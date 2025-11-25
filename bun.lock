@@ -59,7 +59,6 @@
         "@types/react-dom": "catalog:",
         "babel-plugin-react-compiler": "catalog:",
         "drizzle-kit": "catalog:",
-        "prettier": "catalog:",
         "prettier-plugin-tailwindcss": "catalog:",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
