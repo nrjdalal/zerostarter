@@ -91,7 +91,6 @@
     "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "catalog:",
     "simple-git-hooks": "catalog:",
-    "sort-package-json": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:"
