@@ -10,6 +10,7 @@
     "build": "turbo build",
     "clean": "npx rimraf --glob \"**/.next\" \"**/.turbo\" \"**/dist\" \"**/node_modules\"",
     "dev": "turbo dev",
+    "postinstall": "bun .github/scripts/postinstall.ts",
     "lint": "turbo lint",
     "prepare": "npx simple-git-hooks"
   },
@@ -28,7 +29,7 @@
       "prettier --write --ignore-unknown"
     ],
     "package.json": [
-      "bun .github/script/manage-catalog.ts",
+      "bun .github/scripts/postinstall.ts",
       "sort-package-json"
     ]
   },
@@ -39,7 +40,7 @@
   "devDependencies": {
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
-    "@types/node": "catalog:",
+    "globby": "catalog:",
     "lint-staged": "catalog:",
     "oxlint": "catalog:",
     "prettier": "catalog:",
@@ -75,8 +76,7 @@
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "embla-carousel-react": "^8.6.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.4",
+    "globby": "^16.0.0",
     "hono": "^4.10.6",
     "input-otp": "^1.4.2",
     "lint-staged": "^16.2.7",
