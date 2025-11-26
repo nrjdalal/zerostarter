@@ -1,7 +1,6 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   rewrites: async () => {
     return [
@@ -11,6 +10,8 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  // TODO: Make sure this makes any difference
+  transpilePackages: ["@api/hono"],
 }
 
 export default nextConfig

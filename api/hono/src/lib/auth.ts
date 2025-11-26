@@ -7,7 +7,6 @@ import { Resend } from "resend"
 import { account, session, user, verification } from "@/db/schema/auth"
 
 export const auth = betterAuth({
-  basePath: "/api/auth",
   baseURL: process.env.BETTER_AUTH_WEB_URL as string,
   trustedOrigins: [process.env.BETTER_AUTH_WEB_URL as string],
   database: drizzleAdapter(db, {
@@ -40,3 +39,6 @@ export const auth = betterAuth({
     }),
   ],
 })
+
+export type User = typeof auth.$Infer.Session.user
+export type Session = typeof auth.$Infer.Session.session

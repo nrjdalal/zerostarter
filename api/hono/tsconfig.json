@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "esModuleInterop": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "paths": {

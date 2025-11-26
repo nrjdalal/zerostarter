@@ -1,7 +1,7 @@
-import type { AppType } from "@api/hono"
+import { AppType, Session as AuthSession, User as AuthUser } from "@api/hono"
 import { hc } from "hono/client"
 
-const client = hc<AppType>(process.env.NEXT_PUBLIC_API_URL as string) as AppType & {
+const honoClient = hc<AppType>(process.env.NEXT_PUBLIC_API_URL as string) as AppType & {
   api: {
     auth: {
       "get-session": {
@@ -13,9 +13,13 @@ const client = hc<AppType>(process.env.NEXT_PUBLIC_API_URL as string) as AppType
 
 export const auth = {
   api: {
-    getSession: async ({ headers }: { headers: Headers }) => {
+    getSession: async ({
+      headers,
+    }: {
+      headers: Headers
+    }): Promise<{ user: AuthUser; session: AuthSession } | null> => {
       try {
-        const response = await client.api.auth["get-session"].$get(
+        const response = await honoClient.api.auth["get-session"].$get(
           {},
           {
             init: {
@@ -24,7 +28,7 @@ export const auth = {
           },
         )
         if (!response.ok) return null
-        return await response.json()
+        return (await response.json()) as { user: AuthUser; session: AuthSession }
       } catch (error) {
         console.error(error)
         return null
