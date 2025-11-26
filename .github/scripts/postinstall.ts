@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { globby } from "globby"
 
-// TODO:AI-generated script, replace later.
+// TODO: AI-generated script, replace later.
 
 type DepSection = "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies"
 
