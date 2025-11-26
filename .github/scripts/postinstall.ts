@@ -95,6 +95,33 @@ const scanUsedDeps = async (repoRoot: string, pkgPaths: string[]) => {
   return { usedDeps, usedVersions }
 }
 
+const getOrCreateRootCatalog = (rootPkg: PackageJson) => {
+  if (!isPlainObject(rootPkg.catalog)) rootPkg.catalog = {}
+  return rootPkg.catalog as Record<string, JSONValue>
+}
+
+const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string, Set<string>>) => {
+  const safeToMove: Map<string, string> = new Map()
+  const unsafeMissing: string[] = []
+
+  for (const [name, versionsSet] of usedVersions.entries()) {
+    if (catalogKeys.has(name)) continue
+
+    const versions = [...versionsSet]
+    const nonLocal = versions.filter((v) => !isLocalProtocol(v))
+
+    if (nonLocal.length === 0) continue
+    const uniqNonLocal = [...new Set(nonLocal)]
+    if (uniqNonLocal.length === 1) {
+      safeToMove.set(name, uniqNonLocal[0])
+    } else {
+      unsafeMissing.push(name)
+    }
+  }
+
+  return { safeToMove, unsafeMissing }
+}
+
 async function main() {
   const repoRoot = process.cwd()
   const rootPkgPath = resolve(repoRoot, "package.json")
@@ -111,28 +138,79 @@ async function main() {
     rootPkg.catalogs = sortObjectDeep(rootPkg.catalogs)
     rootMutated = true
   }
-  if (rootMutated) await writeJsonFileIfChanged(rootPkgPath, rootPkg, rootRaw)
 
   const catalogKeys = collectCatalogKeys(rootPkg)
-  if (catalogKeys.size === 0) return
 
   const pkgPaths = await globby("**/package.json", { gitignore: true })
   const { usedDeps, usedVersions } = await scanUsedDeps(repoRoot, pkgPaths)
+
+  const { safeToMove, unsafeMissing } = pickSafeMoves(catalogKeys, usedVersions)
+
+  if (safeToMove.size > 0) {
+    const rootCatalog = getOrCreateRootCatalog(rootPkg)
+    for (const [name, version] of safeToMove.entries()) {
+      rootCatalog[name] = version
+      catalogKeys.add(name)
+    }
+    rootPkg.catalog = sortObjectDeep(rootPkg.catalog!)
+    rootMutated = true
+  }
+
+  if (rootMutated) {
+    await writeJsonFileIfChanged(rootPkgPath, rootPkg, rootRaw)
+  }
+
+  for (const relPath of pkgPaths) {
+    const absPath = resolve(repoRoot, relPath)
+    let raw: string
+    let pkg: PackageJson
+
+    try {
+      raw = await readFile(absPath, "utf8")
+      pkg = JSON.parse(raw) as PackageJson
+    } catch {
+      continue
+    }
+
+    let mutated = false
+    for (const section of DEP_SECTIONS) {
+      const deps = pkg[section]
+      if (!deps || !isPlainObject(deps)) continue
+
+      for (const [name, version] of Object.entries(deps)) {
+        if (!safeToMove.has(name)) continue
+        if (isLocalProtocol(version)) continue
+        if (version !== "catalog:") {
+          deps[name] = "catalog:"
+          mutated = true
+        }
+      }
+
+      if (mutated) {
+        pkg[section] = sortObjectDeep(deps) as Record<string, string>
+      }
+    }
+
+    if (mutated) {
+      await writeJsonFileIfChanged(absPath, pkg, raw)
+    }
+  }
 
   const unusedCatalog = [...catalogKeys]
     .filter((k) => !usedDeps.has(k))
     .sort((a, b) => a.localeCompare(b))
 
-  const missingInCatalog = [...usedDeps]
-    .filter((name) => {
-      if (catalogKeys.has(name)) return false
-      const versions = usedVersions.get(name)
-      if (!versions) return false
-      return [...versions].some((v) => !isLocalProtocol(v))
-    })
-    .sort((a, b) => a.localeCompare(b))
+  const missingInCatalog = unsafeMissing.sort((a, b) => a.localeCompare(b))
 
-  if (!unusedCatalog.length && !missingInCatalog.length) return
+  if (!unusedCatalog.length && !missingInCatalog.length && safeToMove.size === 0) return
+
+  if (safeToMove.size) {
+    console.log("Auto-moved deps to catalog:")
+    for (const [k, v] of [...safeToMove.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      console.log(`- ${k}@${v}`)
+    }
+    console.log("")
+  }
 
   if (unusedCatalog.length) {
     console.log("Unused deps in catalog:")
@@ -141,7 +219,7 @@ async function main() {
   }
 
   if (missingInCatalog.length) {
-    console.log("Please move following deps to catalog:")
+    console.log("Not safe to auto-move (multiple non-local versions). Please move manually:")
     for (const k of missingInCatalog) console.log(`- ${k}`)
     console.log("")
   }
