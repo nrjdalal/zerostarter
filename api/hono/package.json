@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "bun run --hot src/index.ts"
+    "dev": "concurrently \"tsdown --watch\" \"bun run --hot src/index.ts\""
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
+    "concurrently": "catalog:",
     "drizzle-kit": "catalog:",
     "tsdown": "catalog:"
   }
