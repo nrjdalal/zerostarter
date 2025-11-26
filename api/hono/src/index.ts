@@ -4,12 +4,7 @@ import { auth } from "@/lib/auth"
 import { zValidator } from "@hono/zod-validator"
 import { z } from "zod"
 
-const app = new Hono<{
-  Variables: {
-    user: typeof auth.$Infer.Session.user | null
-    session: typeof auth.$Infer.Session.session | null
-  }
-}>().basePath("/api")
+const app = new Hono().basePath("/api")
 
 app.use(
   "/auth/*",
