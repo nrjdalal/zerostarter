@@ -16,7 +16,8 @@
       "dependsOn": ["^lint"]
     },
     "start": {
-      "dependsOn": ["^start"]
+      "persistent": true,
+      "cache": false
     }
   }
 }
