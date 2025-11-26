@@ -1,15 +1,17 @@
 {
   "name": "@api/hono",
+  "version": "0.0.1",
+  "private": true,
   "type": "module",
   "exports": "./dist/index.mjs",
-  "main": "src/index.ts",
   "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "concurrently \"tsdown --watch\" \"bun run --hot src/index.ts\""
+    "dev": "concurrently \"tsdown --watch\" \"bun run --hot src/index.ts\"",
+    "lint": "oxlint"
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",

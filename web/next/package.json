@@ -8,13 +8,6 @@
     "lint": "oxlint",
     "start": "next start"
   },
-  "lint-staged": {
-    "*": [
-      "prettier --write --ignore-unknown",
-      "oxlint"
-    ],
-    "package.json": "sort-package-json"
-  },
   "prettier": {
     "importOrder": [
       "<BUILTIN_MODULES>",
