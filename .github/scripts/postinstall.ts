@@ -2,6 +2,8 @@ import { readFile, writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { globby } from "globby"
 
+// TODO: Remove this AI generated script when we get time to fix the catalog issue
+
 type DepSections = "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies"
 
 const DEP_SECTIONS: DepSections[] = [
