@@ -1,4 +1,4 @@
-import { Hono, type Context } from "hono"
+import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { auth } from "@/lib/auth"
 import { zValidator } from "@hono/zod-validator"

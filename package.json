@@ -27,7 +27,7 @@
   },
   "lint-staged": {
     "*": [
-      "oxlint --fix",
+      "oxlint",
       "prettier --write --ignore-unknown"
     ],
     "package.json": [
