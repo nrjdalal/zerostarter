@@ -8,9 +8,10 @@ Welcome to the SaaS Starter monorepo! This project is a full-stack application b
 
 ### Core
 
-- **Package Manager:** [Bun](https://bun.sh/)
+- **Package Manager:** [Bun](https://bun.sh/) (with `catalog` for dependency management)
 - **Monorepo Tool:** [Turborepo](https://turbo.build/)
 - **Language:** TypeScript
+- **Linting:** [Oxlint](https://oxc.rs/docs/guide/usage/linter)
 
 ### Backend (`apps/api` or `api/hono`)
 
@@ -143,10 +144,24 @@ This will start both the backend and frontend servers in parallel using Turborep
   bun run lint
   ```
 
+- **Type Checking:**
+
+  ```bash
+  bun run check-types
+  ```
+
 - **Build:**
   ```bash
   bun run build
   ```
+
+## CI/CD
+
+The project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that runs on every push and pull request to `main`. It checks:
+
+- **Linting:** `bun run lint`
+- **Type Checking:** `bun run check-types`
+- **Build:** `bun run build`
 
 ## API Integration
 
