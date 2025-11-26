@@ -7,6 +7,8 @@
     "web/*"
   ],
   "scripts": {
+    "build": "turbo build",
+    "clean": "npx rimraf --glob \"**/.next\" \"**/.turbo\" \"**/dist\" \"**/node_modules\"",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "prepare": "npx simple-git-hooks"
