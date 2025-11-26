@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises"
-import { resolve, relative } from "node:path"
+import { resolve } from "node:path"
 import { globby } from "globby"
 
 // TODO:AI-generated script, replace later.
