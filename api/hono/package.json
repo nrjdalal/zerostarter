@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsdown",
     "dev": "concurrently \"tsdown --watch\" \"bun run --hot src/index.ts\"",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "start": "bun dist/index.mjs"
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",

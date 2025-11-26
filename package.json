@@ -12,7 +12,8 @@
     "dev": "turbo dev",
     "postinstall": "bun .github/scripts/deps-manager.ts",
     "lint": "turbo lint",
-    "prepare": "npx simple-git-hooks"
+    "prepare": "npx simple-git-hooks",
+    "start": "turbo start"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged --verbose",
