@@ -1,164 +1,136 @@
-import fs from "node:fs"
-import path from "node:path"
+import { readFile, writeFile } from "node:fs/promises"
+import { resolve } from "node:path"
 import { globby } from "globby"
 
-const rootPackageJsonPath = path.join(process.cwd(), "package.json")
+type DepSections = "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies"
 
-async function main() {
-  try {
-    const content = fs.readFileSync(rootPackageJsonPath, "utf8")
-    const pkg = JSON.parse(content)
+const DEP_SECTIONS: DepSections[] = [
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "optionalDependencies",
+]
 
-    if (!pkg.catalog) {
-      pkg.catalog = {}
+type JSONValue = null | boolean | number | string | JSONValue[] | { [key: string]: JSONValue }
+
+type PackageJson = {
+  catalog?: Record<string, JSONValue>
+  catalogs?: Record<string, Record<string, JSONValue>>
+} & Partial<Record<DepSections, Record<string, string>>>
+
+const isPlainObject = (v: unknown): v is Record<string, JSONValue> =>
+  !!v && typeof v === "object" && !Array.isArray(v)
+
+const sortObjectRecursively = <T extends JSONValue>(value: T): T => {
+  if (Array.isArray(value)) return value.map(sortObjectRecursively) as T
+  if (isPlainObject(value)) {
+    const sorted: Record<string, JSONValue> = {}
+    for (const key of Object.keys(value).sort((a, b) => a.localeCompare(b))) {
+      sorted[key] = sortObjectRecursively(value[key])
     }
-
-    let rootPkgModified = false
-    let catalog = { ...pkg.catalog }
-
-    const packageJsonFiles = await globby("**/package.json", {
-      gitignore: true,
-      ignore: ["**/node_modules/**"],
-      absolute: true,
-    })
-
-    const dependencyVersions = new Map<string, Set<string>>()
-    const packageJsons = new Map<string, any>()
-
-    for (const pPath of packageJsonFiles) {
-      const isRoot = pPath === rootPackageJsonPath
-      const pPkg = isRoot ? pkg : JSON.parse(fs.readFileSync(pPath, "utf8"))
-      packageJsons.set(pPath, pPkg)
-
-      const depTypes = [
-        "dependencies",
-        "devDependencies",
-        "peerDependencies",
-        "optionalDependencies",
-      ]
-
-      for (const type of depTypes) {
-        if (pPkg[type]) {
-          for (const [dep, version] of Object.entries(pPkg[type] as Record<string, string>)) {
-            if (!dependencyVersions.has(dep)) {
-              dependencyVersions.set(dep, new Set())
-            }
-            dependencyVersions.get(dep)!.add(version)
-          }
-        }
-      }
-    }
-
-    const usedDependencies = new Set<string>()
-
-    for (const pPath of packageJsonFiles) {
-      const pPkg = packageJsons.get(pPath)
-      let pPkgModified = false
-
-      const depTypes = [
-        "dependencies",
-        "devDependencies",
-        "peerDependencies",
-        "optionalDependencies",
-      ]
-
-      for (const type of depTypes) {
-        if (pPkg[type]) {
-          for (const [dep, version] of Object.entries(pPkg[type] as Record<string, string>)) {
-            usedDependencies.add(dep)
-
-            const versions = dependencyVersions.get(dep)!
-
-            const isCatalog = version === "catalog:"
-            const isWorkspace = version.startsWith("workspace:")
-            const isFile = version.startsWith("file:")
-            const isLink = version.startsWith("link:")
-            const isHttp = version.startsWith("http:") || version.startsWith("https:")
-            const isGit = version.startsWith("git:") || version.startsWith("git+")
-
-            if (isCatalog || isWorkspace || isFile || isLink || isHttp || isGit) continue
-
-            const nonCatalogVersions = Array.from(versions).filter((v) => v !== "catalog:")
-
-            const hasSpecialProtocol = nonCatalogVersions.some(
-              (v) =>
-                v.startsWith("workspace:") ||
-                v.startsWith("file:") ||
-                v.startsWith("link:") ||
-                v.startsWith("http:") ||
-                v.startsWith("https:") ||
-                v.startsWith("git:") ||
-                v.startsWith("git+"),
-            )
-
-            if (hasSpecialProtocol) continue
-
-            if (nonCatalogVersions.length > 1) continue
-
-            const candidateVersion = nonCatalogVersions[0]
-
-            if (versions.has("catalog:")) {
-              if (catalog[dep] && catalog[dep] !== candidateVersion) {
-                continue
-              }
-            }
-
-            if (catalog[dep] !== candidateVersion) {
-              catalog[dep] = candidateVersion
-              rootPkgModified = true
-            }
-            pPkg[type][dep] = "catalog:"
-            pPkgModified = true
-          }
-        }
-      }
-
-      if (pPkgModified) {
-        if (pPath === rootPackageJsonPath) {
-          rootPkgModified = true
-        } else {
-          fs.writeFileSync(pPath, JSON.stringify(pPkg, null, 2) + "\n")
-          console.log(`Updated dependencies to catalog: in ${path.relative(process.cwd(), pPath)}`)
-        }
-      }
-    }
-
-    if (rootPkgModified) {
-      pkg.catalog = catalog
-    }
-
-    const sortedCatalog = Object.keys(pkg.catalog)
-      .sort()
-      .reduce(
-        (acc, key) => {
-          acc[key] = pkg.catalog[key]
-          return acc
-        },
-        {} as Record<string, string>,
-      )
-
-    if (JSON.stringify(pkg.catalog) !== JSON.stringify(sortedCatalog)) {
-      pkg.catalog = sortedCatalog
-      rootPkgModified = true
-    }
-
-    if (rootPkgModified) {
-      const newContent = JSON.stringify(pkg, null, 2) + "\n"
-      fs.writeFileSync(rootPackageJsonPath, newContent)
-      console.log("Updated catalog in package.json")
-    }
-
-    const unusedPackages = Object.keys(pkg.catalog).filter((key) => !usedDependencies.has(key))
-
-    if (unusedPackages.length > 0) {
-      console.warn("[INFO] The following packages in 'catalog' are unused at root package.json:")
-      unusedPackages.forEach((pkgName) => console.warn(`       - ${pkgName}`))
-      console.warn()
-    }
-  } catch (error) {
-    console.error("Error processing package.json:", error)
-    process.exit(1)
+    return sorted as T
   }
+  return value
 }
 
-main()
+const collectCatalogKeys = (rootPkg: PackageJson): Set<string> => {
+  const keys = new Set<string>()
+  if (isPlainObject(rootPkg.catalog)) {
+    for (const k of Object.keys(rootPkg.catalog)) keys.add(k)
+  }
+  if (isPlainObject(rootPkg.catalogs)) {
+    for (const group of Object.values(rootPkg.catalogs)) {
+      if (isPlainObject(group)) {
+        for (const k of Object.keys(group)) keys.add(k)
+      }
+    }
+  }
+  return keys
+}
+
+const isLocalProtocol = (v: string) =>
+  v.startsWith("workspace:") ||
+  v.startsWith("file:") ||
+  v.startsWith("link:") ||
+  v.startsWith("portal:")
+
+const readJson = async (path: string): Promise<PackageJson> =>
+  JSON.parse(await readFile(path, "utf8"))
+
+async function main() {
+  const repoRoot = process.cwd()
+  const rootPkgPath = resolve(repoRoot, "package.json")
+
+  const rawRoot = await readFile(rootPkgPath, "utf8")
+  const rootPkg = JSON.parse(rawRoot) as PackageJson
+
+  let mutated = false
+  if (isPlainObject(rootPkg.catalog)) {
+    rootPkg.catalog = sortObjectRecursively(rootPkg.catalog)
+    mutated = true
+  }
+  if (isPlainObject(rootPkg.catalogs)) {
+    rootPkg.catalogs = sortObjectRecursively(rootPkg.catalogs)
+    mutated = true
+  }
+  if (mutated) {
+    const rawAfter = JSON.stringify(rootPkg, null, 2) + "\n"
+    if (rawAfter !== rawRoot) await writeFile(rootPkgPath, rawAfter, "utf8")
+  }
+
+  const catalogKeys = collectCatalogKeys(rootPkg)
+  if (catalogKeys.size === 0) process.exit(0)
+
+  const pkgPaths = await globby("**/package.json", { gitignore: true })
+
+  const usedDeps = new Set<string>()
+  const usedVersions = new Map<string, Set<string>>()
+
+  for (const p of pkgPaths) {
+    let pkg: PackageJson
+    try {
+      pkg = await readJson(resolve(repoRoot, p))
+    } catch {
+      continue
+    }
+
+    for (const section of DEP_SECTIONS) {
+      const deps = pkg[section]
+      if (!deps || !isPlainObject(deps)) continue
+
+      for (const depName of Object.keys(deps)) {
+        const version = deps[depName] as string
+        usedDeps.add(depName)
+        if (!usedVersions.has(depName)) usedVersions.set(depName, new Set())
+        usedVersions.get(depName)!.add(version)
+      }
+    }
+  }
+
+  const unusedCatalog = [...catalogKeys]
+    .filter((k) => !usedDeps.has(k))
+    .sort((a, b) => a.localeCompare(b))
+
+  const missingInCatalog = [...usedDeps]
+    .filter((name) => {
+      if (catalogKeys.has(name)) return false
+      const versions = [...(usedVersions.get(name) ?? [])]
+      return versions.some((v) => !isLocalProtocol(v))
+    })
+    .sort((a, b) => a.localeCompare(b))
+
+  if (unusedCatalog.length) {
+    console.log("Unused deps in catalog:")
+    for (const k of unusedCatalog) console.log(`- ${k}`)
+    if (missingInCatalog.length) console.log("")
+  }
+
+  if (missingInCatalog.length) {
+    console.log("Please move following deps to catalog:")
+    for (const k of missingInCatalog) console.log(`- ${k}`)
+  }
+
+  console.log()
+}
+
+main().catch(() => process.exit(1))

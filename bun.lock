@@ -7,6 +7,8 @@
       "devDependencies": {
         "@commitlint/cli": "catalog:",
         "@commitlint/config-conventional": "catalog:",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
         "globby": "catalog:",
         "lint-staged": "catalog:",
         "oxlint": "catalog:",
