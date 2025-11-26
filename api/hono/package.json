@@ -1,7 +1,14 @@
 {
   "name": "@api/hono",
+  "type": "module",
+  "exports": "./dist/index.mjs",
   "main": "src/index.ts",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsdown",
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
@@ -15,6 +22,7 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "drizzle-kit": "catalog:"
+    "drizzle-kit": "catalog:",
+    "tsdown": "catalog:"
   }
 }

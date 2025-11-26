@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
-import { auth } from "@/lib/auth"
+import { auth } from "./lib/auth"
 import { zValidator } from "@hono/zod-validator"
 import { z } from "zod"
 
@@ -31,7 +31,9 @@ const routes = app
       }),
     ),
     async (c) => {
-      const session = await auth.api.getSession({ headers: c.req.raw.headers })
+      const session = await (auth.api.getSession as any)({
+        headers: c.req.raw.headers,
+      })
 
       if (!session) {
         return c.json(null)
@@ -59,7 +61,7 @@ const routes = app
   )
   .on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw))
 
-export type { User, Session } from "@/lib/auth"
+export type { User, Session } from "./lib/auth"
 export type AppType = typeof routes
 
 export default {

@@ -99,6 +99,7 @@
     "typescript": "^5",
     "@types/bun": "latest",
     "hono": "^4.10.6",
-    "@hono/zod-validator": "^0.7.5"
+    "@hono/zod-validator": "^0.7.5",
+    "tsdown": "^0.16.7"
   }
 }
