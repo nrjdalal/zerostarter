@@ -21,7 +21,7 @@
       "oxlint"
     ],
     "package.json": [
-      "bun .github/scripts/deps-manager.ts",
+      "bun ../../.github/scripts/deps-manager.ts",
       "sort-package-json"
     ]
   },
