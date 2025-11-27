@@ -5,7 +5,9 @@ if (typeof window === "undefined") {
   try {
     const path = require("path")
     require("dotenv").config({ path: path.resolve(process.cwd(), "../../.env") })
-  } catch (e) {}
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 export const env = createEnv({

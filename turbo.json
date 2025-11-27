@@ -19,5 +19,18 @@
       "persistent": true,
       "cache": false
     }
-  }
+  },
+  "globalEnv": [
+    // Server variables
+    "NODE_ENV",
+    "BETTER_AUTH_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "HONO_PUBLIC_APP_URL",
+    "HONO_PUBLIC_ORIGINS",
+    "POSTGRES_URL",
+    // Client variables
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_APP_URL"
+  ]
 }
