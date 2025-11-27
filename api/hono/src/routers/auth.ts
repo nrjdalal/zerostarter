@@ -30,26 +30,15 @@ export const authRouter = new Hono()
 
       if (selections.length === 1) {
         const key = selections[0]
-
-        if (key === "user") {
-          return c.json(session.user)
-        }
-
-        if (key === "session") {
-          return c.json(session.session)
-        }
+        if (key === "user") return c.json(session.user)
+        if (key === "session") return c.json(session.session)
       }
 
       const result: Partial<typeof session> = {}
 
       for (const key of selections) {
-        if (key === "user") {
-          result.user = session.user
-        }
-
-        if (key === "session") {
-          result.session = session.session
-        }
+        if (key === "user") result.user = session.user
+        if (key === "session") result.session = session.session
       }
 
       return c.json(result)
