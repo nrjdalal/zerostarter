@@ -1,201 +1,131 @@
-# The SaaS Starter Monorepo
+# The SaaS Starter
 
-Welcome to the SaaS Starter monorepo! This project is a full-stack application built with modern web technologies, organized as a monorepo using [Turborepo](https://turbo.build/).
+A modern, production-ready SaaS starter kit built as a monorepo using **Turborepo**, **Bun**, **Hono**, **Next.js**, and **Drizzle ORM**.
 
 ![Architecture](./.github/assets/graph-build.svg)
 
-## Tech Stack
+## 🚀 Tech Stack
 
-### Core
+- **Monorepo**: [Turborepo](https://turbo.build/)
+- **Package Manager**: [Bun](https://bun.sh/)
+- **Frontend**: [Next.js 15](https://nextjs.org/) (React 19), [Tailwind CSS v4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/)
+- **Backend**: [Hono](https://hono.dev/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Authentication**: [Better Auth](https://better-auth.com/)
+- **Validation**: [Zod](https://zod.dev/)
+- **Environment**: [T3 Env](https://env.t3.gg/) for type-safe environment variables
 
-- **Package Manager:** [Bun](https://bun.sh/) (using `catalog` for consistent dependency management)
-- **Monorepo Tool:** [Turborepo](https://turbo.build/)
-- **Language:** TypeScript
-- **Linting:** [Oxlint](https://oxc.rs/docs/guide/usage/linter)
+## 📂 Project Structure
 
-### Backend (`api/hono`)
+```
+.
+├── api/
+│   └── hono/          # Backend API server (Port 4000)
+├── web/
+│   └── next/          # Next.js Frontend application (Port 3000)
+├── packages/
+│   ├── auth/          # Authentication logic & Better Auth configuration
+│   ├── db/            # Database schema & Drizzle configuration
+│   ├── env/           # Shared environment variable validation
+│   └── tsconfig/       # Shared TypeScript configurations
+└── package.json       # Root configuration
+```
 
-- **Framework:** [Hono](https://hono.dev/)
-- **Database ORM:** [Drizzle ORM](https://orm.drizzle.team/)
-- **Database:** PostgreSQL
-- **Authentication:** [Better Auth](https://better-auth.com/)
-- **Validation:** Zod
+## 🛠️ Getting Started
 
-### Frontend (`web/next`)
+### Prerequisites
 
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
-- **Styling:** Tailwind CSS v4
-- **UI Components:** Radix UI, Lucide React, Sonner
-- **State/Data Fetching:** TanStack Query
-- **Forms:** React Hook Form + Zod + TanStack Form (dependency present)
-- **Themes:** next-themes
+- **Bun** (v1.x) installed.
+- **PostgreSQL** database.
 
-## Prerequisites
+### Installation
 
-- **Bun**: You need to have Bun installed.
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-- **PostgreSQL**: Ensure you have a running PostgreSQL instance.
+1. **Clone the repository:**
 
-## Getting Started
+   ```bash
+   git clone <repository-url>
+   cd the-saas-starter
+   ```
 
-### 1. Installation
+2. **Install dependencies:**
 
-Clone the repository and install dependencies using Bun:
+   ```bash
+   bun install
+   ```
+
+3. **Environment Setup:**
+   Create a `.env` file in the root directory based on the required variables (see below) or check `packages/env/src/index.ts`.
+
+   ```bash
+   # Example .env
+   NODE_ENV="development"
+
+   # Database
+   POSTGRES_URL="postgres://user:password@localhost:5432/dbname"
+
+   # Authentication (Better Auth)
+   BETTER_AUTH_SECRET="your-secret-key"
+   GITHUB_CLIENT_ID="your-github-client-id"
+   GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+   # API & App URLs
+   HONO_PUBLIC_APP_URL="http://localhost:4000"
+   HONO_PUBLIC_ORIGINS="http://localhost:3000"
+   NEXT_PUBLIC_API_URL="http://localhost:4000"
+   NEXT_PUBLIC_APP_URL="http://localhost:3000"
+   ```
+
+### Database Setup
+
+Push the schema to your database:
 
 ```bash
-git clone <repository-url>
-cd the-saas-starter
-bun install
+bun run db:push
 ```
 
-### 2. Environment Variables
+### Running Development Server
 
-You need to configure environment variables for both the API and the Web application.
-
-**Backend (`api/hono/.env`):**
-
-Create a `.env` file in `api/hono/` with the following:
-
-```env
-# App Settings
-HONO_PUBLIC_APP_URL="http://localhost:4000"
-HONO_PUBLIC_ORIGINS="http://localhost:3000"
-
-# Better Auth
-BETTER_AUTH_SECRET="your_better_auth_secret"
-
-# OAuth Providers
-GITHUB_CLIENT_ID="your_github_client_id"
-GITHUB_CLIENT_SECRET="your_github_client_secret"
-
-# Database
-POSTGRES_URL="postgresql://user:password@localhost:5432/dbname"
-```
-
-**Frontend (`web/next/.env.local`):**
-
-Create a `.env.local` file in `web/next/` with the following:
-
-```env
-# App Settings
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_API_URL="http://localhost:4000"
-```
-
-### 3. Database Setup
-
-Navigate to the API directory and push the schema to your database:
-
-```bash
-cd api/hono
-bunx drizzle-kit push
-```
-
-### 4. Running the Application
-
-From the root directory, run the development server:
+Start all applications in development mode:
 
 ```bash
 bun run dev
 ```
 
-This will start both the backend and frontend servers in parallel using Turborepo.
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend: [http://localhost:4000](http://localhost:4000)
 
-- **Frontend:** [http://localhost:3000](http://localhost:3000)
-- **Backend:** [http://localhost:4000](http://localhost:4000)
-- **Backend Health Check:** [http://localhost:4000/api/health](http://localhost:4000/api/health)
-
-## Project Structure
-
-```
-.
-├── api/
-│   └── hono/                # Hono server
-│       ├── src/
-│       │   ├── db/          # Database schema (Drizzle)
-│       │   ├── lib/         # Shared libraries (Auth, etc.)
-│       │   ├── middlewares/ # Hono middlewares
-│       │   ├── routers/     # API route definitions
-│       │   └── index.ts     # Server entry point
-├── web/
-│   └── next/                # Next.js client
-│       ├── src/
-│       │   ├── app/         # App Router pages
-│       │   ├── components/  # UI Components
-│       │   ├── hooks/       # Custom React hooks
-│       │   └── lib/         # API clients and utils
-├── packages/
-│   └── tsconfig/             # Shared TypeScript configurations
-├── turbo.json               # Turborepo configuration
-└── package.json             # Root dependencies and scripts
-```
-
-## Development Workflow
-
-### Scripts
+## 📜 Scripts
 
 Run these commands from the root directory:
 
-- **Install Dependencies:**
+- `bun run dev`: Start development servers for all apps.
+- `bun run build`: Build all apps and packages.
+- `bun run lint`: Run linters (Oxlint, Prettier).
+- `bun run db:generate`: Generate SQL migrations.
+- `bun run db:migrate`: Apply migrations to the database.
+- `bun run db:push`: Push schema changes directly to the database (prototyping).
+- `bun run db:studio`: Open Drizzle Studio to manage data.
+- `bun run check-types`: Run TypeScript type checking.
 
-  ```bash
-  bun install
-  ```
+## 🔐 Environment Variables
 
-- **Start Development Server:**
+The project uses `@packages/env` to validate environment variables. Define these in your root `.env` file:
 
-  ```bash
-  bun run dev
-  ```
+| Variable               | Description                            |
+| ---------------------- | -------------------------------------- |
+| `POSTGRES_URL`         | Connection string for PostgreSQL       |
+| `BETTER_AUTH_SECRET`   | Secret key for Better Auth             |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth Client ID                 |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret             |
+| `HONO_PUBLIC_APP_URL`  | URL where the Hono API is running      |
+| `HONO_PUBLIC_ORIGINS`  | Allowed CORS origins (comma-separated) |
+| `NEXT_PUBLIC_API_URL`  | API URL for the frontend client        |
+| `NEXT_PUBLIC_APP_URL`  | URL of the frontend application        |
 
-- **Linting:**
+## 🤝 Contributing
 
-  ```bash
-  bun run lint
-  ```
-
-- **Type Checking:**
-
-  ```bash
-  bun run check-types
-  ```
-
-- **Build:**
-
-  ```bash
-  bun run build
-  ```
-
-- **Clean:** (Removes `node_modules`, `.next`, `dist`, `.turbo`)
-  ```bash
-  bun run clean
-  ```
-
-### Managing Dependencies
-
-This monorepo uses `bun` workspaces. To add a dependency to a specific workspace:
-
-```bash
-# Add to api
-bun add <package> --filter @api/hono
-
-# Add to web
-bun add <package> --filter @web/next
-```
-
-## CI/CD
-
-The project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that runs on every push and pull request to `main`. It checks:
-
-- **Linting:** `bun run lint`
-- **Type Checking:** `bun run check-types`
-- **Build:** `bun run build`
-
-## API Integration
-
-The frontend communicates with the backend using Hono's RPC client, providing end-to-end type safety.
-
-- The API client is initialized in `web/next/src/lib/api/client.ts`.
-- Types are inferred directly from the `@api/hono` workspace exports.
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
