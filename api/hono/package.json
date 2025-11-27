@@ -19,6 +19,10 @@
     "*": [
       "prettier --write --ignore-unknown",
       "oxlint"
+    ],
+    "package.json": [
+      "bun .github/scripts/deps-manager.ts",
+      "sort-package-json"
     ]
   },
   "prettier": {
@@ -59,5 +63,16 @@
     "concurrently": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
+  },
+  "catalog": {
+    "@hono/zod-validator": "catalog:",
+    "@ianvs/prettier-plugin-sort-imports": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "concurrently": "catalog:",
+    "hono": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }
