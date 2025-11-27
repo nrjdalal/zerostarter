@@ -8,6 +8,18 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "db:generate": {
+      "dependsOn": ["^db:generate"]
+    },
+    "db:migrate": {
+      "dependsOn": ["^db:migrate"]
+    },
+    "db:studio": {
+      "dependsOn": ["^db:studio"]
+    },
+    "db:push": {
+      "dependsOn": ["^db:push"]
+    },
     "dev": {
       "persistent": true,
       "cache": false

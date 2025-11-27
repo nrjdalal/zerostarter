@@ -31,3 +31,4 @@ if (env.NODE_ENV === "production") {
 }
 
 export { db }
+export * from "./schema"

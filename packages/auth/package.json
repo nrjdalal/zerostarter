@@ -1,0 +1,22 @@
+{
+  "name": "@packages/auth",
+  "version": "0.0.1",
+  "private": true,
+  "exports": "./src/index.ts",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint"
+  },
+  "dependencies": {
+    "@packages/db": "workspace:*",
+    "@packages/env": "workspace:*",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@packages/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

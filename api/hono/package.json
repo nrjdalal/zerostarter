@@ -47,12 +47,9 @@
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",
+    "@packages/auth": "workspace:*",
     "@packages/env": "workspace:*",
-    "better-auth": "catalog:",
-    "drizzle-orm": "catalog:",
     "hono": "catalog:",
-    "postgres": "catalog:",
-    "resend": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -61,7 +58,6 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
-    "drizzle-kit": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

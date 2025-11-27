@@ -1,10 +1,10 @@
-import { db } from "@/db"
+import { db } from "@packages/db"
 import { env } from "@packages/env"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { openAPI } from "better-auth/plugins"
 
-import { account, session, user, verification } from "@/db/schema/auth"
+import { account, session, user, verification } from "@packages/db"
 
 export const auth = betterAuth({
   baseURL: env.HONO_PUBLIC_APP_URL,

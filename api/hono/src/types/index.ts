@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { auth } from "@packages/auth"
 
 // ~ Auth Types
 export type User = typeof auth.$Infer.Session.user
