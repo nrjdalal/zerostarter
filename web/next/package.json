@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "check-types": "tsc --noEmit",
+    "check-types": "turbo build --filter=@api/hono && tsc --noEmit",
     "dev": "next dev",
     "lint": "oxlint",
     "start": "next start"

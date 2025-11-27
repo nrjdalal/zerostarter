@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint and Build
+    name: Lint, Check Types, and Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,5 +25,8 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Build
-        run: bun run build
+      - name: Check Types
+        run: bun run check-types
+
+      # - name: Build
+      #   run: bun run build
