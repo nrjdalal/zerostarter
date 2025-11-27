@@ -8,12 +8,12 @@ Welcome to the SaaS Starter monorepo! This project is a full-stack application b
 
 ### Core
 
-- **Package Manager:** [Bun](https://bun.sh/) (with `catalog` for dependency management)
+- **Package Manager:** [Bun](https://bun.sh/) (using `catalog` for consistent dependency management)
 - **Monorepo Tool:** [Turborepo](https://turbo.build/)
 - **Language:** TypeScript
 - **Linting:** [Oxlint](https://oxc.rs/docs/guide/usage/linter)
 
-### Backend (`apps/api` or `api/hono`)
+### Backend (`api/hono`)
 
 - **Framework:** [Hono](https://hono.dev/)
 - **Database ORM:** [Drizzle ORM](https://orm.drizzle.team/)
@@ -22,13 +22,14 @@ Welcome to the SaaS Starter monorepo! This project is a full-stack application b
 - **Email:** [Resend](https://resend.com/)
 - **Validation:** Zod
 
-### Frontend (`apps/web` or `web/next`)
+### Frontend (`web/next`)
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **Styling:** Tailwind CSS v4
 - **UI Components:** Radix UI, Lucide React, Sonner
 - **State/Data Fetching:** TanStack Query
-- **Forms:** React Hook Form + Zod
+- **Forms:** React Hook Form + Zod + TanStack Form (dependency present)
+- **Themes:** next-themes
 
 ## Prerequisites
 
@@ -59,19 +60,19 @@ You need to configure environment variables for both the API and the Web applica
 Create a `.env` file in `api/hono/` with the following:
 
 ```env
-# Database
-POSTGRES_URL="postgresql://user:password@localhost:5432/dbname"
-
 # App Settings
 HONO_PUBLIC_APP_URL="http://localhost:4000"
 HONO_PUBLIC_ORIGINS="http://localhost:3000"
 
-# Auth Providers (Example: GitHub)
+# Better Auth
+BETTER_AUTH_SECRET="your_better_auth_secret"
+
+# OAuth Providers
 GITHUB_CLIENT_ID="your_github_client_id"
 GITHUB_CLIENT_SECRET="your_github_client_secret"
 
-# Email
-RESEND_API_KEY="re_..."
+# Database
+POSTGRES_URL="postgresql://user:password@localhost:5432/dbname"
 ```
 
 **Frontend (`web/next/.env.local`):**
@@ -79,9 +80,9 @@ RESEND_API_KEY="re_..."
 Create a `.env.local` file in `web/next/` with the following:
 
 ```env
-# API Configuration
-NEXT_PUBLIC_API_URL="http://localhost:4000"
+# App Settings
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_API_URL="http://localhost:4000"
 ```
 
 ### 3. Database Setup
@@ -105,37 +106,49 @@ This will start both the backend and frontend servers in parallel using Turborep
 
 - **Frontend:** [http://localhost:3000](http://localhost:3000)
 - **Backend:** [http://localhost:4000](http://localhost:4000)
+- **Backend Health Check:** [http://localhost:4000/api/health](http://localhost:4000/api/health)
 
 ## Project Structure
 
 ```
 .
 ├── api/
-│   └── hono/          # Hono API server
+│   └── hono/                # Hono server
 │       ├── src/
-│       │   ├── db/    # Database schema and connection
-│       │   ├── lib/   # Shared libraries (Auth, etc.)
-│       │   └── index.ts # Server entry point
+│       │   ├── db/          # Database schema (Drizzle)
+│       │   ├── lib/         # Shared libraries (Auth, etc.)
+│       │   ├── middlewares/ # Hono middlewares
+│       │   ├── routers/     # API route definitions
+│       │   └── index.ts     # Server entry point
 ├── web/
-│   └── next/          # Next.js Frontend application
+│   └── next/                # Next.js client
 │       ├── src/
-│       │   ├── app/   # App Router pages
-│       │   ├── components/ # UI Components
-│       │   └── lib/   # API clients and utils
-├── turbo.json         # Turborepo configuration
-└── package.json       # Root dependencies and scripts
+│       │   ├── app/         # App Router pages
+│       │   ├── components/  # UI Components
+│       │   ├── hooks/       # Custom React hooks
+│       │   └── lib/         # API clients and utils
+├── packages/
+│   └── tsconfig/             # Shared TypeScript configurations
+├── turbo.json               # Turborepo configuration
+└── package.json             # Root dependencies and scripts
 ```
 
 ## Development Workflow
 
-- **Add a dependency:**
+### Scripts
+
+Run these commands from the root directory:
+
+- **Install Dependencies:**
 
   ```bash
-  # Add to api
-  bun add <package> --filter @api/hono
+  bun install
+  ```
 
-  # Add to web
-  bun add <package> --filter @web/next
+- **Start Development Server:**
+
+  ```bash
+  bun run dev
   ```
 
 - **Linting:**
@@ -151,9 +164,27 @@ This will start both the backend and frontend servers in parallel using Turborep
   ```
 
 - **Build:**
+
   ```bash
   bun run build
   ```
+
+- **Clean:** (Removes `node_modules`, `.next`, `dist`, `.turbo`)
+  ```bash
+  bun run clean
+  ```
+
+### Managing Dependencies
+
+This monorepo uses `bun` workspaces. To add a dependency to a specific workspace:
+
+```bash
+# Add to api
+bun add <package> --filter @api/hono
+
+# Add to web
+bun add <package> --filter @web/next
+```
 
 ## CI/CD
 
@@ -165,7 +196,7 @@ The project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that
 
 ## API Integration
 
-The frontend communicates with the backend using Hono's RPC client. This provides end-to-end type safety.
+The frontend communicates with the backend using Hono's RPC client, providing end-to-end type safety.
 
 - The API client is initialized in `web/next/src/lib/api/client.ts`.
-- Types are shared directly from the `@api/hono` workspace.
+- Types are inferred directly from the `@api/hono` workspace exports.
