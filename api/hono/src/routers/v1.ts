@@ -1,18 +1,17 @@
 import { Hono } from "hono"
 
-import { authMiddleware } from "@/middlewares/auth"
+import { authMiddleware, Env } from "@/middlewares/auth"
 
-export const v1Router = new Hono()
-  .get("/public", (c) => {
-    return c.json({
-      message: "Hello from public endpoint!",
-    })
+const app = new Hono<Env>()
+
+app.use("/*", authMiddleware)
+
+export const v1Router = app
+  .get("/session", (c) => {
+    const session = c.get("session")
+    return c.json(session)
   })
-  .use("/private/*", authMiddleware)
-  .get("/private/user", (c) => {
+  .get("/user", (c) => {
     const user = c.get("user")
-    return c.json({
-      message: "Hello from private endpoint!",
-      user,
-    })
+    return c.json(user)
   })
