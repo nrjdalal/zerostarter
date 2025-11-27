@@ -1,0 +1,11 @@
+{
+  "name": "@packages/env",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "@packages/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

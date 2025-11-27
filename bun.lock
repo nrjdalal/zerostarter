@@ -34,9 +34,20 @@
         "@ianvs/prettier-plugin-sort-imports": "catalog:",
         "@packages/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
+        "@types/node": "catalog:",
         "concurrently": "catalog:",
         "drizzle-kit": "catalog:",
         "tsdown": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/env": {
+      "name": "@packages/env",
+      "version": "0.0.1",
+      "devDependencies": {
+        "@packages/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -84,6 +95,7 @@
         "@packages/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
+        "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
@@ -413,6 +425,8 @@
     "@oxlint/win32-arm64": ["@oxlint/win32-arm64@1.30.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-QK6C1djHKI7g1l5g6W9vkz9sd+sn1QJe6PbaV2sWFjVVoT0tO6LWygVWaci09ZHYVJ+lnCbbaFEgZ9jQhIs05A=="],
 
     "@oxlint/win32-x64": ["@oxlint/win32-x64@1.30.0", "", { "os": "win32", "cpu": "x64" }, "sha512-tbPnJIBUKke9KpceV+DpGyfN3LdhGaEPJHSuD4/mUEwP9Kk6IKSoDNih681RVGhgvaEZg3uHmQr6n9Uh0P3Yrg=="],
+
+    "@packages/env": ["@packages/env@workspace:packages/env"],
 
     "@packages/tsconfig": ["@packages/tsconfig@workspace:packages/tsconfig"],
 

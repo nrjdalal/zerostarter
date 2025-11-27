@@ -58,6 +58,7 @@
     "@ianvs/prettier-plugin-sort-imports": "catalog:",
     "@packages/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "concurrently": "catalog:",
     "drizzle-kit": "catalog:",
     "tsdown": "catalog:",
