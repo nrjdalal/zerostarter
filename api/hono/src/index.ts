@@ -13,7 +13,7 @@ app.use(logger())
 app.use(
   "/*",
   cors({
-    origin: env.HONO_PUBLIC_ORIGINS,
+    origin: env.HONO_TRUSTED_ORIGINS,
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "OPTIONS"],
     exposeHeaders: ["Content-Length"],

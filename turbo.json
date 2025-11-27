@@ -8,18 +8,6 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
-    "db:generate": {
-      "dependsOn": ["^db:generate"]
-    },
-    "db:migrate": {
-      "dependsOn": ["^db:migrate"]
-    },
-    "db:studio": {
-      "dependsOn": ["^db:studio"]
-    },
-    "db:push": {
-      "dependsOn": ["^db:push"]
-    },
     "dev": {
       "persistent": true,
       "cache": false
@@ -38,8 +26,8 @@
     "BETTER_AUTH_SECRET",
     "GITHUB_CLIENT_ID",
     "GITHUB_CLIENT_SECRET",
-    "HONO_PUBLIC_APP_URL",
-    "HONO_PUBLIC_ORIGINS",
+    "HONO_APP_URL",
+    "HONO_TRUSTED_ORIGINS",
     "POSTGRES_URL",
     // Client variables
     "NEXT_PUBLIC_API_URL",

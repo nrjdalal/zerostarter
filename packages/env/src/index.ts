@@ -22,8 +22,8 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: process.env.CI
       ? z.string().default("https://github.com/settings/developers")
       : z.string().min(1),
-    HONO_PUBLIC_APP_URL: z.url().default("http://localhost:4000"),
-    HONO_PUBLIC_ORIGINS: z
+    HONO_APP_URL: z.url().default("http://localhost:4000"),
+    HONO_TRUSTED_ORIGINS: z
       .string()
       .default("http://localhost:3000")
       .transform((s) => s.split(",")),

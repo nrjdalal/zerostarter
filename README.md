@@ -69,8 +69,8 @@ A modern, production-ready SaaS starter kit built as a monorepo using **Turborep
    GITHUB_CLIENT_SECRET="your-github-client-secret"
 
    # API & App URLs
-   HONO_PUBLIC_APP_URL="http://localhost:4000"
-   HONO_PUBLIC_ORIGINS="http://localhost:3000"
+   HONO_APP_URL="http://localhost:4000"
+   HONO_TRUSTED_ORIGINS="http://localhost:3000"
    NEXT_PUBLIC_API_URL="http://localhost:4000"
    NEXT_PUBLIC_APP_URL="http://localhost:3000"
    ```
@@ -117,8 +117,8 @@ The project uses `@packages/env` to validate environment variables. Define these
 | `BETTER_AUTH_SECRET`   | Secret key for Better Auth             |
 | `GITHUB_CLIENT_ID`     | GitHub OAuth Client ID                 |
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret             |
-| `HONO_PUBLIC_APP_URL`  | URL where the Hono API is running      |
-| `HONO_PUBLIC_ORIGINS`  | Allowed CORS origins (comma-separated) |
+| `HONO_APP_URL`         | URL where the Hono API is running      |
+| `HONO_TRUSTED_ORIGINS` | Allowed CORS origins (comma-separated) |
 | `NEXT_PUBLIC_API_URL`  | API URL for the frontend client        |
 | `NEXT_PUBLIC_APP_URL`  | URL of the frontend application        |
 

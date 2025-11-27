@@ -7,8 +7,8 @@ import { openAPI } from "better-auth/plugins"
 import { account, session, user, verification } from "@packages/db"
 
 export const auth = betterAuth({
-  baseURL: env.HONO_PUBLIC_APP_URL,
-  trustedOrigins: env.HONO_PUBLIC_ORIGINS,
+  baseURL: env.HONO_APP_URL,
+  trustedOrigins: env.HONO_TRUSTED_ORIGINS,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
