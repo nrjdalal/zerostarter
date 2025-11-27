@@ -1,5 +1,5 @@
-import { env } from "@/env"
 import type { AppType } from "@api/hono"
+import { env } from "@packages/env"
 import { hc } from "hono/client"
 
 type Client = ReturnType<typeof hc<AppType>>

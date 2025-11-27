@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { env } from "@/env"
+import { env } from "@packages/env"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { openAPI } from "better-auth/plugins"

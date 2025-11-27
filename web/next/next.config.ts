@@ -1,6 +1,6 @@
 import type { NextConfig } from "next"
 
-import { env } from "@/env"
+import { env } from "@packages/env"
 
 const nextConfig: NextConfig = {
   reactCompiler: true,

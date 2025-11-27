@@ -2,9 +2,9 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 
-import { env } from "@/env"
 import { authRouter, v1Router } from "@/routers"
 import type { Variables } from "@/types"
+import { env } from "@packages/env"
 
 const app = new Hono<{ Variables: Variables }>().basePath("/api")
 

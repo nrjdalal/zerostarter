@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",
+    "@packages/env": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",

@@ -2,6 +2,12 @@
   "name": "@packages/env",
   "version": "0.0.1",
   "private": true,
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@t3-oss/env-core": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@packages/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
