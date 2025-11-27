@@ -10,8 +10,7 @@
   "dependencies": {
     "@packages/db": "workspace:*",
     "@packages/env": "workspace:*",
-    "better-auth": "catalog:",
-    "drizzle-orm": "catalog:"
+    "better-auth": "catalog:"
   },
   "devDependencies": {
     "@packages/tsconfig": "workspace:*",
