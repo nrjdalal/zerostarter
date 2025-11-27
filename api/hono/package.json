@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "exports": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
     "dist"

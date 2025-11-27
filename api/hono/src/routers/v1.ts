@@ -1,10 +1,10 @@
 import { Hono } from "hono"
 
 import { authMiddleware } from "@/middlewares"
-import type { Variables } from "@/types"
+import type { Session } from "@packages/auth"
 
 const app = new Hono<{
-  Variables: Variables
+  Variables: Session
 }>()
 
 app.use("/*", authMiddleware)

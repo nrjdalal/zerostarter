@@ -46,6 +46,7 @@
   "dependencies": {
     "@api/hono": "workspace:*",
     "@hookform/resolvers": "catalog:",
+    "@packages/auth": "workspace:*",
     "@packages/env": "workspace:*",
     "@remixicon/react": "catalog:",
     "@tanstack/react-form": "catalog:",

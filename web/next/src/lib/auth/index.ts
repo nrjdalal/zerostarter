@@ -1,6 +1,6 @@
 import { headers } from "next/headers"
 
-import type { AppSession } from "@api/hono"
+import type { Session } from "@packages/auth"
 
 import { authClient } from "@/lib/api/client"
 
@@ -13,7 +13,7 @@ export const auth = {
           headers: Object.fromEntries((await headers()).entries()),
         },
       )
-      return response.json() as Promise<AppSession>
+      return response.json() as Promise<Session | null>
     },
   },
 }
