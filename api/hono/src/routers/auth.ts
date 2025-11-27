@@ -10,9 +10,11 @@ export const authRouter = app
     "/get-session",
     zValidator(
       "query",
-      z.object({
-        select: z.string().optional(),
-      }),
+      z
+        .object({
+          select: z.string().optional(),
+        })
+        .optional(),
     ),
     async (c) => {
       const session = await auth.api.getSession({
@@ -21,7 +23,7 @@ export const authRouter = app
 
       if (!session) return c.json(null)
 
-      const { select } = c.req.valid("query")
+      const { select } = c.req.valid("query") ?? {}
 
       if (!select) return c.json(session)
 

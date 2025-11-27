@@ -4,6 +4,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { authRouter } from "@/routers/auth"
 import { v1Router } from "@/routers/v1"
+import { AppSession, AppUser } from "@/lib/auth"
 
 const app = new Hono().basePath("/api")
 
@@ -29,6 +30,7 @@ const routes = app
   .route("/v1", v1Router)
 
 export type AppType = typeof routes
+export type { AppSession, AppUser }
 
 export default {
   port: 4000,

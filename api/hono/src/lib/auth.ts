@@ -41,5 +41,5 @@ export const auth = betterAuth({
   ],
 })
 
-export type User = typeof auth.$Infer.Session.user
-export type Session = typeof auth.$Infer.Session.session
+export type AppUser = typeof auth.$Infer.Session.user
+export type AppSession = typeof auth.$Infer.Session.session

@@ -18,7 +18,7 @@
     "start": "turbo start"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged --verbose",
+    "pre-commit": "npx lint-staged --verbose && bun run build",
     "commit-msg": "npx commitlint --edit $1"
   },
   "commitlint": {

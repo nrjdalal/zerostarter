@@ -1,8 +1,9 @@
 import { Hono } from "hono"
 
-import { authMiddleware, Env } from "@/middlewares/auth"
+import { authMiddleware } from "@/middlewares/auth"
+import { AppSession, AppUser } from "@/lib/auth"
 
-const app = new Hono<Env>()
+const app = new Hono<{ Variables: { session: AppSession; user: AppUser } }>()
 
 app.use("/*", authMiddleware)
 
