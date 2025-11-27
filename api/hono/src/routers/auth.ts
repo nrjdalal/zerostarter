@@ -1,7 +1,7 @@
 import { Hono } from "hono"
+import { zValidator } from "@hono/zod-validator"
 
 import type { Variables } from "@/types"
-import { zValidator } from "@hono/zod-validator"
 import { z } from "zod"
 
 import { auth } from "@/lib/auth"

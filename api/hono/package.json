@@ -27,6 +27,7 @@
       "<BUILTIN_MODULES>",
       "",
       "^hono/(.*)$|^hono$",
+      "^@hono/(.*)$|^@hono$",
       "",
       "<THIRD_PARTY_MODULES>",
       "",
