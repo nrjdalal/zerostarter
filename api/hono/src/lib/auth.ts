@@ -1,14 +1,14 @@
 import { db } from "@/db"
+import { env } from "@/env"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { magicLink, openAPI } from "better-auth/plugins"
-import { Resend } from "resend"
+import { openAPI } from "better-auth/plugins"
 
 import { account, session, user, verification } from "@/db/schema/auth"
 
 export const auth = betterAuth({
-  baseURL: process.env.HONO_PUBLIC_APP_URL as string,
-  trustedOrigins: process.env.HONO_PUBLIC_ORIGINS ? process.env.HONO_PUBLIC_ORIGINS.split(",") : [],
+  baseURL: env.HONO_PUBLIC_APP_URL,
+  trustedOrigins: env.HONO_PUBLIC_ORIGINS,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -20,23 +20,9 @@ export const auth = betterAuth({
   }),
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-  plugins: [
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        const resend = new Resend(process.env.RESEND_API_KEY as string)
-
-        await resend.emails.send({
-          from: "ACME Inc. <onboarding@tns.nrjdalal.com>",
-          to: [email],
-          subject: "Verify your email address",
-          html: `Click the link to verify your email: ${url}`,
-        })
-      },
-    }),
-    openAPI(),
-  ],
+  plugins: [openAPI()],
 })

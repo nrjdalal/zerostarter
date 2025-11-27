@@ -1,3 +1,4 @@
+import { env } from "@/env"
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
@@ -7,9 +8,9 @@ declare global {
 
 let db: PostgresJsDatabase
 
-if (process.env.NODE_ENV === "production") {
+if (env.NODE_ENV === "production") {
   db = drizzle({
-    client: postgres(process.env.POSTGRES_URL!, {
+    client: postgres(env.POSTGRES_URL, {
       connect_timeout: 10000,
       idle_timeout: 30000,
       ssl: {
@@ -20,7 +21,7 @@ if (process.env.NODE_ENV === "production") {
 } else {
   if (!global.db) {
     global.db = drizzle({
-      client: postgres(process.env.POSTGRES_URL!, {
+      client: postgres(env.POSTGRES_URL, {
         connect_timeout: 10000,
         idle_timeout: 30000,
       }),

@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 
+import { env } from "@/env"
 import { authRouter, v1Router } from "@/routers"
 import type { Variables } from "@/types"
 
@@ -12,7 +13,7 @@ app.use(logger())
 app.use(
   "/*",
   cors({
-    origin: process.env.HONO_PUBLIC_ORIGINS ? process.env.HONO_PUBLIC_ORIGINS.split(",") : [],
+    origin: env.HONO_PUBLIC_ORIGINS,
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "OPTIONS"],
     exposeHeaders: ["Content-Length"],

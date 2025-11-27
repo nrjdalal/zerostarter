@@ -1,12 +1,14 @@
 import type { NextConfig } from "next"
 
+import { env } from "@/env"
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   rewrites: async () => {
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `${env.NEXT_PUBLIC_API_URL}/api/:path*`,
       },
     ]
   },
