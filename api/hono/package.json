@@ -12,6 +12,7 @@
     "build": "tsdown",
     "check-types": "tsc --noEmit",
     "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
+    "format": "prettier --write --ignore-unknown *",
     "lint": "oxlint",
     "start": "bun dist/index.mjs"
   },
