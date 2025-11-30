@@ -37,7 +37,7 @@ export default function Component() {
     >
       <div
         className={cn(
-          "mx-auto flex min-h-14 max-w-screen-lg items-center justify-between px-5",
+          "mx-auto flex min-h-14 max-w-5xl items-center justify-between px-5",
           !scrolled && "bg-sidebar rounded-md border",
         )}
       >

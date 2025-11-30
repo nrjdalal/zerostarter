@@ -80,15 +80,15 @@
 <path fill="none" stroke="black" d="M277.08,-144.41C296.57,-134.93 321.24,-122.94 342.27,-112.72"/>
 <polygon fill="black" stroke="black" points="343.74,-115.89 351.21,-108.37 340.68,-109.6 343.74,-115.89"/>
 </g>
-<!-- the-saas-starter -->
+<!-- ZeroStarter -->
 <g id="node6" class="node">
-<title>the-saas-starter</title>
+<title>ZeroStarter</title>
 <ellipse fill="none" stroke="black" cx="386.95" cy="-18" rx="87.18" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="386.95" y="-12.95" font-family="Times,serif" font-size="14.00">the-saas-starter</text>
+<text xml:space="preserve" text-anchor="middle" x="386.95" y="-12.95" font-family="Times,serif" font-size="14.00">ZeroStarter</text>
 </g>
-<!-- @packages/tsconfig&#45;&gt;the-saas-starter -->
+<!-- @packages/tsconfig&#45;&gt;ZeroStarter -->
 <g id="edge10" class="edge">
-<title>@packages/tsconfig&#45;&gt;the-saas-starter</title>
+<title>@packages/tsconfig&#45;&gt;ZeroStarter</title>
 <path fill="none" stroke="black" d="M386.95,-71.7C386.95,-64.41 386.95,-55.73 386.95,-47.54"/>
 <polygon fill="black" stroke="black" points="390.45,-47.62 386.95,-37.62 383.45,-47.62 390.45,-47.62"/>
 </g>

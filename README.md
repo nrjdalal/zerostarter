@@ -5,7 +5,7 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 <!--
 ```bash
 npx turbo run build --graph=graph.svg
-sed -i '' 's/\[root\] //g; s/#build//g; s/___ROOT___/the-saas-starter/g' graph.svg
+sed -i '' 's/\[root\] //g; s/#build//g; s/___ROOT___/zerostarter/g' graph.svg
 mkdir -p .github/assets
 mv graph.svg .github/assets/graph-build.svg
 ```
@@ -96,8 +96,8 @@ const data = await res.json()
 1. Clone this template:
 
    ```bash
-   bunx gitpick https://github.com/nrjdalal/the-saas-starter
-   cd the-saas-starter
+   bunx gitpick https://github.com/nrjdalal/zerostarter
+   cd zerostarter
    ```
 
 2. Install dependencies:
