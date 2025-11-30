@@ -45,3 +45,5 @@ next-env.d.ts
 dist/
 
 # custom files
+!.env*
+.env.example
