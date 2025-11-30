@@ -67,7 +67,7 @@ export const getSafeEnv = () => {
     "token",
   ]
 
-  const result = Object.fromEntries(
+  const safeEnv = Object.fromEntries(
     Object.entries(env).map(([key, value]) => {
       const isRedacted = redactKeys.some((redactKey) =>
         key.toLowerCase().includes(redactKey.toLowerCase()),
@@ -78,6 +78,6 @@ export const getSafeEnv = () => {
       return [key, value]
     }),
   )
-  console.log("@packages/env:getSafeEnv:", result)
-  return result
+  console.log("@packages/env:getSafeEnv:", safeEnv)
+  return safeEnv
 }
