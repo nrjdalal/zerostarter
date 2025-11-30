@@ -5,6 +5,7 @@ import { z } from "zod"
 
 if (typeof window === "undefined") {
   try {
+    config({ path: path.resolve(process.cwd(), ".env") })
     config({ path: path.resolve(process.cwd(), "../../.env") })
   } catch (e) {
     console.error(e)
