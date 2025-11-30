@@ -14,26 +14,33 @@ if (typeof window === "undefined") {
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production"]).default("development"),
-    BETTER_AUTH_SECRET: process.env.CI ? z.string().optional() : z.string().min(1),
-    GITHUB_CLIENT_ID: process.env.CI ? z.string().optional() : z.string().min(1),
-    GITHUB_CLIENT_SECRET: process.env.CI ? z.string().optional() : z.string().min(1),
-    HONO_APP_URL: process.env.CI ? z.url().optional() : z.url(),
+    BETTER_AUTH_SECRET: process.env.CI
+      ? z.string().default("Generate using `openssl rand -base64 32`")
+      : z.string().min(1),
+    GITHUB_CLIENT_ID: process.env.CI
+      ? z.string().default("Generate at `https://github.com/settings/developers`")
+      : z.string().min(1),
+    GITHUB_CLIENT_SECRET: process.env.CI
+      ? z.string().default("Generate at `https://github.com/settings/developers`")
+      : z.string().min(1),
+    HONO_APP_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
     HONO_TRUSTED_ORIGINS: process.env.CI
       ? z
           .string()
-          .min(1)
+          .default("http://localhost:3000")
           .transform((s) => s.split(","))
-          .optional()
       : z
           .string()
           .min(1)
           .transform((s) => s.split(",")),
-    POSTGRES_URL: process.env.CI ? z.url().optional() : z.url(),
+    POSTGRES_URL: process.env.CI
+      ? z.string().default("Generate using `bunx pglaunch -k`")
+      : z.url(),
   },
   clientPrefix: "NEXT_PUBLIC_",
   client: {
-    NEXT_PUBLIC_API_URL: process.env.CI ? z.url().optional() : z.url(),
-    NEXT_PUBLIC_APP_URL: process.env.CI ? z.url().optional() : z.url(),
+    NEXT_PUBLIC_API_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
+    NEXT_PUBLIC_APP_URL: process.env.CI ? z.url().default("http://localhost:3000") : z.url(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
