@@ -47,7 +47,15 @@ export const env = createEnv({
 })
 
 export const getSafeEnv = () => {
-  const redactKeys = ["db_url", "key", "password", "postgres_url", "secret", "token"]
+  const redactKeys = [
+    "database_url",
+    "db_url",
+    "key",
+    "password",
+    "postgres_url",
+    "secret",
+    "token",
+  ]
 
   const result = Object.fromEntries(
     Object.entries(env).map(([key, value]) => {
