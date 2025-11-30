@@ -3,6 +3,7 @@ import type { NextConfig } from "next"
 import { env } from "@packages/env"
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: true,
   rewrites: async () => {
     return [
