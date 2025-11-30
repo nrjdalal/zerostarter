@@ -1,8 +1,8 @@
 # ZeroStarter - Deployment
 
-## Vercel
+## Frontend
 
-### **Frontend**
+- ### Vercel
 
 | Field           | Value                          |
 | --------------- | ------------------------------ |
