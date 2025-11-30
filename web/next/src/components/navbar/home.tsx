@@ -42,7 +42,7 @@ export default function Component() {
         )}
       >
         <Link href="/" className="font-bold">
-          Zero
+          ZeroStarter
         </Link>
         <div className="flex items-center gap-2.5">
           {session?.user ? (

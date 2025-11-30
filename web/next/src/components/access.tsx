@@ -77,9 +77,9 @@ export default function Component() {
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">Zero</span>
+              <span className="sr-only">ZeroStarter</span>
             </div>
-            <h1 className="text-xl font-semibold">Welcome to Zero</h1>
+            <h1 className="text-xl font-semibold">Welcome to ZeroStarter</h1>
           </div>
           <form
             id="email"
