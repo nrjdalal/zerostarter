@@ -1,4 +1,4 @@
-# ZeroStarter
+# ZeroStarter - The SaaS Starter
 
 A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
 
@@ -128,8 +128,8 @@ const data = await res.json()
 
    # -------------------- Client variables --------------------
 
-   NEXT_PUBLIC_API_URL=http://localhost:4000
    NEXT_PUBLIC_APP_URL=http://localhost:3000
+   NEXT_PUBLIC_API_URL=http://localhost:4000
    ```
 
 ### Database Setup
@@ -160,6 +160,9 @@ Start the development servers:
   ```bash
   bun dev
   ```
+
+> [!IMPORTANT]
+> If you are using `docker-compose up`, replace `localhost` with `host.internal.docker` if you get any errors.
 
 ---
 

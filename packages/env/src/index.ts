@@ -39,8 +39,8 @@ export const env = createEnv({
   },
   clientPrefix: "NEXT_PUBLIC_",
   client: {
-    NEXT_PUBLIC_API_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
     NEXT_PUBLIC_APP_URL: process.env.CI ? z.url().default("http://localhost:3000") : z.url(),
+    NEXT_PUBLIC_API_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,

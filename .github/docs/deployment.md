@@ -4,7 +4,7 @@
 
 ### Vercel
 
-| Field           | Value                          |
+| Option          | Value                          |
 | --------------- | ------------------------------ |
-| Install Command | `bun install --ignore-scripts` |
 | Root Directory  | `web/next`                     |
+| Install Command | `bun install --ignore-scripts` |
