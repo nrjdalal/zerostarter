@@ -18,4 +18,3 @@ const honoClient = hcWithType(url, {
 })
 
 export const apiClient = honoClient.api
-export const authClient = honoClient.api.auth

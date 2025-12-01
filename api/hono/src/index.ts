@@ -24,7 +24,7 @@ app.use(
 
 const routes = app
   .get("/health", (c) => {
-    return c.text("OK")
+    return c.json({ message: "OK", ...(env.NODE_ENV === "development" ? { env } : {}) })
   })
   .route("/auth", authRouter)
   .route("/v1", v1Router)
