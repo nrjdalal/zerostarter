@@ -186,7 +186,7 @@ docker compose up
 ## 📖 Deployment
 
 - **Frontend**:
-  - [Vercel](./.github/docs/deployment.md#vercel)
+  - [Vercel](.github/docs/deployment.md#vercel)
 
 ## 🤝 Contributing
 
@@ -194,4 +194,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT](LICENSE.md) License.
