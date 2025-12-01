@@ -13,34 +13,22 @@ if (typeof window === "undefined") {
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(["development", "production"]).default("development"),
-    BETTER_AUTH_SECRET: process.env.CI
-      ? z.string().default("Generate using `openssl rand -base64 32`")
-      : z.string().min(1),
-    GITHUB_CLIENT_ID: process.env.CI
-      ? z.string().default("Generate at `https://github.com/settings/developers`")
-      : z.string().min(1),
-    GITHUB_CLIENT_SECRET: process.env.CI
-      ? z.string().default("Generate at `https://github.com/settings/developers`")
-      : z.string().min(1),
-    HONO_APP_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
-    HONO_TRUSTED_ORIGINS: process.env.CI
-      ? z
-          .string()
-          .default("http://localhost:3000")
-          .transform((s) => s.split(","))
-      : z
-          .string()
-          .min(1)
-          .transform((s) => s.split(",")),
-    POSTGRES_URL: process.env.CI
-      ? z.string().default("Generate using `bunx pglaunch -k`")
-      : z.url(),
+    NODE_ENV: z.enum(["development", "production"]),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    GITHUB_CLIENT_ID: z.string().min(1),
+    GITHUB_CLIENT_SECRET: z.string().min(1),
+    HONO_APP_URL: z.url(),
+    HONO_TRUSTED_ORIGINS: z
+      .string()
+      .transform((s) => s.split(",").map((v) => v.trim()))
+      .pipe(z.array(z.url())),
+    INTERNAL_API_URL: z.url().optional(),
+    POSTGRES_URL: z.url(),
   },
   clientPrefix: "NEXT_PUBLIC_",
   client: {
-    NEXT_PUBLIC_APP_URL: process.env.CI ? z.url().default("http://localhost:3000") : z.url(),
-    NEXT_PUBLIC_API_URL: process.env.CI ? z.url().default("http://localhost:4000") : z.url(),
+    NEXT_PUBLIC_APP_URL: z.url(),
+    NEXT_PUBLIC_API_URL: z.url(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -49,7 +37,10 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     HONO_APP_URL: process.env.HONO_APP_URL,
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
-    POSTGRES_URL: process.env.POSTGRES_URL,
+    INTERNAL_API_URL: process.env.INTERNAL_API_URL,
+    POSTGRES_URL: process.env.INTERNAL_API_URL
+      ? process.env.POSTGRES_URL?.replace("localhost", "host.docker.internal")
+      : process.env.POSTGRES_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
