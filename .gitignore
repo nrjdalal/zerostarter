@@ -41,8 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 # custom directories
+.sst/
 .turbo/
 dist/
 
 # custom files
 !.env.example
+sst-env.d.ts
