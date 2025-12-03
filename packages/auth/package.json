@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "exports": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "bun build.ts",
     "check-types": "turbo build --filter=@packages/db && tsc --noEmit",
     "lint": "oxlint"
   },
@@ -22,7 +22,6 @@
     "@packages/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -3,18 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "exports": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "bun build.ts",
     "check-types": "turbo build --filter=@packages/auth && tsc --noEmit",
-    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
+    "dev": "concurrently \"bun build src/index.ts --outdir dist --target bun --watch\" \"bun --hot src/index.ts\"",
     "format": "prettier --write --ignore-unknown *",
     "lint": "oxlint",
-    "start": "bun dist/index.mjs"
+    "start": "bun dist/index.js"
   },
   "lint-staged": {
     "*": [
@@ -61,7 +61,6 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }
