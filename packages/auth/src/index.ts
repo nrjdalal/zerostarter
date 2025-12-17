@@ -3,6 +3,9 @@ import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { openAPI } from "better-auth/plugins"
+import { getCookieDomain } from "./lib/utils"
+
+const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 
 export const auth = betterAuth({
   baseURL: env.HONO_APP_URL,
@@ -23,6 +26,14 @@ export const auth = betterAuth({
     },
   },
   plugins: [openAPI()],
+  ...(cookieDomain && {
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: cookieDomain,
+      },
+    },
+  }),
 })
 
 export type Session = typeof auth.$Infer.Session
