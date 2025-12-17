@@ -1,35 +1,31 @@
 import { env } from "@packages/env/db"
-import { SQL } from "bun"
-import { drizzle } from "drizzle-orm/bun-sql"
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql"
-import * as schema from "./schema"
-
-type Database = BunSQLDatabase<typeof schema>
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
 
 declare global {
-  var db: Database
+  var db: PostgresJsDatabase
 }
 
-let db: Database
+let db: PostgresJsDatabase
 
 if (env.NODE_ENV === "production") {
-  const client = new SQL(env.POSTGRES_URL, {
-    connectionTimeout: 10,
-    idleTimeout: 30,
-    maxLifetime: 0,
-    tls: {
-      rejectUnauthorized: true,
-    },
+  db = drizzle({
+    client: postgres(env.POSTGRES_URL, {
+      connect_timeout: 10000,
+      idle_timeout: 30000,
+      ssl: {
+        rejectUnauthorized: true,
+      },
+    }),
   })
-  db = drizzle({ client, schema })
 } else {
   if (!global.db) {
-    const client = new SQL(env.POSTGRES_URL, {
-      connectionTimeout: 10,
-      idleTimeout: 30,
-      maxLifetime: 0,
+    global.db = drizzle({
+      client: postgres(env.POSTGRES_URL, {
+        connect_timeout: 10000,
+        idle_timeout: 30000,
+      }),
     })
-    global.db = drizzle({ client, schema })
   }
   db = global.db
 }
