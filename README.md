@@ -192,6 +192,8 @@ docker compose up
 
 - **Frontend**:
   - [Vercel](.github/docs/deployment.md#vercel)
+- **Backend**:
+  - [Vercel](.github/docs/deployment.md#vercel-1)
 
 ## 🤝 Contributing
 
