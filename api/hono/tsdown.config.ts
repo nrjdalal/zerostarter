@@ -6,6 +6,7 @@ export default [
   defineConfig({
     entry: ["src/index.ts"],
     minify: true,
+    noExternal: ["@packages/auth", "@packages/db", "@packages/env"],
     hooks: {
       "build:prepare": () => {
         getSafeEnv(env)
