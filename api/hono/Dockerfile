@@ -28,6 +28,8 @@ COPY --from=builder /app/packages/auth/dist/ ./packages/auth/dist/
 COPY --from=builder /app/packages/auth/package.json ./packages/auth/
 # @packages/db
 COPY --from=builder /app/packages/db/dist/ ./packages/db/dist/
+COPY --from=builder /app/packages/db/drizzle/ ./packages/db/drizzle/
+COPY --from=builder /app/packages/db/drizzle.config.ts ./packages/db/
 COPY --from=builder /app/packages/db/package.json ./packages/db/
 # @packages/env
 COPY --from=builder /app/packages/env/dist/ ./packages/env/dist/
