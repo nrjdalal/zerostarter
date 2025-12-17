@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && bun run drizzle-kit generate && bun run drizzle-kit migrate",
     "check-types": "turbo build --filter=@packages/env && tsc --noEmit",
     "lint": "oxlint"
   },
