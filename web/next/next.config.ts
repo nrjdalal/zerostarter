@@ -2,6 +2,7 @@ import type { NextConfig } from "next"
 
 import { getSafeEnv } from "@packages/env"
 import { env } from "@packages/env/web-next"
+import { createMDX } from "fumadocs-mdx/next"
 
 getSafeEnv(env)
 
@@ -17,4 +18,5 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+const withMDX = createMDX()
+export default withMDX(nextConfig)
