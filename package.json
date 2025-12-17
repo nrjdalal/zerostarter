@@ -10,7 +10,7 @@
   "scripts": {
     "build": "turbo build --summarize",
     "check-types": "SKIP_ENV_VALIDATION=true turbo check-types --summarize",
-    "clean": "bunx rimraf --glob \"**/.next\" \"**/.turbo\" \"**/dist\" \"**/node_modules\"",
+    "clean": "bunx rimraf --glob \"**/.next\" \"**/.source\" \"**/.turbo\" \"**/dist\" \"**/node_modules\"",
     "db:generate": "bun --cwd packages/db drizzle-kit generate",
     "db:migrate": "bun --cwd packages/db drizzle-kit migrate",
     "db:studio": "bun --cwd packages/db drizzle-kit studio",
