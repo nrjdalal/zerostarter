@@ -3,7 +3,7 @@ import { config } from "dotenv"
 
 if (typeof window === "undefined") {
   try {
-    config({ path: path.resolve(process.cwd(), "../../.env") })
+    config({ path: path.resolve(process.cwd(), "../../.env"), quiet: true })
   } catch (e) {
     console.error(e)
   }
@@ -31,6 +31,9 @@ export const getSafeEnv = (env: Record<string, unknown>) => {
       return [key, value]
     }),
   )
-  console.log("@packages/env:getSafeEnv:", result)
+  // Only log in development mode
+  if (process.env.NODE_ENV === "development") {
+    console.log("@packages/env:getSafeEnv:", result)
+  }
   return result
 }
