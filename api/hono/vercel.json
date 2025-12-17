@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "hono",
-  "installCommand": "bun install --ignore-scripts"
+  "installCommand": "bun install --ignore-scripts",
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist"
 }
