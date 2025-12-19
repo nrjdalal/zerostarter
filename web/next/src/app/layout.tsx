@@ -6,6 +6,8 @@ import { InnerProvider, OuterProvider } from "@/app/providers"
 
 import "./globals.css"
 
+const ogImageUrl = `${config.app.url}/api/og/home?t=${Date.now()}`
+
 export const metadata: Metadata = {
   title: {
     default: `${config.app.name} - ${config.app.tagline}`,
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
     url: config.app.url,
     images: [
       {
-        url: `${config.app.url}/api/og/home`,
+        url: ogImageUrl,
         width: 1200,
         height: 630,
         alt: `${config.app.name} - ${config.app.tagline}`,
@@ -30,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: [`${config.app.url}/api/og/home`],
+    images: [ogImageUrl],
   },
 }
 

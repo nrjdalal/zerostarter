@@ -41,7 +41,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
 
   const pageUrl = `${config.app.url}${page.url}`
   const slugPath = params.slug && params.slug.length > 0 ? params.slug.join("/") : ""
-  const imageUrl = `${config.app.url}/api/og/docs${slugPath ? `/${slugPath}` : ""}`
+  const imageUrl = `${config.app.url}/api/og/docs${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
 
   return {
     title: page.data.title,
