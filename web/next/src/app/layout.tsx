@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: config.app.name,
     images: [
       {
-        url: `${config.app.url}/api/og?type=home`,
+        url: `${config.app.url}/api/og/home`,
         width: 1200,
         height: 630,
         alt: `${config.app.name} - ${config.app.tagline}`,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: [`${config.app.url}/api/og?type=home`],
+    images: [`${config.app.url}/api/og/home`],
   },
 }
 
