@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
         source: "/api/search",
         destination: `${env.NEXT_PUBLIC_APP_URL}/api/search`,
       },
+      {
+        source: "/docs/:path*.md",
+        destination: "/llms.txt/docs/:path*",
+      },
+      {
+        source: "/docs/:path*.txt",
+        destination: "/llms.txt/docs/:path*",
+      },
     ]
   },
 }

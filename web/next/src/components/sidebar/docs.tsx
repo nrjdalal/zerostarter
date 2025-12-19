@@ -21,7 +21,7 @@ const gettingStarted = [
 const deployment = [
   {
     title: "Vercel",
-    url: "/docs/vercel",
+    url: "/docs/deployment/vercel",
   },
 ]
 
