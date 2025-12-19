@@ -159,11 +159,11 @@ If you encounter any bugs, have feature requests, or want to discuss improvement
 We appreciate pull requests for bug fixes, enhancements, or new features. To submit a pull request:
 
 1. Fork the [ZEROSTARTER repository](https://github.com/nrjdalal/zerostarter) on GitHub.
-2. Create a new branch from the `main` branch for your changes.
+2. Create a new branch from the `canary` branch for your changes.
 3. Make your modifications and ensure that the code follows our coding conventions.
 4. Write tests to cover your changes, if applicable.
 5. Commit your changes and push them to your forked repository.
-6. Open a pull request against the `main` branch of the ZEROSTARTER repository.
+6. Open a pull request against the `canary` branch of the ZEROSTARTER repository.
 
 Please provide a clear description of your changes in the pull request, along with any relevant information or context.
 
