@@ -1,27 +1,271 @@
-import Image from "next/image"
 import Link from "next/link"
+
+import { ArrowRight, CheckCircle2, Code2, Database, Lock, Sparkles, Zap } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between bg-white px-5 py-32 sm:items-start dark:bg-black">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <Link
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/8 px-5 transition-colors hover:border-transparent hover:bg-black/4 md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="/docs"
-          >
-            Documentation
-          </Link>
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="from-background via-background to-muted/20 relative overflow-hidden border-b bg-linear-to-b pt-38 pb-32">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
+        <div className="relative z-10 container mx-auto max-w-6xl px-5">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="bg-muted/50 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
+              <Sparkles className="size-4" />
+              <span>ZeroStarter</span>
+            </div>
+            <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+              The{" "}
+              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
+                SaaS
+              </span>{" "}
+              Starter
+            </h1>
+            <p className="text-muted-foreground mb-8 text-lg sm:text-xl">
+              A modern, type-safe, and high-performance SaaS starter template built with a monorepo
+              architecture.
+            </p>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Button asChild size="lg" className="group">
+                <Link href="/docs">
+                  Get Started
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <a
+                  href="https://github.com/nrjdalal/zerostarter"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on GitHub
+                </a>
+              </Button>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Features Section */}
+      <section className="bg-muted/30 border-b py-24">
+        <div className="container mx-auto max-w-6xl px-5">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Everything You Need to Ship Fast
+            </h2>
+            <p className="text-muted-foreground mx-auto max-w-2xl">
+              Built with the best tools and practices. Type-safe from frontend to backend.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Code2 className="text-primary size-6" />
+                </div>
+                <CardTitle>Type-Safe API Client</CardTitle>
+                <CardDescription>
+                  End-to-end type safety with Hono RPC. Your frontend knows exactly what your
+                  backend returns.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Zap className="text-primary size-6" />
+                </div>
+                <CardTitle>High Performance</CardTitle>
+                <CardDescription>
+                  Built on Bun runtime and Turborepo for lightning-fast development and builds.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Lock className="text-primary size-6" />
+                </div>
+                <CardTitle>Authentication Ready</CardTitle>
+                <CardDescription>
+                  Better Auth integration with GitHub OAuth. Add more providers in minutes.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Database className="text-primary size-6" />
+                </div>
+                <CardTitle>Database & ORM</CardTitle>
+                <CardDescription>
+                  PostgreSQL with Drizzle ORM. Migrations and type-safe queries out of the box.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <CheckCircle2 className="text-primary size-6" />
+                </div>
+                <CardTitle>Modern UI Components</CardTitle>
+                <CardDescription>
+                  Shadcn UI components with Tailwind CSS. Beautiful, accessible, and customizable.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Sparkles className="text-primary size-6" />
+                </div>
+                <CardTitle>Monorepo Architecture</CardTitle>
+                <CardDescription>
+                  Shared packages for auth, database, and env. Scale your codebase efficiently.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className="border-b py-24">
+        <div className="container mx-auto max-w-6xl px-5">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Built with Best-in-Class Tools
+            </h2>
+            <p className="text-muted-foreground mx-auto max-w-2xl">
+              Carefully selected stack for modern SaaS development
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { name: "Next.js 16", desc: "React Framework" },
+              { name: "Hono", desc: "Web Framework" },
+              { name: "Bun", desc: "Runtime & Package Manager" },
+              { name: "Turborepo", desc: "Monorepo Build System" },
+              { name: "Drizzle ORM", desc: "Type-Safe ORM" },
+              { name: "Better Auth", desc: "Authentication" },
+              { name: "Shadcn UI", desc: "UI Components" },
+              { name: "TanStack Query", desc: "Data Fetching" },
+            ].map((tech) => (
+              <div
+                key={tech.name}
+                className="bg-card hover:bg-accent rounded-lg border p-4 text-center transition-colors"
+              >
+                <div className="font-semibold">{tech.name}</div>
+                <div className="text-muted-foreground text-sm">{tech.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Code Example Section */}
+      <section className="bg-muted/30 border-b py-24">
+        <div className="container mx-auto max-w-6xl px-5">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Type-Safe API Calls
+            </h2>
+            <p className="text-muted-foreground mx-auto max-w-2xl">
+              Full type inference from backend to frontend. No more manual type definitions.
+            </p>
+          </div>
+          <Card className="mx-auto max-w-3xl">
+            <CardContent className="pt-6">
+              <pre className="bg-muted overflow-x-auto rounded-lg p-6 text-sm">
+                <code className="text-foreground">
+                  {`import { apiClient } from "@/lib/api/client"
+
+// Fully typed request and response
+const res = await apiClient.health.$get()
+const data = await res.json()`}
+                </code>
+              </pre>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Getting Started Section */}
+      <section className="border-b py-24">
+        <div className="container mx-auto max-w-4xl px-5">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Get Started in Minutes
+            </h2>
+            <p className="text-muted-foreground mx-auto max-w-2xl">
+              Clone, install, and start building. It's that simple.
+            </p>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <pre className="bg-muted overflow-x-auto rounded-lg p-6 text-sm">
+                <code className="text-foreground">
+                  {`# Clone the template
+bunx gitpick https://github.com/nrjdalal/zerostarter
+cd zerostarter
+
+# Install dependencies
+bun install
+
+# Set up environment variables
+cp .env.example .env
+
+# Run database migrations
+bun run db:migrate
+
+# Start development servers
+bun dev`}
+                </code>
+              </pre>
+            </CardContent>
+          </Card>
+          <div className="mt-8 text-center">
+            <Button asChild size="lg">
+              <Link href="/docs">
+                Read Full Documentation
+                <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="from-background to-muted/20 bg-linear-to-b py-24">
+        <div className="container mx-auto max-w-4xl px-5 text-center">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            Ready to Build Your SaaS?
+          </h2>
+          <p className="text-muted-foreground mb-8 text-lg">
+            Start building your next project with ZeroStarter today.
+          </p>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href="/docs">
+                Get Started
+                <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a
+                href="https://github.com/nrjdalal/zerostarter"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Star on GitHub
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
