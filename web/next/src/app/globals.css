@@ -80,7 +80,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0); /* --color-neutral-900 */
   --sidebar-border: oklch(0.922 0 0); /* --color-neutral-200 */
   --sidebar-ring: oklch(0.708 0 0); /* --color-neutral-400 */
-  --fd-banner-height: 3.5rem; /* 56px - matches navbar min-h-14 */
+  --fd-banner-height: 3.5rem;
 }
 
 .dark {
@@ -126,5 +126,11 @@
   }
   #nd-page {
     @apply mt-10;
+  }
+  #nd-subnav {
+    @apply hidden!;
+  }
+  #nd-docs-layout {
+    --fd-header-height: 0px !important;
   }
 }
