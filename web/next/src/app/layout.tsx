@@ -15,9 +15,18 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "ZeroStarter",
+    images: [
+      {
+        url: "/api/og?type=home",
+        width: 1200,
+        height: 630,
+        alt: "ZeroStarter - The SaaS Starter",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/api/og?type=home"],
   },
 }
 

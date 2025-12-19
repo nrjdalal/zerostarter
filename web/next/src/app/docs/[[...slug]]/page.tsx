@@ -21,7 +21,6 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            // this allows you to link to other pages with relative file paths
             a: createRelativeLink(source, page),
           })}
         />
@@ -39,8 +38,25 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   const page = source.getPage(params.slug)
   if (!page) notFound()
 
+  const slugPath = params.slug && params.slug.length > 0 ? params.slug.join("/") : ""
+  const imageUrl = `/api/og${slugPath ? `?slug=${slugPath}` : ""}`
+
   return {
     title: page.data.title,
     description: page.data.description,
+    openGraph: {
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: page.data.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [imageUrl],
+    },
   }
 }
