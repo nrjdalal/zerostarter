@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { getMDXComponents } from "@/mdx-components"
+import { env } from "@packages/env/web-next"
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
 import { createRelativeLink } from "fumadocs-ui/mdx"
 
@@ -39,12 +40,15 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   if (!page) notFound()
 
   const slugPath = params.slug && params.slug.length > 0 ? params.slug.join("/") : ""
-  const imageUrl = `/api/og${slugPath ? `?slug=${slugPath}` : ""}`
+  const pageUrl = `${env.NEXT_PUBLIC_APP_URL}${page.url}`
+  const imageUrl = `${env.NEXT_PUBLIC_APP_URL}/api/og${slugPath ? `?slug=${slugPath}` : ""}`
 
   return {
     title: page.data.title,
     description: page.data.description,
     openGraph: {
+      type: "article",
+      url: pageUrl,
       images: [
         {
           url: imageUrl,

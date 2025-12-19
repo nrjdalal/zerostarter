@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 
+import { env } from "@packages/env/web-next"
+
 import { Navbar } from "@/components/navbar/home"
 import { InnerProvider, OuterProvider } from "@/app/providers"
 
@@ -14,19 +16,23 @@ export const metadata: Metadata = {
     "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
   openGraph: {
     type: "website",
+    url: env.NEXT_PUBLIC_APP_URL,
     siteName: "ZeroStarter",
     images: [
       {
-        url: "/api/og?type=home",
+        url: `${env.NEXT_PUBLIC_APP_URL}/api/og?type=home`,
         width: 1200,
         height: 630,
         alt: "ZeroStarter - The SaaS Starter",
       },
     ],
   },
+  other: {
+    "og:logo": `${env.NEXT_PUBLIC_APP_URL}/favicon.ico`,
+  },
   twitter: {
     card: "summary_large_image",
-    images: ["/api/og?type=home"],
+    images: [`${env.NEXT_PUBLIC_APP_URL}/api/og?type=home`],
   },
 }
 
