@@ -3,13 +3,15 @@ import { ImageResponse } from "next/og"
 
 import { source } from "@/lib/source"
 
+export const revalidate = 3600
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const slug = searchParams.get("slug")
   const type = searchParams.get("type") || "docs"
 
   if (type === "home") {
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       <div
         style={{
           fontSize: 64,
@@ -54,6 +56,13 @@ export async function GET(request: Request) {
         height: 630,
       },
     )
+
+    imageResponse.headers.set(
+      "Cache-Control",
+      "public, s-maxage=3600, stale-while-revalidate=86400",
+    )
+
+    return imageResponse
   }
 
   let page
@@ -69,7 +78,7 @@ export async function GET(request: Request) {
   const title = page.data.title || "ZeroStarter Documentation"
   const description = page.data.description || "Documentation for ZeroStarter"
 
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     <div
       style={{
         fontSize: 64,
@@ -124,4 +133,8 @@ export async function GET(request: Request) {
       height: 630,
     },
   )
+
+  imageResponse.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400")
+
+  return imageResponse
 }
