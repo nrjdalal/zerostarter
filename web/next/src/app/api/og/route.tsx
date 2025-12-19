@@ -8,7 +8,7 @@ export const revalidate = 3600
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const slug = searchParams.get("slug")
-  const type = searchParams.get("type") || "docs"
+  const type = searchParams.get("type") || "home"
 
   if (type === "home") {
     const imageResponse = new ImageResponse(
@@ -48,7 +48,8 @@ export async function GET(request: Request) {
             paddingRight: 40,
           }}
         >
-          A modern, type-safe, and high-performance SaaS starter template
+          A modern, type-safe, and high-performance SaaS starter template built with a monorepo
+          architecture.
         </div>
       </div>,
       {

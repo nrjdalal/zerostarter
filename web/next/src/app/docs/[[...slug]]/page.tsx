@@ -41,7 +41,7 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
 
   const slugPath = params.slug && params.slug.length > 0 ? params.slug.join("/") : ""
   const pageUrl = `${env.NEXT_PUBLIC_APP_URL}${page.url}`
-  const imageUrl = `${env.NEXT_PUBLIC_APP_URL}/api/og${slugPath ? `?slug=${slugPath}` : ""}`
+  const imageUrl = `${env.NEXT_PUBLIC_APP_URL}/api/og${slugPath ? `?type=docs&slug=${slugPath}` : "?type=docs"}`
 
   return {
     title: page.data.title,
