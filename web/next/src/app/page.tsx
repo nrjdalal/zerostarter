@@ -135,7 +135,7 @@ export default function Home() {
               Built with Best-in-Class Tools
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl">
-              Carefully selected stack for modern SaaS development
+              Carefully selected stack for modern SaaS development.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -172,25 +172,23 @@ export default function Home() {
               Full type inference from backend to frontend. No more manual type definitions.
             </p>
           </div>
-          <Card className="mx-auto max-w-3xl">
-            <CardContent className="pt-6">
-              <pre className="bg-muted overflow-x-auto rounded-lg p-6 text-sm">
-                <code className="text-foreground">
-                  {`import { apiClient } from "@/lib/api/client"
+        </div>
+        <div className="w-full px-5">
+          <pre className="bg-muted mx-auto w-full max-w-3xl overflow-x-auto rounded-lg p-6 text-sm">
+            <code className="block overflow-x-auto whitespace-pre">
+              {`import { apiClient } from "@/lib/api/client"
 
 // Fully typed request and response
 const res = await apiClient.health.$get()
 const data = await res.json()`}
-                </code>
-              </pre>
-            </CardContent>
-          </Card>
+            </code>
+          </pre>
         </div>
       </section>
 
       {/* Getting Started Section */}
       <section className="border-b py-24">
-        <div className="container mx-auto max-w-4xl px-5">
+        <div className="container mx-auto max-w-6xl px-5">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Get Started in Minutes
@@ -199,11 +197,11 @@ const data = await res.json()`}
               Clone, install, and start building. It's that simple.
             </p>
           </div>
-          <Card>
-            <CardContent className="pt-6">
-              <pre className="bg-muted overflow-x-auto rounded-lg p-6 text-sm">
-                <code className="text-foreground">
-                  {`# Clone the template
+        </div>
+        <div className="w-full px-5">
+          <pre className="bg-muted mx-auto w-full max-w-3xl overflow-x-auto rounded-lg p-6 text-sm">
+            <code className="block overflow-x-auto whitespace-pre">
+              {`# Clone the template
 bunx gitpick ${config.social.github}
 cd zerostarter
 
@@ -218,18 +216,16 @@ bun run db:migrate
 
 # Start development servers
 bun dev`}
-                </code>
-              </pre>
-            </CardContent>
-          </Card>
-          <div className="mt-8 text-center">
-            <Button asChild size="lg" className="group">
-              <Link href="/docs">
-                Get Started
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </div>
+            </code>
+          </pre>
+        </div>
+        <div className="container mx-auto mt-8 max-w-6xl px-5 text-center">
+          <Button asChild size="lg" className="group">
+            <Link href="/docs">
+              Get Started
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
         </div>
       </section>
 
