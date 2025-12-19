@@ -15,7 +15,6 @@ export default function Home() {
         <div className="relative z-10 container mx-auto max-w-6xl px-5">
           <div className="mx-auto max-w-3xl text-center">
             <div className="bg-muted/50 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
-              <Sparkles className="size-4" />
               <span>{config.app.name}</span>
             </div>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
@@ -224,10 +223,10 @@ bun dev`}
             </CardContent>
           </Card>
           <div className="mt-8 text-center">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="group">
               <Link href="/docs">
-                Read Full Documentation
-                <ArrowRight className="ml-2 size-4" />
+                Get Started
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
           </div>
@@ -244,10 +243,10 @@ bun dev`}
             Start building your next project with {config.app.name} today.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="group">
               <Link href="/docs">
                 Get Started
-                <ArrowRight className="ml-2 size-4" />
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
