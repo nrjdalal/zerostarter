@@ -1,15 +1,13 @@
 import type { AppType } from "@api/hono"
-import { env } from "@packages/env/web-next"
 import { hc } from "hono/client"
+
+import { config } from "@/lib/config"
 
 type Client = ReturnType<typeof hc<AppType>>
 
 const hcWithType = (...args: Parameters<typeof hc>): Client => hc<AppType>(...args)
 
-const url =
-  typeof window === "undefined" && env.INTERNAL_API_URL
-    ? env.INTERNAL_API_URL
-    : env.NEXT_PUBLIC_API_URL
+const url = config.api.internalUrl ? config.api.internalUrl : config.api.url
 
 const honoClient = hcWithType(url, {
   init: {

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 
-import { env } from "@packages/env/web-next"
 import { RiGithubFill, RiGoogleFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { GalleryVerticalEnd, Loader2 } from "lucide-react"
@@ -10,6 +9,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { signIn } from "@/lib/auth/client"
+import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -41,7 +41,7 @@ export function Access() {
       setLoader("email")
       const res = await signIn.magicLink({
         email: value.email,
-        callbackURL: `${env.NEXT_PUBLIC_APP_URL}/x`,
+        callbackURL: `${config.app.url}/x`,
       })
       if (res.error) {
         toast.error(res.error.message)
@@ -77,9 +77,9 @@ export function Access() {
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">ZeroStarter</span>
+              <span className="sr-only">{config.app.name}</span>
             </div>
-            <h1 className="text-xl font-semibold">Welcome to ZeroStarter</h1>
+            <h1 className="text-xl font-semibold">Welcome to {config.app.name}</h1>
           </div>
           <form
             id="email"
@@ -139,7 +139,7 @@ export function Access() {
                 setLoader("github")
                 const res = await signIn.social({
                   provider: "github",
-                  callbackURL: `${env.NEXT_PUBLIC_APP_URL}/x`,
+                  callbackURL: `${config.app.url}/x`,
                 })
                 if (res.error) {
                   toast.error(res.error.message)
@@ -163,7 +163,7 @@ export function Access() {
                 setLoader("google")
                 const res = await signIn.social({
                   provider: "google",
-                  callbackURL: `${env.NEXT_PUBLIC_APP_URL}/x`,
+                  callbackURL: `${config.app.url}/x`,
                 })
                 if (res.error) {
                   toast.error(res.error.message)

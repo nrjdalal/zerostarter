@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { Toaster } from "sonner"
 
+import { config } from "@/lib/config"
 import { DevTools } from "@/components/devtools"
 
 export function OuterProvider({ children }: { children: React.ReactNode }) {
@@ -14,7 +15,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.NODE_ENV === "development" && <DevTools />}
+      {config.env.isDevelopment && <DevTools />}
     </QueryClientProvider>
   )
 }

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { Loader2 } from "lucide-react"
 
 import { useSession } from "@/lib/auth/client"
+import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -23,7 +24,7 @@ export function Navbar() {
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
       <div className="flex min-h-14 items-center justify-between px-5">
         <Link href="/" className="font-bold">
-          ZeroStarter
+          {config.app.name}
         </Link>
         <div className="flex items-center gap-2.5">
           {session?.user ? (

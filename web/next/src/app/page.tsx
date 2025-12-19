@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { ArrowRight, CheckCircle2, Code2, Database, Lock, Sparkles, Zap } from "lucide-react"
 
+import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -15,7 +16,7 @@ export default function Home() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="bg-muted/50 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
               <Sparkles className="size-4" />
-              <span>ZeroStarter</span>
+              <span>{config.app.name}</span>
             </div>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
               The{" "}
@@ -25,8 +26,7 @@ export default function Home() {
               Starter
             </h1>
             <p className="text-muted-foreground mb-8 text-lg sm:text-xl">
-              A modern, type-safe, and high-performance SaaS starter template built with a monorepo
-              architecture.
+              {config.app.description}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button asChild size="lg" className="group">
@@ -36,11 +36,7 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a
-                  href="https://github.com/nrjdalal/zerostarter"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={config.social.github} target="_blank" rel="noopener noreferrer">
                   View on GitHub
                 </a>
               </Button>
@@ -209,7 +205,7 @@ const data = await res.json()`}
               <pre className="bg-muted overflow-x-auto rounded-lg p-6 text-sm">
                 <code className="text-foreground">
                   {`# Clone the template
-bunx gitpick https://github.com/nrjdalal/zerostarter
+bunx gitpick ${config.social.github}
 cd zerostarter
 
 # Install dependencies
@@ -245,7 +241,7 @@ bun dev`}
             Ready to Build Your SaaS?
           </h2>
           <p className="text-muted-foreground mb-8 text-lg">
-            Start building your next project with ZeroStarter today.
+            Start building your next project with {config.app.name} today.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button asChild size="lg">
@@ -255,11 +251,7 @@ bun dev`}
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a
-                href="https://github.com/nrjdalal/zerostarter"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={config.social.github} target="_blank" rel="noopener noreferrer">
                 Star on GitHub
               </a>
             </Button>

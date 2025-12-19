@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation"
 
-import { env } from "@packages/env/web-next"
-
+import { config } from "@/lib/config"
 import { source } from "@/lib/source"
 
 export const revalidate = false
@@ -12,9 +11,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   if (!slug) {
     const allPages = source.getPages()
     const index = allPages
-      .map(
-        (p) => `- [${p.data.title}](${env.NEXT_PUBLIC_APP_URL}${p.url}.md): ${p.data.description}`,
-      )
+      .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
       .join("\n")
 
     return new Response(
@@ -41,14 +38,14 @@ ${index}`,
     content = await page.data.getText("raw")
   }
 
-  const fullUrl = `${env.NEXT_PUBLIC_APP_URL}${page.url}`
+  const fullUrl = `${config.app.url}${page.url}`
 
   return new Response(
     `# [${page.data.title}](${fullUrl})
 ${content}
 ---
 
-> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${env.NEXT_PUBLIC_APP_URL}/llms.txt`,
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt`,
     {
       headers: {
         "Content-Type": "text/markdown",

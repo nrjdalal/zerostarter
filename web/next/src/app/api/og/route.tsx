@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { ImageResponse } from "next/og"
 
+import { config } from "@/lib/config"
 import { source } from "@/lib/source"
 
 export const revalidate = 3600
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
             color: "transparent",
           }}
         >
-          ZeroStarter
+          {config.app.name}
         </div>
         <div
           style={{
@@ -48,8 +49,7 @@ export async function GET(request: Request) {
             paddingRight: 40,
           }}
         >
-          A modern, type-safe, and high-performance SaaS starter template built with a monorepo
-          architecture.
+          {config.app.description}
         </div>
       </div>,
       {
@@ -76,8 +76,8 @@ export async function GET(request: Request) {
 
   if (!page) notFound()
 
-  const title = page.data.title || "ZeroStarter Documentation"
-  const description = page.data.description || "Documentation for ZeroStarter"
+  const title = page.data.title || `${config.app.name} - Documentation`
+  const description = page.data.description || `Documentation for ${config.app.name}`
 
   const imageResponse = new ImageResponse(
     <div
@@ -103,7 +103,7 @@ export async function GET(request: Request) {
           fontWeight: 500,
         }}
       >
-        ZeroStarter - Documentation
+        {config.app.name} - Documentation
       </div>
       <div
         style={{
