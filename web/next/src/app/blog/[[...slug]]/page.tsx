@@ -6,11 +6,11 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layo
 import { createRelativeLink } from "fumadocs-ui/mdx"
 
 import { config } from "@/lib/config"
-import { docsSource } from "@/lib/source"
+import { blogSource } from "@/lib/source"
 
-export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
+export default async function Page(props: PageProps<"/blog/[[...slug]]">) {
   const params = await props.params
-  const page = docsSource.getPage(params.slug)
+  const page = blogSource.getPage(params.slug)
   if (!page) notFound()
 
   const MDX = page.data.body
@@ -22,7 +22,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            a: createRelativeLink(docsSource, page),
+            a: createRelativeLink(blogSource, page),
           })}
         />
       </DocsBody>
@@ -31,23 +31,23 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
 }
 
 export async function generateStaticParams() {
-  return docsSource.generateParams()
+  return blogSource.generateParams()
 }
 
-export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<"/blog/[[...slug]]">): Promise<Metadata> {
   const params = await props.params
-  const page = docsSource.getPage(params.slug)
+  const page = blogSource.getPage(params.slug)
   if (!page) notFound()
 
   const pageUrl = `${config.app.url}${page.url}`
   const slugPath = params.slug && params.slug.length > 0 ? params.slug.join("/") : ""
-  const imageUrl = `${config.app.url}/api/og/docs${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
+  const imageUrl = `${config.app.url}/api/og/blog${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
 
   return {
     title: page.data.title,
     description: page.data.description,
     openGraph: {
-      type: "website",
+      type: "article",
       siteName: config.app.name,
       url: pageUrl,
       images: [

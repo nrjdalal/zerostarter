@@ -18,7 +18,7 @@ export function Navbar() {
 
   const [toDashboard, setToDashboard] = useState(false)
 
-  if (pathname !== "/" && !pathname?.startsWith("/docs")) return null
+  if (pathname?.startsWith("/x")) return null
 
   return (
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">

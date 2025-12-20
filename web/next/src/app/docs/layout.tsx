@@ -2,7 +2,7 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
 import { baseOptions } from "@/lib/fumadocs"
-import { source } from "@/lib/source"
+import { docsSource } from "@/lib/source"
 import {
   Sidebar,
   SidebarContent,
@@ -33,7 +33,7 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
             sidebar={{
               enabled: false,
             }}
-            tree={source.pageTree}
+            tree={docsSource.pageTree}
             {...baseOptions()}
           >
             {children}

@@ -2,18 +2,18 @@ import { notFound } from "next/navigation"
 import { ImageResponse } from "next/og"
 
 import { config } from "@/lib/config"
-import { docsSource } from "@/lib/source"
+import { blogSource } from "@/lib/source"
 
 export const dynamic = "force-static"
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
 
-  const page = docsSource.getPage(slug)
+  const page = blogSource.getPage(slug)
   if (!page) notFound()
 
-  const title = page.data.title || `${config.app.name} - Documentation`
-  const description = page.data.description || `Documentation for ${config.app.name}`
+  const title = page.data.title || `${config.app.name} - Blog`
+  const description = page.data.description || `Blog post from ${config.app.name}`
 
   const imageResponse = new ImageResponse(
     <div
@@ -40,7 +40,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
           fontWeight: 500,
         }}
       >
-        {config.app.name} - Documentation
+        {config.app.name} - Blog
       </div>
       <div
         style={{
@@ -80,7 +80,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
 }
 
 export function generateStaticParams() {
-  return docsSource.generateParams().map((params) => ({
+  return blogSource.generateParams().map((params) => ({
     slug: params.slug ?? [],
   }))
 }
