@@ -15,13 +15,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
       .join("\n")
 
     return new Response(
-      `# Documentation
+      `# ${config.app.name}
+
+> ${config.app.description}
+
+## Documentation
+
+> Complete documentation for ${config.app.name}
 
 ${docsIndex}
 
-# Optional
+## Optional
 
-- [Blog](${config.app.url}/blog.md): Latest articles and updates
+- [Blog](${config.app.url}/blog.md): Latest articles and updates about ${config.app.name}
 `,
       {
         headers: {
@@ -41,13 +47,19 @@ ${docsIndex}
       .join("\n")
 
     return new Response(
-      `# Blog
+      `# ${config.app.name}
+
+> ${config.app.description}
+
+## Blog
+
+> Latest articles and updates about ${config.app.name}
 
 ${blogIndex}
 
-# Optional
+## Optional
 
-- [Documentation](${config.app.url}/llms.txt): Documentation for ${config.app.name}
+- [Documentation](${config.app.url}/llms.txt): Complete documentation for ${config.app.name}
 `,
       {
         headers: {
