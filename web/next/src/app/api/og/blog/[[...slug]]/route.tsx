@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
       <div
         style={{
           display: "flex",
-          fontSize: 24,
+          fontSize: 28,
           color: "#666",
           marginBottom: 20,
           fontWeight: 500,
