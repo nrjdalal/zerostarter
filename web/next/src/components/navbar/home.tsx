@@ -4,11 +4,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { Loader2 } from "lucide-react"
+import { Loader2, Menu } from "lucide-react"
 
 import { useSession } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
 
@@ -17,8 +18,14 @@ export function Navbar() {
   const { data: session } = useSession()
 
   const [toDashboard, setToDashboard] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   if (pathname?.startsWith("/x")) return null
+
+  const navLinks = [
+    { href: "/docs", label: "Docs" },
+    { href: "/blog", label: "Blog" },
+  ]
 
   return (
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
@@ -27,6 +34,24 @@ export function Navbar() {
           {config.app.name}
         </Link>
         <div className="flex items-center gap-2.5">
+          {/* Desktop Navigation */}
+          <nav className="mx-5 hidden items-center gap-5 md:flex">
+            {navLinks.map((link) => {
+              const isActive = pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`font-medium transition-colors ${
+                    isActive ? "text-foreground" : "hover:text-foreground/80 text-foreground/60"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </nav>
+
           {session?.user ? (
             <Link href="/x">
               <Button
@@ -42,9 +67,45 @@ export function Navbar() {
             <Access />
           )}
 
-          <div className="-mr-2.5">
+          <div className="md:-mr-2.5">
             <ModeToggle />
           </div>
+
+          {/* Mobile Navigation */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                className="-mr-2.5 size-8 cursor-pointer md:hidden [&_svg]:size-4!"
+                aria-label="Open menu"
+                size="sm"
+                variant="outline"
+              >
+                <Menu aria-hidden="true" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <nav className="ml-4 flex flex-col gap-5">
+                {navLinks.map((link) => {
+                  const isActive = pathname?.startsWith(link.href)
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`font-medium transition-colors ${
+                        isActive ? "text-foreground" : "hover:text-foreground/80 text-foreground/60"
+                      }`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  )
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </div>
