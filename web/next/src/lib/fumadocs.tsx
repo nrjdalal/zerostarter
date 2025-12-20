@@ -8,6 +8,7 @@ import { createRelativeLink } from "fumadocs-ui/mdx"
 
 import { config } from "@/lib/config"
 import type { blogSource, docsSource } from "@/lib/source"
+import { CopyAsMarkdown } from "@/components/copy-as-markdown"
 
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -37,10 +38,13 @@ export async function getPageData(
 
 export function renderPageContent({ page, source }: PageData) {
   const MDX = page.data.body
+  const isDocsPage = page.url.startsWith("/docs")
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsTitle>
+        {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
+      </DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
         <MDX
