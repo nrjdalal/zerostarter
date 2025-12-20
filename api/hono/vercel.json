@@ -3,6 +3,8 @@
   "framework": "hono",
   "installCommand": "cd ../.. && bun install --ignore-scripts",
   "buildCommand": "cd ../.. && turbo build --filter=@api/hono",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- 'api/hono/**' 'packages/**'",
   "outputDirectory": "dist",
+  "relatedProjects": ["prj_uMeWSgdGT1Rw5moCBrqHcgZycjeK"],
   "bunVersion": "1.3.5"
 }

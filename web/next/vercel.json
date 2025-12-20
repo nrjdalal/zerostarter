@@ -3,5 +3,7 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && bun install --ignore-scripts",
   "buildCommand": "cd ../.. && turbo build --filter=@web/next",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- 'api/hono/**' 'packages/**' 'web/next/**'",
+  "relatedProjects": ["prj_lDsRsHlYbSyzuzF2lnQGxzWACLJm"],
   "bunVersion": "1.3.5"
 }
