@@ -1,0 +1,213 @@
+---
+title: Getting Started with ZeroStarter
+description: A comprehensive guide to setting up and running your ZeroStarter SaaS application
+---
+
+ZeroStarter is a modern, type-safe SaaS starter template that gets you up and running quickly. This guide will walk you through the setup process and help you understand the architecture.
+
+## What is ZeroStarter?
+
+ZeroStarter is a production-ready SaaS starter template featuring:
+
+- **Monorepo architecture** with Turborepo
+- **Type-safe APIs** with Hono RPC
+- **Modern frontend** with Next.js 16
+- **Secure authentication** with Better Auth
+- **Type-safe database** with Drizzle ORM
+- **Beautiful UI** with Shadcn UI components
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- [Bun](https://bun.sh) v1.3.0 or later installed
+- A PostgreSQL database (local or hosted)
+- A GitHub account (for OAuth setup)
+
+## Installation
+
+### 1. Clone the Template
+
+```bash
+bunx gitpick https://github.com/nrjdalal/zerostarter
+cd zerostarter
+```
+
+### 2. Install Dependencies
+
+```bash
+bun install
+```
+
+### 3. Set Up Environment Variables
+
+Create a `.env` file in the root directory:
+
+```text
+# Server variables
+HONO_APP_URL=http://localhost:4000
+HONO_TRUSTED_ORIGINS=http://localhost:3000
+
+# Generate using: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-secret-key-here
+
+# GitHub OAuth (get from https://github.com/settings/developers)
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+
+# PostgreSQL connection string
+# Generate using: bunx pglaunch -k
+POSTGRES_URL=postgresql://user:password@localhost:5432/dbname
+
+# Client variables
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+## Database Setup
+
+### 1. Generate Migrations
+
+```bash
+bun run db:generate
+```
+
+This creates migration files based on your schema in `packages/db/src/schema`.
+
+### 2. Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+This applies the migrations to your database.
+
+### 3. (Optional) Open Drizzle Studio
+
+```bash
+bun run db:studio
+```
+
+This opens a visual database editor at `http://localhost:4983`.
+
+## Authentication Setup
+
+### GitHub OAuth
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Set **Homepage URL** to `http://localhost:3000`
+4. Set **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`
+5. Copy the Client ID and Client Secret to your `.env` file
+
+## Running the Application
+
+### Development Mode
+
+```bash
+bun dev
+```
+
+This starts both the frontend (Next.js) and backend (Hono) servers:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:4000
+
+### Production Build
+
+```bash
+bun run build
+bun run start
+```
+
+### Docker Compose
+
+```bash
+docker compose up
+```
+
+## Project Structure
+
+Understanding the structure helps you navigate the codebase:
+
+```
+.
+├── api/
+│   └── hono/              # Backend API (Hono)
+│       ├── src/
+│       │   ├── routers/   # API route definitions
+│       │   └── middlewares/ # Auth & other middleware
+│       └── dist/          # Compiled output
+│
+├── web/
+│   └── next/              # Frontend (Next.js)
+│       ├── src/
+│       │   ├── app/       # Next.js app router pages
+│       │   ├── components/ # React components
+│       │   └── lib/       # Utilities & API client
+│       └── content/       # MDX content (blog/docs)
+│
+└── packages/
+    ├── auth/              # Shared auth logic
+    ├── db/                # Database schema & migrations
+    ├── env/               # Type-safe environment variables
+    └── tsconfig/          # Shared TypeScript configs
+```
+
+## Key Features
+
+### Type-Safe API Client
+
+The frontend automatically gets types from your backend:
+
+```typescript
+import { apiClient } from "@/lib/api/client"
+
+// Fully typed!
+const res = await apiClient.v1.health.$get()
+const data = await res.json()
+```
+
+### Authentication
+
+Use the `useSession` hook in your components:
+
+```typescript
+import { useSession } from "@/lib/auth/client"
+
+export function MyComponent() {
+  const { data: session } = useSession()
+
+  if (!session) {
+    return <div>Please sign in</div>
+  }
+
+  return <div>Welcome, {session.user.email}</div>
+}
+```
+
+## Next Steps
+
+1. **Customize the branding**: Update `web/next/src/lib/config.ts`
+2. **Add your first API route**: Create routes in `api/hono/src/routers`
+3. **Extend the database schema**: Add tables in `packages/db/src/schema`
+4. **Create pages**: Add routes in `web/next/src/app`
+5. **Deploy**: Follow the deployment guides in the docs
+
+## Common Commands
+
+- `bun dev` - Start development servers
+- `bun run build` - Build for production
+- `bun run lint` - Lint codebase
+- `bun run format` - Format code
+- `bun run db:generate` - Generate database migrations
+- `bun run db:migrate` - Run migrations
+- `bun run db:studio` - Open Drizzle Studio
+
+## Getting Help
+
+- Check the [documentation](/docs)
+- Review the [GitHub repository](https://github.com/nrjdalal/zerostarter)
+- Open an issue for bugs or feature requests
+
+You're now ready to start building your SaaS application with ZeroStarter!

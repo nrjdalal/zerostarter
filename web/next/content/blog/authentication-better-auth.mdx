@@ -1,0 +1,158 @@
+---
+title: Authentication Best Practices with Better Auth
+description: Implementing secure, scalable authentication in your SaaS application
+---
+
+Authentication is one of the most critical aspects of any SaaS application. Get it wrong, and you risk security vulnerabilities and poor user experience. ZeroStarter uses Better Auth, a modern authentication library that makes implementing secure auth straightforward.
+
+## Why Better Auth?
+
+Better Auth provides a comprehensive solution for authentication that's:
+
+- **Type-safe**: Built with TypeScript from the ground up
+- **Flexible**: Supports multiple providers and strategies
+- **Secure**: Implements best practices by default
+- **Developer-friendly**: Simple API with powerful features
+
+## Setting Up Authentication
+
+In ZeroStarter, authentication is configured in the `packages/auth` package:
+
+```typescript
+// packages/auth/src/index.ts
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "postgresql",
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
+  },
+})
+```
+
+## Security Best Practices
+
+### 1. Secure Session Management
+
+Better Auth handles session management securely:
+
+- Uses HTTP-only cookies by default
+- Implements CSRF protection
+- Supports secure session rotation
+- Handles session expiration properly
+
+### 2. Password Security
+
+When using email/password authentication:
+
+- Passwords are hashed using bcrypt
+- Minimum password requirements enforced
+- Rate limiting on login attempts
+- Protection against brute force attacks
+
+### 3. OAuth Integration
+
+For social providers like GitHub:
+
+- Secure OAuth 2.0 flow
+- Proper token handling
+- User profile synchronization
+- Account linking support
+
+## Frontend Integration
+
+The frontend uses a React hook for authentication:
+
+```typescript
+// web/next/src/lib/auth/client.ts
+import { createAuthClient } from "better-auth/react"
+
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+})
+
+// Usage in components
+const { data: session } = useSession()
+```
+
+## Protected Routes
+
+ZeroStarter demonstrates how to protect routes:
+
+```typescript
+// api/hono/src/middlewares/auth.ts
+export const authMiddleware = async (c: Context, next: Next) => {
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers,
+  })
+
+  if (!session) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  c.set("session", session)
+  await next()
+}
+```
+
+## Common Patterns
+
+### Role-Based Access Control
+
+Extend Better Auth with custom roles:
+
+```typescript
+// Add roles to your user schema
+export const users = pgTable("users", {
+  // ...
+  role: text("role").notNull().default("user"),
+})
+
+// Check roles in middleware
+if (session.user.role !== "admin") {
+  return c.json({ error: "Forbidden" }, 403)
+}
+```
+
+### Multi-Tenancy Support
+
+Better Auth can be extended for organization/team support, which is planned for ZeroStarter's future features.
+
+## Testing Authentication
+
+Always test your authentication flows:
+
+- Test login/logout flows
+- Verify protected routes
+- Test OAuth callbacks
+- Validate session expiration
+- Test error handling
+
+## Monitoring and Logging
+
+Track authentication events:
+
+- Failed login attempts
+- Successful logins
+- Session creation/destruction
+- OAuth provider callbacks
+
+## Conclusion
+
+Better Auth provides a solid foundation for authentication in SaaS applications. Combined with ZeroStarter's structure, you get:
+
+- Secure authentication out of the box
+- Type-safe API throughout
+- Easy integration with multiple providers
+- Scalable architecture for growth
+
+By following these practices and leveraging Better Auth's features, you can build secure, user-friendly authentication that scales with your SaaS application.

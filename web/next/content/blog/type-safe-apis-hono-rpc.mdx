@@ -1,0 +1,78 @@
+---
+title: Building Type-Safe APIs with Hono RPC
+description: Learn how to achieve end-to-end type safety between your frontend and backend using Hono RPC
+---
+
+When building modern SaaS applications, type safety is crucial for maintaining code quality and catching errors early. One of the most powerful features of ZeroStarter is its use of Hono RPC, which provides end-to-end type safety between your frontend and backend.
+
+## The Problem with Traditional APIs
+
+Traditional REST APIs often suffer from type mismatches between frontend and backend. You might define types on both sides, but there's no guarantee they stay in sync. This leads to:
+
+- Runtime errors that could have been caught at compile time
+- Manual type definitions that drift apart
+- Time wasted debugging type mismatches
+- Poor developer experience
+
+## How Hono RPC Solves This
+
+Hono RPC automatically infers types from your backend routes and makes them available to your frontend client. This means:
+
+- **Single source of truth**: Types are defined once on the backend
+- **Automatic type inference**: Frontend types are automatically generated
+- **Compile-time safety**: TypeScript catches errors before runtime
+- **Better DX**: IntelliSense and autocomplete work seamlessly
+
+## Implementation in ZeroStarter
+
+In ZeroStarter, the backend routes are defined in `api/hono/src/routers` and exported as `AppType`:
+
+```typescript
+// api/hono/src/routers/v1.ts
+import { Hono } from "hono"
+import { z } from "zod"
+
+const app = new Hono().basePath("/v1")
+
+app.get("/health", (c) => {
+  return c.json({ status: "ok", timestamp: Date.now() })
+})
+
+app.post("/users", async (c) => {
+  const body = await c.req.json()
+  // ... create user logic
+  return c.json({ id: "1", name: body.name })
+})
+
+export default app
+```
+
+The frontend client automatically infers these types:
+
+```typescript
+// web/next/src/lib/api/client.ts
+import type { AppType } from "@api/hono"
+import { hc } from "hono/client"
+
+export const apiClient = hc<AppType>(process.env.NEXT_PUBLIC_API_URL!)
+
+// Fully typed request and response
+const res = await apiClient.v1.health.$get()
+const data = await res.json() // TypeScript knows the shape!
+```
+
+## Benefits for SaaS Development
+
+1. **Faster Development**: No need to manually maintain types
+2. **Fewer Bugs**: Type errors caught at compile time
+3. **Better Refactoring**: TypeScript helps you update all usages
+4. **Improved Documentation**: Types serve as inline documentation
+
+## Best Practices
+
+- Use Zod schemas for request/response validation
+- Keep route handlers focused and single-purpose
+- Leverage TypeScript's type inference capabilities
+- Document complex types with JSDoc comments
+
+By leveraging Hono RPC, ZeroStarter provides a foundation for building robust, type-safe SaaS applications that scale with your team.

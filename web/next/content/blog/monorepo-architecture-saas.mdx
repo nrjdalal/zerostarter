@@ -1,0 +1,101 @@
+---
+title: Monorepo Architecture for Modern SaaS Applications
+description: Discover how monorepos can accelerate your SaaS development workflow
+---
+
+Modern SaaS applications require multiple packages, services, and shared code. Managing these in separate repositories can become a nightmare. That's where monorepos shine, and ZeroStarter demonstrates how to structure one effectively.
+
+## Why Monorepos?
+
+A monorepo contains multiple related projects in a single repository. For SaaS applications, this offers several advantages:
+
+### Code Sharing Made Easy
+
+With a monorepo, you can share code between your frontend, backend, and other packages without publishing to npm:
+
+```typescript
+// Both frontend and backend can import this
+import { users } from "@packages/db"
+
+// packages/db/src/schema/auth.ts
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  // ...
+})
+```
+
+### Atomic Changes
+
+When you need to update a shared type or schema, you can update all consumers in a single commit. This ensures consistency across your entire application.
+
+### Simplified Dependency Management
+
+Instead of managing versions across multiple repositories, you have a single `package.json` and lock file. Turborepo handles the rest.
+
+## ZeroStarter's Monorepo Structure
+
+ZeroStarter uses a clean, scalable structure:
+
+```
+.
+├── api/
+│   └── hono/          # Backend API server
+├── web/
+│   └── next/          # Frontend application
+└── packages/
+    ├── auth/          # Shared auth logic
+    ├── db/            # Database schema
+    ├── env/           # Type-safe env vars
+    └── tsconfig/      # Shared TS config
+```
+
+## Key Benefits
+
+### Type-Safe Environment Variables
+
+The `packages/env` package ensures environment variables are validated and typed:
+
+```typescript
+// packages/env/src/web-next.ts
+export const env = {
+  NEXT_PUBLIC_APP_URL: z.string().url().parse(process.env.NEXT_PUBLIC_APP_URL),
+  NEXT_PUBLIC_API_URL: z.string().url().parse(process.env.NEXT_PUBLIC_API_URL),
+}
+```
+
+### Shared Database Schema
+
+The `packages/db` package provides a single source of truth for your database schema, used by both migrations and application code.
+
+### Consistent TypeScript Configuration
+
+Shared TypeScript configs ensure consistent compilation settings across all packages.
+
+## Turborepo for Build Orchestration
+
+ZeroStarter uses Turborepo to manage builds efficiently:
+
+- **Parallel execution**: Builds run in parallel when possible
+- **Caching**: Only rebuilds what changed
+- **Task dependencies**: Automatically handles build order
+
+```json
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    }
+  }
+}
+```
+
+## Best Practices
+
+1. **Keep packages focused**: Each package should have a single responsibility
+2. **Use workspace protocols**: Reference local packages with `workspace:*`
+3. **Leverage Turborepo**: Use caching and parallelization
+4. **Document dependencies**: Make package relationships clear
+
+Monorepos might seem complex at first, but with the right tooling and structure—like ZeroStarter provides—they become a powerful way to build and scale SaaS applications.
