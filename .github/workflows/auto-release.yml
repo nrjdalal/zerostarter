@@ -37,16 +37,20 @@ jobs:
         run: |
           git checkout main
           git fetch origin changelog || true
-          git checkout changelog 2>/dev/null || git checkout -b changelog main
 
-          # Merge latest main into changelog to keep it in sync
-          git merge main --no-edit || true
+          # Reset changelog branch to main to avoid merge conflicts
+          if git show-ref --verify --quiet refs/heads/changelog || git show-ref --verify --quiet refs/remotes/origin/changelog; then
+            git checkout changelog 2>/dev/null || git checkout -b changelog origin/changelog
+            git reset --hard main
+          else
+            git checkout -b changelog main
+          fi
 
           bunx changelogen --bump --no-commit || true
           if [ -n "$(git status --porcelain)" ]; then
             git add CHANGELOG.md package.json
             git commit -m "chore: update changelog and bump version"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog --force
             echo "has_changes=true" >> $GITHUB_OUTPUT
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -66,7 +70,7 @@ jobs:
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/pulls" \
-              -d "{\"title\": \"chore: update changelog and bump version\", \"head\": \"changelog\", \"base\": \"canary\", \"body\": \"Automatically generated PR to update changelog and version from main.\"}"
+              -d "{\"title\": \"ci(changelog): update changelog and bump version\", \"head\": \"changelog\", \"base\": \"canary\", \"body\": \"Automatically generated PR to update changelog and version from main.\"}"
             echo "Created PR from changelog to canary"
           else
             echo "PR from changelog to canary already exists: #$PR_NUMBER"
