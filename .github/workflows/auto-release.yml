@@ -38,22 +38,52 @@ jobs:
           git checkout main
           git fetch origin changelog --tags || true
 
-          # Get last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          # Reset changelog branch to main
+          # Preserve existing CHANGELOG.md before resetting
           if git show-ref --verify --quiet refs/remotes/origin/changelog; then
             git checkout changelog
+            if [ -f CHANGELOG.md ]; then
+              cp CHANGELOG.md /tmp/existing-changelog.md
+              # Extract last version from existing changelog
+              LAST_VERSION_IN_CHANGELOG=$(awk '/^## / {print; exit}' /tmp/existing-changelog.md | sed 's/^## //' | sed 's/\[//' | sed 's/\]//' | sed 's/^v//' | head -1)
+            fi
             git reset --hard main
+            # Restore CHANGELOG.md if it existed
+            if [ -f /tmp/existing-changelog.md ]; then
+              mv /tmp/existing-changelog.md CHANGELOG.md
+            fi
           else
             git checkout -b changelog main
+            LAST_VERSION_IN_CHANGELOG=""
           fi
 
-          # Generate changelog and bump version
-          if [ -n "$LAST_TAG" ]; then
-            bunx changelogen --from "$LAST_TAG" --bump --no-commit || true
+          # Get the tag for the last version in changelog, or use latest tag
+          if [ -n "$LAST_VERSION_IN_CHANGELOG" ]; then
+            FROM_TAG="v${LAST_VERSION_IN_CHANGELOG}"
+            # Verify tag exists
+            if ! git rev-parse "$FROM_TAG" >/dev/null 2>&1; then
+              FROM_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            fi
           else
-            bunx changelogen --bump --no-commit || true
+            FROM_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          fi
+
+          # Generate changelog only for commits after the last released version
+          if [ -n "$FROM_TAG" ]; then
+            bunx changelogen --from "$FROM_TAG" --bump --no-commit --no-output > /tmp/new-changelog.md 2>/dev/null || true
+          else
+            bunx changelogen --bump --no-commit --no-output > /tmp/new-changelog.md 2>/dev/null || true
+          fi
+
+          # Extract only the new version section (first ## block)
+          if [ -f /tmp/new-changelog.md ] && [ -s /tmp/new-changelog.md ]; then
+            NEW_VERSION=$(awk '/^## / {if (found && /^## /) exit; found=1} found' /tmp/new-changelog.md)
+            if [ -n "$NEW_VERSION" ] && [ -f CHANGELOG.md ]; then
+              # Prepend new version to existing changelog
+              printf "%s\n\n%s" "$NEW_VERSION" "$(cat CHANGELOG.md)" > CHANGELOG.md
+            elif [ -n "$NEW_VERSION" ]; then
+              # No existing changelog, use the new one
+              echo "$NEW_VERSION" > CHANGELOG.md
+            fi
           fi
 
           # Commit and force push
