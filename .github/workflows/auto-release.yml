@@ -41,8 +41,13 @@ jobs:
           # Get last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
-          # Checkout or create changelog branch
-          git checkout changelog 2>/dev/null || git checkout -b changelog main
+          # Reset changelog branch to main
+          if git show-ref --verify --quiet refs/remotes/origin/changelog; then
+            git checkout changelog
+            git reset --hard main
+          else
+            git checkout -b changelog main
+          fi
 
           # Generate changelog and bump version
           if [ -n "$LAST_TAG" ]; then
