@@ -36,17 +36,35 @@ jobs:
         id: update-changelog
         run: |
           git checkout main
-          git fetch origin changelog || true
+          git fetch origin changelog --tags || true
+
+          # Get the last tag to use as --from for changelogen
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
           # Reset changelog branch to main to avoid merge conflicts
           if git show-ref --verify --quiet refs/heads/changelog || git show-ref --verify --quiet refs/remotes/origin/changelog; then
             git checkout changelog 2>/dev/null || git checkout -b changelog origin/changelog
+            # Preserve existing CHANGELOG.md before reset
+            if [ -f CHANGELOG.md ]; then
+              cp CHANGELOG.md /tmp/existing-changelog.md
+            fi
             git reset --hard main
+            # Restore CHANGELOG.md if it existed
+            if [ -f /tmp/existing-changelog.md ]; then
+              mv /tmp/existing-changelog.md CHANGELOG.md
+              git add CHANGELOG.md
+            fi
           else
             git checkout -b changelog main
           fi
 
-          bunx changelogen --bump --no-commit || true
+          # Generate changelog only for new commits since last tag
+          if [ -n "$LAST_TAG" ]; then
+            bunx changelogen --from "$LAST_TAG" --bump --no-commit || true
+          else
+            bunx changelogen --bump --no-commit || true
+          fi
+
           if [ -n "$(git status --porcelain)" ]; then
             git add CHANGELOG.md package.json
             git commit -m "chore: update changelog and bump version"
