@@ -241,4 +241,4 @@ Thank you for helping improve ZeroStarter!
 
 This project is licensed under the [MIT](https://github.com/nrjdalal/zerostarter/blob/canary/LICENSE.md) License.
 
-<!-- trigger build: 0 -->
+<!-- trigger build: 1 -->
