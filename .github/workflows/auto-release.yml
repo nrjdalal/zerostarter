@@ -36,9 +36,15 @@ jobs:
         id: update-changelog
         run: |
           git checkout main
+          git fetch origin changelog:changelog 2>/dev/null || true
+          FROM_COMMIT=$(git rev-parse changelog 2>/dev/null || git rev-parse HEAD~1 2>/dev/null || echo "")
           git branch -D changelog 2>/dev/null || true
           git checkout -b changelog
-          bunx changelogen --bump || true
+          if [ -n "$FROM_COMMIT" ]; then
+            bunx changelogen --bump --from "$FROM_COMMIT" || true
+          else
+            bunx changelogen --bump || true
+          fi
           if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ]; then
             git add CHANGELOG.md package.json
             git commit -m "ci(changelog): update changelog and bump version"
