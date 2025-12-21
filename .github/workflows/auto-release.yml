@@ -123,8 +123,12 @@ jobs:
           fi
 
           # Create GitHub release payload using fx and save
-          # Escape the changelog content and create payload
-          printf '{"body":%s}' "$(printf '%s' "$CHANGELOG_CONTENT" | bunx fx -s 'x => JSON.stringify(x)')" | bunx fx "x => ({
+          # Write changelog to file and use node to properly escape it
+          echo "$CHANGELOG_CONTENT" > /tmp/changelog-body.txt
+          ESCAPED_BODY=$(node -e "console.log(JSON.stringify(require('fs').readFileSync('/tmp/changelog-body.txt', 'utf8')))")
+
+          # Create JSON payload using fx
+          echo "{\"body\":${ESCAPED_BODY}}" | bunx fx "x => ({
             ...x,
             tag_name: 'v${VERSION}',
             name: 'v${VERSION}',
