@@ -38,13 +38,7 @@ jobs:
           git checkout main
           git branch -D changelog 2>/dev/null || true
           git checkout -b changelog
-          bunx changelogen --bump --no-commit --no-output > /tmp/new-changelog.md 2>/dev/null || true
-          if [ -s /tmp/new-changelog.md ]; then
-            NEW_VERSION=$(awk '/^## / {if (found && /^## /) exit; found=1} found' /tmp/new-changelog.md)
-            if [ -n "$NEW_VERSION" ]; then
-              [ -s CHANGELOG.md ] && printf "%s\n\n%s" "$NEW_VERSION" "$(cat CHANGELOG.md)" > CHANGELOG.md || echo "$NEW_VERSION" > CHANGELOG.md
-            fi
-          fi
+          bunx changelogen --bump || true
           if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ]; then
             git add CHANGELOG.md package.json
             git commit -m "ci(changelog): update changelog and bump version"
