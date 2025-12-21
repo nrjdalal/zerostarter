@@ -15,6 +15,7 @@ permissions:
 jobs:
   auto-canary-to-main:
     runs-on: ubuntu-latest
+    name: Auto merge canary into main
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

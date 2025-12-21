@@ -1,4 +1,4 @@
-name: ci
+name: auto-check-build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  ci:
+  auto-check-build:
     name: Lint, Build, and Check Types
     runs-on: ubuntu-latest
     steps:
