@@ -36,7 +36,7 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
-          <nav className="mx-5 hidden items-center gap-5 md:flex">
+          <nav className="mx-5 hidden items-center gap-7.5 md:flex">
             {navLinks.map((link) => {
               const isActive = pathname?.startsWith(link.href)
               return (

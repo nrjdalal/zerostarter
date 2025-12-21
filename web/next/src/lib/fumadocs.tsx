@@ -39,9 +39,14 @@ export async function getPageData(
 export function renderPageContent({ page, source }: PageData) {
   const MDX = page.data.body
   const isDocsPage = page.url.startsWith("/docs")
+  const isBlogMainPage = page.url === "/blog"
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      toc={isBlogMainPage ? undefined : page.data.toc}
+      full={page.data.full}
+      footer={isBlogMainPage ? { enabled: false } : undefined}
+    >
       <DocsTitle>
         {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
       </DocsTitle>
