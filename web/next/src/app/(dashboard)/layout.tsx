@@ -7,6 +7,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarProvider,
+  SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { SidebarUser } from "@/components/sidebar/user"
@@ -24,6 +25,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         <SidebarFooter>
           <SidebarUser user={session.user} />
         </SidebarFooter>
+        <SidebarRail />
       </Sidebar>
       <main>
         <SidebarTrigger className="bg-sidebar absolute m-2 cursor-pointer border" />

@@ -9,6 +9,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarProvider,
+  SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { SidebarDocs } from "@/components/sidebar/docs"
@@ -22,9 +23,10 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
           <SidebarDocs />
         </SidebarContent>
         <SidebarFooter />
+        <SidebarRail />
       </Sidebar>
       <main>
-        <SidebarTrigger className="bg-sidebar fixed right-0 mt-27 mr-2.5 size-8 cursor-pointer border md:top-1/2 md:right-auto md:mx-auto md:mt-auto md:-translate-y-1/2 md:rounded-l-none md:border-l-0" />
+        <SidebarTrigger className="bg-sidebar fixed right-0 bottom-0 mr-12 mb-12 size-8 cursor-pointer border md:right-auto md:mb-48 md:rounded-l-none md:border-l-0" />
         <RootProvider>
           <DocsLayout
             nav={{
