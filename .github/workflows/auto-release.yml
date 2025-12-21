@@ -35,56 +35,31 @@ jobs:
       - name: Update changelog branch from main
         id: update-changelog
         run: |
-          git checkout main
           git fetch origin changelog --tags || true
 
-          # Get the last tag to use as --from for changelogen
+          # Get the last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
-          # Reset changelog branch to main to avoid merge conflicts
-          if git show-ref --verify --quiet refs/heads/changelog || git show-ref --verify --quiet refs/remotes/origin/changelog; then
-            git checkout changelog 2>/dev/null || git checkout -b changelog origin/changelog
-            # Preserve existing CHANGELOG.md before reset
-            if [ -f CHANGELOG.md ]; then
-              cp CHANGELOG.md /tmp/existing-changelog.md
-            fi
-            git reset --hard main
-            # Restore CHANGELOG.md if it existed
-            if [ -f /tmp/existing-changelog.md ]; then
-              mv /tmp/existing-changelog.md CHANGELOG.md
-            fi
+          # Checkout or create changelog branch
+          if git show-ref --verify --quiet refs/remotes/origin/changelog; then
+            git checkout changelog
+            git merge main --no-edit || true
           else
             git checkout -b changelog main
           fi
 
-          # Generate changelog only for new commits since last tag to a temp file
-          # Use --from to only get commits since the last tag, and --no-output to write to temp file
+          # Run changelogen with --from to only get new commits since last tag
           if [ -n "$LAST_TAG" ]; then
-            bunx changelogen --from "$LAST_TAG" --bump --no-commit --no-output > /tmp/new-changelog.md 2>/dev/null || true
+            bunx changelogen --from "$LAST_TAG" --bump --no-commit || true
           else
-            bunx changelogen --bump --no-commit --no-output > /tmp/new-changelog.md 2>/dev/null || true
+            bunx changelogen --bump --no-commit || true
           fi
 
-          # Extract only the new version section and prepend to existing changelog
-          if [ -f /tmp/new-changelog.md ] && [ -s /tmp/new-changelog.md ]; then
-            # Extract the first version section (from first ## to next ## or end)
-            NEW_VERSION=$(awk '/^## / {if (found && /^## /) exit; found=1} found' /tmp/new-changelog.md)
-            
-            if [ -n "$NEW_VERSION" ]; then
-              if [ -f CHANGELOG.md ] && [ -s CHANGELOG.md ]; then
-                # Prepend new version to existing changelog
-                printf "%s\n\n%s" "$NEW_VERSION" "$(cat CHANGELOG.md)" > CHANGELOG.md
-              else
-                # No existing changelog, use the new one
-                echo "$NEW_VERSION" > CHANGELOG.md
-              fi
-            fi
-          fi
-
+          # Commit changes if any
           if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ]; then
             git add CHANGELOG.md package.json
             git commit -m "chore: update changelog and bump version"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog --force
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog
             echo "has_changes=true" >> $GITHUB_OUTPUT
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
