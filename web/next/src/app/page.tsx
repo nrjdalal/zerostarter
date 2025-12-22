@@ -1,10 +1,22 @@
 import Link from "next/link"
 
-import { ArrowRight, CheckCircle2, Code2, Database, Lock, Sparkles, Zap } from "lucide-react"
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Code2,
+  Database,
+  FileText,
+  GitBranch,
+  Lock,
+  Search,
+  Sparkles,
+  Zap,
+} from "lucide-react"
 
 import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Home() {
   return (
@@ -30,7 +42,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button asChild size="lg" className="group">
                 <Link href="/docs">
-                  Get Started
+                  Documentation
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -123,6 +135,78 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
             </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <FileText className="text-primary size-6" />
+                </div>
+                <CardTitle>Type-Safe Environment</CardTitle>
+                <CardDescription>
+                  Centralized environment variables with validation. One env file, selective access
+                  per package.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <BookOpen className="text-primary size-6" />
+                </div>
+                <CardTitle>Documentation & llms.txt</CardTitle>
+                <CardDescription>
+                  Fumadocs with auto-generated llms.txt endpoint. Full-text search and structured
+                  content for AI assistants.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <GitBranch className="text-primary size-6" />
+                </div>
+                <CardTitle>Automated Releases</CardTitle>
+                <CardDescription>
+                  Automated changelog generation and release workflow. Draft PRs for canary to main
+                  and changelog updates.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Search className="text-primary size-6" />
+                </div>
+                <CardTitle>Full-Text Search</CardTitle>
+                <CardDescription>
+                  Built-in search for docs and blog powered by Fumadocs. Fast and accurate content
+                  discovery.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <CheckCircle2 className="text-primary size-6" />
+                </div>
+                <CardTitle>Validation & DevTools</CardTitle>
+                <CardDescription>
+                  Zod validation throughout. React Query DevTools for debugging. Oxlint and Prettier
+                  for code quality.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <Sparkles className="text-primary size-6" />
+                </div>
+                <CardTitle>OG Image Generation</CardTitle>
+                <CardDescription>
+                  Dynamic Open Graph image generation for SEO. Automatic image creation for blog and
+                  docs pages.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </section>
@@ -148,6 +232,10 @@ export default function Home() {
               { name: "Better Auth", desc: "Authentication" },
               { name: "Shadcn UI", desc: "UI Components" },
               { name: "TanStack Query", desc: "Data Fetching" },
+              { name: "Zod", desc: "Validation" },
+              { name: "Fumadocs", desc: "Documentation" },
+              { name: "tsdown", desc: "Bundling" },
+              { name: "Oxlint", desc: "Linting" },
             ].map((tech) => (
               <div
                 key={tech.name}
@@ -222,7 +310,7 @@ bun dev`}
         <div className="container mx-auto mt-8 max-w-6xl px-5 text-center">
           <Button asChild size="lg" className="group">
             <Link href="/docs">
-              Get Started
+              Documentation
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
@@ -241,7 +329,7 @@ bun dev`}
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button asChild size="lg" className="group">
               <Link href="/docs">
-                Get Started
+                Documentation
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

@@ -1,3 +1,11 @@
 {
-  "pages": ["index", "manage/environment", "manage/release", "deployment/vercel"]
+  "pages": [
+    "index",
+    "manage/blog",
+    "manage/documentation",
+    "manage/environment",
+    "manage/llms-txt",
+    "manage/release",
+    "deployment/vercel"
+  ]
 }

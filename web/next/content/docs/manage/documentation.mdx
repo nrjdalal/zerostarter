@@ -1,0 +1,47 @@
+---
+title: Documentation
+description: Manage documentation content.
+---
+
+## Overview
+
+Documentation is managed using Fumadocs and stored in `web/next/content/docs/`.
+
+## Content Structure
+
+- **Location**: `web/next/content/docs/`
+- **Format**: MDX files with frontmatter
+- **Configuration**: Defined in `web/next/source.config.ts` and `web/next/content/docs/meta.json`
+
+## Creating Documentation
+
+1. Create a new `.mdx` file in `web/next/content/docs/`
+2. Add frontmatter with `title` and `description`
+3. Write content using MDX syntax
+4. Add entry to `web/next/content/docs/meta.json`
+
+## Configuration
+
+Documentation source is configured in `web/next/source.config.ts`:
+
+```ts
+export const docs = defineDocs({
+  dir: "content/docs",
+})
+```
+
+Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+
+```json
+{
+  "pages": [
+    "index",
+    "manage/blog",
+    "manage/documentation",
+    "manage/environment",
+    "manage/llms-txt",
+    "manage/release",
+    "deployment/vercel"
+  ]
+}
+```

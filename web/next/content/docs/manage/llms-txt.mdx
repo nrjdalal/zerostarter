@@ -1,0 +1,33 @@
+---
+title: llms.txt
+description: Auto-generated documentation endpoint for AI assistants.
+---
+
+import { config } from "@/lib/config"
+
+## Overview
+
+`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/blog.md`, `/blog/\*.md`, `/docs.md`, and `/docs/\*.md`.
+
+## How It Works
+
+The endpoint automatically scans documentation and blog content, generating markdown files that include:
+
+- Complete documentation pages
+- Blog articles
+- Structured navigation
+- Cross-references between pages
+
+## Access Points for AI Assistants
+
+- **Main**: `/llms.txt` - Index for complete documentation for {config.app.name}
+- **Blog**: `/blog.md` - Index for latest articles and updates about {config.app.name}
+- `/llms-full.txt` - Complete documentation in one page for AI assistants
+
+## Implementation
+
+The endpoint is implemented in `web/next/src/app/llms.txt/[[...slug]]/route.ts` and uses:
+
+- Automatic markdown generation with links and metadata
+- `docsSource` from Fumadocs for documentation
+- `blogSource` from Fumadocs for blog content

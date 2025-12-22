@@ -27,8 +27,20 @@ const deployment = [
 
 const manage = [
   {
+    title: "Blog",
+    url: "/docs/manage/blog",
+  },
+  {
+    title: "Documentation",
+    url: "/docs/manage/documentation",
+  },
+  {
     title: "Environment",
     url: "/docs/manage/environment",
+  },
+  {
+    title: "llms.txt",
+    url: "/docs/manage/llms-txt",
   },
   {
     title: "Release",

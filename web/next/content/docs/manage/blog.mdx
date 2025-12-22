@@ -1,0 +1,45 @@
+---
+title: Blog
+description: Manage blog content and articles.
+---
+
+## Overview
+
+Blog content is managed using Fumadocs and stored in `web/next/content/blog/`.
+
+## Content Structure
+
+- **Location**: `web/next/content/blog/`
+- **Format**: MDX files with frontmatter
+- **Configuration**: Defined in `web/next/source.config.ts`
+
+## Creating a Blog Post
+
+1. Create a new `.mdx` file in `web/next/content/blog/`
+2. Add frontmatter with `title` and `description`
+3. Write content using MDX syntax
+4. Add entry to `web/next/content/blog/meta.json`
+
+## Configuration
+
+Blog source is configured in `web/next/source.config.ts`:
+
+```ts
+export const blog = defineDocs({
+  dir: "content/blog",
+})
+```
+
+Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+
+```json
+{
+  "pages": [
+    "index",
+    "getting-started-zero-starter",
+    "type-safe-apis-hono-rpc",
+    "monorepo-architecture-saas",
+    "authentication-better-auth"
+  ]
+}
+```
