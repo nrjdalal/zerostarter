@@ -70,7 +70,7 @@ jobs:
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/pulls" \
-              -d "{\"title\": \"ci(changelog): 📖 update changelog and bump version\", \"head\": \"changelog\", \"base\": \"canary\", \"body\": \"Automatically generated PR to update changelog and version from main.\"}"
+              -d "{\"title\": \"ci(changelog): 📖 update changelog and bump version\", \"head\": \"changelog\", \"base\": \"canary\", \"body\": \"Automatically generated PR to update changelog and version from main.\", \"draft\": true}"
             echo "Created PR from changelog to canary"
           else
             echo "PR from changelog to canary already exists: #$PR_NUMBER"
