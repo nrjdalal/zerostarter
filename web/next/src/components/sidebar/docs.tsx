@@ -66,6 +66,14 @@ const manage = [
     title: "Release",
     url: "/docs/manage/release",
   },
+  {
+    title: "robots.txt",
+    url: "/docs/manage/robots",
+  },
+  {
+    title: "Sitemap",
+    url: "/docs/manage/sitemap",
+  },
 ]
 
 export function SidebarDocs() {

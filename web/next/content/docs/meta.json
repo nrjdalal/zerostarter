@@ -11,6 +11,8 @@
     "manage/environment",
     "manage/llms-txt",
     "manage/release",
+    "manage/robots",
+    "manage/sitemap",
     "deployment/vercel",
     "contributing"
   ]

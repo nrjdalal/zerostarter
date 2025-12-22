@@ -1,0 +1,45 @@
+---
+title: Sitemap
+description: Auto-generated sitemap for search engines.
+---
+
+import { config } from "@/lib/config"
+
+## Overview
+
+The sitemap is automatically generated and provides structured URLs for search engines. It's accessible at `/sitemap.xml` and includes all documentation pages, blog posts, and static routes.
+
+## How It Works
+
+The sitemap automatically includes:
+
+- Static routes (home page)
+- All documentation pages from `docsSource`
+- All blog posts from `blogSource`
+- Proper priorities and change frequencies
+- Alphabetically sorted URLs
+
+## Access Points
+
+- <a href={`${config.app.url}/sitemap.xml`}>sitemap.xml</a> - Complete sitemap for {config.app.name}
+
+## Implementation
+
+The sitemap is implemented in `web/next/src/app/sitemap.ts` and uses:
+
+- Next.js `MetadataRoute.Sitemap` type
+- Automatic page discovery from Fumadocs sources
+- Configurable priorities and change frequencies:
+  - Home page: priority 1.0, weekly updates
+  - Documentation pages: priority 0.9, weekly updates
+  - Blog posts: priority 0.9, monthly updates
+
+## Structure
+
+The sitemap includes:
+
+- **Static Routes**: Home page (priority 1.0, weekly updates)
+- **Documentation**: All pages from `docsSource` (priority 0.9, weekly updates)
+- **Blog**: All posts from `blogSource`, excluding the blog index page (priority 0.9, monthly updates)
+
+All entries are automatically sorted alphabetically by URL for consistency.
