@@ -63,6 +63,14 @@ const manage = [
     url: "/docs/manage/llms-txt",
   },
   {
+    title: "robots.txt",
+    url: "/docs/manage/robots",
+  },
+  {
+    title: "Sitemap",
+    url: "/docs/manage/sitemap",
+  },
+  {
     title: "Release",
     url: "/docs/manage/release",
   },
