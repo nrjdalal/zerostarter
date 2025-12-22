@@ -2,6 +2,9 @@
 
 A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
 
+[![Twitter](https://img.shields.io/twitter/follow/nrjdalal?label=%40nrjdalal)](https://twitter.com/nrjdalal)
+[![GitHub stars](https://img.shields.io/github/stars/nrjdalal/zerostarter?color=blue)](https://github.com/nrjdalal/zerostarter)
+
 <!--
 ```bash
 npx turbo run build --graph=graph.svg
