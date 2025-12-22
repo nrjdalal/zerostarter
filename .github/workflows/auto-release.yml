@@ -36,11 +36,15 @@ jobs:
         id: update-changelog
         run: |
           git checkout main
-          FROM_COMMIT=$(git log -1 --format=%H -- CHANGELOG.md 2>/dev/null || echo "")
           git branch -D changelog 2>/dev/null || true
           git checkout -b changelog
-          if [ -n "$FROM_COMMIT" ]; then
-            bunx changelogen --bump --from "$FROM_COMMIT" --no-commit || true
+          if [ -f CHANGELOG.md ] && [ -s CHANGELOG.md ]; then
+            FROM_COMMIT=$(git log -1 --format=%H -- CHANGELOG.md 2>/dev/null || echo "")
+            if [ -n "$FROM_COMMIT" ]; then
+              bunx changelogen --bump --from "$FROM_COMMIT" --no-commit || true
+            else
+              bunx changelogen --bump --no-commit || true
+            fi
           else
             bunx changelogen --bump --no-commit || true
           fi
