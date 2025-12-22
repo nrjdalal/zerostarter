@@ -32,7 +32,7 @@ mv graph.svg .github/assets/graph-build.svg
 - **Validation**: [Zod](https://zod.dev)
 - **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Prettier](https://prettier.io)
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
-- **Automated Releases**: Automatically updates the [Changelog](https://github.com/nrjdalal/zerostarter/releases) when a new release is made to the `main` branch.
+- **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
 
 ### Future Stack and Features
 
