@@ -1,4 +1,8 @@
 
+## v0.0.4
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/8b72b93340ef7a7e853e727411e22fa90f20b699...v0.0.4)
+
 ## v0.0.3
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/27d208db791baaf33eabd48b358abbba171fd6ad...v0.0.3)
