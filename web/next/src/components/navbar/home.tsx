@@ -14,6 +14,38 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
 
+const badges = [
+  {
+    href: "https://twitter.com/nrjdalal",
+    src: "https://img.shields.io/twitter/follow/nrjdalal?label=%40nrjdalal",
+    alt: "Twitter",
+  },
+  {
+    href: "https://github.com/nrjdalal/zerostarter",
+    src: "https://img.shields.io/github/stars/nrjdalal/zerostarter?color=blue",
+    alt: "stars",
+  },
+]
+
+function Badges({ onBadgeClick }: { onBadgeClick?: () => void }) {
+  return (
+    <>
+      {badges.map((badge) => (
+        <a
+          key={badge.href}
+          href={badge.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition-opacity hover:opacity-80"
+          onClick={onBadgeClick}
+        >
+          <img src={badge.src} alt={badge.alt} height="16" />
+        </a>
+      ))}
+    </>
+  )
+}
+
 export function Navbar() {
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -53,6 +85,11 @@ export function Navbar() {
               )
             })}
           </nav>
+
+          {/* Badges */}
+          <div className="mr-5 hidden items-center gap-2.5 md:flex">
+            <Badges />
+          </div>
 
           {session?.user ? (
             <Link href="/x">
@@ -117,6 +154,10 @@ export function Navbar() {
                   )
                 })}
               </nav>
+              {/* Mobile Badges */}
+              <div className="mt-2.5 ml-4 flex items-center gap-2.5">
+                <Badges onBadgeClick={() => setIsOpen(false)} />
+              </div>
             </SheetContent>
           </Sheet>
         </div>
