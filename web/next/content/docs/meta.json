@@ -9,6 +9,7 @@
     "manage/blog",
     "manage/documentation",
     "manage/environment",
+    "manage/feedback",
     "manage/llms-txt",
     "manage/release",
     "manage/robots",
