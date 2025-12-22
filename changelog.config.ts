@@ -1,6 +1,3 @@
 export default {
-  github: "nrjdalal/zerostarter",
-  repo: {
-    github: "nrjdalal/zerostarter",
-  },
+  repo: "https://github.com/nrjdalal/zerostarter",
 }
