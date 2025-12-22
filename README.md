@@ -2,8 +2,8 @@
 
 A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
 
-> **📚 Documentation**: For comprehensive documentation, visit **[https://zerostarter.dev/docs](https://zerostarter.dev/docs)**.  
-> **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
+- **📚 Documentation**: For comprehensive documentation, visit **[https://zerostarter.dev/docs](https://zerostarter.dev/docs)**.
+- **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
 
 [![Twitter](https://img.shields.io/twitter/follow/nrjdalal?label=%40nrjdalal)](https://twitter.com/nrjdalal)
 [![GitHub stars](https://img.shields.io/github/stars/nrjdalal/zerostarter?color=blue)](https://github.com/nrjdalal/zerostarter)
