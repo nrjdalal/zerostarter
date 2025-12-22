@@ -1,4 +1,17 @@
 
+## v0.0.3
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/27d208db791baaf33eabd48b358abbba171fd6ad...v0.0.3)
+
+### 🏡 Chore
+
+- Trigger build ([8017760](https://github.com/nrjdalal/zerostarter/commit/8017760))
+- Emojis to auto prs ([2b5fea8](https://github.com/nrjdalal/zerostarter/commit/2b5fea8))
+
+### ❤️ Contributors
+
+- Neeraj Dalal <admin@nrjdalal.com>
+
 ## v0.0.2
 
 
