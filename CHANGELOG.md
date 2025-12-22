@@ -1,4 +1,33 @@
 
+## v0.0.3
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/b244985400f8a9fe92ce4a24bcfb55379e326543...v0.0.3)
+
+### 🏡 Chore
+
+- Test release creation ([2c850e9](https://github.com/nrjdalal/zerostarter/commit/2c850e9))
+- Test release creation ([04b9245](https://github.com/nrjdalal/zerostarter/commit/04b9245))
+- Test release creation ([a850abb](https://github.com/nrjdalal/zerostarter/commit/a850abb))
+- Test release creation ([73a7255](https://github.com/nrjdalal/zerostarter/commit/73a7255))
+- Test release creation ([d47da6d](https://github.com/nrjdalal/zerostarter/commit/d47da6d))
+- Test release creation ([5d5662c](https://github.com/nrjdalal/zerostarter/commit/5d5662c))
+- Test release creation ([a3bd7ac](https://github.com/nrjdalal/zerostarter/commit/a3bd7ac))
+- Update deps ([20a0414](https://github.com/nrjdalal/zerostarter/commit/20a0414))
+- Test release creation ([13fdd48](https://github.com/nrjdalal/zerostarter/commit/13fdd48))
+- Test release creation ([4cbbcce](https://github.com/nrjdalal/zerostarter/commit/4cbbcce))
+- Test release creation ([249aac2](https://github.com/nrjdalal/zerostarter/commit/249aac2))
+- Test release creation ([33acbc8](https://github.com/nrjdalal/zerostarter/commit/33acbc8))
+- Test release creation ([6d0dc60](https://github.com/nrjdalal/zerostarter/commit/6d0dc60))
+- Test release creation ([cbc1782](https://github.com/nrjdalal/zerostarter/commit/cbc1782))
+- Hopeful ([debcb5b](https://github.com/nrjdalal/zerostarter/commit/debcb5b))
+- Test release creation ([6b639b1](https://github.com/nrjdalal/zerostarter/commit/6b639b1))
+- Update confg ([a958347](https://github.com/nrjdalal/zerostarter/commit/a958347))
+- No commit ([d863b29](https://github.com/nrjdalal/zerostarter/commit/d863b29))
+
+### ❤️ Contributors
+
+- Neeraj Dalal <admin@nrjdalal.com>
+
 ## v0.0.2
 
 
