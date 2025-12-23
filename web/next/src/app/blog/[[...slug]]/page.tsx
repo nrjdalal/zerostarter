@@ -8,17 +8,19 @@ import {
 } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
-export default async function Page(props: PageProps<"/blog/[[...slug]]">) {
+export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const pageData = await getPageData(props.params, blogSource)
   return renderPageContent(pageData)
 }
 
 export const generateStaticParams = createGenerateStaticParams(blogSource)
 
-export async function generateMetadata(props: PageProps<"/blog/[[...slug]]">): Promise<Metadata> {
+export async function generateMetadata(props: {
+  params: Promise<{ slug?: string[] }>
+}): Promise<Metadata> {
   return generatePageMetadata(props.params, {
     source: blogSource,
-    ogPath: "/api/og/blog",
+    ogPath: `/api/og/blog?t=${Date.now()}`,
     ogType: "article",
   })
 }

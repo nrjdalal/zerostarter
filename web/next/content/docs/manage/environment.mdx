@@ -18,11 +18,11 @@ All environment variables are stored in a single `.env` file at the project root
 Each package defines only the environment variables it needs:
 
 - **`api-hono`**: `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`
-- **`auth`**: `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`
+- **`auth`**: `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`
 - **`db`**: `POSTGRES_URL`
 - **`web-next`**:
   - **Server**: `INTERNAL_API_URL` (server-side only)
-  - **Client**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL` (exposed to browser)
+  - **Client**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_USERJOT_ID` (exposed to browser)
 
 **Important**: Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
 
@@ -68,6 +68,7 @@ import { env } from "@packages/env/web-next"
    - Add to `.env` file
    - Define in the appropriate package's env file (`packages/env/src/*.ts`)
    - Add to `server` or `client` schema with Zod validation
+   - Add to `turbo.json`: Include the variable in the `globalEnv` array so Turbo's cache invalidates correctly when it changes
 4. **Validation**: Each package validates only its declared variables at runtime
 
 ## Features

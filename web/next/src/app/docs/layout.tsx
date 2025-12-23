@@ -10,11 +10,11 @@ import {
   SidebarHeader,
   SidebarProvider,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { SidebarDocs } from "@/components/sidebar/docs"
+import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
 
-export default function Layout({ children }: LayoutProps<"/docs">) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar className="md:pt-12" collapsible="offcanvas">
@@ -26,7 +26,9 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
         <SidebarRail />
       </Sidebar>
       <main>
-        <SidebarTrigger className="bg-sidebar fixed right-0 bottom-0 mr-12 mb-12 size-8 cursor-pointer border md:right-auto md:mb-48 md:rounded-l-none md:border-l-0" />
+        <SidebarTrigger className="md:bg-sidebar! hover:md:bg-sidebar-accent! fixed right-0 bottom-0 mr-6 mb-18 h-8 cursor-pointer border md:right-auto md:mb-48 md:rounded-l-none md:border-l-0">
+          <span>Docs</span>
+        </SidebarTrigger>
         <RootProvider>
           <DocsLayout
             nav={{

@@ -59,12 +59,24 @@ const manage = [
     url: "/docs/manage/environment",
   },
   {
+    title: "Feedback",
+    url: "/docs/manage/feedback",
+  },
+  {
     title: "llms.txt",
     url: "/docs/manage/llms-txt",
   },
   {
     title: "Release",
     url: "/docs/manage/release",
+  },
+  {
+    title: "robots.txt",
+    url: "/docs/manage/robots",
+  },
+  {
+    title: "Sitemap",
+    url: "/docs/manage/sitemap",
   },
 ]
 

@@ -9,6 +9,7 @@ import { Loader2, Menu } from "lucide-react"
 import { useSession } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Access } from "@/components/access"
@@ -63,8 +64,11 @@ export function Navbar() {
   return (
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
       <div className="flex min-h-14 items-center justify-between px-5">
-        <Link href="/" className="text-2xl font-bold">
+        <Link href="/" className="flex items-center gap-2 font-bold">
           {config.app.name}
+          <Badge variant="secondary" className="text-xs">
+            RC
+          </Badge>
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
@@ -127,10 +131,13 @@ export function Navbar() {
                 <SheetTitle asChild>
                   <Link
                     href="/"
-                    className="-mt-1 text-2xl font-bold"
+                    className="-mt-1 flex items-center gap-2 text-2xl font-bold"
                     onClick={() => setIsOpen(false)}
                   >
                     {config.app.name}
+                    <Badge variant="secondary" className="text-xs">
+                      RC
+                    </Badge>
                   </Link>
                 </SheetTitle>
               </SheetHeader>

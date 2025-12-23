@@ -44,7 +44,7 @@ export function Access() {
         callbackURL: `${config.app.url}/x`,
       })
       if (res.error) {
-        toast.error(res.error.message)
+        toast.error(res.error.message || "Provider Not Found")
         setLoader(null)
       } else {
         toast.success("Check your email for the magic link!")

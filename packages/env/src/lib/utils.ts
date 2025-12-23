@@ -3,7 +3,16 @@ import { config } from "dotenv"
 
 if (typeof window === "undefined") {
   try {
-    config({ path: path.resolve(process.cwd(), "../../.env"), quiet: true })
+    // Load base .env file
+    const envPath = path.resolve(process.cwd(), "../../.env")
+    config({ path: envPath, quiet: true })
+
+    // Load environment-specific .env file if NODE_ENV is set
+    const nodeEnv = process.env.NODE_ENV
+    if (nodeEnv === "development" || nodeEnv === "production") {
+      const envSpecificPath = path.resolve(process.cwd(), `../../.env.${nodeEnv}`)
+      config({ path: envSpecificPath, override: true, quiet: true })
+    }
   } catch (e) {
     console.error(e)
   }

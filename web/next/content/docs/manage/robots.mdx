@@ -1,0 +1,44 @@
+---
+title: robots.txt
+description: Search engine crawler instructions.
+---
+
+import { config } from "@/lib/config"
+
+## Overview
+
+The `robots.txt` file provides instructions to search engine crawlers about which pages should be indexed. It's automatically generated and accessible at `/robots.txt`.
+
+## How It Works
+
+The robots.txt file:
+
+- Allows all public pages to be crawled
+- Disallows API routes and private dashboard pages
+- References the sitemap location
+- Uses Next.js `MetadataRoute.Robots` type
+
+## Access Points
+
+- <a href={`${config.app.url}/robots.txt`}>robots.txt</a> - Crawler instructions for
+  {config.app.name}
+
+## Implementation
+
+The robots.txt is implemented in `web/next/src/app/robots.ts` and configures:
+
+- **User-Agent**: `*` (all crawlers)
+- **Allowed**: All pages under `/` (public content)
+- **Disallowed**:
+  - `/api/` - API endpoints
+  - `/x/` - Dashboard routes
+- **Sitemap**: References `${baseUrl}/sitemap.xml`
+
+## Rules
+
+The current configuration:
+
+- Allows all search engines (`User-Agent: *`)
+- Permits crawling of all public pages
+- Blocks API endpoints and dashboard routes
+- Points crawlers to the sitemap for efficient discovery

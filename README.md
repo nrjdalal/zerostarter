@@ -2,8 +2,12 @@
 
 A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
 
-[![Twitter](https://img.shields.io/twitter/follow/nrjdalal?label=%40nrjdalal)](https://twitter.com/nrjdalal)
-[![GitHub stars](https://img.shields.io/github/stars/nrjdalal/zerostarter?color=blue)](https://github.com/nrjdalal/zerostarter)
+- **📚 Documentation**: For comprehensive documentation, visit **[https://zerostarter.dev/docs](https://zerostarter.dev/docs)**.
+- **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
+- **🐦 X**: Follow **[@nrjdalal](https://twitter.com/nrjdalal)** for updates and don't forget to star the repository!
+
+> [!IMPORTANT]
+> **Release Candidate (RC) Status**: ZeroStarter is currently in **Release Candidate (RC)** status. All implemented features are stable and production-ready. We're actively adding new features and integrations day-by-day.
 
 <!--
 ```bash
@@ -148,6 +152,10 @@ const data = await res.json()
    GITHUB_CLIENT_ID=
    GITHUB_CLIENT_SECRET=
 
+   # Generate at `https://console.cloud.google.com/apis/credentials`
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+
    # Generate using `bunx pglaunch -k`
    POSTGRES_URL=
 
@@ -174,12 +182,23 @@ const data = await res.json()
 
 ### Authentication Setup
 
-This starter uses [Better Auth](https://better-auth.com) with GitHub as the provider.
+ZeroStarter comes with some default authentication plugins using [Better Auth](https://better-auth.com), you can extend as needed.
+
+#### Github
 
 1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
 2. Set the **Homepage URL** to `http://localhost:3000`.
 3. Set the **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`.
 4. Copy the **Client ID** and **Client Secret** into your `.env` file.
+
+#### Google
+
+1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials.
+2. Configure the OAuth consent screen (External).
+3. Create an **OAuth Client ID** (Application type: Web).
+4. Set the **Authorized JavaScript origins** to `http://localhost:3000`.
+5. Set the **Authorized redirect URI** to `http://localhost:4000/api/auth/callback/google`.
+6. Copy the **Client ID** and **Client Secret** into your `.env` file.
 
 ### Running the Application
 

@@ -1,0 +1,74 @@
+---
+title: Feedback
+description: Configure and manage user feedback collection with UserJot.
+---
+
+## Overview
+
+ZeroStarter includes optional integration with [UserJot](https://userjot.com) for collecting user feedback. The feedback widget appears on your application when configured, allowing users to submit feedback, report bugs, and share their thoughts.
+
+## Setup
+
+### 1. Get Your UserJot ID
+
+1. Sign up for a free account at [UserJot](https://userjot.com)
+2. Create a new project
+3. Copy your project ID from the dashboard
+
+### 2. Configure Environment Variable
+
+Add your UserJot project ID to your `.env` file:
+
+```
+# Optional: User feedback widget
+NEXT_PUBLIC_USERJOT_ID=your_userjot_project_id
+```
+
+### 3. Environment Configuration
+
+The UserJot ID is configured in `packages/env/src/web-next.ts`:
+
+```ts
+client: {
+  NEXT_PUBLIC_USERJOT_ID: z.string().optional(),
+}
+```
+
+The feedback widget will automatically appear when `NEXT_PUBLIC_USERJOT_ID` is set. If the variable is not set or is empty, the widget will not be loaded.
+
+## Customization
+
+The feedback widget is configured in `web/next/src/app/layout.tsx`. You can customize:
+
+- **Position**: `'left'` or `'right'` (default: `'left'`)
+- **Theme**: `'light'`, `'dark'`, or `'auto'` (default: `'auto'`)
+- **Widget**: Enable/disable the widget (default: `true`)
+
+```tsx
+window.uj.init("your-project-id", {
+  widget: true,
+  position: "left",
+  theme: "light",
+})
+```
+
+## Viewing Feedback
+
+1. Log in to your [UserJot dashboard](https://userjot.com)
+2. Navigate to your project
+3. View all submitted feedback, including:
+   - User messages
+   - Screenshots (if enabled)
+   - Browser and device information
+   - Timestamps
+
+## Features
+
+- **Non-intrusive**: Widget appears as a floating button
+- **Customizable**: Position and theme can be adjusted
+- **Optional**: Only loads when `NEXT_PUBLIC_USERJOT_ID` is configured
+- **Privacy-friendly**: Respects user preferences and privacy settings
+
+## Disabling Feedback
+
+To disable the feedback widget, simply remove or leave empty the `NEXT_PUBLIC_USERJOT_ID` environment variable. The widget scripts will not be loaded, ensuring zero performance impact when not in use.
