@@ -20,9 +20,9 @@ function SidebarTrigger({
     <Button
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
-      variant="default"
+      variant="secondary"
       size={children ? undefined : "icon"}
-      className={cn(children ? undefined : "size-7", className)}
+      className={cn(children ? undefined : "size-7", "md:size-7", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -30,10 +30,12 @@ function SidebarTrigger({
       {...props}
     >
       <PanelLeftIcon />
-      {children}
+      {children && <span className="md:hidden">{children}</span>}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
 }
 
 export { SidebarTrigger }
+
+// used at `@/app/docs/layout.tsx`
