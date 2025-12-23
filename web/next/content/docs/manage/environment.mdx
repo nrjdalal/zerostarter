@@ -68,6 +68,7 @@ import { env } from "@packages/env/web-next"
    - Add to `.env` file
    - Define in the appropriate package's env file (`packages/env/src/*.ts`)
    - Add to `server` or `client` schema with Zod validation
+   - Add to `turbo.json`: Include the variable in the `globalEnv` array so Turbo's cache invalidates correctly when it changes
 4. **Validation**: Each package validates only its declared variables at runtime
 
 ## Features

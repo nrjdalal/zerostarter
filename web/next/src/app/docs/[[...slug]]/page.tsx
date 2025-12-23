@@ -18,7 +18,7 @@ export const generateStaticParams = createGenerateStaticParams(docsSource)
 export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): Promise<Metadata> {
   return generatePageMetadata(props.params, {
     source: docsSource,
-    ogPath: "/api/og/docs",
+    ogPath: `/api/og/docs?t=${Date.now()}`,
     ogType: "website",
   })
 }
