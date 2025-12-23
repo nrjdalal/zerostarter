@@ -184,16 +184,16 @@ const data = await res.json()
 
 ZeroStarter comes with OAuth-based authentication using [Better Auth](https://better-auth.com).
 
-Github
+#### Github
 
 1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
 2. Set the **Homepage URL** to `http://localhost:3000`.
 3. Set the **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`.
 4. Copy the **Client ID** and **Client Secret** into your `.env` file.
 
-Google
+#### Google
 
-1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com).
+1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials.
 2. Configure the OAuth consent screen (External).
 3. Create an **OAuth Client ID** (Application type: Web).
 4. Set the **Authorized JavaScript origins** to `http://localhost:3000`.
