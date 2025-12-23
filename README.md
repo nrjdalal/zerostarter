@@ -161,6 +161,14 @@ const data = await res.json()
    NEXT_PUBLIC_API_URL=http://localhost:4000
    ```
 
+3. Run the Application:
+
+  
+   ```
+   bun dev
+   ```
+   
+
 ### Database Setup
 
 1. Ensure your PostgreSQL server is running.
