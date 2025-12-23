@@ -64,7 +64,7 @@ export default function RootLayout({
                   id="userjot-init"
                   strategy="afterInteractive"
                   dangerouslySetInnerHTML={{
-                    __html: `window.uj.init('${env.NEXT_PUBLIC_USERJOT_ID}', { widget: true, position: 'left', theme: 'auto' });`,
+                    __html: `window.uj.init('${env.NEXT_PUBLIC_USERJOT_ID}', { widget: true, position: 'right', theme: 'auto' });`,
                   }}
                 />
               </>
