@@ -182,7 +182,7 @@ const data = await res.json()
 
 ### Authentication Setup
 
-ZeroStarter comes with OAuth-based authentication using [Better Auth](https://better-auth.com).
+ZeroStarter comes with some default authentication plugins using [Better Auth](https://better-auth.com), you can extend as needed.
 
 #### Github
 
