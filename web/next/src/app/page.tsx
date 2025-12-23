@@ -29,14 +29,14 @@ export default function Home() {
             <div className="bg-muted/50 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
               <span>
                 The{" "}
-                <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
+                <span className="from-primary to-primary/60 bg-gradient-to-r bg-clip-text text-transparent">
                   SaaS
                 </span>{" "}
                 Starter
               </span>
             </div>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
+              <span className="from-primary to-primary/60 bg-gradient-to-r bg-clip-text text-transparent">
                 {config.app.name}
               </span>
             </h1>
