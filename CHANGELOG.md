@@ -74,7 +74,7 @@
 
 ### ❤️ Contributors
 
-- Neeraj Dalal
+- Neeraj Dalal @nrjdalal
 
 ## v0.0.4
 
@@ -94,7 +94,7 @@
 
 ### ❤️ Contributors
 
-- Neeraj Dalal
+- Neeraj Dalal @nrjdalal
 
 ## v0.0.3
 
@@ -108,7 +108,7 @@
 
 ### ❤️ Contributors
 
-- Neeraj Dalal
+- Neeraj Dalal @nrjdalal
 
 ## v0.0.2
 
@@ -122,4 +122,4 @@
 
 ### ❤️ Contributors
 
-- Neeraj Dalal
+- Neeraj Dalal @nrjdalal
