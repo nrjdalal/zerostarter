@@ -84,21 +84,21 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 ZeroStarter comes with OAuth-based authentication using [Better Auth](https://better-auth.com).
 
-#### Github
+**Github**
 
-- Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
-- Set the **Homepage URL** to `http://localhost:3000`.
-- Set the **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`.
-- Copy the **Client ID** and **Client Secret** into your `.env` file.
+1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
+2. Set the **Homepage URL** to `http://localhost:3000`.
+3. Set the **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`.
+4. Copy the **Client ID** and **Client Secret** into your `.env` file.
 
-#### Google
+**Google**
 
-- Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com).
-- Configure the OAuth consent screen (External).
-- Create an **OAuth Client ID** (Application type: Web).
-- Set the **Authorized JavaScript origins** to `http://localhost:3000`.
-- Set the **Authorized redirect URI** to `http://localhost:3000/api/auth/callback/google`.
-- Copy the **Client ID** and **Client Secret** into your `.env` file.
+1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com).
+2. Configure the OAuth consent screen (External).
+3. Create an **OAuth Client ID** (Application type: Web).
+4. Set the **Authorized JavaScript origins** to `http://localhost:3000`.
+5. Set the **Authorized redirect URI** to `http://localhost:4000/api/auth/callback/google`.
+6. Copy the **Client ID** and **Client Secret** into your `.env` file.
 
 ### Running the Application
 
