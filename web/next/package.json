@@ -90,6 +90,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/recharts": "^2.0.1",
     "babel-plugin-react-compiler": "catalog:",
     "prettier-plugin-tailwindcss": "catalog:",
     "tailwindcss": "catalog:",

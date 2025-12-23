@@ -143,6 +143,7 @@
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+        "@types/recharts": "^2.0.1",
         "babel-plugin-react-compiler": "catalog:",
         "prettier-plugin-tailwindcss": "catalog:",
         "tailwindcss": "catalog:",
@@ -171,6 +172,7 @@
     "@types/node": "latest",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
+    "@types/recharts": "^2.0.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "^1.4.9",
     "class-variance-authority": "^0.7.1",
@@ -787,6 +789,8 @@
     "@types/react": ["@types/react@19.2.7", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-MWtvHrGZLFttgeEj28VXHxpmwYbor/ATPYbBfSFZEIRK0ecCFLl2Qo55z52Hss+UV9CRN7trSeq1zbgx7YDWWg=="],
 
     "@types/react-dom": ["@types/react-dom@19.2.3", "", { "peerDependencies": { "@types/react": "^19.2.0" } }, "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ=="],
+
+    "@types/recharts": ["@types/recharts@2.0.1", "", { "dependencies": { "recharts": "*" } }, "sha512-/cFs7oiafzByUwBSWA1IzE6FW+ppPwQAWsDTadSgVOwzveY9MESpyLHyyHY0SfPPKLW4+4qVNYHPXd0rFiC8vg=="],
 
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
 
