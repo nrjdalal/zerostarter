@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { RiDiscordFill, RiGithubFill, RiTwitterXFill } from "@remixicon/react"
 import { Loader2, Menu } from "lucide-react"
 
 import { useSession } from "@/lib/auth/client"
@@ -12,38 +13,49 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
 
-const badges = [
+const socialLinks = [
   {
-    href: "https://twitter.com/nrjdalal",
-    src: "https://img.shields.io/twitter/follow/nrjdalal?label=%40nrjdalal",
-    alt: "Twitter",
+    href: "https://x.com/nrjdalal",
+    icon: RiTwitterXFill,
+    label: "X (Twitter)",
   },
   {
     href: "https://github.com/nrjdalal/zerostarter",
-    src: "https://img.shields.io/github/stars/nrjdalal/zerostarter?color=blue",
-    alt: "stars",
+    icon: RiGithubFill,
+    label: "GitHub",
+  },
+  {
+    href: "https://discord.gg/38FeAUmHSZ",
+    icon: RiDiscordFill,
+    label: "Discord",
   },
 ]
 
-function Badges({ onBadgeClick }: { onBadgeClick?: () => void }) {
+function SocialLinks({ onClick }: { onClick?: () => void }) {
   return (
-    <>
-      {badges.map((badge) => (
-        <a
-          key={badge.href}
-          href={badge.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-opacity hover:opacity-80"
-          onClick={onBadgeClick}
-        >
-          <img src={badge.src} alt={badge.alt} height="16" />
-        </a>
+    <div className="flex items-center gap-2.5">
+      {socialLinks.map((link) => (
+        <Tooltip key={link.href}>
+          <TooltipTrigger asChild>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground/60 hover:text-foreground transition-colors"
+              aria-label={link.label}
+              onClick={onClick}
+            >
+              <link.icon className="size-5" aria-hidden="true" />
+            </a>
+          </TooltipTrigger>
+          <TooltipContent>{link.label}</TooltipContent>
+        </Tooltip>
       ))}
-    </>
+    </div>
   )
 }
 
@@ -90,9 +102,9 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Badges */}
+          {/* Social Links */}
           <div className="mr-5 hidden items-center gap-2.5 md:flex">
-            <Badges />
+            <SocialLinks />
           </div>
 
           {session?.user ? (
@@ -161,9 +173,9 @@ export function Navbar() {
                   )
                 })}
               </nav>
-              {/* Mobile Badges */}
+              {/* Mobile Social Links */}
               <div className="mt-2.5 ml-4 flex items-center gap-2.5">
-                <Badges onBadgeClick={() => setIsOpen(false)} />
+                <SocialLinks onClick={() => setIsOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
