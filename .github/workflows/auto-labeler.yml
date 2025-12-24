@@ -1,4 +1,4 @@
-name: Labeler
+name: auto-labeler
 
 on:
   pull_request:
