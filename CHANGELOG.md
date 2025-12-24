@@ -1,3 +1,49 @@
+## v0.0.7
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/23cb47f3fe9e526ae5a5bde5ad39cfeeede788f3...v0.0.7)
+
+### 🚀 Enhancements
+
+- **auth:** Add Google OAuth support ([9032e4b](https://github.com/nrjdalal/zerostarter/commit/9032e4b))
+- **og:** Add custom image og with fallback ([781de9a](https://github.com/nrjdalal/zerostarter/commit/781de9a))
+- **sidebar:** Emojis and collapsible with centralized @lib/config ([ce27fc6](https://github.com/nrjdalal/zerostarter/commit/ce27fc6))
+
+### 🩹 Fixes
+
+- **readme:** Change bullet points to numbered steps and fix callback url ([113d914](https://github.com/nrjdalal/zerostarter/commit/113d914))
+- **scripts:** Check-types ([69bd1df](https://github.com/nrjdalal/zerostarter/commit/69bd1df))
+- Escape quotes in package.json scripts for windows compatibility ([f9ab4e5](https://github.com/nrjdalal/zerostarter/commit/f9ab4e5))
+- Undo icons, there were no emojis ([ad9b250](https://github.com/nrjdalal/zerostarter/commit/ad9b250))
+
+### 📖 Documentation
+
+- **readme:** Add Google OAuth setup instructions ([014c843](https://github.com/nrjdalal/zerostarter/commit/014c843))
+- Add Google OAuth setup instructions ([83a52e9](https://github.com/nrjdalal/zerostarter/commit/83a52e9))
+- **readme:** Fix typo ([5c5f741](https://github.com/nrjdalal/zerostarter/commit/5c5f741))
+- Minor sync ([38102f0](https://github.com/nrjdalal/zerostarter/commit/38102f0))
+- Extend manage env ([c4257a0](https://github.com/nrjdalal/zerostarter/commit/c4257a0))
+
+### 🏡 Chore
+
+- **turbo:** And env to configs ([3e9aef7](https://github.com/nrjdalal/zerostarter/commit/3e9aef7))
+- Include .npmrc in ignore ([3216742](https://github.com/nrjdalal/zerostarter/commit/3216742))
+- Test custom og ([51c50ce](https://github.com/nrjdalal/zerostarter/commit/51c50ce))
+- Eol space on ignore file ([5ea8a30](https://github.com/nrjdalal/zerostarter/commit/5ea8a30))
+
+### ✅ Tests
+
+- See if this add query param to og api ([688badd](https://github.com/nrjdalal/zerostarter/commit/688badd))
+
+### 🤖 CI
+
+- **release:** 🚀 remove some generate types at fumadocs releated pages ([7ebc7af](https://github.com/nrjdalal/zerostarter/commit/7ebc7af))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+- PrakharSingh ([@PrakharSinghDev](https://github.com/PrakharSinghDev))
+- Surajgoraicse @surajgoraicse
+
 ## v0.0.6
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/e5ed86215f9d805e196e0df12cf329c6dfb52e5e...v0.0.6)
