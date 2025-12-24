@@ -1,10 +1,14 @@
 name: auto-check-build
 
 on:
-  push:
-    branches: ["canary"]
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
+    branches: ["canary", "main"]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches: ["canary", "main"]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
 
 jobs:
   auto-check-build:
