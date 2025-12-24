@@ -1,3 +1,55 @@
+## v0.0.8
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/d03a1acf4869778a8b5231a04a8e2cad61872cb5...v0.0.8)
+
+### 🚀 Enhancements
+
+- **labels:** At pull requests ([368b005](https://github.com/nrjdalal/zerostarter/commit/368b005))
+- **labels:** At pull requests v2 ([1e3248a](https://github.com/nrjdalal/zerostarter/commit/1e3248a))
+- **labels:** At pull requests v3 ([6f92b96](https://github.com/nrjdalal/zerostarter/commit/6f92b96))
+- **labels:** At pull requests v4 ([b519a25](https://github.com/nrjdalal/zerostarter/commit/b519a25))
+- **labels:** At pull requests v5 ([13a5061](https://github.com/nrjdalal/zerostarter/commit/13a5061))
+- **labels:** At pull requests v6 ([52bcf1b](https://github.com/nrjdalal/zerostarter/commit/52bcf1b))
+- **labels:** At pull requests v7 ([b50582b](https://github.com/nrjdalal/zerostarter/commit/b50582b))
+- **labels:** At pull requests v8 ([21e4fc1](https://github.com/nrjdalal/zerostarter/commit/21e4fc1))
+- **labels:** At pull requests v9 ([a037b54](https://github.com/nrjdalal/zerostarter/commit/a037b54))
+- **labels:** At pull requests v10 ([899c9db](https://github.com/nrjdalal/zerostarter/commit/899c9db))
+- Neat label adder ([2d5634f](https://github.com/nrjdalal/zerostarter/commit/2d5634f))
+
+### 🏡 Chore
+
+- Cleanup ([b4ffbbd](https://github.com/nrjdalal/zerostarter/commit/b4ffbbd))
+- Finalize ([7007f45](https://github.com/nrjdalal/zerostarter/commit/7007f45))
+- Update workflow ([706a83b](https://github.com/nrjdalal/zerostarter/commit/706a83b))
+- More labeler fallbacks ([8ad38fe](https://github.com/nrjdalal/zerostarter/commit/8ad38fe))
+- Only target ([599898b](https://github.com/nrjdalal/zerostarter/commit/599898b))
+- Sync file ([df1f1e2](https://github.com/nrjdalal/zerostarter/commit/df1f1e2))
+- Test new labeler permissions ([700990c](https://github.com/nrjdalal/zerostarter/commit/700990c))
+- Refactor badges to social links with tooltips ([525c2f3](https://github.com/nrjdalal/zerostarter/commit/525c2f3))
+- Add github icon to buttons for improved visibility ([61ae972](https://github.com/nrjdalal/zerostarter/commit/61ae972))
+- Reorder social links and update icon size ([5491e60](https://github.com/nrjdalal/zerostarter/commit/5491e60))
+- Save rulesets locally ([301a351](https://github.com/nrjdalal/zerostarter/commit/301a351))
+- Minor cleanup ([1897e2b](https://github.com/nrjdalal/zerostarter/commit/1897e2b))
+- Minor ci fix ([d1e652d](https://github.com/nrjdalal/zerostarter/commit/d1e652d))
+- Test updated ([6c0ab78](https://github.com/nrjdalal/zerostarter/commit/6c0ab78))
+- Finalize ([76a7ca3](https://github.com/nrjdalal/zerostarter/commit/76a7ca3))
+
+### ✅ Tests
+
+- Labels at github script v8 ([a19ec3b](https://github.com/nrjdalal/zerostarter/commit/a19ec3b))
+- Pull request to pull request target ([b432bf1](https://github.com/nrjdalal/zerostarter/commit/b432bf1))
+- Pull request to pull request target and pull request ([21bd75a](https://github.com/nrjdalal/zerostarter/commit/21bd75a))
+
+### 🤖 CI
+
+- **release:** 🚀 merge canary into main ([#185](https://github.com/nrjdalal/zerostarter/pull/185))
+- **release:** 🚀 merge canary into main ([#187](https://github.com/nrjdalal/zerostarter/pull/187))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+- Vaibhav Jha @vaibhavjha-dev
+
 ## v0.0.7
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/23cb47f3fe9e526ae5a5bde5ad39cfeeede788f3...v0.0.7)
