@@ -21,23 +21,23 @@ const socialLinks = [
   {
     href: "https://x.com/nrjdalal",
     icon: RiTwitterXFill,
-    label: "X (Twitter)",
-  },
-  {
-    href: "https://github.com/nrjdalal/zerostarter",
-    icon: RiGithubFill,
-    label: "GitHub",
+    label: "X",
   },
   {
     href: "https://discord.gg/38FeAUmHSZ",
     icon: RiDiscordFill,
     label: "Discord",
   },
+  {
+    href: "https://github.com/nrjdalal/zerostarter",
+    icon: RiGithubFill,
+    label: "GitHub",
+  },
 ]
 
 function SocialLinks({ onClick }: { onClick?: () => void }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-5 md:gap-3">
       {socialLinks.map((link) => (
         <Tooltip key={link.href}>
           <TooltipTrigger asChild>
@@ -49,7 +49,7 @@ function SocialLinks({ onClick }: { onClick?: () => void }) {
               aria-label={link.label}
               onClick={onClick}
             >
-              <link.icon className="size-5" aria-hidden="true" />
+              <link.icon className="size-6" aria-hidden="true" />
             </a>
           </TooltipTrigger>
           <TooltipContent>{link.label}</TooltipContent>

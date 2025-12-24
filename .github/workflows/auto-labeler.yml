@@ -1,9 +1,12 @@
 name: auto-labeler
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: ["canary", "main"]
   pull_request_target:
     types: [opened, synchronize, reopened]
-    branches: ["canary"]
+    branches: ["canary", "main"]
   pull_request_review:
     types: [submitted, edited, dismissed]
 
@@ -11,12 +14,11 @@ concurrency: ${{ github.workflow }}-${{ github.event.pull_request.number }}
 
 permissions:
   contents: read
-  pull-requests: read
   issues: write
+  pull-requests: write
 
 env:
   APPROVAL_THRESHOLD: "1"
-  TARGET_BRANCH: "canary"
 
 jobs:
   auto-labeler:
@@ -29,7 +31,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -39,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
 
-      - name: Label impacted packages/apps
+      - name: Add labels based on files in PR
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

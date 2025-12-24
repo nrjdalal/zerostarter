@@ -20,7 +20,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   return generatePageMetadata(props.params, {
     source: blogSource,
-    ogPath: `/api/og/blog?t=${Date.now()}`,
+    ogPath: "/api/og/blog",
     ogType: "article",
   })
 }
