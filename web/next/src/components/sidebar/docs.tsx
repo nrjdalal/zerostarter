@@ -3,157 +3,94 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { ChevronRight } from "lucide-react"
+
+import { config } from "@/lib/config"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-
-const gettingStarted = [
-  {
-    title: "Introduction",
-    url: "/docs",
-  },
-  {
-    title: "Architecture",
-    url: "/docs/getting-started/architecture",
-  },
-  {
-    title: "Project Structure",
-    url: "/docs/getting-started/project-structure",
-  },
-  {
-    title: "Type-Safe API Client",
-    url: "/docs/getting-started/type-safe-api",
-  },
-  {
-    title: "Installation",
-    url: "/docs/getting-started/installation",
-  },
-  {
-    title: "Scripts",
-    url: "/docs/getting-started/scripts",
-  },
-]
-
-const deployment = [
-  {
-    title: "Vercel",
-    url: "/docs/deployment/vercel",
-  },
-]
-
-const manage = [
-  {
-    title: "Blog",
-    url: "/docs/manage/blog",
-  },
-  {
-    title: "Documentation",
-    url: "/docs/manage/documentation",
-  },
-  {
-    title: "Environment",
-    url: "/docs/manage/environment",
-  },
-  {
-    title: "Feedback",
-    url: "/docs/manage/feedback",
-  },
-  {
-    title: "llms.txt",
-    url: "/docs/manage/llms-txt",
-  },
-  {
-    title: "Release",
-    url: "/docs/manage/release",
-  },
-  {
-    title: "robots.txt",
-    url: "/docs/manage/robots",
-  },
-  {
-    title: "Sitemap",
-    url: "/docs/manage/sitemap",
-  },
-]
 
 export function SidebarDocs() {
   const pathname = usePathname()
 
+  const isCategoryActive = (items: ReadonlyArray<{ readonly url: string }>) => {
+    return items.some(
+      (item) =>
+        pathname === item.url ||
+        pathname === item.url + "/" ||
+        pathname?.startsWith(item.url + "/"),
+    )
+  }
+
+  const isItemActive = (url: string) => {
+    return pathname === url || pathname === url + "/" || pathname?.startsWith(url + "/")
+  }
+
   return (
     <>
-      <SidebarGroup>
-        <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
-        <SidebarMenu>
-          {gettingStarted.map((link) => {
-            const isActive = pathname === link.url || pathname === link.url + "/"
+      {config.sidebar.groups.map((group) => (
+        <SidebarGroup key={group.label}>
+          <SidebarGroupLabel className="pl-2.5">{group.label}</SidebarGroupLabel>
+          <SidebarMenu>
+            {"items" in group &&
+              group.items.map((item) => {
+                const isActive = pathname === item.url || pathname === item.url + "/"
 
-            return (
-              <SidebarMenuItem key={link.url}>
-                <SidebarMenuButton asChild isActive={isActive}>
-                  <Link href={link.url}>
-                    <span>{link.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
-      </SidebarGroup>
-      <SidebarGroup>
-        <SidebarGroupLabel className="pl-2.5">Manage</SidebarGroupLabel>
-        <SidebarMenu>
-          {manage.map((link) => {
-            const isActive = pathname === link.url || pathname?.startsWith(link.url + "/")
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link href={item.url}>
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            {"categories" in group &&
+              Object.entries(group.categories).map(([category, items]) => {
+                const isOpen = isCategoryActive(items)
 
-            return (
-              <SidebarMenuItem key={link.url}>
-                <SidebarMenuButton asChild isActive={isActive}>
-                  <Link href={link.url}>
-                    <span>{link.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
-      </SidebarGroup>
-      <SidebarGroup>
-        <SidebarGroupLabel className="pl-2.5">Deployment</SidebarGroupLabel>
-        <SidebarMenu>
-          {deployment.map((link) => {
-            const isActive = pathname === link.url || pathname?.startsWith(link.url + "/")
+                return (
+                  <Collapsible key={category} asChild defaultOpen={isOpen} className="group">
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={category}>
+                          <ChevronRight className="transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                          <span>{category}</span>
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {items.map((item) => {
+                            const isActive = isItemActive(item.url)
 
-            return (
-              <SidebarMenuItem key={link.url}>
-                <SidebarMenuButton asChild isActive={isActive}>
-                  <Link href={link.url}>
-                    <span>{link.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
-      </SidebarGroup>
-      <SidebarGroup>
-        <SidebarGroupLabel className="pl-2.5">MIT</SidebarGroupLabel>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === "/docs/contributing" || pathname === "/docs/contributing/"}
-            >
-              <Link href="/docs/contributing">
-                <span>Contributing</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
+                            return (
+                              <SidebarMenuSubItem key={item.url}>
+                                <SidebarMenuSubButton asChild isActive={isActive}>
+                                  <Link href={item.url}>
+                                    <span>{item.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            )
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                )
+              })}
+          </SidebarMenu>
+        </SidebarGroup>
+      ))}
     </>
   )
 }
