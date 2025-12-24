@@ -151,18 +151,19 @@ jobs:
               const pathParts = file.filename.split('/').filter(Boolean);
               const [topLevel] = pathParts;
               
-              // Skip if not in a tracked top-level directory
-              if (!topLevelDirs.includes(topLevel)) {
-                continue;
-              }
-
-              // Find the package this file belongs to
-              const label = findPackageForFile(file.filename);
-              
-              if (label) {
-                labelsToAdd.add(label);
+              // Check if file is in a tracked top-level directory
+              if (topLevelDirs.includes(topLevel)) {
+                // Find the package this file belongs to
+                const label = findPackageForFile(file.filename);
+                
+                if (label) {
+                  labelsToAdd.add(label);
+                } else {
+                  // In tracked directory but no package.json found - add zero label
+                  labelsToAdd.add('@zero');
+                }
               } else {
-                // No package.json found - add zero label
+                // Not in a tracked top-level directory (e.g., .github/scripts) - add zero label
                 labelsToAdd.add('@zero');
               }
             }
