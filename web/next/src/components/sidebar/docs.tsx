@@ -16,10 +16,12 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 export function SidebarDocs() {
   const pathname = usePathname()
+  const { isMobile, setOpenMobile } = useSidebar()
 
   const isCategoryActive = (items: ReadonlyArray<{ readonly url: string }>) => {
     return items.some(
@@ -47,7 +49,14 @@ export function SidebarDocs() {
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.url}>
+                      <Link
+                        href={item.url}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false)
+                          }
+                        }}
+                      >
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -75,7 +84,14 @@ export function SidebarDocs() {
                             return (
                               <SidebarMenuSubItem key={item.url}>
                                 <SidebarMenuSubButton asChild isActive={isActive}>
-                                  <Link href={item.url}>
+                                  <Link
+                                    href={item.url}
+                                    onClick={() => {
+                                      if (isMobile) {
+                                        setOpenMobile(false)
+                                      }
+                                    }}
+                                  >
                                     <span>{item.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
