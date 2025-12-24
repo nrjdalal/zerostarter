@@ -51,11 +51,11 @@ jobs:
             const { number: prNumber } = context.payload.pull_request;
             const { owner, repo } = context.repo;
 
-            // Configuration
             const config = {
               colors: {
                 api: '9333ea',
                 config: '6b7280',
+                dependencies: 'f59e0b',
                 docker: '0ea5e9',
                 packages: '3b82f6',
                 scripts: '8b5cf6',
@@ -64,7 +64,6 @@ jobs:
               },
             };
 
-            // Find all package.json files and extract package names
             const findPackages = () => {
               const packageMap = new Map();
               const paths = globbySync(['**/package.json'], {
@@ -78,7 +77,8 @@ jobs:
                   const content = fs.readFileSync(pkgPath, 'utf-8');
                   const pkg = JSON.parse(content);
                   if (pkg.name) {
-                    packageMap.set(dir, `@${pkg.name}`);
+                    const labelName = pkg.name.startsWith('@') ? pkg.name : `@${pkg.name}`;
+                    packageMap.set(dir, labelName);
                   }
                 } catch (error) {
                   console.warn(`Failed to parse ${pkgPath}:`, error.message);
@@ -87,18 +87,18 @@ jobs:
               return packageMap;
             };
 
-            // Determine label for a file path
             const getLabelForFile = (filePath, packageMap) => {
               const pathParts = filePath.split('/').filter(Boolean);
               const fileName = pathParts[pathParts.length - 1];
               const [topLevel, secondLevel] = pathParts;
 
-              // Dockerfiles → @docker
+              if (fileName === 'package.json' || fileName === 'bun.lock' || fileName === 'bun.lockb' || fileName === 'package-lock.json' || fileName === 'yarn.lock' || fileName === 'pnpm-lock.yaml') {
+                return '@dependencies';
+              }
+
               if (fileName === 'Dockerfile' || fileName.startsWith('Dockerfile.')) {
                 return '@docker';
               }
-
-              // Check if file belongs to a package/app (walk up directory tree)
               for (let i = pathParts.length; i > 0; i--) {
                 const dirPath = pathParts.slice(0, i).join('/');
                 if (packageMap.has(dirPath)) {
@@ -106,30 +106,25 @@ jobs:
                 }
               }
 
-              // .github directory mappings
               if (topLevel === '.github') {
                 if (secondLevel === 'scripts') return '@scripts';
                 if (secondLevel === 'workflows') return '@workflows';
                 return '@workflows';
               }
 
-              // Root level files → @config (dynamic detection)
               if (pathParts.length === 1) {
                 return '@config';
               }
 
-              // Default: use top-level directory name
               return topLevel ? `@${topLevel}` : '@config';
             };
 
-            // Ensure label exists
             const ensureLabel = async (labelName) => {
               try {
                 await github.rest.issues.getLabel({ owner, repo, name: labelName });
               } catch (error) {
                 if (error.status === 404) {
-                  // Extract category from label name
-                  let category = labelName.substring(1); // Remove @
+                  let category = labelName.substring(1);
                   if (category.includes('/')) {
                     category = category.split('/')[0];
                   }
@@ -149,7 +144,6 @@ jobs:
               }
             };
 
-            // Main execution
             const packageMap = findPackages();
             console.log(`Found ${packageMap.size} package(s): ${[...packageMap.values()].join(', ')}`);
 
@@ -158,7 +152,6 @@ jobs:
               { owner, repo, pull_number: prNumber, per_page: 100 }
             );
 
-            // Collect labels using pattern matching
             const labelsToAdd = new Set();
             for (const file of files) {
               const label = getLabelForFile(file.filename, packageMap);
@@ -172,24 +165,20 @@ jobs:
 
             console.log(`Labels to add: ${[...labelsToAdd].join(', ')}`);
 
-            // Ensure all labels exist
             await Promise.all([...labelsToAdd].map(ensureLabel));
 
-            // Get current labels and determine what to remove
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner,
               repo,
               issue_number: prNumber
             });
 
-            // Match all labels that start with @ and are not approval labels
             const labelPattern = /^@[\w/-]+$/;
             const approvalPattern = /^\d+\/\d+$|^APPROVED$/;
             const toRemove = currentLabels
               .map(l => l.name)
               .filter(name => labelPattern.test(name) && !approvalPattern.test(name) && !labelsToAdd.has(name));
 
-            // Remove stale labels
             for (const name of toRemove) {
               try {
                 await github.rest.issues.removeLabel({
@@ -204,7 +193,6 @@ jobs:
               }
             }
 
-            // Add new labels
             await github.rest.issues.addLabels({
               owner,
               repo,
@@ -257,14 +245,12 @@ jobs:
             const labelName = count >= required ? 'APPROVED' : `${count}/${required}`;
             const color = count >= required ? '0e8a16' : 'd73a4a';
 
-            // Get existing labels
             const { data: existingLabels } = await github.rest.issues.listLabelsOnIssue({
               owner,
               repo,
               issue_number: pr.number
             });
 
-            // Remove old approval labels
             const approvalPattern = /^\d+\/\d+$|^APPROVED$/;
             for (const label of existingLabels) {
               if (approvalPattern.test(label.name) && label.name !== labelName) {
@@ -282,7 +268,6 @@ jobs:
               }
             }
 
-            // Ensure label exists
             try {
               await github.rest.issues.getLabel({ owner, repo, name: labelName });
             } catch (error) {
@@ -302,7 +287,6 @@ jobs:
               }
             }
 
-            // Add the label
             await github.rest.issues.addLabels({
               owner,
               repo,
