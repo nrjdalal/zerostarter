@@ -134,3 +134,8 @@
     --fd-header-height: 0px !important;
   }
 }
+
+/* userjot */
+#userjot-widget-container {
+  opacity: 0.7 !important;
+}
