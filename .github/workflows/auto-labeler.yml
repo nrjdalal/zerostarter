@@ -1,0 +1,297 @@
+name: auto-labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - canary
+  pull_request_review:
+    types: [submitted, dismissed]
+
+concurrency: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  APPROVAL_THRESHOLD: "1"
+  TARGET_BRANCH: "canary"
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'canary'
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Label impacted packages/apps
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { globbySync } = require('globby');
+
+            const { number: prNumber } = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+
+            const config = {
+              colors: {
+                api: '9333ea',
+                dependencies: 'f59e0b',
+                docker: '0ea5e9',
+                misc: '6b7280',
+                packages: '3b82f6',
+                scripts: '8b5cf6',
+                web: 'f97316',
+                workflows: 'ec4899',
+              },
+            };
+
+            const findPackages = () => {
+              const packageMap = new Map();
+              const paths = globbySync(['**/package.json'], {
+                gitignore: true,
+                ignore: ['**/node_modules/**']
+              });
+
+              for (const pkgPath of paths) {
+                const dir = path.dirname(pkgPath);
+                try {
+                  const content = fs.readFileSync(pkgPath, 'utf-8');
+                  const pkg = JSON.parse(content);
+                  if (pkg.name) {
+                    const labelName = pkg.name.startsWith('@') ? pkg.name : `@${pkg.name}`;
+                    packageMap.set(dir, labelName);
+                  }
+                } catch (error) {
+                  console.warn(`Failed to parse ${pkgPath}:`, error.message);
+                }
+              }
+              return packageMap;
+            };
+
+            const getLabelForFile = (filePath, packageMap) => {
+              const pathParts = filePath.split('/').filter(Boolean);
+              const fileName = pathParts[pathParts.length - 1];
+              const [topLevel, secondLevel] = pathParts;
+
+              if (fileName === 'bun.lock' || fileName === 'bun.lockb' || fileName === 'package.json' || fileName === 'package-lock.json' || fileName === 'pnpm-lock.yaml' || fileName === 'yarn.lock') {
+                return '@dependencies';
+              }
+
+              if (fileName === 'Dockerfile' || fileName.startsWith('Dockerfile.')) {
+                return '@docker';
+              }
+
+              for (let i = pathParts.length; i > 0; i--) {
+                const dirPath = pathParts.slice(0, i).join('/');
+                if (packageMap.has(dirPath)) {
+                  return packageMap.get(dirPath);
+                }
+              }
+
+              if (topLevel === '.github') {
+                if (secondLevel === 'scripts') return '@scripts';
+                if (secondLevel === 'workflows') return '@workflows';
+                return '@workflows';
+              }
+
+              if (pathParts.length === 1) {
+                return '@misc';
+              }
+
+              return topLevel ? `@${topLevel}` : '@misc';
+            };
+
+            const ensureLabel = async (labelName) => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: labelName });
+              } catch (error) {
+                if (error.status === 404) {
+                  let category = labelName.substring(1);
+                  if (category.includes('/')) {
+                    category = category.split('/')[0];
+                  }
+                  const color = config.colors[category] || '6b7280';
+                  const description = `Auto-created label for ${labelName}`;
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: labelName,
+                    color,
+                    description
+                  });
+                  console.log(`Created label: ${labelName}`);
+                } else {
+                  throw error;
+                }
+              }
+            };
+
+            const packageMap = findPackages();
+            console.log(`Found ${packageMap.size} package(s): ${[...packageMap.values()].join(', ')}`);
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number: prNumber, per_page: 100 }
+            );
+
+            const labelsToAdd = new Set();
+            for (const file of files) {
+              const label = getLabelForFile(file.filename, packageMap);
+              labelsToAdd.add(label);
+            }
+
+            if (labelsToAdd.size === 0) {
+              console.log('No files to label.');
+              return;
+            }
+
+            console.log(`Labels to add: ${[...labelsToAdd].join(', ')}`);
+
+            await Promise.all([...labelsToAdd].map(ensureLabel));
+
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber
+            });
+
+            const labelPattern = /^@[\w/-]+$/;
+            const approvalPattern = /^\d+\/\d+$|^APPROVED$/;
+            const toRemove = currentLabels
+              .map(l => l.name)
+              .filter(name => labelPattern.test(name) && !approvalPattern.test(name) && !labelsToAdd.has(name));
+
+            for (const name of toRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  name
+                });
+                console.log(`Removed stale label: ${name}`);
+              } catch (error) {
+                console.warn(`Failed to remove label ${name}:`, error.message);
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: prNumber,
+              labels: [...labelsToAdd]
+            });
+            console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
+
+      - name: Get approval count
+        id: approvals
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const pr = context.payload.pull_request;
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+
+            const latestReviewByUser = {};
+            reviews
+              .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
+              .forEach(review => {
+                if (review.user?.login) {
+                  latestReviewByUser[review.user.login] = review;
+                }
+              });
+
+            const approvers = Object.values(latestReviewByUser)
+              .filter(review => review.state === 'APPROVED')
+              .map(review => review.user.login);
+
+            const count = approvers.length;
+            console.log(`Found ${count} approval(s) from: ${approvers.join(', ') || 'none'}`);
+            return count.toString();
+
+      - name: Apply dynamic approval label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+            const count = parseInt(`${{ steps.approvals.outputs.result }}`, 10) || 0;
+            const required = parseInt(process.env.APPROVAL_THRESHOLD, 10);
+
+            const labelName = count >= required ? 'APPROVED' : `${count}/${required}`;
+            const color = count >= required ? '0e8a16' : 'd73a4a';
+
+            const { data: existingLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: pr.number
+            });
+
+            const approvalPattern = /^\d+\/\d+$|^APPROVED$/;
+            for (const label of existingLabels) {
+              if (approvalPattern.test(label.name) && label.name !== labelName) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    name: label.name
+                  });
+                  console.log(`Removed old approval label: ${label.name}`);
+                } catch (error) {
+                  console.warn(`Failed to remove label ${label.name}:`, error.message);
+                }
+              }
+            }
+
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: labelName });
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: labelName,
+                  color,
+                  description: count >= required
+                    ? 'PR has met the required approvals'
+                    : `PR has ${count} of ${required} required approvals`
+                });
+                console.log(`Created approval label: ${labelName}`);
+              } else {
+                throw error;
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: pr.number,
+              labels: [labelName]
+            });
+            console.log(`Applied approval label: ${labelName}`);
