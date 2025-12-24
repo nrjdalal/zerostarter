@@ -1,3 +1,6 @@
+import { existsSync } from "fs"
+import { join } from "path"
+
 import type { Metadata } from "next"
 import Script from "next/script"
 
@@ -9,7 +12,15 @@ import { InnerProvider, OuterProvider } from "@/app/providers"
 
 import "./globals.css"
 
-const ogImageUrl = `${config.app.url}/api/og/home?t=${Date.now()}`
+function getOgImageUrl(): string {
+  const staticOgPath = join(process.cwd(), "public", "og", "home.png")
+  if (existsSync(staticOgPath)) {
+    return `${config.app.url}/og/home.png?t=${Date.now()}`
+  }
+  return `${config.app.url}/api/og/home?t=${Date.now()}`
+}
+
+const ogImageUrl = getOgImageUrl()
 
 export const metadata: Metadata = {
   title: {
@@ -51,7 +62,7 @@ export default function RootLayout({
           <InnerProvider>
             <Navbar />
             {children}
-            {env.NEXT_PUBLIC_USERJOT_ID && (
+            {process.env.NODE_ENV !== "development" && env.NEXT_PUBLIC_USERJOT_ID && (
               <>
                 <Script
                   id="userjot-sdk"

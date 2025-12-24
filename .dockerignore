@@ -48,3 +48,4 @@ dist/
 # custom files
 !.env*
 .env.example
+.npmrc

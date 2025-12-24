@@ -27,16 +27,20 @@ export default function Home() {
         <div className="relative z-10 container mx-auto max-w-6xl px-5">
           <div className="mx-auto max-w-3xl text-center">
             <div className="bg-muted/50 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
-              <span>{config.app.name}</span>
+              <span>
+                The{" "}
+                <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
+                  SaaS
+                </span>{" "}
+                Starter
+              </span>
             </div>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              The{" "}
               <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
-                SaaS
-              </span>{" "}
-              Starter
+                {config.app.name}
+              </span>
             </h1>
-            <p className="text-muted-foreground mb-8 text-lg sm:text-xl">
+            <p className="text-muted-foreground mb-8 text-lg sm:text-2xl">
               {config.app.description}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
