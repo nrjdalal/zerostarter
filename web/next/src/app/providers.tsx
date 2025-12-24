@@ -3,12 +3,12 @@
 import { useState } from "react"
 import Script from "next/script"
 
+import { isLocal, isProduction } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { Toaster } from "sonner"
 
-import { config } from "@/lib/config"
 import { DevTools } from "@/components/devtools"
 
 export function OuterProvider({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {config.env.isDevelopment && <DevTools />}
+      {!isProduction(env.NODE_ENV) && <DevTools />}
     </QueryClientProvider>
   )
 }
@@ -32,7 +32,7 @@ export function InnerProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
       <Toaster richColors />
-      {process.env.NODE_ENV !== "development" && env.NEXT_PUBLIC_USERJOT_ID && (
+      {!isLocal(env.NODE_ENV) && env.NEXT_PUBLIC_USERJOT_ID && (
         <>
           <Script
             id="userjot-sdk"

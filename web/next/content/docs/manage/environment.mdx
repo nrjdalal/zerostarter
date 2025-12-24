@@ -7,6 +7,18 @@ description: Configure type-safe environment variables for your application.
 
 This project uses a centralized, type-safe environment variable system. There's **one `.env` file to rule them all** at the project root, but each package only gets what it asks for through validation.
 
+### Environment Stages
+
+The project supports five environment stages in order: **local → development → test → staging → production**
+
+- **`local`**: Your local development machine.
+- **`development`**: Development server/environment.
+- **`test`**: Testing environment.
+- **`staging`**: Pre-production environment. Production-like settings.
+- **`production`**: Production environment.
+
+The `NODE_ENV` environment variable is centralized in `@packages/env` and validated across all packages.
+
 ## How It Works
 
 ### Single Source of Truth
@@ -36,13 +48,16 @@ Each package uses `@t3-oss/env-core` with Zod schemas for type-safe validation:
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 import "./lib/utils" // Loads root .env
+import { NODE_ENV } from "./lib/constants"
 
 export const env = createEnv({
   server: {
+    NODE_ENV, // Centralized enum: local, development, test, staging, production
     HONO_APP_URL: z.url(),
     HONO_TRUSTED_ORIGINS: z.string().transform(...),
   },
   runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
     HONO_APP_URL: process.env.HONO_APP_URL,
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
   },
@@ -77,6 +92,8 @@ import { env } from "@packages/env/web-next"
 - Runtime validation with clear error messages
 - Selective access per package
 - Server/client separation (only `NEXT_PUBLIC_*` exposed to browser)
+- Centralized `NODE_ENV` enum supporting: local, development, test, staging, production
+- Environment-specific logging (only logs in `local` environment)
 
 ## Required Variables
 

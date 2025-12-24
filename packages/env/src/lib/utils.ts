@@ -1,5 +1,6 @@
 import path from "node:path"
 import { config } from "dotenv"
+import { isLocal, NODE_ENV } from "./constants"
 
 if (typeof window === "undefined") {
   try {
@@ -9,7 +10,7 @@ if (typeof window === "undefined") {
 
     // Load environment-specific .env file if NODE_ENV is set
     const nodeEnv = process.env.NODE_ENV
-    if (nodeEnv === "development" || nodeEnv === "production") {
+    if (nodeEnv && NODE_ENV.safeParse(nodeEnv).success) {
       const envSpecificPath = path.resolve(process.cwd(), `../../.env.${nodeEnv}`)
       config({ path: envSpecificPath, override: true, quiet: true })
     }
@@ -40,8 +41,8 @@ export const getSafeEnv = (env: Record<string, unknown>) => {
       return [key, value]
     }),
   )
-  // Only log in development mode
-  if (process.env.NODE_ENV === "development") {
+  // Only log in local environment
+  if (isLocal(process.env.NODE_ENV)) {
     console.log("@packages/env:getSafeEnv:", result)
   }
   return result

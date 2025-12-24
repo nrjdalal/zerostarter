@@ -1,10 +1,11 @@
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 import "./lib/utils"
+import { NODE_ENV } from "./lib/constants"
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(["development", "production"]),
+    NODE_ENV,
     POSTGRES_URL: z.url(),
   },
   runtimeEnv: {

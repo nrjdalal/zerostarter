@@ -4,6 +4,7 @@ import { logger } from "hono/logger"
 
 import { authRouter, v1Router } from "@/routers"
 import type { Session } from "@packages/auth"
+import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 
 const app = new Hono<{ Variables: Session }>().basePath("/api")
@@ -24,7 +25,7 @@ app.use(
 
 const routes = app
   .get("/health", (c) => {
-    return c.json({ message: "OK", ...(env.NODE_ENV === "development" ? { env } : {}) })
+    return c.json({ message: "OK", ...(isLocal(env.NODE_ENV) ? { env } : {}) })
   })
   .route("/auth", authRouter)
   .route("/v1", v1Router)
