@@ -168,7 +168,9 @@ jobs:
 
             console.log(`Labels to add: ${[...labelsToAdd].join(', ')}`);
 
-            await Promise.all([...labelsToAdd].map(ensureLabel));
+            await Promise.all([...labelsToAdd].map(label => ensureLabel(label).catch(err => {
+              console.warn(`Failed to ensure label ${label}: ${err.message}`);
+            })));
 
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner,
@@ -196,13 +198,22 @@ jobs:
               }
             }
 
-            await github.rest.issues.addLabels({
-              owner,
-              repo,
-              issue_number: prNumber,
-              labels: [...labelsToAdd]
-            });
-            console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
+            try {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: [...labelsToAdd]
+              });
+              console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
+            } catch (error) {
+              if (error.status === 403) {
+                console.warn(`Cannot add labels: insufficient permissions (${error.status}). Labels may have been created but cannot be applied to this PR.`);
+              } else {
+                console.error(`Failed to add labels: ${error.message}`);
+                throw error;
+              }
+            }
 
       - name: Get approval count
         id: approvals
