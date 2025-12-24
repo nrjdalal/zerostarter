@@ -124,15 +124,17 @@
   body {
     @apply bg-background text-foreground;
   }
-  #nd-page {
-    @apply mt-10;
-  }
-  #nd-subnav {
-    @apply hidden!;
-  }
-  #nd-docs-layout {
-    --fd-header-height: 0px !important;
-  }
+}
+
+/* fumadocs */
+#nd-page {
+  @apply mt-10;
+}
+#nd-subnav {
+  @apply hidden!;
+}
+#nd-docs-layout {
+  --fd-header-height: 0px !important;
 }
 
 /* userjot */
