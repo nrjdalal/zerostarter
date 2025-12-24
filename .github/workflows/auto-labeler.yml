@@ -3,8 +3,7 @@ name: auto-labeler
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - canary
+    branches: ["canary"]
   pull_request_review:
     types: [submitted, dismissed]
 
