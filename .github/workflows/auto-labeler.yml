@@ -5,14 +5,14 @@ on:
     types: [opened, synchronize, reopened]
     branches: ["canary"]
   pull_request_review:
-    types: [submitted, dismissed]
+    types: [submitted, edited, dismissed]
 
 concurrency: ${{ github.workflow }}-${{ github.event.pull_request.number }}
 
 permissions:
   contents: read
+  pull-requests: read
   issues: write
-  pull-requests: write
 
 env:
   APPROVAL_THRESHOLD: "1"
@@ -113,7 +113,7 @@ jobs:
                 'compose.yml',
                 'compose.yaml',
               ];
-              
+
               if (
                 fileName === 'Dockerfile' ||
                 fileName.startsWith('Dockerfile.') ||

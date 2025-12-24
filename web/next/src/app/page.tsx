@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { RiGithubFill } from "@remixicon/react"
 import {
   ArrowRight,
   BookOpen,
@@ -52,6 +53,7 @@ export default function Home() {
               </Button>
               <Button asChild size="lg" variant="outline">
                 <a href={config.social.github} target="_blank" rel="noopener noreferrer">
+                  <RiGithubFill className="size-5" />
                   View on GitHub
                 </a>
               </Button>
@@ -339,6 +341,7 @@ bun dev`}
             </Button>
             <Button asChild size="lg" variant="outline">
               <a href={config.social.github} target="_blank" rel="noopener noreferrer">
+                <RiGithubFill className="size-5" />
                 Star on GitHub
               </a>
             </Button>
