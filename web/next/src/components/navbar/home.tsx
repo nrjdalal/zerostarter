@@ -108,16 +108,17 @@ export function Navbar() {
           </div>
 
           {session?.user ? (
-            <Link href="/x">
-              <Button
-                className="w-24 cursor-pointer"
-                size="sm"
-                variant="outline"
-                onClick={() => setToDashboard(true)}
-              >
+            <Button
+              asChild
+              className="w-24 cursor-pointer"
+              size="sm"
+              variant="outline"
+              onClick={() => setToDashboard(true)}
+            >
+              <Link href="/x">
                 {toDashboard ? <Loader2 className="animate-spin" /> : "Dashboard"}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           ) : (
             <Access />
           )}

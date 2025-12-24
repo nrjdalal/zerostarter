@@ -9,6 +9,7 @@ import {
   Database,
   FileText,
   GitBranch,
+  Heart,
   Lock,
   Search,
   Sparkles,
@@ -51,12 +52,23 @@ export default function Home() {
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <a href={config.social.github} target="_blank" rel="noopener noreferrer">
-                  <RiGithubFill className="size-5" />
-                  View on GitHub
+              <div className="relative">
+                <Button asChild size="lg" variant="outline">
+                  <a href={config.social.github} target="_blank" rel="noopener noreferrer">
+                    <RiGithubFill className="size-5" />
+                    View on GitHub
+                  </a>
+                </Button>
+                <a
+                  href="https://github.com/sponsors/nrjdalal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground absolute top-full right-0 left-0 mt-2 flex items-center justify-center gap-1.5 text-sm transition-colors"
+                >
+                  <Heart className="size-3.5 fill-red-500/70 text-red-500/70" />
+                  Sponsor Us
                 </a>
-              </Button>
+              </div>
             </div>
           </div>
         </div>
