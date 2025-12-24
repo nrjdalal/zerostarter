@@ -17,7 +17,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {!isProduction(env.NODE_ENV) && <DevTools />}
+      {!isProduction(process.env.NODE_ENV) && <DevTools />}
     </QueryClientProvider>
   )
 }
@@ -32,7 +32,7 @@ export function InnerProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
       <Toaster richColors />
-      {!isLocal(env.NODE_ENV) && env.NEXT_PUBLIC_USERJOT_ID && (
+      {!isLocal(process.env.NODE_ENV) && env.NEXT_PUBLIC_USERJOT_ID && (
         <>
           <Script
             id="userjot-sdk"
