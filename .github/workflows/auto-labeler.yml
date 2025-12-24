@@ -286,25 +286,42 @@ jobs:
               await github.rest.issues.getLabel({ owner, repo, name: labelName });
             } catch (error) {
               if (error.status === 404) {
-                await github.rest.issues.createLabel({
-                  owner,
-                  repo,
-                  name: labelName,
-                  color,
-                  description: count >= required
-                    ? 'PR has met the required approvals'
-                    : `PR has ${count} of ${required} required approvals`
-                });
-                console.log(`Created approval label: ${labelName}`);
+                try {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: labelName,
+                    color,
+                    description: count >= required
+                      ? 'PR has met the required approvals'
+                      : `PR has ${count} of ${required} required approvals`
+                  });
+                  console.log(`Created approval label: ${labelName}`);
+                } catch (createError) {
+                  if (createError.status === 403) {
+                    console.warn(`Cannot create approval label ${labelName}: insufficient permissions. Continuing...`);
+                  } else {
+                    throw createError;
+                  }
+                }
               } else {
                 throw error;
               }
             }
 
-            await github.rest.issues.addLabels({
-              owner,
-              repo,
-              issue_number: pr.number,
-              labels: [labelName]
-            });
-            console.log(`Applied approval label: ${labelName}`);
+            try {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: pr.number,
+                labels: [labelName]
+              });
+              console.log(`Applied approval label: ${labelName}`);
+            } catch (error) {
+              if (error.status === 403) {
+                console.warn(`Cannot add approval label: insufficient permissions (${error.status}). Label may have been created but cannot be applied to this PR.`);
+              } else {
+                console.error(`Failed to add approval label: ${error.message}`);
+                throw error;
+              }
+            }
