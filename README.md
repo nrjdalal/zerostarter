@@ -9,19 +9,6 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 > [!IMPORTANT]
 > ZeroStarter is currently in **Release Candidate (RC)** status. All implemented features are stable and production-ready. We're actively adding new features and integrations day-by-day.
 
-## ✨ Why ZeroStarter?
-
-**Architecture & Best Practices as a Service** — ZeroStarter isn't just a starter template; it's a complete blueprint for building production-ready SaaS applications with battle-tested patterns and practices.
-
-- **🏗️ Modular Architecture** — Clean, plug-and-play packages that work independently or together. Swap components, extend functionality, or customize without breaking the system
-- **🔒 End-to-End Type Safety** — Hono RPC ensures type safety from database to frontend. Catch errors at compile time, ship with confidence
-- **🧩 Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
-- **⚡ Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
-- **🎨 Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
-- **🔐 Enterprise-Grade Auth** — Better Auth integration with GitHub, Google, and more — fully configured and ready to extend
-- **📚 Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
-- **🚀 Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
-
 ## Architecture and Tech Stack
 
 > [!NOTE]
@@ -73,6 +60,19 @@ This project is a monorepo organized as follows:
 ```
 
 📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**
+
+## 🔥 Why ZeroStarter?
+
+**Architecture & Best Practices as a Service** — ZeroStarter isn't just a starter template; it's a complete blueprint for building production-ready SaaS applications with battle-tested patterns and practices.
+
+- **Modular Architecture** — Clean, plug-and-play packages that work independently or together. Swap components, extend functionality, or customize without breaking the system
+- **End-to-End Type Safety** — Hono RPC ensures type safety from database to frontend. Catch errors at compile time, ship with confidence
+- **Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
+- **Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
+- **Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
+- **Enterprise-Grade Auth** — Better Auth integration with GitHub, Google, and more — fully configured and ready to extend
+- **Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
+- **Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
 
 ## 🔌 Type-Safe API Client
 
