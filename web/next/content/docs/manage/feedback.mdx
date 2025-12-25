@@ -1,74 +1,47 @@
 ---
 title: Feedback
-description: Configure and manage user feedback collection with UserJot.
+description: Configure and manage user feedback collection.
 ---
 
 ## Overview
 
-ZeroStarter includes optional integration with [UserJot](https://userjot.com) for collecting user feedback. The feedback widget appears on your application when configured, allowing users to submit feedback, report bugs, and share their thoughts.
+ZeroStarter includes optional integration for collecting user feedback. When configured, feedback links appear in two locations:
+
+1. **Docs Sidebar Footer**: A feedback link appears in the docs sidebar footer
+2. **Dashboard User Menu**: A feedback option appears in the user dropdown menu in the dashboard sidebar
+
+Both locations allow users to submit feedback and only appear when the feedback URL is configured.
 
 ## Setup
 
-### 1. Get Your UserJot ID
+### 1. Configure Environment Variable
 
-1. Sign up for a free account at [UserJot](https://userjot.com)
-2. Create a new project
-3. Copy your project ID from the dashboard
-
-### 2. Configure Environment Variable
-
-Add your UserJot project ID to your `.env` file:
+Add your feedback URL to your `.env` file:
 
 ```
-# Optional: User feedback widget
-NEXT_PUBLIC_USERJOT_ID=your_userjot_project_id
+# Optional: Manage user feedback `https://zerostarter.dev/docs/manage/feedback`
+NEXT_PUBLIC_USERJOT_URL=
 ```
 
-### 3. Environment Configuration
+### 2. Environment Configuration
 
-The UserJot ID is configured in `packages/env/src/web-next.ts`:
+The feedback URL is configured in `packages/env/src/web-next.ts`:
 
 ```ts
 client: {
-  NEXT_PUBLIC_USERJOT_ID: z.string().optional(),
+  NEXT_PUBLIC_USERJOT_URL: z.url().optional(),
 }
 ```
 
-The feedback widget will automatically appear when `NEXT_PUBLIC_USERJOT_ID` is set. If the variable is not set or is empty, the widget will not be loaded.
-
-## Customization
-
-The feedback widget is configured in `web/next/src/app/layout.tsx`. You can customize:
-
-- **Position**: `'left'` or `'right'` (default: `'left'`)
-- **Theme**: `'light'`, `'dark'`, or `'auto'` (default: `'auto'`)
-- **Widget**: Enable/disable the widget (default: `true`)
-
-```tsx
-window.uj.init("your-project-id", {
-  widget: true,
-  position: "left",
-  theme: "light",
-})
-```
-
-## Viewing Feedback
-
-1. Log in to your [UserJot dashboard](https://userjot.com)
-2. Navigate to your project
-3. View all submitted feedback, including:
-   - User messages
-   - Screenshots (if enabled)
-   - Browser and device information
-   - Timestamps
+The feedback links will automatically appear in both locations when `NEXT_PUBLIC_USERJOT_URL` is set. If the variable is not set or is empty, the links will not be displayed.
 
 ## Features
 
-- **Non-intrusive**: Widget appears as a floating button
-- **Customizable**: Position and theme can be adjusted
-- **Optional**: Only loads when `NEXT_PUBLIC_USERJOT_ID` is configured
-- **Privacy-friendly**: Respects user preferences and privacy settings
+- **Docs Sidebar Footer**: Feedback link appears in the docs sidebar footer
+- **Dashboard User Menu**: Feedback option appears in the user dropdown menu (between user info and logout)
+- **Optional**: Only loads when `NEXT_PUBLIC_USERJOT_URL` is configured
+- **External Link**: Opens feedback URL in a new tab
 
 ## Disabling Feedback
 
-To disable the feedback widget, simply remove or leave empty the `NEXT_PUBLIC_USERJOT_ID` environment variable. The widget scripts will not be loaded, ensuring zero performance impact when not in use.
+To disable the feedback links, simply remove or leave empty the `NEXT_PUBLIC_USERJOT_URL` environment variable. The links will not be rendered in either location, ensuring zero performance impact when not in use.

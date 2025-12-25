@@ -34,7 +34,7 @@ Each package defines only the environment variables it needs:
 - **`db`**: `POSTGRES_URL`
 - **`web-next`**:
   - **Server**: `INTERNAL_API_URL` (server-side only)
-  - **Client**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_USERJOT_ID` (exposed to browser)
+  - **Client**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_USERJOT_URL` (exposed to browser)
 
 **Important**: Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
 

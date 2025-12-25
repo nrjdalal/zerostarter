@@ -136,8 +136,3 @@
 #nd-docs-layout {
   --fd-header-height: 0px !important;
 }
-
-/* userjot */
-#userjot-widget-container {
-  opacity: 0.9 !important;
-}

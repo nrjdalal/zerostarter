@@ -19,7 +19,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function SidebarDocs() {
+export function SidebarDocsContent() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -80,7 +80,6 @@ export function SidebarDocs() {
                         <SidebarMenuSub>
                           {items.map((item) => {
                             const isActive = isItemActive(item.url)
-
                             return (
                               <SidebarMenuSubItem key={item.url}>
                                 <SidebarMenuSubButton asChild isActive={isActive}>
