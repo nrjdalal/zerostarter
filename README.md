@@ -61,6 +61,12 @@ This project is a monorepo organized as follows:
 
 📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**
 
+## 🗺️ Roadmap
+
+We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.
+
+📖 **[View planned features →](https://zerostarter.dev/docs/getting-started/architecture#future-stack-and-features)**
+
 ## 🔥 Why ZeroStarter?
 
 **Architecture & Best Practices as a Service** — ZeroStarter isn't just a starter template, it's a complete blueprint for building production-ready SaaS applications with battle-tested patterns and practices.
@@ -130,12 +136,6 @@ bun dev
 - **[⚙️ Scripts](https://zerostarter.dev/docs/getting-started/scripts)** — Available commands
 - **[🚀 Deployment](https://zerostarter.dev/docs/deployment/vercel)** — Deploy to production
 - **[🤖 AI/LLM Users](https://zerostarter.dev/llms.txt)** — Optimized documentation
-
-## 🗺️ Roadmap
-
-We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.
-
-📖 **[View planned features →](https://zerostarter.dev/docs)**
 
 ## 🤝 Contributing
 
