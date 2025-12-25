@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useState } from "react"
+import { useEffect } from "react"
 
 import { SearchIcon } from "lucide-react"
 
@@ -10,14 +10,9 @@ import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
 
 export function SidebarSearch() {
   const isMac = useIsMac()
-  const [mounted, setMounted] = useState(false)
   const { isMobile, setOpenMobile } = useSidebar()
 
-  useLayoutEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const handleClick = () => {
+  const dispatchSearchEvent = () => {
     if (isMobile) {
       setOpenMobile(false)
     }
@@ -32,6 +27,33 @@ export function SidebarSearch() {
     document.dispatchEvent(event)
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Press "s" to trigger search (Cmd/Ctrl+K)
+      if (e.key === "s" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable
+        ) {
+          return
+        }
+        e.preventDefault()
+        dispatchSearchEvent()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isMac, isMobile])
+
+  const handleClick = () => {
+    dispatchSearchEvent()
+  }
+
   return (
     <div className="relative">
       <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
@@ -43,17 +65,7 @@ export function SidebarSearch() {
       />
       {!isMobile && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
-          {mounted ? (
-            <>
-              <Kbd className="text-xs">{isMac ? "cmd" : "ctrl"}</Kbd>
-              <Kbd>K</Kbd>
-            </>
-          ) : (
-            <div className="flex items-center gap-1 opacity-0">
-              <Kbd className="text-xs">ctrl</Kbd>
-              <Kbd>K</Kbd>
-            </div>
-          )}
+          <Kbd>S</Kbd>
         </div>
       )}
     </div>
