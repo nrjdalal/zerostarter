@@ -11,8 +11,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SidebarDocsContent, SidebarDocsFooter } from "@/components/sidebar/docs"
-import { SidebarSearch } from "@/components/sidebar/search"
+import { SidebarDocsContent, SidebarDocsFooter, SidebarDocsSearch } from "@/components/sidebar/docs"
 import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -20,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar className="md:pt-12" collapsible="offcanvas">
         <SidebarHeader className="mt-2.5">
-          <SidebarSearch />
+          <SidebarDocsSearch />
         </SidebarHeader>
         <SidebarContent>
           <SidebarDocsContent />

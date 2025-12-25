@@ -25,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function SidebarUser({ user }: { user: User }) {
+export function SidebarDashboardFooter({ user }: { user: User }) {
   const { isMobile } = useSidebar()
 
   return (

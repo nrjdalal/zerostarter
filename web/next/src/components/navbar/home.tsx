@@ -66,7 +66,7 @@ export function Navbar() {
   const [toDashboard, setToDashboard] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  if (pathname?.startsWith("/x")) return null
+  if (pathname?.startsWith("/dashboard")) return null
 
   const navLinks = [
     { href: "/docs", label: "Documentation" },
@@ -115,7 +115,7 @@ export function Navbar() {
               variant="outline"
               onClick={() => setToDashboard(true)}
             >
-              <Link href="/x">
+              <Link href="/dashboard">
                 {toDashboard ? <Loader2 className="animate-spin" /> : "Dashboard"}
               </Link>
             </Button>

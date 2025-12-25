@@ -8,7 +8,7 @@ import { useIsMac } from "@/hooks/use-platform"
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
 
-export function SidebarSearch() {
+export function SidebarDocsSearch() {
   const isMac = useIsMac()
   const { isMobile, setOpenMobile } = useSidebar()
 

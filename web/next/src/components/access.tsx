@@ -41,7 +41,7 @@ export function Access() {
       setLoader("email")
       const res = await signIn.magicLink({
         email: value.email,
-        callbackURL: `${config.app.url}/x`,
+        callbackURL: `${config.app.url}/dashboard`,
       })
       if (res.error) {
         toast.error(res.error.message || "Provider Not Found")
@@ -139,7 +139,7 @@ export function Access() {
                 setLoader("github")
                 const res = await signIn.social({
                   provider: "github",
-                  callbackURL: `${config.app.url}/x`,
+                  callbackURL: `${config.app.url}/dashboard`,
                 })
                 if (res.error) {
                   toast.error(res.error.message)
@@ -163,7 +163,7 @@ export function Access() {
                 setLoader("google")
                 const res = await signIn.social({
                   provider: "google",
-                  callbackURL: `${config.app.url}/x`,
+                  callbackURL: `${config.app.url}/dashboard`,
                 })
                 if (res.error) {
                   toast.error(res.error.message)

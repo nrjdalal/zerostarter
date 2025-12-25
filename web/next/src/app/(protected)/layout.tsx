@@ -9,7 +9,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SidebarUser } from "@/components/sidebar/user"
+import { SidebarDashboardFooter } from "@/components/sidebar/dashboard"
 import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
@@ -23,7 +23,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         <SidebarHeader />
         <SidebarContent>{/* Content Goes Here */}</SidebarContent>
         <SidebarFooter>
-          <SidebarUser user={session.user} />
+          <SidebarDashboardFooter user={session.user} />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
