@@ -1,3 +1,59 @@
+## v0.0.9
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/df7eacb268c5f500a23ab34cb367a612d52d51be...v0.0.9)
+
+### 🚀 Enhancements
+
+- Custom doc search button ([0e85b3b](https://github.com/nrjdalal/zerostarter/commit/0e85b3b))
+
+### 🩹 Fixes
+
+- Changelog render GitHub usernames as Markdown links ([38bc6c5](https://github.com/nrjdalal/zerostarter/commit/38bc6c5))
+
+### 📖 Documentation
+
+- Add sponser project below the github button ([247cb70](https://github.com/nrjdalal/zerostarter/commit/247cb70))
+- Cleanup ([36eb622](https://github.com/nrjdalal/zerostarter/commit/36eb622))
+- Cleanup ([9f306b1](https://github.com/nrjdalal/zerostarter/commit/9f306b1))
+
+### 🏡 Chore
+
+- Trigger build ([9763040](https://github.com/nrjdalal/zerostarter/commit/9763040))
+- Move feedback to provider ([#190](https://github.com/nrjdalal/zerostarter/pull/190))
+- Update rulesets ([21d19af](https://github.com/nrjdalal/zerostarter/commit/21d19af))
+- Cleanup ([c1bf8ad](https://github.com/nrjdalal/zerostarter/commit/c1bf8ad))
+- Lighter feedback button ([b20e975](https://github.com/nrjdalal/zerostarter/commit/b20e975))
+- Minor tweaks ([97f09c5](https://github.com/nrjdalal/zerostarter/commit/97f09c5))
+- Increase userjot widget opacity ([a3a101b](https://github.com/nrjdalal/zerostarter/commit/a3a101b))
+- Increase userjot widget opacity further ([dc475e0](https://github.com/nrjdalal/zerostarter/commit/dc475e0))
+- Extend env for development to release cycle ([79e7ab6](https://github.com/nrjdalal/zerostarter/commit/79e7ab6))
+- Minor tweak ([1019789](https://github.com/nrjdalal/zerostarter/commit/1019789))
+- Only hide devtools in prod ([b9f0353](https://github.com/nrjdalal/zerostarter/commit/b9f0353))
+- Hide feedback in development too ([564641a](https://github.com/nrjdalal/zerostarter/commit/564641a))
+- Set NODE_ENV=local as default ([b206d0e](https://github.com/nrjdalal/zerostarter/commit/b206d0e))
+- Updates deps ([cb6e36f](https://github.com/nrjdalal/zerostarter/commit/cb6e36f))
+- Just click at docs to search ([3ce865e](https://github.com/nrjdalal/zerostarter/commit/3ce865e))
+- Coz I like order to things ([9cdcbb4](https://github.com/nrjdalal/zerostarter/commit/9cdcbb4))
+- Minor cleanup ([255db71](https://github.com/nrjdalal/zerostarter/commit/255db71))
+- Better env logging locally ([18a7c85](https://github.com/nrjdalal/zerostarter/commit/18a7c85))
+- Reorder ([17d647c](https://github.com/nrjdalal/zerostarter/commit/17d647c))
+- New readme ([dbee792](https://github.com/nrjdalal/zerostarter/commit/dbee792))
+- Minor touches ([3dbaaeb](https://github.com/nrjdalal/zerostarter/commit/3dbaaeb))
+- Finalize v2 readme ([4473d3e](https://github.com/nrjdalal/zerostarter/commit/4473d3e))
+- Finalize v2 readme ([d88f6df](https://github.com/nrjdalal/zerostarter/commit/d88f6df))
+- New landing page ([99122ea](https://github.com/nrjdalal/zerostarter/commit/99122ea))
+
+### 🤖 CI
+
+- **release:** 🚀 merge canary into main ([#185](https://github.com/nrjdalal/zerostarter/pull/185), [#186](https://github.com/nrjdalal/zerostarter/pull/186))
+- **changelog:** 📖 update changelog and bump version ([#168](https://github.com/nrjdalal/zerostarter/pull/168))
+- **release:** 🚀 merge canary into main ([#191](https://github.com/nrjdalal/zerostarter/pull/191))
+
+### ❤️ Contributors
+
+- Surajgoraicse ([@surajgoraicse](https://github.com/surajgoraicse))
+- Neeraj Dalal ([@nrjdalal](https://github.com/nrjdalal))
+
 ## v0.0.8
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/d03a1acf4869778a8b5231a04a8e2cad61872cb5...v0.0.8)
