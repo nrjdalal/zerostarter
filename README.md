@@ -140,6 +140,8 @@ const data = await res.json()
    Create a `.env` file in the root directory with the following variables:
 
    ```
+   NODE_ENV=local
+
    # -------------------- Server variables --------------------
 
    HONO_APP_URL=http://localhost:4000
