@@ -108,7 +108,7 @@
     "fumadocs-mdx": "^14.2.2",
     "fumadocs-ui": "^16.4.0",
     "globby": "^16.1.0",
-    "hono": "^4.11.1",
+    "hono": "^4.11.2",
     "input-otp": "^1.4.2",
     "lint-staged": "^16.2.7",
     "lucide-react": "^0.562.0",

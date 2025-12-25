@@ -70,10 +70,7 @@ async function processChangelog() {
   let updatedContent = content
   for (const [email, username] of emailToUsername) {
     if (username) {
-      updatedContent = updatedContent.replaceAll(
-        `<${email}>`,
-        `@${username}`,
-      )
+      updatedContent = updatedContent.replaceAll(`<${email}>`, `@${username}`)
     } else {
       updatedContent = updatedContent
         .split("\n")
