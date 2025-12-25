@@ -74,6 +74,8 @@ This project is a monorepo organized as follows:
 - **Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
 - **Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
 
+📖 **[View full why ZeroStarter? →](https://zerostarter.dev)**
+
 ## 🔌 Type-Safe API Client
 
 > [!NOTE]
@@ -133,11 +135,13 @@ bun dev
 
 We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.
 
-**[View planned features →](https://zerostarter.dev/docs)**
+📖 **[View planned features →](https://zerostarter.dev/docs)**
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [contributing guidelines](https://zerostarter.dev/docs/contributing) first.
+Contributions are welcome! Please read our contributing guidelines first.
+
+📖 **[View contributing guidelines →](https://zerostarter.dev/docs/contributing)**
 
 ## 📄 License
 
