@@ -9,6 +9,24 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 > [!IMPORTANT]
 > ZeroStarter is currently in **Release Candidate (RC)** status. All implemented features are stable and production-ready. We're actively adding new features and integrations day-by-day.
 
+## ✨ Why ZeroStarter?
+
+**Architecture & Best Practices as a Service** — ZeroStarter isn't just a starter template; it's a complete blueprint for building production-ready SaaS applications with battle-tested patterns and practices.
+
+- **🏗️ Modular Architecture** — Clean, plug-and-play packages that work independently or together. Swap components, extend functionality, or customize without breaking the system
+- **🔒 End-to-End Type Safety** — Hono RPC ensures type safety from database to frontend. Catch errors at compile time, ship with confidence
+- **🧩 Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
+- **⚡ Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
+- **🎨 Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
+- **🔐 Enterprise-Grade Auth** — Better Auth integration with GitHub, Google, and more — fully configured and ready to extend
+- **📚 Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
+- **🚀 Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
+
+## Architecture and Tech Stack
+
+> [!NOTE]
+> For detailed information about the architecture and tech stack, see the [Architecture documentation](https://zerostarter.dev/docs/getting-started/architecture).
+
 <!--
 ```bash
 npx turbo run build --graph=graph.svg
@@ -22,11 +40,6 @@ mkdir -p .github/assets
 mv graph.svg .github/assets/graph-build.svg
 ```
 -->
-
-## Architecture and Tech Stack
-
-> [!NOTE]
-> For detailed information about the architecture and tech stack, see the [Architecture documentation](https://zerostarter.dev/docs/getting-started/architecture).
 
 ![Graph Build](./.github/assets/graph-build.svg)
 
@@ -44,42 +57,6 @@ mv graph.svg .github/assets/graph-build.svg
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
 
-### Future Stack and Features
-
-- **AI**
-  - [ ] [Vercel AI SDK](https://ai-sdk.dev)
-- **Analytics**:
-  - [ ] [Posthog](https://posthog.com)
-- **Background Tasks**:
-  - [ ] [Inngest](https://www.inngest.com)
-  - [ ] [Trigger.dev](https://trigger.dev)
-- **Email**:
-  - [ ] [Resend](https://resend.com)
-  - [ ] [SendGrid](https://sendgrid.com)
-- **OpenAPI**:
-  - [ ] [Scalar](https://scalar.com)
-- **Organization/teams**:
-  - [ ] [Better Auth](https://www.better-auth.com/docs/plugins/organization)
-- **Internationalization**:
-  - [ ] [i18next](https://www.i18next.com)
-  - [ ] [next-intl](https://next-intl.dev)
-- **Payment Processing**:
-  - [ ] [Autumn](https://useautumn.com)
-  - [ ] [Creem](https://www.creem.io)
-  - [ ] [Dodo](https://dodopayments.com)
-  - [ ] [Lemon Squeezy](https://www.lemonsqueezy.com)
-  - [ ] [Paddle](https://www.paddle.com)
-  - [ ] [Polar](https://polar.sh)
-  - [ ] [Razorpay](https://razorpay.com)
-  - [ ] [Stripe](https://stripe.com)
-
----
-
-## 📂 Project Structure
-
-> [!NOTE]
-> For a detailed breakdown of the project structure, see the [Project Structure documentation](https://zerostarter.dev/docs/getting-started/project-structure).
-
 This project is a monorepo organized as follows:
 
 ```
@@ -95,7 +72,7 @@ This project is a monorepo organized as follows:
     └── tsconfig/  # Shared TypeScript configuration
 ```
 
----
+📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**
 
 ## 🔌 Type-Safe API Client
 
@@ -117,139 +94,56 @@ const res = await apiClient.health.$get()
 const data = await res.json()
 ```
 
----
+📖 **[View full type-safe API client documentation →](https://zerostarter.dev/docs/getting-started/type-safe-api)**
 
-## ⚙️ Getting Started
-
-> [!NOTE]
-> For a complete step-by-step installation guide, see the [Installation documentation](https://zerostarter.dev/docs/getting-started/installation).
-
-### Prerequisites
-
-- [Bun](https://bun.sh) (v1.3.0 or later)
-
-### Installation
-
-1. Clone this template:
-
-   ```bash
-   bunx gitpick https://github.com/nrjdalal/zerostarter/tree/main
-   cd zerostarter
-   ```
-
-   > **Note**: The `main` branch is the latest stable release.
-
-2. Install dependencies:
-
-   ```bash
-   bun install
-   ```
-
-   > **Note**: If the installation fails, try using `bun install --ignore-scripts`
-
-3. Set up environment variables:
-
-   Create a `.env` file in the root directory with the following variables:
-
-   ```
-   NODE_ENV=local
-
-   # -------------------- Server variables --------------------
-
-   HONO_APP_URL=http://localhost:4000
-   HONO_TRUSTED_ORIGINS=http://localhost:3000
-
-   # Generate using `openssl rand -base64 32`
-   BETTER_AUTH_SECRET=
-
-   # Generate at `https://github.com/settings/developers`
-   GITHUB_CLIENT_ID=
-   GITHUB_CLIENT_SECRET=
-
-   # Generate at `https://console.cloud.google.com/apis/credentials`
-   GOOGLE_CLIENT_ID=
-   GOOGLE_CLIENT_SECRET=
-
-   # Generate using `bunx pglaunch -k`
-   POSTGRES_URL=
-
-   # -------------------- Client variables --------------------
-
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:4000
-   ```
-
-### Database Setup
-
-1. Ensure your PostgreSQL server is running.
-2. Run the generation:
-
-   ```bash
-   bun run db:generate
-   ```
-
-3. Run the migration:
-
-   ```bash
-   bun run db:migrate
-   ```
-
-### Authentication Setup
-
-ZeroStarter comes with some default authentication plugins using [Better Auth](https://better-auth.com), you can extend as needed.
-
-#### Github
-
-1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
-2. Set the **Homepage URL** to `http://localhost:3000`.
-3. Set the **Authorization callback URL** to `http://localhost:3000/api/auth/callback/github`.
-4. Copy the **Client ID** and **Client Secret** into your `.env` file.
-
-#### Google
-
-1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials.
-2. Configure the OAuth consent screen (External).
-3. Create an **OAuth Client ID** (Application type: Web).
-4. Set the **Authorized JavaScript origins** to `http://localhost:3000`.
-5. Set the **Authorized redirect URI** to `http://localhost:4000/api/auth/callback/google`.
-6. Copy the **Client ID** and **Client Secret** into your `.env` file.
-
-### Running the Application
+## 🚀 Quick Start
 
 ```bash
+# Clone the template
+bunx gitpick https://github.com/nrjdalal/zerostarter/tree/main
+cd zerostarter
+
+# Install dependencies
+bun install
+
+# Set up environment variables (see docs)
+cp .env.example .env
+
+# Set up database
+bun run db:generate
+bun run db:migrate
+
+# Start development
 bun dev
 ```
 
-### Running the Application with Docker Compose
+📖 **[Complete installation guide →](https://zerostarter.dev/docs/getting-started/installation)**
 
-```bash
-docker compose up
-```
+## 📚 Documentation
 
-### Accessing the Application
+- **[📖 Full Documentation](https://zerostarter.dev/docs)** — Everything you need to know
+- **[🏗️ Architecture](https://zerostarter.dev/docs/getting-started/architecture)** — Deep dive into the tech stack
+- **[📂 Project Structure](https://zerostarter.dev/docs/getting-started/project-structure)** — Monorepo organization
+- **[🔌 Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)** — Hono RPC client examples
+- **[⚙️ Scripts](https://zerostarter.dev/docs/getting-started/scripts)** — Available commands
+- **[🚀 Deployment](https://zerostarter.dev/docs/deployment/vercel)** — Deploy to production
+- **[🤖 AI/LLM Users](https://zerostarter.dev/llms.txt)** — Optimized documentation
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend: [http://localhost:4000](http://localhost:4000)
+## 🗺️ Roadmap
 
----
-
-## 📜 Scripts
-
-> [!NOTE]
-> For a complete list of available scripts and their usage, see the [Scripts documentation](https://zerostarter.dev/docs/getting-started/scripts).
-
-## 📖 Deployment
-
-> [!NOTE]
-> For detailed deployment instructions, see the [Deployment documentation](https://zerostarter.dev/docs/deployment/vercel).
+We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.  
+**[View planned features →](https://zerostarter.dev/docs)**
 
 ## 🤝 Contributing
 
-> [!NOTE]
-> For detailed contribution guidelines and best practices, see the [Contributing documentation](https://zerostarter.dev/docs/contributing).
+Contributions are welcome! Please read our [contributing guidelines](https://zerostarter.dev/docs/contributing) first.
 
 ## 📄 License
 
-This project is licensed under the [MIT](https://github.com/nrjdalal/zerostarter/blob/canary/LICENSE.md) License.
+MIT License — see [LICENSE.md](LICENSE.md) for details.
+
+---
+
+**⭐ Star this repo** if you find it helpful, and follow [@nrjdalal](https://twitter.com/nrjdalal) for updates!
 
 <!-- trigger build: 5 -->
