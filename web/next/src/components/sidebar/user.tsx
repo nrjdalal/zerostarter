@@ -1,9 +1,11 @@
 "use client"
 
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import { env } from "@packages/env/web-next"
 import { type User } from "better-auth/types"
-import { ChevronsUpDown, LogOut } from "lucide-react"
+import { Book, ChevronsUpDown, LogOut, MessageSquare } from "lucide-react"
 
 import { signOut } from "@/lib/auth/client"
 import { cn } from "@/lib/utils"
@@ -28,6 +30,14 @@ export function SidebarUser({ user }: { user: User }) {
 
   return (
     <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild>
+          <Link href="/docs">
+            <Book />
+            <span>Documentation</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -68,6 +78,19 @@ export function SidebarUser({ user }: { user: User }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {env.NEXT_PUBLIC_USERJOT_URL && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href={env.NEXT_PUBLIC_USERJOT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="cursor-pointer"
+                >
+                  <MessageSquare />
+                  Feedback
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={async () => {

@@ -11,7 +11,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SidebarDocs } from "@/components/sidebar/docs"
+import { SidebarDocsContent, SidebarDocsFooter } from "@/components/sidebar/docs"
 import { SidebarSearch } from "@/components/sidebar/search"
 import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
 
@@ -23,9 +23,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <SidebarSearch />
         </SidebarHeader>
         <SidebarContent>
-          <SidebarDocs />
+          <SidebarDocsContent />
         </SidebarContent>
-        <SidebarFooter />
+        <SidebarFooter className="border-t">
+          <SidebarDocsFooter />
+        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
       <main>
