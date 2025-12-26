@@ -18,6 +18,7 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+import { codeToHtml } from "shiki"
 
 import { config } from "@/lib/config"
 import {
@@ -29,7 +30,49 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function Home() {
+export default async function Home() {
+  const typescriptCode = `import { apiClient } from "@/lib/api/client"
+
+// Fully typed request and response
+// TypeScript knows exactly what you're getting!
+const res = await apiClient.health.$get()
+const data = await res.json()`
+
+  const bashCode = `# Clone the template
+bunx gitpick ${config.social.github}/tree/main
+cd zerostarter
+
+# Install dependencies
+bun install
+
+# Set up environment variables (see docs)
+cp .env.example .env
+
+# Set up database
+bun run db:generate
+bun run db:migrate
+
+# Start development
+bun dev`
+
+  const typescriptHtml = await codeToHtml(typescriptCode, {
+    lang: "typescript",
+    themes: {
+      light: "github-light",
+      dark: "github-dark",
+    },
+    defaultColor: false,
+  })
+
+  const bashHtml = await codeToHtml(bashCode, {
+    lang: "bash",
+    themes: {
+      light: "github-light",
+      dark: "github-dark",
+    },
+    defaultColor: false,
+  })
+
   return (
     <div className="flex flex-col select-none">
       {/* Hero Section */}
@@ -402,16 +445,15 @@ export default function Home() {
           </div>
         </div>
         <div className="w-full px-5">
-          <pre className="bg-muted mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-6 text-sm">
-            <code className="block overflow-x-auto whitespace-pre">
-              {`import { apiClient } from "@/lib/api/client"
-
-// Fully typed request and response
-// TypeScript knows exactly what you're getting!
-const res = await apiClient.health.$get()
-const data = await res.json()`}
-            </code>
-          </pre>
+          <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
+            <div
+              className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
+              dangerouslySetInnerHTML={{ __html: typescriptHtml }}
+              style={{
+                colorScheme: "light dark",
+              }}
+            />
+          </div>
         </div>
       </section>
 
@@ -495,26 +537,15 @@ const data = await res.json()`}
           </div>
         </div>
         <div className="w-full px-5">
-          <pre className="bg-muted mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-6 text-sm">
-            <code className="block overflow-x-auto whitespace-pre">
-              {`# Clone the template
-bunx gitpick ${config.social.github}/tree/main
-cd zerostarter
-
-# Install dependencies
-bun install
-
-# Set up environment variables (see docs)
-cp .env.example .env
-
-# Set up database
-bun run db:generate
-bun run db:migrate
-
-# Start development
-bun dev`}
-            </code>
-          </pre>
+          <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
+            <div
+              className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
+              dangerouslySetInnerHTML={{ __html: bashHtml }}
+              style={{
+                colorScheme: "light dark",
+              }}
+            />
+          </div>
         </div>
         <div className="container mx-auto mt-8 max-w-6xl px-5 text-center">
           <Button asChild size="lg" className="group h-12 px-8 text-base">
