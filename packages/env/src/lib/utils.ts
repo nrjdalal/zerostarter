@@ -5,7 +5,6 @@ import { config } from "dotenv"
 
 if (typeof window === "undefined") {
   try {
-    // Load base .env file first (needed for Infisical credentials)
     const envPath = path.resolve(process.cwd(), "../../.env")
     config({ path: envPath, quiet: true })
 
@@ -16,6 +15,7 @@ if (typeof window === "undefined") {
       config({ path: envSpecificPath, override: true, quiet: true })
     }
 
+    // Load secrets from Infisical if credentials are present
     loadInfisicalSecrets()
   } catch (e) {
     console.error(e)
