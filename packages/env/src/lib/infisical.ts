@@ -1,7 +1,7 @@
 export async function loadInfisicalSecrets() {
   const clientId = process.env.INFISICAL_CLIENT_ID
   const clientSecret = process.env.INFISICAL_CLIENT_SECRET
-  const environment = process.env.INFISICAL_ENVIRONMENT || process.env.NODE_ENV || "dev"
+  const environment = process.env.INFISICAL_ENVIRONMENT
   const projectId = process.env.INFISICAL_PROJECT_ID
   const siteUrl = process.env.INFISICAL_SITE_URL
 
