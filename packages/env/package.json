@@ -41,6 +41,7 @@
     "semi": false
   },
   "dependencies": {
+    "@infisical/sdk": "catalog:",
     "@t3-oss/env-core": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"

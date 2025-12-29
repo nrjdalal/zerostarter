@@ -1,10 +1,11 @@
 import path from "node:path"
 import { isLocal, NODE_ENV } from "@/lib/constants"
+import { loadInfisicalSecrets } from "@/lib/infisical"
 import { config } from "dotenv"
 
 if (typeof window === "undefined") {
   try {
-    // Load base .env file
+    // Load base .env file first (needed for Infisical credentials)
     const envPath = path.resolve(process.cwd(), "../../.env")
     config({ path: envPath, quiet: true })
 
@@ -14,6 +15,8 @@ if (typeof window === "undefined") {
       const envSpecificPath = path.resolve(process.cwd(), `../../.env.${nodeEnv}`)
       config({ path: envSpecificPath, override: true, quiet: true })
     }
+
+    loadInfisicalSecrets()
   } catch (e) {
     console.error(e)
   }
