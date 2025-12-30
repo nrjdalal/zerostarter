@@ -26,18 +26,61 @@ app.use(
 
 const routes = app
   .get("/health", (c) => {
-    return c.json({ message: "OK", ...(isLocal(env.NODE_ENV) ? { env } : {}) })
+    return c.json({
+      message: "ok",
+      environment: env.NODE_ENV,
+    })
   })
   .route("/auth", authRouter)
   .route("/v1", v1Router)
-  .notFound((c) => c.json({ message: "Not Found" }, 404))
+  .notFound((c) =>
+    c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Route not found",
+        },
+      },
+      404,
+    ),
+  )
   .onError((error, c) => {
     console.error(error)
+
     if (error instanceof z.ZodError) {
-      return c.json({ error: { message: "ZodError", errors: JSON.parse(error.message) } }, 400)
+      return c.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid request payload",
+            issues: error.issues,
+          },
+        },
+        400,
+      )
     }
-    if (error instanceof Error) return c.json({ error: { message: error.message } }, 500)
-    return c.json({ error: { message: "I'm a teapot" } }, 418)
+
+    if (error instanceof Error) {
+      return c.json(
+        {
+          error: {
+            code: "INTERNAL_SERVER_ERROR",
+            message: isLocal(env.NODE_ENV) ? error.message : "An unexpected error occurred",
+          },
+        },
+        500,
+      )
+    }
+
+    return c.json(
+      {
+        error: {
+          code: "UNKNOWN_ERROR",
+          message: "An unexpected error occurred",
+        },
+      },
+      500,
+    )
   })
 
 export type AppType = typeof routes
