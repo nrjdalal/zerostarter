@@ -8,7 +8,7 @@ export default [
     minify: true,
     hooks: {
       "build:prepare": () => {
-        getSafeEnv(env)
+        getSafeEnv(env, "@packages/auth")
       },
     },
   }),

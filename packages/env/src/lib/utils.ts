@@ -19,7 +19,7 @@ if (typeof window === "undefined") {
   }
 }
 
-export const getSafeEnv = (env: Record<string, unknown>) => {
+export const getSafeEnv = (env: Record<string, unknown>, appName?: string) => {
   const redactKeys = [
     "database_url",
     "db_url",
@@ -43,7 +43,7 @@ export const getSafeEnv = (env: Record<string, unknown>) => {
   )
   // Only log in local environment
   if (isLocal(process.env.NODE_ENV)) {
-    console.log("@packages/env:getSafeEnv:", result)
+    console.log(`${appName ?? "@packages/env"}:getSafeEnv:`, result)
   }
   return result
 }

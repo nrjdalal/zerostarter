@@ -4,7 +4,7 @@ import { getSafeEnv } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 
-getSafeEnv(env)
+getSafeEnv(env, "@web/next")
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
