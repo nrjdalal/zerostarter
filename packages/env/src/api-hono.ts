@@ -7,7 +7,7 @@ export const env = createEnv({
   server: {
     NODE_ENV,
     HONO_APP_URL: z.url(),
-    HONO_PORT: z.number().default(4000),
+    HONO_PORT: z.coerce.number().default(4000),
     HONO_TRUSTED_ORIGINS: z
       .string()
       .transform((s) => s.split(",").map((v) => v.trim()))
