@@ -82,6 +82,6 @@ const routes = app
 export type AppType = typeof routes
 
 export default {
-  port: 4000,
+  port: env.HONO_PORT,
   fetch: app.fetch,
 }

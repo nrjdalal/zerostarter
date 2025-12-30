@@ -7,6 +7,7 @@ export const env = createEnv({
   server: {
     NODE_ENV,
     HONO_APP_URL: z.url(),
+    HONO_PORT: z.number().default(4000),
     HONO_TRUSTED_ORIGINS: z
       .string()
       .transform((s) => s.split(",").map((v) => v.trim()))
@@ -15,6 +16,7 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     HONO_APP_URL: process.env.HONO_APP_URL,
+    HONO_PORT: process.env.HONO_PORT,
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
   },
   emptyStringAsUndefined: true,
