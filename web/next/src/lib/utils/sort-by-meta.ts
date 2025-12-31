@@ -4,9 +4,21 @@ export function sortByMeta<T extends { url: string }>(
   baseUrl: string,
 ): T[] {
   const getSlug = (url: string) => url.replace(baseUrl, "").replace(/^\//, "") || "index"
+
+  // Create a position lookup map for O(1) lookups during sorting
+  const positionMap = new Map<string, number>()
+  order.forEach((slug, index) => positionMap.set(slug, index))
+
   return [...pages].sort((a, b) => {
-    if (order.indexOf(getSlug(a.url)) === -1) return 1
-    if (order.indexOf(getSlug(b.url)) === -1) return -1
-    return order.indexOf(getSlug(a.url)) - order.indexOf(getSlug(b.url))
+    const slugA = getSlug(a.url)
+    const slugB = getSlug(b.url)
+    const posA = positionMap.get(slugA)
+    const posB = positionMap.get(slugB)
+
+    // Pages not in order go to the end
+    if (posA === undefined) return 1
+    if (posB === undefined) return -1
+
+    return posA - posB
   })
 }
