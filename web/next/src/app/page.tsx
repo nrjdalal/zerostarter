@@ -151,6 +151,27 @@ bun dev`
               "Docker",
               "Vercel",
             ]
+              .concat([
+                "Turborepo",
+                "React",
+                "Next.js",
+                "Hono",
+                "TanStack Query",
+                "Better Auth",
+                "Tailwind CSS",
+                "Shadcn UI",
+                "Drizzle ORM",
+                "PostgreSQL",
+                "Bun",
+                "Zod",
+                "Fumadocs",
+                "tsdown",
+                "Oxlint",
+                "Prettier",
+                "TypeScript",
+                "Docker",
+                "Vercel",
+              ])
               .flatMap((tech, index, array) => (index === array.length - 1 ? [tech] : [tech, "•"]))
               .map((item, index) => (
                 <span
