@@ -31,6 +31,28 @@ import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ApiStatus } from "@/components/api-status"
 
+const techStack = [
+  "Turborepo",
+  "React",
+  "Next.js",
+  "Hono",
+  "TanStack Query",
+  "Better Auth",
+  "Tailwind CSS",
+  "Shadcn UI",
+  "Drizzle ORM",
+  "PostgreSQL",
+  "Bun",
+  "Zod",
+  "Fumadocs",
+  "tsdown",
+  "Oxlint",
+  "Prettier",
+  "TypeScript",
+  "Docker",
+  "Vercel",
+]
+
 export default async function Home() {
   const typescriptCode = `import { apiClient } from "@/lib/api/client"
 
@@ -130,44 +152,19 @@ bun dev`
               animation: "scroll-left 20s linear infinite",
             }}
           >
-            {(() => {
-              const techStack = [
-                "Turborepo",
-                "React",
-                "Next.js",
-                "Hono",
-                "TanStack Query",
-                "Better Auth",
-                "Tailwind CSS",
-                "Shadcn UI",
-                "Drizzle ORM",
-                "PostgreSQL",
-                "Bun",
-                "Zod",
-                "Fumadocs",
-                "tsdown",
-                "Oxlint",
-                "Prettier",
-                "TypeScript",
-                "Docker",
-                "Vercel",
-              ]
-              return techStack
-                .concat(techStack)
-                .flatMap((tech, index, array) =>
-                  index === array.length - 1 ? [tech] : [tech, "•"],
-                )
-                .map((item, index) => (
-                  <span
-                    key={`${item}-${index}`}
-                    className={
-                      item === "•" ? "opacity-25" : "hover:text-foreground transition-colors"
-                    }
-                  >
-                    {item}
-                  </span>
-                ))
-            })()}
+            {techStack
+              .concat(techStack)
+              .flatMap((tech, index, array) => (index === array.length - 1 ? [tech] : [tech, "•"]))
+              .map((item, index) => (
+                <span
+                  key={`${item}-${index}`}
+                  className={
+                    item === "•" ? "opacity-25" : "hover:text-foreground transition-colors"
+                  }
+                >
+                  {item}
+                </span>
+              ))}
           </div>
           <style
             dangerouslySetInnerHTML={{
