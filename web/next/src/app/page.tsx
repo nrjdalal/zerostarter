@@ -130,28 +130,8 @@ bun dev`
               animation: "scroll-left 20s linear infinite",
             }}
           >
-            {[
-              "Turborepo",
-              "React",
-              "Next.js",
-              "Hono",
-              "TanStack Query",
-              "Better Auth",
-              "Tailwind CSS",
-              "Shadcn UI",
-              "Drizzle ORM",
-              "PostgreSQL",
-              "Bun",
-              "Zod",
-              "Fumadocs",
-              "tsdown",
-              "Oxlint",
-              "Prettier",
-              "TypeScript",
-              "Docker",
-              "Vercel",
-            ]
-              .concat([
+            {(() => {
+              const techStack = [
                 "Turborepo",
                 "React",
                 "Next.js",
@@ -171,18 +151,23 @@ bun dev`
                 "TypeScript",
                 "Docker",
                 "Vercel",
-              ])
-              .flatMap((tech, index, array) => (index === array.length - 1 ? [tech] : [tech, "•"]))
-              .map((item, index) => (
-                <span
-                  key={`${item}-${index}`}
-                  className={
-                    item === "•" ? "opacity-25" : "hover:text-foreground transition-colors"
-                  }
-                >
-                  {item}
-                </span>
-              ))}
+              ]
+              return techStack
+                .concat(techStack)
+                .flatMap((tech, index, array) =>
+                  index === array.length - 1 ? [tech] : [tech, "•"],
+                )
+                .map((item, index) => (
+                  <span
+                    key={`${item}-${index}`}
+                    className={
+                      item === "•" ? "opacity-25" : "hover:text-foreground transition-colors"
+                    }
+                  >
+                    {item}
+                  </span>
+                ))
+            })()}
           </div>
           <style
             dangerouslySetInnerHTML={{
