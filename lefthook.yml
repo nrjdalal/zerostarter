@@ -1,0 +1,13 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint-staged:
+      run: bunx lint-staged --verbose
+      stage_fixed: true
+    build:
+      run: bun run build
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1}
