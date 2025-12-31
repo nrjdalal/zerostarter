@@ -2,18 +2,10 @@ import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 
 import { config } from "@/lib/config"
+import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
-
-function sortByMeta<T extends { url: string }>(pages: T[], order: string[], baseUrl: string): T[] {
-  const getSlug = (url: string) => url.replace(baseUrl, "").replace(/^\//, "") || "index"
-  return [...pages].sort((a, b) => {
-    if (order.indexOf(getSlug(a.url)) === -1) return 1
-    if (order.indexOf(getSlug(b.url)) === -1) return -1
-    return order.indexOf(getSlug(a.url)) - order.indexOf(getSlug(b.url))
-  })
-}
 
 export async function GET() {
   const pages = [
