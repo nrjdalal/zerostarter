@@ -1,21 +1,37 @@
 "use client"
 
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { SearchIcon } from "lucide-react"
 
-import { useIsMac } from "@/hooks/use-platform"
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
 
+function isMacPlatform(): boolean {
+  return typeof window !== "undefined" && window.navigator.userAgent.includes("Mac")
+}
+
+function MetaOrControl() {
+  const [key, setKey] = useState<string | null>(null)
+  useEffect(() => {
+    setKey(isMacPlatform() ? "⌘" : "Ctrl")
+  }, [])
+  return key ?? "⌘"
+}
+
 export function SidebarDocsSearch() {
-  const isMac = useIsMac()
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const dispatchSearchEvent = () => {
+  const handleSearchTrigger = useCallback(() => {
     if (isMobile) {
       setOpenMobile(false)
     }
+  }, [isMobile, setOpenMobile])
+
+  const handleClick = useCallback(() => {
+    handleSearchTrigger()
+    // Dispatch keyboard event for fumadocs to catch
+    const isMac = isMacPlatform()
     const event = new KeyboardEvent("keydown", {
       key: "k",
       code: "KeyK",
@@ -25,12 +41,20 @@ export function SidebarDocsSearch() {
       cancelable: true,
     })
     document.dispatchEvent(event)
-  }
+  }, [handleSearchTrigger])
 
   useEffect(() => {
+    const hotKey = [
+      {
+        key: (e: KeyboardEvent) => e.metaKey || e.ctrlKey,
+      },
+      {
+        key: "k",
+      },
+    ]
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Press "S" to trigger search (Cmd/Ctrl+K)
-      if (e.key === "s" && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      if (hotKey.every((v) => (typeof v.key === "string" ? e.key === v.key : v.key(e)))) {
         const target = e.target as HTMLElement
         if (
           target.isContentEditable ||
@@ -39,20 +63,17 @@ export function SidebarDocsSearch() {
         ) {
           return
         }
+
         e.preventDefault()
-        dispatchSearchEvent()
+        handleSearchTrigger()
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown)
     return () => {
-      document.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isMac, isMobile])
-
-  const handleClick = () => {
-    dispatchSearchEvent()
-  }
+  }, [handleSearchTrigger])
 
   return (
     <div className="relative">
@@ -65,7 +86,10 @@ export function SidebarDocsSearch() {
       />
       {!isMobile && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
-          <Kbd>S</Kbd>
+          <Kbd>
+            <MetaOrControl />
+          </Kbd>
+          <Kbd>K</Kbd>
         </div>
       )}
     </div>
