@@ -22,7 +22,15 @@ function MetaOrControl() {
 export function SidebarDocsSearch() {
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const triggerSearchEvent = useCallback(() => {
+  const handleSearchTrigger = useCallback(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [isMobile, setOpenMobile])
+
+  const handleClick = useCallback(() => {
+    handleSearchTrigger()
+    // Dispatch keyboard event for fumadocs to catch
     const isMac = isMacPlatform()
     const event = new KeyboardEvent("keydown", {
       key: "k",
@@ -32,18 +40,8 @@ export function SidebarDocsSearch() {
       bubbles: true,
       cancelable: true,
     })
-    // Mark as synthetic to prevent infinite loop
-    const syntheticEvent = event as KeyboardEvent & { __synthetic?: boolean }
-    syntheticEvent.__synthetic = true
     document.dispatchEvent(event)
-  }, [])
-
-  const handleSearchTrigger = useCallback(() => {
-    if (isMobile) {
-      setOpenMobile(false)
-    }
-    triggerSearchEvent()
-  }, [isMobile, setOpenMobile, triggerSearchEvent])
+  }, [handleSearchTrigger])
 
   useEffect(() => {
     const hotKey = [
@@ -56,11 +54,6 @@ export function SidebarDocsSearch() {
     ]
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore synthetic events to prevent infinite loop
-      if ((e as KeyboardEvent & { __synthetic?: boolean }).__synthetic) {
-        return
-      }
-
       if (hotKey.every((v) => (typeof v.key === "string" ? e.key === v.key : v.key(e)))) {
         const target = e.target as HTMLElement
         if (
@@ -71,7 +64,6 @@ export function SidebarDocsSearch() {
           return
         }
 
-        e.preventDefault()
         handleSearchTrigger()
       }
     }
@@ -87,7 +79,7 @@ export function SidebarDocsSearch() {
       <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
       <SidebarInput
         placeholder="Search"
-        onClick={handleSearchTrigger}
+        onClick={handleClick}
         readOnly
         className={`cursor-pointer pl-8 ${isMobile ? "pr-3" : "pr-20"}`}
       />
