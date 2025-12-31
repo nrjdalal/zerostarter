@@ -1,17 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { SearchIcon } from "lucide-react"
 
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
 
+function isMacPlatform(): boolean {
+  return typeof window !== "undefined" && window.navigator.userAgent.includes("Mac")
+}
+
 function MetaOrControl() {
   const [key, setKey] = useState<string | null>(null)
   useEffect(() => {
-    const isMac = window.navigator.userAgent.includes("Mac")
-    setKey(isMac ? "⌘" : "Ctrl")
+    setKey(isMacPlatform() ? "⌘" : "Ctrl")
   }, [])
   return key ?? "⌘"
 }
@@ -19,8 +22,8 @@ function MetaOrControl() {
 export function SidebarDocsSearch() {
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const triggerSearchEvent = () => {
-    const isMac = window.navigator.userAgent.includes("Mac")
+  const triggerSearchEvent = useCallback(() => {
+    const isMac = isMacPlatform()
     const event = new KeyboardEvent("keydown", {
       key: "k",
       code: "KeyK",
@@ -30,14 +33,14 @@ export function SidebarDocsSearch() {
       cancelable: true,
     })
     document.dispatchEvent(event)
-  }
+  }, [])
 
-  const dispatchSearchEvent = () => {
+  const dispatchSearchEvent = useCallback(() => {
     if (isMobile) {
       setOpenMobile(false)
     }
     triggerSearchEvent()
-  }
+  }, [isMobile, triggerSearchEvent])
 
   useEffect(() => {
     const hotKey = [
