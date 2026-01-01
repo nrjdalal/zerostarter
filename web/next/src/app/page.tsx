@@ -18,6 +18,20 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+import {
+  SiBun,
+  SiDocker,
+  SiHono,
+  SiNextdotjs,
+  SiPostgresql,
+  SiPrettier,
+  SiReact,
+  SiTailwindcss,
+  SiTurborepo,
+  SiTypescript,
+  SiVercel,
+  SiZod,
+} from "react-icons/si"
 import { codeToHtml } from "shiki"
 
 import { config } from "@/lib/config"
@@ -29,8 +43,33 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TechMarquee } from "@/components/ui/marquee-tech"
 import { ApiStatus } from "@/components/api-status"
+
+import { BetterAuthIcon } from "../../public/landing/better-auth-icon"
+import { DrizzleIcon } from "../../public/landing/drizzle-icon"
+import { TanStackIcon } from "../../public/landing/tanstack-icon"
+
+const techStack = [
+  { name: "Turborepo", icon: SiTurborepo },
+  { name: "React", icon: SiReact },
+  { name: "Next.js", icon: SiNextdotjs },
+  { name: "Hono", icon: SiHono },
+  { name: "TanStack Query", icon: TanStackIcon },
+  { name: "Better Auth", icon: BetterAuthIcon },
+  { name: "Tailwind CSS", icon: SiTailwindcss },
+  { name: "shadcn/ui", icon: SiReact },
+  { name: "Drizzle ORM", icon: DrizzleIcon },
+  { name: "PostgreSQL", icon: SiPostgresql },
+  { name: "Bun", icon: SiBun },
+  { name: "Zod", icon: SiZod },
+  { name: "Fumadocs", icon: SiReact },
+  { name: "tsdown", icon: SiTypescript },
+  { name: "Oxlint", icon: SiTypescript },
+  { name: "Prettier", icon: SiPrettier },
+  { name: "TypeScript", icon: SiTypescript },
+  { name: "Docker", icon: SiDocker },
+  { name: "Vercel", icon: SiVercel },
+]
 
 export default async function Home() {
   const typescriptCode = `import { apiClient } from "@/lib/api/client"
@@ -124,7 +163,40 @@ bun dev`
         </div>
 
         {/* Tech Stack Badges */}
-        <TechMarquee />
+        <div className="bg-muted/30 relative overflow-hidden border-t py-8">
+          <div className="animate-marquee flex w-max gap-12 px-6">
+            {[...techStack, ...techStack].map((tech, index) => {
+              const Icon = tech.icon
+              return (
+                <div
+                  key={`${tech.name}-${index}`}
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 whitespace-nowrap transition-colors"
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className="text-sm font-medium">{tech.name}</span>
+                </div>
+              )
+            })}
+          </div>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+            @keyframes marquee {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-50%);
+              }
+            }
+
+            .animate-marquee {
+              animation: marquee 28s linear infinite;
+            }
+          `,
+            }}
+          />
+        </div>
       </section>
 
       {/* Features Section */}
