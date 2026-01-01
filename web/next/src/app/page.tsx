@@ -286,18 +286,19 @@ bun dev`
           </div>
           <style
             dangerouslySetInnerHTML={{
-              __html: `@keyframes marquee {
-                from {
-                  transform: translate3d(0, 0, 0);
+              __html: `
+                @keyframes marquee {
+                  from {
+                    transform: translate3d(0, 0, 0);
+                  }
+                  to {
+                    transform: translate3d(-50%, 0, 0);
+                  }
                 }
-                to {
-                  transform: translate3d(-50%, 0, 0);
+                .animate-marquee {
+                  animation: marquee 45s linear infinite;
+                  will-change: transform;
                 }
-              }
-              .animate-marquee {
-                animation: marquee 45s linear infinite;
-                will-change: transform;
-              }
               `,
             }}
           />
