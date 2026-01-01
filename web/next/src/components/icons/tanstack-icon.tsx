@@ -1,8 +1,6 @@
 "use client"
 
-import Image from "next/image"
-
-export function TanStackIcon({ className }: { className?: string }) {
+export function TanStackIcon() {
   return (
     <svg
       className="fill-gray-700 dark:fill-gray-300"

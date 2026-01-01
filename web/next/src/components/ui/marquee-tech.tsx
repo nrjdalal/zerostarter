@@ -1,7 +1,6 @@
 "use client"
 
 import { FaDatabase } from "react-icons/fa"
-import { HiOutlineServer } from "react-icons/hi"
 import {
   SiBun,
   SiDocker,
@@ -17,6 +16,7 @@ import {
   SiZod,
 } from "react-icons/si"
 
+import { BetterAuthIcon } from "../icons/better-auth-icon"
 import { TanStackIcon } from "../icons/tanstack-icon"
 
 const techStack = [
@@ -25,7 +25,7 @@ const techStack = [
   { name: "Next.js", icon: SiNextdotjs },
   { name: "Hono", icon: SiHono },
   { name: "TanStack Query", icon: TanStackIcon },
-  { name: "Better Auth", icon: HiOutlineServer },
+  { name: "Better Auth", icon: BetterAuthIcon },
   { name: "Tailwind CSS", icon: SiTailwindcss },
   { name: "shadcn/ui", icon: SiReact },
   { name: "Drizzle ORM", icon: FaDatabase },
