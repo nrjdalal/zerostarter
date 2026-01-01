@@ -44,22 +44,22 @@ export const techStack: Tech[] = [
   {
     name: "Turborepo",
     icon: {
-      light: "/landing/Turborepo_light.svg",
-      dark: "/landing/Turborepo_dark.svg",
+      light: "/landing/turborepo-light.svg",
+      dark: "/landing/turborepo-dark.svg",
     },
   },
   {
     name: "React",
     icon: {
-      light: "/landing/React_light.svg",
-      dark: "/landing/React_dark.svg",
+      light: "/landing/react-light.svg",
+      dark: "/landing/react-dark.svg",
     },
   },
   {
     name: "Next.js",
     icon: {
-      light: "/landing/nextjs_icon_dark.svg",
-      dark: "/landing/nextjs_icon_dark.svg",
+      light: "/landing/nextjs-icon-dark.svg",
+      dark: "/landing/nextjs-icon-dark.svg",
     },
   },
   {
@@ -79,8 +79,8 @@ export const techStack: Tech[] = [
   {
     name: "Better Auth",
     icon: {
-      light: "/landing/Better Auth_light.svg",
-      dark: "/landing/Better Auth_dark.svg",
+      light: "/landing/better-auth-light.svg",
+      dark: "/landing/better-auth-dark.svg",
     },
   },
   {
@@ -93,15 +93,15 @@ export const techStack: Tech[] = [
   {
     name: "Shadcn UI",
     icon: {
-      light: "/landing/shadcn_ui_light.svg",
-      dark: "/landing/shadcn_ui_dark.svg",
+      light: "/landing/shadcn-ui-light.svg",
+      dark: "/landing/shadcn-ui-dark.svg",
     },
   },
   {
     name: "Drizzle ORM",
     icon: {
-      light: "/landing/Drizzle ORM_light.svg",
-      dark: "/landing/Drizzle ORM_dark.svg",
+      light: "/landing/drizzle-orm-light.svg",
+      dark: "/landing/drizzle-orm-dark.svg",
     },
   },
   {
@@ -142,15 +142,15 @@ export const techStack: Tech[] = [
   {
     name: "Oxlint",
     icon: {
-      light: "/landing/Oxlint.svg",
-      dark: "/landing/Oxlint.svg",
+      light: "/landing/oxlint.svg",
+      dark: "/landing/oxlint.svg",
     },
   },
   {
     name: "Prettier",
     icon: {
-      light: "/landing/Prettier_light.svg",
-      dark: "/landing/Prettier_dark.svg",
+      light: "/landing/prettier-light.svg",
+      dark: "/landing/prettier-dark.svg",
     },
   },
   {
@@ -170,8 +170,8 @@ export const techStack: Tech[] = [
   {
     name: "Vercel",
     icon: {
-      light: "/landing/Vercel_light.svg",
-      dark: "/landing/Vercel_dark.svg",
+      light: "/landing/vercel-light.svg",
+      dark: "/landing/vercel-dark.svg",
     },
   },
 ]
