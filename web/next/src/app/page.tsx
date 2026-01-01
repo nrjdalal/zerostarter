@@ -42,73 +42,10 @@ type Tech = {
 
 export const techStack: Tech[] = [
   {
-    name: "Turborepo",
-    icon: {
-      light: "/landing/turborepo-light.svg",
-      dark: "/landing/turborepo-dark.svg",
-    },
-  },
-  {
-    name: "React",
-    icon: {
-      light: "/landing/react-light.svg",
-      dark: "/landing/react-dark.svg",
-    },
-  },
-  {
-    name: "Next.js",
-    icon: {
-      light: "/landing/nextjs-icon-dark.svg",
-      dark: "/landing/nextjs-icon-dark.svg",
-    },
-  },
-  {
-    name: "Hono",
-    icon: {
-      light: "/landing/hono.svg",
-      dark: "/landing/hono.svg",
-    },
-  },
-  {
-    name: "Tanstack Query",
-    icon: {
-      light: "/landing/tanstack.svg",
-      dark: "/landing/tanstack.svg",
-    },
-  },
-  {
     name: "Better Auth",
     icon: {
       light: "/landing/better-auth-light.svg",
       dark: "/landing/better-auth-dark.svg",
-    },
-  },
-  {
-    name: "Tailwind CSS",
-    icon: {
-      light: "/landing/tailwindcss.svg",
-      dark: "/landing/tailwindcss.svg",
-    },
-  },
-  {
-    name: "Shadcn UI",
-    icon: {
-      light: "/landing/shadcn-ui-light.svg",
-      dark: "/landing/shadcn-ui-dark.svg",
-    },
-  },
-  {
-    name: "Drizzle ORM",
-    icon: {
-      light: "/landing/drizzle-orm-light.svg",
-      dark: "/landing/drizzle-orm-dark.svg",
-    },
-  },
-  {
-    name: "postgreSQL",
-    icon: {
-      light: "/landing/postgresql.svg",
-      dark: "/landing/postgresql.svg",
     },
   },
   {
@@ -119,10 +56,17 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "Zod",
+    name: "Docker",
     icon: {
-      light: "/landing/zod.svg",
-      dark: "/landing/zod.svg",
+      light: "/landing/docker.svg",
+      dark: "/landing/docker.svg",
+    },
+  },
+  {
+    name: "Drizzle ORM",
+    icon: {
+      light: "/landing/drizzle-orm-light.svg",
+      dark: "/landing/drizzle-orm-dark.svg",
     },
   },
   {
@@ -133,10 +77,17 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "tsdown",
+    name: "Hono",
     icon: {
-      light: "/landing/tsdown.svg",
-      dark: "/landing/tsdown.svg",
+      light: "/landing/hono.svg",
+      dark: "/landing/hono.svg",
+    },
+  },
+  {
+    name: "Next.js",
+    icon: {
+      light: "/landing/nextjs.svg",
+      dark: "/landing/nextjs.svg",
     },
   },
   {
@@ -147,10 +98,59 @@ export const techStack: Tech[] = [
     },
   },
   {
+    name: "PostgreSQL",
+    icon: {
+      light: "/landing/postgresql.svg",
+      dark: "/landing/postgresql.svg",
+    },
+  },
+  {
     name: "Prettier",
     icon: {
       light: "/landing/prettier-light.svg",
       dark: "/landing/prettier-dark.svg",
+    },
+  },
+  {
+    name: "React",
+    icon: {
+      light: "/landing/react-light.svg",
+      dark: "/landing/react-dark.svg",
+    },
+  },
+  {
+    name: "shadcn/ui",
+    icon: {
+      light: "/landing/shadcn-ui-light.svg",
+      dark: "/landing/shadcn-ui-dark.svg",
+    },
+  },
+  {
+    name: "Tanstack Query",
+    icon: {
+      light: "/landing/tanstack.svg",
+      dark: "/landing/tanstack.svg",
+    },
+  },
+  {
+    name: "Tailwind CSS",
+    icon: {
+      light: "/landing/tailwindcss.svg",
+      dark: "/landing/tailwindcss.svg",
+    },
+  },
+  {
+    name: "tsdown",
+    icon: {
+      light: "/landing/tsdown.svg",
+      dark: "/landing/tsdown.svg",
+    },
+  },
+  {
+    name: "Turborepo",
+    icon: {
+      light: "/landing/turborepo-light.svg",
+      dark: "/landing/turborepo-dark.svg",
     },
   },
   {
@@ -161,17 +161,17 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "Docker",
-    icon: {
-      light: "/landing/docker.svg",
-      dark: "/landing/docker.svg",
-    },
-  },
-  {
     name: "Vercel",
     icon: {
       light: "/landing/vercel-light.svg",
       dark: "/landing/vercel-dark.svg",
+    },
+  },
+  {
+    name: "Zod",
+    icon: {
+      light: "/landing/zod.svg",
+      dark: "/landing/zod.svg",
     },
   },
 ]
@@ -275,7 +275,6 @@ bun dev`
                 key={`${tech.name}-${index}`}
                 className="text-muted-foreground hover:text-foreground flex items-center gap-2 whitespace-nowrap transition-colors"
               >
-                {/* LIGHT / DARK SVG swap */}
                 <span className="relative h-5 w-5 shrink-0">
                   <Image src={tech.icon.light} alt={tech.name} fill className="block dark:hidden" />
                   <Image src={tech.icon.dark} alt={tech.name} fill className="hidden dark:block" />
@@ -285,24 +284,22 @@ bun dev`
               </div>
             ))}
           </div>
-
           <style
             dangerouslySetInnerHTML={{
               __html: `
-        @keyframes marquee {
-          from {
-            transform: translate3d(0, 0, 0);
-          }
-          to {
-            transform: translate3d(-50%, 0, 0);
-          }
-        }
-
-        .animate-marquee {
-          animation: marquee 28s linear infinite;
-          will-change: transform;
-        }
-      `,
+                @keyframes marquee {
+                  from {
+                    transform: translate3d(0, 0, 0);
+                  }
+                  to {
+                    transform: translate3d(-50%, 0, 0);
+                  }
+                }
+                .animate-marquee {
+                  animation: marquee 45s linear infinite;
+                  will-change: transform;
+                }
+              `,
             }}
           />
         </div>
