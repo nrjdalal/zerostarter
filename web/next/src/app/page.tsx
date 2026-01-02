@@ -72,8 +72,8 @@ export const techStack: Tech[] = [
   {
     name: "Fumadocs",
     icon: {
-      light: "/landing/fumadocs.svg",
-      dark: "/landing/fumadocs.svg",
+      light: "/landing/fumadocs.png",
+      dark: "/landing/fumadocs.png",
     },
   },
   {
