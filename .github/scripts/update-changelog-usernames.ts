@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest"
 
 const CHANGELOG_PATH = "CHANGELOG.md"
 const EMAIL_REGEX =
-  /<((?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+.-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,})>/gi
+  /([^<\n]+?)\s*<((?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+.-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,})>/gi
 
 async function searchCommits(
   octokit: Octokit,
@@ -70,9 +70,19 @@ async function processChangelog() {
   const emailToUserInfo = new Map<string, { username: string | null; name: string | null }>()
 
   const emails = new Set<string>()
+  const emailMatches = new Map<
+    string,
+    Array<{ fullMatch: string; nameBefore: string | undefined }>
+  >()
   let match
   while ((match = EMAIL_REGEX.exec(content)) !== null) {
-    emails.add(match[1])
+    const email = match[2]
+    const nameBefore = match[1]?.trim()
+    emails.add(email)
+    const matchInfo = { fullMatch: match[0], nameBefore }
+    const existing = emailMatches.get(email) || []
+    existing.push(matchInfo)
+    emailMatches.set(email, existing)
   }
 
   const token = process.env.GITHUB_TOKEN
@@ -100,17 +110,26 @@ async function processChangelog() {
 
   let updatedContent = content
   for (const [email, userInfo] of emailToUserInfo) {
+    const matches = emailMatches.get(email)
+    if (!matches) continue
+
     if (userInfo.username) {
-      // Format as "Name @username" if name exists, otherwise just "@username"
-      const replacement = userInfo.name
-        ? `${userInfo.name} @${userInfo.username}`
-        : `@${userInfo.username}`
-      updatedContent = updatedContent.replaceAll(`<${email}>`, replacement)
+      // Always use GitHub name if available, otherwise fall back to name before email, otherwise username
+      // This prevents duplicates when nameBefore matches GitHub name
+      const displayName = userInfo.name || matches[0]?.nameBefore || userInfo.username
+      const replacement = `${displayName} @${userInfo.username}`
+      // Replace all matches for this email (replace the full match including any name before email)
+      for (const matchInfo of matches) {
+        updatedContent = updatedContent.replaceAll(matchInfo.fullMatch, replacement)
+      }
     } else {
-      updatedContent = updatedContent
-        .split("\n")
-        .filter((line) => !line.includes(`<${email}>`))
-        .join("\n")
+      // Remove lines containing any match for this email
+      for (const matchInfo of matches) {
+        updatedContent = updatedContent
+          .split("\n")
+          .filter((line) => !line.includes(matchInfo.fullMatch))
+          .join("\n")
+      }
     }
   }
 
