@@ -135,22 +135,25 @@ async function processChangelog() {
   // Replace emails in contributor lines
   const updatedLines = [...lines]
   for (const [email, userInfo] of emailToUserInfo) {
-    const lineIndices = emailToLineIndex.get(email) || []
+    const matches = emailMatches.get(email)
+    if (!matches) continue
 
-    for (const lineIndex of lineIndices) {
-      let line = updatedLines[lineIndex]
-
-      if (userInfo.username) {
-        // Replace everything from bullet point to <email> with Name @username
-        const displayName = userInfo.name || userInfo.username
-        // Match: "- " (optional) + any text + "<email>" and replace with "- " + displayName + " @username"
-        const bulletMatch = line.match(/^(-\s*)/)
-        const bullet = bulletMatch ? bulletMatch[1] : ""
-        line = line.replace(/^(-\s*)?.*<[^>]+>/, `${bullet}${displayName} @${userInfo.username}`)
-        updatedLines[lineIndex] = line
-      } else {
-        // Remove the line if no username found
-        updatedLines[lineIndex] = ""
+    if (userInfo.username) {
+      // Always use GitHub name if available, otherwise fall back to name before email, otherwise username
+      // This prevents duplicates when nameBefore matches GitHub name
+      const displayName = userInfo.name || matches[0]?.nameBefore || userInfo.username
+      const replacement = `- ${displayName} @${userInfo.username}`
+      // Replace all matches for this email (replace the full match including any name before email)
+      for (const matchInfo of matches) {
+        updatedContent = updatedContent.replaceAll(matchInfo.fullMatch, replacement)
+      }
+    } else {
+      // Remove lines containing any match for this email
+      for (const matchInfo of matches) {
+        updatedContent = updatedContent
+          .split("\n")
+          .filter((line) => !line.includes(matchInfo.fullMatch))
+          .join("\n")
       }
     }
   }
