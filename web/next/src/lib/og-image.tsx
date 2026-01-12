@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation"
-
 import { ImageResponse } from "@takumi-rs/image-response"
+import { notFound } from "next/navigation"
 
 import type { blogSource, docsSource } from "@/lib/source"
 
