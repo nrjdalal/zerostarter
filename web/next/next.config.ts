@@ -7,7 +7,6 @@ import { createMDX } from "fumadocs-mdx/next"
 getSafeEnv(env, "@web/next")
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@takumi-rs/image-response"],
   reactCompiler: true,
   rewrites: async () => {
     return [
@@ -37,6 +36,7 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  serverExternalPackages: ["@takumi-rs/image-response"],
 }
 
 const withMDX = createMDX()
