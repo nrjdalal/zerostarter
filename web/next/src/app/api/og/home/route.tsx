@@ -1,4 +1,4 @@
-import { ImageResponse } from "next/og"
+import { ImageResponse } from "@takumi-rs/image-response"
 
 import { config } from "@/lib/config"
 
