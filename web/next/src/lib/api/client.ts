@@ -1,4 +1,5 @@
 import type { AppType } from "@api/hono"
+
 import { hc } from "hono/client"
 
 import { config } from "@/lib/config"

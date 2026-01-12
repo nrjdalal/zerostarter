@@ -1,8 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-
 import { SearchIcon } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
 
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"

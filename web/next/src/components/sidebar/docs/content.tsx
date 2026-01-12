@@ -1,11 +1,9 @@
 "use client"
 
+import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { ChevronRight } from "lucide-react"
-
-import { config } from "@/lib/config"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
@@ -18,6 +16,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { config } from "@/lib/config"
 
 export function SidebarDocsContent() {
   const pathname = usePathname()

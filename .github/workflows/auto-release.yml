@@ -48,7 +48,7 @@ jobs:
           else
             bunx changelogen --bump --no-commit || true
           fi
-          bunx prettier --write CHANGELOG.md
+          bunx oxfmt --write CHANGELOG.md
           bun install --ignore-scripts
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun .github/scripts/changelog-manager.ts
           if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ]; then

@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
-
 import { config } from "@/lib/config"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"

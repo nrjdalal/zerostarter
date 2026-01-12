@@ -1,15 +1,12 @@
 "use client"
 
-import { useState } from "react"
-
 import { RiGithubFill, RiGoogleFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { GalleryVerticalEnd, Loader2 } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { signIn } from "@/lib/auth/client"
-import { config } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -20,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { signIn } from "@/lib/auth/client"
+import { config } from "@/lib/config"
 
 const formSchema = z.object({
   email: z.email({ message: "Please enter a valid email address." }),

@@ -2,51 +2,17 @@
   "name": "@api/hono",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
-  "exports": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
     "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@packages/auth && tsc --noEmit",
     "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
-    "format": "prettier --write --ignore-unknown *",
-    "lint": "oxlint",
     "start": "bun dist/index.mjs"
-  },
-  "lint-staged": {
-    "*": [
-      "prettier --write --ignore-unknown",
-      "oxlint"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
-  },
-  "prettier": {
-    "importOrder": [
-      "<BUILTIN_MODULES>",
-      "",
-      "^hono/(.*)$|^hono$",
-      "^@hono/(.*)$|^@hono$",
-      "",
-      "<THIRD_PARTY_MODULES>",
-      "",
-      "^@/types/(.*)$",
-      "^@/db/(.*)$",
-      "^@/lib/(.*)$",
-      "^@/middlewares/(.*)$",
-      "^@/routers/(.*)$",
-      "",
-      "^[./]"
-    ],
-    "plugins": [
-      "@ianvs/prettier-plugin-sort-imports"
-    ],
-    "printWidth": 100,
-    "semi": false
   },
   "dependencies": {
     "@hono/zod-validator": "catalog:",
@@ -56,7 +22,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "catalog:",
     "@packages/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",

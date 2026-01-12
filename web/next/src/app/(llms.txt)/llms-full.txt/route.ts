@@ -1,6 +1,5 @@
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
-
 import { config } from "@/lib/config"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
@@ -88,7 +87,7 @@ You MUST:
 
 **Development Tools:**
 - Linter: Oxlint
-- Formatter: Prettier
+- Formatter: Oxfmt
 - Type Checking: TypeScript
 - Documentation: Fumadocs
 
@@ -113,8 +112,8 @@ You MUST:
 
 **Code Organization:**
 - Use workspace imports (\`@api/hono\`, \`@packages/*\`) not relative paths for cross-package imports
-- Follow import order conventions defined in each package's \`prettier.config\`
-- No semicolons (Prettier config: \`"semi": false\`)
+- Follow formatting conventions defined in \`.oxfmtrc.jsonc\`
+- No semicolons (Oxfmt config: \`"semi": false\`)
 
 ---
 

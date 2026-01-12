@@ -6,43 +6,7 @@
     "build": "next build",
     "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@api/hono && tsc --noEmit",
     "dev": "next dev",
-    "format": "prettier --write --ignore-unknown *",
-    "lint": "oxlint",
     "start": "next start"
-  },
-  "lint-staged": {
-    "*": [
-      "prettier --write --ignore-unknown",
-      "oxlint"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
-  },
-  "prettier": {
-    "importOrder": [
-      "<BUILTIN_MODULES>",
-      "",
-      "^react/(.*)$|^react$",
-      "^next/(.*)$|^next$",
-      "",
-      "<THIRD_PARTY_MODULES>",
-      "",
-      "^@/types/(.*)$",
-      "^@/lib/(.*)$",
-      "^@/hooks/(.*)$",
-      "^@/components/ui/(.*)$",
-      "^@/components/(.*)$",
-      "^@/app/(.*)$",
-      "",
-      "^[./]"
-    ],
-    "plugins": [
-      "@ianvs/prettier-plugin-sort-imports",
-      "prettier-plugin-tailwindcss"
-    ],
-    "printWidth": 100,
-    "semi": false
   },
   "dependencies": {
     "@api/hono": "workspace:*",
@@ -85,7 +49,6 @@
   "devDependencies": {
     "@fontsource-variable/dm-sans": "catalog:",
     "@fontsource-variable/jetbrains-mono": "catalog:",
-    "@ianvs/prettier-plugin-sort-imports": "catalog:",
     "@packages/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
@@ -95,7 +58,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
-    "prettier-plugin-tailwindcss": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:"

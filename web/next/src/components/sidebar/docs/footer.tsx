@@ -1,8 +1,7 @@
 "use client"
 
-import Link from "next/link"
-
 import { env } from "@packages/env/web-next"
+import Link from "next/link"
 
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 

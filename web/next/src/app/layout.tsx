@@ -1,12 +1,11 @@
+import type { Metadata } from "next"
+
 import { existsSync } from "fs"
 import { join } from "path"
 
-import type { Metadata } from "next"
-
-import { config } from "@/lib/config"
-import { Navbar } from "@/components/navbar/home"
 import { InnerProvider, OuterProvider } from "@/app/providers"
-
+import { Navbar } from "@/components/navbar/home"
+import { config } from "@/lib/config"
 import "@/app/globals.css"
 
 function getOgImageUrl(): string {

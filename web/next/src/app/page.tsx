@@ -1,6 +1,3 @@
-import Image from "next/image"
-import Link from "next/link"
-
 import { RiGithubFill } from "@remixicon/react"
 import {
   ArrowRight,
@@ -19,9 +16,11 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 import { codeToHtml } from "shiki"
 
-import { config } from "@/lib/config"
+import { ApiStatus } from "@/components/api-status"
 import {
   Accordion,
   AccordionContent,
@@ -30,7 +29,7 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ApiStatus } from "@/components/api-status"
+import { config } from "@/lib/config"
 
 type Tech = {
   name: string
@@ -91,10 +90,10 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "Oxlint",
+    name: "Oxc",
     icon: {
-      light: "/landing/oxlint.svg",
-      dark: "/landing/oxlint.svg",
+      light: "/landing/oxc.svg",
+      dark: "/landing/oxc.svg",
     },
   },
   {
@@ -102,13 +101,6 @@ export const techStack: Tech[] = [
     icon: {
       light: "/landing/postgresql.svg",
       dark: "/landing/postgresql.svg",
-    },
-  },
-  {
-    name: "Prettier",
-    icon: {
-      light: "/landing/prettier-light.svg",
-      dark: "/landing/prettier-dark.svg",
     },
   },
   {

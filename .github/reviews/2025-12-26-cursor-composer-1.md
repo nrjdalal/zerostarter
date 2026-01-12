@@ -159,9 +159,9 @@ ZeroStarter is a well-structured monorepo SaaS starter template with solid archi
    - Consistent naming conventions
    - Good use of barrel exports
 
-3. **Prettier/ESLint**
+3. **Oxfmt/Oxlint**
    - Consistent formatting
-   - Import sorting configured
+   - Formatting configured
    - Lint-staged hooks
 
 ### ⚠️ Issues Found
@@ -207,7 +207,9 @@ ZeroStarter is a well-structured monorepo SaaS starter template with solid archi
 
    ```typescript
    // web/next/src/app/providers.tsx:18
-   {!isProduction(process.env.NODE_ENV) && <DevTools />}
+   {
+     !isProduction(process.env.NODE_ENV) && <DevTools />
+   }
    ```
 
    **Issue:** Direct `process.env.NODE_ENV` access instead of using env package

@@ -1,8 +1,7 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
-import { baseOptions } from "@/lib/fumadocs"
-import { docsSource } from "@/lib/source"
+import { SidebarDocsContent, SidebarDocsFooter, SidebarDocsSearch } from "@/components/sidebar/docs"
 import {
   Sidebar,
   SidebarContent,
@@ -11,8 +10,9 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SidebarDocsContent, SidebarDocsFooter, SidebarDocsSearch } from "@/components/sidebar/docs"
 import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
+import { baseOptions } from "@/lib/fumadocs"
+import { docsSource } from "@/lib/source"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

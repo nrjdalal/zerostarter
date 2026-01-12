@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools/production"
 import { CodeXml, ExternalLink } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const config = {
   WebNext: "nrjdalal/zerostarter.dev",

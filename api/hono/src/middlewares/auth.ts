@@ -1,7 +1,7 @@
-import { createMiddleware } from "hono/factory"
+import type { Session } from "@packages/auth"
 
 import { auth } from "@packages/auth"
-import type { Session } from "@packages/auth"
+import { createMiddleware } from "hono/factory"
 
 export const authMiddleware = createMiddleware<{ Variables: Session }>(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })

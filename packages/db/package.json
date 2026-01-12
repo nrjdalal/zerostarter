@@ -2,23 +2,15 @@
   "name": "@packages/db",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
-  "exports": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@packages/env && tsc --noEmit",
-    "lint": "oxlint"
-  },
-  "prettier": {
-    "plugins": [
-      "@ianvs/prettier-plugin-sort-imports"
-    ],
-    "printWidth": 100,
-    "semi": false
+    "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@packages/env && tsc --noEmit"
   },
   "dependencies": {
     "@packages/env": "workspace:*",

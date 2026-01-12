@@ -1,12 +1,11 @@
 "use client"
 
+import { PanelLeftIcon } from "lucide-react"
 import * as React from "react"
 
-import { PanelLeftIcon } from "lucide-react"
-
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 
 function SidebarTrigger({
   className,

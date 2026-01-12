@@ -11,7 +11,7 @@ pre-commit:
       stage_fixed: true
     build:
       run: bun run build
-      use_stdin: true
+      interactive: true
 
 commit-msg:
   commands:

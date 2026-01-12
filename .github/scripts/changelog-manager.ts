@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from "node:fs"
 import { Octokit } from "@octokit/rest"
+import { readFileSync, writeFileSync } from "node:fs"
 
 const CHANGELOG_PATH = "CHANGELOG.md"
 

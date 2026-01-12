@@ -40,7 +40,7 @@ mv graph.svg .github/assets/graph-build.svg
 - **UI Components**: [Shadcn UI](https://ui.shadcn.com)
 - **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
 - **Validation**: [Zod](https://zod.dev)
-- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Prettier](https://prettier.io)
+- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
 

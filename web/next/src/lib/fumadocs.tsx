@@ -1,14 +1,15 @@
+import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 import type { Metadata } from "next"
+
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
+import { createRelativeLink } from "fumadocs-ui/mdx"
 import { notFound } from "next/navigation"
 
-import { getMDXComponents } from "@/mdx-components"
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
-import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
-import { createRelativeLink } from "fumadocs-ui/mdx"
-
-import { config } from "@/lib/config"
 import type { blogSource, docsSource } from "@/lib/source"
+
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
+import { config } from "@/lib/config"
+import { getMDXComponents } from "@/mdx-components"
 
 export function baseOptions(): BaseLayoutProps {
   return {

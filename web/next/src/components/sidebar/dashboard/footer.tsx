@@ -1,14 +1,11 @@
 "use client"
 
-import Link from "next/link"
-import { redirect } from "next/navigation"
-
 import { env } from "@packages/env/web-next"
 import { type User } from "better-auth/types"
 import { Book, ChevronsUpDown, LogOut, MessageSquare } from "lucide-react"
+import Link from "next/link"
+import { redirect } from "next/navigation"
 
-import { signOut } from "@/lib/auth/client"
-import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -24,6 +21,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { signOut } from "@/lib/auth/client"
+import { cn } from "@/lib/utils"
 
 export function SidebarDashboardFooter({ user }: { user: User }) {
   const { isMobile } = useSidebar()

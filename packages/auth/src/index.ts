@@ -1,9 +1,10 @@
-import { getCookieDomain } from "@/lib/utils"
 import { account, db, session, user, verification } from "@packages/db"
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { openAPI } from "better-auth/plugins"
+
+import { getCookieDomain } from "@/lib/utils"
 
 const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 

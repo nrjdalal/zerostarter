@@ -2,6 +2,9 @@
   "name": "@packages/env",
   "version": "0.0.1",
   "private": true,
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -25,20 +28,9 @@
       "default": "./dist/web-next.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit",
-    "lint": "oxlint"
-  },
-  "prettier": {
-    "plugins": [
-      "@ianvs/prettier-plugin-sort-imports"
-    ],
-    "printWidth": 100,
-    "semi": false
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
