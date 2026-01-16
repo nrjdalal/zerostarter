@@ -1,3 +1,4 @@
+import "@/instrumentation"
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Hono } from "hono"
