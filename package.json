@@ -70,7 +70,7 @@
     "@opentelemetry/resources": "^2.4.0",
     "@opentelemetry/sdk-node": "^0.210.0",
     "@opentelemetry/sdk-trace-node": "^2.4.0",
-    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "@opentelemetry/semantic-conventions": "^1.38.0",
     "@posthog/react": "^1.5.2",
     "@remixicon/react": "^4.8.0",
     "@t3-oss/env-core": "^0.13.10",

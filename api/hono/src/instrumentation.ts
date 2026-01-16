@@ -1,8 +1,14 @@
+import type { SpanProcessor } from "@opentelemetry/sdk-trace-node"
+
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node"
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 import { resourceFromAttributes } from "@opentelemetry/resources"
 import { NodeSDK } from "@opentelemetry/sdk-node"
-import { ConsoleSpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-node"
+import {
+  BatchSpanProcessor,
+  ConsoleSpanExporter,
+  SimpleSpanProcessor,
+} from "@opentelemetry/sdk-trace-node"
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions"
 
 /*
@@ -22,17 +28,57 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic
  * - OTEL_LOG_TO_CONSOLE: Set to "true" to log traces to console (default: false)
  */
 
+const spanProcessors: SpanProcessor[] = [new BatchSpanProcessor(new OTLPTraceExporter())]
+
+if (process.env.OTEL_LOG_TO_CONSOLE === "true") {
+  spanProcessors.push(new SimpleSpanProcessor(new ConsoleSpanExporter()))
+}
+
 const openTelemetrySDK = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(),
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: "api-hono",
     [ATTR_SERVICE_VERSION]: "0.0.1",
   }),
   instrumentations: [getNodeAutoInstrumentations()],
-  spanProcessors:
-    process.env.OTEL_LOG_TO_CONSOLE === "true"
-      ? [new SimpleSpanProcessor(new ConsoleSpanExporter())]
-      : undefined,
+  spanProcessors,
 })
 
-openTelemetrySDK.start()
+const SHUTDOWN_TIMEOUT_MS = 5000
+
+async function gracefulShutdown(signal: string): Promise<void> {
+  console.log(`[OpenTelemetry] Received ${signal}, shutting down...`)
+  try {
+    await Promise.race([
+      openTelemetrySDK.shutdown(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Shutdown timeout")), SHUTDOWN_TIMEOUT_MS),
+      ),
+    ])
+    console.log("[OpenTelemetry] Shutdown complete")
+  } catch (error) {
+    console.error("[OpenTelemetry] Shutdown error:", error)
+  }
+}
+
+process.on("SIGINT", async () => {
+  await gracefulShutdown("SIGINT")
+  process.exit(0)
+})
+
+process.on("SIGTERM", async () => {
+  await gracefulShutdown("SIGTERM")
+  process.exit(0)
+})
+
+process.on("uncaughtException", async (error) => {
+  console.error("[OpenTelemetry] Uncaught exception:", error)
+  await gracefulShutdown("uncaughtException")
+  process.exit(1)
+})
+
+try {
+  openTelemetrySDK.start()
+} catch (error) {
+  console.error("[OpenTelemetry] Failed to start SDK:", error)
+  process.exit(1)
+}

@@ -13,17 +13,12 @@ export const env = createEnv({
       .string()
       .transform((s) => s.split(",").map((v) => v.trim()))
       .pipe(z.array(z.url())),
-    OTEL_LOG_TO_CONSOLE: z
-      .enum(["true", "false"])
-      .default("false")
-      .transform((v) => v === "true"),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     HONO_APP_URL: process.env.HONO_APP_URL,
     HONO_PORT: process.env.HONO_PORT,
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
-    OTEL_LOG_TO_CONSOLE: process.env.OTEL_LOG_TO_CONSOLE,
   },
   emptyStringAsUndefined: true,
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
