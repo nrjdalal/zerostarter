@@ -15,7 +15,15 @@
     "start": "bun dist/index.mjs"
   },
   "dependencies": {
+    "@hono/otel": "catalog:",
     "@hono/zod-validator": "catalog:",
+    "@opentelemetry/api": "catalog:",
+    "@opentelemetry/auto-instrumentations-node": "catalog:",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:",
+    "@opentelemetry/resources": "catalog:",
+    "@opentelemetry/sdk-node": "catalog:",
+    "@opentelemetry/sdk-trace-node": "catalog:",
+    "@opentelemetry/semantic-conventions": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/env": "workspace:*",
     "hono": "catalog:",

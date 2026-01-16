@@ -6,13 +6,14 @@ import { logger } from "hono/logger"
 import { requestId } from "hono/request-id"
 import { z } from "zod"
 
-import { metadataMiddleware } from "@/middlewares"
+import { metadataMiddleware, otelMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
 const app = new Hono().basePath("/api")
 
 app.use(logger())
 app.use("*", requestId())
+app.use("*", otelMiddleware)
 app.use("*", metadataMiddleware)
 
 app.use(
