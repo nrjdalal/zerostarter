@@ -19,6 +19,7 @@
     "@hono/zod-validator": "catalog:",
     "@opentelemetry/api": "catalog:",
     "@opentelemetry/auto-instrumentations-node": "catalog:",
+    "@opentelemetry/core": "catalog:",
     "@opentelemetry/exporter-trace-otlp-http": "catalog:",
     "@opentelemetry/resources": "catalog:",
     "@opentelemetry/sdk-node": "catalog:",
