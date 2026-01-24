@@ -280,8 +280,20 @@ bun dev`
                 className="text-muted-foreground hover:text-foreground flex items-center gap-2 whitespace-nowrap transition-colors"
               >
                 <span className="relative h-5 w-5 shrink-0">
-                  <Image src={tech.icon.light} alt={tech.name} fill className="block dark:hidden" />
-                  <Image src={tech.icon.dark} alt={tech.name} fill className="hidden dark:block" />
+                  <Image
+                    src={tech.icon.light}
+                    alt={tech.name}
+                    fill
+                    sizes="1.25rem"
+                    className="block dark:hidden"
+                  />
+                  <Image
+                    src={tech.icon.dark}
+                    alt={tech.name}
+                    fill
+                    sizes="1.25rem"
+                    className="hidden dark:block"
+                  />
                 </span>
 
                 <span className="text-sm font-medium">{tech.name}</span>
