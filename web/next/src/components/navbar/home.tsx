@@ -84,7 +84,7 @@ export function Navbar() {
 
   return (
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
-      <div className="flex min-h-14 items-center justify-between px-5">
+      <div className="flex min-h-14 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {config.app.name}
           <Badge variant="secondary" className="text-xs">
