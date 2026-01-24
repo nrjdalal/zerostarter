@@ -1,3 +1,59 @@
+## v0.0.13
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.12...v0.0.13)
+
+### 🚀 Enhancements
+
+- Init hono-api ([f29f3fd](https://github.com/nrjdalal/zerostarter/commit/f29f3fd))
+- **ui:** Add API docs link and improve navbar responsiveness ([bbeda21](https://github.com/nrjdalal/zerostarter/commit/bbeda21))
+- Show versioning ([49a75a7](https://github.com/nrjdalal/zerostarter/commit/49a75a7))
+- Show versioning v2 ([9a6bac5](https://github.com/nrjdalal/zerostarter/commit/9a6bac5))
+
+### 💅 Refactors
+
+- Move skills to .claude and .cursor directories ([2394126](https://github.com/nrjdalal/zerostarter/commit/2394126))
+- **sidebar:** Improve spacing and active state handling ([db478f0](https://github.com/nrjdalal/zerostarter/commit/db478f0))
+
+### 📖 Documentation
+
+- New blog ([9b1b03c](https://github.com/nrjdalal/zerostarter/commit/9b1b03c))
+- **blog:** Add callouts with documentation links ([fb1b683](https://github.com/nrjdalal/zerostarter/commit/fb1b683))
+- **openapi:** Add refs and sync ([40b06e5](https://github.com/nrjdalal/zerostarter/commit/40b06e5))
+- Version size reduce ([8b4bea0](https://github.com/nrjdalal/zerostarter/commit/8b4bea0))
+
+### 🏡 Chore
+
+- Update deps ([498883f](https://github.com/nrjdalal/zerostarter/commit/498883f))
+- Update deps ([dd5b0b4](https://github.com/nrjdalal/zerostarter/commit/dd5b0b4))
+- Add skills to .github, symlinks later ([82d9174](https://github.com/nrjdalal/zerostarter/commit/82d9174))
+- Address coderabbit comment ([81ebcb9](https://github.com/nrjdalal/zerostarter/commit/81ebcb9))
+- Address coderabbit comment ([d0d6371](https://github.com/nrjdalal/zerostarter/commit/d0d6371))
+- Sync ([0e5b1ee](https://github.com/nrjdalal/zerostarter/commit/0e5b1ee))
+- Add x-code-samples ([b1274fa](https://github.com/nrjdalal/zerostarter/commit/b1274fa))
+- Minor sync ([89fe959](https://github.com/nrjdalal/zerostarter/commit/89fe959))
+- Minor sync ([1aa402d](https://github.com/nrjdalal/zerostarter/commit/1aa402d))
+- Minor sync ([f061b0f](https://github.com/nrjdalal/zerostarter/commit/f061b0f))
+- Baseui comp sync ([f0f1102](https://github.com/nrjdalal/zerostarter/commit/f0f1102))
+- Baseui comp sync ([917294c](https://github.com/nrjdalal/zerostarter/commit/917294c))
+- Remove query param example ([7a82baf](https://github.com/nrjdalal/zerostarter/commit/7a82baf))
+- Sync ([f683599](https://github.com/nrjdalal/zerostarter/commit/f683599))
+- Sync ([a633aba](https://github.com/nrjdalal/zerostarter/commit/a633aba))
+- Sync ([b770a96](https://github.com/nrjdalal/zerostarter/commit/b770a96))
+- Sync ([99f94b4](https://github.com/nrjdalal/zerostarter/commit/99f94b4))
+- Update deps ([cfbd409](https://github.com/nrjdalal/zerostarter/commit/cfbd409))
+- Minor sync ([c19bd79](https://github.com/nrjdalal/zerostarter/commit/c19bd79))
+- Add api docs imports ([baf6df7](https://github.com/nrjdalal/zerostarter/commit/baf6df7))
+- Add api docs imports sync v1 ([e4e1a94](https://github.com/nrjdalal/zerostarter/commit/e4e1a94))
+- Sync ([0fe7174](https://github.com/nrjdalal/zerostarter/commit/0fe7174))
+- Sync ([8d14457](https://github.com/nrjdalal/zerostarter/commit/8d14457))
+- Sync ([a9980b2](https://github.com/nrjdalal/zerostarter/commit/a9980b2))
+- Update deps ([6e1e81f](https://github.com/nrjdalal/zerostarter/commit/6e1e81f))
+- Update links in /api/docs ([876e49e](https://github.com/nrjdalal/zerostarter/commit/876e49e))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.12
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.11...v0.0.12)
