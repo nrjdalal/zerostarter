@@ -10,7 +10,7 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@packages/auth && tsc --noEmit",
+    "check-types": "SKIP_ENV_VALIDATION=true tsc --noEmit",
     "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
     "start": "bun dist/index.mjs"
   },

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "check-types": "SKIP_ENV_VALIDATION=true turbo build --filter=@api/hono && tsc --noEmit",
+    "check-types": "SKIP_ENV_VALIDATION=true tsc --noEmit",
     "dev": "next dev",
     "start": "next start"
   },
