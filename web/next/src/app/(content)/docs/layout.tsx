@@ -17,7 +17,7 @@ import { docsSource } from "@/lib/source"
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <Sidebar className="md:pt-12" collapsible="offExamples">
+      <Sidebar className="md:pt-12" collapsible="offcanvas">
         <SidebarHeader className="mt-2.5">
           <SidebarDocsSearch />
         </SidebarHeader>
