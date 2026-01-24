@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "turbo run build --summarize",
-    "check-types": "SKIP_ENV_VALIDATION=true turbo run check-types --summarize",
+    "check-types": "turbo run check-types --summarize",
     "clean": "bunx rimraf --glob \"**/.next\" \"**/.turbo\" \"**/dist\" \"**/node_modules\" && bunx delete-empty",
     "db:generate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit generate",
     "db:migrate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit migrate",
