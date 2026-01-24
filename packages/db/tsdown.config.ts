@@ -6,6 +6,7 @@ export default [
   defineConfig({
     entry: ["src/index.ts"],
     minify: true,
+    dts: { tsgo: true },
     hooks: {
       "build:prepare": () => {
         getSafeEnv(env, "@packages/db")
