@@ -48,11 +48,11 @@ export function DevTools() {
   const { width, height } = dimensions
 
   return (
-    <div className="bg-background text-primary fixed right-2 bottom-2 z-100 flex items-center gap-1.5 rounded-full border font-mono text-xs font-medium select-none">
+    <div className="bg-background text-primary fixed right-0 bottom-0 z-100 flex items-center gap-1.5 rounded-tl-lg border-t border-l font-mono text-xs font-medium select-none">
       {expandDevtools && (
         <>
           <ReactQueryDevtools buttonPosition="top-right" />
-          <div className="fixed right-4 bottom-12 flex items-center gap-x-3">
+          <div className="fixed right-44 bottom-2 flex items-center gap-x-3">
             {Links.map(({ title, url }) => (
               <a
                 key={title}

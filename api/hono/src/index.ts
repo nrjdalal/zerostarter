@@ -140,12 +140,13 @@ const data = await response.json()`,
     "/docs",
     Scalar({
       pageTitle: "API Reference | ZeroStarter",
-      url: "/api/openapi.json",
       defaultHttpClient: {
         targetKey: "js",
         clientKey: "hono/client",
       },
       defaultOpenAllTags: true,
+      expandAllResponses: true,
+      url: "/api/openapi.json",
     }),
   )
 
