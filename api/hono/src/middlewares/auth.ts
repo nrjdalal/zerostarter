@@ -1,7 +1,16 @@
 import type { Session } from "@packages/auth"
+import type { Context, Next } from "hono"
 
 import { auth } from "@packages/auth"
 import { createMiddleware } from "hono/factory"
+
+import { createRateLimiter } from "@/middlewares/rate-limiter"
+
+const userRateLimiter = createRateLimiter({
+  getUserId: (c) => c.get("session")?.userId,
+  limit: 120,
+  windowMs: 60000,
+})
 
 export const authMiddleware = createMiddleware<{ Variables: Session }>(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
@@ -12,5 +21,6 @@ export const authMiddleware = createMiddleware<{ Variables: Session }>(async (c,
 
   c.set("session", session.session)
   c.set("user", session.user)
-  await next()
+
+  return userRateLimiter(c as Context, next as Next)
 })

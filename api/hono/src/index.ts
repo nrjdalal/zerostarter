@@ -8,25 +8,25 @@ import { logger } from "hono/logger"
 import { requestId } from "hono/request-id"
 import { z } from "zod"
 
-import { metadataMiddleware } from "@/middlewares"
+import { metadataMiddleware, rateLimiterMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
 const app = new Hono().basePath("/api")
 
-app.use(logger())
-app.use("*", requestId())
-app.use("*", metadataMiddleware)
-
 app.use(
-  "/*",
+  "*",
   cors({
     origin: env.HONO_TRUSTED_ORIGINS,
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "OPTIONS"],
-    exposeHeaders: ["Content-Length"],
+    exposeHeaders: ["Content-Length", "x-rate-limit-key"],
     maxAge: 600,
     credentials: true,
   }),
+  metadataMiddleware,
+  logger(),
+  rateLimiterMiddleware,
+  requestId(),
 )
 
 const routes = app
