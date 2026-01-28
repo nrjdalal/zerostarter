@@ -1,6 +1,7 @@
 import type { Context } from "hono"
 
 import { findIp } from "@arcjet/ip"
+import { env } from "@packages/env/api-hono"
 import { hash, randomUUIDv7 } from "bun"
 import { rateLimiter } from "hono-rate-limiter"
 
@@ -46,4 +47,7 @@ export function createRateLimiter(config: RateLimiterConfig = {}) {
   })
 }
 
-export const rateLimiterMiddleware = createRateLimiter()
+export const rateLimiterMiddleware = createRateLimiter({
+  limit: env.HONO_RATE_LIMIT,
+  windowMs: env.HONO_RATE_LIMIT_WINDOW_MS,
+})
