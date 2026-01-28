@@ -11,7 +11,7 @@ import { z } from "zod"
 import { metadataMiddleware, rateLimiterMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
-const app = new Hono().basePath("/api")
+const app = new Hono()
 
 app.use(
   "*",
@@ -30,6 +30,14 @@ app.use(
 )
 
 const routes = app
+  .get("/", (c) => {
+    return c.json({
+      message: "ok",
+      version: BUILD_VERSION,
+      environment: env.NODE_ENV,
+    })
+  })
+  .basePath("/api")
   .get(
     "/health",
     describeRoute({
