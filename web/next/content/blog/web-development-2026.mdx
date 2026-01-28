@@ -289,7 +289,7 @@ The practice is **secure, tested authentication**. Whether self-hosted or manage
 
 **The principle**: Environment variables should be validated at startup and typed throughout your code. A missing variable should crash the app immediately with a clear error—not fail silently during a request.
 
-**Why it matters**: `process.env.DATABASE_URL` returns `string | undefined`. If it's undefined, when do you find out? Maybe immediately. Maybe five minutes later when the first database query runs. Maybe in production when a specific code path executes.
+**Why it matters**: `process.env.POSTGRES_URL` returns `string | undefined`. If it's undefined, when do you find out? Maybe immediately. Maybe five minutes later when the first database query runs. Maybe in production when a specific code path executes.
 
 ### How ZeroStarter approaches this
 
@@ -300,13 +300,13 @@ ZeroStarter uses [@t3-oss/env-core](https://env.t3.gg) with Zod schemas:
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["local", "development", "test", "staging", "production"]),
-    DATABASE_URL: z.url(),
+    POSTGRES_URL: z.url(),
     PORT: z.coerce.number().default(4000),
     TRUSTED_ORIGINS: z.string().transform((s) => s.split(",")),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    DATABASE_URL: process.env.DATABASE_URL,
+    POSTGRES_URL: process.env.POSTGRES_URL,
     PORT: process.env.PORT,
     TRUSTED_ORIGINS: process.env.TRUSTED_ORIGINS,
   },

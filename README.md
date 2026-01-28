@@ -140,4 +140,4 @@ MIT License — see [LICENSE.md](LICENSE.md) for details.
 
 **⭐ Star this repo** if you find it helpful, and follow [@nrjdalal](https://twitter.com/nrjdalal) for updates!
 
-<!-- trigger build: 6 -->
+<!-- trigger build: 7 -->

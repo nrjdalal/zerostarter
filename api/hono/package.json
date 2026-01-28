@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@arcjet/ip": "catalog:",
+    "@hono/standard-validator": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/env": "workspace:*",
     "@scalar/hono-api-reference": "catalog:",

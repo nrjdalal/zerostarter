@@ -1,35 +1,24 @@
+/**
+ * Extracts the cookie domain from a URL by stripping the first subdomain.
+ * Useful for sharing cookies across environment subdomains
+ * (api, production, staging, canary, development, dev, test, etc.)
+ *
+ * @example
+ * getCookieDomain("https://api.zerostarter.dev")             // ".zerostarter.dev"
+ * getCookieDomain("https://api.canary.zerostarter.dev")      // ".canary.zerostarter.dev"
+ * getCookieDomain("https://api.dev.zerostarter.dev")         // ".dev.zerostarter.dev"
+ * getCookieDomain("https://api.development.zerostarter.dev") // ".development.zerostarter.dev"
+ * getCookieDomain("https://api.staging.zerostarter.dev")     // ".staging.zerostarter.dev"
+ * getCookieDomain("https://api.test.zerostarter.dev")        // ".test.zerostarter.dev"
+ */
+
 export function getCookieDomain(url: string): string | undefined {
   try {
-    const urlObj = new URL(url)
-    const hostname = urlObj.hostname
+    const { hostname } = new URL(url)
+    if (hostname === "localhost" || hostname === "127.0.0.1") return undefined
     const parts = hostname.split(".")
-
-    // need at least 2 parts for a valid domain (e.g., "example.com")
-    if (parts.length < 2) return undefined
-
-    const rootDomain = parts.slice(-2).join(".") // e.g., "zerostarter.dev"
-
-    // for 2-part domains (e.g., "zerostarter.dev"), use root domain
-    if (parts.length === 2) return `.${rootDomain}`
-
-    // for 3+ part domains, check if it's an environment-specific subdomain
-    // Examples:
-    // - "dev-api.zerostarter.dev" -> ".dev.zerostarter.dev" (parts: ['dev-api', 'zerostarter', 'dev'])
-    // - "dev.zerostarter.dev" -> ".dev.zerostarter.dev" (parts: ['dev', 'zerostarter', 'dev'])
-    // - "staging-api.zerostarter.dev" -> ".staging.zerostarter.dev" (parts: ['staging-api', 'zerostarter', 'dev'])
-    // - "api.zerostarter.dev" -> ".zerostarter.dev" (production) (parts: ['api', 'zerostarter', 'dev'])
-
-    if (parts.length >= 3) {
-      const firstPart = parts[0] // e.g., "dev-api", "dev", "staging-api", "api"
-
-      // check if first part starts with environment prefix (dev- or staging-)
-      if (firstPart.startsWith("dev-")) return `.dev.${rootDomain}`
-      if (firstPart.startsWith("staging-")) return `.staging.${rootDomain}`
-      if (firstPart === "dev" || firstPart === "staging") return `.${firstPart}.${rootDomain}`
-    }
-
-    // default: use root domain (for production: "api.zerostarter.dev" -> ".zerostarter.dev")
-    return `.${rootDomain}`
+    if (parts.length <= 2) return undefined
+    return `.${parts.slice(1).join(".")}`
   } catch {
     return undefined
   }
