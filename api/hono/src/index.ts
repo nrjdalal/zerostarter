@@ -17,9 +17,9 @@ app.use(
   "*",
   cors({
     origin: env.HONO_TRUSTED_ORIGINS,
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["content-type", "authorization"],
     allowMethods: ["GET", "POST", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "x-rate-limit-key"],
+    exposeHeaders: ["content-length"],
     maxAge: 600,
     credentials: true,
   }),
@@ -36,6 +36,11 @@ const routes = app
       version: BUILD_VERSION,
       environment: env.NODE_ENV,
     })
+  })
+  .get("/headers", (c) => {
+    return env.NODE_ENV === "local" || env.NODE_ENV === "development"
+      ? c.json(c.req.header())
+      : c.json({ error: { code: "FORBIDDEN", message: "Not allowed in production" } }, 403)
   })
   .basePath("/api")
   .get(
