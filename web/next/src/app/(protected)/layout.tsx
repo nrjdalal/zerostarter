@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { SidebarDashboardFooter } from "@/components/sidebar/dashboard"
+import { SidebarDashboardFooter, SidebarDashboardHeader } from "@/components/sidebar/dashboard"
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +20,9 @@ export default async function Layout({ children }: { children: React.ReactNode }
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
-        <SidebarHeader />
+        <SidebarHeader>
+          <SidebarDashboardHeader />
+        </SidebarHeader>
         <SidebarContent>{/* Content Goes Here */}</SidebarContent>
         <SidebarFooter>
           <SidebarDashboardFooter user={session.user} />

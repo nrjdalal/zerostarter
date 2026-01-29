@@ -5,6 +5,8 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { authMiddleware } from "@/middlewares"
+import { organizationRouter } from "@/routers/organization"
+import { organizationsRouter } from "@/routers/organizations"
 
 const sessionSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
@@ -130,3 +132,5 @@ const data = await response.json()`,
       return c.json(user)
     },
   )
+  .route("/organization", organizationRouter)
+  .route("/organizations", organizationsRouter)

@@ -5,7 +5,17 @@ import { config } from "@/lib/config"
 
 export const authClient = createAuthClient({
   baseURL: `${config.api.url}/api/auth`,
-  plugins: [magicLinkClient(), organizationClient()],
+  fetchOptions: {
+    credentials: "include",
+  },
+  plugins: [
+    magicLinkClient(),
+    organizationClient({
+      teams: {
+        enabled: true,
+      },
+    }),
+  ],
 })
 
 export const { useSession, signIn, signUp, signOut, resetPassword } = authClient
