@@ -4,5 +4,5 @@
   "installCommand": "cd ../.. && bun install --ignore-scripts",
   "buildCommand": "cd ../.. && turbo build --filter=@api/hono",
   "outputDirectory": "dist",
-  "bunVersion": "1.3.6"
+  "bunVersion": "1.3.7"
 }
