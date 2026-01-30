@@ -181,7 +181,7 @@ export default async function Home() {
 // Fully typed request and response
 // TypeScript knows exactly what you're getting!
 const res = await apiClient.health.$get()
-const data = await res.json()`
+const { data } = await res.json()`
 
   const bashCode = `# Clone the template
 bunx gitpick ${config.social.github}/tree/main

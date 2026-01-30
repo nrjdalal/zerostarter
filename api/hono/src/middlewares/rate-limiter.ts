@@ -33,17 +33,8 @@ export function createRateLimiter(config: RateLimiterConfig = {}) {
     limit,
     windowMs,
     keyGenerator: (c) => generateRateLimitKey(c, getUserId, getApiKey),
-    handler: (c) => {
-      return c.json(
-        {
-          error: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: "Too many requests. Please try again later.",
-          },
-        },
-        429,
-      )
-    },
+    handler: (c) =>
+      c.json({ error: { code: "TOO_MANY_REQUESTS", message: "Too Many Requests" } }, 429),
   })
 }
 

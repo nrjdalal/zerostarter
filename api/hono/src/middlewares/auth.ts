@@ -17,7 +17,7 @@ export const authMiddleware = createMiddleware<{ Variables: Session }>(async (c,
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
 
   if (!session) {
-    return c.json({ error: { code: "AUTHORIZATION_ERROR", message: "Unauthorized" } }, 401)
+    return c.json({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }, 401)
   }
 
   c.set("session", session.session)

@@ -27,13 +27,10 @@ const userSchema = z.object({
   updatedAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
 })
 
-const app = new Hono<{
+export const v1Router = new Hono<{
   Variables: Session
 }>()
-
-app.use("/*", authMiddleware)
-
-export const v1Router = app
+  .use("/*", authMiddleware)
   .get(
     "/session",
     describeRoute({
@@ -47,7 +44,7 @@ export const v1Router = app
             source: `import { apiClient } from "@/lib/api/client"
 
 const response = await apiClient.v1.session.$get()
-const data = await response.json()`,
+const { data } = await response.json()`,
           },
         ],
       } as object),
@@ -56,30 +53,15 @@ const data = await response.json()`,
           description: "OK",
           content: {
             "application/json": {
-              schema: resolver(sessionSchema),
-            },
-          },
-        },
-        401: {
-          description: "Unauthorized",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({
-                  error: z.object({
-                    code: z.string().meta({ example: "AUTHORIZATION_ERROR" }),
-                    message: z.string().meta({ example: "Unauthorized" }),
-                  }),
-                }),
-              ),
+              schema: resolver(z.object({ data: sessionSchema })),
             },
           },
         },
       },
     }),
     (c) => {
-      const session = c.get("session")
-      return c.json(session)
+      const data = c.get("session")
+      return c.json({ data })
     },
   )
   .get(
@@ -95,7 +77,7 @@ const data = await response.json()`,
             source: `import { apiClient } from "@/lib/api/client"
 
 const response = await apiClient.v1.user.$get()
-const data = await response.json()`,
+const { data } = await response.json()`,
           },
         ],
       } as object),
@@ -104,29 +86,14 @@ const data = await response.json()`,
           description: "OK",
           content: {
             "application/json": {
-              schema: resolver(userSchema),
-            },
-          },
-        },
-        401: {
-          description: "Unauthorized",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({
-                  error: z.object({
-                    code: z.string().meta({ example: "AUTHORIZATION_ERROR" }),
-                    message: z.string().meta({ example: "Unauthorized" }),
-                  }),
-                }),
-              ),
+              schema: resolver(z.object({ data: userSchema })),
             },
           },
         },
       },
     }),
     (c) => {
-      const user = c.get("user")
-      return c.json(user)
+      const data = c.get("user")
+      return c.json({ data })
     },
   )

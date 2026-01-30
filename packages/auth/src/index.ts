@@ -37,6 +37,15 @@ export const auth = betterAuth({
       verification,
     },
   }),
+  onAPIError: {
+    throw: true,
+  },
+  plugins: [
+    openAPIPlugin(),
+    organizationPlugin({
+      teams: { enabled: true },
+    }),
+  ],
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
@@ -47,12 +56,6 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  plugins: [
-    openAPIPlugin(),
-    organizationPlugin({
-      teams: { enabled: true },
-    }),
-  ],
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {

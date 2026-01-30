@@ -88,7 +88,7 @@ import { apiClient } from "@/lib/api/client"
 
 // Fully typed request and response
 const res = await apiClient.health.$get()
-const data = await res.json()
+const { data } = await res.json()
 ```
 
 📖 **[Type-Safe API documentation→](https://zerostarter.dev/docs/getting-started/type-safe-api)**

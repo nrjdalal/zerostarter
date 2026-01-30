@@ -106,13 +106,13 @@ const itemSchema = z.object({
 
 export const v1Router = new Hono()
   .get("/items", async (c) => {
-    const items = await db.query.items.findMany()
-    return c.json(items)
+    const data = await db.query.items.findMany()
+    return c.json({ data })
   })
   .post("/items", zValidator("json", itemSchema), async (c) => {
-    const data = c.req.valid("json") // Typed from Zod schema
-    const item = await db.insert(items).values(data).returning()
-    return c.json(item[0])
+    const body = c.req.valid("json") // Typed from Zod schema
+    const [data] = await db.insert(items).values(body).returning()
+    return c.json({ data })
   })
 ```
 
@@ -144,32 +144,22 @@ The practice is **type safety across the network boundary**. Whether you infer t
 
 ---
 
-## API Observability
+## API Response Format
 
-**The principle**: Every request should be traceable. Errors should be standardized. You should know what happened, when, and how long it took.
+**The principle**: Every API response should follow a consistent format. Success and error responses should be predictable and easy to handle.
 
-**Why it matters**: A user reports "something went wrong." Without request IDs, timestamps, and structured errors, you're searching through logs hoping to find the needle in the haystack. With proper observability, you search by request ID and see exactly what happened.
+**Why it matters**: A user reports "something went wrong." Without standardized error responses, debugging becomes guesswork. With consistent formats, error handling is straightforward across your entire application.
 
 ### How ZeroStarter approaches this
 
-**Request ID middleware** assigns a unique ID to every request:
+**Standardized response format** for all endpoints:
 
 ```ts
-import { requestId } from "hono/request-id"
+// Success response
+{ "data": { message: "ok", version: "1.0.0" } }
 
-app.use("*", requestId())
-```
-
-**Metadata middleware** injects timing and context into responses:
-
-```ts
-const metadata = {
-  requestId: c.get("requestId"),
-  timestamp: new Date().toISOString(),
-  method: c.req.method,
-  path: c.req.path,
-  duration: Math.round(performance.now() - start),
-}
+// Error response
+{ "error": { code: "NOT_FOUND", message: "Not Found" } }
 ```
 
 **Global error handler** standardizes error responses:
@@ -194,18 +184,18 @@ const metadata = {
 })
 ```
 
-Every error follows the same shape. Zod validation errors include the specific issues. Request context is always available for debugging.
+Every error follows the same shape. Zod validation errors include the specific issues. Clients always know what to expect.
 
 ### What you can learn
 
-Observability tools vary:
+Response standardization approaches vary:
 
-- **Request IDs**: Built-in middleware or custom
-- **Structured logging**: Pino, Winston, console with JSON
-- **Error tracking**: Sentry, Bugsnag, LogRocket
-- **APM**: Datadog, New Relic, OpenTelemetry
+- **Wrapper types**: `{ data }` or `{ error }` at the top level
+- **HTTP status codes**: Use appropriate codes (400, 401, 404, 500)
+- **Error codes**: Machine-readable codes like `VALIDATION_ERROR`
+- **Error tracking**: Sentry, Bugsnag, LogRocket for production monitoring
 
-The practice is **consistent, traceable request handling**. When something fails, you should be able to trace it end-to-end.
+The practice is **consistent, predictable API responses**. When something fails, the client knows exactly how to handle it.
 
 ---
 

@@ -49,6 +49,7 @@ Backend routes in `api/hono/src/routers/` are exported as `AppType`. Frontend im
 ```ts
 import { apiClient } from "@/lib/api/client"
 const res = await apiClient.health.$get()
+const { data } = await res.json()
 ```
 
 ### Database Schema
