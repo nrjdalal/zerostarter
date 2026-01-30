@@ -1,8 +1,19 @@
-import { account, db, session, user, verification } from "@packages/db"
+import {
+  account,
+  db,
+  invitation,
+  member,
+  organization,
+  session,
+  team,
+  teamMember,
+  user,
+  verification,
+} from "@packages/db"
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { openAPI } from "better-auth/plugins"
+import { openAPI as openAPIPlugin, organization as organizationPlugin } from "better-auth/plugins"
 
 import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 
@@ -15,9 +26,14 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
-      user,
-      session,
       account,
+      invitation,
+      member,
+      organization,
+      session,
+      team,
+      teamMember,
+      user,
       verification,
     },
   }),
@@ -31,7 +47,12 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  plugins: [openAPI()],
+  plugins: [
+    openAPIPlugin(),
+    organizationPlugin({
+      teams: { enabled: true },
+    }),
+  ],
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {
