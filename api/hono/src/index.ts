@@ -1,4 +1,4 @@
-import { BUILD_VERSION, isLocal } from "@packages/env"
+import { BUILD_VERSION } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
@@ -8,7 +8,7 @@ import { logger } from "hono/logger"
 import { requestId } from "hono/request-id"
 import { z } from "zod"
 
-import { metadataMiddleware, rateLimiterMiddleware } from "@/middlewares"
+import { errorHandler, metadataMiddleware, rateLimiterMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
 const app = new Hono()
@@ -100,40 +100,7 @@ const data = await response.json()`,
       404,
     )
   })
-  .onError((error, c) => {
-    if (error instanceof z.ZodError) {
-      return c.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid request payload",
-            issues: error.issues,
-          },
-        },
-        400,
-      )
-    }
-    if (error instanceof Error) {
-      return c.json(
-        {
-          error: {
-            code: "INTERNAL_SERVER_ERROR",
-            message: isLocal(env.NODE_ENV) ? error.message : "An unexpected error occurred",
-          },
-        },
-        500,
-      )
-    }
-    return c.json(
-      {
-        error: {
-          code: "UNKNOWN_ERROR",
-          message: "An unexpected error occurred",
-        },
-      },
-      500,
-    )
-  })
+  .onError(errorHandler)
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {

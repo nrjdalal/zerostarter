@@ -14,13 +14,6 @@ const organizationSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-01T00:00:00.000Z" }),
 })
 
-const unauthorizedSchema = z.object({
-  error: z.object({
-    code: z.string().meta({ example: "AUTHORIZATION_ERROR" }),
-    message: z.string().meta({ example: "Unauthorized" }),
-  }),
-})
-
 export const organizationsRouter = new Hono<{
   Variables: Session
 }>().get(
@@ -45,19 +38,7 @@ const { data: organizations } = await response.json()`,
         description: "OK",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                data: z.array(organizationSchema),
-              }),
-            ),
-          },
-        },
-      },
-      401: {
-        description: "Unauthorized",
-        content: {
-          "application/json": {
-            schema: resolver(unauthorizedSchema),
+            schema: resolver(z.object({ data: z.array(organizationSchema) })),
           },
         },
       },

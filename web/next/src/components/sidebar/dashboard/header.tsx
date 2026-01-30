@@ -80,13 +80,13 @@ function CreateOrganizationDialog({
       })
 
       if (!response.ok) {
-        const { error } = await response.json()
-        toast.error(error.message ?? "Something went wrong")
+        const json = (await response.json()) as { error?: { message?: string } }
+        toast.error(json.error?.message ?? "Something went wrong")
         return
       }
 
       const { data: organization } = await response.json()
-      toast.success(`Organization ${organization.name} created successfully`)
+      toast.success(`Organization ${organization?.name} created successfully`)
 
       form.reset()
       onOpenChange(false)
