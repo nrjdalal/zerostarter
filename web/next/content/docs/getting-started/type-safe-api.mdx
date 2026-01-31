@@ -23,8 +23,8 @@ import { apiClient } from "@/lib/api/client"
 
 // Fully typed request and response
 const res = await apiClient.health.$get()
-const data = await res.json()
-// data is typed as { message: string, environment: string, metadata: {...} }
+const { data } = await res.json()
+// data is typed as { message: string, environment: string, version: string }
 ```
 
 ### Authenticated Requests
@@ -36,8 +36,8 @@ import { apiClient } from "@/lib/api/client"
 
 // Protected route - requires authentication
 const res = await apiClient.v1.session.$get()
-const session = await res.json()
-// session is typed as Session | { error: { code: string, message: string } }
+const { data } = await res.json()
+// data is typed as Session, or error contains { code: string, message: string }
 ```
 
 ### Session Data
@@ -45,7 +45,7 @@ const session = await res.json()
 ```ts
 import { apiClient } from "@/lib/api/client"
 
-// Get current session and user
+// Get current session and user (via Better Auth)
 const res = await apiClient.auth["get-session"].$get()
 const data = await res.json()
 // data is typed as { session: Session, user: User } | null
@@ -62,18 +62,16 @@ Define routes in `api/hono/src/routers/`:
 import { Hono } from "hono"
 import { authMiddleware } from "@/middlewares"
 
-const app = new Hono()
-app.use("/*", authMiddleware)
-
-export const v1Router = app
+export const v1Router = new Hono()
+  .use("/*", authMiddleware)
   .get("/session", (c) => {
-    const session = c.get("session")
-    return c.json(session)
+    const data = c.get("session")
+    return c.json({ data })
   })
   .post("/items", async (c) => {
     const body = await c.req.json()
-    // Handle creation
-    return c.json({ id: "123", ...body })
+    const data = { id: "123", ...body }
+    return c.json({ data })
   })
 ```
 
@@ -93,7 +91,8 @@ const createItemSchema = z.object({
 app.post("/items", zValidator("json", createItemSchema), async (c) => {
   const { name, description } = c.req.valid("json")
   // name and description are fully typed
-  return c.json({ id: "123", name, description })
+  const data = { id: "123", name, description }
+  return c.json({ data })
 })
 ```
 
@@ -158,8 +157,10 @@ app.get(
           "application/json": {
             schema: resolver(
               z.object({
-                message: z.string(),
-                environment: z.string(),
+                data: z.object({
+                  message: z.string(),
+                  environment: z.string(),
+                }),
               }),
             ),
           },
@@ -167,7 +168,10 @@ app.get(
       },
     },
   }),
-  (c) => c.json({ message: "ok", environment: "production" }),
+  (c) => {
+    const data = { message: "ok", environment: "production" }
+    return c.json({ data })
+  },
 )
 ```
 

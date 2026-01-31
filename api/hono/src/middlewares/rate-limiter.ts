@@ -1,6 +1,7 @@
 import type { Context } from "hono"
 
 import { findIp } from "@arcjet/ip"
+import { env } from "@packages/env/api-hono"
 import { hash, randomUUIDv7 } from "bun"
 import { rateLimiter } from "hono-rate-limiter"
 
@@ -32,18 +33,12 @@ export function createRateLimiter(config: RateLimiterConfig = {}) {
     limit,
     windowMs,
     keyGenerator: (c) => generateRateLimitKey(c, getUserId, getApiKey),
-    handler: (c) => {
-      return c.json(
-        {
-          error: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: "Too many requests. Please try again later.",
-          },
-        },
-        429,
-      )
-    },
+    handler: (c) =>
+      c.json({ error: { code: "TOO_MANY_REQUESTS", message: "Too Many Requests" } }, 429),
   })
 }
 
-export const rateLimiterMiddleware = createRateLimiter()
+export const rateLimiterMiddleware = createRateLimiter({
+  limit: env.HONO_RATE_LIMIT,
+  windowMs: env.HONO_RATE_LIMIT_WINDOW_MS,
+})

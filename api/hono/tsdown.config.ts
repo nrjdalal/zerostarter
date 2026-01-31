@@ -12,5 +12,6 @@ export default [
         getSafeEnv(env, "@api/hono")
       },
     },
+    external: ["bun"],
   }),
 ]

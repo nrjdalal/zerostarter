@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useSession } from "@/lib/auth/client"
+import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
 
@@ -68,7 +68,7 @@ function SocialLinks({ onClick }: { onClick?: () => void }) {
 
 export function Navbar() {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session } = authClient.useSession()
 
   const [toDashboard, setToDashboard] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -84,7 +84,7 @@ export function Navbar() {
 
   return (
     <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
-      <div className="flex min-h-14 items-center justify-between px-3.5">
+      <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {config.app.name}
           <Badge variant="secondary" className="text-xs">

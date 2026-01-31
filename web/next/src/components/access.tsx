@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { signIn } from "@/lib/auth/client"
+import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
@@ -37,7 +37,7 @@ export function Access() {
     },
     onSubmit: async ({ value }) => {
       setLoader("email")
-      const res = await signIn.magicLink({
+      const res = await authClient.signIn.magicLink({
         email: value.email,
         callbackURL: `${config.app.url}/dashboard`,
       })
@@ -127,7 +127,7 @@ export function Access() {
               className="w-full cursor-pointer"
               onClick={async () => {
                 setLoader("github")
-                const res = await signIn.social({
+                const res = await authClient.signIn.social({
                   provider: "github",
                   callbackURL: `${config.app.url}/dashboard`,
                 })
@@ -151,7 +151,7 @@ export function Access() {
               className="w-full cursor-pointer"
               onClick={async () => {
                 setLoader("google")
-                const res = await signIn.social({
+                const res = await authClient.signIn.social({
                   provider: "google",
                   callbackURL: `${config.app.url}/dashboard`,
                 })

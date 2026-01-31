@@ -1,35 +1,48 @@
-import { BUILD_VERSION, isLocal } from "@packages/env"
+import { BUILD_VERSION } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
-import { requestId } from "hono/request-id"
 import { z } from "zod"
 
-import { metadataMiddleware, rateLimiterMiddleware } from "@/middlewares"
+import { errorHandler } from "@/lib/error"
+import { rateLimiterMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
-const app = new Hono().basePath("/api")
+const app = new Hono()
 
 app.use(
   "*",
   cors({
     origin: env.HONO_TRUSTED_ORIGINS,
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "x-rate-limit-key"],
+    allowHeaders: ["content-type", "authorization"],
+    allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
+    exposeHeaders: ["content-length"],
     maxAge: 600,
     credentials: true,
   }),
-  metadataMiddleware,
   logger(),
   rateLimiterMiddleware,
-  requestId(),
 )
 
+app.onError(errorHandler)
+app.notFound((c) => c.json({ error: { code: "NOT_FOUND", message: "Not Found" } }, 404))
+
 const routes = app
+  .get("/", (c) => {
+    const data = { version: BUILD_VERSION, environment: env.NODE_ENV }
+    return c.json({ data })
+  })
+  .get("/headers", (c) => {
+    if (env.NODE_ENV !== "local" && env.NODE_ENV !== "development") {
+      return c.json({ error: { code: "FORBIDDEN", message: "Forbidden" } }, 403)
+    }
+    const data = c.req.header()
+    return c.json({ data })
+  })
+  .basePath("/api")
   .get(
     "/health",
     describeRoute({
@@ -43,7 +56,7 @@ const routes = app
             source: `import { apiClient } from "@/lib/api/client"
 
 const response = await apiClient.health.$get()
-const data = await response.json()`,
+const { data } = await response.json()`,
           },
         ],
       } as object),
@@ -54,11 +67,13 @@ const data = await response.json()`,
             "application/json": {
               schema: resolver(
                 z.object({
-                  environment: z
-                    .enum(["local", "development", "test", "staging", "production"])
-                    .meta({ example: env.NODE_ENV }),
-                  message: z.string().meta({ example: "ok" }),
-                  version: z.string().meta({ example: BUILD_VERSION }),
+                  data: z.object({
+                    environment: z
+                      .enum(["local", "development", "test", "staging", "production"])
+                      .meta({ example: env.NODE_ENV }),
+                    message: z.string().meta({ example: "ok" }),
+                    version: z.string().meta({ example: BUILD_VERSION }),
+                  }),
                 }),
               ),
             },
@@ -67,60 +82,12 @@ const data = await response.json()`,
       },
     }),
     (c) => {
-      return c.json({
-        message: "ok",
-        version: BUILD_VERSION,
-        environment: env.NODE_ENV,
-      })
+      const data = { message: "ok", version: BUILD_VERSION, environment: env.NODE_ENV }
+      return c.json({ data })
     },
   )
   .route("/auth", authRouter)
   .route("/v1", v1Router)
-  .notFound((c) => {
-    return c.json(
-      {
-        error: {
-          code: "NOT_FOUND",
-          message: "Route not found",
-        },
-      },
-      404,
-    )
-  })
-  .onError((error, c) => {
-    if (error instanceof z.ZodError) {
-      return c.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid request payload",
-            issues: error.issues,
-          },
-        },
-        400,
-      )
-    }
-    if (error instanceof Error) {
-      return c.json(
-        {
-          error: {
-            code: "INTERNAL_SERVER_ERROR",
-            message: isLocal(env.NODE_ENV) ? error.message : "An unexpected error occurred",
-          },
-        },
-        500,
-      )
-    }
-    return c.json(
-      {
-        error: {
-          code: "UNKNOWN_ERROR",
-          message: "An unexpected error occurred",
-        },
-      },
-      500,
-    )
-  })
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {
