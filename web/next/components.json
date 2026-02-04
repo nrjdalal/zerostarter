@@ -11,6 +11,7 @@
     "prefix": ""
   },
   "iconLibrary": "remixicon",
+  "rtl": false,
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
