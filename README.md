@@ -132,6 +132,12 @@ Contributions are welcome! Please read our contributing guidelines first.
 
 📖 **[View contributing guidelines →](https://zerostarter.dev/docs/contributing)**
 
+## ❤️ Amazing Contributors
+
+<a href="https://github.com/nrjdalal/zerostarter/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nrjdalal/zerostarter" />
+</a>
+
 ## 📄 License
 
 MIT License — see [LICENSE.md](LICENSE.md) for details.
