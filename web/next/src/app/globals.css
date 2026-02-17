@@ -13,7 +13,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "DM Sans Variable", sans-serif;
+  --font-sans: var(--font-sans);
   --font-cursive: "Caveat Variable", cursive;
   --font-serif: "Newsreader Variable", serif;
   --font-mono: "JetBrains Mono Variable", monospace;
