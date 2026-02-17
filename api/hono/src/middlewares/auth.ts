@@ -1,8 +1,7 @@
 import type { Session } from "@packages/auth"
-import type { Context, Next } from "hono"
-
 import { auth } from "@packages/auth"
 import { env } from "@packages/env/api-hono"
+import type { Context, Next } from "hono"
 import { createMiddleware } from "hono/factory"
 
 import { createRateLimiter } from "@/middlewares/rate-limiter"

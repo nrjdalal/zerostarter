@@ -1,8 +1,7 @@
-import type { Context } from "hono"
-
 import { findIp } from "@arcjet/ip"
 import { env } from "@packages/env/api-hono"
 import { hash, randomUUIDv7 } from "bun"
+import type { Context } from "hono"
 import { rateLimiter } from "hono-rate-limiter"
 
 function generateRateLimitKey(
