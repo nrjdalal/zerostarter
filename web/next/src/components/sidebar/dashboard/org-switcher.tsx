@@ -45,7 +45,11 @@ export function SidebarDashboardOrgSwitcher() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   const { data: orgs, refetch: refetchOrgs } = authClient.useListOrganizations()
-  const { data: activeOrg, refetch: refetchActiveOrg } = authClient.useActiveOrganization()
+  const {
+    data: activeOrg,
+    isPending: isOrgLoading,
+    refetch: refetchActiveOrg,
+  } = authClient.useActiveOrganization()
 
   const form = useForm({
     defaultValues: {
@@ -90,6 +94,8 @@ export function SidebarDashboardOrgSwitcher() {
   }
 
   const organizations: Organization[] = orgs ?? []
+  const triggerOrgName = isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")
+  const triggerOrgSlug = isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")
 
   return (
     <>
@@ -106,10 +112,8 @@ export function SidebarDashboardOrgSwitcher() {
             <RiBuildingLine className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{activeOrg?.name ?? "Select Organization"}</span>
-            <span className="text-muted-foreground truncate text-xs">
-              {activeOrg?.slug ?? "No organization selected"}
-            </span>
+            <span className="truncate font-medium">{triggerOrgName}</span>
+            <span className="text-muted-foreground truncate text-xs">{triggerOrgSlug}</span>
           </div>
           <RiExpandUpDownLine className="ml-auto size-4" />
         </DropdownMenuTrigger>
