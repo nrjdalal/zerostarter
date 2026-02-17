@@ -23,11 +23,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth/client"
-import { cn } from "@/lib/utils"
+import { cn, slugify } from "@/lib/utils"
 
 type Organization = {
   id: string
@@ -37,8 +37,7 @@ type Organization = {
 }
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  slug: z.string(),
+  name: z.string().min(2).max(32),
 })
 
 export function SidebarDashboardOrgSwitcher() {
@@ -51,17 +50,16 @@ export function SidebarDashboardOrgSwitcher() {
   const form = useForm({
     defaultValues: {
       name: "",
-      slug: "",
     },
     validators: {
       onSubmit: formSchema,
       onChange: formSchema,
-      onBlur: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const slug = value.slug.trim() || value.name.toLowerCase().replace(/\s+/g, "-")
+      const name = value.name.trim()
+      const slug = slugify(name, 4)
       const result = await authClient.organization.create({
-        name: value.name.trim(),
+        name,
         slug,
       })
 
@@ -198,29 +196,6 @@ export function SidebarDashboardOrgSwitcher() {
                         aria-invalid={isInvalid}
                         disabled={form.state.isSubmitting}
                       />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              </form.Field>
-              <form.Field name="slug">
-                {(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Slug</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        className="focus:placeholder:opacity-0"
-                        placeholder="acme"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        disabled={form.state.isSubmitting}
-                      />
-                      <FieldDescription>Leave empty to auto-generate from name.</FieldDescription>
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
                     </Field>
                   )
