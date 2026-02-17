@@ -1,3 +1,4 @@
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -19,12 +20,15 @@ import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies()
+  const sidebarStateCookie = cookieStore.get("sidebar_state")?.value
+  const defaultOpen = sidebarStateCookie ? sidebarStateCookie === "true" : true
   const session = await auth.api.getSession()
 
   if (!session?.user) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:mx-auto">
