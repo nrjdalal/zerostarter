@@ -82,8 +82,13 @@ export function SidebarDashboardOrgSwitcher() {
   })
 
   const handleSetActive = async (organizationId: string) => {
-    await authClient.organization.setActive({ organizationId })
-    refetchActiveOrg()
+    try {
+      await authClient.organization.setActive({ organizationId })
+      refetchActiveOrg()
+    } catch (error) {
+      console.error("Failed to set active organization", error)
+      toast.error("Failed to switch organization")
+    }
   }
 
   const organizations: Organization[] = orgs ?? []
