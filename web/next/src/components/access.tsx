@@ -2,7 +2,8 @@
 
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill, RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
-import { useState } from "react"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -24,7 +25,14 @@ const formSchema = z.object({
 })
 
 export function Access() {
+  const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    setLoader(null)
+    setOpen(false)
+  }, [pathname])
 
   const form = useForm({
     defaultValues: {
@@ -53,7 +61,7 @@ export function Access() {
   })
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button className="w-24 cursor-pointer" variant="outline" />}>
         Login
       </DialogTrigger>
