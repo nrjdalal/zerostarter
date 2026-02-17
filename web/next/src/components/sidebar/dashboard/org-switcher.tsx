@@ -47,7 +47,7 @@ export function SidebarDashboardOrgSwitcher() {
   const { data: orgs, refetch: refetchOrgs } = authClient.useListOrganizations()
   const {
     data: activeOrg,
-    isPending: isOrgLoading,
+    isPending: isPendingActiveOrg,
     refetch: refetchActiveOrg,
   } = authClient.useActiveOrganization()
 
@@ -111,10 +111,10 @@ export function SidebarDashboardOrgSwitcher() {
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium">
-              {isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")}
+              {isPendingActiveOrg ? "" : (activeOrg?.name ?? "Select Organization")}
             </span>
             <span className="text-muted-foreground truncate text-xs">
-              {isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")}
+              {isPendingActiveOrg ? "" : (activeOrg?.slug ?? "No organization selected")}
             </span>
           </div>
           <RiExpandUpDownLine className="ml-auto size-4" />
