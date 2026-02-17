@@ -26,7 +26,7 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
 
-export function SidebarDashboardFooter({ user }: { user: User }) {
+export function SidebarDashboardUserActions({ user }: { user: User }) {
   const { isMobile } = useSidebar()
 
   return (
