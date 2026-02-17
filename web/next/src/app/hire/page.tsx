@@ -1,6 +1,5 @@
-import type { Metadata } from "next"
-
 import { RiArrowRightUpLine, RiTwitterXFill } from "@remixicon/react"
+import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"

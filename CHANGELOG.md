@@ -1,3 +1,111 @@
+## v0.0.14
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.13...v0.0.14)
+
+### 🚀 Enhancements
+
+- Tsgo ([73dfa74](https://github.com/nrjdalal/zerostarter/commit/73dfa74))
+- Hono rate limiter ([4467baa](https://github.com/nrjdalal/zerostarter/commit/4467baa))
+- Rate limiter middleware ([a547c96](https://github.com/nrjdalal/zerostarter/commit/a547c96))
+- Add rate limiting with env ([e7b5d4a](https://github.com/nrjdalal/zerostarter/commit/e7b5d4a))
+- Update auth schema for orgs ([6e9e302](https://github.com/nrjdalal/zerostarter/commit/6e9e302))
+- Standardize api response ([d2c59cd](https://github.com/nrjdalal/zerostarter/commit/d2c59cd))
+
+### 🩹 Fixes
+
+- Audit hono ([b81479b](https://github.com/nrjdalal/zerostarter/commit/b81479b))
+
+### 📖 Documentation
+
+- Sync docs for api response ([6e4d9f1](https://github.com/nrjdalal/zerostarter/commit/6e4d9f1))
+- Add all time contributors ([90398fb](https://github.com/nrjdalal/zerostarter/commit/90398fb))
+
+### 🏡 Chore
+
+- Harden getSession at frontend ([05c6774](https://github.com/nrjdalal/zerostarter/commit/05c6774))
+- Harden getSession at frontend ([f6abfc6](https://github.com/nrjdalal/zerostarter/commit/f6abfc6))
+- Harden getSession at frontend ([c511e21](https://github.com/nrjdalal/zerostarter/commit/c511e21))
+- Harden getSession at frontend ([38595f7](https://github.com/nrjdalal/zerostarter/commit/38595f7))
+- Harden getSession at frontend ([056435e](https://github.com/nrjdalal/zerostarter/commit/056435e))
+- Sync ui comps ([be953e2](https://github.com/nrjdalal/zerostarter/commit/be953e2))
+- Turbooooo ([10f84c7](https://github.com/nrjdalal/zerostarter/commit/10f84c7))
+- Minor sync ([7dc4ecb](https://github.com/nrjdalal/zerostarter/commit/7dc4ecb))
+- Minor sync ([db7e589](https://github.com/nrjdalal/zerostarter/commit/db7e589))
+- Update deps ([e83e90e](https://github.com/nrjdalal/zerostarter/commit/e83e90e))
+- Update deps ([5bb0be3](https://github.com/nrjdalal/zerostarter/commit/5bb0be3))
+- Update deps ([190072e](https://github.com/nrjdalal/zerostarter/commit/190072e))
+- Sync ([494cea5](https://github.com/nrjdalal/zerostarter/commit/494cea5))
+- Update deps ([139dd2e](https://github.com/nrjdalal/zerostarter/commit/139dd2e))
+- Update deps ([8b29b15](https://github.com/nrjdalal/zerostarter/commit/8b29b15))
+- Reposition frontend dev toolbar ([dc63dd2](https://github.com/nrjdalal/zerostarter/commit/dc63dd2))
+- Update deps ([4079bdf](https://github.com/nrjdalal/zerostarter/commit/4079bdf))
+- Update deps ([868cc56](https://github.com/nrjdalal/zerostarter/commit/868cc56))
+- Update deps ([2bf4451](https://github.com/nrjdalal/zerostarter/commit/2bf4451))
+- Added todo ([c7d1576](https://github.com/nrjdalal/zerostarter/commit/c7d1576))
+- Sync ([8efc3b7](https://github.com/nrjdalal/zerostarter/commit/8efc3b7))
+- Save state ([1bb0b41](https://github.com/nrjdalal/zerostarter/commit/1bb0b41))
+- Sync ([66cff5b](https://github.com/nrjdalal/zerostarter/commit/66cff5b))
+- Shorten ([b34aa3b](https://github.com/nrjdalal/zerostarter/commit/b34aa3b))
+- Cleanup ([adbc716](https://github.com/nrjdalal/zerostarter/commit/adbc716))
+- Externalize bun ([5234cca](https://github.com/nrjdalal/zerostarter/commit/5234cca))
+- Default endpoint ([7b42cfc](https://github.com/nrjdalal/zerostarter/commit/7b42cfc))
+- Check headers at dev ([7f9ed20](https://github.com/nrjdalal/zerostarter/commit/7f9ed20))
+- Update deps ([5d800eb](https://github.com/nrjdalal/zerostarter/commit/5d800eb))
+- Bun version to 1.3.7 ([85f1a3b](https://github.com/nrjdalal/zerostarter/commit/85f1a3b))
+- Remove related projects from vercel.json ([33a4721](https://github.com/nrjdalal/zerostarter/commit/33a4721))
+- Chore sync ([031332e](https://github.com/nrjdalal/zerostarter/commit/031332e))
+- Update deps ([bc69c93](https://github.com/nrjdalal/zerostarter/commit/bc69c93))
+- Test export cleanup ([c6eae4b](https://github.com/nrjdalal/zerostarter/commit/c6eae4b))
+- Sync bun ([6e73a15](https://github.com/nrjdalal/zerostarter/commit/6e73a15))
+- Sync bun ([f1279bd](https://github.com/nrjdalal/zerostarter/commit/f1279bd))
+- Sync docs ([454d29a](https://github.com/nrjdalal/zerostarter/commit/454d29a))
+- Update domains ([86a080d](https://github.com/nrjdalal/zerostarter/commit/86a080d))
+- Update domains ([0ae59ab](https://github.com/nrjdalal/zerostarter/commit/0ae59ab))
+- Degrade turbo ([a43a4ea](https://github.com/nrjdalal/zerostarter/commit/a43a4ea))
+- Degrade posthog-version ([56081c3](https://github.com/nrjdalal/zerostarter/commit/56081c3))
+- Degrade scalar hono api ref ([c8465c5](https://github.com/nrjdalal/zerostarter/commit/c8465c5))
+- Undo ([74cf639](https://github.com/nrjdalal/zerostarter/commit/74cf639))
+- Tired ([3d388a7](https://github.com/nrjdalal/zerostarter/commit/3d388a7))
+- Add hono validator ([bd14d87](https://github.com/nrjdalal/zerostarter/commit/bd14d87))
+- Sync lock ([db733cd](https://github.com/nrjdalal/zerostarter/commit/db733cd))
+- Undo cross-subdomain ([7be18d9](https://github.com/nrjdalal/zerostarter/commit/7be18d9))
+- Another cross domain approach ([3b1d681](https://github.com/nrjdalal/zerostarter/commit/3b1d681))
+- Reorder ([35f6f5a](https://github.com/nrjdalal/zerostarter/commit/35f6f5a))
+- Aliased import ([7e18d1c](https://github.com/nrjdalal/zerostarter/commit/7e18d1c))
+- Update deps ([088ad98](https://github.com/nrjdalal/zerostarter/commit/088ad98))
+- Claude.md ([4152ee5](https://github.com/nrjdalal/zerostarter/commit/4152ee5))
+- Update bun version ([77ce7b3](https://github.com/nrjdalal/zerostarter/commit/77ce7b3))
+- Minor fix ([9453f0f](https://github.com/nrjdalal/zerostarter/commit/9453f0f))
+- Sync related changes ([aa05697](https://github.com/nrjdalal/zerostarter/commit/aa05697))
+- Migrations? ([8087e99](https://github.com/nrjdalal/zerostarter/commit/8087e99))
+- Undo ([180d579](https://github.com/nrjdalal/zerostarter/commit/180d579))
+- Improved error handling ([8dd96cf](https://github.com/nrjdalal/zerostarter/commit/8dd96cf))
+- Minor sync ([1a1b400](https://github.com/nrjdalal/zerostarter/commit/1a1b400))
+- Cleanup ([7156e9b](https://github.com/nrjdalal/zerostarter/commit/7156e9b))
+- Cleanup ([ce98675](https://github.com/nrjdalal/zerostarter/commit/ce98675))
+- Cleanup ([530aa96](https://github.com/nrjdalal/zerostarter/commit/530aa96))
+- Update deps ([3c2dac5](https://github.com/nrjdalal/zerostarter/commit/3c2dac5))
+- Update deps ([5b48e75](https://github.com/nrjdalal/zerostarter/commit/5b48e75))
+- Sync shadcn comps ([c29ca0e](https://github.com/nrjdalal/zerostarter/commit/c29ca0e))
+- Update deps ([89b9c0b](https://github.com/nrjdalal/zerostarter/commit/89b9c0b))
+- Update deps ([c038607](https://github.com/nrjdalal/zerostarter/commit/c038607))
+- Update deps ([61de1cb](https://github.com/nrjdalal/zerostarter/commit/61de1cb))
+- Update deps ([ed2104e](https://github.com/nrjdalal/zerostarter/commit/ed2104e))
+- Update deps ([6faa6ce](https://github.com/nrjdalal/zerostarter/commit/6faa6ce))
+- Update deps ([6edef32](https://github.com/nrjdalal/zerostarter/commit/6edef32))
+- Update deps ([23463c1](https://github.com/nrjdalal/zerostarter/commit/23463c1))
+- Ran formatter ([244af9f](https://github.com/nrjdalal/zerostarter/commit/244af9f))
+- Ran shadcn updates ([a9bd467](https://github.com/nrjdalal/zerostarter/commit/a9bd467))
+- Sync ([8b1908a](https://github.com/nrjdalal/zerostarter/commit/8b1908a))
+
+### ✅ Tests
+
+- Fingerprint ([6e86816](https://github.com/nrjdalal/zerostarter/commit/6e86816))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.13
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.12...v0.0.13)

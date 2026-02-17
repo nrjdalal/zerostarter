@@ -1,5 +1,4 @@
 import type { Session } from "@packages/auth"
-
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"

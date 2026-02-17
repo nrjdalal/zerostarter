@@ -1,9 +1,8 @@
 import { ImageResponse } from "@takumi-rs/image-response"
 import { notFound } from "next/navigation"
 
-import type { blogSource, docsSource } from "@/lib/source"
-
 import { config } from "@/lib/config"
+import type { blogSource, docsSource } from "@/lib/source"
 
 type Source = typeof blogSource | typeof docsSource
 
