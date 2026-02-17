@@ -1,7 +1,6 @@
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql"
-
 import { env } from "@packages/env/db"
 import { SQL } from "bun"
+import type { BunSQLDatabase } from "drizzle-orm/bun-sql"
 import { drizzle } from "drizzle-orm/bun-sql"
 
 import * as schema from "@/schema"

@@ -1,5 +1,6 @@
-import { config } from "dotenv"
 import path from "node:path"
+
+import { config } from "dotenv"
 
 import { isLocal, NODE_ENV } from "@/lib/constants"
 

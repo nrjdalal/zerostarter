@@ -1,8 +1,7 @@
-import type { NextConfig } from "next"
-
 import { getSafeEnv } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
+import type { NextConfig } from "next"
 
 getSafeEnv(env, "@web/next")
 

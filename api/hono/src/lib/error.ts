@@ -1,7 +1,6 @@
-import type { Context } from "hono"
-
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
+import type { Context } from "hono"
 import { z } from "zod"
 
 export const errorHandler = (err: Error, c: Context) => {
