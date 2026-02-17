@@ -94,8 +94,6 @@ export function SidebarDashboardOrgSwitcher() {
   }
 
   const organizations: Organization[] = orgs ?? []
-  const triggerOrgName = isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")
-  const triggerOrgSlug = isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")
 
   return (
     <>
@@ -112,8 +110,12 @@ export function SidebarDashboardOrgSwitcher() {
             <RiBuildingLine className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{triggerOrgName}</span>
-            <span className="text-muted-foreground truncate text-xs">{triggerOrgSlug}</span>
+            <span className="truncate font-medium">
+              {isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")}
+            </span>
+            <span className="text-muted-foreground truncate text-xs">
+              {isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")}
+            </span>
           </div>
           <RiExpandUpDownLine className="ml-auto size-4" />
         </DropdownMenuTrigger>
