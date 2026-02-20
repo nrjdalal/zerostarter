@@ -43,9 +43,14 @@ const formSchema = z.object({
 export function SidebarDashboardOrgSwitcher() {
   const { isMobile } = useSidebar()
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [isOrgTransitioning, setIsOrgTransitioning] = useState(false)
 
   const { data: orgs, refetch: refetchOrgs } = authClient.useListOrganizations()
-  const { data: activeOrg, refetch: refetchActiveOrg } = authClient.useActiveOrganization()
+  const {
+    data: activeOrg,
+    isPending: isPendingActiveOrg,
+    refetch: refetchActiveOrg,
+  } = authClient.useActiveOrganization()
 
   const form = useForm({
     defaultValues: {
@@ -56,40 +61,49 @@ export function SidebarDashboardOrgSwitcher() {
       onChange: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const name = value.name.trim()
-      const slug = slugify(name, 4)
-      const result = await authClient.organization.create({
-        name,
-        slug,
-      })
+      setIsOrgTransitioning(true)
+      try {
+        const name = value.name.trim()
+        const slug = slugify(name, 4)
+        const result = await authClient.organization.create({
+          name,
+          slug,
+        })
 
-      if (result.error) {
-        toast.error(result.error.message || "Failed to create organization")
-        return
-      }
+        if (result.error) {
+          toast.error(result.error.message || "Failed to create organization")
+          return
+        }
 
-      if (result.data) {
-        await authClient.organization.setActive({ organizationId: result.data.id })
-        refetchOrgs()
-        refetchActiveOrg()
-        setCreateDialogOpen(false)
-        form.reset()
-        toast.success("Organization created!")
+        if (result.data) {
+          await authClient.organization.setActive({ organizationId: result.data.id })
+          refetchOrgs()
+          refetchActiveOrg()
+          setCreateDialogOpen(false)
+          form.reset()
+          toast.success("Organization created!")
+        }
+      } finally {
+        setIsOrgTransitioning(false)
       }
     },
   })
 
   const handleSetActive = async (organizationId: string) => {
     try {
+      setIsOrgTransitioning(true)
       await authClient.organization.setActive({ organizationId })
-      refetchActiveOrg()
+      await Promise.all([refetchOrgs(), refetchActiveOrg()])
     } catch (error) {
       console.error("Failed to set active organization", error)
       toast.error("Failed to switch organization")
+    } finally {
+      setIsOrgTransitioning(false)
     }
   }
 
   const organizations: Organization[] = orgs ?? []
+  const isOrgLoading = isPendingActiveOrg || isOrgTransitioning
 
   return (
     <>
@@ -106,9 +120,11 @@ export function SidebarDashboardOrgSwitcher() {
             <RiBuildingLine className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{activeOrg?.name ?? "Select Organization"}</span>
+            <span className="truncate font-medium">
+              {isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")}
+            </span>
             <span className="text-muted-foreground truncate text-xs">
-              {activeOrg?.slug ?? "No organization selected"}
+              {isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")}
             </span>
           </div>
           <RiExpandUpDownLine className="ml-auto size-4" />

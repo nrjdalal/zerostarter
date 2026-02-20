@@ -10,7 +10,7 @@ import {
 } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -72,6 +72,10 @@ export function Navbar() {
 
   const [toDashboard, setToDashboard] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    setToDashboard(false)
+  }, [pathname])
 
   if (pathname?.startsWith("/dashboard")) return null
 
