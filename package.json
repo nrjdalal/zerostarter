@@ -68,7 +68,7 @@
     "@octokit/rest": "^22.0.1",
     "@posthog/react": "^1.8.0",
     "@remixicon/react": "^4.9.0",
-    "@scalar/hono-api-reference": "^0.9.44",
+    "@scalar/hono-api-reference": "^0.9.45",
     "@t3-oss/env-core": "^0.13.10",
     "@tailwindcss/postcss": "^4.2.1",
     "@takumi-rs/image-response": "^0.68.17",
