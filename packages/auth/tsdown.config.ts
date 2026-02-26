@@ -4,13 +4,15 @@ import { defineConfig } from "tsdown"
 
 export default [
   defineConfig({
+    dts: {
+      tsgo: true,
+    },
     entry: ["src/index.ts"],
-    minify: true,
-    dts: { tsgo: true },
     hooks: {
       "build:prepare": () => {
         getSafeEnv(env, "@packages/auth")
       },
     },
+    minify: true,
   }),
 ]
