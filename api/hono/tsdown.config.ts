@@ -4,14 +4,18 @@ import { defineConfig } from "tsdown"
 
 export default [
   defineConfig({
+    deps: {
+      neverBundle: ["bun"],
+    },
+    dts: {
+      tsgo: true,
+    },
     entry: ["src/index.ts"],
-    minify: true,
-    dts: { tsgo: true },
     hooks: {
       "build:prepare": () => {
         getSafeEnv(env, "@api/hono")
       },
     },
-    external: ["bun"],
+    minify: true,
   }),
 ]
