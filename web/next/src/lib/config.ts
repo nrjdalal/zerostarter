@@ -59,8 +59,8 @@ export const config = {
             url: "/docs/getting-started/type-safe-api",
           },
           {
-            title: "Installation",
-            url: "/docs/getting-started/installation",
+            title: "Setup",
+            url: "/docs/getting-started/setup",
           },
           {
             title: "Scripts",
