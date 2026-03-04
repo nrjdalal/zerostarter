@@ -45,12 +45,15 @@ export function SidebarDocsContent() {
             {"items" in group &&
               group.items.map((item) => {
                 const isActive = pathname === item.url || pathname === item.url + "/"
+                const isSetupItem = item.url === "/docs/getting-started/setup"
 
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      className="data-active:font-normal"
+                      className={
+                        isSetupItem ? "border data-active:font-normal" : "data-active:font-normal"
+                      }
                       render={
                         <Link
                           href={item.url}

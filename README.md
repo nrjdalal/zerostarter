@@ -114,7 +114,7 @@ bun run db:migrate
 bun dev
 ```
 
-📖 **[Complete installation guide →](https://zerostarter.dev/docs/getting-started/installation)**
+📖 **[Complete setup guide →](https://zerostarter.dev/docs/getting-started/setup)**
 
 ## 📚 Documentation
 
