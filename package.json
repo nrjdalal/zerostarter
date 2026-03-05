@@ -57,7 +57,6 @@
   "catalog": {
     "@arcjet/ip": "^1.1.0",
     "@base-ui/react": "^1.2.0",
-    "@better-auth/drizzle-adapter": "^1.5.3",
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@fontsource-variable/caveat": "^5.2.8",
