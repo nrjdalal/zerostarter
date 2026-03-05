@@ -13,6 +13,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "catalog:",
     "@packages/db": "workspace:*",
     "@packages/env": "workspace:*",
     "better-auth": "catalog:"
