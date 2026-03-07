@@ -87,7 +87,7 @@ export function Navbar() {
   ]
 
   return (
-    <div className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
+    <header className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {config.app.name}
@@ -97,7 +97,7 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
-          <nav className="mx-5 hidden items-center gap-7.5 lg:flex">
+          <nav aria-label="Main navigation" className="mx-5 hidden items-center gap-7.5 lg:flex">
             {navLinks.map((link) => {
               const isActive = !link.external && pathname?.startsWith(link.href)
               if (link.external) {
@@ -236,6 +236,6 @@ export function Navbar() {
           </Sheet>
         </div>
       </div>
-    </div>
+    </header>
   )
 }
