@@ -19,7 +19,15 @@ RUN bun run build
 
 FROM base AS runner
 WORKDIR /app
-COPY --from=builder /app ./
+COPY --from=prepare /app/out/json/ .
+COPY --from=prepare /app/out/bun.lock .
+RUN bun install --frozen-lockfile --ignore-scripts --production
+COPY --from=builder /app/web/next/.next/ ./web/next/.next/
+COPY --from=builder /app/web/next/.source/ ./web/next/.source/
+COPY --from=builder /app/web/next/public/ ./web/next/public/
+COPY --from=builder /app/api/hono/dist/ ./api/hono/dist/
+COPY --from=builder /app/packages/auth/dist/ ./packages/auth/dist/
+COPY --from=builder /app/packages/env/dist/ ./packages/env/dist/
 RUN chown -R bun:bun web/next/.next web/next/.source
 
 USER bun
