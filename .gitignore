@@ -46,6 +46,11 @@ next-env.d.ts
 .turbo/
 dist/
 
+# agent skills
+.agents/
+.claude/skills/
+skills-lock.json
+
 # custom files
 !.env.example
 .npmrc
