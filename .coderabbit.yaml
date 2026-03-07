@@ -7,7 +7,10 @@ tone_instructions: >-
 early_access: true
 reviews:
   collapse_walkthrough: false
-  poem: false
+  path_filters:
+    - "!**/.agents/**"
+    - "!**/.claude/**"
+  poem: true
 issue_enrichment:
   auto_enrich:
     enabled: true

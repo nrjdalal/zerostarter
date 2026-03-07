@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # custom directories
+.playwright-cli/
 .source/
 .turbo/
 dist/
