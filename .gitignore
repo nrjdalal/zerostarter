@@ -49,3 +49,4 @@ dist/
 # custom files
 !.env.example
 .npmrc
+*.local.json
