@@ -1,3 +1,7 @@
 {
-  "ignorePatterns": [".agents/**", ".claude/skills/**"],
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "experimentalSortImports": {},
+  "experimentalTailwindcss": {},
+  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/skills/**"],
 }
