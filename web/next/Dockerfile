@@ -28,6 +28,7 @@ COPY --from=builder /app/packages/env/dist/ ./packages/env/dist/
 COPY --from=builder /app/web/next/.next/ ./web/next/.next/
 COPY --from=builder /app/web/next/.source/ ./web/next/.source/
 COPY --from=builder /app/web/next/public/ ./web/next/public/
+
 RUN chown -R bun:bun web/next/.next web/next/.source
 
 USER bun
