@@ -34,7 +34,13 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 3. Set up environment variables:
 
-   Create a `.env` file in the root directory with the following variables:
+   Copy the example file and fill in your values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   The `.env` file contains the following variables:
 
    ```
    NODE_ENV=local
@@ -43,6 +49,8 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
    HONO_APP_URL=http://localhost:4000
    HONO_TRUSTED_ORIGINS=http://localhost:3000
+   HONO_RATE_LIMIT=60 # allow 60 req/min (default) and twice that for authenticated users
+   HONO_RATE_LIMIT_WINDOW_MS=60000 # 1 minute (default)
 
    # Generate using `openssl rand -base64 32`
    BETTER_AUTH_SECRET=

@@ -79,16 +79,16 @@ Oxfmt configuration in `.oxfmtrc.jsonc`:
   "semi": false,
   "experimentalSortImports": {},
   "experimentalTailwindcss": {},
-  "ignorePatterns": ["**/*.lock"],
+  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/**"],
 }
 ```
 
-| Setting                   | Value           | Description                                      |
-| ------------------------- | --------------- | ------------------------------------------------ |
-| `semi`                    | `false`         | No semicolons (like Prettier with `semi: false`) |
-| `experimentalSortImports` | `{}`            | Auto-sort imports                                |
-| `experimentalTailwindcss` | `{}`            | Sort Tailwind CSS classes                        |
-| `ignorePatterns`          | `["**/*.lock"]` | Skip lock files                                  |
+| Setting                   | Value                                       | Description                                      |
+| ------------------------- | ------------------------------------------- | ------------------------------------------------ |
+| `semi`                    | `false`                                     | No semicolons (like Prettier with `semi: false`) |
+| `experimentalSortImports` | `{}`                                        | Auto-sort imports                                |
+| `experimentalTailwindcss` | `{}`                                        | Sort Tailwind CSS classes                        |
+| `ignorePatterns`          | `["**/*.lock", ".agents/**", ".claude/**"]` | Skip lock files and AI skill directories         |
 
 ### Manual Formatting
 
