@@ -17,12 +17,15 @@ ZeroStarter can be deployed to Vercel for both the frontend (Next.js) and backen
 
 ### Configuration
 
-| Option           | Value                           |
-| ---------------- | ------------------------------- |
-| Root Directory   | `web/next`                      |
-| Framework        | Next.js                         |
-| Build Command    | `bun run build` (auto-detected) |
-| Output Directory | `.next` (auto-detected)         |
+Each workspace includes a `vercel.json` with the correct install, build, and framework settings. Vercel reads this automatically when you set the root directory.
+
+| Option          | Value                                        |
+| --------------- | -------------------------------------------- |
+| Root Directory  | `web/next`                                   |
+| Framework       | Next.js                                      |
+| Install Command | `cd ../.. && bun install --ignore-scripts`   |
+| Build Command   | `cd ../.. && turbo build --filter=@web/next` |
+| Bun Version     | 1.3.10                                       |
 
 ### Environment Variables
 
@@ -45,12 +48,14 @@ NEXT_PUBLIC_USERJOT_URL=your_userjot_url
 
 ### Configuration
 
-| Option           | Value           |
-| ---------------- | --------------- |
-| Root Directory   | `api/hono`      |
-| Framework        | Other           |
-| Build Command    | `bun run build` |
-| Output Directory | `dist`          |
+| Option           | Value                                        |
+| ---------------- | -------------------------------------------- |
+| Root Directory   | `api/hono`                                   |
+| Framework        | Hono                                         |
+| Install Command  | `cd ../.. && bun install --ignore-scripts`   |
+| Build Command    | `cd ../.. && turbo build --filter=@api/hono` |
+| Output Directory | `dist`                                       |
+| Bun Version      | 1.3.10                                       |
 
 ### Environment Variables
 

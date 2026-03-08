@@ -77,10 +77,10 @@ export const v1Router = new Hono()
 
 ### Request Validation
 
-Use Zod for type-safe request validation:
+Use `@hono/standard-validator` with Zod for type-safe request validation:
 
 ```ts
-import { zValidator } from "@hono/zod-validator"
+import { standardValidator } from "@hono/standard-validator"
 import { z } from "zod"
 
 const createItemSchema = z.object({
@@ -88,7 +88,7 @@ const createItemSchema = z.object({
   description: z.string().optional(),
 })
 
-app.post("/items", zValidator("json", createItemSchema), async (c) => {
+app.post("/items", standardValidator("json", createItemSchema), async (c) => {
   const { name, description } = c.req.valid("json")
   // name and description are fully typed
   const data = { id: "123", name, description }

@@ -18,17 +18,7 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
    This setting is required for the automated workflows to create draft PRs.
 
-2. **Changelog Configuration**: Manage `changelog.config.ts` to configure changelog generation:
-   - `repo`: Your GitHub repository URL
-   - `hideAuthorEmail`: Set to `true` to hide author emails in changelog
-
-   ```ts
-   // changelog.config.ts
-
-   export default {
-     repo: "https://github.com/nrjdalal/zerostarter",
-   }
-   ```
+2. **Changelog Generation**: The release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
 
 ## Workflow
 
