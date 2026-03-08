@@ -15,7 +15,7 @@ RUN bun build /app/api/hono/dist/index.mjs --outfile /app/api/hono/bundle/index.
 
 FROM base AS runner
 WORKDIR /app/api/hono
-COPY --from=builder /app/api/hono/bundle ./bundle
+COPY --from=builder --chown=bun:bun /app/api/hono/bundle ./bundle
 
 USER bun
 CMD ["bun", "bundle/index.mjs"]

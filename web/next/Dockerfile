@@ -12,12 +12,13 @@ RUN bun install --frozen-lockfile --ignore-scripts
 COPY --from=prepare /app/out/full/ .
 ENV INTERNAL_API_URL=http://api:4000
 RUN bunx turbo run build --filter=@web/next
+RUN cp -r /app/web/next/.next/static /app/web/next/.next/standalone/web/next/.next/static
+RUN cp -r /app/web/next/public /app/web/next/.next/standalone/web/next/public
 
 FROM base AS runner
 WORKDIR /app/web/next
-COPY --from=builder /app/web/next/.next/standalone /app
-COPY --from=builder /app/web/next/.next/static ./.next/static
-COPY --from=builder /app/web/next/public ./public
+COPY --from=builder --chown=bun:bun /app/web/next/.next/standalone /app
+RUN mkdir -p .next && chown bun:bun .next
 
 USER bun
 CMD ["bun", "server.js"]
