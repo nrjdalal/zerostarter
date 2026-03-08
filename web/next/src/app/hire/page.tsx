@@ -1,4 +1,10 @@
-import { RiArrowRightUpLine, RiTwitterXFill } from "@remixicon/react"
+import {
+  RiArrowRightUpLine,
+  RiGithubFill,
+  RiLinkedinFill,
+  RiMailLine,
+  RiTwitterXFill,
+} from "@remixicon/react"
 import type { Metadata } from "next"
 import Link from "next/link"
 
@@ -110,7 +116,7 @@ const sections: {
 
 export default function Page() {
   return (
-    <div className="dark bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
+    <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
       {/* About */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
         <h1 className="font-cursive text-3xl font-semibold tracking-wide">nrjdalal</h1>
@@ -140,6 +146,43 @@ export default function Page() {
           </a>
           .
         </p>
+
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="https://github.com/nrjdalal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+          >
+            <RiGithubFill className="size-4" />
+            GitHub
+          </a>
+          <a
+            href="https://x.com/nrjdalal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+          >
+            <RiTwitterXFill className="size-4" />
+            @nrjdalal
+          </a>
+          <a
+            href="https://linkedin.com/in/nrjdalal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+          >
+            <RiLinkedinFill className="size-4" />
+            LinkedIn
+          </a>
+          <a
+            href="mailto:nrjdalal.dev@gmail.com"
+            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+          >
+            <RiMailLine className="size-4" />
+            nrjdalal.dev@gmail.com
+          </a>
+        </div>
       </div>
 
       {/* Work */}
