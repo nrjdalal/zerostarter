@@ -6,6 +6,7 @@ import type { NextConfig } from "next"
 getSafeEnv(env, "@web/next")
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: true,
   rewrites: async () => {
     return [

@@ -68,12 +68,12 @@ Generates a styled SVG visualization of Turborepo task dependencies.
 1. **Generate Raw Graph**: `npx turbo run build --graph=graph.svg`
 2. **Clean Up Labels**: Remove prefixes and internal placeholders
 3. **Style for Dark Mode**: Apply transparent background and GitHub blue theme
-4. **Move to Assets**: Save to `.github/assets/graph-build.svg`
+4. **Move to Public Assets**: Save to `web/next/public/graph-build.svg`
 
 **Output**: A dark-mode-friendly SVG that can be embedded in README:
 
 ```markdown
-![Build Graph](.github/assets/graph-build.svg)
+![Build Graph](/graph-build.svg)
 ```
 
 ## Skill Structure

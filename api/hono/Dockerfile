@@ -1,0 +1,20 @@
+FROM oven/bun:latest AS base
+WORKDIR /app
+
+FROM base AS prepare
+COPY . .
+RUN bunx turbo prune @api/hono --docker
+
+FROM base AS builder
+COPY .env ./.env
+COPY --from=prepare /app/out/json/ .
+RUN bun install --frozen-lockfile --ignore-scripts
+COPY --from=prepare /app/out/full/ .
+RUN bunx turbo run build --filter=@api/hono
+RUN bun build /app/api/hono/dist/index.mjs --outfile /app/api/hono/bundle/index.mjs --target bun --minify
+
+FROM base AS runner
+WORKDIR /app/api/hono
+COPY --from=builder /app/api/hono/bundle ./bundle
+EXPOSE 4000
+CMD ["bun", "bundle/index.mjs"]
