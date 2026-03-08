@@ -1,32 +1,22 @@
-FROM oven/bun:latest AS base
+FROM oven/bun:1.3.10 AS base
+WORKDIR /app
 
 FROM base AS prepare
-WORKDIR /app
-RUN bun install --global turbo
 COPY . .
-RUN turbo prune @api/hono --docker
+RUN bunx turbo prune @api/hono --docker
 
 FROM base AS builder
-WORKDIR /app
-COPY --from=prepare /app/.env .
-COPY --from=prepare /app/.github/ ./.github/
+COPY .env ./.env
 COPY --from=prepare /app/out/json/ .
-COPY --from=prepare /app/out/bun.lock .
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY --from=prepare /app/out/full/ .
-RUN bun run build
+RUN bunx turbo run build --filter=@api/hono
+RUN bun build /app/api/hono/dist/index.mjs --outfile /app/api/hono/bundle/index.mjs --target bun --minify
 
 FROM base AS runner
-WORKDIR /app
-COPY --from=prepare /app/out/json/ .
-COPY --from=prepare /app/out/bun.lock .
-RUN bun install --frozen-lockfile --ignore-scripts --production
-COPY --from=builder /app/api/hono/dist/ ./api/hono/dist/
-COPY --from=builder /app/packages/auth/dist/ ./packages/auth/dist/
-COPY --from=builder /app/packages/db/dist/ ./packages/db/dist/
-COPY --from=builder /app/packages/env/dist/ ./packages/env/dist/
+WORKDIR /app/api/hono
+COPY --from=builder /app/api/hono/bundle ./bundle
 
 USER bun
-WORKDIR /app/api/hono
-CMD ["bun", "run", "start"]
+CMD ["bun", "bundle/index.mjs"]
 EXPOSE 4000

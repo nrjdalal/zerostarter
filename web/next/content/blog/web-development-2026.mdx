@@ -683,7 +683,7 @@ services:
       - INTERNAL_API_URL=http://api:4000
 ```
 
-Services communicate via Docker's internal network. Server-side rendering connects to the API container directly.
+Services communicate via Docker's internal network. `INTERNAL_API_URL` enables the api container to rewrite Postgres URLs for Docker networking, and the web container to make server-side API calls directly.
 
 **Vercel** for production: Frontend and backend deploy as separate projects from the same repository.
 
