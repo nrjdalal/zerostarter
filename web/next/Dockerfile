@@ -18,5 +18,7 @@ WORKDIR /app/web/next
 COPY --from=builder /app/web/next/.next/standalone /app
 COPY --from=builder /app/web/next/.next/static ./.next/static
 COPY --from=builder /app/web/next/public ./public
-EXPOSE 3000
+
+USER bun
 CMD ["bun", "server.js"]
+EXPOSE 3000
