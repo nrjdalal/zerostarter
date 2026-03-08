@@ -51,11 +51,11 @@ services:
 
 ### Key Configuration
 
-| Setting            | Description                                                |
-| ------------------ | ---------------------------------------------------------- |
-| `context: .`       | Build context is the repository root (for monorepo access) |
-| `env_file: .env`   | Loads environment variables from root `.env` file          |
-| `INTERNAL_API_URL` | Internal service-to-service communication URL              |
+| Setting            | Description                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `context: .`       | Build context is the repository root (for monorepo access)                                                                                    |
+| `env_file: .env`   | Loads environment variables from root `.env` file                                                                                             |
+| `INTERNAL_API_URL` | Enables Docker networking: api uses it for Postgres URL rewrite (`localhost` → `host.docker.internal`), web uses it for server-side API calls |
 
 ## Building Individual Images
 
@@ -102,7 +102,11 @@ When running with Docker Compose, services communicate using Docker's internal n
 - The `web` service connects to `api` using `http://api:4000` (service name resolution)
 - External clients connect using the mapped ports (`localhost:3000`, `localhost:4000`)
 
-The `INTERNAL_API_URL` environment variable enables server-side rendering to communicate directly with the API container without going through the public network.
+`INTERNAL_API_URL` serves multiple purposes:
+
+- **Build time (web)**: Set via `ENV` in the web Dockerfile, baked into Next.js rewrites so `/api/*` routes proxy to `http://api:4000`
+- **Runtime (web)**: Set via `environment` in docker-compose, used by server-side API client calls (SSR, server actions) to reach the api container directly
+- **Runtime (api)**: Triggers Postgres URL rewrite (`localhost` → `host.docker.internal`) so the api container can reach the host database
 
 ## Production Considerations
 
