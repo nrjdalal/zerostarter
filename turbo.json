@@ -31,6 +31,7 @@
     "GOOGLE_CLIENT_SECRET",
     "HONO_APP_URL",
     "HONO_TRUSTED_ORIGINS",
+    "INTERNAL_API_URL",
     "POSTGRES_URL",
     // Client variables
     "NEXT_PUBLIC_API_URL",
