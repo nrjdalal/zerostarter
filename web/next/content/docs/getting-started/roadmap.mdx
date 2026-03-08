@@ -158,26 +158,20 @@ Integration with [Scalar](https://scalar.com) for beautiful, interactive API doc
 
 ### Better Auth Organizations
 
-**Status:** Planned  
+**Status:** ✅ Implemented
 **Priority:** High
 
-**Concept:**
 Integration with [Better Auth Organizations plugin](https://www.better-auth.com/docs/plugins/organization) for multi-tenant SaaS applications with team and organization support.
 
-**Use Cases:**
+**Features:**
 
-- Multi-tenant applications
-- Team collaboration features
-- Organization management
-- Role-based access control (RBAC)
-- Billing per organization
+- Organization creation and switching via dashboard sidebar
+- Team management within organizations
+- Member roles and invitations
+- Last used organization persistence across sessions
+- Database schema with `organization`, `member`, `team`, `teamMember`, and `invitation` tables
 
-**Implementation Notes:**
-
-- Database schema extensions
-- Middleware for organization context
-- UI components for team management
-- Integration with existing auth system
+> **Available now:** See the [Authentication documentation](/docs/manage/authentication) for details.
 
 ---
 
@@ -419,7 +413,7 @@ Integration with [Dodo](https://dodopayments.com) for payment processing service
 ### Phase 1 (High Priority)
 
 1. **Resend Email** - Critical for user communication
-2. **Better Auth Organizations** - Core SaaS feature
+2. ~~**Better Auth Organizations**~~ - ✅ Implemented
 3. **Stripe Payments** - Essential for monetization
 
 ### Phase 2 (Medium Priority)
@@ -435,7 +429,7 @@ Integration with [Dodo](https://dodopayments.com) for payment processing service
 2. **i18next** - Advanced i18n features
 3. **SendGrid** - Alternative email provider
 
-> **Note**: PostHog Analytics and Scalar API Docs are already implemented. See the [Analytics documentation](/docs/manage/analytics) and [Type-Safe API documentation](/docs/getting-started/type-safe-api#api-documentation) for details.
+> **Note**: PostHog Analytics, Scalar API Docs, and Better Auth Organizations are already implemented. See the [Analytics documentation](/docs/manage/analytics), [Type-Safe API documentation](/docs/getting-started/type-safe-api#api-documentation), and [Authentication documentation](/docs/manage/authentication) for details.
 
 ---
 

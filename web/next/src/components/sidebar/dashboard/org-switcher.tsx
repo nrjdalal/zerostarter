@@ -36,6 +36,13 @@ type Organization = {
   logo?: string | null
 }
 
+const LAST_ORG_COOKIE = "last-active-org"
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 400
+
+function setLastOrgId(userId: string, orgId: string) {
+  document.cookie = `${LAST_ORG_COOKIE}_${userId}=${encodeURIComponent(orgId)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
+}
+
 const formSchema = z.object({
   name: z.string().min(2).max(32),
 })
@@ -45,6 +52,7 @@ export function SidebarDashboardOrgSwitcher() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [isOrgTransitioning, setIsOrgTransitioning] = useState(false)
 
+  const { data: session } = authClient.useSession()
   const { data: orgs, refetch: refetchOrgs } = authClient.useListOrganizations()
   const {
     data: activeOrg,
@@ -77,6 +85,7 @@ export function SidebarDashboardOrgSwitcher() {
 
         if (result.data) {
           await authClient.organization.setActive({ organizationId: result.data.id })
+          if (session?.user.id) setLastOrgId(session.user.id, result.data.id)
           refetchOrgs()
           refetchActiveOrg()
           setCreateDialogOpen(false)
@@ -93,6 +102,7 @@ export function SidebarDashboardOrgSwitcher() {
     try {
       setIsOrgTransitioning(true)
       await authClient.organization.setActive({ organizationId })
+      if (session?.user.id) setLastOrgId(session.user.id, organizationId)
       await Promise.all([refetchOrgs(), refetchActiveOrg()])
     } catch (error) {
       console.error("Failed to set active organization", error)

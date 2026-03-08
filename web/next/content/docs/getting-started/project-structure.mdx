@@ -63,7 +63,8 @@ The frontend application built with [Next.js 16](https://nextjs.org).
 Shared authentication logic using [Better Auth](https://better-auth.com).
 
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
-- Supports GitHub and Google OAuth
+- Supports GitHub and Google OAuth, magic links
+- Organization and teams plugin for multi-tenant support
 - Exports session types for type safety
 
 ### `packages/db/`
@@ -71,7 +72,7 @@ Shared authentication logic using [Better Auth](https://better-auth.com).
 Database schema and configuration using [Drizzle ORM](https://orm.drizzle.team).
 
 - **`src/schema/`**: Database table definitions
-  - `auth.ts`: User, session, account, and verification tables
+  - `auth.ts`: User, session, account, verification, organization, member, team, teamMember, and invitation tables
 - **`drizzle/`**: Generated migrations
 - **`drizzle.config.ts`**: Drizzle Kit configuration
 

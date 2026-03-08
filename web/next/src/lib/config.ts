@@ -76,6 +76,12 @@ export const config = {
         label: "Manage",
         collapsible: true,
         categories: {
+          Authentication: [
+            {
+              title: "Auth & Organizations",
+              url: "/docs/manage/authentication",
+            },
+          ],
           Analytics: [
             {
               title: "PostHog",

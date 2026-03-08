@@ -21,7 +21,7 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 - **Backend**: [Hono](https://hono.dev)
 - **RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end type safety with frontend client
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.com)
+- **Authentication**: [Better Auth](https://better-auth.com) with OAuth (GitHub, Google), magic links, organizations, and teams
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
 - **Styling**: [Tailwind CSS](https://tailwindcss.com)
 - **UI Components**: [Shadcn UI](https://ui.shadcn.com)
@@ -49,9 +49,17 @@ This project is a monorepo organized as follows:
 
 📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**
 
+## ✅ Implemented Features
+
+- **Authentication** — OAuth (GitHub, Google), magic links, session management
+- **Organizations & Teams** — Multi-tenant support with roles, invitations, and org switching
+- **Analytics** — PostHog integration for product analytics, feature flags, and session recordings
+- **API Documentation** — Interactive docs at `/api/docs` powered by Scalar with auto-generated OpenAPI spec
+- **Rate Limiting** — Configurable per-user, per-API-key, and per-IP rate limiting
+
 ## 🗺️ Roadmap
 
-We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.
+We're actively working on integrations for AI, email, background tasks, payments, and more.
 
 📖 **[View detailed roadmap →](https://zerostarter.dev/docs/getting-started/roadmap)**
 
@@ -64,7 +72,7 @@ We're actively working on integrations for AI, analytics, background tasks, emai
 - **Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
 - **Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
 - **Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
-- **Enterprise-Grade Auth** — Better Auth integration with GitHub, Google, and more — fully configured and ready to extend
+- **Enterprise-Grade Auth** — Better Auth with OAuth providers, magic links, multi-tenant organizations, teams, and role-based access
 - **Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
 - **Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
 
@@ -121,6 +129,7 @@ bun dev
 - **[📖 Full Documentation](https://zerostarter.dev/docs)** — Everything you need to know
 - **[🏗️ Architecture](https://zerostarter.dev/docs/getting-started/architecture)** — Deep dive into the tech stack
 - **[📂 Project Structure](https://zerostarter.dev/docs/getting-started/project-structure)** — Monorepo organization
+- **[🔐 Authentication](https://zerostarter.dev/docs/manage/authentication)** — Auth, organizations, and teams
 - **[🔌 Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)** — Hono RPC client examples
 - **[⚙️ Scripts](https://zerostarter.dev/docs/getting-started/scripts)** — Available commands
 - **[🚀 Deployment](https://zerostarter.dev/docs/deployment/vercel)** — Deploy to production
