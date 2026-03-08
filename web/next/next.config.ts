@@ -6,12 +6,13 @@ import type { NextConfig } from "next"
 getSafeEnv(env, "@web/next")
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: true,
   rewrites: async () => {
     return [
       {
         source: "/api/:path*",
-        destination: `${env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path*`,
       },
       {
         source: "/api/search",
