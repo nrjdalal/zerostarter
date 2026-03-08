@@ -1,0 +1,188 @@
+---
+title: API Conventions
+description: Standardized API response format, error handling, and middleware patterns.
+---
+
+## Overview
+
+The Hono API server follows consistent conventions for responses, errors, middleware, and route organization. Understanding these patterns is essential for extending the API.
+
+## Response Format
+
+All API responses use a standardized JSON envelope:
+
+### Success
+
+```json
+{
+  "data": { ... }
+}
+```
+
+### Error
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable message"
+  }
+}
+```
+
+### Error Codes
+
+| Code                    | Status | When                                                      |
+| ----------------------- | ------ | --------------------------------------------------------- |
+| `NOT_FOUND`             | 404    | Route does not exist                                      |
+| `UNAUTHORIZED`          | 401    | Missing or invalid session                                |
+| `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production) |
+| `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                       |
+| `VALIDATION_ERROR`      | 400    | Zod schema validation failed                              |
+| `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                    |
+
+### Validation Errors
+
+When a Zod validation fails, the response includes the full issues array:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed",
+    "issues": [{ "path": ["name"], "message": "Required" }]
+  }
+}
+```
+
+### Environment-Aware Errors
+
+- **Local/Development**: Error messages include the actual error details for debugging
+- **Production**: Generic `"Internal Server Error"` message to avoid leaking internals
+
+## Middleware Stack
+
+Every request passes through these global middlewares in order:
+
+1. **CORS** — Allows configured trusted origins with credentials
+2. **Logger** — Logs request/response to console
+3. **Rate Limiter** — Enforces per-key rate limits
+
+### CORS Configuration
+
+Configured in `api/hono/src/index.ts`:
+
+- **Origins**: From `HONO_TRUSTED_ORIGINS` (comma-separated URLs)
+- **Methods**: GET, OPTIONS, POST, PUT
+- **Headers**: content-type, authorization
+- **Credentials**: Enabled (for cookies)
+- **Max Age**: 600 seconds
+
+### Rate Limiting
+
+Rate limit keys are resolved in priority order:
+
+1. **User ID** — If authenticated (highest priority)
+2. **API Key** — Hash of `Authorization` header
+3. **IP Address** — Detected via [Arcjet IP](https://arcjet.com)
+4. **Random UUID** — Fallback if IP detection fails
+
+| Context         | Limit        | Window | Environment Variable                            |
+| --------------- | ------------ | ------ | ----------------------------------------------- |
+| Unauthenticated | 60 req       | 60s    | `HONO_RATE_LIMIT` / `HONO_RATE_LIMIT_WINDOW_MS` |
+| Authenticated   | 120 req (2x) | 60s    | Same variables, doubled automatically           |
+
+When a rate limit is exceeded, the API returns:
+
+```json
+{
+  "error": {
+    "code": "TOO_MANY_REQUESTS",
+    "message": "Too Many Requests"
+  }
+}
+```
+
+### Auth Middleware
+
+Applied to protected routes (e.g., `/api/v1/*`):
+
+1. Extracts session from request headers via Better Auth
+2. Returns `401 UNAUTHORIZED` if no valid session
+3. Sets `session` and `user` context variables for downstream handlers
+4. Creates a user-specific rate limiter with 2x the global limit
+
+## Route Organization
+
+```
+/                       → Version and environment info
+/headers                → Request headers (local/dev only)
+/api/health             → Health check with OpenAPI docs
+/api/openapi.json       → OpenAPI specification
+/api/docs               → Scalar API documentation UI
+/api/auth/*             → Better Auth handlers (session, OAuth, etc.)
+/api/v1/*               → Protected routes (requires auth middleware)
+  /api/v1/session       → Current session data
+  /api/v1/user          → Current user data
+```
+
+### Adding a New Route
+
+1. Create or edit a router in `api/hono/src/routers/`:
+
+```ts
+import { Hono } from "hono"
+import { describeRoute, resolver } from "hono-openapi"
+import { z } from "zod"
+import { authMiddleware } from "@/middlewares"
+
+export const v1Router = new Hono().use("/*", authMiddleware).get(
+  "/items",
+  describeRoute({
+    tags: ["Items"],
+    description: "List items",
+    responses: {
+      200: {
+        description: "OK",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ data: z.array(z.object({ id: z.string() })) })),
+          },
+        },
+      },
+    },
+  }),
+  (c) => {
+    const user = c.get("user")
+    return c.json({ data: [] })
+  },
+)
+```
+
+2. Register in `api/hono/src/index.ts` if it's a new router:
+
+```ts
+.route("/api/v1", v1Router)
+```
+
+3. The route is automatically available in the frontend via `apiClient.v1.items.$get()`
+
+## OpenAPI Documentation
+
+Routes decorated with `describeRoute` appear in the Scalar API docs at `/api/docs`. You can add code samples:
+
+```ts
+describeRoute({
+  tags: ["v1"],
+  description: "Get session",
+  ...({
+    "x-codeSamples": [{
+      lang: "typescript",
+      label: "hono/client",
+      source: `const res = await apiClient.v1.session.$get()
+const { data } = await res.json()`,
+    }],
+  } as object),
+  responses: { ... },
+})
+```

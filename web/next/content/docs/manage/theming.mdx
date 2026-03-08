@@ -1,0 +1,99 @@
+---
+title: Theming
+description: Dark mode, CSS variables, and styling with Tailwind CSS v4.
+---
+
+## Overview
+
+ZeroStarter uses [Tailwind CSS v4](https://tailwindcss.com) with CSS custom properties for theming, [next-themes](https://github.com/pacocoursey/next-themes) for dark/light mode switching, and the [Fumadocs UI](https://fumadocs.dev) theme for documentation pages.
+
+## Dark Mode
+
+Dark mode is handled by `next-themes` with system preference detection:
+
+```ts
+// web/next/src/app/providers.tsx
+<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+  {children}
+</ThemeProvider>
+```
+
+The theme toggle component at `web/next/src/components/mode-toggle.tsx` cycles through: **system → light → dark → system**.
+
+## CSS Variables
+
+Theme colors are defined in `web/next/src/app/globals.css` using OKLch color space:
+
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --border: oklch(0.922 0 0);
+  /* ... */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  /* ... */
+}
+```
+
+These variables are consumed by Tailwind utility classes like `bg-background`, `text-foreground`, `border-border`, etc.
+
+## Tailwind Configuration
+
+Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
+
+```ts
+export default { plugins: { "@tailwindcss/postcss": {} } }
+```
+
+The global CSS imports Tailwind, animations, and fonts:
+
+```css
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/jetbrains-mono";
+```
+
+## Fonts
+
+Two variable fonts are included:
+
+- **DM Sans** — Primary UI font (body text, headings)
+- **JetBrains Mono** — Monospace font (code blocks)
+
+## Component Styling
+
+Components use the shadcn/ui `base-nova` preset with [Base UI](https://base-ui.com) primitives. The configuration is in `web/next/components.json`:
+
+```json
+{
+  "style": "base-nova",
+  "iconLibrary": "remixicon",
+  "tailwind": {
+    "baseColor": "neutral",
+    "cssVariables": true
+  }
+}
+```
+
+### Utility Functions
+
+```ts
+import { cn } from "@/lib/utils"
+
+// Merge Tailwind classes with conflict resolution
+<div className={cn("text-sm", isActive && "font-bold")} />
+```
+
+## Customizing the Theme
+
+1. Edit CSS variables in `web/next/src/app/globals.css` for global color changes
+2. Use Tailwind utility classes that reference the CSS variables
+3. Update `components.json` and run `bun run shadcn:update` to regenerate components with a different preset

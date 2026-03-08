@@ -1,0 +1,85 @@
+---
+title: Dashboard
+description: Protected dashboard with authentication, organization management, and sidebar navigation.
+---
+
+## Overview
+
+The dashboard is a protected area at `/dashboard` that requires authentication. It includes organization switching, user management, and a collapsible sidebar. The layout is defined in `web/next/src/app/(protected)/layout.tsx`.
+
+## Authentication Guard
+
+The protected layout checks for a valid session server-side:
+
+```ts
+const session = await auth.api.getSession()
+if (!session?.user) redirect("/")
+```
+
+Unauthenticated users are redirected to the home page. The `auth.api.getSession()` helper in `web/next/src/lib/auth/index.ts` makes a server-side call to the API using the request cookies.
+
+## Organization Persistence
+
+When a user logs in, the dashboard restores their last active organization:
+
+1. On load, checks for `last-active-org_{userId}` cookie
+2. If found, calls `POST /api/auth/organization/set-active` to restore the org
+3. The org switcher component saves the cookie when the user switches organizations
+
+This ensures users return to the same organization context across sessions.
+
+## Sidebar Components
+
+### Organization Switcher
+
+Located at `web/next/src/components/sidebar/dashboard/org-switcher.tsx`:
+
+- Lists all organizations the user belongs to
+- Allows switching between organizations
+- Create Organization dialog with name and slug fields
+- Saves last active org in a cookie for persistence
+
+### User Actions
+
+Located at `web/next/src/components/sidebar/dashboard/user-actions.tsx`:
+
+- Displays user avatar, name, and email
+- Links to documentation
+- Optional feedback link (if `NEXT_PUBLIC_USERJOT_URL` is set)
+- Sign out action with redirect to home
+
+## Adding Dashboard Pages
+
+1. Create a new page under `web/next/src/app/(protected)/`:
+
+```
+web/next/src/app/(protected)/
+├── layout.tsx          ← Auth guard + sidebar
+├── dashboard/
+│   └── page.tsx        ← Main dashboard (currently empty)
+└── settings/
+    └── page.tsx        ← New page example
+```
+
+2. The page automatically inherits the authenticated layout with sidebar.
+
+3. Access session data in your page:
+
+```ts
+import { auth } from "@/lib/auth"
+
+export default async function SettingsPage() {
+  const session = await auth.api.getSession()
+  return <div>Welcome, {session?.user.name}</div>
+}
+```
+
+## Sidebar Configuration
+
+The sidebar uses the shadcn/ui `Sidebar` component with `collapsible="icon"` mode. It consists of:
+
+- **Header**: App name with RC badge, sidebar trigger
+- **Content**: Empty by default (add navigation items here)
+- **Footer**: User actions dropdown
+
+The sidebar state (open/closed) is persisted in a `sidebar_state` cookie.

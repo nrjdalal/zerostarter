@@ -1,0 +1,51 @@
+---
+title: OG Images
+description: Dynamic Open Graph image generation for social media previews.
+---
+
+## Overview
+
+ZeroStarter generates dynamic Open Graph images for social media previews using [@takumi-rs/image-response](https://github.com/vercel/og-image). Each page type has its own OG image route.
+
+## Endpoints
+
+| Route                      | Purpose                     |
+| -------------------------- | --------------------------- |
+| `/api/og/home`             | Landing page preview        |
+| `/api/og/docs/[[...slug]]` | Documentation page previews |
+| `/api/og/blog/[[...slug]]` | Blog post previews          |
+| `/api/og/hire`             | Hire page preview           |
+
+## How It Works
+
+OG images are generated as static routes at build time using `generateStaticParams`. They return PNG images with immutable cache headers (1 year).
+
+The shared utility at `web/next/src/lib/og-image.tsx` creates consistent images with:
+
+- Dark gradient background
+- Page title and description
+- Section label (e.g., "Documentation", "Blog")
+- App name branding
+
+## Customizing
+
+To add OG images for a new section:
+
+1. Create a route at `web/next/src/app/api/og/your-section/route.tsx`
+2. Use the `generateOgImage()` utility:
+
+```ts
+import { generateOgImage } from "@/lib/og-image"
+
+export async function GET() {
+  return generateOgImage({
+    title: "Page Title",
+    description: "Page description",
+    section: "Section Name",
+  })
+}
+```
+
+## Metadata Integration
+
+OG images are automatically referenced in page metadata via `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx`. Each docs and blog page gets a unique OG image URL based on its slug.

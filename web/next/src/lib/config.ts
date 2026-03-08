@@ -81,6 +81,20 @@ export const config = {
               title: "Auth & Organizations",
               url: "/docs/manage/authentication",
             },
+            {
+              title: "Dashboard",
+              url: "/docs/manage/dashboard",
+            },
+          ],
+          "Backend & Data": [
+            {
+              title: "Database",
+              url: "/docs/manage/database",
+            },
+            {
+              title: "API Conventions",
+              url: "/docs/manage/api-conventions",
+            },
           ],
           Analytics: [
             {
@@ -116,6 +130,20 @@ export const config = {
             {
               title: "Release",
               url: "/docs/manage/release",
+            },
+          ],
+          "UI & Styling": [
+            {
+              title: "Theming",
+              url: "/docs/manage/theming",
+            },
+            {
+              title: "OG Images",
+              url: "/docs/manage/og-images",
+            },
+            {
+              title: "Search",
+              url: "/docs/manage/search",
             },
           ],
           "Indexing and AI/LLM": [
