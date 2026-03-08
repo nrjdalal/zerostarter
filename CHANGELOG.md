@@ -1,3 +1,86 @@
+## v0.0.15
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.14...v0.0.15)
+
+### 🚀 Enhancements
+
+- Org switcher at sidebar ([66f81d3](https://github.com/nrjdalal/zerostarter/commit/66f81d3))
+- Add auth docs, last-used org persistence, and update outdated docs ([36116ef](https://github.com/nrjdalal/zerostarter/commit/36116ef))
+- Update hire page with light mode and social link badges ([25e3746](https://github.com/nrjdalal/zerostarter/commit/25e3746))
+- Add Dockerfiles and update docs/config for containerized builds ([bbde628](https://github.com/nrjdalal/zerostarter/commit/bbde628))
+
+### 🩹 Fixes
+
+- Improve accessibility and update gitignore ([805b1db](https://github.com/nrjdalal/zerostarter/commit/805b1db))
+- Restore original oxfmtrc config and add skills ignores ([fa33962](https://github.com/nrjdalal/zerostarter/commit/fa33962))
+- Use INTERNAL_API_URL for Docker API rewrite proxy ([e99b516](https://github.com/nrjdalal/zerostarter/commit/e99b516))
+- Restore INTERNAL_API_URL on both services and update docs ([9963ce8](https://github.com/nrjdalal/zerostarter/commit/9963ce8))
+- Run containers as non-root bun user and add missing turbo globalEnv vars ([c75da4d](https://github.com/nrjdalal/zerostarter/commit/c75da4d))
+
+### 📖 Documentation
+
+- Highlight setup button ([7bf916c](https://github.com/nrjdalal/zerostarter/commit/7bf916c))
+
+### 🏡 Chore
+
+- Sync ([e30f364](https://github.com/nrjdalal/zerostarter/commit/e30f364))
+- Slugify org name ([8c147ae](https://github.com/nrjdalal/zerostarter/commit/8c147ae))
+- Better loading org names ([945ba35](https://github.com/nrjdalal/zerostarter/commit/945ba35))
+- Cleanup ([47eec49](https://github.com/nrjdalal/zerostarter/commit/47eec49))
+- Sync ([019f95d](https://github.com/nrjdalal/zerostarter/commit/019f95d))
+- Sync ([8a26a00](https://github.com/nrjdalal/zerostarter/commit/8a26a00))
+- Sync ([c613a63](https://github.com/nrjdalal/zerostarter/commit/c613a63))
+- Sync ([36f896d](https://github.com/nrjdalal/zerostarter/commit/36f896d))
+- Sync ([39306cb](https://github.com/nrjdalal/zerostarter/commit/39306cb))
+- Update deps ([d16585e](https://github.com/nrjdalal/zerostarter/commit/d16585e))
+- Sync ([e2e58eb](https://github.com/nrjdalal/zerostarter/commit/e2e58eb))
+- Update deps ([246180a](https://github.com/nrjdalal/zerostarter/commit/246180a))
+- Update deps ([080da78](https://github.com/nrjdalal/zerostarter/commit/080da78))
+- Update deps ([a372050](https://github.com/nrjdalal/zerostarter/commit/a372050))
+- Update deps ([abbbdbc](https://github.com/nrjdalal/zerostarter/commit/abbbdbc))
+- Update deps ([129450b](https://github.com/nrjdalal/zerostarter/commit/129450b))
+- Update deps ([6daf3cc](https://github.com/nrjdalal/zerostarter/commit/6daf3cc))
+- Shadcn sync ([f6d0c16](https://github.com/nrjdalal/zerostarter/commit/f6d0c16))
+- Shadcn sync ([d9c146f](https://github.com/nrjdalal/zerostarter/commit/d9c146f))
+- Update deps ([9634483](https://github.com/nrjdalal/zerostarter/commit/9634483))
+- Coderabbitai ([272cac2](https://github.com/nrjdalal/zerostarter/commit/272cac2))
+- Update deps ([e43c056](https://github.com/nrjdalal/zerostarter/commit/e43c056))
+- Sync ([133e520](https://github.com/nrjdalal/zerostarter/commit/133e520))
+- Sync ([5190a58](https://github.com/nrjdalal/zerostarter/commit/5190a58))
+- Add playwright-cli skill and track .claude/skills ([bfda712](https://github.com/nrjdalal/zerostarter/commit/bfda712))
+- Clean up gitignore ([824f39e](https://github.com/nrjdalal/zerostarter/commit/824f39e))
+- Gitignore agent skills and untrack old playwright-cli ([663f20d](https://github.com/nrjdalal/zerostarter/commit/663f20d))
+- Clean up gitignore ([fbbd7ff](https://github.com/nrjdalal/zerostarter/commit/fbbd7ff))
+- Track agent skills and skills-lock.json ([c88a3a1](https://github.com/nrjdalal/zerostarter/commit/c88a3a1))
+- Add eslintignore and prettierignore for agent skills ([27f2e10](https://github.com/nrjdalal/zerostarter/commit/27f2e10))
+- Use oxlintrc and oxfmtrc to ignore agent skills ([22b93d8](https://github.com/nrjdalal/zerostarter/commit/22b93d8))
+- Rename oxlintrc and oxfmtrc to jsonc ([37d9f68](https://github.com/nrjdalal/zerostarter/commit/37d9f68))
+- Remove tracked agent skills ([ea3de58](https://github.com/nrjdalal/zerostarter/commit/ea3de58))
+- Update oxfmtrc ignore to .claude/\*\* ([347aa59](https://github.com/nrjdalal/zerostarter/commit/347aa59))
+- Update oxlintrc with schema and ignore patterns ([43d4e6c](https://github.com/nrjdalal/zerostarter/commit/43d4e6c))
+- Rename CLAUDE.md to AGENTS.md and symlink ([1355e20](https://github.com/nrjdalal/zerostarter/commit/1355e20))
+- Add agent skills and skills-lock.json ([f38ca6f](https://github.com/nrjdalal/zerostarter/commit/f38ca6f))
+- Simplify AGENTS.md ([1aafbe2](https://github.com/nrjdalal/zerostarter/commit/1aafbe2))
+- Exclude agent paths from coderabbit reviews ([a51bfae](https://github.com/nrjdalal/zerostarter/commit/a51bfae))
+- Symlink .claude to .agents instead of individual skill symlinks ([a52543b](https://github.com/nrjdalal/zerostarter/commit/a52543b))
+- Symlink .claude/skills and .github/skills to .agents/skills ([8fa35de](https://github.com/nrjdalal/zerostarter/commit/8fa35de))
+- Update deps ([3d32a9d](https://github.com/nrjdalal/zerostarter/commit/3d32a9d))
+- Shadcn sync ([cd10f29](https://github.com/nrjdalal/zerostarter/commit/cd10f29))
+- Update deps ([0a0b340](https://github.com/nrjdalal/zerostarter/commit/0a0b340))
+- Fix docker build ([62b82b1](https://github.com/nrjdalal/zerostarter/commit/62b82b1))
+- Fix docker build ([e2cf86d](https://github.com/nrjdalal/zerostarter/commit/e2cf86d))
+- Fix docker build ([8bfda7c](https://github.com/nrjdalal/zerostarter/commit/8bfda7c))
+- Fix docker build ([cd6ade5](https://github.com/nrjdalal/zerostarter/commit/cd6ade5))
+- Fix docker build ([fc145e7](https://github.com/nrjdalal/zerostarter/commit/fc145e7))
+- Fix docker build ([f79af39](https://github.com/nrjdalal/zerostarter/commit/f79af39))
+- Remove unused agent skills ([0a156ac](https://github.com/nrjdalal/zerostarter/commit/0a156ac))
+- Sync ([2f89cd6](https://github.com/nrjdalal/zerostarter/commit/2f89cd6))
+- Pin bun version for dockerfile ([f2db618](https://github.com/nrjdalal/zerostarter/commit/f2db618))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.14
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.13...v0.0.14)
