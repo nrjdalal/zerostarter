@@ -141,10 +141,6 @@ export const config = {
               title: "OG Images",
               url: "/docs/manage/og-images",
             },
-            {
-              title: "Search",
-              url: "/docs/manage/search",
-            },
           ],
           "Indexing and AI/LLM": [
             {
