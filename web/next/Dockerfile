@@ -6,7 +6,7 @@ COPY . .
 RUN bunx turbo prune @web/next --docker
 
 FROM base AS builder
-COPY .env ./.env
+COPY .env* ./
 COPY --from=prepare /app/out/json/ .
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY --from=prepare /app/out/full/ .
