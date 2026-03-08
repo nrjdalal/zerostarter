@@ -5,7 +5,7 @@ description: Pre-defined skills for AI assistants and LLM agents to help with co
 
 ## Overview
 
-ZeroStarter includes a `.skills` directory containing structured instructions for AI assistants and LLM agents. These skills help AI tools like Cursor, GitHub Copilot, and other AI coding assistants perform common tasks correctly and consistently.
+ZeroStarter includes a `.agents/skills` directory containing structured instructions for AI assistants and LLM agents. These skills help AI tools like Cursor, GitHub Copilot, and other AI coding assistants perform common tasks correctly and consistently.
 
 Skills are written in Markdown with frontmatter metadata, making them both human-readable and machine-parseable.
 
@@ -13,7 +13,7 @@ Skills are written in Markdown with frontmatter metadata, making them both human
 
 ### Git Commit
 
-**Location**: `.skills/git/commit/SKILL.md`
+**Location**: `.agents/skills/git/commit/SKILL.md`
 
 Creates atomic commits with conventional commit message format.
 
@@ -57,7 +57,7 @@ chore(deps): bump dependencies to latest versions
 
 ### Turbo Build Graph
 
-**Location**: `.skills/turbo/generate-build-graph/SKILL.md`
+**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md`
 
 Generates a styled SVG visualization of Turborepo task dependencies.
 
@@ -81,7 +81,7 @@ Generates a styled SVG visualization of Turborepo task dependencies.
 Each skill follows a standard structure:
 
 ```
-.skills/
+.agents/skills/
 └── <category>/
     └── <skill-name>/
         └── SKILL.md
@@ -121,7 +121,7 @@ command to run
 
 To create a new skill:
 
-1. Create a directory: `.skills/<category>/<skill-name>/`
+1. Create a directory: `.agents/skills/<category>/<skill-name>/`
 2. Add a `SKILL.md` file with:
    - Frontmatter with `name` and `description`
    - Clear workflow steps
@@ -164,12 +164,12 @@ bun run db:migrate
 
 ### Cursor
 
-Skills in `.skills/` are automatically available to Cursor's AI assistant when referenced in `AGENTS.md`:
+Skills in `.agents/skills/` are automatically available to Cursor's AI assistant when referenced in `AGENTS.md`:
 
 ```markdown
 ## Skills
 
-There are few skills that are used in the project to help the user with the tasks. You can find them in the `<root>/.skills` directory.
+This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.
 ````
 
 ### GitHub Copilot

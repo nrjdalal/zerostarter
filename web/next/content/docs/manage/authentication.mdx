@@ -1,0 +1,146 @@
+---
+title: Authentication
+description: Authentication system with Better Auth, supporting OAuth providers, magic links, organizations, and teams.
+---
+
+## Overview
+
+ZeroStarter uses [Better Auth](https://better-auth.com) for authentication, configured in the `@packages/auth` package. It supports multiple sign-in methods, multi-tenant organizations with teams, and session management with cross-subdomain cookie support.
+
+## Sign-In Methods
+
+### Magic Link
+
+Users can sign in with their email address. A magic link is sent to their inbox, and clicking it authenticates them and redirects to the dashboard.
+
+### OAuth Providers
+
+Two social providers are configured:
+
+- **GitHub** — Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+- **Google** — Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+
+Both redirect to `/dashboard` after successful authentication.
+
+### Adding OAuth Providers
+
+1. Create OAuth credentials with the provider
+2. Add the client ID and secret to your `.env` file
+3. Configure the provider in `packages/auth/src/index.ts`:
+
+```ts
+socialProviders: {
+  github: {
+    clientId: env.GITHUB_CLIENT_ID,
+    clientSecret: env.GITHUB_CLIENT_SECRET,
+  },
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+  },
+},
+```
+
+4. Add the environment variables to `packages/env/src/auth.ts`
+
+## Organizations & Teams
+
+The [Better Auth Organizations plugin](https://www.better-auth.com/docs/plugins/organization) provides multi-tenant support.
+
+### Features
+
+- **Organization creation** — Users can create organizations from the dashboard sidebar
+- **Organization switching** — Switch between organizations via the sidebar dropdown
+- **Last used org persistence** — The last selected organization is saved in a cookie and restored on next login
+- **Teams** — Teams can be created within organizations
+- **Member roles** — Members have roles (default: "member") within organizations
+- **Invitations** — Invite users to organizations via email
+
+### Database Schema
+
+The organization system adds these tables:
+
+| Table          | Purpose                                                             |
+| -------------- | ------------------------------------------------------------------- |
+| `organization` | Organization metadata (`name`, `slug`, `logo`)                      |
+| `member`       | Links users to organizations with a `role`                          |
+| `team`         | Teams within an organization                                        |
+| `teamMember`   | Links users to teams                                                |
+| `invitation`   | Pending org invitations with `status`, `email`, `role`, `expiresAt` |
+
+The `session` table includes `activeOrganizationId` and `activeTeamId` fields to track the current context.
+
+### Client Usage
+
+```ts
+import { authClient } from "@/lib/auth/client"
+
+// List user's organizations
+const { data: orgs } = authClient.useListOrganizations()
+
+// Get active organization
+const { data: activeOrg } = authClient.useActiveOrganization()
+
+// Switch organization
+await authClient.organization.setActive({ organizationId: "..." })
+
+// Create organization
+await authClient.organization.create({ name: "Acme Inc.", slug: "acme" })
+```
+
+## Session Management
+
+Sessions are stored in the `session` database table with:
+
+- **Token-based authentication** via secure cookies
+- **Cross-subdomain cookies** — Automatically configured when using subdomains
+- **IP address and user agent tracking** for security
+- **Session expiration** with automatic cleanup
+
+### Server-Side Session Access
+
+In Next.js server components and layouts:
+
+```ts
+import { auth } from "@/lib/auth"
+
+const session = await auth.api.getSession()
+if (!session?.user) redirect("/")
+```
+
+### Client-Side Session Access
+
+```ts
+import { authClient } from "@/lib/auth/client"
+
+const { data: session } = authClient.useSession()
+```
+
+## Protected Routes
+
+The `(protected)` layout in `web/next/src/app/(protected)/layout.tsx` handles route protection server-side. It checks for a valid session and redirects unauthenticated users to the home page.
+
+API routes are protected using the auth middleware in `api/hono/src/middlewares/auth.ts`, which validates the session from request headers.
+
+## Rate Limiting
+
+API routes are rate-limited using `hono-rate-limiter` with [Arcjet IP](https://arcjet.com) detection.
+
+| Setting             | Default          | Environment Variable        |
+| ------------------- | ---------------- | --------------------------- |
+| Requests per window | 60               | `HONO_RATE_LIMIT`           |
+| Window duration     | 60,000ms (1 min) | `HONO_RATE_LIMIT_WINDOW_MS` |
+
+Rate limit keys are resolved in order: authenticated user ID, API key, then IP address.
+
+## Environment Variables
+
+| Variable               | Description                                               |
+| ---------------------- | --------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`   | Secret key for signing tokens (`openssl rand -base64 32`) |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth app client ID                                |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret                            |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID                                    |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                                |
+| `HONO_APP_URL`         | Backend URL (used as Better Auth base URL)                |
+| `HONO_TRUSTED_ORIGINS` | Allowed CORS origins                                      |

@@ -1,4 +1,4 @@
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -26,6 +26,19 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const session = await auth.api.getSession()
 
   if (!session?.user) redirect("/")
+
+  if (!session.session.activeOrganizationId) {
+    const lastOrgId = cookieStore.get(`last-active-org_${session.user.id}`)?.value
+    if (lastOrgId) {
+      const url = `${config.api.internalUrl || config.api.url}/api/auth/organization/set-active`
+      const reqHeaders = Object.fromEntries((await headers()).entries())
+      await fetch(url, {
+        method: "POST",
+        headers: { ...reqHeaders, "content-type": "application/json" },
+        body: JSON.stringify({ organizationId: lastOrgId }),
+      }).catch(() => {})
+    }
+  }
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
