@@ -136,6 +136,7 @@ export function Navbar() {
 
           {session?.user ? (
             <Button
+              role="link"
               className="w-24 cursor-pointer"
               variant="outline"
               onClick={() => setToDashboard(true)}
@@ -217,6 +218,7 @@ export function Navbar() {
                   )
                 })}
                 <Button
+                  role="link"
                   size="sm"
                   className="mt-2 w-fit"
                   onClick={() => setIsOpen(false)}

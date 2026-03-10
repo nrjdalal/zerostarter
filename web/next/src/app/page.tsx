@@ -248,6 +248,7 @@ bun dev`
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
+                role="link"
                 size="lg"
                 className="group h-12 px-8 text-base"
                 render={<a href={config.social.github} target="_blank" rel="noopener noreferrer" />}
@@ -256,6 +257,7 @@ bun dev`
                 Get ZeroStarter
               </Button>
               <Button
+                role="link"
                 size="lg"
                 variant="outline"
                 className="group h-12 px-8 text-base"
@@ -696,7 +698,12 @@ bun dev`
           </div>
         </div>
         <div className="container mx-auto mt-8 max-w-6xl px-5 text-center">
-          <Button size="lg" className="group h-12 px-8 text-base" render={<Link href="/docs" />}>
+          <Button
+            role="link"
+            size="lg"
+            className="group h-12 px-8 text-base"
+            render={<Link href="/docs" />}
+          >
             Documentation
             <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-1" />
           </Button>
@@ -785,6 +792,7 @@ bun dev`
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
+              role="link"
               size="lg"
               className="group h-12 px-8 text-base"
               render={<a href={config.social.github} target="_blank" rel="noopener noreferrer" />}
@@ -793,6 +801,7 @@ bun dev`
               Get ZeroStarter
             </Button>
             <Button
+              role="link"
               size="lg"
               variant="outline"
               className="group h-12 px-8 text-base"
