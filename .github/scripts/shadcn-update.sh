@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/sh
 
 cd web/next || exit 1
 rm -rf components.json src/components/ui
