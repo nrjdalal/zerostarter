@@ -44,6 +44,7 @@ next-env.d.ts
 .playwright-cli/
 .source/
 .turbo/
+bundle/
 dist/
 
 # custom files
