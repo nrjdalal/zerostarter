@@ -1,15 +1,17 @@
-import { $ } from "bun"
+import { $, Glob } from "bun"
 
 async function dirSize(path: string, exclude?: string): Promise<number> {
   try {
     if (exclude) {
-      const result =
-        await $`find ${path} -not -name ${exclude} -type f -exec stat -f%z {} + `.quiet()
-      return result
-        .text()
-        .trim()
-        .split("\n")
-        .reduce((sum, line) => sum + parseInt(line || "0"), 0)
+      const glob = new Glob(`**/*`)
+      const excludeGlob = new Glob(exclude)
+      let total = 0
+      for await (const entry of glob.scan({ cwd: path, dot: true })) {
+        if (excludeGlob.match(entry)) continue
+        const stat = Bun.file(`${path}/${entry}`)
+        total += stat.size
+      }
+      return total
     }
     const result = await $`du -sk ${path}`.quiet()
     return parseInt(result.text().split("\t")[0]) * 1024
