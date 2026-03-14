@@ -179,8 +179,8 @@ async function main() {
       if (!deps || !isPlainObject(deps)) continue
 
       for (const [name, version] of Object.entries(deps)) {
-        if (!safeToMove.has(name)) continue
         if (isLocalProtocol(version)) continue
+        if (!catalogKeys.has(name) && !safeToMove.has(name)) continue
         if (version !== "catalog:") {
           deps[name] = "catalog:"
           mutated = true
