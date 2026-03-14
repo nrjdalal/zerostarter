@@ -16,15 +16,17 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
+const distSize = await dirSize("api/hono/dist")
 const bundleSize = await dirSize("api/hono/bundle")
 const standaloneSize = await dirSize("web/next/.next/standalone")
 const staticSize = await dirSize("web/next/.next/static")
 
 const rows = [
-  ["@api/hono", "bundle", formatSize(bundleSize)],
+  ["@api/hono", "dist", formatSize(distSize)],
+  ["", "bundle *", formatSize(bundleSize)],
   ["@web/next", "standalone", formatSize(standaloneSize)],
   ["", "static", formatSize(staticSize)],
-  ["", "standalone + static", formatSize(standaloneSize + staticSize)],
+  ["", "standalone + static *", formatSize(standaloneSize + staticSize)],
 ]
 
 const widths = [0, 0, 0]
@@ -46,8 +48,9 @@ console.log(
 )
 console.log(line("├", "┼", "┤"))
 console.log(fmtRow(rows[0]))
+console.log(fmtRow(rows[1]))
 console.log(line("├", "┼", "┤"))
-for (let i = 1; i < rows.length; i++) {
+for (let i = 2; i < rows.length; i++) {
   console.log(fmtRow(rows[i]))
 }
 console.log(line("└", "┴", "┘"))
