@@ -11,7 +11,6 @@ COPY --from=prepare /app/out/json/ .
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY --from=prepare /app/out/full/ .
 RUN bunx turbo run build --filter=@api/hono
-RUN bun build /app/api/hono/dist/index.mjs --outfile /app/api/hono/bundle/index.mjs --target bun --minify
 
 FROM base AS runner
 WORKDIR /app/api/hono

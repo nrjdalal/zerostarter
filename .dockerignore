@@ -41,11 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 # custom directories
+.playwright-cli/
 .source/
 .turbo/
+bundle/
 dist/
 
 # custom files
+*.local.json
 !.env*
-.env.example
 .npmrc
+
+# docker overrides
+.env.example
