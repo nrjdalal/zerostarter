@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "fumadocs-mdx && next build",
     "check-types": "tsc --noEmit",
     "dev": "next dev",
     "start": "next start"
