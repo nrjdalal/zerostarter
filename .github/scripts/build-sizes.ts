@@ -1,7 +1,16 @@
 import { $ } from "bun"
 
-async function dirSize(path: string): Promise<number> {
+async function dirSize(path: string, exclude?: string): Promise<number> {
   try {
+    if (exclude) {
+      const result =
+        await $`find ${path} -not -name ${exclude} -type f -exec stat -f%z {} + `.quiet()
+      return result
+        .text()
+        .trim()
+        .split("\n")
+        .reduce((sum, line) => sum + parseInt(line || "0"), 0)
+    }
     const result = await $`du -sk ${path}`.quiet()
     return parseInt(result.text().split("\t")[0]) * 1024
   } catch {
@@ -12,11 +21,11 @@ async function dirSize(path: string): Promise<number> {
 function formatSize(bytes: number): string {
   if (bytes === 0) return "—"
   if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
-const distSize = await dirSize("api/hono/dist")
+const distSize = await dirSize("api/hono/dist", "*.d.mts")
 const bundleSize = await dirSize("api/hono/bundle")
 const standaloneSize = await dirSize("web/next/.next/standalone")
 const staticSize = await dirSize("web/next/.next/static")
