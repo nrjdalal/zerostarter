@@ -7,6 +7,9 @@ import { config } from "@/lib/config"
 
 import { Wordmark } from "./wordmark"
 
+/**
+ * Renders the landing-page footer with resource links, social links, and the animated wordmark.
+ */
 export function Footer() {
   return (
     <footer className="bg-background relative overflow-hidden border-t pt-20 pb-6">

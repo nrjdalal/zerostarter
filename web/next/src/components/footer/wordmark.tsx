@@ -9,6 +9,9 @@ const FONT = "var(--font-mono), monospace"
 const TEXT = "ZEROSTARTER"
 const GRAD_R = 250
 
+/**
+ * Shared SVG text element used by the wordmark's layered outline and fill effects.
+ */
 function TextEl(props: React.SVGProps<SVGTextElement>) {
   return (
     <text
@@ -28,6 +31,9 @@ function TextEl(props: React.SVGProps<SVGTextElement>) {
   )
 }
 
+/**
+ * Renders an interactive SVG wordmark with a cursor-following radial highlight.
+ */
 export const Wordmark = () => {
   const svgRef = useRef<SVGSVGElement>(null)
 
