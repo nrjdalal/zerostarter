@@ -21,6 +21,7 @@ import Link from "next/link"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/api-status"
+import { Footer } from "@/components/footer/footer"
 import {
   Accordion,
   AccordionContent,
@@ -827,6 +828,9 @@ bun dev`
           </div>
         </div>
       </section>
+
+      {/* PLACE THE FOOTER HERE */}
+      <Footer />
     </div>
   )
 }

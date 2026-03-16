@@ -120,6 +120,7 @@
         "fumadocs-ui": "catalog:",
         "hono": "catalog:",
         "input-otp": "catalog:",
+        "motion": "^12.36.0",
         "nanoid": "catalog:",
         "next": "catalog:",
         "next-themes": "catalog:",
