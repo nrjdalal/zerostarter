@@ -111,14 +111,6 @@ export function Footer() {
               </a>
             </span>
           </div>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
-              Terms
-            </Link>
-          </div>
         </div>
 
         {/* Large Background Wordmark (Now inside the container to match page margins) */}

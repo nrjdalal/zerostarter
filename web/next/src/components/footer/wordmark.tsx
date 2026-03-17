@@ -62,10 +62,10 @@ export const Wordmark = () => {
   const mid = "wm-mask"
 
   return (
-    // FIX: Set to 120% width and perfectly center it using left-1/2 and -translate-x-1/2.
-    // This allows it to scale up 1.2x and bleed beautifully off the edges.
+    // FIX: Set to 110% width and perfectly center it using left-1/2 and -translate-x-1/2.
+    // This allows it to scale up 1.1x and bleed beautifully off the edges.
     <div
-      className="pointer-events-auto relative left-1/2 w-[120%] -translate-x-1/2 select-none"
+      className="pointer-events-auto relative left-1/2 w-[110%] -translate-x-1/2 select-none"
       onMouseMove={onMove}
       onMouseLeave={onLeave}
     >
