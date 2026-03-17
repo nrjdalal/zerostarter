@@ -828,8 +828,6 @@ bun dev`
           </div>
         </div>
       </section>
-
-      {/* PLACE THE FOOTER HERE */}
       <Footer />
     </div>
   )
