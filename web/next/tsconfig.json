@@ -2,10 +2,9 @@
   "extends": "@packages/tsconfig/base.json",
   "compilerOptions": {
     "incremental": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "fumadocs-mdx:collections/*": [".source/*"]
+      "fumadocs-mdx:collections/*": ["./.source/*"]
     },
     "plugins": [
       {
