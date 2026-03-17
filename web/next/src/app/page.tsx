@@ -21,7 +21,7 @@ import Link from "next/link"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/api-status"
-import { Footer } from "@/components/footer/footer"
+import { Footer } from "@/components/footer"
 import {
   Accordion,
   AccordionContent,

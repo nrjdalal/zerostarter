@@ -29,6 +29,26 @@ export const config = {
   // Social links
   social: {
     github: "https://github.com/nrjdalal/zerostarter",
+    twitter: "https://x.com/nrjdalal",
+    discord: "https://discord.gg/38FeAUmHSZ",
+  },
+
+  // Footer configuration
+  footer: {
+    navigation: [
+      {
+        label: "Documentation",
+        href: "/docs",
+      },
+      {
+        label: "API Docs",
+        href: "/api/docs",
+      },
+      {
+        label: "Blog",
+        href: "/blog",
+      },
+    ],
   },
 
   // Feature flags
