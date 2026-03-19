@@ -21,7 +21,7 @@ import Link from "next/link"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/api-status"
-import { Footer } from "@/components/footer"
+import { Wordmark } from "@/components/footer/wordmark"
 import {
   Accordion,
   AccordionContent,
@@ -828,7 +828,13 @@ bun dev`
           </div>
         </div>
       </section>
-      <Footer />
+      <div className="bg-background border-t pt-10 pb-6">
+        <div className="container mx-auto max-w-6xl px-5">
+          <div className="hidden opacity-35 transition-opacity duration-700 ease-in-out hover:opacity-100 md:block dark:opacity-45">
+            <Wordmark />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
