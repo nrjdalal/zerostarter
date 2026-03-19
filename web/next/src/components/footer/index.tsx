@@ -1,11 +1,8 @@
-"use client"
-
 import { RiDiscordFill, RiGithubFill, RiTwitterXFill } from "@remixicon/react"
 import Link from "next/link"
 
+import { Wordmark } from "@/components/footer/wordmark"
 import { config } from "@/lib/config"
-
-import { Wordmark } from "./wordmark"
 
 const socialLinks = [
   { key: "twitter", label: "X (Twitter)", Icon: RiTwitterXFill },
@@ -17,8 +14,8 @@ export function Footer() {
   return (
     <footer className="bg-background relative overflow-hidden border-t pt-20 pb-6">
       <div className="relative z-10 container mx-auto max-w-6xl px-5">
-        <div className="mb-16 grid gap-12 md:grid-cols-4">
-          <div className="col-span-1 space-y-4 md:col-span-2">
+        <div className="mb-16 grid gap-12 md:[grid-template-columns:minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-start md:gap-16">
+          <div className="space-y-4 md:max-w-md">
             <span className="text-2xl font-bold tracking-tight">{config.app.name}</span>
             <p className="text-muted-foreground max-w-xs leading-relaxed">
               {config.app.description}
@@ -70,7 +67,7 @@ export function Footer() {
           </span>
         </div>
 
-        <div className="mt-12 opacity-20 transition-opacity duration-700 ease-in-out hover:opacity-100 dark:opacity-30">
+        <div className="mt-12 hidden opacity-35 transition-opacity duration-700 ease-in-out hover:opacity-100 md:block dark:opacity-45">
           <Wordmark />
         </div>
       </div>

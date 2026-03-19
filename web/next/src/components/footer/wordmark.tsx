@@ -1,7 +1,7 @@
 "use client"
 
 import type { MouseEvent, SVGProps } from "react"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useId, useRef } from "react"
 
 import { config } from "@/lib/config"
 
@@ -31,6 +31,7 @@ function TextEl({ children, ...props }: SVGProps<SVGTextElement>) {
 
 export function Wordmark() {
   const text = config.app.name.toUpperCase()
+  const instanceId = useId().replace(/:/g, "")
   const svgRef = useRef<SVGSVGElement>(null)
   const gradientRef = useRef<SVGRadialGradientElement>(null)
   const circleRef = useRef<SVGCircleElement>(null)
@@ -63,8 +64,8 @@ export function Wordmark() {
     setPosition(W / 2, H * 3)
   }, [setPosition])
 
-  const gid = "wm-grad"
-  const mid = "wm-mask"
+  const gid = `${instanceId}-wm-grad`
+  const mid = `${instanceId}-wm-mask`
 
   return (
     <div
@@ -88,7 +89,7 @@ export function Wordmark() {
             r={GRAD_R}
           >
             <stop offset="0%" stopColor="currentColor" stopOpacity={1} />
-            <stop offset="60%" stopColor="currentColor" stopOpacity={0.6} />
+            <stop offset="60%" stopColor="currentColor" stopOpacity={0.72} />
             <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
           </radialGradient>
 
@@ -105,7 +106,7 @@ export function Wordmark() {
           </mask>
         </defs>
 
-        <g className="text-zinc-800 transition-colors duration-300 dark:text-zinc-700">
+        <g className="text-zinc-700 transition-colors duration-300 dark:text-zinc-500">
           <TextEl stroke="currentColor" strokeWidth={1.5} fill="none">
             {text}
           </TextEl>
@@ -113,7 +114,7 @@ export function Wordmark() {
 
         <g
           mask={`url(#${mid})`}
-          className="text-zinc-800 transition-colors duration-300 dark:text-zinc-100"
+          className="text-zinc-700 transition-colors duration-300 dark:text-zinc-50"
         >
           <TextEl stroke={`url(#${gid})`} strokeWidth={2.5} fill="none">
             {text}
@@ -122,9 +123,9 @@ export function Wordmark() {
 
         <g
           mask={`url(#${mid})`}
-          className="text-zinc-800 transition-colors duration-300 dark:text-zinc-100"
+          className="text-zinc-700 transition-colors duration-300 dark:text-zinc-50"
         >
-          <TextEl fill="currentColor" fillOpacity={0.06} stroke="none">
+          <TextEl fill="currentColor" fillOpacity={0.1} stroke="none">
             {text}
           </TextEl>
         </g>
