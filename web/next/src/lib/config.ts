@@ -166,6 +166,10 @@ export const config = {
             url: "/docs/deployment/docker",
           },
           {
+            title: "Cloudflare",
+            url: "/docs/deployment/cloudflare",
+          },
+          {
             title: "Vercel",
             url: "/docs/deployment/vercel",
           },

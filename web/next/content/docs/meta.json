@@ -24,6 +24,7 @@
     "manage/robots",
     "manage/sitemap",
     "deployment/docker",
+    "deployment/cloudflare",
     "deployment/vercel",
     "resources/ai-skills",
     "resources/ide-setup",

@@ -4,9 +4,6 @@ import { defineConfig } from "tsdown"
 
 export default [
   defineConfig({
-    deps: {
-      neverBundle: ["bun"],
-    },
     dts: {
       tsgo: true,
     },

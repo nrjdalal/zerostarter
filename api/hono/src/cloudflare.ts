@@ -1,10 +1,7 @@
-import { env } from "@packages/env/api-hono"
-
 import { app, routes } from "@/app"
 
 export type AppType = typeof routes
 
 export default {
-  port: env.HONO_PORT,
   fetch: app.fetch,
 }

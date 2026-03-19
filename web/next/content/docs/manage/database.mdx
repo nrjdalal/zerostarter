@@ -9,19 +9,18 @@ ZeroStarter uses [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](htt
 
 ## Connection
 
-The database client is initialized in `packages/db/src/index.ts` using Bun's native SQL driver:
+The database client is initialized in `packages/db/src/index.ts` using `postgres` with Drizzle's Postgres.js adapter:
 
 ```ts
 import { env } from "@packages/env/db"
-import { drizzle } from "drizzle-orm/bun-sql"
-import { SQL } from "bun"
+import { drizzle } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
 
-const client = new SQL({
-  url: env.POSTGRES_URL,
-  tls: isProduction() ? { rejectUnauthorized: true } : false,
-  connectionTimeout: 10,
-  idleTimeout: 30,
-  maxLifetime: 0,
+const client = postgres(env.POSTGRES_URL, {
+  connect_timeout: 10,
+  idle_timeout: 30,
+  max_lifetime: 0,
+  tls: isProduction() ? { rejectUnauthorized: true } : undefined,
 })
 
 export const db = drizzle({ client, schema })

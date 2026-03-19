@@ -14,14 +14,13 @@
   },
   "dependencies": {
     "@packages/env": "workspace:*",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "postgres": "catalog:"
   },
   "devDependencies": {
     "@packages/tsconfig": "workspace:*",
-    "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
-    "postgres": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

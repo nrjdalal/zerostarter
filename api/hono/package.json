@@ -11,6 +11,9 @@
   "scripts": {
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "check-types": "tsc --noEmit",
+    "cf:deploy": "bunx wrangler deploy --config wrangler.jsonc",
+    "cf:dev": "bunx wrangler dev --config wrangler.jsonc",
+    "cf:typegen": "bunx wrangler types --env-interface CloudflareBindings --config wrangler.jsonc",
     "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
     "start": "bun bundle/index.mjs"
   },

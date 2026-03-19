@@ -1,0 +1,112 @@
+---
+title: Deploy at Cloudflare
+description: Deploy your frontend and backend on Cloudflare.
+---
+
+## Overview
+
+ZeroStarter can be deployed to Cloudflare with a split deployment:
+
+- `api/hono` runs on Cloudflare Workers
+- `web/next` runs on Cloudflare's Next.js support via Wrangler setup
+
+Deploy backend first, then frontend, so the frontend can point to the final API URL.
+
+## Prerequisites
+
+1. A [Cloudflare](https://cloudflare.com) account
+2. Wrangler CLI `4.68.0` or newer (or use `bunx wrangler`)
+3. A PostgreSQL database reachable from Cloudflare (for example, [Neon](https://neon.tech) or [Supabase](https://supabase.com))
+4. Your repository pushed to GitHub (recommended for Workers Builds)
+
+## Backend Deployment (`api/hono`)
+
+### Configuration
+
+Cloudflare worker configuration is included at `api/hono/wrangler.jsonc`.
+
+| Option                | Value                  |
+| --------------------- | ---------------------- |
+| Worker Name           | `zerostarter-api`      |
+| Main Entry            | `src/cloudflare.ts`    |
+| Compatibility Date    | `2026-03-19`           |
+| Compatibility Flags   | `nodejs_compat`, `nodejs_compat_populate_process_env` |
+
+### Environment Variables
+
+Set non-secret values in `api/hono/wrangler.jsonc` under `vars` and set secrets with Wrangler:
+
+```bash
+bunx wrangler secret put BETTER_AUTH_SECRET --config api/hono/wrangler.jsonc
+bunx wrangler secret put GITHUB_CLIENT_ID --config api/hono/wrangler.jsonc
+bunx wrangler secret put GITHUB_CLIENT_SECRET --config api/hono/wrangler.jsonc
+bunx wrangler secret put GOOGLE_CLIENT_ID --config api/hono/wrangler.jsonc
+bunx wrangler secret put GOOGLE_CLIENT_SECRET --config api/hono/wrangler.jsonc
+bunx wrangler secret put POSTGRES_URL --config api/hono/wrangler.jsonc
+```
+
+Required runtime values:
+
+```
+NODE_ENV=production
+HONO_APP_URL=https://your-api.workers.dev
+HONO_TRUSTED_ORIGINS=https://your-frontend-domain.com
+HONO_RATE_LIMIT=60
+HONO_RATE_LIMIT_WINDOW_MS=60000
+```
+
+### Deploy Commands
+
+```bash
+# Local worker dev
+bun --cwd api/hono run cf:dev
+
+# Deploy to Cloudflare Workers
+bun --cwd api/hono run cf:deploy
+```
+
+After deploy, copy the API URL (for example, `https://zerostarter-api.<subdomain>.workers.dev`).
+
+## Frontend Deployment (`web/next`)
+
+### Automatic Setup
+
+Cloudflare Wrangler can auto-configure Next.js projects:
+
+```bash
+cd web/next
+bunx wrangler setup
+bunx wrangler deploy
+```
+
+`wrangler setup` detects the framework, installs adapters if needed, and generates project configuration.
+
+### Frontend Environment Variables
+
+Set these values in your Cloudflare frontend project:
+
+```
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://your-frontend-domain.com
+NEXT_PUBLIC_API_URL=https://your-api.workers.dev
+
+# Optional: Analytics
+NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+
+# Optional: Feedback
+NEXT_PUBLIC_USERJOT_URL=your_userjot_url
+```
+
+## Deployment Order
+
+1. Deploy backend (`api/hono`) and copy its Worker URL
+2. Set `NEXT_PUBLIC_API_URL` in frontend project to that backend URL
+3. Deploy frontend (`web/next`)
+4. Update OAuth callback URLs in GitHub/Google with production domains
+
+## Notes
+
+- `nodejs_compat_populate_process_env` is enabled so existing env access via `process.env` continues to work on Workers
+- Use a managed PostgreSQL database with SSL enabled in production
+- Keep frontend and backend as separate Cloudflare projects for clearer lifecycle and rollbacks
