@@ -13,7 +13,7 @@ COPY --from=prepare /app/out/full/ .
 ENV INTERNAL_API_URL=http://api:4000
 RUN bunx turbo run build --filter=@web/next
 RUN cp -r /app/web/next/.next/static /app/web/next/.next/standalone/web/next/.next/static
-RUN cp -r /app/web/next/public /app/web/next/.next/standalone/web/next/public
+RUN cp -r /app/web/next/public /app/web/next/.next/standalone/web/next
 
 FROM base AS runner
 WORKDIR /app/web/next
