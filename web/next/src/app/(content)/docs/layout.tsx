@@ -35,14 +35,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </SidebarTrigger>
         <RootProvider>
           <DocsLayout
-            nav={{
-              enabled: false,
-            }}
-            sidebar={{
-              enabled: false,
-            }}
-            tree={docsSource.pageTree}
             {...baseOptions()}
+            nav={{ enabled: false }}
+            sidebar={{ enabled: false }}
+            // @ts-expect-error - fumadocs v16.7.0+ ignores sidebar.enabled
+            slots={{ sidebar: false }}
+            tree={docsSource.pageTree}
           >
             {children}
           </DocsLayout>
