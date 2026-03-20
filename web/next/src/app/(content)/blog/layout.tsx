@@ -9,14 +9,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <main>
       <RootProvider>
         <DocsLayout
-          nav={{
-            enabled: false,
-          }}
-          sidebar={{
-            enabled: false,
-          }}
-          tree={blogSource.pageTree}
           {...baseOptions()}
+          nav={{ enabled: false }}
+          sidebar={{ enabled: false }}
+          // @ts-expect-error - fumadocs v16.7.0+ ignores sidebar.enabled
+          slots={{ sidebar: false }}
+          tree={blogSource.pageTree}
         >
           {children}
         </DocsLayout>
