@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 
+import caveatUrl from "@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2"
+import dmSansUrl from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2"
+import jetbrainsMonoUrl from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
+import newsreaderUrl from "@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2"
 import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
@@ -55,6 +59,36 @@ export default function RootLayout({
   return (
     <OuterProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <link
+            rel="preload"
+            href={dmSansUrl}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href={caveatUrl}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href={newsreaderUrl}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href={jetbrainsMonoUrl}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+        </head>
         <body className="min-h-dvh antialiased">
           <InnerProvider>
             <Navbar />

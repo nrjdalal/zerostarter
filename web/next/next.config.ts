@@ -8,6 +8,13 @@ getSafeEnv(env, "@web/next")
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+  turbopack: {
+    rules: {
+      "*.woff2": {
+        type: "asset",
+      },
+    },
+  },
   rewrites: async () => {
     return [
       {
