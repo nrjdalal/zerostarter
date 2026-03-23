@@ -3,6 +3,7 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
+import { protectedErrorResponses, protectedRouteSecurity } from "@/lib/openapi"
 import { authMiddleware } from "@/middlewares"
 
 const sessionSchema = z.object({
@@ -35,6 +36,7 @@ export const v1Router = new Hono<{
     describeRoute({
       tags: ["v1"],
       description: "Get current session only",
+      security: protectedRouteSecurity,
       ...({
         "x-codeSamples": [
           {
@@ -56,6 +58,7 @@ const { data } = await response.json()`,
             },
           },
         },
+        ...protectedErrorResponses,
       },
     }),
     (c) => {
@@ -68,6 +71,7 @@ const { data } = await response.json()`,
     describeRoute({
       tags: ["v1"],
       description: "Get current user only",
+      security: protectedRouteSecurity,
       ...({
         "x-codeSamples": [
           {
@@ -89,6 +93,7 @@ const { data } = await response.json()`,
             },
           },
         },
+        ...protectedErrorResponses,
       },
     }),
     (c) => {

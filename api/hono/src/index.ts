@@ -8,6 +8,7 @@ import { logger } from "hono/logger"
 import { z } from "zod"
 
 import { errorHandler } from "@/lib/error"
+import { commonErrorResponses, openApiComponents } from "@/lib/openapi"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { authRouter, v1Router } from "@/routers"
 
@@ -79,6 +80,7 @@ const { data } = await response.json()`,
             },
           },
         },
+        ...commonErrorResponses,
       },
     }),
     (c) => {
@@ -92,6 +94,7 @@ const { data } = await response.json()`,
     "/openapi.json",
     openAPIRouteHandler(app, {
       documentation: {
+        components: openApiComponents,
         info: {
           version: BUILD_VERSION,
           title: "ZeroStarter",
