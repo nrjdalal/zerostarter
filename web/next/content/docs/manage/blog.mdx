@@ -27,6 +27,11 @@ Blog source is configured in `web/next/source.config.ts`:
 ```ts
 export const blog = defineDocs({
   dir: "content/blog",
+  docs: {
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
 })
 ```
 

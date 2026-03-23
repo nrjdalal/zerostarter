@@ -27,6 +27,11 @@ Documentation source is configured in `web/next/source.config.ts`:
 ```ts
 export const docs = defineDocs({
   dir: "content/docs",
+  docs: {
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
 })
 ```
 
