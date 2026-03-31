@@ -1,6 +1,7 @@
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
+import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
@@ -16,17 +17,7 @@ export async function GET() {
     ),
   ]
 
-  const scanned = await Promise.all(
-    pages.map(async (page) => {
-      let content: string
-      try {
-        content = await page.data.getText("processed")
-      } catch {
-        content = await page.data.getText("raw")
-      }
-      return `# [${page.data.title}](${config.app.url}${page.url})\n${content}`
-    }),
-  )
+  const scanned = await Promise.all(pages.map(getLLMText))
 
   return new Response(
     `# ${config.app.name} – LLM Context File
@@ -120,7 +111,7 @@ You MUST:
 ${scanned.join("\n---\n\n")}`,
     {
       headers: {
-        "Content-Type": "text/markdown",
+        ...llmTextHeaders,
       },
     },
   )

@@ -34,3 +34,5 @@ The endpoint is implemented in `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]
 - Automatic markdown generation with links and metadata
 - `docsSource` from Fumadocs for documentation
 - `blogSource` from Fumadocs for blog content
+- `getLLMText()` in `web/next/src/lib/llms.ts` to reuse the Fumadocs page-to-markdown conversion logic
+- UTF-8 markdown responses (`text/markdown; charset=utf-8`) so Unicode content survives in AI-facing exports

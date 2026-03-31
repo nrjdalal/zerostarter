@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
+import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
@@ -31,10 +32,10 @@ ${docsIndex}
 ## Optional
 
 - [Blog](${config.app.url}/blog.md): Latest articles and updates about ${config.app.name}
-`,
+      `,
       {
         headers: {
-          "Content-Type": "text/markdown",
+          ...llmTextHeaders,
         },
       },
     )
@@ -67,10 +68,10 @@ ${blogIndex}
 ## Optional
 
 - [Documentation](${config.app.url}/llms.txt): Complete documentation for ${config.app.name}
-`,
+      `,
       {
         headers: {
-          "Content-Type": "text/markdown",
+          ...llmTextHeaders,
         },
       },
     )
@@ -82,14 +83,7 @@ ${blogIndex}
   const page = source.getPage(pageSlug)
   if (!page) notFound()
 
-  let content: string
-  try {
-    content = await page.data.getText("processed")
-  } catch {
-    content = await page.data.getText("raw")
-  }
-
-  const fullUrl = `${config.app.url}${page.url}`
+  const content = await getLLMText(page)
 
   const footer = isDocs
     ? `---
@@ -99,12 +93,11 @@ ${blogIndex}
     : ""
 
   return new Response(
-    `# [${page.data.title}](${fullUrl})
-${content}
+    `${content}
 ${footer}`,
     {
       headers: {
-        "Content-Type": "text/markdown",
+        ...llmTextHeaders,
       },
     },
   )
