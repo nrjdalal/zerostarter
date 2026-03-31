@@ -113,10 +113,12 @@ export function SidebarDocsSearch() {
 
 export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpenSearch] = useState(false)
-  const [modifierKeyDisplay, setModifierKeyDisplay] = useState<ReactNode>("⌘")
+  const [modifierKeyDisplay, setModifierKeyDisplay] = useState<ReactNode>("Ctrl")
 
   useEffect(() => {
-    setModifierKeyDisplay(isMacPlatform() ? "⌘" : "Ctrl")
+    if (isMacPlatform()) {
+      setModifierKeyDisplay("⌘")
+    }
   }, [])
 
   const hotKey = useMemo<HotKey[]>(

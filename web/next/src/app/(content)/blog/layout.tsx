@@ -11,6 +11,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         theme={{
           enabled: false,
         }}
+        search={{
+          enabled: false,
+        }}
       >
         <DocsLayout
           {...baseOptions()}
