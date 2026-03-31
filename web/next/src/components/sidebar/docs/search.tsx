@@ -55,7 +55,6 @@ export function SidebarDocsSearch() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (hotKey.every((v) => (typeof v.key === "string" ? e.key === v.key : v.key(e)))) {
         const target = e.target as HTMLElement
-
         if (
           target.isContentEditable ||
           target.tagName === "INPUT" ||
