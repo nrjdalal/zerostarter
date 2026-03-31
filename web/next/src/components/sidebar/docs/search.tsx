@@ -12,11 +12,9 @@ function isMacPlatform(): boolean {
 
 function MetaOrControl() {
   const [key, setKey] = useState<string | null>(null)
-
   useEffect(() => {
     setKey(isMacPlatform() ? "⌘" : "Ctrl")
   }, [])
-
   return key ?? "⌘"
 }
 
@@ -31,7 +29,7 @@ export function SidebarDocsSearch() {
 
   const handleClick = useCallback(() => {
     handleSearchTrigger()
-
+    // Dispatch keyboard event for fumadocs to catch
     const isMac = isMacPlatform()
     const event = new KeyboardEvent("keydown", {
       key: "k",
@@ -41,27 +39,22 @@ export function SidebarDocsSearch() {
       bubbles: true,
       cancelable: true,
     })
-
     document.dispatchEvent(event)
   }, [handleSearchTrigger])
 
   useEffect(() => {
     const hotKey = [
       {
-        key: (event: KeyboardEvent) => event.metaKey || event.ctrlKey,
+        key: (e: KeyboardEvent) => e.metaKey || e.ctrlKey,
       },
       {
         key: "k",
       },
     ]
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        hotKey.every((item) =>
-          typeof item.key === "string" ? event.key === item.key : item.key(event),
-        )
-      ) {
-        const target = event.target as HTMLElement
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (hotKey.every((v) => (typeof v.key === "string" ? e.key === v.key : v.key(e)))) {
+        const target = e.target as HTMLElement
 
         if (
           target.isContentEditable ||
@@ -71,13 +64,12 @@ export function SidebarDocsSearch() {
           return
         }
 
-        event.preventDefault()
+        e.preventDefault()
         handleSearchTrigger()
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
