@@ -1,10 +1,8 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
-import { SidebarDocsContent } from "@/components/sidebar/docs/content"
-import { SidebarDocsFooter } from "@/components/sidebar/docs/footer"
-import { SidebarDocsSearch } from "@/components/sidebar/docs/search"
-import { DocsSearchProvider } from "@/components/sidebar/docs/search-provider"
+import { SidebarDocsContent, SidebarDocsFooter, SidebarDocsSearch } from "@/components/sidebar/docs"
+import { DocsSearchProvider } from "@/components/sidebar/docs/search"
 import {
   Sidebar,
   SidebarContent,

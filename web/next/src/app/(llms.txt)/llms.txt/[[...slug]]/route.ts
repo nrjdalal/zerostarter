@@ -3,11 +3,31 @@ import { notFound } from "next/navigation"
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
-import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
+
+const llmTextHeaders = {
+  "Content-Type": "text/markdown; charset=utf-8",
+} as const
+
+async function getLLMText(
+  page: NonNullable<ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>>,
+) {
+  let content: string
+
+  try {
+    content = await page.data.getText("processed")
+  } catch {
+    content = await page.data.getText("raw")
+  }
+
+  return `# [${page.data.title}](${config.app.url}${page.url})
+${content}
+
+`
+}
 
 async function createPageResponse(
   page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,

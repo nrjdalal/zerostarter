@@ -19,15 +19,16 @@ export function baseOptions(): BaseLayoutProps {
 
 type Source = typeof blogSource | typeof docsSource
 type Page = NonNullable<ReturnType<Source["getPage"]>>
-type SlugParams = { slug?: string[] }
-type AwaitableSlugParams = SlugParams | Promise<SlugParams>
 
 interface PageData {
   page: Page
   source: Source
 }
 
-export async function getPageData(params: AwaitableSlugParams, source: Source): Promise<PageData> {
+export async function getPageData(
+  params: Promise<{ slug?: string[] }>,
+  source: Source,
+): Promise<PageData> {
   const resolvedParams = await params
   const page = source.getPage(resolvedParams.slug)
   if (!page) notFound()
@@ -60,15 +61,9 @@ export function renderPageContent({ page, source }: PageData) {
   )
 }
 
-export function createGenerateStaticParams(
-  source: Source,
-  options: {
-    includeRoot?: boolean
-  } = {},
-) {
+export function createGenerateStaticParams(source: Source) {
   return async function generateStaticParams() {
-    const params = await source.generateParams()
-    return options.includeRoot === false ? params.filter((param) => param.slug.length > 0) : params
+    return source.generateParams()
   }
 }
 
@@ -79,7 +74,7 @@ interface GenerateMetadataOptions {
 }
 
 export async function generatePageMetadata(
-  params: AwaitableSlugParams,
+  params: Promise<{ slug?: string[] }>,
   options: GenerateMetadataOptions,
 ): Promise<Metadata> {
   const resolvedParams = await params

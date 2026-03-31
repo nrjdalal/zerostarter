@@ -5,24 +5,13 @@ description: Manage blog content and articles.
 
 ## Overview
 
-Blog content lives in `web/next/content/blog/` and uses the same Fumadocs content pipeline as the docs collection.
-
-## Architecture
-
-- `web/next/source.config.ts` defines the `blog` collection.
-- `web/next/src/lib/source.ts` builds `blogSource` from `collections/server`.
-- `web/next/src/app/(content)/blog/layout.tsx` scopes Fumadocs `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
-- `web/next/src/app/(content)/blog/page.tsx` renders `content/blog/index.mdx`.
-- `web/next/src/app/(content)/blog/[...slug]/page.tsx` renders individual blog posts.
-
-The blog layout also disables Fumadocs' internal theme provider directly because the app already has a global `next-themes` provider in `web/next/src/app/providers.tsx`.
+Blog content is managed using Fumadocs and stored in `web/next/content/blog/`.
 
 ## Content Structure
 
 - **Location**: `web/next/content/blog/`
 - **Format**: MDX files with frontmatter
-- **Collection config**: `web/next/source.config.ts`
-- **Ordering**: `web/next/content/blog/meta.json`
+- **Configuration**: Defined in `web/next/source.config.ts`
 
 ## Creating a Blog Post
 
@@ -41,33 +30,10 @@ export const blog = defineDocs({
 })
 ```
 
-The route loader lives in `web/next/src/lib/source.ts`:
-
-```ts
-import { loader } from "fumadocs-core/source"
-import { blog } from "collections/server"
-
-export const blogSource = loader({
-  baseUrl: "/blog",
-  source: blog.toFumadocsSource(),
-})
-```
-
-Pages are listed in `web/next/content/blog/meta.json`. The sequence controls the Fumadocs page tree order:
+Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
 
 ```json
 {
   "pages": ["index", "web-development-2026"]
 }
 ```
-
-## Routing
-
-The blog keeps a dedicated index page and uses a non-optional catch-all post route so nested slugs stay supported:
-
-- `/blog` → `web/next/src/app/(content)/blog/page.tsx`
-- `/blog/[...slug]` → `web/next/src/app/(content)/blog/[...slug]/page.tsx`
-
-Flat posts still work as before, and nested content such as `/blog/category/post` resolves without changing the `/blog` index route.
-
-This route now uses the same Fumadocs loader-based static params pattern as the docs route. Both call `source.generateParams()`, and the blog route filters out the empty root slug because `/blog` is handled by `web/next/src/app/(content)/blog/page.tsx`.

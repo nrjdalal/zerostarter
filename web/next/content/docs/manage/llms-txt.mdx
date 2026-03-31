@@ -7,7 +7,7 @@ import { config } from "@/lib/config"
 
 ## Overview
 
-`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/llms.txt/blog`, `/llms.txt/docs`, and nested page routes such as `/llms.txt/blog/web-development-2026` or `/llms.txt/docs/getting-started/setup`.
+`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/blog.md`, `/blog/*.md`, `/docs.md`, and `/docs/*.md`.
 
 ## How It Works
 
@@ -22,10 +22,8 @@ The endpoint automatically scans documentation and blog content, generating mark
 
 - <a href={`${config.app.url}/llms.txt`}>llms.txt</a> - Index for complete documentation for
   {config.app.name}
-- <a href={`${config.app.url}/llms.txt/blog`}>llms.txt/blog</a> - Index for latest articles and
-  updates about
+- <a href={`${config.app.url}/blog.md`}>blog.md</a> - Index for latest articles and updates about
   {config.app.name}
-- <a href={`${config.app.url}/llms.txt/docs`}>llms.txt/docs</a> - Root docs page in markdown form
 - <a href={`${config.app.url}/llms-full.txt`}>llms-full.txt</a> - Complete documentation in one page
   for AI assistants
 
@@ -36,5 +34,3 @@ The endpoint is implemented in `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]
 - Automatic markdown generation with links and metadata
 - `docsSource` from Fumadocs for documentation
 - `blogSource` from Fumadocs for blog content
-- `getLLMText()` in `web/next/src/lib/llms.ts` to reuse the Fumadocs page-to-markdown conversion logic
-- UTF-8 markdown responses (`text/markdown; charset=utf-8`) so Unicode content survives in AI-facing exports
