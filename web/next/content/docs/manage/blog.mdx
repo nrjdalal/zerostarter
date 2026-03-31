@@ -10,7 +10,7 @@ Blog content lives in `web/next/content/blog/` and uses the same Fumadocs conten
 ## Architecture
 
 - `web/next/source.config.ts` defines the `blog` collection.
-- `web/next/src/lib/source.ts` builds `blogSource` from `fumadocs-mdx:collections/server`.
+- `web/next/src/lib/source.ts` builds `blogSource` from `collections/server`.
 - `web/next/src/app/(content)/blog/layout.tsx` scopes `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
 - `web/next/src/app/(content)/blog/page.tsx` renders `content/blog/index.mdx`.
 - `web/next/src/app/(content)/blog/[...slug]/page.tsx` renders individual blog posts.
@@ -45,7 +45,7 @@ The route loader lives in `web/next/src/lib/source.ts`:
 
 ```ts
 import { loader } from "fumadocs-core/source"
-import { blog } from "fumadocs-mdx:collections/server"
+import { blog } from "collections/server"
 
 export const blogSource = loader({
   baseUrl: "/blog",

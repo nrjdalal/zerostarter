@@ -9,6 +9,32 @@ import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
 
+async function createPageResponse(
+  page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,
+  isDocs: boolean,
+) {
+  if (!page) notFound()
+
+  const content = await getLLMText(page)
+
+  const footer = isDocs
+    ? `---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt
+`
+    : ""
+
+  return new Response(
+    `${content}
+${footer}`,
+    {
+      headers: {
+        ...llmTextHeaders,
+      },
+    },
+  )
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
 
@@ -43,6 +69,7 @@ ${docsIndex}
 
   const isBlog = slug[0] === "blog"
   const isDocs = slug[0] === "docs"
+  const source = isBlog ? blogSource : docsSource
 
   if (isBlog && slug.length === 1) {
     const blogPages = sortByMeta(
@@ -77,30 +104,12 @@ ${blogIndex}
     )
   }
 
-  const source = isBlog ? blogSource : docsSource
-  const pageSlug = isBlog || isDocs ? (slug.length === 1 ? undefined : slug.slice(1)) : slug
+  if (isDocs && slug.length === 1) {
+    return createPageResponse(source.getPage(undefined), true)
+  }
 
-  const page = source.getPage(pageSlug)
-  if (!page) notFound()
-
-  const content = await getLLMText(page)
-
-  const footer = isDocs
-    ? `---
-
-> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt
-`
-    : ""
-
-  return new Response(
-    `${content}
-${footer}`,
-    {
-      headers: {
-        ...llmTextHeaders,
-      },
-    },
-  )
+  const pageSlug = isBlog || isDocs ? slug.slice(1) : slug
+  return createPageResponse(source.getPage(pageSlug), isDocs)
 }
 
 export function generateStaticParams() {
