@@ -161,7 +161,7 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
       hotKey,
       setOpenSearch,
     }),
-    [hotKey],
+    [],
   )
 
   return (
