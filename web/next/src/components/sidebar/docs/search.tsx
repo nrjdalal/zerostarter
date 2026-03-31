@@ -30,6 +30,7 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 
 type HotKey = {
+  id: string
   display: ReactNode
   key: string | ((event: KeyboardEvent) => boolean)
 }
@@ -98,8 +99,8 @@ export function SidebarDocsSearch() {
       </button>
       {!isMobile && hotKey.length > 0 && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
-          {hotKey.map((item, index) => (
-            <Kbd key={index}>{item.display}</Kbd>
+          {hotKey.map((item) => (
+            <Kbd key={item.id}>{item.display}</Kbd>
           ))}
         </div>
       )}
@@ -120,10 +121,12 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const hotKey = useMemo<HotKey[]>(
     () => [
       {
+        id: "modifier",
         display: modifierKeyDisplay,
         key: (event) => event.metaKey || event.ctrlKey,
       },
       {
+        id: "search",
         display: "K",
         key: "k",
       },

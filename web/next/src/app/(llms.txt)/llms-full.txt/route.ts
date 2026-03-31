@@ -17,7 +17,7 @@ export async function GET() {
     ),
   ]
 
-  const scanned = await Promise.all(pages.map(getLLMText))
+  const scanned = (await Promise.all(pages.map(getLLMText))).map((entry) => entry.trimEnd())
 
   return new Response(
     `# ${config.app.name} – LLM Context File
@@ -108,7 +108,7 @@ You MUST:
 
 ---
 
-${scanned.join("\n---\n\n")}`,
+${scanned.join("\n\n---\n\n")}`,
     {
       headers: {
         ...llmTextHeaders,
