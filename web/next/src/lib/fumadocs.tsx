@@ -17,12 +17,6 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
-export const contentRootProviderProps = {
-  theme: {
-    enabled: false,
-  },
-} as const
-
 type Source = typeof blogSource | typeof docsSource
 type Page = NonNullable<ReturnType<Source["getPage"]>>
 type SlugParams = { slug?: string[] }

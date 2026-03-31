@@ -20,19 +20,13 @@ Dark mode is handled globally by `next-themes` with system preference detection:
 
 The theme toggle component at `web/next/src/components/mode-toggle.tsx` cycles through: **system → light → dark → system**.
 
-Docs and blog pages still use `RootProvider` from Fumadocs, but those route-scoped providers disable Fumadocs' internal theme provider:
+Docs and blog pages still use Fumadocs `RootProvider` directly at the route level, with Fumadocs' internal theme provider disabled:
 
 ```ts
-<RootProvider
-  theme={{
-    enabled: false,
-  }}
->
-  {children}
-</RootProvider>
+<RootProvider theme={{ enabled: false }}>{children}</RootProvider>
 ```
 
-That keeps a single source of truth for theme state while still enabling Fumadocs search and layout contexts on the content routes.
+That keeps a single source of truth for theme state while still enabling Fumadocs layout contexts on the content routes. The docs route adds its own local search provider on top of that because the sidebar search trigger is custom.
 
 ## CSS Variables
 

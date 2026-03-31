@@ -58,7 +58,7 @@ ${docsIndex}
 ## Optional
 
 - [Blog](${config.app.url}/blog.md): Latest articles and updates about ${config.app.name}
-      `,
+`,
       {
         headers: {
           ...llmTextHeaders,
@@ -95,7 +95,7 @@ ${blogIndex}
 ## Optional
 
 - [Documentation](${config.app.url}/llms.txt): Complete documentation for ${config.app.name}
-      `,
+`,
       {
         headers: {
           ...llmTextHeaders,

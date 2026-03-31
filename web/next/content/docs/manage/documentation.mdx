@@ -11,12 +11,13 @@ Documentation content lives in `web/next/content/docs/` and is loaded through [F
 
 - `web/next/source.config.ts` defines the `docs` collection.
 - `web/next/src/lib/source.ts` builds `docsSource` with `loader()` and `docs.toFumadocsSource()`.
-- `web/next/src/app/(content)/docs/layout.tsx` scopes `RootProvider` to the docs route, not the global app root.
+- `web/next/src/app/(content)/docs/layout.tsx` scopes Fumadocs `RootProvider` to the docs route, not the global app root.
+- `web/next/src/components/sidebar/docs/search-provider.tsx` adds the docs-only route-scoped search state used by the custom sidebar trigger.
 - `web/next/src/app/(content)/docs/layout.tsx` passes `tree={docsSource.getPageTree()}` into `DocsLayout`.
 - `web/next/src/components/sidebar/docs/*` renders the custom docs sidebar.
 - `web/next/src/lib/config.ts` stores the custom sidebar grouping and category labels.
 
-The docs layout-level `RootProvider` is intentional. It keeps Fumadocs search state and hotkeys scoped to the content routes instead of the entire app. Because the app already uses `next-themes` globally in `web/next/src/app/providers.tsx`, the Fumadocs theme provider is disabled at the docs/blog layout level to avoid nesting a second `next-themes` provider.
+The docs layout-level provider is intentional. It keeps Fumadocs search state and hotkeys scoped to the content routes instead of the entire app. Because the app already uses `next-themes` globally in `web/next/src/app/providers.tsx`, the Fumadocs theme provider is disabled in the docs layout to avoid nesting a second `next-themes` provider.
 
 ## Content Structure
 
@@ -105,7 +106,7 @@ export const { GET } = createFromSource(docsSource, {
 })
 ```
 
-The visible search trigger in the docs sidebar lives at `web/next/src/components/sidebar/docs/search.tsx`. It opens the Fumadocs dialog through `useSearchContext()` instead of simulating a keyboard event. On mobile, the click handler closes the custom sidebar before opening search so the dialog does not appear behind the sheet.
+The visible search trigger in the docs sidebar lives at `web/next/src/components/sidebar/docs/search.tsx`. It opens a route-scoped dialog through the local `useDocsSearchContext()` hook instead of simulating a keyboard event. The actual dialog is rendered from `web/next/src/components/sidebar/docs/search-provider.tsx` with Fumadocs' documented lower-level search components and `useDocsSearch({ type: "fetch", api: "/api/search" })`. On mobile, the click handler closes the custom sidebar before opening search so the dialog does not appear behind the sheet.
 
 The Next.js config still rewrites `/api/search` back to the app route:
 
@@ -115,7 +116,7 @@ The Next.js config still rewrites `/api/search` back to the app route:
 
 ### Keyboard Shortcut
 
-Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog on the content routes. The hotkey and dialog state come from the route-scoped Fumadocs `RootProvider`.
+Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog on the docs route. The hotkey and dialog state come from the local docs search provider mounted inside the route-scoped `RootProvider`.
 
 ## Navigation
 

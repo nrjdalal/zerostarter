@@ -11,11 +11,11 @@ Blog content lives in `web/next/content/blog/` and uses the same Fumadocs conten
 
 - `web/next/source.config.ts` defines the `blog` collection.
 - `web/next/src/lib/source.ts` builds `blogSource` from `collections/server`.
-- `web/next/src/app/(content)/blog/layout.tsx` scopes `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
+- `web/next/src/app/(content)/blog/layout.tsx` scopes Fumadocs `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
 - `web/next/src/app/(content)/blog/page.tsx` renders `content/blog/index.mdx`.
 - `web/next/src/app/(content)/blog/[...slug]/page.tsx` renders individual blog posts.
 
-The blog layout also disables Fumadocs' internal theme provider because the app already has a global `next-themes` provider in `web/next/src/app/providers.tsx`.
+The blog layout also disables Fumadocs' internal theme provider directly because the app already has a global `next-themes` provider in `web/next/src/app/providers.tsx`.
 
 ## Content Structure
 
