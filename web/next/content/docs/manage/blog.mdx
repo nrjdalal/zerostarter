@@ -13,7 +13,7 @@ Blog content lives in `web/next/content/blog/` and uses the same Fumadocs conten
 - `web/next/src/lib/source.ts` builds `blogSource` from `fumadocs-mdx:collections/server`.
 - `web/next/src/app/(content)/blog/layout.tsx` scopes `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
 - `web/next/src/app/(content)/blog/page.tsx` renders `content/blog/index.mdx`.
-- `web/next/src/app/(content)/blog/[slug]/page.tsx` renders individual blog posts.
+- `web/next/src/app/(content)/blog/[...slug]/page.tsx` renders individual blog posts.
 
 The blog layout also disables Fumadocs' internal theme provider because the app already has a global `next-themes` provider in `web/next/src/app/providers.tsx`.
 
@@ -63,9 +63,11 @@ Pages are listed in `web/next/content/blog/meta.json`. The sequence controls the
 
 ## Routing
 
-The current blog content uses flat slugs, so the blog route uses a dedicated index page and a single-segment post route:
+The blog keeps a dedicated index page and uses a non-optional catch-all post route so nested slugs stay supported:
 
 - `/blog` → `web/next/src/app/(content)/blog/page.tsx`
-- `/blog/[slug]` → `web/next/src/app/(content)/blog/[slug]/page.tsx`
+- `/blog/[...slug]` → `web/next/src/app/(content)/blog/[...slug]/page.tsx`
 
-Nested catch-all routing is not needed unless the blog content structure changes to support nested slugs.
+Flat posts still work as before, and nested content such as `/blog/category/post` resolves without changing the `/blog` index route.
+
+This route now uses the same Fumadocs loader-based static params pattern as the docs route. Both call `source.generateParams()`, and the blog route filters out the empty root slug because `/blog` is handled by `web/next/src/app/(content)/blog/page.tsx`.

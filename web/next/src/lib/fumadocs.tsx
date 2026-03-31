@@ -66,18 +66,15 @@ export function renderPageContent({ page, source }: PageData) {
   )
 }
 
-export function createGenerateStaticParams(source: Source) {
+export function createGenerateStaticParams(
+  source: Source,
+  options: {
+    includeRoot?: boolean
+  } = {},
+) {
   return async function generateStaticParams() {
-    return source.generateParams()
-  }
-}
-
-export function createGenerateFlatStaticParams(source: Source) {
-  return async function generateStaticParams() {
-    return source
-      .getPages()
-      .filter((page) => page.slugs.length === 1)
-      .map((page) => ({ slug: page.slugs[0] }))
+    const params = await source.generateParams()
+    return options.includeRoot === false ? params.filter((param) => param.slug.length > 0) : params
   }
 }
 
