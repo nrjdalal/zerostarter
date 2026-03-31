@@ -18,5 +18,7 @@ export async function getLLMText(page: Page) {
   }
 
   return `# [${page.data.title}](${config.app.url}${page.url})
-${content}`
+${content}
+
+`
 }
