@@ -100,7 +100,9 @@ export function SidebarDocsSearch() {
       {!isMobile && hotKey.length > 0 && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
           {hotKey.map((item) => (
-            <Kbd key={item.id}>{item.display}</Kbd>
+            <Kbd key={item.id} suppressHydrationWarning={item.id === "modifier"}>
+              {item.display}
+            </Kbd>
           ))}
         </div>
       )}
@@ -110,13 +112,7 @@ export function SidebarDocsSearch() {
 
 export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpenSearch] = useState(false)
-  const [modifierKeyDisplay, setModifierKeyDisplay] = useState<ReactNode>("Ctrl")
-
-  useEffect(() => {
-    if (isMacPlatform()) {
-      setModifierKeyDisplay("⌘")
-    }
-  }, [])
+  const modifierKeyDisplay: ReactNode = isMacPlatform() ? "⌘" : "Ctrl"
 
   const hotKey = useMemo<HotKey[]>(
     () => [

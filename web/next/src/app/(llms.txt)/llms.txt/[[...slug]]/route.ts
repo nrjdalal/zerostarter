@@ -20,11 +20,10 @@ async function createPageResponse(
   const footer = isDocs
     ? `---
 
-> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt
-`
-    : ""
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt`
+    : undefined
 
-  return new Response(content + footer, {
+  return new Response(footer ? `${content}\n\n${footer}` : content, {
     headers: {
       ...llmTextHeaders,
     },
@@ -109,7 +108,7 @@ ${blogIndex}
     return createPageResponse(source.getPage([]), true)
   }
 
-  const pageSlug = isBlog || isDocs ? slug.slice(1) : slug
+  const pageSlug = slug.slice(1)
   return createPageResponse(source.getPage(pageSlug), isDocs)
 }
 

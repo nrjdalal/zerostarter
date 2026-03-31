@@ -51,6 +51,5 @@ export async function getLLMText(page: LLMPage) {
 
   return `# [${pageTitle}](${config.app.url}${page.url})
 
-${normalizedContent}
-`
+${normalizedContent}`
 }
