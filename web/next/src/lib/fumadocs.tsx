@@ -17,18 +17,23 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
+export const contentRootProviderProps = {
+  theme: {
+    enabled: false,
+  },
+} as const
+
 type Source = typeof blogSource | typeof docsSource
 type Page = NonNullable<ReturnType<Source["getPage"]>>
+type SlugParams = { slug?: string[] }
+type AwaitableSlugParams = SlugParams | Promise<SlugParams>
 
 interface PageData {
   page: Page
   source: Source
 }
 
-export async function getPageData(
-  params: Promise<{ slug?: string[] }>,
-  source: Source,
-): Promise<PageData> {
+export async function getPageData(params: AwaitableSlugParams, source: Source): Promise<PageData> {
   const resolvedParams = await params
   const page = source.getPage(resolvedParams.slug)
   if (!page) notFound()
@@ -67,6 +72,15 @@ export function createGenerateStaticParams(source: Source) {
   }
 }
 
+export function createGenerateFlatStaticParams(source: Source) {
+  return async function generateStaticParams() {
+    return source
+      .getPages()
+      .filter((page) => page.slugs.length === 1)
+      .map((page) => ({ slug: page.slugs[0] }))
+  }
+}
+
 interface GenerateMetadataOptions {
   source: Source
   ogPath: string
@@ -74,7 +88,7 @@ interface GenerateMetadataOptions {
 }
 
 export async function generatePageMetadata(
-  params: Promise<{ slug?: string[] }>,
+  params: AwaitableSlugParams,
   options: GenerateMetadataOptions,
 ): Promise<Metadata> {
   const resolvedParams = await params

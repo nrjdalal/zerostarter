@@ -9,7 +9,7 @@ ZeroStarter uses [Tailwind CSS v4](https://tailwindcss.com) with CSS custom prop
 
 ## Dark Mode
 
-Dark mode is handled by `next-themes` with system preference detection:
+Dark mode is handled globally by `next-themes` with system preference detection:
 
 ```ts
 // web/next/src/app/providers.tsx
@@ -19,6 +19,20 @@ Dark mode is handled by `next-themes` with system preference detection:
 ```
 
 The theme toggle component at `web/next/src/components/mode-toggle.tsx` cycles through: **system → light → dark → system**.
+
+Docs and blog pages still use `RootProvider` from Fumadocs, but those route-scoped providers disable Fumadocs' internal theme provider:
+
+```ts
+<RootProvider
+  theme={{
+    enabled: false,
+  }}
+>
+  {children}
+</RootProvider>
+```
+
+That keeps a single source of truth for theme state while still enabling Fumadocs search and layout contexts on the content routes.
 
 ## CSS Variables
 

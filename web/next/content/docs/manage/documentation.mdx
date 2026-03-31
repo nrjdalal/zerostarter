@@ -5,13 +5,25 @@ description: Manage documentation content and search.
 
 ## Overview
 
-Documentation is managed using [Fumadocs](https://fumadocs.vercel.app) and stored in `web/next/content/docs/`. Full-text search is powered by [Orama](https://orama.com) via Fumadocs.
+Documentation content lives in `web/next/content/docs/` and is loaded through [Fumadocs](https://fumadocs.dev). The docs route uses Fumadocs for MDX loading, page metadata, page trees, and search UI, while the left sidebar remains a custom shadcn/ui implementation.
+
+## Architecture
+
+- `web/next/source.config.ts` defines the `docs` collection.
+- `web/next/src/lib/source.ts` builds `docsSource` with `loader()` and `docs.toFumadocsSource()`.
+- `web/next/src/app/(content)/docs/layout.tsx` scopes `RootProvider` to the docs route, not the global app root.
+- `web/next/src/app/(content)/docs/layout.tsx` passes `tree={docsSource.getPageTree()}` into `DocsLayout`.
+- `web/next/src/components/sidebar/docs/*` renders the custom docs sidebar.
+- `web/next/src/lib/config.ts` stores the custom sidebar grouping and category labels.
+
+The docs layout-level `RootProvider` is intentional. It keeps Fumadocs search state and hotkeys scoped to the content routes instead of the entire app. Because the app already uses `next-themes` globally in `web/next/src/app/providers.tsx`, the Fumadocs theme provider is disabled at the docs/blog layout level to avoid nesting a second `next-themes` provider.
 
 ## Content Structure
 
 - **Location**: `web/next/content/docs/`
 - **Format**: MDX files with frontmatter
-- **Configuration**: Defined in `web/next/source.config.ts` and `web/next/content/docs/meta.json`
+- **Collection config**: `web/next/source.config.ts`
+- **Ordering**: `web/next/content/docs/meta.json`
 
 ## Creating Documentation
 
@@ -30,7 +42,19 @@ export const docs = defineDocs({
 })
 ```
 
-Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+The Fumadocs source loader lives in `web/next/src/lib/source.ts`:
+
+```ts
+import { loader } from "fumadocs-core/source"
+import { docs } from "fumadocs-mdx:collections/server"
+
+export const docsSource = loader({
+  baseUrl: "/docs",
+  source: docs.toFumadocsSource(),
+})
+```
+
+Pages are listed in `web/next/content/docs/meta.json`. The sequence controls the Fumadocs page tree and the order used by docs navigation helpers:
 
 ```json
 {
@@ -70,24 +94,20 @@ Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** 
 
 ## Search
 
-Full-text search indexes all documentation and blog content via an API endpoint at `web/next/src/app/api/search/route.ts`:
+The docs search API is implemented at `web/next/src/app/api/search/route.ts` with Fumadocs' built-in Orama integration:
 
 ```ts
-import { createSearchAPI } from "fumadocs-core/search/server"
-import { source } from "@/lib/source"
+import { createFromSource } from "fumadocs-core/search/server"
+import { docsSource } from "@/lib/source"
 
-export const { GET } = createSearchAPI("advanced", {
-  indexes: source.getPages().map((page) => ({
-    title: page.data.title,
-    description: page.data.description,
-    url: page.url,
-    id: page.url,
-    structuredData: page.data.structuredData,
-  })),
+export const { GET } = createFromSource(docsSource, {
+  language: "english",
 })
 ```
 
-The Next.js config rewrites `/api/search` to the internal app URL to avoid CORS issues:
+The visible search trigger in the docs sidebar lives at `web/next/src/components/sidebar/docs/search.tsx`. It opens the Fumadocs dialog through `useSearchContext()` instead of simulating a keyboard event.
+
+The Next.js config still rewrites `/api/search` back to the app route:
 
 ```ts
 { source: "/api/search", destination: `${env.NEXT_PUBLIC_APP_URL}/api/search` }
@@ -95,4 +115,13 @@ The Next.js config rewrites `/api/search` to the internal app URL to avoid CORS 
 
 ### Keyboard Shortcut
 
-Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog from any docs page. The search dialog supports full-text search across all content, heading-level results, and keyboard navigation.
+Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog on the content routes. The hotkey and dialog state come from the route-scoped Fumadocs `RootProvider`.
+
+## Navigation
+
+Fumadocs still provides the canonical page tree for the docs route, but the rendered sidebar is intentionally custom. This matches current Fumadocs guidance after the old sidebar API removal and lets ZeroStarter keep its bespoke grouping under the "Manage" section without restructuring the content tree.
+
+When you add or move a docs page:
+
+1. Update `web/next/content/docs/meta.json` so Fumadocs page ordering stays correct.
+2. Update `web/next/src/lib/config.ts` if the custom sidebar grouping should change.

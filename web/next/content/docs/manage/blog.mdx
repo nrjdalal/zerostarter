@@ -5,13 +5,24 @@ description: Manage blog content and articles.
 
 ## Overview
 
-Blog content is managed using Fumadocs and stored in `web/next/content/blog/`.
+Blog content lives in `web/next/content/blog/` and uses the same Fumadocs content pipeline as the docs collection.
+
+## Architecture
+
+- `web/next/source.config.ts` defines the `blog` collection.
+- `web/next/src/lib/source.ts` builds `blogSource` from `fumadocs-mdx:collections/server`.
+- `web/next/src/app/(content)/blog/layout.tsx` scopes `RootProvider` to the blog route and passes `tree={blogSource.getPageTree()}` into `DocsLayout`.
+- `web/next/src/app/(content)/blog/page.tsx` renders `content/blog/index.mdx`.
+- `web/next/src/app/(content)/blog/[slug]/page.tsx` renders individual blog posts.
+
+The blog layout also disables Fumadocs' internal theme provider because the app already has a global `next-themes` provider in `web/next/src/app/providers.tsx`.
 
 ## Content Structure
 
 - **Location**: `web/next/content/blog/`
 - **Format**: MDX files with frontmatter
-- **Configuration**: Defined in `web/next/source.config.ts`
+- **Collection config**: `web/next/source.config.ts`
+- **Ordering**: `web/next/content/blog/meta.json`
 
 ## Creating a Blog Post
 
@@ -30,10 +41,31 @@ export const blog = defineDocs({
 })
 ```
 
-Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+The route loader lives in `web/next/src/lib/source.ts`:
+
+```ts
+import { loader } from "fumadocs-core/source"
+import { blog } from "fumadocs-mdx:collections/server"
+
+export const blogSource = loader({
+  baseUrl: "/blog",
+  source: blog.toFumadocsSource(),
+})
+```
+
+Pages are listed in `web/next/content/blog/meta.json`. The sequence controls the Fumadocs page tree order:
 
 ```json
 {
   "pages": ["index", "web-development-2026"]
 }
 ```
+
+## Routing
+
+The current blog content uses flat slugs, so the blog route uses a dedicated index page and a single-segment post route:
+
+- `/blog` → `web/next/src/app/(content)/blog/page.tsx`
+- `/blog/[slug]` → `web/next/src/app/(content)/blog/[slug]/page.tsx`
+
+Nested catch-all routing is not needed unless the blog content structure changes to support nested slugs.
