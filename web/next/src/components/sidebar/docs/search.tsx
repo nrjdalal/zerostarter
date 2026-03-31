@@ -45,7 +45,22 @@ const DocsSearchContext = createContext<DocsSearchContextValue>({
   setOpenSearch: () => undefined,
 })
 
-const IS_MAC = typeof navigator !== "undefined" && navigator.userAgent.includes("Mac")
+function isMacPlatform(): boolean {
+  if (typeof document !== "undefined" && document.documentElement.dataset.platform) {
+    return document.documentElement.dataset.platform === "mac"
+  }
+
+  return typeof navigator !== "undefined" && navigator.userAgent.includes("Mac")
+}
+
+function ModifierKeyLabel() {
+  return (
+    <span className="docs-search-modifier" aria-hidden="true">
+      <span className="docs-search-modifier-default">Ctrl</span>
+      <span className="docs-search-modifier-mac">⌘</span>
+    </span>
+  )
+}
 
 function DocsSearchDialog(props: SharedProps) {
   const { locale } = useI18n()
@@ -98,9 +113,7 @@ export function SidebarDocsSearch() {
       {!isMobile && hotKey.length > 0 && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
           {hotKey.map((item) => (
-            <Kbd key={item.id} suppressHydrationWarning={item.id === "modifier"}>
-              {item.display}
-            </Kbd>
+            <Kbd key={item.id}>{item.display}</Kbd>
           ))}
         </div>
       )}
@@ -115,8 +128,8 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
     () => [
       {
         id: "modifier",
-        display: IS_MAC ? "⌘" : "Ctrl",
-        key: (event) => (IS_MAC ? event.metaKey : event.ctrlKey),
+        display: <ModifierKeyLabel />,
+        key: (event) => (isMacPlatform() ? event.metaKey : event.ctrlKey),
       },
       {
         id: "search",
