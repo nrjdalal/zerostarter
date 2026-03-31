@@ -24,15 +24,11 @@ async function createPageResponse(
 `
     : ""
 
-  return new Response(
-    `${content}
-${footer}`,
-    {
-      headers: {
-        ...llmTextHeaders,
-      },
+  return new Response(content + footer, {
+    headers: {
+      ...llmTextHeaders,
     },
-  )
+  })
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
