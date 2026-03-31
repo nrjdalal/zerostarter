@@ -101,7 +101,7 @@ ${blogIndex}
   }
 
   if (isDocs && slug.length === 1) {
-    return createPageResponse(source.getPage(undefined), true)
+    return createPageResponse(source.getPage([]), true)
   }
 
   const pageSlug = isBlog || isDocs ? slug.slice(1) : slug

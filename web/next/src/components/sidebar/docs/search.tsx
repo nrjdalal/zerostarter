@@ -136,6 +136,10 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
   )
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.repeat) {
+      return
+    }
+
     if (
       !hotKey.every((item) =>
         typeof item.key === "string" ? event.key.toLowerCase() === item.key : item.key(event),
