@@ -110,13 +110,12 @@ export function SidebarDocsSearch() {
 
 export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpenSearch] = useState(false)
-  const modifierKeyDisplay: ReactNode = IS_MAC ? "⌘" : "Ctrl"
 
   const hotKey = useMemo<HotKey[]>(
     () => [
       {
         id: "modifier",
-        display: modifierKeyDisplay,
+        display: IS_MAC ? "⌘" : "Ctrl",
         key: (event) => (IS_MAC ? event.metaKey : event.ctrlKey),
       },
       {
@@ -125,7 +124,7 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
         key: "k",
       },
     ],
-    [modifierKeyDisplay],
+    [],
   )
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {

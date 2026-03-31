@@ -37,16 +37,18 @@ function parseFrontmatter(content: string) {
 }
 
 export async function getLLMText(page: LLMPage) {
-  let content: string
+  let body: string
+  let title = page.data.title
 
   try {
-    content = await page.data.getText("processed")
+    body = (await page.data.getText("processed")).trim()
   } catch {
-    content = await page.data.getText("raw")
+    const parsed = parseFrontmatter(await page.data.getText("raw"))
+    body = parsed.body
+    title ??= parsed.title
   }
 
-  const { body, title } = parseFrontmatter(content)
-  const pageTitle = page.data.title ?? title ?? page.url
+  const pageTitle = title ?? page.url
 
   return `# [${pageTitle}](${config.app.url}${page.url})
 
