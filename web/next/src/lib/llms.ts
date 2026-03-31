@@ -21,8 +21,10 @@ export async function getLLMText(page: LLMPage) {
     content = await page.data.getText("raw")
   }
 
-  return `# [${page.data.title}](${config.app.url}${page.url})
-${content}
+  const normalizedContent = content.trim()
 
+  return `# [${page.data.title}](${config.app.url}${page.url})
+
+${normalizedContent}
 `
 }
