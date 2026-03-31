@@ -3,7 +3,7 @@ import { config } from "@/lib/config"
 type LLMPage = {
   url: string
   data: {
-    title: string
+    title?: string
     getText: (type: "processed" | "raw") => Promise<string>
   }
 }
@@ -46,10 +46,9 @@ export async function getLLMText(page: LLMPage) {
   }
 
   const { body, title } = parseFrontmatter(content)
-  const normalizedContent = body
   const pageTitle = page.data.title ?? title ?? page.url
 
   return `# [${pageTitle}](${config.app.url}${page.url})
 
-${normalizedContent}`
+${body}`
 }

@@ -17,7 +17,7 @@ export async function GET() {
     ),
   ]
 
-  const scanned = (await Promise.all(pages.map(getLLMText))).map((entry) => entry.trimEnd())
+  const scanned = await Promise.all(pages.map(getLLMText))
 
   return new Response(
     `# ${config.app.name} – LLM Context File
