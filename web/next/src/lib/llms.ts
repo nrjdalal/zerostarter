@@ -12,6 +12,30 @@ export const llmTextHeaders = {
   "Content-Type": "text/markdown; charset=utf-8",
 } as const
 
+const FRONTMATTER_PATTERN = /^---\r?\n([\s\S]*?)\r?\n---\r?\n*/
+
+function parseFrontmatter(content: string) {
+  const match = content.match(FRONTMATTER_PATTERN)
+
+  if (!match) {
+    return {
+      body: content.trim(),
+      title: undefined,
+    }
+  }
+
+  const title = match[1]
+    .split(/\r?\n/)
+    .find((line) => line.startsWith("title:"))
+    ?.replace(/^title:\s*/, "")
+    .replace(/^['"]|['"]$/g, "")
+
+  return {
+    body: content.slice(match[0].length).trim(),
+    title,
+  }
+}
+
 export async function getLLMText(page: LLMPage) {
   let content: string
 
@@ -21,9 +45,11 @@ export async function getLLMText(page: LLMPage) {
     content = await page.data.getText("raw")
   }
 
-  const normalizedContent = content.trim()
+  const { body, title } = parseFrontmatter(content)
+  const normalizedContent = body
+  const pageTitle = page.data.title ?? title ?? page.url
 
-  return `# [${page.data.title}](${config.app.url}${page.url})
+  return `# [${pageTitle}](${config.app.url}${page.url})
 
 ${normalizedContent}
 `
