@@ -142,15 +142,3 @@
 #nd-page {
   @apply mt-10;
 }
-
-.docs-search-modifier-mac {
-  display: none;
-}
-
-html[data-platform="mac"] .docs-search-modifier-default {
-  display: none;
-}
-
-html[data-platform="mac"] .docs-search-modifier-mac {
-  display: inline;
-}

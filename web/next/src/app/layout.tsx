@@ -2,7 +2,6 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 
 import type { Metadata } from "next"
-import Script from "next/script"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/navbar/home"
@@ -19,7 +18,6 @@ function getOgImageUrl(): string {
 }
 
 const ogImageUrl = getOgImageUrl()
-const platformDetectionScript = `document.documentElement.dataset.platform = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "mac" : "other";`
 
 export const metadata: Metadata = {
   title: {
@@ -58,9 +56,6 @@ export default function RootLayout({
     <OuterProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="min-h-dvh antialiased">
-          <Script id="platform-detection" strategy="beforeInteractive">
-            {platformDetectionScript}
-          </Script>
           <InnerProvider>
             <Navbar />
             {children}
