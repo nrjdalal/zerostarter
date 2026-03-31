@@ -35,13 +35,11 @@ type HotKey = {
 }
 
 type DocsSearchContextValue = {
-  enabled: boolean
   hotKey: HotKey[]
   setOpenSearch: (value: boolean) => void
 }
 
 const DocsSearchContext = createContext<DocsSearchContextValue>({
-  enabled: true,
   hotKey: [],
   setOpenSearch: () => undefined,
 })
@@ -75,7 +73,7 @@ function DocsSearchDialog(props: SharedProps) {
 
 export function SidebarDocsSearch() {
   const { isMobile, setOpenMobile } = useSidebar()
-  const { enabled, hotKey, setOpenSearch } = useDocsSearchContext()
+  const { hotKey, setOpenSearch } = useDocsSearchContext()
 
   return (
     <div className="relative">
@@ -85,13 +83,11 @@ export function SidebarDocsSearch() {
         aria-haspopup="dialog"
         aria-label="Open search"
         onClick={() => {
-          if (enabled) {
-            if (isMobile) {
-              setOpenMobile(false)
-            }
-
-            setOpenSearch(true)
+          if (isMobile) {
+            setOpenMobile(false)
           }
+
+          setOpenSearch(true)
         }}
         className={cn(
           "h-8 w-full rounded-lg border border-input bg-background pl-8 text-left text-sm text-muted-foreground shadow-none transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
@@ -100,7 +96,7 @@ export function SidebarDocsSearch() {
       >
         Search
       </button>
-      {!isMobile && enabled && hotKey.length > 0 && (
+      {!isMobile && hotKey.length > 0 && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
           {hotKey.map((item, index) => (
             <Kbd key={index}>{item.display}</Kbd>
@@ -162,11 +158,10 @@ export function DocsSearchProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener("keydown", onKeyDown)
     }
-  }, [onKeyDown])
+  }, [])
 
   const value = useMemo<DocsSearchContextValue>(
     () => ({
-      enabled: true,
       hotKey,
       setOpenSearch,
     }),

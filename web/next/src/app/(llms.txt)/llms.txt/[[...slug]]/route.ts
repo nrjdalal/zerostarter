@@ -65,6 +65,11 @@ ${docsIndex}
 
   const isBlog = slug[0] === "blog"
   const isDocs = slug[0] === "docs"
+
+  if (!isBlog && !isDocs) {
+    notFound()
+  }
+
   const source = isBlog ? blogSource : docsSource
 
   if (isBlog && slug.length === 1) {
