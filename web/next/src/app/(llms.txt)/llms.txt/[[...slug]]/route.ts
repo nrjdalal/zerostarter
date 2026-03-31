@@ -113,11 +113,12 @@ ${blogIndex}
 }
 
 export function generateStaticParams() {
+  const indexParams = [{ slug: [] }]
   const docsParams = docsSource.generateParams().map((params) => ({
     slug: ["docs", ...(params.slug ?? [])],
   }))
   const blogParams = blogSource.generateParams().map((params) => ({
     slug: ["blog", ...(params.slug ?? [])],
   }))
-  return [...docsParams, ...blogParams]
+  return [...indexParams, ...docsParams, ...blogParams]
 }

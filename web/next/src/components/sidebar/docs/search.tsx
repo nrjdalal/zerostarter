@@ -45,9 +45,7 @@ const DocsSearchContext = createContext<DocsSearchContextValue>({
   setOpenSearch: () => undefined,
 })
 
-function isMacPlatform(): boolean {
-  return typeof window !== "undefined" && window.navigator.userAgent.includes("Mac")
-}
+const IS_MAC = typeof navigator !== "undefined" && navigator.userAgent.includes("Mac")
 
 function DocsSearchDialog(props: SharedProps) {
   const { locale } = useI18n()
@@ -112,14 +110,14 @@ export function SidebarDocsSearch() {
 
 export function DocsSearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpenSearch] = useState(false)
-  const modifierKeyDisplay: ReactNode = isMacPlatform() ? "⌘" : "Ctrl"
+  const modifierKeyDisplay: ReactNode = IS_MAC ? "⌘" : "Ctrl"
 
   const hotKey = useMemo<HotKey[]>(
     () => [
       {
         id: "modifier",
         display: modifierKeyDisplay,
-        key: (event) => event.metaKey || event.ctrlKey,
+        key: (event) => (IS_MAC ? event.metaKey : event.ctrlKey),
       },
       {
         id: "search",
