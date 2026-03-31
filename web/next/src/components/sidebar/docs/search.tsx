@@ -2,33 +2,28 @@
 
 import { RiSearchLine } from "@remixicon/react"
 import { useSearchContext } from "fumadocs-ui/contexts/search"
-import { useCallback, useEffect } from "react"
 
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
 
 export function SidebarDocsSearch() {
   const { isMobile, setOpenMobile } = useSidebar()
-  const { enabled, hotKey, open, setOpenSearch } = useSearchContext()
-
-  const handleClick = useCallback(() => {
-    if (enabled) {
-      setOpenSearch(true)
-    }
-  }, [enabled, setOpenSearch])
-
-  useEffect(() => {
-    if (isMobile && open) {
-      setOpenMobile(false)
-    }
-  }, [isMobile, open, setOpenMobile])
+  const { enabled, hotKey, setOpenSearch } = useSearchContext()
 
   return (
     <div className="relative">
       <RiSearchLine className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
       <SidebarInput
         placeholder="Search"
-        onClick={handleClick}
+        onClick={() => {
+          if (enabled) {
+            if (isMobile) {
+              setOpenMobile(false)
+            }
+
+            setOpenSearch(true)
+          }
+        }}
         readOnly
         className={`cursor-pointer pl-8 ${isMobile ? "pr-3" : "pr-20"}`}
       />

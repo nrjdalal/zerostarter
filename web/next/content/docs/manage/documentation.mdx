@@ -105,7 +105,7 @@ export const { GET } = createFromSource(docsSource, {
 })
 ```
 
-The visible search trigger in the docs sidebar lives at `web/next/src/components/sidebar/docs/search.tsx`. It opens the Fumadocs dialog through `useSearchContext()` instead of simulating a keyboard event.
+The visible search trigger in the docs sidebar lives at `web/next/src/components/sidebar/docs/search.tsx`. It opens the Fumadocs dialog through `useSearchContext()` instead of simulating a keyboard event. On mobile, the click handler closes the custom sidebar before opening search so the dialog does not appear behind the sheet.
 
 The Next.js config still rewrites `/api/search` back to the app route:
 
