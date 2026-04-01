@@ -7,7 +7,7 @@ import { config } from "@/lib/config"
 
 ## Overview
 
-`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/blog.md`, `/blog/*.md`, `/docs.md`, and `/docs/*.md`.
+`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/blog.md`, `/blog.txt`, `/blog/*.md`, `/blog/*.txt`, `/docs.md`, `/docs.txt`, `/docs/*.md`, and `/docs/*.txt`.
 
 ## How It Works
 
@@ -24,6 +24,8 @@ The endpoint automatically scans documentation and blog content, generating mark
   {config.app.name}
 - <a href={`${config.app.url}/blog.md`}>blog.md</a> - Index for latest articles and updates about
   {config.app.name}
+- `.md` and `.txt` aliases are available for individual blog and docs pages under `/blog/*` and
+  `/docs/*`
 - <a href={`${config.app.url}/llms-full.txt`}>llms-full.txt</a> - Complete documentation in one page
   for AI assistants
 
