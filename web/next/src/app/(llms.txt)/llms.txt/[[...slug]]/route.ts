@@ -33,7 +33,7 @@ async function createPageResponse(
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
 
-  if (!slug) {
+  if (!slug || slug.length === 0) {
     const docsPages = sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs")
     const docsIndex = docsPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
