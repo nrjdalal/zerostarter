@@ -7,12 +7,19 @@ import { blogSource } from "@/lib/source"
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <main>
-      <RootProvider>
+      <RootProvider
+        theme={{
+          enabled: false,
+        }}
+        search={{
+          enabled: false,
+        }}
+      >
         <DocsLayout
           {...baseOptions()}
           nav={{ enabled: false }}
           sidebar={{ enabled: false }}
-          tree={blogSource.pageTree}
+          tree={blogSource.getPageTree()}
         >
           {children}
         </DocsLayout>

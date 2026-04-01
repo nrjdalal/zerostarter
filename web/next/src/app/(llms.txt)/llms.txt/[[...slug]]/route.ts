@@ -3,15 +3,37 @@ import { notFound } from "next/navigation"
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
+import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
 
+async function createPageResponse(
+  page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,
+  isDocs: boolean,
+) {
+  if (!page) notFound()
+
+  const content = await getLLMText(page)
+
+  const footer = isDocs
+    ? `---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt`
+    : undefined
+
+  return new Response(footer ? `${content}\n\n${footer}` : content, {
+    headers: {
+      ...llmTextHeaders,
+    },
+  })
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
 
-  if (!slug) {
+  if (!slug || slug.length === 0) {
     const docsPages = sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs")
     const docsIndex = docsPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
@@ -34,7 +56,7 @@ ${docsIndex}
 `,
       {
         headers: {
-          "Content-Type": "text/markdown",
+          ...llmTextHeaders,
         },
       },
     )
@@ -42,6 +64,12 @@ ${docsIndex}
 
   const isBlog = slug[0] === "blog"
   const isDocs = slug[0] === "docs"
+
+  if (!isBlog && !isDocs) {
+    notFound()
+  }
+
+  const source = isBlog ? blogSource : docsSource
 
   if (isBlog && slug.length === 1) {
     const blogPages = sortByMeta(
@@ -70,52 +98,27 @@ ${blogIndex}
 `,
       {
         headers: {
-          "Content-Type": "text/markdown",
+          ...llmTextHeaders,
         },
       },
     )
   }
 
-  const source = isBlog ? blogSource : docsSource
-  const pageSlug = isBlog || isDocs ? (slug.length === 1 ? undefined : slug.slice(1)) : slug
-
-  const page = source.getPage(pageSlug)
-  if (!page) notFound()
-
-  let content: string
-  try {
-    content = await page.data.getText("processed")
-  } catch {
-    content = await page.data.getText("raw")
+  if (isDocs && slug.length === 1) {
+    return createPageResponse(source.getPage([]), true)
   }
 
-  const fullUrl = `${config.app.url}${page.url}`
-
-  const footer = isDocs
-    ? `---
-
-> To find navigation and other pages in this documentation, fetch the llms.txt file at: ${config.app.url}/llms.txt
-`
-    : ""
-
-  return new Response(
-    `# [${page.data.title}](${fullUrl})
-${content}
-${footer}`,
-    {
-      headers: {
-        "Content-Type": "text/markdown",
-      },
-    },
-  )
+  const pageSlug = slug.slice(1)
+  return createPageResponse(source.getPage(pageSlug), isDocs)
 }
 
 export function generateStaticParams() {
+  const indexParams = [{ slug: [] }]
   const docsParams = docsSource.generateParams().map((params) => ({
     slug: ["docs", ...(params.slug ?? [])],
   }))
   const blogParams = blogSource.generateParams().map((params) => ({
     slug: ["blog", ...(params.slug ?? [])],
   }))
-  return [...docsParams, ...blogParams]
+  return [...indexParams, ...docsParams, ...blogParams]
 }

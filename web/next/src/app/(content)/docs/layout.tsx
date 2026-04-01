@@ -33,12 +33,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <SidebarTrigger className="md:bg-sidebar! hover:md:bg-sidebar-accent! fixed right-0 bottom-0 mr-6 mb-18 h-8 cursor-pointer border md:right-auto md:mb-48 md:rounded-l-none md:border-l-0">
           <span>Docs</span>
         </SidebarTrigger>
-        <RootProvider>
+        <RootProvider
+          theme={{
+            enabled: false,
+          }}
+        >
           <DocsLayout
             {...baseOptions()}
             nav={{ enabled: false }}
             sidebar={{ enabled: false }}
-            tree={docsSource.pageTree}
+            tree={docsSource.getPageTree()}
           >
             {children}
           </DocsLayout>

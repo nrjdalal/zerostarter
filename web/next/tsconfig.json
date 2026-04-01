@@ -4,7 +4,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "fumadocs-mdx:collections/*": ["./.source/*"]
+      "collections/*": ["./.source/*"]
     },
     "plugins": [
       {
