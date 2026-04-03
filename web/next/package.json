@@ -6,7 +6,7 @@
     "build": "fumadocs-mdx && next build",
     "check-types": "tsc --noEmit",
     "dev": "next dev",
-    "start": "next start"
+    "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {
     "@api/hono": "workspace:*",
