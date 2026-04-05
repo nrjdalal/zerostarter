@@ -8,17 +8,16 @@ import { optimize } from "svgo"
 const scriptDir = path.dirname(Bun.main)
 const publicDir = path.resolve(scriptDir, "../../web/next/public")
 const isCI = !!process.env.CI
+const CONCURRENCY = 8
 
 const rasterGlob = new Glob("**/*.{png,jpg,jpeg,webp,avif}")
 const svgGlob = new Glob("**/*.svg")
 
-const results: { file: string; before: number; after: number }[] = []
+type Result = { file: string; before: number; after: number }
+const results: Result[] = []
 let total = 0
 
-for await (const file of rasterGlob.scan({ cwd: publicDir })) {
-  total++
-  if (!isCI) process.stdout.write(`\rcompressing ${total} images...`)
-
+async function compressRaster(file: string): Promise<Result | null> {
   const filePath = `${publicDir}/${file}`
 
   try {
@@ -43,22 +42,20 @@ for await (const file of rasterGlob.scan({ cwd: publicDir })) {
         output = await sharp(buffer).avif({ quality: 65 }).toBuffer()
         break
       default:
-        continue
+        return null
     }
 
     if (output.length < originalSize) {
       await Bun.write(filePath, output)
-      results.push({ file, before: originalSize, after: output.length })
+      return { file, before: originalSize, after: output.length }
     }
   } catch (err) {
     console.warn(`  WARN: failed to compress ${file}: ${err}`)
   }
+  return null
 }
 
-for await (const file of svgGlob.scan({ cwd: publicDir })) {
-  total++
-  if (!isCI) process.stdout.write(`\rcompressing ${total} images...`)
-
+async function compressSvg(file: string): Promise<Result | null> {
   const filePath = `${publicDir}/${file}`
 
   try {
@@ -77,10 +74,44 @@ for await (const file of svgGlob.scan({ cwd: publicDir })) {
 
     if (optimizedSize < originalSize) {
       await Bun.write(filePath, result.data)
-      results.push({ file, before: originalSize, after: optimizedSize })
+      return { file, before: originalSize, after: optimizedSize }
     }
   } catch (err) {
     console.warn(`  WARN: failed to optimize ${file}: ${err}`)
+  }
+  return null
+}
+
+// collect all files first
+const rasterFiles: string[] = []
+const svgFiles: string[] = []
+
+for await (const file of rasterGlob.scan({ cwd: publicDir })) {
+  rasterFiles.push(file)
+}
+for await (const file of svgGlob.scan({ cwd: publicDir })) {
+  svgFiles.push(file)
+}
+
+total = rasterFiles.length + svgFiles.length
+
+if (!isCI) process.stdout.write(`compressing ${total} images...`)
+
+// process raster images in parallel batches
+for (let i = 0; i < rasterFiles.length; i += CONCURRENCY) {
+  const batch = rasterFiles.slice(i, i + CONCURRENCY)
+  const batchResults = await Promise.all(batch.map(compressRaster))
+  for (const r of batchResults) {
+    if (r) results.push(r)
+  }
+}
+
+// process SVGs in parallel batches
+for (let i = 0; i < svgFiles.length; i += CONCURRENCY) {
+  const batch = svgFiles.slice(i, i + CONCURRENCY)
+  const batchResults = await Promise.all(batch.map(compressSvg))
+  for (const r of batchResults) {
+    if (r) results.push(r)
   }
 }
 
