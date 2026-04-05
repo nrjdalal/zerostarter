@@ -46,6 +46,8 @@
     "lint-staged": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "sharp": "catalog:",
+    "svgo": "catalog:",
     "turbo": "catalog:"
   },
   "commitlint": {
