@@ -153,8 +153,6 @@
         "@types/react-dom": "catalog:",
         "babel-plugin-react-compiler": "catalog:",
         "shadcn": "catalog:",
-        "sharp": "catalog:",
-        "svgo": "catalog:",
         "tailwindcss": "catalog:",
         "tw-animate-css": "catalog:",
         "typescript": "catalog:",
