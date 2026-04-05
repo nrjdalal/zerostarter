@@ -1,0 +1,96 @@
+import path from "path"
+
+import { Glob } from "bun"
+import sharp from "sharp"
+import { optimize } from "svgo"
+
+const scriptDir = path.dirname(Bun.main)
+const publicDir = path.resolve(scriptDir, "../../web/next/public")
+
+const rasterGlob = new Glob("**/*.{png,jpg,jpeg,webp,avif}")
+const svgGlob = new Glob("**/*.svg")
+
+const results: { file: string; before: number; after: number }[] = []
+let total = 0
+
+for await (const file of rasterGlob.scan({ cwd: publicDir })) {
+  total++
+  process.stdout.write(`\rcompressing ${total} images...`)
+
+  const filePath = `${publicDir}/${file}`
+  const buffer = Buffer.from(await Bun.file(filePath).arrayBuffer())
+  const originalSize = buffer.length
+  const ext = file.split(".").pop()?.toLowerCase()
+
+  let output: Buffer
+
+  switch (ext) {
+    case "png":
+      output = await sharp(buffer).png({ effort: 10, compressionLevel: 9 }).toBuffer()
+      break
+    case "jpg":
+    case "jpeg":
+      output = await sharp(buffer).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
+      break
+    case "webp":
+      output = await sharp(buffer).webp({ quality: 80 }).toBuffer()
+      break
+    case "avif":
+      output = await sharp(buffer).avif({ quality: 65 }).toBuffer()
+      break
+    default:
+      continue
+  }
+
+  if (output.length < originalSize) {
+    await Bun.write(filePath, output)
+    results.push({ file, before: originalSize, after: output.length })
+  }
+}
+
+for await (const file of svgGlob.scan({ cwd: publicDir })) {
+  total++
+  process.stdout.write(`\rcompressing ${total} images...`)
+
+  const filePath = `${publicDir}/${file}`
+  const content = await Bun.file(filePath).text()
+  const originalSize = Buffer.byteLength(content)
+
+  const result = optimize(content)
+  const optimizedSize = Buffer.byteLength(result.data)
+
+  if (optimizedSize < originalSize) {
+    await Bun.write(filePath, result.data)
+    results.push({ file, before: originalSize, after: optimizedSize })
+  }
+}
+
+process.stdout.write("\r")
+
+if (results.length === 0) {
+  console.log(`compress-images: ${total} images — all optimal`)
+} else {
+  const maxName = Math.max(...results.map((r) => r.file.length))
+  const maxBefore = Math.max(...results.map((r) => formatSize(r.before).length))
+  const maxAfter = Math.max(...results.map((r) => formatSize(r.after).length))
+
+  for (const r of results) {
+    const saved = ((1 - r.after / r.before) * 100).toFixed(1)
+    console.log(
+      `  ${r.file.padEnd(maxName)}  ${formatSize(r.before).padStart(maxBefore)} → ${formatSize(r.after).padStart(maxAfter)}  −${saved}%`,
+    )
+  }
+
+  const totalBefore = results.reduce((s, r) => s + r.before, 0)
+  const totalAfter = results.reduce((s, r) => s + r.after, 0)
+  const totalSaved = ((1 - totalAfter / totalBefore) * 100).toFixed(1)
+  console.log(
+    `\n  compressed ${results.length}/${total} images: ${formatSize(totalBefore)} → ${formatSize(totalAfter)} (−${totalSaved}%)`,
+  )
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
