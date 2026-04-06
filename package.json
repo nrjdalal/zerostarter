@@ -46,6 +46,8 @@
     "lint-staged": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "sharp": "catalog:",
+    "svgo": "catalog:",
     "turbo": "catalog:"
   },
   "commitlint": {
@@ -124,8 +126,10 @@
     "react-resizable-panels": "4.9.0",
     "recharts": "3.8.1",
     "shadcn": "^4.1.2",
+    "sharp": "^0.34.5",
     "shiki": "^4.0.2",
     "sonner": "^2.0.7",
+    "svgo": "^4.0.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2",
     "tsdown": "^0.21.7",
