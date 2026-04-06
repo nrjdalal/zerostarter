@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "fumadocs-mdx && next build",
+    "build": "bun ../../.github/scripts/compress-images.ts && fumadocs-mdx && next build",
     "check-types": "tsc --noEmit",
     "dev": "next dev",
     "start": "bun .next/standalone/web/next/server.js"
