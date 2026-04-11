@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  serverExternalPackages: ["@takumi-rs/image-response"],
+  serverExternalPackages: ["takumi-js"],
 }
 
 const withMDX = createMDX()
