@@ -7,6 +7,7 @@ RUN bunx turbo prune @api/hono --docker
 
 FROM base AS builder
 COPY .env* ./
+COPY --from=prepare /app/.github/scripts .github/scripts
 COPY --from=prepare /app/out/json/ .
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY --from=prepare /app/out/full/ .
