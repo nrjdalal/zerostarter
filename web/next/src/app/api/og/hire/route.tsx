@@ -1,3 +1,4 @@
+import "@/lib/polyfill-promise-with-resolvers"
 import { ImageResponse } from "@takumi-rs/image-response"
 
 export const dynamic = "force-static"

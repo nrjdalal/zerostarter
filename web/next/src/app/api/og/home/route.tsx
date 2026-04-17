@@ -1,3 +1,4 @@
+import "@/lib/polyfill-promise-with-resolvers"
 import { ImageResponse } from "@takumi-rs/image-response"
 
 import { config } from "@/lib/config"
