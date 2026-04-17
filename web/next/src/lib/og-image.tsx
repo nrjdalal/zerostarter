@@ -1,4 +1,3 @@
-import "@/lib/polyfill-promise-with-resolvers"
 import { notFound } from "next/navigation"
 import { ImageResponse } from "takumi-js/response"
 
