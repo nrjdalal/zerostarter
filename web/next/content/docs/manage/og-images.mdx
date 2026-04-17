@@ -5,7 +5,7 @@ description: Dynamic Open Graph image generation for social media previews.
 
 ## Overview
 
-ZeroStarter generates dynamic Open Graph images for social media previews using [@takumi-rs/image-response](https://github.com/vercel/og-image). Each page type has its own OG image route.
+ZeroStarter generates dynamic Open Graph images for social media previews using [takumi-js](https://takumi.kane.tw). Each page type has its own OG image route.
 
 ## Endpoints
 
@@ -27,24 +27,40 @@ The shared utility at `web/next/src/lib/og-image.tsx` creates consistent images 
 - Section label (e.g., "Documentation", "Blog")
 - App name branding
 
+`ImageResponse` is imported from `takumi-js/response`, and `takumi-js` is listed in `serverExternalPackages` in `next.config.ts` so the native/WASM renderer loads at runtime.
+
 ## Customizing
 
-To add OG images for a new section:
+To add OG images for a new content source, create a route at `web/next/src/app/api/og/<section>/[[...slug]]/route.tsx` that forwards to the shared helper:
 
-1. Create a route at `web/next/src/app/api/og/your-section/route.tsx`
-2. Use the `generateOgImage()` utility:
-
-```ts
+```tsx
+import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
+import { yourSource } from "@/lib/source"
 
-export async function GET() {
-  return generateOgImage({
-    title: "Page Title",
-    description: "Page description",
-    section: "Section Name",
+export const dynamic = "force-static"
+
+export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
+  const { slug } = await params
+
+  return generateOgImage(slug, {
+    source: yourSource,
+    sectionName: "Your Section",
+    defaultTitle: `${config.app.name} - Your Section`,
+    defaultDescription: `Your default description`,
   })
 }
+
+export function generateStaticParams() {
+  return yourSource.generateParams().map((params) => ({
+    slug: params.slug ?? [],
+  }))
+}
 ```
+
+For a one-off route (no source), use `ImageResponse` directly — see `web/next/src/app/api/og/home/route.tsx` and `/hire/route.tsx` as references.
+
+> **Note:** `takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
 
 ## Metadata Integration
 
