@@ -1,4 +1,4 @@
 {
-  "*": ["oxfmt --no-error-on-unmatched-pattern", "oxlint"],
+  "*": ["oxfmt --no-error-on-unmatched-pattern", "oxlint --no-error-on-unmatched-pattern"],
   "package.json": ["bun .github/scripts/deps-manager.ts"]
 }
