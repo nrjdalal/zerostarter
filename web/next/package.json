@@ -16,7 +16,6 @@
     "@packages/env": "workspace:*",
     "@posthog/react": "catalog:",
     "@remixicon/react": "catalog:",
-    "@takumi-rs/image-response": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
@@ -43,6 +42,7 @@
     "shiki": "catalog:",
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
+    "takumi-js": "catalog:",
     "vaul": "catalog:",
     "zod": "catalog:"
   },
