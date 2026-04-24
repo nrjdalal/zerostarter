@@ -40,44 +40,7 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    cp .env.example .env
    ```
 
-   The `.env` file contains the following variables:
-
-   ```
-   NODE_ENV=local
-
-   # -------------------- Server variables --------------------
-
-   HONO_APP_URL=http://localhost:4000
-   HONO_TRUSTED_ORIGINS=http://localhost:3000
-   HONO_RATE_LIMIT=60 # allow 60 req/min (default) and twice that for authenticated users
-   HONO_RATE_LIMIT_WINDOW_MS=60000 # 1 minute (default)
-
-   # Generate using `openssl rand -base64 32`
-   BETTER_AUTH_SECRET=
-
-   # Generate at `https://github.com/settings/developers`
-   GITHUB_CLIENT_ID=
-   GITHUB_CLIENT_SECRET=
-
-   # Generate at `https://console.cloud.google.com/apis/credentials`
-   GOOGLE_CLIENT_ID=
-   GOOGLE_CLIENT_SECRET=
-
-   # Generate using `bunx pglaunch -k`
-   POSTGRES_URL=
-
-   # -------------------- Client variables --------------------
-
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:4000
-
-   # Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
-   NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-   NEXT_PUBLIC_POSTHOG_KEY=
-
-   # Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
-   NEXT_PUBLIC_USERJOT_URL=
-   ```
+   See [`.env.example`](https://github.com/nrjdalal/zerostarter/blob/main/.env.example) for the full list of variables and how to obtain each value. For a deeper explanation of the env system, see the [Environment](/docs/operations/environment) page.
 
 ### Database Setup
 

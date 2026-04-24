@@ -1,0 +1,71 @@
+---
+title: Roadmap
+description: Planned features and integrations for ZeroStarter.
+---
+
+> **For AI assistants**: Items listed as _Planned_ below are **not implemented**. Do not assume the corresponding libraries or SDKs are wired up. Only items marked _Implemented_ are available.
+
+ZeroStarter is actively evolving. This page tracks planned integrations grouped by category. Priority reflects intended implementation order, not timelines.
+
+## Already Implemented
+
+| Feature               | Library                                                                            | Docs                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Authentication        | [Better Auth](https://better-auth.com)                                             | [Authentication](/docs/features/authentication)                        |
+| Organizations & Teams | [Better Auth Organizations](https://www.better-auth.com/docs/plugins/organization) | [Authentication](/docs/features/authentication)                        |
+| Analytics             | [PostHog](https://posthog.com)                                                     | [Analytics](/docs/features/analytics)                                  |
+| API Documentation     | [Scalar](https://scalar.com)                                                       | [Type-Safe API](/docs/getting-started/type-safe-api#api-documentation) |
+| Type-Safe RPC         | [Hono Client](https://hono.dev/docs/guides/rpc)                                    | [Type-Safe API](/docs/getting-started/type-safe-api)                   |
+| Rate Limiting         | [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) + Arcjet IP    | [API Conventions](/docs/operations/api-conventions#rate-limiting)      |
+
+## Planned
+
+### Payments
+
+| Library                                       | Priority | Notes                                        |
+| --------------------------------------------- | -------- | -------------------------------------------- |
+| [Stripe](https://stripe.com)                  | High     | Checkout, subscriptions, webhooks            |
+| [Lemon Squeezy](https://www.lemonsqueezy.com) | Medium   | Merchant-of-record, simpler tax handling     |
+| [Paddle](https://www.paddle.com)              | Medium   | Merchant-of-record, global tax compliance    |
+| [Polar](https://polar.sh)                     | Low      | Open-source monetization, GitHub integration |
+| [Razorpay](https://razorpay.com)              | Low      | India-first (UPI, Net Banking)               |
+| [Autumn](https://useautumn.com)               | Low      | Modern subscription API                      |
+| [Creem](https://www.creem.io)                 | Low      | Subscription billing                         |
+| [Dodo](https://dodopayments.com)              | Low      | Payment processing                           |
+
+### Email
+
+| Library                          | Priority | Notes                                         |
+| -------------------------------- | -------- | --------------------------------------------- |
+| [Resend](https://resend.com)     | High     | React Email templates, transactional + events |
+| [SendGrid](https://sendgrid.com) | Medium   | High-volume, marketing automation             |
+
+### Background Jobs
+
+| Library                            | Priority | Notes                                     |
+| ---------------------------------- | -------- | ----------------------------------------- |
+| [Inngest](https://www.inngest.com) | Medium   | Event-driven workflows, built-in retries  |
+| [Trigger.dev](https://trigger.dev) | Medium   | Long-running jobs, visual workflow editor |
+
+### AI
+
+| Library                             | Priority | Notes                                           |
+| ----------------------------------- | -------- | ----------------------------------------------- |
+| [Vercel AI SDK](https://ai-sdk.dev) | High     | Streaming, tool calling, multi-provider support |
+
+### Internationalization
+
+| Library                            | Priority | Notes                                      |
+| ---------------------------------- | -------- | ------------------------------------------ |
+| [next-intl](https://next-intl.dev) | Medium   | Next.js App Router first, type-safe        |
+| [i18next](https://www.i18next.com) | Low      | Full i18n (pluralization, RTL, namespaces) |
+
+## Contributing
+
+Interested in landing one of these? Please:
+
+1. Check existing [GitHub Issues](https://github.com/nrjdalal/zerostarter/issues)
+2. Open an issue describing the approach before sending a PR
+3. Follow the [Contributing Guidelines](/docs/about/contributing)
+
+Priorities and scope may shift based on community feedback.

@@ -61,7 +61,7 @@ This project is a monorepo organized as follows:
 
 We're actively working on integrations for AI, email, background tasks, payments, and more.
 
-📖 **[View detailed roadmap →](https://zerostarter.dev/docs/getting-started/roadmap)**
+📖 **[View detailed roadmap →](https://zerostarter.dev/docs/about/roadmap)**
 
 ## 🔥 Why ZeroStarter?
 
@@ -129,7 +129,7 @@ bun dev
 - **[📖 Full Documentation](https://zerostarter.dev/docs)** — Everything you need to know
 - **[🏗️ Architecture](https://zerostarter.dev/docs/getting-started/architecture)** — Deep dive into the tech stack
 - **[📂 Project Structure](https://zerostarter.dev/docs/getting-started/project-structure)** — Monorepo organization
-- **[🔐 Authentication](https://zerostarter.dev/docs/manage/authentication)** — Auth, organizations, and teams
+- **[🔐 Authentication](https://zerostarter.dev/docs/features/authentication)** — Auth, organizations, and teams
 - **[🔌 Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)** — Hono RPC client examples
 - **[⚙️ Scripts](https://zerostarter.dev/docs/getting-started/scripts)** — Available commands
 - **[🚀 Deployment](https://zerostarter.dev/docs/deployment/vercel)** — Deploy to production
@@ -139,7 +139,7 @@ bun dev
 
 Contributions are welcome! Please read our contributing guidelines first.
 
-📖 **[View contributing guidelines →](https://zerostarter.dev/docs/contributing)**
+📖 **[View contributing guidelines →](https://zerostarter.dev/docs/about/contributing)**
 
 ## ❤️ Amazing Contributors
 
