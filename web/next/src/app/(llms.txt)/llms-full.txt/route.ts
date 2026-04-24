@@ -1,19 +1,16 @@
-import blogMeta from "@/../content/blog/meta.json"
-import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
-import { sortByMeta } from "@/lib/sort-by-meta"
+import { sortByPageTree } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
 
 export async function GET() {
   const pages = [
-    ...sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs"),
-    ...sortByMeta(
+    ...sortByPageTree(docsSource.getPages(), docsSource.pageTree),
+    ...sortByPageTree(
       blogSource.getPages().filter((p) => p.url !== "/blog"),
-      blogMeta.pages,
-      "/blog",
+      blogSource.pageTree,
     ),
   ]
 

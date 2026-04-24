@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation"
 
-import blogMeta from "@/../content/blog/meta.json"
-import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
-import { sortByMeta } from "@/lib/sort-by-meta"
+import { sortByPageTree } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
@@ -34,7 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   const { slug } = await params
 
   if (!slug || slug.length === 0) {
-    const docsPages = sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs")
+    const docsPages = sortByPageTree(docsSource.getPages(), docsSource.pageTree)
     const docsIndex = docsPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
       .join("\n")
@@ -72,10 +70,9 @@ ${docsIndex}
   const source = isBlog ? blogSource : docsSource
 
   if (isBlog && slug.length === 1) {
-    const blogPages = sortByMeta(
+    const blogPages = sortByPageTree(
       blogSource.getPages().filter((p) => p.url !== "/blog"),
-      blogMeta.pages,
-      "/blog",
+      blogSource.pageTree,
     )
     const blogIndex = blogPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)

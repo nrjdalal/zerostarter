@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "add-env-var",
+    "add-database-table",
+    "add-protected-route",
+    "add-oauth-provider",
+    "add-docs-page",
+    "publish-blog-post"
+  ]
+}

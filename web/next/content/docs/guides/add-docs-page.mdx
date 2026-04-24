@@ -43,17 +43,25 @@ Opening paragraph explaining what and why.
 Edge cases, gotchas, and cross-links.
 ```
 
-## 2. Register in `meta.json`
+## 2. Register in the folder's `meta.json`
 
-Add the path (without `.mdx`) to `web/next/content/docs/meta.json`. **Order matters** — the array order is the sidebar order.
+Each folder has its own `meta.json` listing its pages. Add the new page's filename (without `.mdx`) to that folder's `pages` array. **Order matters** — the array order is the sidebar order.
 
 ```json
+// web/next/content/docs/guides/meta.json
 {
-  "pages": ["index", "getting-started/setup", "guides/add-protected-route", "guides/my-new-guide"]
+  "title": "Guides",
+  "pages": [
+    "add-env-var",
+    "add-database-table",
+    "add-protected-route",
+    "add-oauth-provider",
+    "my-new-guide"
+  ]
 }
 ```
 
-Pages not listed in `meta.json` will not appear in the sidebar.
+Pages not listed in `meta.json` will not appear in the sidebar. If you're adding a whole new section, also add the folder name to the root `web/next/content/docs/meta.json`.
 
 ## 3. Cross-link from related pages
 

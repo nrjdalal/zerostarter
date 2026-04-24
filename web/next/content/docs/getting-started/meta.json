@@ -1,0 +1,4 @@
+{
+  "title": "Getting Started",
+  "pages": ["setup", "architecture", "project-structure", "scripts", "type-safe-api"]
+}

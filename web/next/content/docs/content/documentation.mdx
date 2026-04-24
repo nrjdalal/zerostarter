@@ -15,10 +15,10 @@ Documentation is managed using [Fumadocs](https://fumadocs.vercel.app) and store
 
 ## Creating Documentation
 
-1. Create a new `.mdx` file in `web/next/content/docs/`
+1. Create a new `.mdx` file under the appropriate folder in `web/next/content/docs/`
 2. Add frontmatter with `title` and `description`
 3. Write content using MDX syntax
-4. Add entry to `web/next/content/docs/meta.json`
+4. Add the filename to the `pages` array in that folder's `meta.json`
 
 ## Configuration
 
@@ -30,49 +30,41 @@ export const docs = defineDocs({
 })
 ```
 
-Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+Navigation is driven by **a `meta.json` in each folder**. The root `meta.json` lists top-level sections; each folder's `meta.json` lists the pages inside it. The array order is the sidebar order — a page absent from `meta.json` won't appear in the sidebar.
+
+**Root `web/next/content/docs/meta.json`** — section order:
 
 ```json
 {
   "pages": [
     "index",
-    "getting-started/setup",
-    "getting-started/architecture",
-    "getting-started/project-structure",
-    "getting-started/scripts",
-    "getting-started/type-safe-api",
-    "guides/add-env-var",
-    "guides/add-database-table",
-    "guides/add-protected-route",
-    "guides/add-oauth-provider",
-    "guides/add-docs-page",
-    "guides/publish-blog-post",
-    "features/authentication",
-    "features/dashboard",
-    "features/database",
-    "features/analytics",
-    "features/blog",
-    "features/feedback",
-    "operations/environment",
-    "operations/api-conventions",
-    "operations/code-quality",
-    "operations/release",
-    "content/documentation",
-    "content/theming",
-    "content/og-images",
-    "content/llms-txt",
-    "content/robots",
-    "content/sitemap",
-    "deployment/vercel",
-    "deployment/docker",
-    "resources/ide-setup",
-    "resources/ai-skills",
-    "resources/infisical",
-    "about/roadmap",
-    "about/contributing"
+    "getting-started",
+    "guides",
+    "features",
+    "operations",
+    "content",
+    "deployment",
+    "resources",
+    "about"
   ]
 }
 ```
+
+**Per-folder `meta.json`** — page order inside a section:
+
+```json
+// web/next/content/docs/getting-started/meta.json
+{
+  "title": "Getting Started",
+  "pages": ["setup", "architecture", "project-structure", "scripts", "type-safe-api"]
+}
+```
+
+The `title` field controls the sidebar section label. Page names are the MDX filenames without the extension.
+
+### llms.txt ordering
+
+`/llms.txt` and `/llms-full.txt` derive their page order from the Fumadocs page tree via `sortByPageTree` (`web/next/src/lib/sort-by-meta.ts`). That means the sidebar, the docs landing page, and llms.txt output all follow the same order — update the `meta.json` files and everything stays in sync.
 
 ## Search
 
