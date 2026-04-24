@@ -1,6 +1,5 @@
-import "@/lib/polyfill-promise-with-resolvers"
-import { ImageResponse } from "@takumi-rs/image-response"
 import { notFound } from "next/navigation"
+import { ImageResponse } from "takumi-js/response"
 
 import { config } from "@/lib/config"
 import type { blogSource, docsSource } from "@/lib/source"
