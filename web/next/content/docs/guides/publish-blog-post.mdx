@@ -1,0 +1,51 @@
+---
+title: Publish a Blog Post
+description: Add a new blog post to the Fumadocs-powered blog.
+---
+
+Blog posts live in `web/next/content/blog/` and are rendered by Fumadocs. Order and visibility are controlled by `meta.json`.
+
+## 1. Create the MDX file
+
+Add `web/next/content/blog/my-post-slug.mdx`. The slug becomes the URL path (`/blog/my-post-slug`).
+
+```mdx
+---
+title: "My post title"
+description: "Short summary shown in listings, OG tags, and llms.txt."
+---
+
+Opening hook.
+
+## Section heading
+
+Regular MDX content — paragraphs, code blocks, components, etc.
+```
+
+## 2. Register in `meta.json`
+
+Add the slug to `web/next/content/blog/meta.json`. **Order matters** — the array order is the navigation order.
+
+```json
+{
+  "pages": ["index", "my-post-slug", "web-development-2026"]
+}
+```
+
+Posts not listed here will not appear in navigation.
+
+## 3. Preview locally
+
+```bash
+bun dev
+```
+
+Visit [http://localhost:3000/blog/my-post-slug](http://localhost:3000/blog/my-post-slug).
+
+## What's automatic
+
+- **OG image** — generated at `/api/og/blog/my-post-slug` from the frontmatter title + description.
+- **llms.txt entry** — the post appears in `/llms.txt`, `/blog.md`, and `/blog/my-post-slug.md` with no extra wiring.
+- **Sitemap** — auto-indexed via Fumadocs' page source.
+
+See [Blog](/docs/features/blog) and [Documentation](/docs/content/documentation) for Fumadocs configuration details.

@@ -1,0 +1,69 @@
+---
+title: Add an OAuth Provider
+description: Wire up a new social login provider with Better Auth.
+---
+
+ZeroStarter ships with GitHub and Google providers preconfigured. This guide walks through adding another one (e.g. Discord, Microsoft, Apple) — the shape is identical for any Better Auth-supported provider.
+
+## 1. Create OAuth credentials with the provider
+
+Register an application with the provider and copy the client ID and secret. Configure the redirect URI to:
+
+```
+{HONO_APP_URL}/api/auth/callback/{provider}
+```
+
+For local development: `http://localhost:4000/api/auth/callback/{provider}`.
+
+## 2. Add the credentials to your env
+
+Add the variables to `.env` and `.env.example`:
+
+```
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+```
+
+## 3. Declare them in the auth env schema
+
+Add the variables to the `server` schema in `packages/env/src/auth.ts`:
+
+```ts
+DISCORD_CLIENT_ID: z.string(),
+DISCORD_CLIENT_SECRET: z.string(),
+```
+
+Add matching entries to `runtimeEnv`. Also add the variable names to `globalEnv` in `turbo.json` so Turbo invalidates cache when they change.
+
+## 4. Wire the provider into Better Auth
+
+In `packages/auth/src/index.ts`:
+
+```ts
+socialProviders: {
+  github: {
+    clientId: env.GITHUB_CLIENT_ID,
+    clientSecret: env.GITHUB_CLIENT_SECRET,
+  },
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+  },
+  discord: {
+    clientId: env.DISCORD_CLIENT_ID,
+    clientSecret: env.DISCORD_CLIENT_SECRET,
+  },
+},
+```
+
+## 5. Add a sign-in button
+
+Trigger the flow from the client:
+
+```ts
+import { authClient } from "@/lib/auth/client"
+
+await authClient.signIn.social({ provider: "discord", callbackURL: "/dashboard" })
+```
+
+See [Authentication](/docs/features/authentication) for session handling and protected-route patterns.

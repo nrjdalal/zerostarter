@@ -1,0 +1,66 @@
+---
+title: Add a Protected Route
+description: Create a new authenticated API route, exposed via the type-safe Hono client.
+---
+
+## 1. Define the route
+
+Add or extend a router in `api/hono/src/routers/`. Protected routes mount under the shared `authMiddleware`.
+
+```ts
+import { Hono } from "hono"
+import { describeRoute, resolver } from "hono-openapi"
+import { z } from "zod"
+import { authMiddleware } from "@/middlewares"
+
+export const v1Router = new Hono().use("/*", authMiddleware).get(
+  "/items",
+  describeRoute({
+    tags: ["Items"],
+    description: "List items",
+    responses: {
+      200: {
+        description: "OK",
+        content: {
+          "application/json": {
+            schema: resolver(z.object({ data: z.array(z.object({ id: z.string() })) })),
+          },
+        },
+      },
+    },
+  }),
+  (c) => {
+    const user = c.get("user")
+    return c.json({ data: [] })
+  },
+)
+```
+
+## 2. Register on the app (only for new routers)
+
+If this is a new router, mount it in `api/hono/src/index.ts`:
+
+```ts
+.route("/api/v1", v1Router)
+```
+
+Existing routers (like `v1Router`) are already mounted — new handlers on them need no extra wiring.
+
+## 3. Call it from the frontend
+
+The route is automatically typed end-to-end via Hono RPC:
+
+```ts
+import { apiClient } from "@/lib/api/client"
+
+const res = await apiClient.v1.items.$get()
+const { data } = await res.json()
+```
+
+## Notes
+
+- Every protected route receives `session` and `user` on the Hono context — use `c.get("user")` to access the caller.
+- Authenticated routes get **2×** the configured rate limit automatically.
+- Routes decorated with `describeRoute` appear in the Scalar API docs at `/api/docs`.
+
+See [API Conventions](/docs/operations/api-conventions) for response envelope, error codes, and middleware details, and [Type-Safe API](/docs/getting-started/type-safe-api) for the RPC client.

@@ -1,0 +1,67 @@
+---
+title: Add an Environment Variable
+description: Register a new env var with type-safe validation across the monorepo.
+---
+
+Environment variables are validated per-package with `@t3-oss/env-core` + Zod. A new variable needs to be declared in the package(s) that actually use it.
+
+## 1. Add to `.env` and `.env.example`
+
+Always add to both — `.env.example` is the contract for new contributors.
+
+```
+STRIPE_SECRET_KEY=
+```
+
+## 2. Declare in the package env schema
+
+Pick the right file in `packages/env/src/`:
+
+| File          | Used by     |
+| ------------- | ----------- |
+| `api-hono.ts` | Hono API    |
+| `auth.ts`     | Better Auth |
+| `db.ts`       | Drizzle     |
+| `web-next.ts` | Next.js web |
+
+Add the variable to `server` (server-only) or `client` (exposed to browser — must be `NEXT_PUBLIC_*`), plus a matching entry in `runtimeEnv`:
+
+```ts
+// packages/env/src/api-hono.ts
+export const env = createEnv({
+  server: {
+    NODE_ENV,
+    // ...existing vars
+    STRIPE_SECRET_KEY: z.string().min(1),
+  },
+  runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
+    // ...existing vars
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  },
+})
+```
+
+## 3. Add to `turbo.json`
+
+Include the variable in the `globalEnv` array so Turbo invalidates cached builds when it changes.
+
+## 4. Use it
+
+Import from the package-specific entry point:
+
+```ts
+import { env } from "@packages/env/api-hono"
+
+stripe.charges.create({ amount: 1000 }, { apiKey: env.STRIPE_SECRET_KEY })
+```
+
+Runtime validation fires on first access — a missing or invalid value throws a clear error with the variable name.
+
+## Server vs client rules
+
+- Server variables are **never** available in the browser bundle.
+- Only variables prefixed with `NEXT_PUBLIC_` are exposed to the client.
+- Prefixing a secret with `NEXT_PUBLIC_` will leak it — don't.
+
+See [Environment](/docs/operations/environment) for the full system overview.

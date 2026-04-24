@@ -1,0 +1,69 @@
+---
+title: Add a Documentation Page
+description: Add a new page to the docs site and make it show up in the sidebar.
+---
+
+Docs pages live in `web/next/content/docs/` and are rendered by Fumadocs. The sidebar is driven by `meta.json`.
+
+## 1. Create the MDX file
+
+Pick a folder that matches the page's audience:
+
+| Folder             | Use for                                                           |
+| ------------------ | ----------------------------------------------------------------- |
+| `getting-started/` | Onboarding, architecture overview, setup                          |
+| `guides/`          | Task-shaped recipes ("how to add X")                              |
+| `features/`        | Product feature reference (auth, DB, analytics, dashboard, …)     |
+| `operations/`      | Infra/convention reference (env, code quality, API conventions)   |
+| `content/`         | Content & SEO plumbing (docs, blog, OG, robots, sitemap, theming) |
+| `deployment/`      | Hosting-specific deployment walkthroughs                          |
+| `resources/`       | Third-party tools, IDE setup, skills                              |
+| `about/`           | Roadmap, contributing, meta-project docs                          |
+
+Example — `web/next/content/docs/guides/my-new-guide.mdx`:
+
+```mdx
+---
+title: My new guide
+description: Short, concrete description (shown in listings, OG tags, and llms.txt).
+---
+
+## Overview
+
+Opening paragraph explaining what and why.
+
+## Steps
+
+1. First step with a code block.
+2. Second step.
+3. Third step.
+
+## Notes
+
+Edge cases, gotchas, and cross-links.
+```
+
+## 2. Register in `meta.json`
+
+Add the path (without `.mdx`) to `web/next/content/docs/meta.json`. **Order matters** — the array order is the sidebar order.
+
+```json
+{
+  "pages": ["index", "getting-started/setup", "guides/add-protected-route", "guides/my-new-guide"]
+}
+```
+
+Pages not listed in `meta.json` will not appear in the sidebar.
+
+## 3. Cross-link from related pages
+
+Drive readers to the new page from the relevant reference doc or the landing page at `web/next/content/docs/index.mdx`.
+
+## What's automatic
+
+- **OG image** — generated at `/api/og/docs/<slug>` from the frontmatter title + description.
+- **Search** — Fumadocs' Orama index picks up the page automatically.
+- **llms.txt entry** — served at `/docs.md`, `/docs/<slug>.md`, and `/llms.txt`.
+- **Sitemap** — auto-indexed via Fumadocs' page source.
+
+See [Documentation](/docs/content/documentation) for the Fumadocs config and search details.

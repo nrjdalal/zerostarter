@@ -6,9 +6,6 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 - **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
 - **🐦 X**: Follow **[@nrjdalal](https://twitter.com/nrjdalal)** for updates and don't forget to star the repository!
 
-> [!IMPORTANT]
-> ZeroStarter is currently in **Release Candidate (RC)** status. All implemented features are stable and production-ready. We're actively adding new features and integrations day-by-day.
-
 ## ⚙️ Architecture and Tech Stack
 
 > [!NOTE]

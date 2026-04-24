@@ -1,0 +1,74 @@
+---
+title: Add a Database Table
+description: Define a new table with Drizzle, generate a migration, and apply it.
+---
+
+## 1. Define the schema
+
+Create or edit a file in `packages/db/src/schema/`. Foreign keys should use `CASCADE` on delete to match existing conventions.
+
+```ts
+// packages/db/src/schema/project.ts
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { organization } from "./auth"
+
+export const project = pgTable("project", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+```
+
+## 2. Export the table
+
+Add the schema to `packages/db/src/schema/index.ts`:
+
+```ts
+export * from "./project"
+```
+
+## 3. Generate the migration
+
+```bash
+bun run db:generate
+```
+
+This creates a new SQL file in `packages/db/drizzle/`. **Review it before applying** — Drizzle's diff is usually correct but not always what you want.
+
+## 4. Apply the migration
+
+```bash
+bun run db:migrate
+```
+
+## 5. Query the table
+
+`db` picks up the new table automatically via the schema export:
+
+```ts
+import { db } from "@packages/db"
+
+const rows = await db.query.project.findMany({
+  where: (p, { eq }) => eq(p.organizationId, orgId),
+})
+```
+
+## Adding relations
+
+For type-safe joins, declare the relation alongside the table:
+
+```ts
+import { relations } from "drizzle-orm"
+
+export const projectRelations = relations(project, ({ one }) => ({
+  organization: one(organization, {
+    fields: [project.organizationId],
+    references: [organization.id],
+  }),
+}))
+```
+
+See [Database](/docs/features/database) for connection pooling, existing tables, and Drizzle Studio.
