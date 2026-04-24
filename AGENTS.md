@@ -1,62 +1,26 @@
 # AGENTS.md
 
-Guidance for humans and AI coding agents working in this repo.
+Guidance for humans and AI coding agents working in this repo. `CLAUDE.md` is a symlink to this file, so edits apply to both.
 
 ## Documentation
 
-Canonical docs live in Fumadocs at `web/next/content/docs/**`. They are published with AI-friendly endpoints — **fetch these before making non-trivial changes**:
+Canonical docs live in Fumadocs at `web/next/content/docs/**`. They publish with AI-friendly endpoints — **fetch these before making non-trivial changes**. Replace `<site>` with the value of `NEXT_PUBLIC_APP_URL` (this project: `https://zerostarter.dev`; forks: whatever you deploy to):
 
-- **Index:** <https://zerostarter.dev/llms.txt>
-- **Full docs, one page:** <https://zerostarter.dev/llms-full.txt>
+- **Index:** `<site>/llms.txt`
+- **Full docs, one page:** `<site>/llms-full.txt`
 - **Any page as plain text:** append `.md` or `.txt` to a docs URL (e.g. `/docs/manage/database.md`).
 
-Locally the same endpoints are served by `bun dev` at `NEXT_PUBLIC_APP_URL` (route: `web/next/src/app/(llms.txt)/`). If you can't reach the hosted site and dev isn't running, read the MDX directly under `web/next/content/docs/`.
+Locally the same endpoints are served by `bun dev` at `NEXT_PUBLIC_APP_URL` (route: `web/next/src/app/(llms.txt)/`). If you can't reach the site and dev isn't running, read the MDX directly under `web/next/content/docs/`.
 
-### Where to look (by intent)
+### Where to look (by section)
 
-**Orient yourself**
-
-- `/docs` — landing page and doc map
-- `/docs/getting-started/project-structure` — what lives where
-- `/docs/getting-started/architecture` — tech stack and data flow
-- `/docs/getting-started/setup` — local bootstrap
-- `/docs/getting-started/scripts` — every `bun run <x>` explained
-- `/docs/getting-started/roadmap` — what's planned
-
-**Build features**
-
-- `/docs/getting-started/type-safe-api` — Hono RPC client used from `web/next`
-- `/docs/manage/api-conventions` — response shape, error shape, OpenAPI metadata for new routes
-- `/docs/manage/authentication` — better-auth wiring, protected routes, sessions
-- `/docs/manage/database` — drizzle schema + migration workflow
-- `/docs/manage/environment` — `@packages/env` per-surface entrypoints
-- `/docs/manage/dashboard` — auth-gated app surface in `web/next`
-- `/docs/manage/theming` — tokens and tailwind conventions
-- `/docs/manage/feedback` — userjot integration
-- `/docs/manage/analytics` — PostHog
-
-**Publish content**
-
-- `/docs/manage/documentation` — how this Fumadocs site is authored
-- `/docs/manage/blog` — blog MDX pipeline
-- `/docs/manage/og-images` — takumi-js OG route patterns
-- `/docs/manage/sitemap` — auto-generated sitemap
-- `/docs/manage/robots` — crawler rules
-- `/docs/manage/llms-txt` — AI-friendly docs endpoint
-
-**Ship & maintain**
-
-- `/docs/manage/code-quality` — oxlint, oxfmt, typecheck, lefthook
-- `/docs/manage/release` — changelog + versioning workflow
-- `/docs/deployment/vercel` — Vercel config (`web/next/vercel.json`, `api/hono/vercel.json`)
-- `/docs/deployment/docker` — Dockerfile + compose flow
+- `/docs/getting-started/**` — project structure, architecture, setup, scripts, roadmap, type-safe API
+- `/docs/manage/**` — every runtime concern (auth, DB, env, API conventions, analytics, theming, sitemap, robots, llms-txt, OG images, feedback, release, code-quality, docs, blog, dashboard)
+- `/docs/deployment/**` — Vercel, Docker
+- `/docs/resources/**` — IDE setup, AI skills, Infisical
 - `/docs/contributing` — contribution rules
 
-**Tooling context**
-
-- `/docs/resources/ide-setup` — recommended editor config
-- `/docs/resources/ai-skills` — how custom skills fit in
-- `/docs/resources/infisical` — secret management
+Fetch `<site>/llms.txt` for the current, fine-grained page list — it stays in sync with the site automatically.
 
 ## House rules
 

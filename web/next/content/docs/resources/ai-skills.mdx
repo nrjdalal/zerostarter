@@ -15,18 +15,9 @@ A single physical tree serves every runtime: `.agents/skills/` is the source of 
 
 **Location:** `.agents/skills/docs/SKILL.md`
 
-The one skill this template needs to keep on its own: a workflow guide for reading the Fumadocs site (`web/next/content/docs/**`) and keeping every sync-point coherent when pages or features change.
+The one skill this template needs to keep on its own. It teaches agents how to read the Fumadocs site (`web/next/content/docs/**`) and, when pages or features change, how to keep every manual sync-point coherent — `meta.json`, the sidebar config in `web/next/src/lib/config.ts`, the `index.mdx` Quick Links, and downstream references like the README.
 
-**Triggers:** whenever an agent needs to learn how something in this template works, and whenever it adds / removes / renames / reorders a doc page or ships a feature whose behavior is described in docs.
-
-**What it enforces:**
-
-- **Reading:** use the `<site>/llms.txt`, `<site>/llms-full.txt`, and `.md`-suffix endpoints served from `web/next/src/app/(llms.txt)/**` instead of re-deriving behavior from source.
-- **Tier 1 sync (manual, silently breaks):** `web/next/content/docs/meta.json`, the `config.sidebar` tree in `web/next/src/lib/config.ts`, and the Quick Links in `web/next/content/docs/index.mdx` (plus blog equivalents).
-- **Tier 2 (auto, depends on Tier 1):** `llms.txt` / `llms-full.txt` routes, sitemap, OG, search.
-- **Tier 3 (only on path / title changes):** root `README.md` links, `web/next/next.config.ts` rewrites, `web/next/source.config.ts`, and this page.
-- **MDX rules:** required `title` / `description` frontmatter, fumadocs-mdx components, absolute `/docs/<slug>` cross-links.
-- **Checklists** for adding / renaming / deleting pages and for changing feature behavior.
+Load it any time an agent needs to learn how something in this template works, or is about to add / remove / rename / reorder a doc or blog page. The full checklists, tier model, and failure modes live inside the skill itself — read it there rather than duplicating it here.
 
 ## Adding more skills
 
@@ -65,24 +56,4 @@ The `name` must match the directory name. The `description` is the single most i
 
 ## Integration with AI tools
 
-Skills are discovered via the `.agents/skills/` / `.claude/skills` conventions each runtime supports. Reference the directory and the shipped skills from the project's root `AGENTS.md` so agents pick them up on first read:
-
-```markdown
-## Skills
-
-Custom skills live in `.agents/skills/`. Shipped:
-
-- `docs` — how to read and keep the Fumadocs site in sync when pages or features change.
-```
-
-### Cursor
-
-Skills in `.agents/skills/` are available to Cursor when referenced from `AGENTS.md`.
-
-### GitHub Copilot
-
-Copilot can reference skills when you mention them in comments or prompts.
-
-### Custom AI assistants
-
-The structured format makes skills easy to parse programmatically.
+Skills are picked up automatically by runtimes that read the `.agents/skills/` / `.claude/skills` conventions (Claude Code, Cursor, Copilot, and compatible tools). Reference them from the project's root `AGENTS.md` so the first agent that loads the repo finds them on first hop.

@@ -9,7 +9,7 @@ The canonical documentation for this template is the Fumadocs site under `web/ne
 
 ---
 
-## Part 1 — How to read the docs
+## Reading
 
 Always prefer the Fumadocs site over re-deriving behavior from source.
 
@@ -40,7 +40,7 @@ Read MDX directly:
 
 ---
 
-## Part 2 — How to keep the docs in sync
+## Syncing
 
 **Rule:** if you change behavior that's described in a doc page, update the doc page in the same change. If you add / remove / rename / reorder a page, update every touchpoint below.
 
@@ -58,7 +58,7 @@ These are hand-maintained. Miss one and the page silently disappears from nav or
    - Groups with a flat list of pages use `items: [{ title, url }]`.
    - Groups split into sub-sections (like "Manage") use `collapsible: true` + `categories: { <SubSection>: [{ title, url }] }`.
    - `url` must match `/docs/<slug>` exactly.
-   - Add on new page, remove on delete, move on rename. This is the primary nav source of truth — missing entries = missing links in prod.
+   - Add on new page, remove on delete, move on rename. This is the rendered sidebar's source of truth — missing entries = missing links in prod. (`meta.json` is independently load-bearing for `llms.txt`, OG static params, and sidebar fallback, so both files must be correct for different surfaces.)
 
 3. **`web/next/content/docs/index.mdx` → "Quick Links"** (for docs pages)
    **`web/next/content/blog/index.mdx` → "Recent Posts"** (for blog pages)
@@ -86,7 +86,7 @@ You don't touch these, but verify they still work:
 
 ---
 
-## Part 3 — MDX authoring rules
+## Authoring
 
 Every doc page must have:
 
@@ -98,12 +98,12 @@ description: <One-sentence summary. Used in metadata, OG images, search.>
 ```
 
 - `title` and `description` are consumed by: the sidebar label fallback, the OG image generator (`/api/og/docs/...`), the search index (Orama), and the LLM markdown output.
-- Use fumadocs-mdx components (`<Callout>`, `<Steps>`, `<Tabs>`, etc.) — they're already wired in.
+- fumadocs-mdx components (`<Callout>`, `<Steps>`, `<Tabs>`, etc.) are available if you need them — most existing pages are plain Markdown.
 - Links between pages use `/docs/<slug>` (not relative `.mdx` paths).
 
 ---
 
-## Part 4 — Checklists
+## Checklists
 
 ### Adding a new doc page
 
@@ -113,6 +113,16 @@ description: <One-sentence summary. Used in metadata, OG images, search.>
 4. Add a line in `web/next/content/docs/index.mdx` under the correct subsection.
 5. If it's a feature users will discover from the README, also add it to the README feature list or doc links.
 6. Run `bun dev` and open `/docs/<section>/<slug>`, plus click to it from the sidebar and from `/docs`. Hit `/llms.txt` and verify the slug is listed.
+
+### Adding a new blog post
+
+Blog is symmetric to docs but simpler — **no sidebar config to update** (the sidebar is docs-only).
+
+1. Create `web/next/content/blog/<slug>.mdx` with `title` + `description` frontmatter.
+2. Add `"<slug>"` to `web/next/content/blog/meta.json` at the correct position.
+3. Add a line in `web/next/content/blog/index.mdx` under "Recent Posts".
+4. If it's a launch-worthy post, add a link in the root `README.md`.
+5. Run `bun dev`, hit `/blog/<slug>` and `/blog.md`, and confirm the slug appears in `/llms.txt`.
 
 ### Renaming or moving a page
 
