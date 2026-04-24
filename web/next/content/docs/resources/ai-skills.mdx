@@ -1,189 +1,88 @@
 ---
 title: AI Skills
-description: Pre-defined skills for AI assistants and LLM agents to help with common tasks.
+description: How this template ships and authors skills for AI coding assistants.
 ---
 
 ## Overview
 
-ZeroStarter includes a `.agents/skills` directory containing structured instructions for AI assistants and LLM agents. These skills help AI tools like Cursor, GitHub Copilot, and other AI coding assistants perform common tasks correctly and consistently.
+ZeroStarter ships a `.agents/skills/` directory of structured instructions for AI coding assistants (Claude Code, Cursor, Copilot, and any other runtime that reads the emerging `AGENTS.md` / `SKILL.md` conventions). Each skill is a markdown file with YAML frontmatter — human-readable and machine-parseable.
 
-Skills are written in Markdown with frontmatter metadata, making them both human-readable and machine-parseable.
+A single physical tree serves every runtime: `.agents/skills/` is the source of truth, and `.claude/skills` + `.github/skills` are symlinks into it.
 
-## Available Skills
+## Shipped skills
 
-### Git Commit
+### `docs`
 
-**Location**: `.agents/skills/git/commit/SKILL.md`
+**Location:** `.agents/skills/docs/SKILL.md`
 
-Creates atomic commits with conventional commit message format.
+The one skill this template needs to keep on its own: a workflow guide for reading the Fumadocs site (`web/next/content/docs/**`) and keeping every sync-point coherent when pages or features change.
 
-**Triggers**: When user asks to "commit", "save changes", or "create a commit"
+**Triggers:** whenever an agent needs to learn how something in this template works, and whenever it adds / removes / renames / reorders a doc page or ships a feature whose behavior is described in docs.
 
-**Workflow**:
+**What it enforces:**
 
-1. **Inspect Changes**: Review both staged and unstaged changes
-2. **Stage Changes**: Stage related changes together (one logical unit per commit)
-3. **Commit**: Create commit with conventional message format
-4. **Push (Optional)**: Only push if user explicitly requests it
+- **Reading:** use the `<site>/llms.txt`, `<site>/llms-full.txt`, and `.md`-suffix endpoints served from `web/next/src/app/(llms.txt)/**` instead of re-deriving behavior from source.
+- **Tier 1 sync (manual, silently breaks):** `web/next/content/docs/meta.json`, the `config.sidebar` tree in `web/next/src/lib/config.ts`, and the Quick Links in `web/next/content/docs/index.mdx` (plus blog equivalents).
+- **Tier 2 (auto, depends on Tier 1):** `llms.txt` / `llms-full.txt` routes, sitemap, OG, search.
+- **Tier 3 (only on path / title changes):** root `README.md` links, `web/next/next.config.ts` rewrites, `web/next/source.config.ts`, and this page.
+- **MDX rules:** required `title` / `description` frontmatter, fumadocs-mdx components, absolute `/docs/<slug>` cross-links.
+- **Checklists** for adding / renaming / deleting pages and for changing feature behavior.
 
-**Default Behavior**: The skill stages and commits changes but does **not** push automatically. This prevents accidental pushes to remote branches and gives users control over when changes are shared.
+## Adding more skills
 
-**Push Confirmation**: To push after committing, the user must explicitly request it (e.g., "commit and push", "push the changes", or respond affirmatively when asked). If the user only asks to "commit" or "save changes", the skill stops after creating the commit.
+The template intentionally ships with just the `docs` skill. Reach for a new skill only when you notice yourself repeating the **same multi-step instructions** to an agent across sessions — if the answer is "read the docs", put it in the docs instead.
 
-**Message Format**:
-
-```
-<type>(<scope>): <subject>
-
-<body>
-```
-
-| Element     | Description                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| **Type**    | `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`, `ci` |
-| **Scope**   | Optional area in parentheses (package, component, feature name)           |
-| **Subject** | Imperative mood, lowercase, no period, ≤80 chars                          |
-| **Body**    | Optional; explain "why" not "what"; wrap at 80 chars                      |
-
-**Examples**:
-
-```
-feat(auth): add OAuth provider support
-fix(api): prevent duplicate webhook delivery
-refactor(web): extract auth middleware into separate module
-docs(readme): update installation steps
-chore(deps): bump dependencies to latest versions
-```
-
-### Turbo Build Graph
-
-**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md`
-
-Generates a styled SVG visualization of Turborepo task dependencies.
-
-**Triggers**: When user asks to "visualize dependencies", "generate build graph", or "update pipeline diagram"
-
-**Workflow**:
-
-1. **Generate Raw Graph**: `npx turbo run build --graph=graph.svg`
-2. **Clean Up Labels**: Remove prefixes and internal placeholders
-3. **Style for Dark Mode**: Apply transparent background and GitHub blue theme
-4. **Move to Public Assets**: Save to `web/next/public/graph-build.svg`
-
-**Output**: A dark-mode-friendly SVG that can be embedded in README:
-
-```markdown
-![Build Graph](/graph-build.svg)
-```
-
-## Skill Structure
-
-Each skill follows a standard structure:
+### Skill structure
 
 ```
 .agents/skills/
-└── <category>/
-    └── <skill-name>/
-        └── SKILL.md
+└── <skill-name>/
+    └── SKILL.md
 ```
 
-### SKILL.md Format
+### SKILL.md format
 
-````markdown
+```markdown
 ---
 name: skill-name
-description: Brief description of what the skill does and when to use it.
+description: One sentence. What it does AND when the agent should load it. Runtimes match on this to decide when to inject the skill.
 ---
 
 # Skill Title
 
-Description of the skill.
-
-## Workflow
-
-### 1. First Step
-
-```bash
-command to run
-```
-````
-
-- Notes about this step
-- Important considerations
-
-### 2. Second Step
-
-...
-
-````
-
-## Creating Custom Skills
-
-To create a new skill:
-
-1. Create a directory: `.agents/skills/<category>/<skill-name>/`
-2. Add a `SKILL.md` file with:
-   - Frontmatter with `name` and `description`
-   - Clear workflow steps
-   - Code examples with commands
-   - Notes and edge cases
-
-**Example Custom Skill**:
-
-```markdown
----
-name: db-migration
-description: Creates and runs database migrations. Use when user asks to update database schema.
----
-
-# Database Migration
-
-Creates type-safe database migrations with Drizzle.
-
-## Workflow
-
-### 1. Create Migration
-
-```bash
-bun run db:generate
-````
-
-### 2. Review Migration
-
-Check the generated SQL in `packages/db/drizzle/`
-
-### 3. Apply Migration
-
-```bash
-bun run db:migrate
+Body with the actual procedure, rules, checklists, and failure modes.
 ```
 
-````
+The `name` must match the directory name. The `description` is the single most important field — runtimes show it to the model as the trigger hint, so make it specific.
 
-## Integration with AI Tools
+### Authoring rules
 
-### Cursor
+- **Keep skills focused.** One concern per skill.
+- **Encode non-obvious invariants.** Skills earn their slot when they capture "you must do X or Y breaks silently". Rewrapping a single command isn't a skill — it's a script.
+- **Prefer project scripts over raw commands.** If the workflow is `bun run <x>`, reference the script rather than the raw invocation so the skill survives script changes.
+- **Include failure modes.** List the ways the workflow silently breaks; agents use these as a checklist.
+- **Update docs, not the skill, for product knowledge.** Skills describe _how to work_ with the template; Fumadocs describes _what the template does_.
 
-Skills in `.agents/skills/` are automatically available to Cursor's AI assistant when referenced in `AGENTS.md`:
+## Integration with AI tools
+
+Skills are discovered via the `.agents/skills/` / `.claude/skills` conventions each runtime supports. Reference the directory and the shipped skills from the project's root `AGENTS.md` so agents pick them up on first read:
 
 ```markdown
 ## Skills
 
-This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.
-````
+Custom skills live in `.agents/skills/`. Shipped:
+
+- `docs` — how to read and keep the Fumadocs site in sync when pages or features change.
+```
+
+### Cursor
+
+Skills in `.agents/skills/` are available to Cursor when referenced from `AGENTS.md`.
 
 ### GitHub Copilot
 
 Copilot can reference skills when you mention them in comments or prompts.
 
-### Custom AI Assistants
+### Custom AI assistants
 
-The structured format makes skills easy to parse programmatically for custom AI integrations.
-
-## Best Practices
-
-- **Keep skills focused**: One task per skill
-- **Include examples**: Show expected inputs and outputs
-- **Document edge cases**: Handle errors and special situations
-- **Use standard commands**: Prefer project scripts over raw commands
-- **Version control**: Skills evolve with the project
+The structured format makes skills easy to parse programmatically.
