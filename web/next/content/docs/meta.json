@@ -28,10 +28,10 @@
     "content/llms-txt",
     "content/robots",
     "content/sitemap",
-    "deployment/docker",
     "deployment/vercel",
-    "resources/ai-skills",
+    "deployment/docker",
     "resources/ide-setup",
+    "resources/ai-skills",
     "resources/infisical",
     "about/roadmap",
     "about/contributing"
