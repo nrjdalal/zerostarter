@@ -10,7 +10,7 @@ import {
   user,
   verification,
 } from "@packages/db"
-import { emulateOAuthConfig, EMULATE_PROVIDER_ID } from "@packages/emulate"
+import { emulateAccountLinking, emulateOAuthConfig } from "@packages/emulate"
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
@@ -64,14 +64,7 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  ...(isLocal(env.NODE_ENV) && {
-    account: {
-      accountLinking: {
-        enabled: true,
-        trustedProviders: ["github", "google", EMULATE_PROVIDER_ID],
-      },
-    },
-  }),
+  ...(isLocal(env.NODE_ENV) && emulateAccountLinking()),
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {

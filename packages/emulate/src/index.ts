@@ -11,8 +11,17 @@ type AuthLike = {
   }
 }
 
-export const EMULATE_PROVIDER_ID = "github-emulate"
+const EMULATE_PROVIDER_ID = "github-emulate"
 const EMULATE_GITHUB = "http://localhost:4001"
+
+export const emulateAccountLinking = () => ({
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["github", "google", EMULATE_PROVIDER_ID],
+    },
+  },
+})
 
 export const emulateOAuthConfig = (creds: {
   clientId: string
@@ -50,13 +59,13 @@ export const createAgentsRouter = (auth: { api: unknown }) =>
       const fail = (message: string) =>
         c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
       // genericOAuth plugin endpoints aren't surfaced on the base Auth type
-      const api = auth.api as AuthLike["api"]
+      const { signInWithOAuth2, oAuth2Callback } = auth.api as AuthLike["api"]
 
       const userLogin =
         c.req.query("user") ?? (await c.req.json().catch(() => ({}))).user ?? "agent"
       const APP_URL = env.HONO_TRUSTED_ORIGINS[0]
 
-      const init = await api.signInWithOAuth2({
+      const init = await signInWithOAuth2({
         body: { providerId: EMULATE_PROVIDER_ID, callbackURL: `${APP_URL}/dashboard` },
         asResponse: true,
       })
@@ -85,7 +94,7 @@ export const createAgentsRouter = (auth: { api: unknown }) =>
       const code = new URL(callback).searchParams.get("code")
       if (!code) return fail("emulator did not return a code")
 
-      const cb = await api.oAuth2Callback({
+      const cb = await oAuth2Callback({
         query: { code, state },
         params: { providerId: EMULATE_PROVIDER_ID },
         headers: new Headers({ cookie: stateCookie }),
