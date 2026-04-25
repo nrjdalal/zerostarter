@@ -51,6 +51,7 @@ dist/
 *.local.json
 !.env*
 .npmrc
+cookies.txt
 
 # docker overrides
 .env.example
