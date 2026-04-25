@@ -39,7 +39,7 @@ export const emulateOAuthConfig = (creds: {
         authorizationUrl: `${EMULATE_GITHUB}/login/oauth/authorize`,
         tokenUrl: `${EMULATE_GITHUB}/login/oauth/access_token`,
         userInfoUrl: `${EMULATE_GITHUB}/user`,
-        scopes: ["user", "repo"],
+        scopes: ["read:user", "user:email"],
         pkce: false,
         mapProfileToUser: (p) => ({
           name: p.name ?? p.login,
@@ -89,7 +89,7 @@ export const createAgentsRouter = (auth: AuthLike) =>
         body: new URLSearchParams({
           login: userLogin,
           redirect_uri: redirectUri,
-          scope: "user repo",
+          scope: "read:user user:email",
           state,
           client_id: clientId,
         }),
