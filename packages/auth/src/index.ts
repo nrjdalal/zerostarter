@@ -64,7 +64,7 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  ...(isLocal(env.NODE_ENV) && emulateAccountLinking()),
+  ...(isLocal(env.NODE_ENV) ? emulateAccountLinking() : {}),
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {

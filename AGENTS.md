@@ -9,7 +9,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Logging in (agents)
 
-In local dev there is a one-shot dev sign-in route. Agents (no browser) hit it directly; humans get a "Login as $USER (dev)" button at the top of the auth dialog.
+In local dev there is a one-shot dev sign-in route. Agents (no browser) hit it directly; humans get a "Login (agents)" button at the top of the auth dialog.
 
 ```bash
 bun dev                                                              # boots stack

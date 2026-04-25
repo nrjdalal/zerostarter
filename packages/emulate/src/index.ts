@@ -4,7 +4,8 @@ import type { BetterAuthPlugin } from "better-auth"
 import { genericOAuth } from "better-auth/plugins"
 import { Hono } from "hono"
 
-type AuthLike = {
+// genericOAuth plugin endpoints aren't surfaced on the base Auth type — narrow to what we use
+export type AuthLike = {
   api: {
     signInWithOAuth2: (a: unknown) => Promise<Response>
     oAuth2Callback: (a: unknown) => Promise<Response>
@@ -47,10 +48,11 @@ export const emulateOAuthConfig = (creds: {
     ],
   })
 
-export const createAgentsRouter = (auth: { api: unknown }) =>
+export const createAgentsRouter = (auth: AuthLike) =>
   new Hono()
     .use(async (c, next) => {
-      if (!isLocal(env.NODE_ENV)) {
+      // belt-and-suspenders: explicit prod block + positive isLocal check
+      if (env.NODE_ENV === "production" || !isLocal(env.NODE_ENV)) {
         return c.json({ error: { code: "FORBIDDEN", message: "Forbidden" } }, 403)
       }
       return next()
@@ -58,8 +60,7 @@ export const createAgentsRouter = (auth: { api: unknown }) =>
     .post("/sign-in-as", async (c) => {
       const fail = (message: string) =>
         c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
-      // genericOAuth plugin endpoints aren't surfaced on the base Auth type
-      const { signInWithOAuth2, oAuth2Callback } = auth.api as AuthLike["api"]
+      const { signInWithOAuth2, oAuth2Callback } = auth.api
 
       const userLogin = c.req.query("user") ?? "agent"
       const APP_URL = env.HONO_TRUSTED_ORIGINS[0]
@@ -75,7 +76,11 @@ export const createAgentsRouter = (auth: { api: unknown }) =>
       const clientId = params.get("client_id")
       const redirectUri = params.get("redirect_uri")
       if (!state || !clientId || !redirectUri) return fail("malformed authorize url")
-      const stateCookie = (init.headers.get("set-cookie") ?? "").split(";")[0]
+      // headers.get("set-cookie") collapses multiple cookies in some runtimes; use getSetCookie()
+      const stateCookie = init.headers
+        .getSetCookie()
+        .map((s) => s.split(";")[0])
+        .join("; ")
 
       const pick = await fetch(`${EMULATE_GITHUB}/login/oauth/callback`, {
         method: "POST",
