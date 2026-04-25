@@ -1,5 +1,5 @@
 github:
   users:
-    - login: agent
-      email: agent@local.host
-      name: agent
+    - login: AgentZero
+      email: agent@zerostarter.dev
+      name: AgentZero

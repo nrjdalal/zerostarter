@@ -62,7 +62,7 @@ export const createAgentsRouter = (auth: AuthLike) =>
         c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
       const { signInWithOAuth2, oAuth2Callback } = auth.api
 
-      const userLogin = c.req.query("user") ?? "agent"
+      const userLogin = c.req.query("user") ?? "AgentZero"
       const APP_URL = env.HONO_TRUSTED_ORIGINS[0]
 
       const init = await signInWithOAuth2({
