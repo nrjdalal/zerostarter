@@ -44,7 +44,9 @@ export const auth = betterAuth({
   },
   plugins: [
     openAPIPlugin(),
-    organizationPlugin({ teams: { enabled: true } }),
+    organizationPlugin({
+      teams: { enabled: true },
+    }),
     ...(isLocal(env.NODE_ENV)
       ? [
           emulateOAuthConfig({
