@@ -61,8 +61,7 @@ export const createAgentsRouter = (auth: { api: unknown }) =>
       // genericOAuth plugin endpoints aren't surfaced on the base Auth type
       const { signInWithOAuth2, oAuth2Callback } = auth.api as AuthLike["api"]
 
-      const userLogin =
-        c.req.query("user") ?? (await c.req.json().catch(() => ({}))).user ?? "agent"
+      const userLogin = c.req.query("user") ?? "agent"
       const APP_URL = env.HONO_TRUSTED_ORIGINS[0]
 
       const init = await signInWithOAuth2({
