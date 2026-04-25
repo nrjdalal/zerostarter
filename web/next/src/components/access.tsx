@@ -28,7 +28,8 @@ export function Access() {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
-  // only `next dev` (the actual `next` binary inlines NODE_ENV; deployments build with NODE_ENV=production)
+  // Next inlines NODE_ENV at build time: "development" only under `next dev`,
+  // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
 
   useEffect(() => {
