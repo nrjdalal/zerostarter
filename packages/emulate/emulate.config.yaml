@@ -3,7 +3,3 @@ github:
     - login: agent
       email: agent@local.host
       name: agent
-google:
-  users:
-    - email: agent@local.host
-      name: agent

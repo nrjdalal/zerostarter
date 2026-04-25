@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "emulate --service github,google --port 4001 --seed seed.yaml"
+    "dev": "emulate --service github --port 4001"
   },
   "dependencies": {
     "@packages/env": "workspace:*",
