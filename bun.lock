@@ -28,6 +28,7 @@
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
         "@packages/auth": "workspace:*",
+        "@packages/emulate": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
         "hono": "catalog:",
@@ -49,6 +50,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@packages/db": "workspace:*",
+        "@packages/emulate": "workspace:*",
         "@packages/env": "workspace:*",
         "better-auth": "catalog:",
       },
@@ -73,6 +75,23 @@
         "@types/node": "catalog:",
         "drizzle-kit": "catalog:",
         "postgres": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/emulate": {
+      "name": "@packages/emulate",
+      "version": "0.0.1",
+      "dependencies": {
+        "@packages/env": "workspace:*",
+        "better-auth": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@packages/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "emulate": "^0.4.1",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -713,6 +732,8 @@
 
     "@packages/db": ["@packages/db@workspace:packages/db"],
 
+    "@packages/emulate": ["@packages/emulate@workspace:packages/emulate"],
+
     "@packages/env": ["@packages/env@workspace:packages/env"],
 
     "@packages/tsconfig": ["@packages/tsconfig@workspace:packages/tsconfig"],
@@ -1326,6 +1347,8 @@
     "emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 
     "empathic": ["empathic@2.0.0", "", {}, "sha512-i6UzDscO/XfAcNYD75CfICkmfLedpyPDdozrLMmQc5ORaQcdMoc21OnlEylMIqI7U8eniKrPMxxtj8k0vhmJhA=="],
+
+    "emulate": ["emulate@0.4.1", "", { "dependencies": { "@hono/node-server": "^1", "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-96CEZB96M7fC5na1lFl9sL7AS5d2lRgJkZVb/e8ufbLMLLxEy2oHhN4E9d7+eJbtABne/CeumSRX2j7A9UDlEQ=="],
 
     "encodeurl": ["encodeurl@2.0.0", "", {}, "sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg=="],
 

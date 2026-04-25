@@ -28,6 +28,7 @@ export function Access() {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
+  const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "local"
 
   useEffect(() => {
     setLoader(null)
@@ -129,6 +130,13 @@ export function Access() {
             </span>
           </div>
           <div className="grid gap-4">
+            {isLocal && (
+              <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
+                <Button type="submit" variant="default" className="w-full cursor-pointer">
+                  Login (agents)
+                </Button>
+              </form>
+            )}
             <Button
               variant="outline"
               type="button"

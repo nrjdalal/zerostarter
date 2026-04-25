@@ -1,3 +1,4 @@
+import { agentsRouter } from "@packages/emulate"
 import { BUILD_VERSION } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
@@ -86,6 +87,7 @@ const { data } = await response.json()`,
       return c.json({ data })
     },
   )
+  .route("/agents", agentsRouter)
   .route("/auth", authRouter)
   .route("/v1", v1Router)
   .get(

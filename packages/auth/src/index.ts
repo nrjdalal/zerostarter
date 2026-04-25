@@ -10,6 +10,8 @@ import {
   user,
   verification,
 } from "@packages/db"
+import { emulateOAuthConfig, EMULATE_PROVIDER_ID } from "@packages/emulate"
+import { isLocal } from "@packages/env"
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
@@ -42,9 +44,15 @@ export const auth = betterAuth({
   },
   plugins: [
     openAPIPlugin(),
-    organizationPlugin({
-      teams: { enabled: true },
-    }),
+    organizationPlugin({ teams: { enabled: true } }),
+    ...(isLocal(env.NODE_ENV)
+      ? [
+          emulateOAuthConfig({
+            clientId: env.GITHUB_CLIENT_ID,
+            clientSecret: env.GITHUB_CLIENT_SECRET,
+          }),
+        ]
+      : []),
   ],
   socialProviders: {
     github: {
@@ -56,6 +64,14 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
+  ...(isLocal(env.NODE_ENV) && {
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ["github", "google", EMULATE_PROVIDER_ID],
+      },
+    },
+  }),
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {
