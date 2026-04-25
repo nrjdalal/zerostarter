@@ -1,3 +1,5 @@
+// Eject: `rm -rf packages/emulate` + drop the workspace dep + 3 import lines from
+// packages/auth/src/index.ts and api/hono/src/index.ts. See AGENTS.md for usage.
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import type { BetterAuthPlugin } from "better-auth"
