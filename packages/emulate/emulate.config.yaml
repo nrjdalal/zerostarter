@@ -1,4 +1,16 @@
+tokens:
+  AgentZero:
+    login: AgentZero
+    scopes: [read:user, user:email]
+
 github:
+  oauth_apps:
+    - client_id: emulate
+      client_secret: emulate
+      name: ZeroStarter (emulate)
+      redirect_uris:
+        - http://localhost:4000/api/auth/oauth2/callback/github-emulate
+
   users:
     - login: AgentZero
       email: agent@zerostarter.dev

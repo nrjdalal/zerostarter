@@ -47,14 +47,7 @@ export const auth = betterAuth({
     organizationPlugin({
       teams: { enabled: true },
     }),
-    ...(isLocal(env.NODE_ENV)
-      ? [
-          emulateOAuthConfig({
-            clientId: env.GITHUB_CLIENT_ID,
-            clientSecret: env.GITHUB_CLIENT_SECRET,
-          }),
-        ]
-      : []),
+    ...(isLocal(env.NODE_ENV) ? [emulateOAuthConfig()] : []),
   ],
   socialProviders: {
     github: {
@@ -66,7 +59,7 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  ...(isLocal(env.NODE_ENV) ? emulateAccountLinking() : {}),
+  ...(isLocal(env.NODE_ENV) ? emulateAccountLinking : {}),
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
     ...(cookieDomain && {
