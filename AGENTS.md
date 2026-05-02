@@ -9,12 +9,10 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Logging in (agents)
 
-The auth dialog has a one-click **Login (agents)** button (visible only under `next dev`). It signs you in as `AgentZero` (`agent@zerostarter.dev`).
-
-Headless agents (no browser) hit the same endpoint directly:
+Signs in as `AgentZero` (`agent@zerostarter.dev`). Dev UI: **Login (agents)** button. Headless needs `Origin` matching a trusted origin:
 
 ```bash
-curl -sS -c cookies.txt -X POST http://localhost:4000/api/agents/sign-in-as
+curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
 

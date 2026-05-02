@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "concurrently \"tsdown --watch\" \"emulate --service github --port 4001\""
+    "dev": "concurrently \"tsdown --watch\" \"emulate --service github --port 4567\""
   },
   "dependencies": {
     "@packages/env": "workspace:*",
