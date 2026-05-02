@@ -21,8 +21,6 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     INTERNAL_API_URL: process.env.INTERNAL_API_URL,
-    // Polyfills only apply when SKIP_ENV_VALIDATION=true; production deploys
-    // still hard-fail on missing values because the schema's z.url() runs.
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ??
       (process.env.SKIP_ENV_VALIDATION === "true" ? "https://polyfill.url" : undefined),
