@@ -30,7 +30,8 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev": "tsdown --watch"
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
