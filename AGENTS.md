@@ -4,8 +4,9 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Instructions
 
+- ALWAYS: Use `@/` for imports, if applicable.
+- NEVER: Include "Co-authored-by" in commit messages.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
-- Use `@/` for imports, if applicable.
 
 ## Logging in (agents)
 
