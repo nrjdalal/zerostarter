@@ -10,7 +10,8 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev": "tsdown --watch"
   },
   "dependencies": {
     "@packages/db": "workspace:*",

@@ -91,6 +91,7 @@
         "@packages/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
+        "concurrently": "catalog:",
         "emulate": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

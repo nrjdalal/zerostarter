@@ -2,6 +2,7 @@
 // packages/auth/src/index.ts and api/hono/src/index.ts. See AGENTS.md.
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
+import type { BetterAuthPlugin } from "better-auth"
 import { genericOAuth } from "better-auth/plugins"
 import { Hono } from "hono"
 
@@ -14,11 +15,11 @@ const EMULATOR_URL = "http://localhost:4001"
 
 export const emulateAccountLinking = {
   account: {
-    accountLinking: { enabled: true, trustedProviders: ["github", "google", PROVIDER_ID] },
+    accountLinking: { enabled: true, trustedProviders: [PROVIDER_ID] },
   },
 }
 
-export const emulateOAuthConfig = () =>
+export const emulateOAuthConfig = (): BetterAuthPlugin =>
   genericOAuth({
     config: [
       {
