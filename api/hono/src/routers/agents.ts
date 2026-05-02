@@ -11,24 +11,37 @@ const AGENT_NAME = "AgentZero"
 export const agentsRouter = new Hono()
   .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
-    // Trusting Origin is safe only because the router middleware above gates this to local.
+    const fail = (message: string) =>
+      c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
+
     const origin = c.req.header("origin")
-    if (!origin) {
-      return c.json(
-        { error: { code: "AGENTS_LOGIN_FAILED", message: "missing Origin header" } },
-        500,
-      )
-    }
+    if (!origin) return fail("missing Origin header")
+    if (!env.HONO_TRUSTED_ORIGINS.includes(origin)) return fail("untrusted Origin")
+    const dashboardUrl = `${origin}/dashboard`
 
     const ctx = await auth.$context
     const existing = await ctx.internalAdapter.findUserByEmail(AGENT_EMAIL)
-    const user =
-      existing?.user ??
-      (await ctx.internalAdapter.createUser({
-        email: AGENT_EMAIL,
+
+    let user
+    if (existing) {
+      user = await ctx.internalAdapter.updateUserByEmail(AGENT_EMAIL, {
         name: AGENT_NAME,
         emailVerified: true,
-      }))
+      })
+    } else {
+      try {
+        user = await ctx.internalAdapter.createUser({
+          email: AGENT_EMAIL,
+          name: AGENT_NAME,
+          emailVerified: true,
+        })
+      } catch (err) {
+        console.error("POST /api/agents/sign-in-as createUser failed:", err)
+        const raced = await ctx.internalAdapter.findUserByEmail(AGENT_EMAIL)
+        if (!raced) return fail("user creation failed")
+        user = raced.user
+      }
+    }
 
     const session = await ctx.internalAdapter.createSession(user.id)
     const signed = `${session.token}.${await makeSignature(session.token, ctx.secret)}`
@@ -41,5 +54,5 @@ export const agentsRouter = new Hono()
       sameSite: attributes.sameSite ?? "Lax",
       domain: attributes.domain,
     })
-    return c.redirect(`${origin}/dashboard`, 302)
+    return c.redirect(dashboardUrl, 302)
   })

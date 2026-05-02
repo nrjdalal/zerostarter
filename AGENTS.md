@@ -9,14 +9,14 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Logging in (agents)
 
-Signs in as `AgentZero` (`agent@zerostarter.dev`). Dev UI: **Login (agents)** button. Headless via curl:
+Signs in as `AgentZero` (`agent@zerostarter.dev`). Click **Login (agents)** in the dev UI, or use curl:
 
 ```bash
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
 
-`api/hono/src/routers/agents.ts` mints the session directly via better-auth's internal adapter. Gated to local NODE_ENV; the `Origin` header is used only to derive the redirect target.
+Local-only and requires a trusted `Origin` header. See `api/hono/src/routers/agents.ts` if needed.
 
 ## Skills
 
