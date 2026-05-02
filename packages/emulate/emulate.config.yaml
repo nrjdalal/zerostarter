@@ -1,8 +1,3 @@
-tokens:
-  AgentZero:
-    login: AgentZero
-    scopes: [read:user, user:email]
-
 github:
   oauth_apps:
     - client_id: emulate

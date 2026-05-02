@@ -43,6 +43,8 @@ export const createAgentsRouter = (auth: AuthLike) =>
   new Hono()
     .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
     .post("/sign-in-as", async (c) => {
+      const fail = (message: string) =>
+        c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
       const dashboardUrl = `${env.HONO_TRUSTED_ORIGINS[0]}/dashboard`
 
       const authorize = await auth.api.signInWithOAuth2({
@@ -63,10 +65,15 @@ export const createAgentsRouter = (auth: AuthLike) =>
         body: pickerForm,
         redirect: "manual",
       })
-      const callbackParams = new URL(pickerResponse.headers.get("location")!).searchParams
+      const location = pickerResponse.headers.get("location")
+      if (!location) return fail("emulator picker did not redirect")
+      const callbackParams = new URL(location).searchParams
+      const code = callbackParams.get("code")
+      const state = callbackParams.get("state")
+      if (!code || !state) return fail("emulator did not return code/state")
 
       const session = await auth.api.oAuth2Callback({
-        query: { code: callbackParams.get("code")!, state: callbackParams.get("state")! },
+        query: { code, state },
         params: { providerId: PROVIDER_ID },
         headers: new Headers({ cookie: stateCookie }),
         asResponse: true,
