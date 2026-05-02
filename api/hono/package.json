@@ -11,14 +11,13 @@
   "scripts": {
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "check-types": "tsc --noEmit",
-    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
+    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\" \"emulate --service github --port 4567\"",
     "start": "bun bundle/index.mjs"
   },
   "dependencies": {
     "@arcjet/ip": "catalog:",
     "@hono/standard-validator": "catalog:",
     "@packages/auth": "workspace:*",
-    "@packages/emulate": "workspace:*",
     "@packages/env": "workspace:*",
     "@scalar/hono-api-reference": "catalog:",
     "hono": "catalog:",
@@ -31,6 +30,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
+    "emulate": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

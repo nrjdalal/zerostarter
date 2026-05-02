@@ -16,6 +16,8 @@ curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localh
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
 
+Backed by a local `emulate` CLI (port 4567) configured via `api/hono/emulate.config.yaml`, started by `api/hono`'s dev script. Gated to local in both `packages/auth` and `api/hono/src/routers/agents.ts`.
+
 ## Skills
 
 This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.

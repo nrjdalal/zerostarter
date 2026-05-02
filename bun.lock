@@ -28,7 +28,6 @@
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
         "@packages/auth": "workspace:*",
-        "@packages/emulate": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
         "hono": "catalog:",
@@ -41,6 +40,7 @@
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "concurrently": "catalog:",
+        "emulate": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -50,7 +50,6 @@
       "version": "0.0.1",
       "dependencies": {
         "@packages/db": "workspace:*",
-        "@packages/emulate": "workspace:*",
         "@packages/env": "workspace:*",
         "better-auth": "catalog:",
       },
@@ -75,24 +74,6 @@
         "@types/node": "catalog:",
         "drizzle-kit": "catalog:",
         "postgres": "catalog:",
-        "tsdown": "catalog:",
-        "typescript": "catalog:",
-      },
-    },
-    "packages/emulate": {
-      "name": "@packages/emulate",
-      "version": "0.0.1",
-      "dependencies": {
-        "@packages/env": "workspace:*",
-        "better-auth": "catalog:",
-        "hono": "catalog:",
-      },
-      "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
-        "@types/bun": "catalog:",
-        "@types/node": "catalog:",
-        "concurrently": "catalog:",
-        "emulate": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -733,8 +714,6 @@
     "@packages/auth": ["@packages/auth@workspace:packages/auth"],
 
     "@packages/db": ["@packages/db@workspace:packages/db"],
-
-    "@packages/emulate": ["@packages/emulate@workspace:packages/emulate"],
 
     "@packages/env": ["@packages/env@workspace:packages/env"],
 
