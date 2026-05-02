@@ -28,6 +28,7 @@ export const agentsRouter = new Hono()
         name: AGENT_NAME,
         emailVerified: true,
       })
+      if (!user) return fail("user update failed")
     } else {
       try {
         user = await ctx.internalAdapter.createUser({

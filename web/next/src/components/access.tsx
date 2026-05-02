@@ -132,7 +132,7 @@ export function Access() {
           <div className="grid gap-4">
             {isDev && (
               <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
-                <Button type="submit" variant="default" className="w-full cursor-pointer">
+                <Button type="submit" variant="outline" className="w-full cursor-pointer">
                   Login (agents)
                 </Button>
               </form>
