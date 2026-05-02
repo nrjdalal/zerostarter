@@ -32,7 +32,5 @@ jobs:
           bun run lint
           bun run build
         env:
-          SKIP_ENV_VALIDATION: true
           NODE_ENV: production
-          NEXT_PUBLIC_APP_URL: https://polyfill.url
-          NEXT_PUBLIC_API_URL: https://polyfill.url
+          SKIP_ENV_VALIDATION: true
