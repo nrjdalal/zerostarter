@@ -7,11 +7,22 @@ import { genericOAuth } from "better-auth/plugins"
 import { Hono } from "hono"
 
 export type AuthLike = {
-  api: Record<"signInWithOAuth2" | "oAuth2Callback", (a: unknown) => Promise<Response>>
+  api: {
+    signInWithOAuth2: (input: {
+      body: { providerId: string; callbackURL: string }
+      asResponse: true
+    }) => Promise<Response>
+    oAuth2Callback: (input: {
+      query: { code: string; state: string }
+      params: { providerId: string }
+      headers: Headers
+      asResponse: true
+    }) => Promise<Response>
+  }
 }
 
 const PROVIDER_ID = "github-emulate"
-const EMULATOR_URL = "http://localhost:4001"
+const EMULATOR_URL = "http://localhost:4567"
 
 export const emulateAccountLinking = {
   account: {
@@ -45,7 +56,9 @@ export const createAgentsRouter = (auth: AuthLike) =>
     .post("/sign-in-as", async (c) => {
       const fail = (message: string) =>
         c.json({ error: { code: "AGENTS_LOGIN_FAILED", message } }, 500)
-      const dashboardUrl = `${env.HONO_TRUSTED_ORIGINS[0]}/dashboard`
+      const origin = c.req.header("origin")
+      if (!origin) return fail("missing Origin header")
+      const dashboardUrl = `${origin}/dashboard`
 
       const authorize = await auth.api.signInWithOAuth2({
         body: { providerId: PROVIDER_ID, callbackURL: dashboardUrl },
