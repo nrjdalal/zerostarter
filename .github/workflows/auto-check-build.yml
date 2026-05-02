@@ -32,5 +32,5 @@ jobs:
           bun run lint
           bun run build
         env:
-          SKIP_ENV_VALIDATION: true
           NODE_ENV: production
+          SKIP_ENV_VALIDATION: true
