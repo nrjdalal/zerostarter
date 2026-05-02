@@ -11,8 +11,14 @@ export const env = createEnv({
   },
   clientPrefix: "NEXT_PUBLIC_",
   client: {
-    NEXT_PUBLIC_APP_URL: z.url(),
-    NEXT_PUBLIC_API_URL: z.url(),
+    NEXT_PUBLIC_APP_URL:
+      process.env.SKIP_ENV_VALIDATION === "true"
+        ? z.url().default("https://polyfill.url")
+        : z.url(),
+    NEXT_PUBLIC_API_URL:
+      process.env.SKIP_ENV_VALIDATION === "true"
+        ? z.url().default("https://polyfill.url")
+        : z.url(),
     NEXT_PUBLIC_NODE_ENV: NODE_ENV,
     NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
