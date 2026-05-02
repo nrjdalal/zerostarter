@@ -30,6 +30,7 @@
         "@packages/auth": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
+        "better-auth": "catalog:",
         "hono": "catalog:",
         "hono-openapi": "catalog:",
         "hono-rate-limiter": "catalog:",
@@ -40,7 +41,6 @@
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "concurrently": "catalog:",
-        "emulate": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -1322,8 +1322,6 @@
     "emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 
     "empathic": ["empathic@2.0.0", "", {}, "sha512-i6UzDscO/XfAcNYD75CfICkmfLedpyPDdozrLMmQc5ORaQcdMoc21OnlEylMIqI7U8eniKrPMxxtj8k0vhmJhA=="],
-
-    "emulate": ["emulate@0.5.0", "", { "dependencies": { "@hono/node-server": "^1", "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-2LrOE8sqa1ITQ1aRR3kZhAhOCNz8hu+Kea9oBKdG/jEK6I/RYlMgHbsvQmbTTtr+nx6+fOOWkL6wqvfLeF5vuA=="],
 
     "encodeurl": ["encodeurl@2.0.0", "", {}, "sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg=="],
 

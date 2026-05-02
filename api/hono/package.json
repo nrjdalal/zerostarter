@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "check-types": "tsc --noEmit",
-    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\" \"emulate --service github --port 4567\"",
+    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
     "start": "bun bundle/index.mjs"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@packages/auth": "workspace:*",
     "@packages/env": "workspace:*",
     "@scalar/hono-api-reference": "catalog:",
+    "better-auth": "catalog:",
     "hono": "catalog:",
     "hono-openapi": "catalog:",
     "hono-rate-limiter": "catalog:",
@@ -30,7 +31,6 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",
-    "emulate": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }
