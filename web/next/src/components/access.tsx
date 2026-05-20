@@ -28,6 +28,9 @@ export function Access() {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
+  // Next inlines NODE_ENV at build time: "development" only under `next dev`,
+  // "production" for any `next build`. Auto-hides in deployments.
+  const isDev = process.env.NODE_ENV === "development"
 
   useEffect(() => {
     setLoader(null)
@@ -124,11 +127,16 @@ export function Access() {
             </Button>
           </form>
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-background text-muted-foreground relative z-10 px-2 text-xs">
-              OR
-            </span>
+            <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">OR</span>
           </div>
           <div className="grid gap-4">
+            {isDev && (
+              <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
+                <Button type="submit" variant="outline" className="w-full cursor-pointer">
+                  Login (agents)
+                </Button>
+              </form>
+            )}
             <Button
               variant="outline"
               type="button"

@@ -15,7 +15,7 @@ export const env = createEnv({
     HONO_APP_URL: z.url(),
     HONO_TRUSTED_ORIGINS: z
       .string()
-      .transform((s) => s.split(",").map((v) => v.trim()))
+      .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
       .pipe(z.array(z.url())),
   },
   runtimeEnv: {

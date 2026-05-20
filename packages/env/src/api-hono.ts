@@ -13,7 +13,7 @@ export const env = createEnv({
     HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
     HONO_TRUSTED_ORIGINS: z
       .string()
-      .transform((s) => s.split(",").map((v) => v.trim()))
+      .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
       .pipe(z.array(z.url())),
   },
   runtimeEnv: {
