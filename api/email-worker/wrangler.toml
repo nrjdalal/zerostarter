@@ -1,0 +1,10 @@
+name = "zerostarter-email-worker"
+main = "src/index.ts"
+compatibility_date = "2026-05-21"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DOMAIN = "nrjdalal.com"
+
+[[send_email]]
+name = "EMAIL"
