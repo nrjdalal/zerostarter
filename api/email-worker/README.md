@@ -27,7 +27,7 @@ bun run deploy
 ### 3. Send
 
 ```bash
-curl -X POST https://zerostarter-email-worker.nd941z.workers.dev/send \
+curl -X POST https://mailer.nd941z.workers.dev/send \
   -H "Authorization: Bearer $EMAIL_SENDING" \
   -H "Content-Type: application/json" \
   -d '{
