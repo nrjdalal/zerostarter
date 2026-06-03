@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs"
 import path from "path"
 
 import { Glob } from "bun"
@@ -9,6 +10,12 @@ const scriptDir = path.dirname(Bun.main)
 const publicDir = path.resolve(scriptDir, "../../web/next/public")
 const isCI = !!process.env.CI
 const CONCURRENCY = 8
+
+// public/ may be absent on fresh checkouts when emptied (git does not track empty dirs)
+if (!existsSync(publicDir)) {
+  console.log("compress-images: public dir not found, skipping")
+  process.exit(0)
+}
 
 const rasterGlob = new Glob("**/*.{png,jpg,jpeg,webp,avif}")
 const svgGlob = new Glob("**/*.svg")
