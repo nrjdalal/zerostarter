@@ -65,7 +65,7 @@ Generates a styled SVG visualization of Turborepo task dependencies.
 
 **Workflow**:
 
-1. **Generate Raw Graph**: `npx turbo run build --graph=graph.svg`
+1. **Generate Raw Graph**: `npx turbo run build --graph=graph.dot`, then render with Graphviz: `dot -Tsvg graph.dot -o graph.svg` (turbo 2.x renders `.svg` with its own rough built-in renderer, so emit DOT and use `dot`)
 2. **Clean Up Labels**: Remove prefixes and internal placeholders
 3. **Style for Dark Mode**: Apply transparent background and GitHub blue theme
 4. **Move to Public Assets**: Save to `web/next/public/graph-build.svg`
