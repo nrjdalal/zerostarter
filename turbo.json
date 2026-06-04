@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", ".source/**", "bundle/**", "dist/**"]
     },
+    "build:vercel": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "vercel-bundle/**"]
+    },
     "check-types": {
       "dependsOn": ["^build"]
     },
