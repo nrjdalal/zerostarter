@@ -49,7 +49,9 @@ dist/
 vercel-bundle/
 
 # custom files
-!.env.example
 .npmrc
 *.local.json
 cookies.txt
+
+# git overrides
+!.env.example

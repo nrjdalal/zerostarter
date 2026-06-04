@@ -49,10 +49,10 @@ dist/
 vercel-bundle/
 
 # custom files
-*.local.json
-!.env*
 .npmrc
+*.local.json
 cookies.txt
 
 # docker overrides
+!.env*
 .env.example
