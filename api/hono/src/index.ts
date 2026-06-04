@@ -1,4 +1,4 @@
-import { BUILD_VERSION } from "@packages/env"
+import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
@@ -10,6 +10,8 @@ import { z } from "zod"
 import { errorHandler } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router } from "@/routers"
+
+const BUILD_VERSION = getBuildVersion()
 
 const app = new Hono()
 
