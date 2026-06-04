@@ -9,6 +9,16 @@ export const VERSION = __VERSION__
 export const GIT_SHA = __GIT_SHA__
 export const BUILD_VERSION = __BUILD_VERSION__
 
+// Baked __GIT_SHA__ freezes at the last source-changing build under turbo cache
+// replays; prefer the platform's deploy-time sha when one exists (#428)
+export const getBuildVersion = (): string => {
+  const sha =
+    typeof process === "undefined"
+      ? ""
+      : (process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? process.env.GIT_SHA ?? "")
+  return sha ? `${VERSION}-${sha}` : BUILD_VERSION
+}
+
 export const NODE_ENV = z.enum(["local", "development", "test", "staging", "production"])
 
 export type NodeEnv = z.infer<typeof NODE_ENV>
