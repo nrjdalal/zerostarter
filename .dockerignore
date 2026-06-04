@@ -46,6 +46,7 @@ next-env.d.ts
 .turbo/
 bundle/
 dist/
+vercel-bundle/
 
 # custom files
 *.local.json
