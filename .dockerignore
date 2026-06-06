@@ -54,5 +54,4 @@ vercel-bundle/
 cookies.txt
 
 # docker overrides
-!.env*
-.env.example
+!.env.example

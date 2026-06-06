@@ -62,38 +62,40 @@ services:
 ### Backend (Hono API)
 
 ```bash
-docker build -f api/hono/Dockerfile -t zerostarter-api .
+docker build -f api/hono/Dockerfile --secret id=dotenv,src=.env -t zerostarter-api .
 docker run -p 4000:4000 --env-file .env zerostarter-api
 ```
 
 ### Frontend (Next.js)
 
 ```bash
-docker build -f web/next/Dockerfile -t zerostarter-web .
+docker build -f web/next/Dockerfile --secret id=dotenv,src=.env -t zerostarter-web .
 docker run -p 3000:3000 --env-file .env zerostarter-web
 ```
 
 ## Environment Variables
 
-Ensure your `.env` file contains all required variables before building:
+The `.env` file reaches builds only through a BuildKit secret mount: it is mounted for the build command alone, never copied into a layer, and real env files never enter the build context (`.dockerignore` excludes them). Compose wires the secret automatically; plain `docker build` passes `--secret id=dotenv,src=.env`. A missing `.env` fails the build immediately with a clear error.
 
+Env validation runs in full during the build and again at container boot. Do not set `SKIP_ENV_VALIDATION` in the Docker flow, and never at runtime in any deployment: skipping validation also skips zod defaults and transforms, so comma-list variables like `HONO_TRUSTED_ORIGINS` stay raw strings (CORS silently breaks) and defaulted ports go undefined. Scope that variable to CI builds that genuinely lack a `.env`.
+
+For smoke-testing a clean checkout, generate a dummy `.env` that passes validation instead of skipping it:
+
+```bash
+sed -e 's|^BETTER_AUTH_SECRET=$|BETTER_AUTH_SECRET=dummy|' \
+    -e 's|^GITHUB_CLIENT_ID=$|GITHUB_CLIENT_ID=dummy|' \
+    -e 's|^GITHUB_CLIENT_SECRET=$|GITHUB_CLIENT_SECRET=dummy|' \
+    -e 's|^GOOGLE_CLIENT_ID=$|GOOGLE_CLIENT_ID=dummy|' \
+    -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
+    -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
+    .env.example > .env
 ```
-NODE_ENV=production
 
-# Server variables
-HONO_APP_URL=http://localhost:4000
-HONO_TRUSTED_ORIGINS=http://localhost:3000
-BETTER_AUTH_SECRET=your_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-POSTGRES_URL=your_postgres_url
+Traps worth knowing:
 
-# Client variables
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
+- Dummy-built web images are for smoke tests only, never promote one to a deployment: Next.js inlines `NEXT_PUBLIC_*` values into the bundle at build time, so a dummy-built image carries dummy URLs permanently
+- Secret contents are not part of BuildKit's cache key: after editing `.env`, rebuild with `--no-cache` or a cached build can silently ship stale baked values
+- `docker run --env-file` does not strip inline comments (`HONO_RATE_LIMIT=60 # note` arrives as a NaN), while compose's `env_file` parser does
 
 ## Internal Communication
 
