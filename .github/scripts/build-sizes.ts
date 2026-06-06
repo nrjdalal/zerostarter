@@ -65,3 +65,17 @@ for (let i = 2; i < rows.length; i++) {
   console.log(fmtRow(rows[i]))
 }
 console.log(line("└", "┴", "┘"))
+
+const standaloneDir = "web/next/.next/standalone"
+const wasmGlob = new Glob("**/*.wasm")
+const wasmFiles: string[] = []
+for await (const entry of wasmGlob.scan({ cwd: standaloneDir, dot: true })) {
+  wasmFiles.push(entry)
+}
+if (wasmFiles.length > 0) {
+  console.error(
+    `\nwasm binaries leaked into standalone output (outputFileTracingExcludes in web/next/next.config.ts is no longer matching):`,
+  )
+  for (const file of wasmFiles) console.error(`  ${standaloneDir}/${file}`)
+  process.exit(1)
+}
