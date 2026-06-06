@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
   rewrites: async () => {
     return [
       {
-        source: "/api/:path*",
-        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        source: "/api/:path((?!og$|og/).*)",
+        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path`,
       },
       {
         source: "/api/search",
@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
     ]
   },
   serverExternalPackages: ["takumi-js"],
+  outputFileTracingExcludes: {
+    "*": ["**/@takumi-rs/wasm/**", "../../**/@takumi-rs/wasm/**"],
+  },
 }
 
 const withMDX = createMDX()

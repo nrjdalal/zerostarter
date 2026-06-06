@@ -2,7 +2,7 @@ import { ImageResponse } from "takumi-js/response"
 
 import { config } from "@/lib/config"
 
-export const dynamic = "force-static"
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const imageResponse = new ImageResponse(

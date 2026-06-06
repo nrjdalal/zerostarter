@@ -1,6 +1,6 @@
 import { ImageResponse } from "takumi-js/response"
 
-export const dynamic = "force-static"
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const imageResponse = new ImageResponse(
