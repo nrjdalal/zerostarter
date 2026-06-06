@@ -140,10 +140,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@fontsource-variable/caveat": "catalog:",
-        "@fontsource-variable/dm-sans": "catalog:",
-        "@fontsource-variable/jetbrains-mono": "catalog:",
-        "@fontsource-variable/newsreader": "catalog:",
         "@packages/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
@@ -175,10 +171,6 @@
     "@base-ui/react": "^1.5.0",
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
-    "@fontsource-variable/caveat": "^5.2.8",
-    "@fontsource-variable/dm-sans": "^5.2.8",
-    "@fontsource-variable/jetbrains-mono": "^5.2.8",
-    "@fontsource-variable/newsreader": "^5.2.10",
     "@hono/standard-validator": "^0.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@octokit/rest": "^22.0.1",
@@ -453,14 +445,6 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.8", "", { "dependencies": { "@floating-ui/dom": "^1.7.6" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-cC52bHwM/n/CxS87FH0yWdngEZrjdtLW/qVruo68qg+prK7ZQ4YGdut2GyDVpoGeAYe/h899rVeOVm6Oi40k2A=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
-
-    "@fontsource-variable/caveat": ["@fontsource-variable/caveat@5.2.8", "", {}, "sha512-Iv+G8xn0pKG7RtanBmYGMjIfkO819N13LXZBwmRVcgfJvJwKVom/v3KT9pwANXTSoUbPeRp228twRDK7hcabLw=="],
-
-    "@fontsource-variable/dm-sans": ["@fontsource-variable/dm-sans@5.2.8", "", {}, "sha512-AxkvMTvNWgfrmlyjiV05vlHYJa+nRQCf1EfvIrQAPBpFJW0O9VTz7oAFr9S3lvbWdmnFoBk7yFqQL86u64nl2g=="],
-
-    "@fontsource-variable/jetbrains-mono": ["@fontsource-variable/jetbrains-mono@5.2.8", "", {}, "sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q=="],
-
-    "@fontsource-variable/newsreader": ["@fontsource-variable/newsreader@5.2.10", "", {}, "sha512-MdI2iRwrqWpMOU/2aV2BgfZ4dJNlj/XlYaY8Zb7t87mWqHskYW0XiUANkt1cyOCiEfW2VQ0bQ5vZgGPp6B2B4w=="],
 
     "@fumadocs/tailwind": ["@fumadocs/tailwind@0.0.5", "", { "peerDependencies": { "@tailwindcss/oxide": "^4.0.0", "tailwindcss": "^4.0.0" }, "optionalPeers": ["@tailwindcss/oxide", "tailwindcss"] }, "sha512-ENKPWUDRmriccsrUDE4bDBq3FNr/ms3BP2rWlsAEMV1yP23pcCaan+ceGfeBUsAQjw7sj9Q3R4Kl3g/TCStPzQ=="],
 

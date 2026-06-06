@@ -6,6 +6,8 @@ import type { Metadata } from "next"
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/navbar/home"
 import { config } from "@/lib/config"
+import { caveat, dmSans, jetbrainsMono, newsreader } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
 
 import "@/app/globals.css"
 
@@ -54,8 +56,18 @@ export default function RootLayout({
 }>) {
   return (
     <OuterProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className="min-h-dvh antialiased">
+      <html
+        className={cn(
+          caveat.variable,
+          dmSans.variable,
+          jetbrainsMono.variable,
+          newsreader.variable,
+          "antialiased",
+        )}
+        lang="en"
+        suppressHydrationWarning
+      >
+        <body className="min-h-dvh">
           <InnerProvider>
             <Navbar />
             {children}

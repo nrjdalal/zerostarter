@@ -52,13 +52,11 @@ Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
 export default { plugins: { "@tailwindcss/postcss": {} } }
 ```
 
-The global CSS imports Tailwind, animations, and fonts:
+The global CSS imports Tailwind and animations; fonts are self-hosted via `next/font/local` (see `web/next/src/lib/fonts.ts`), with the theme's font roles chaining to the generated CSS variables:
 
 ```css
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource-variable/dm-sans";
-@import "@fontsource-variable/jetbrains-mono";
 ```
 
 ## Fonts
