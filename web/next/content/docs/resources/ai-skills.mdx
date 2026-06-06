@@ -11,9 +11,23 @@ Skills are written in Markdown with frontmatter metadata, making them both human
 
 ## Available Skills
 
+### Docker Test
+
+**Location**: `.agents/skills/docker-test/SKILL.md`
+
+Builds and smoke-tests the Docker images with `docker compose`.
+
+**Triggers**: When touching Dockerfiles, the bundle build, compose config, or anything that changes how containers are packaged
+
+**Workflow**:
+
+1. **Build and run**: `docker compose build --no-cache && docker compose up` (scope to one service while iterating)
+2. **Smoke-test**: Hit the health endpoints and check container logs
+3. **Self-containment check**: Verify the image runs offline (env is a runtime concern, never baked into layers)
+
 ### Git Commit
 
-**Location**: `.agents/skills/git/commit/SKILL.md`
+**Location**: `.agents/skills/gh-commit/SKILL.md`
 
 Creates atomic commits with conventional commit message format.
 
@@ -55,6 +69,16 @@ docs(readme): update installation steps
 chore(deps): bump dependencies to latest versions
 ```
 
+### Ignore Sync
+
+**Location**: `.agents/skills/ignore-sync/SKILL.md`
+
+Keeps `.dockerignore` in sync with `.gitignore`.
+
+**Triggers**: Whenever an entry is added to or removed from `.gitignore`, or when auditing why the Docker build context is bloated
+
+`.dockerignore` does not inherit from `.gitignore`: anything ignored by git but absent from `.dockerignore` still enters the Docker build context. Every `.gitignore` change is mirrored into `.dockerignore` in the same commit, same entry, same section. The one intentional divergence: `.dockerignore` excludes all env files (env is a runtime concern), keeping only `.env.example`.
+
 ### Turbo Build Graph
 
 **Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md`
@@ -82,9 +106,8 @@ Each skill follows a standard structure:
 
 ```
 .agents/skills/
-└── <category>/
-    └── <skill-name>/
-        └── SKILL.md
+└── <skill-name>/
+    └── SKILL.md
 ```
 
 ### SKILL.md Format
@@ -121,7 +144,7 @@ command to run
 
 To create a new skill:
 
-1. Create a directory: `.agents/skills/<category>/<skill-name>/`
+1. Create a directory: `.agents/skills/<skill-name>/`
 2. Add a `SKILL.md` file with:
    - Frontmatter with `name` and `description`
    - Clear workflow steps
