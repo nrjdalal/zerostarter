@@ -6,6 +6,12 @@ import type { blogSource, docsSource } from "@/lib/source"
 
 type Source = typeof blogSource | typeof docsSource
 
+interface RenderOgImageOptions {
+  sectionName?: string
+  title: string
+  description: string
+}
+
 interface OgImageOptions {
   source: Source
   sectionName: string
@@ -13,17 +19,9 @@ interface OgImageOptions {
   defaultDescription: string
 }
 
-export async function generateOgImage(
-  slug: string[] | undefined,
-  options: OgImageOptions,
-): Promise<ImageResponse> {
-  const { source, sectionName, defaultTitle, defaultDescription } = options
-
-  const page = source.getPage(slug)
-  if (!page) notFound()
-
-  const title = page.data.title || defaultTitle
-  const description = page.data.description || defaultDescription
+export function renderOgImage(options: RenderOgImageOptions): ImageResponse {
+  const { sectionName, title, description } = options
+  const label = sectionName ? `${config.app.name} - ${sectionName}` : config.app.name
 
   const imageResponse = new ImageResponse(
     <div
@@ -50,7 +48,7 @@ export async function generateOgImage(
           fontWeight: 500,
         }}
       >
-        {config.app.name} - {sectionName}
+        {label}
       </div>
       <div
         style={{
@@ -87,4 +85,20 @@ export async function generateOgImage(
   imageResponse.headers.set("Cache-Control", "public, immutable, no-transform, max-age=31536000")
 
   return imageResponse
+}
+
+export async function generateOgImage(
+  slug: string[] | undefined,
+  options: OgImageOptions,
+): Promise<ImageResponse> {
+  const { source, sectionName, defaultTitle, defaultDescription } = options
+
+  const page = source.getPage(slug)
+  if (!page) notFound()
+
+  return renderOgImage({
+    sectionName,
+    title: page.data.title || defaultTitle,
+    description: page.data.description || defaultDescription,
+  })
 }
