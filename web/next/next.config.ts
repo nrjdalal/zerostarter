@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["takumi-js"],
   outputFileTracingExcludes: {
-    "*": ["**/@takumi-rs/wasm/**", "../../**/@takumi-rs/wasm/**"],
+    "*": ["../../**/@takumi-rs/wasm/**"],
   },
 }
 
