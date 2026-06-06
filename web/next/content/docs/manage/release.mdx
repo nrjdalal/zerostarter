@@ -7,7 +7,7 @@ import { Step, Steps } from "fumadocs-ui/components/steps"
 
 ## Overview
 
-ZeroStarter uses an automated release workflow that manages versioning, changelog generation, and GitHub releases. The workflow operates with `canary` (development) and `main` (production) branches, automatically creating draft PRs for review.
+ZeroStarter uses a one-button release cycle built on `canary` (development) and `main` (production) branches. The one human step is merging the draft release PR; everything downstream (changelog generation, version bump, boundary tag, and the published GitHub Release) is automated by `auto-release.yml`.
 
 ## Prerequisites
 
@@ -18,64 +18,66 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
    This setting is required for the automated workflows to create draft PRs.
 
-2. **Changelog Generation**: The release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
+2. **Changelog Generation**: The release workflow uses `changelogen` to generate the changelog from conventional commits. `changelog.config.json` disables the bare `ci` type: it is reserved for pipeline-generated commits (`ci(changelog): ...`) that should never appear in release notes. Real CI work uses a scope instead (`fix(ci): ...`, `feat(ci): ...`) and lands in the changelog normally.
+
+   `changelogen` is pinned to an exact version: the workflow's content gate parses its output format, so an unreviewed format change could silently break releases.
 
 ## Workflow
-
-This project uses an automated release workflow with `canary` (development) and `main` (production) branches. All PRs are created as drafts for manual review.
 
 <Steps>
 <Step>
 
 ### Development Branch (canary)
 
-Push changes to `canary` triggers `auto-canary-into-main.yml` workflow.
-
-**Auto-creates draft PR:**
+Feature PRs are **squash-merged** into `canary`. Each push to `canary` triggers `auto-canary-into-main.yml`, which maintains a draft release PR:
 
 - Title: `ci(release): 🚀 merge canary into main`
 - Head: `canary` → Base: `main`
 
-</Step>
-
-<Step>
-
-### Production Branch (main)
-
-Manually review and merge the draft PR from `canary` → `main`.
-
-After merge, `auto-release.yml` workflow triggers automatically.
+No open release PR means nothing is unreleased, or the last `canary` push came from the pipeline itself (`GITHUB_TOKEN` pushes do not trigger workflows); the next feature push recreates it.
 
 </Step>
 
 <Step>
 
-### Update Changelog Branch
+### Merge the Release PR (the one human step)
 
-Workflow creates/updates `changelog` branch from `main`:
+Review the draft PR, mark it ready, and merge it **with a merge commit**:
 
-- Generates `CHANGELOG.md` using `changelogen --bump`
-- Bumps version in `package.json`
-- Commits: `ci(changelog): update changelog and bump version`
+```bash
+gh pr ready <N>
+gh pr merge <N> --merge
+```
 
-</Step>
-
-<Step>
-
-### Changelog PR to Canary
-
-If changes detected, auto-creates draft PR:
-
-- Title: `ci(changelog): 📖 update changelog and bump version`
-- Head: `changelog` → Base: `canary`
+**Never squash a release PR.** A squash disconnects `main`'s history from `canary` and poisons every future release diff. Only the release direction uses merge commits; feature PRs into `canary` are squashed.
 
 </Step>
 
 <Step>
 
-### Back to Development
+### Automated Release
 
-Manually review and merge the changelog PR to sync version and changelog back to `canary`.
+Merging triggers `auto-release.yml`, which runs entirely on `canary`:
+
+1. Generates the changelog section from conventional commits since the last `v*` tag
+2. Bumps the version in `package.json`
+3. Commits `ci(changelog): update changelog and bump version` **directly to canary**; the commit is mechanical (generated from already-reviewed PR titles), so no review round-trip
+4. Tags `vX.Y.Z` at the coverage boundary and pushes branch and tag **atomically**: they land together or not at all
+5. Publishes a GitHub Release whose notes mirror the new changelog section
+
+**Content gate**: a commit range containing only filtered-out types still bumps the version, so the workflow also requires at least one entry in the new section before releasing. Otherwise it skips cleanly.
+
+</Step>
+
+<Step>
+
+### Verify
+
+```bash
+gh run list --workflow auto-release.yml --limit 1     # expect success
+git fetch --tags origin && git log --oneline origin/canary -1   # expect the ci(changelog) commit
+gh release list --limit 1                             # expect new vX.Y.Z as Latest
+```
 
 </Step>
 </Steps>
@@ -86,16 +88,10 @@ Manually review and merge the changelog PR to sync version and changelog back to
 
 ## GitHub Releases
 
-`changelogen` generates `CHANGELOG.md` with categorized changes, commit links, and contributors. When creating a GitHub release:
+Releases are published by the pipeline: don't create them by hand and don't use GitHub's "Generate release notes" feature. The notes are the `CHANGELOG.md` section for that version: categorized changes, commit links, and contributor credits.
 
-1. **Go to Releases**: Navigate to your repository's Releases page and click "Draft a new release"
-2. **Create Tag**: Create a new tag matching the version in `package.json` (e.g., `v0.0.7`)
-3. **Copy from CHANGELOG.md**: Copy the changelog entry for that version from `CHANGELOG.md` and paste it as the release notes
+## Failure Recovery
 
-   The changelog entry includes:
-   - Version header with compare changes link
-   - Categorized changes (📖 Documentation, 🏡 Chore, etc.)
-   - Commit links with hashes
-   - Contributor credits
-
-**Note**: Don't use GitHub's "Generate release notes" feature. The `CHANGELOG.md` generated by `changelogen` already contains the properly formatted release notes based on conventional commits.
+- **Late failure after pushes** (release missing but tag and changelog commit present): re-run the workflow; the skip path backfills the missing GitHub Release idempotently.
+- **Tag collision** (`tag vX.Y.Z exists at <sha> but boundary is <sha>`): a previous cycle left inconsistent state; investigate which tag is right before re-running. This should be unreachable in the direct-commit flow.
+- **Race** (`canary` moved during the run): the non-force push fails loudly with no partial state; re-run.
