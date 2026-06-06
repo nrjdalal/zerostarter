@@ -67,12 +67,18 @@ jobs:
             bunx changelogen --bump --no-commit || true
           fi
           bunx oxfmt --write CHANGELOG.md
+          # refresh the build-graph snapshot for this release from a fresh CI build
+          # (env mirrors auto-check-build.yml so size labels match the PR-check build)
+          NODE_ENV=production SKIP_ENV_VALIDATION=true bunx turbo build
+          bun .github/scripts/build-sizes.ts --graph
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun .github/scripts/changelog-manager.ts
+          # gate intentionally ignores the svg: it only ships riding a real release
+          # (changelog or version change); alone it is never worth a commit.
           # content check: a range of only filtered-out commit types still bumps,
           # so also require at least one entry in the new section before releasing
           SECTION=$(awk '/^## v/ { n++ } n == 1' CHANGELOG.md | sed '/^### ❤️ Contributors/,$d')
           if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ] && echo "$SECTION" | grep -q '^- '; then
-            git add CHANGELOG.md package.json
+            git add CHANGELOG.md package.json .github/assets/graph-build.svg
             git commit -m "ci(changelog): update changelog and bump version"
             NEW_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
             # fail loudly on tag collision: proceeding would mislabel this changelog section

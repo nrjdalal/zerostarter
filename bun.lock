@@ -11,6 +11,7 @@
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@typescript/native-preview": "catalog:",
+        "@viz-js/viz": "catalog:",
         "changelogen": "catalog:",
         "globby": "catalog:",
         "lefthook": "catalog:",
@@ -205,6 +206,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@typescript/native-preview": "^7.0.0-dev.20260519.1",
+    "@viz-js/viz": "^3.28.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "^1.6.11",
     "changelogen": "0.6.2",
@@ -1063,6 +1065,8 @@
     "@typescript/native-preview-win32-x64": ["@typescript/native-preview-win32-x64@7.0.0-dev.20260519.1", "", { "os": "win32", "cpu": "x64" }, "sha512-r9LEsoY7JC/82gXo8hlOmpQaUXcqmngCVOv+mUx1UeMt9f+1S6oNO0W48o75mlBqqC7jfcMHqw8YS4LfVxPRGw=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.3.1", "", {}, "sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ=="],
+
+    "@viz-js/viz": ["@viz-js/viz@3.28.0", "", {}, "sha512-nPt+jbGHGgd7lUQLBT79/4lChIzeW44I+hFrscx18AnpNyX9vdRFVNwVbKz9eq+ACeKSm4bFQns17WhCW11eWQ=="],
 
     "@web/next": ["@web/next@workspace:web/next"],
 

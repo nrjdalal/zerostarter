@@ -55,26 +55,11 @@ docs(readme): update installation steps
 chore(deps): bump dependencies to latest versions
 ```
 
-### Turbo Build Graph
+### Build Graph (automated)
 
-**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md`
+The README's build graph svg (`.github/assets/graph-build.svg`) is maintained by the release pipeline: `auto-release.yml` runs `bun .github/scripts/build-sizes.ts --graph` against a fresh CI build and regenerates the svg with real artifact sizes in the node labels, so the graph is a per-release snapshot. The script emits turbo's DOT output and renders it via `@viz-js/viz` (Graphviz compiled to wasm, the same engine turbo's `--graph=*.html` embeds), then restyles it for dark mode. No manual skill or Graphviz install is involved.
 
-Generates a styled SVG visualization of Turborepo task dependencies.
-
-**Triggers**: When user asks to "visualize dependencies", "generate build graph", or "update pipeline diagram"
-
-**Workflow**:
-
-1. **Generate Raw Graph**: `npx turbo run build --graph=graph.dot`, then render with Graphviz: `dot -Tsvg graph.dot -o graph.svg` (turbo 2.x renders `.svg` with its own rough built-in renderer, so emit DOT and use `dot`)
-2. **Clean Up Labels**: Remove prefixes and internal placeholders
-3. **Style for Dark Mode**: Apply transparent background and GitHub blue theme
-4. **Move to Public Assets**: Save to `web/next/public/graph-build.svg`
-
-**Output**: A dark-mode-friendly SVG that can be embedded in README:
-
-```markdown
-![Build Graph](/graph-build.svg)
-```
+To refresh it locally after a build: `bun .github/scripts/build-sizes.ts --graph`
 
 ## Skill Structure
 
