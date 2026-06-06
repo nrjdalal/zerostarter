@@ -97,6 +97,14 @@ Sessions are stored in the `session` database table with:
 - **IP address and user agent tracking** for security
 - **Session expiration** with automatic cleanup
 
+### Cookie Cache
+
+Session data is additionally cached in a short-lived signed cookie (`cookieCache`, 5 minutes), so most authenticated API requests validate the session from the cookie instead of hitting the database.
+
+Enabling `cookieCache` in the auth config is **not sufficient on its own**: better-auth refreshes the cache cookie via a `Set-Cookie` header on `getSession`, and a server-side `getSession` call silently drops it. The API auth middleware (`api/hono/src/middlewares/auth.ts`) calls `getSession` with `returnHeaders: true` and forwards every returned `Set-Cookie` header to the client; without that forwarding, the cookie never primes and every request falls back to the database.
+
+**Trade-off**: session revocation propagates to cache-hit paths only after the cookie expires, so the cache `maxAge` is the upper bound on how long a revoked session can keep working.
+
 ### Server-Side Session Access
 
 In Next.js server components and layouts:
@@ -120,7 +128,7 @@ const { data: session } = authClient.useSession()
 
 The `(protected)` layout in `web/next/src/app/(protected)/layout.tsx` handles route protection server-side. It checks for a valid session and redirects unauthenticated users to the home page.
 
-API routes are protected using the auth middleware in `api/hono/src/middlewares/auth.ts`, which validates the session from request headers.
+API routes are protected using the auth middleware in `api/hono/src/middlewares/auth.ts`, which validates the session from request headers and forwards refreshed cookie-cache headers back to the client.
 
 ## Rate Limiting
 
