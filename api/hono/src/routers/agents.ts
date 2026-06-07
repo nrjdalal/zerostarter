@@ -5,8 +5,8 @@ import { makeSignature } from "better-auth/crypto"
 import { Hono } from "hono"
 import { setCookie } from "hono/cookie"
 
-const AGENT_EMAIL = "agent@zerostarter.dev"
-const AGENT_NAME = "AgentZero"
+const AGENT_EMAIL = "agent@cafe.local"
+const AGENT_NAME = "AgentCafe"
 
 export const agentsRouter = new Hono()
   .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))

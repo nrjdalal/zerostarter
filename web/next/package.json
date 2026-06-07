@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "build": "bun ../../.github/scripts/compress-images.ts && fumadocs-mdx && next build",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "dev": "next dev",
-    "start": "bun .next/standalone/web/next/server.js"
+    "start": "bun .next/standalone/web/next/server.js",
+    "test": "bun run test/run.ts -- test/",
+    "test:all": "bun run test/all.ts",
+    "test:e2e": "BROWSER_TESTS=true ALLOW_DB_WRITES=true bun run test/run.ts --browser -- test/",
+    "test:visual": "bun run test/visual.ts",
+    "test:visual:update": "bun run test/visual.ts --update"
   },
   "dependencies": {
     "@api/hono": "workspace:*",
@@ -47,10 +52,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@fontsource-variable/caveat": "catalog:",
-    "@fontsource-variable/dm-sans": "catalog:",
-    "@fontsource-variable/jetbrains-mono": "catalog:",
-    "@fontsource-variable/newsreader": "catalog:",
+    "@packages/db": "workspace:*",
     "@packages/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
@@ -60,7 +62,9 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "drizzle-orm": "catalog:",
     "shadcn": "catalog:",
+    "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:"

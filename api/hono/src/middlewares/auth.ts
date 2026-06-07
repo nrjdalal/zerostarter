@@ -13,7 +13,16 @@ const userRateLimiter = createRateLimiter({
 })
 
 export const authMiddleware = createMiddleware<{ Variables: Session }>(async (c, next) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  const { headers, response: session } = await auth.api.getSession({
+    headers: c.req.raw.headers,
+    returnHeaders: true,
+  })
+
+  // forward the session_data cookie so the cookie cache actually primes;
+  // getSession without this silently drops better-auth's Set-Cookie
+  for (const cookie of headers.getSetCookie()) {
+    c.header("Set-Cookie", cookie, { append: true })
+  }
 
   if (!session) {
     return c.json({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }, 401)

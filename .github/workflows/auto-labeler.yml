@@ -1,9 +1,8 @@
 name: auto-labeler
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: ["canary", "main"]
+  # pull_request_target only: labeling needs a write token (fork pull_request runs get
+  # read-only), and this workflow runs no PR code, the script and bare checkout are base
   pull_request_target:
     types: [opened, synchronize, reopened]
     branches: ["canary", "main"]
@@ -27,7 +26,8 @@ jobs:
     if: github.event.pull_request.base.ref == 'canary'
 
     steps:
-      - name: Checkout PR head
+      # bare checkout = base branch under pull_request_target; never set ref to the PR head
+      - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -131,6 +131,8 @@ jobs:
               }
 
               if (topLevel === '.github') {
+                // generated artifacts and maintained process docs, not workflow config
+                if (secondLevel === 'assets' || secondLevel === 'docs') return null;
                 if (secondLevel === 'scripts') return '@scripts';
                 if (secondLevel === 'workflows') return '@workflows';
                 return '@workflows';
@@ -179,19 +181,21 @@ jobs:
             const labelsToAdd = new Set();
             for (const file of files) {
               const label = getLabelForFile(file.filename, packageMap);
-              labelsToAdd.add(label);
+              if (label) labelsToAdd.add(label);
             }
 
             if (labelsToAdd.size === 0) {
               console.log('No files to label.');
-              return;
+            } else {
+              console.log(`Labels to add: ${[...labelsToAdd].join(', ')}`);
+
+              await Promise.all([...labelsToAdd].map(label => ensureLabel(label).catch(err => {
+                console.warn(`Failed to ensure label ${label}: ${err.message}`);
+              })));
             }
 
-            console.log(`Labels to add: ${[...labelsToAdd].join(', ')}`);
-
-            await Promise.all([...labelsToAdd].map(label => ensureLabel(label).catch(err => {
-              console.warn(`Failed to ensure label ${label}: ${err.message}`);
-            })));
+            // stale-label removal runs even when nothing is added, so a PR whose
+            // labelable files all disappear (e.g. force-push) sheds its old labels
 
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner,
@@ -219,20 +223,22 @@ jobs:
               }
             }
 
-            try {
-              await github.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: prNumber,
-                labels: [...labelsToAdd]
-              });
-              console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
-            } catch (error) {
-              if (error.status === 403) {
-                console.warn(`Cannot add labels: insufficient permissions (${error.status}). Labels may have been created but cannot be applied to this PR.`);
-              } else {
-                console.error(`Failed to add labels: ${error.message}`);
-                throw error;
+            if (labelsToAdd.size > 0) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  labels: [...labelsToAdd]
+                });
+                console.log(`Added labels: ${[...labelsToAdd].join(', ')}`);
+              } catch (error) {
+                if (error.status === 403) {
+                  console.warn(`Cannot add labels: insufficient permissions (${error.status}). Labels may have been created but cannot be applied to this PR.`);
+                } else {
+                  console.error(`Failed to add labels: ${error.message}`);
+                  throw error;
+                }
               }
             }
 
@@ -343,6 +349,39 @@ jobs:
                 console.warn(`Cannot add approval label: insufficient permissions (${error.status}). Label may have been created but cannot be applied to this PR.`);
               } else {
                 console.error(`Failed to add approval label: ${error.message}`);
+                throw error;
+              }
+            }
+
+      - name: Comment merge-method guidance
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const marker = '<!-- merge-method-guidance -->';
+            const { number: prNumber } = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: prNumber, per_page: 100
+            });
+            if (comments.some(c => c.body?.includes(marker))) {
+              console.log('Guidance comment already present.');
+              return;
+            }
+
+            try {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: prNumber,
+                body: `${marker}\n> [!IMPORTANT]\n> Merge with a **squash commit** (not merge), so canary stays one commit per PR and shared-history merges stay reserved for release PRs.`
+              });
+              console.log('Posted merge-method guidance comment.');
+            } catch (error) {
+              if (error.status === 403) {
+                console.warn(`Cannot post guidance comment: insufficient permissions (${error.status}).`);
+              } else {
+                console.error(`Failed to post guidance comment: ${error.message}`);
                 throw error;
               }
             }

@@ -1,11 +1,10 @@
-import { ImageResponse } from "takumi-js/response"
-
 import { config } from "@/lib/config"
+import { renderOgElement } from "@/lib/og-image"
 
 export const dynamic = "force-static"
 
 export async function GET() {
-  const imageResponse = new ImageResponse(
+  return renderOgElement(
     <div
       style={{
         fontSize: 64,
@@ -47,13 +46,5 @@ export async function GET() {
         {config.app.description}
       </div>
     </div>,
-    {
-      width: 1200,
-      height: 630,
-    },
   )
-
-  imageResponse.headers.set("Cache-Control", "public, immutable, no-transform, max-age=31536000")
-
-  return imageResponse
 }

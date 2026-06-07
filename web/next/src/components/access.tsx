@@ -106,7 +106,7 @@ export function Access() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        placeholder="admin@nrjdalal.com"
+                        placeholder="you@example.com"
                         disabled={loader === "email"}
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}

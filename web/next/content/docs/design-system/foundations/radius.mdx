@@ -1,0 +1,37 @@
+---
+title: Radius
+description: Border radius scale derived from a single base token.
+---
+
+import { Card, CardContent } from "@/components/ui/card"
+
+The whole scale derives from one base token, `--radius: 0.625rem`. Changing it re-tunes every component.
+
+<Card className="not-prose">
+  <CardContent className="flex flex-wrap gap-6">
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-sm)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-md)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-lg)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-xl)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-2xl)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-3xl)" }} />
+    <div className="bg-muted size-16 border" style={{ borderRadius: "var(--radius-4xl)" }} />
+  </CardContent>
+</Card>
+
+| Token          | Value                        |
+| -------------- | ---------------------------- |
+| `--radius-sm`  | `calc(var(--radius) - 4px)`  |
+| `--radius-md`  | `calc(var(--radius) - 2px)`  |
+| `--radius-lg`  | `var(--radius)`              |
+| `--radius-xl`  | `calc(var(--radius) + 4px)`  |
+| `--radius-2xl` | `calc(var(--radius) + 8px)`  |
+| `--radius-3xl` | `calc(var(--radius) + 12px)` |
+| `--radius-4xl` | `calc(var(--radius) + 16px)` |
+
+## Usage
+
+```tsx
+<div className="rounded-lg border" />
+<img className="rounded-xl" />
+```

@@ -2,10 +2,11 @@
 
 import {
   RiArrowRightUpLine,
-  RiDiscordFill,
   RiGithubFill,
+  RiInstagramFill,
   RiLoaderLine,
   RiMenuLine,
+  RiRedditFill,
   RiTwitterXFill,
 } from "@remixicon/react"
 import Link from "next/link"
@@ -14,7 +15,6 @@ import { useEffect, useState } from "react"
 
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -24,19 +24,24 @@ import { cn } from "@/lib/utils"
 
 const socialLinks = [
   {
-    href: "https://x.com/nrjdalal",
-    icon: RiTwitterXFill,
-    label: "X",
-  },
-  {
-    href: "https://discord.gg/38FeAUmHSZ",
-    icon: RiDiscordFill,
-    label: "Discord",
-  },
-  {
-    href: "https://github.com/nrjdalal/zerostarter",
+    href: config.social.github,
     icon: RiGithubFill,
     label: "GitHub",
+  },
+  {
+    href: config.social.instagram,
+    icon: RiInstagramFill,
+    label: "Instagram",
+  },
+  {
+    href: config.social.reddit,
+    icon: RiRedditFill,
+    label: "Reddit",
+  },
+  {
+    href: config.social.x,
+    icon: RiTwitterXFill,
+    label: "X",
   },
 ]
 
@@ -78,12 +83,13 @@ export function Navbar() {
   }, [pathname])
 
   if (pathname?.startsWith("/dashboard")) return null
+  // waitlist mode: no navbar on the landing page, except during local development
+  if (pathname === "/" && process.env.NODE_ENV !== "development") return null
 
   const navLinks = [
     { href: "/docs", label: "Documentation" },
     { href: "/api/docs", label: "API Docs", external: true },
     { href: "/blog", label: "Blog" },
-    { href: "/hire", label: "Hire" },
   ]
 
   return (
@@ -91,9 +97,6 @@ export function Navbar() {
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {config.app.name}
-          <Badge variant="secondary" className="text-xs">
-            RC
-          </Badge>
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
@@ -178,9 +181,6 @@ export function Navbar() {
                   }
                 >
                   {config.app.name}
-                  <Badge variant="secondary" className="text-xs">
-                    RC
-                  </Badge>
                 </SheetTitle>
               </SheetHeader>
               <nav className="ml-4 flex flex-col gap-5">
@@ -217,18 +217,6 @@ export function Navbar() {
                     </Link>
                   )
                 })}
-                <Button
-                  role="link"
-                  size="sm"
-                  className="mt-2 w-fit"
-                  onClick={() => setIsOpen(false)}
-                  render={
-                    <a href={config.social.github} target="_blank" rel="noopener noreferrer" />
-                  }
-                >
-                  <RiGithubFill className="size-4" />
-                  Get ZeroStarter
-                </Button>
               </nav>
               {/* Mobile Social Links */}
               <div className="mt-2.5 ml-4 flex items-center gap-2.5">

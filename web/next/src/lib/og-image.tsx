@@ -1,10 +1,17 @@
 import { notFound } from "next/navigation"
-import { ImageResponse } from "takumi-js/response"
+import type { ReactElement } from "react"
+import { render } from "takumi-js"
 
 import { config } from "@/lib/config"
 import type { blogSource, docsSource } from "@/lib/source"
 
 type Source = typeof blogSource | typeof docsSource
+
+interface RenderOgImageOptions {
+  sectionName?: string
+  title: string
+  description: string
+}
 
 interface OgImageOptions {
   source: Source
@@ -13,19 +20,29 @@ interface OgImageOptions {
   defaultDescription: string
 }
 
-export async function generateOgImage(
-  slug: string[] | undefined,
-  options: OgImageOptions,
-): Promise<ImageResponse> {
-  const { source, sectionName, defaultTitle, defaultDescription } = options
+export async function renderOgElement(element: ReactElement): Promise<Response> {
+  try {
+    const png = await render(element, { width: 1200, height: 630, format: "png" })
+    return new Response(new Uint8Array(png), {
+      headers: {
+        "Cache-Control": "public, immutable, no-transform, max-age=31536000",
+        "Content-Type": "image/png",
+      },
+    })
+  } catch (e) {
+    if (process.env.NEXT_PHASE === "phase-production-build") throw e
+    const cause =
+      e instanceof Error && e.cause instanceof Error ? ` | cause: ${e.cause.message}` : ""
+    console.error(`og render failed: ${e instanceof Error ? e.message : String(e)}${cause}`)
+    return new Response("og render failed", { status: 500 })
+  }
+}
 
-  const page = source.getPage(slug)
-  if (!page) notFound()
+export async function renderOgImage(options: RenderOgImageOptions): Promise<Response> {
+  const { sectionName, title, description } = options
+  const label = sectionName ? `${config.app.name} - ${sectionName}` : config.app.name
 
-  const title = page.data.title || defaultTitle
-  const description = page.data.description || defaultDescription
-
-  const imageResponse = new ImageResponse(
+  const element = (
     <div
       style={{
         fontSize: 64,
@@ -50,7 +67,7 @@ export async function generateOgImage(
           fontWeight: 500,
         }}
       >
-        {config.app.name} - {sectionName}
+        {label}
       </div>
       <div
         style={{
@@ -77,14 +94,24 @@ export async function generateOgImage(
       >
         {description}
       </div>
-    </div>,
-    {
-      width: 1200,
-      height: 630,
-    },
+    </div>
   )
 
-  imageResponse.headers.set("Cache-Control", "public, immutable, no-transform, max-age=31536000")
+  return renderOgElement(element)
+}
 
-  return imageResponse
+export async function generateOgImage(
+  slug: string[] | undefined,
+  options: OgImageOptions,
+): Promise<Response> {
+  const { source, sectionName, defaultTitle, defaultDescription } = options
+
+  const page = source.getPage(slug)
+  if (!page) notFound()
+
+  return renderOgImage({
+    sectionName,
+    title: page.data.title || defaultTitle,
+    description: page.data.description || defaultDescription,
+  })
 }

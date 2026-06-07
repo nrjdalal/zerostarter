@@ -10,7 +10,7 @@ export const GIT_SHA = __GIT_SHA__
 export const BUILD_VERSION = __BUILD_VERSION__
 
 // Baked __GIT_SHA__ freezes at the last source-changing build under turbo cache
-// replays; prefer the platform's deploy-time sha when one exists (#428)
+// replays; prefer the platform's deploy-time sha when one exists (ZeroStarter#428)
 export const getBuildVersion = (): string => {
   const sha =
     typeof process === "undefined"
