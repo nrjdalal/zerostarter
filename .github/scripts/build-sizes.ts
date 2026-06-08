@@ -101,7 +101,7 @@ const labels = Object.entries(nodeSizes).map(
   ([pkg, size]) =>
     `\t"[root] ${pkg}#build" [label="${size ? `${pkg} (${formatSize(size)})` : pkg}"]`,
 )
-labels.push(`\t"[root] ___ROOT___" [label="cafe"]`)
+labels.push(`\t"[root] ___ROOT___" [label="zerostarter"]`)
 const viz = await instance()
 const rendered = viz.renderString(dotSrc.replace(/}\s*$/, `${labels.join("\n")}\n}`), {
   format: "svg",
@@ -110,7 +110,7 @@ const rendered = viz.renderString(dotSrc.replace(/}\s*$/, `${labels.join("\n")}\
 const svg = rendered
   .replaceAll("[root] ", "")
   .replaceAll("#build", "")
-  .replaceAll("___ROOT___", "cafe")
+  .replaceAll("___ROOT___", "zerostarter")
   .replaceAll('fill="white"', 'fill="none"')
   .replaceAll('fill="#ffffff"', 'fill="none"')
   .replaceAll('fill="#fff"', 'fill="none"')

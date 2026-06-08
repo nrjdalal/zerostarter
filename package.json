@@ -1,16 +1,17 @@
 {
-  "name": "cafe",
-  "version": "0.0.18",
+  "name": "zerostarter",
+  "version": "0.0.15",
   "private": true,
-  "homepage": "https://github.com/dalonic/cafe#readme",
-  "bugs": "https://github.com/dalonic/cafe/issues",
+  "homepage": "https://github.com/nrjdalal/zerostarter#readme",
+  "bugs": "https://github.com/nrjdalal/zerostarter/issues",
   "license": "MIT",
   "author": {
     "name": "Neeraj Dalal",
     "email": "admin@nrjdalal.com",
     "url": "https://nrjdalal.com"
   },
-  "repository": "dalonic/cafe",
+  "repository": "nrjdalal/zerostarter",
+  "funding": "https://github.com/sponsors/nrjdalal",
   "workspaces": [
     "api/*",
     "packages/*",

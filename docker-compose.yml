@@ -1,4 +1,4 @@
-name: cafe
+name: zerostarter
 
 services:
   api:

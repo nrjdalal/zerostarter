@@ -98,8 +98,8 @@ function updateCompareLinks(lines: string[], repoOwner: string, repoName: string
 }
 
 async function processChangelog() {
-  const repoOwner = process.env.GITHUB_REPOSITORY_OWNER || "dalonic"
-  const repoName = process.env.GITHUB_REPOSITORY_NAME || "cafe"
+  const repoOwner = process.env.GITHUB_REPOSITORY_OWNER || "nrjdalal"
+  const repoName = process.env.GITHUB_REPOSITORY_NAME || "zerostarter"
 
   const content = await Bun.file(CHANGELOG_PATH).text()
   const lines = content.split("\n")

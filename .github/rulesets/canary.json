@@ -2,7 +2,7 @@
   "name": "canary",
   "target": "branch",
   "source_type": "Repository",
-  "source": "dalonic/cafe",
+  "source": "nrjdalal/zerostarter",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
