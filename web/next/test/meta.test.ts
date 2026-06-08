@@ -34,7 +34,9 @@ describe("home metadata", () => {
     expect(head.metas["og:url"]).toBe(BASE)
     expect(head.metas["og:site_name"]).toBe(APP_NAME)
     expect(head.metas["og:type"]).toBe("website")
-    expect(head.metas["og:image"]).toBe(`${BASE}/og/home.png`)
+    // getOgImageUrl() prefers the committed static /og/home.png and falls back to the dynamic
+    // /api/og/home when it's absent — accept either so the spec tracks behavior, not one file.
+    expect(head.metas["og:image"]).toMatch(/\/(og\/home\.png|api\/og\/home)$/)
     expect(head.metas["og:image:width"]).toBe("1200")
     expect(head.metas["og:image:height"]).toBe("630")
     expect(head.metas["og:image:alt"]).toBe(DEFAULT_TITLE)
@@ -42,7 +44,7 @@ describe("home metadata", () => {
     expect(head.metas["twitter:card"]).toBe("summary_large_image")
     expect(head.metas["twitter:title"]).toBe(DEFAULT_TITLE)
     expect(head.metas["twitter:description"]).toBe(APP_DESCRIPTION)
-    expect(head.metas["twitter:image"]).toBe(`${BASE}/og/home.png`)
+    expect(head.metas["twitter:image"]).toMatch(/\/(og\/home\.png|api\/og\/home)$/)
   })
 
   test("og image url carries a cache buster", async () => {

@@ -12,7 +12,9 @@ description: Run, extend, and validate the web/next behavioral spec suite for Ze
 Runnable from repo root (thin `cd web/next && bun run …` delegators in the root `package.json`) or from `web/next` directly. Not turbo tasks: the suite needs live servers and the stack helper itself spawns `turbo run dev`, so wrapping it in turbo would nest it. Every script shares the stack lifecycle in `test/stack.ts` (`run.ts` for the test tiers, `visual.ts` for the visual one, `all.ts` for both under one boot): it starts the stack if down, reuses and leaves a running one, and tears down only what it started.
 
 ```bash
-bun run test                # deterministic tiers: fast, read-only, safe anywhere
+bun run test                # deterministic (non-browser) tiers; needs the live stack + DB.
+                            # the dashboard/feedback/api tiers sign in via the idempotent
+                            # agent upsert, so it is not a pure read-only run.
 bun run test:e2e            # full behavioral run: browser interactions plus the authed
                             # dashboard/feedback tiers (agent sign-in); needs the
                             # agent-browser CLI

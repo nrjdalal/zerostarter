@@ -69,7 +69,10 @@ describe("404s", () => {
 })
 
 describe("trailing slash normalization", () => {
-  const paths = ["/docs/", "/blog/", "/docs/getting-started/setup/", "/llms.txt/", "/dashboard/"]
+  // /dashboard/ is excluded on purpose: it is auth-gated, so anonymously its first hop can be
+  // either the trailing-slash normalize (-> /dashboard) or the auth redirect (-> /) depending on
+  // middleware order. The anonymous /dashboard redirect is asserted in "protected routes" below.
+  const paths = ["/docs/", "/blog/", "/docs/getting-started/setup/", "/llms.txt/"]
   for (const path of paths) {
     test(`${path} redirects to ${path.replace(/\/+$/, "")}`, async () => {
       const res = await get(path)
