@@ -12,9 +12,10 @@ const getInternalApiUrl = () => {
 export const config = {
   // Application configuration
   app: {
-    name: "Cafe",
-    description: "Cafe, your smart companion for tables.",
-    tagline: "Your Smart Companion for Tables",
+    name: "ZeroStarter",
+    description:
+      "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
+    tagline: "The SaaS Starter",
     url: env.NEXT_PUBLIC_APP_URL,
     version: BUILD_VERSION,
   },
@@ -27,10 +28,7 @@ export const config = {
 
   // Social links
   social: {
-    github: "https://github.com/dalonic/cafe",
-    instagram: "https://instagram.com/dalonic_ai",
-    reddit: "https://reddit.com/user/dalonic_ai",
-    x: "https://x.com/dalonic_ai",
+    github: "https://github.com/nrjdalal/zerostarter",
   },
 
   // Feature flags
@@ -48,27 +46,156 @@ export const config = {
             title: "Introduction",
             url: "/docs",
           },
+          {
+            title: "Architecture",
+            url: "/docs/getting-started/architecture",
+          },
+          {
+            title: "Project Structure",
+            url: "/docs/getting-started/project-structure",
+          },
+          {
+            title: "Type-Safe API Client",
+            url: "/docs/getting-started/type-safe-api",
+          },
+          {
+            title: "Setup",
+            url: "/docs/getting-started/setup",
+          },
+          {
+            title: "Scripts",
+            url: "/docs/getting-started/scripts",
+          },
+          {
+            title: "Roadmap",
+            url: "/docs/getting-started/roadmap",
+          },
         ],
       },
       {
-        label: "Design System",
+        label: "Manage",
         collapsible: true,
         categories: {
-          Foundations: [
+          Authentication: [
             {
-              title: "Colors",
-              url: "/docs/design-system/foundations/colors",
+              title: "Auth & Organizations",
+              url: "/docs/manage/authentication",
             },
             {
-              title: "Radius",
-              url: "/docs/design-system/foundations/radius",
+              title: "Dashboard",
+              url: "/docs/manage/dashboard",
+            },
+          ],
+          "Backend & Data": [
+            {
+              title: "Database",
+              url: "/docs/manage/database",
             },
             {
-              title: "Typography",
-              url: "/docs/design-system/foundations/typography",
+              title: "API Conventions",
+              url: "/docs/manage/api-conventions",
+            },
+          ],
+          Analytics: [
+            {
+              title: "PostHog",
+              url: "/docs/manage/analytics",
+            },
+          ],
+          "Code Quality": [
+            {
+              title: "Git Hooks & Linting",
+              url: "/docs/manage/code-quality",
+            },
+          ],
+          "Content Management": [
+            {
+              title: "Blog",
+              url: "/docs/manage/blog",
+            },
+            {
+              title: "Documentation",
+              url: "/docs/manage/documentation",
+            },
+            {
+              title: "Feedback",
+              url: "/docs/manage/feedback",
+            },
+          ],
+          "Environment & Release": [
+            {
+              title: "Environment",
+              url: "/docs/manage/environment",
+            },
+            {
+              title: "Release",
+              url: "/docs/manage/release",
+            },
+          ],
+          "UI & Styling": [
+            {
+              title: "Theming",
+              url: "/docs/manage/theming",
+            },
+            {
+              title: "OG Images",
+              url: "/docs/manage/og-images",
+            },
+          ],
+          "Indexing and AI/LLM": [
+            {
+              title: "llms.txt",
+              url: "/docs/manage/llms-txt",
+            },
+            {
+              title: "robots.txt",
+              url: "/docs/manage/robots",
+            },
+            {
+              title: "Sitemap",
+              url: "/docs/manage/sitemap",
             },
           ],
         },
+      },
+      {
+        label: "Deployment",
+        items: [
+          {
+            title: "Docker",
+            url: "/docs/deployment/docker",
+          },
+          {
+            title: "Vercel",
+            url: "/docs/deployment/vercel",
+          },
+        ],
+      },
+      {
+        label: "Resources",
+        items: [
+          {
+            title: "AI Skills",
+            url: "/docs/resources/ai-skills",
+          },
+          {
+            title: "IDE Setup",
+            url: "/docs/resources/ide-setup",
+          },
+          {
+            title: "Infisical",
+            url: "/docs/resources/infisical",
+          },
+        ],
+      },
+      {
+        label: "MIT",
+        items: [
+          {
+            title: "Contributing",
+            url: "/docs/contributing",
+          },
+        ],
       },
     ],
   },

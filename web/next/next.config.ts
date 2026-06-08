@@ -32,16 +32,6 @@ const libcExcludes = {
 }
 
 const nextConfig: NextConfig = {
-  // MVP crawl block: mirror of the Vercel platform header so self-hosted
-  // deploys (Docker) carry it too; remove both when the MVP phase ends
-  headers: async () => {
-    return [
-      {
-        source: "/:path*",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
-      },
-    ]
-  },
   output: "standalone",
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },

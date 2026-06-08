@@ -9,7 +9,7 @@ import { z } from "zod"
 
 import { errorHandler } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
-import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
+import { agentsRouter, authRouter, v1Router } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
 
@@ -44,7 +44,6 @@ const routes = app
     const data = c.req.header()
     return c.json({ data })
   })
-  .get("/robots.txt", (c) => c.text("User-Agent: *\nDisallow: /\n"))
   .basePath("/api")
   .get(
     "/health",
@@ -92,17 +91,17 @@ const { data } = await response.json()`,
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)
   .route("/v1", v1Router)
-  .route("/waitlist", waitlistRouter)
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {
       documentation: {
         info: {
           version: BUILD_VERSION,
-          title: "Cafe",
-          description: `API Reference for your Cafe Instance.
+          title: "ZeroStarter",
+          description: `API Reference for your ZeroStarter Instance.
 - [Dashboard](/dashboard) - Client-side dashboard application
-- [Better Auth Instance](/api/auth/reference) - Better Auth API reference`,
+- [Better Auth Instance](/api/auth/reference) - Better Auth API reference
+- [hono/client](/docs/getting-started/type-safe-api) - Type-safe API client for frontend`,
         },
       },
     }),
@@ -110,7 +109,7 @@ const { data } = await response.json()`,
   .get(
     "/docs",
     Scalar({
-      pageTitle: "API Reference | Cafe",
+      pageTitle: "API Reference | ZeroStarter",
       defaultHttpClient: {
         targetKey: "js",
         clientKey: "hono/client",
