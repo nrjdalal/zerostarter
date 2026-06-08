@@ -40,6 +40,12 @@ export const auth = betterAuth({
   onAPIError: {
     throw: true,
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 300,
+    },
+  },
   plugins: [
     openAPIPlugin(),
     organizationPlugin({

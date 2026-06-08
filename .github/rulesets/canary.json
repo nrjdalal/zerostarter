@@ -26,7 +26,7 @@
         "require_code_owner_review": false,
         "require_last_push_approval": false,
         "required_review_thread_resolution": false,
-        "allowed_merge_methods": ["merge", "squash", "rebase"]
+        "allowed_merge_methods": ["squash"]
       }
     }
   ],
@@ -34,6 +34,11 @@
     {
       "actor_id": 5,
       "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    },
+    {
+      "actor_id": 15368,
+      "actor_type": "Integration",
       "bypass_mode": "always"
     }
   ]

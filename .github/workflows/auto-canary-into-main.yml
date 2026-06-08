@@ -21,36 +21,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Check if PR already exists
-        id: check-if-pr-exists
+      - name: Create release PR if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_RESPONSE=$(curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:canary&base=main&state=open")
-
-          PR_NUMBER=$(echo "$PR_RESPONSE" | bunx fx 'x => x[0]?.number ?? null')
-
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
-            echo "pr_exists=false" >> $GITHUB_OUTPUT
-          else
-            echo "pr_exists=true" >> $GITHUB_OUTPUT
-            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          EXISTING=$(gh pr list --head canary --base main --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "Pull request #$EXISTING already exists. Skipping creation."
+            exit 0
           fi
+          gh pr create --head canary --base main --draft \
+            --title "ci(release): 🚀 merge canary into main" \
+            --body "This PR was automatically created to merge changes from canary into main.
 
-      - name: Create Pull Request
-        if: steps.check-if-pr-exists.outputs.pr_exists == 'false'
-        run: |
-          curl -sL -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls" \
-            -d "{\"title\": \"ci(release): 🚀 merge canary into main\", \"head\": \"canary\", \"base\": \"main\", \"body\": \"This PR was automatically created to merge changes from canary into main.\", \"draft\": true}"
-
-      - name: Log existing PR
-        if: steps.check-if-pr-exists.outputs.pr_exists == 'true'
-        run: |
-          echo "Pull request #${{ steps.check-if-pr-exists.outputs.pr_number }} already exists. Skipping creation."
+          > [!IMPORTANT]
+          > Merge with a **merge commit** (not squash), so main keeps shared history with canary and future release diffs stay clean."

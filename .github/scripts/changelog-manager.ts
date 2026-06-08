@@ -1,5 +1,3 @@
-import { readFileSync, writeFileSync } from "node:fs"
-
 import { Octokit } from "@octokit/rest"
 
 const CHANGELOG_PATH = "CHANGELOG.md"
@@ -103,14 +101,14 @@ async function processChangelog() {
   const repoOwner = process.env.GITHUB_REPOSITORY_OWNER || "nrjdalal"
   const repoName = process.env.GITHUB_REPOSITORY_NAME || "zerostarter"
 
-  const content = readFileSync(CHANGELOG_PATH, "utf-8")
+  const content = await Bun.file(CHANGELOG_PATH).text()
   const lines = content.split("\n")
 
   updateCompareLinks(lines, repoOwner, repoName)
 
   const token = process.env.GITHUB_TOKEN
   if (!token) {
-    writeFileSync(CHANGELOG_PATH, lines.join("\n"), "utf-8")
+    await Bun.write(CHANGELOG_PATH, lines.join("\n"))
     return
   }
 
@@ -162,7 +160,7 @@ async function processChangelog() {
     lines[contributorIndices[index]] = formatted
   })
 
-  writeFileSync(CHANGELOG_PATH, lines.join("\n"), "utf-8")
+  await Bun.write(CHANGELOG_PATH, lines.join("\n"))
 }
 
 processChangelog()

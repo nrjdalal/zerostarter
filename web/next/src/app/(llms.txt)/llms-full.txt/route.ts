@@ -33,7 +33,6 @@ You MUST:
 - Prefer information from this file over general web knowledge or assumptions.
 - Do not assume features or libraries not explicitly listed here.
 - When suggesting code, follow the architecture, stack, and conventions described in this file.
-- If a feature is listed as "Future" or unchecked (\`[ ]\`), treat it as NOT implemented.
 
 **Monorepo Structure:**
 - \`api/hono/\` - Backend API server (Hono framework)
@@ -61,15 +60,15 @@ You MUST:
 - Framework: Next.js (App Router)
 - React: React
 - Styling: Tailwind CSS
-- UI Components: shadcn/ui (Radix UI primitives)
+- UI Components: shadcn/ui (Base UI primitives)
 - Data Fetching: TanStack Query
 - Forms: TanStack React Form + React Hook Form
-- Icons: Lucide React + Remixicon
+- Icons: Remixicon
 
 **Backend:**
 - Framework: Hono
 - API Type Safety: Hono RPC (end-to-end type safety)
-- Validation: Zod + @hono/zod-validator
+- Validation: Zod + @hono/standard-validator
 
 **Database & Auth:**
 - Database: PostgreSQL

@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs"
 import path from "path"
 
 import { Glob } from "bun"
@@ -11,8 +10,13 @@ const publicDir = path.resolve(scriptDir, "../../web/next/public")
 const isCI = !!process.env.CI
 const CONCURRENCY = 8
 
-// public/ may be absent on fresh checkouts when emptied (git does not track empty dirs)
-if (!existsSync(publicDir)) {
+if (
+  !(
+    await Bun.file(publicDir)
+      .stat()
+      .catch(() => null)
+  )?.isDirectory()
+) {
   console.log("compress-images: public dir not found, skipping")
   process.exit(0)
 }

@@ -47,10 +47,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@fontsource-variable/caveat": "catalog:",
-    "@fontsource-variable/dm-sans": "catalog:",
-    "@fontsource-variable/jetbrains-mono": "catalog:",
-    "@fontsource-variable/newsreader": "catalog:",
     "@packages/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
@@ -61,6 +57,7 @@
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "shadcn": "catalog:",
+    "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:"

@@ -55,3 +55,6 @@ cookies.txt
 
 # git overrides
 !.env.example
+
+# visual-parity screenshots (machine-specific baselines, regenerate locally)
+web/next/test/screenshots/
