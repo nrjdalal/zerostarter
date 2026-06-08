@@ -9,6 +9,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
+import { caveat, newsreader } from "@/lib/fonts"
 
 const ogImageUrl = `${config.app.url}/api/og/hire?t=${Date.now()}`
 
@@ -119,11 +120,11 @@ export default function Page() {
     <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
       {/* About */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className="font-cursive text-3xl font-semibold tracking-wide">nrjdalal</h1>
+        <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
 
         <p>
           Crafting software that makes a difference.{" "}
-          <span className="font-serif font-medium tracking-wide italic">
+          <span className={`${newsreader.className} font-medium tracking-wide italic`}>
             I build developer tools and infrastructure.
           </span>{" "}
           Experimenting with new technologies and ideas.
@@ -189,7 +190,9 @@ export default function Page() {
       <div className="container mx-auto grid max-w-3xl gap-8 px-5 sm:grid-cols-2">
         {sections.map((section) => (
           <div key={section.title} className="space-y-8">
-            <h1 className="font-cursive text-muted-foreground text-3xl font-semibold tracking-wide">
+            <h1
+              className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
+            >
               {section.title}
             </h1>
             {section.projects.map((project) => (
@@ -223,13 +226,15 @@ export default function Page() {
 
       {/* hobbies */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className="font-cursive text-muted-foreground text-3xl font-semibold tracking-wide">
+        <h1
+          className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
+        >
           hobbies
         </h1>
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
-            <span className="font-serif font-medium tracking-wide italic">
+            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
               This year, I want to travel more and explore new places
             </span>
             .
@@ -242,7 +247,9 @@ export default function Page() {
 
       {/* connect */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className="font-cursive text-muted-foreground text-3xl font-semibold tracking-wide">
+        <h1
+          className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
+        >
           connect
         </h1>
         <p>
