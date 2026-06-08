@@ -1,3 +1,15 @@
+## v0.0.17
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.16...v0.0.17)
+
+### 🚀 Enhancements
+
+- **web:** Add hire funnel, résumé page, and biography blog ([#445](https://github.com/nrjdalal/zerostarter/pull/445))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.16
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.15...v0.0.16)
