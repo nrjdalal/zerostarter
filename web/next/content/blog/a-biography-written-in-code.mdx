@@ -1,0 +1,381 @@
+---
+title: "A Biography Written in Code"
+description: "Six years of my GitHub repos, read back in order. Not a portfolio, a record of how I learned to think."
+---
+
+I used to think my GitHub was a portfolio.
+
+Now I think it is closer to a diary.
+
+There are around 250 repositories under my name. A few of them are real things: used, starred, downloaded, opened by people I have never met. Many of them are not. They are half-finished experiments, afternoon ideas, broken scaffolds, abandoned rewrites, and projects that died after three commits.
+
+But when I read them in order, something changed.
+
+They stopped looking like a pile of code.
+
+They started looking like a record of how I learned to think.
+
+Not cleanly. Not strategically. Not in the polished way people usually describe their careers after the fact. More like this: build something, get annoyed by the bad version, build it again, understand a little more, repeat.
+
+That has been the pattern for six years.
+
+From a shell script in 2020 to the monorepo I am working on now, my GitHub has become an accidental biography. It has the confidence, the confusion, the overreach, the bad commit messages, the real improvements, and the unfinished ideas all sitting in public.
+
+This is the honest version.
+
+---
+
+## The first instinct was automation
+
+The first repo was not impressive.
+
+It was a shell script for deploying a website over SSH. A bare Git repository, a post-receive hook, and the thrill of pushing code and seeing a server update itself.
+
+That was the first pattern, before I knew it was a pattern: I hated repeating something manually, so I tried to automate it.
+
+`GIT-Website-Workflow` was the same instinct, just slightly more packaged. A `curl | bash` script, an ASCII banner, and the kind of commit messages you write when you are still editing files directly in GitHub because you do not yet understand that Git itself is a skill.
+
+Then came `no.CSS`.
+
+I was tired of writing the same layout classes, so I wrote a tiny utility CSS library. In hindsight, I had reinvented a small piece of Tailwind without knowing Tailwind existed. I abandoned it quickly, which happened a lot back then.
+
+Good instinct. Weak follow-through.
+
+That sentence describes a lot of my early work.
+
+There was also `beloans`, the first template I ever made. It was a fake instant-loans landing page with images and a zip file dumped into the repo root. No structure, no build step, no real hygiene.
+
+I am not embarrassed by it anymore.
+
+Starting badly still counts as starting.
+
+---
+
+## I learned by making things too painful to keep messy
+
+I think I learned to actually program through crypto trading bots.
+
+`binance`, `binancefy`, and `telegram-crypto-notifications` were all versions of the same itch: pull market data, calculate indicators, send myself signals.
+
+The earliest version was ugly. A single file. Loose variables. Strange function names. Logic piled on top of logic until the whole thing became hard to hold in my head.
+
+Then, slowly, I started splitting things apart.
+
+One file fetched symbols. One pulled candle data. One calculated indicators. One sent alerts.
+
+Nobody told me to do that.
+
+The code became painful, so I made it less painful.
+
+That is probably the most accurate description of how I have learned software: not through a perfect curriculum, but by building the bad version until the better version became obvious.
+
+`binancefy` was where I set up TypeScript properly for the first time. Linting. Build scripts. npm publishing. The README called it "the world's largest crypto exchange trading library," which is funny now because it was mostly a wrapper around axios.
+
+But I like that version of me.
+
+The ambition was bigger than the execution, but the ambition mattered. I was writing the README for the thing I wanted to become capable of building.
+
+---
+
+## The first time strangers used something I made
+
+`JioTV-Next` was different.
+
+It streamed live TV in the browser. To make it work, I had to understand how the real app signed its requests, how the tokens worked, how to package the whole thing so another person could run it.
+
+It got stars. It got contributors. It even got a security report.
+
+That was new.
+
+Until then, most of my projects were for me. This one crossed a line: a stranger could land on it, understand it, run it, and care enough to open an issue.
+
+That changed how I thought about building.
+
+The code was still the center, but it was no longer the whole product. The README mattered. The setup mattered. The deployment story mattered. The error messages mattered. The project had to survive contact with people who were not inside my head.
+
+That was the first time GitHub felt less like storage and more like distribution.
+
+---
+
+## The work kept circling the same problems
+
+For a while, the projects looked unrelated.
+
+Crypto bots. Email templates. Scrapers. E-commerce experiments. Server managers. Proxy pools. Torrent search UIs. Next.js starters. VS Code extensions. CLI tools.
+
+But reading them back, the same few obsessions kept showing up.
+
+I build tools for myself, and sometimes it turns out other people had the same problem.
+
+I wanted easier deploys, so I wrote shell scripts.
+
+I wanted cleaner project setup, so I wrote starters.
+
+I wanted to clone only one folder from a GitHub repo, so I built `gitpick`.
+
+I wanted shadcn registry setup to be less manual, so I built `smart-registry`.
+
+I wanted safer env handling after making a bad mistake, so I built `commitsafe`.
+
+The surface area kept changing, but the reflex stayed the same:
+
+> Find the annoying part. Build the tool I wish existed. Package it so someone else can use it.
+
+That is probably the through-line of the whole thing.
+
+I am also, apparently, obsessed with starting points.
+
+There is a straight line from `beloans` to `onset` to `the-typescript-starter` to `zerostarter`. Different levels of skill, different stacks, different names, but the same question underneath:
+
+> What would a clean beginning look like?
+
+Six years later, I am still answering that question.
+
+---
+
+## Around 2023, it started feeling like engineering
+
+At some point, the repos stopped looking like experiments.
+
+`google-parser` was one of the first projects where that shift was obvious. It was not just a script that worked once. It had tests. Releases. A cleaner structure. A reason to exist beyond "I wonder if I can do this."
+
+Then came `onset`.
+
+That project mattered because the documentation was not an afterthought. The README was part of the product. It taught the architecture step by step instead of just saying, "clone this and figure it out."
+
+That lesson carried into `rdt-li`, the URL shortener that actually caught on. The idea itself was not new. A URL shortener is one of the oldest web-app ideas there is.
+
+What worked was the packaging.
+
+One-click deploy. Pre-wired configuration. Analytics. A README that respected the person trying to use it.
+
+That was a turning point.
+
+I started to understand that good software is not just the clever core. It is the path into it.
+
+---
+
+## Not everything good gets noticed
+
+One thing GitHub teaches you quickly: quality and traction are not the same thing.
+
+`smart-registry` is one of the projects I am proudest of. It solves a real problem. It removes boilerplate. It understands files and dependencies so the user does not have to write as much configuration by hand.
+
+It did not take off like `gitpick`.
+
+That used to bother me more than it does now.
+
+Stars are useful feedback, but they are not the only feedback. Some projects are popular because the timing is right. Some are quiet because the audience is small. Some are good because they raise your own standard, even if nobody else notices.
+
+I would still build `smart-registry` again.
+
+That is the difference between chasing attention and developing taste.
+
+---
+
+## The mistakes became part of the system
+
+The worst parts are in the record too.
+
+I leaked AWS keys in a public README. Twice.
+
+That is not a cute mistake. It is the kind of thing that teaches you quickly because the cost is obvious.
+
+But the more interesting part is what happened after.
+
+Later, I built `commitsafe`, a tool that encrypts `.env` files before they touch Git. I moved toward short-lived publishing tokens. I started caring more about release safety, changelogs, and whether a project could be shipped without leaving sharp edges everywhere.
+
+That is the real growth.
+
+Not "I stopped making mistakes."
+
+More like:
+
+> I started turning mistakes into guardrails.
+
+My commit messages were bad for years too. Raw timestamps. "Initial commit." Lazy `chore: tweaks` commits next to huge changes. Even now, smaller side projects can be messy.
+
+But the projects that matter now have more discipline around them.
+
+That is probably a fair description of me as a builder: careful where it matters, sometimes sloppy where it does not, and slowly moving more things into the "matters" category.
+
+---
+
+## The thing that changed was judgment
+
+When I look across the whole GitHub history, the biggest change is not that I learned a framework.
+
+Frameworks changed constantly.
+
+Shell. Node. TypeScript. Next.js. Prisma. Drizzle. Hono. Bun. TanStack. Cloudflare Workers. AI tooling.
+
+The real change is judgment.
+
+Early on, the question was:
+
+> Can I make this work?
+
+Later, it became:
+
+> Can someone else use this?
+
+Then:
+
+> Can this be maintained?
+
+And now:
+
+> Is this safe, documented, typed, releasable, and worth shipping?
+
+That is a very different bar.
+
+`zerostarter` is where most of that thinking currently lives. It is not just another starter. It is the place where years of opinions collapsed into one system: shared types, one database schema, a real release process, and a stack that tries to remove the usual friction from starting a serious product.
+
+The thing I am proudest of is not that it runs.
+
+It is that it is trying to be correct.
+
+That sounds less exciting, but it feels more like engineering.
+
+---
+
+## The current direction
+
+The newest repos point toward AI, agents, and memory.
+
+`ai-x-terminal` was the early signal: a CLI that brings a workspace into a model. Now the work is moving toward agent sign-in flows, `AGENTS.md` files, bundled skills, and backends that exist to help software remember context.
+
+In one sense, this is a new direction.
+
+In another sense, it is the same old instinct.
+
+The reflex that automated a deploy script in 2020 is now pointed at infrastructure for software that can help write software.
+
+I do not know exactly where that goes yet.
+
+That uncertainty used to bother me. Now it feels familiar.
+
+Most of the useful things I have built started with a vague irritation, not a perfect plan.
+
+---
+
+## What my GitHub actually says
+
+My GitHub is not a clean list of wins.
+
+It is messier and more useful than that.
+
+It says I learn by building real things. It says I chase new tools early, sometimes too early. It says I abandon ideas when the question has been answered. It says I have confused ambition with execution more than once. It says I care more now about documentation, safety, release quality, and the user's path into the project than I did when I started.
+
+Most of all, it says I keep returning to the same promise:
+
+> Give me a domain I do not fully understand, and I will learn it by building something real inside it.
+
+That is the part I trust.
+
+Not mastery. Not polish. Not a perfect portfolio.
+
+A public trail of attempts, corrections, taste, and judgment.
+
+Six years ago, I was writing shell scripts to avoid repeating myself.
+
+Now I am building systems that try to make software easier to start, safer to ship, and maybe soon, easier for agents to understand.
+
+The work changed.
+
+The instinct did not.
+
+---
+
+## The full timeline
+
+If you want the receipts, here is the whole trail, year by year. It got long, because I build a lot. I left out the forks, the dupes, and the dead-on-arrival experiments, but a lot more than the highlights made the cut.
+
+**2020**
+
+- `ssh-git-connect` · POSIX shell: an interactive script that set up git-push-to-deploy, a bare repo and post-receive hook on a remote box. My literal first repo.
+- [`GIT-Website-Workflow`](https://github.com/nrjdalal/GIT-Website-Workflow) · Shell: a `curl | bash` push-to-deploy setup over SSH. Where the automate-my-own-annoyance habit started.
+- [`no.CSS`](https://github.com/nrjdalal/no.CSS) · SCSS: a mixin-generated atomic utility-CSS library, one class per value. Reinventing a slice of Tailwind before I knew it existed.
+
+**2021**
+
+- [`beloans`](https://github.com/nrjdalal/beloans) · HTML / SCSS: "the first template I ever made," a fake instant-loans landing page. A beginner pushing pixels with zero project hygiene.
+- `mac-setup` · zsh, Homebrew: a one-shot bootstrap for a fresh Mac, my whole dev environment as code. Turning a new laptop into home in one script.
+- `binance` · Node, Binance API, tulind: a crypto bot pulling kline data and computing MACD/EMA across pairs. Where I first taught code to read the markets.
+- [`telegram-crypto-notifications`](https://github.com/nrjdalal/telegram-crypto-notifications) · Node, Express, Telegram Bot API: a deployed bot that watched EMA crossovers and DM'd me trade signals. Alerts that actually reached my phone.
+- [`binancefy`](https://github.com/nrjdalal/binancefy) · TypeScript: a published npm package that fetches and sorts Binance trading pairs over axios. My first real TypeScript toolchain.
+- [`cowin-2021-telegram-notifications`](https://github.com/nrjdalal/cowin-2021-telegram-notifications) · Node, CoWIN API, node-cron: a slot-scanner hammering the CoWIN API to catch vaccine openings in India's 2021 crunch. Code to beat the queue when it mattered.
+- [`instagram-bot`](https://github.com/nrjdalal/instagram-bot) · Node, Puppeteer: a headless-browser bot that logged into Instagram and scraped follower data. My first taste of bending the browser to my will.
+- [`silicon-virtualizer`](https://github.com/nrjdalal/silicon-virtualizer) · Shell: a QEMU + HVF launcher that spins up Ubuntu ARM VMs on M1 Macs, a homemade Multipass. Systems curiosity, way ahead of the tooling.
+
+**2022**
+
+- [`linux-server-manager`](https://github.com/nrjdalal/linux-server-manager) · Bash: a `vero` CLI that installs nginx, Node, and Certbot and wires up reverse proxies. Wanting to own my whole deploy stack.
+- `verommerce-beta` · Next.js, Prisma, TypeScript: store, admin, and API for an e-commerce platform. Trying to ship a product, not learn a framework.
+- `experimental-store-creator` · Next.js, Prisma, MongoDB: a multi-tenant store builder that spun up a separate database per merchant. An architecture experiment in dynamic multi-tenancy.
+- [`mjml`](https://github.com/nrjdalal/mjml) · MJML, Sharp: a responsive email-template studio shipping campaigns for ~30 clients from one repo. Real paid client work.
+- [`JioTV-Next`](https://github.com/nrjdalal/JioTV-Next) · Next.js, Docker: stream live JioTV HD in the browser, self-host with one command (38 stars). The first time strangers used my stuff.
+- `site-crawler` / `crawler-node` · Puppeteer on Lambda, cheerio: a site-crawling toolchain, from headless serverless scraping to a lean link-harvester. Where the scraping habit began.
+- `ec2-proxy` / `proxyify` · Node, AWS SDK, Express: EC2 fleets as a rotating, IP-cycling proxy pool (ec2-proxy the prototype, proxyify the real build). Spinning up and killing infrastructure to dodge rate limits.
+- [`verosearch-prowlarr`](https://github.com/nrjdalal/verosearch-prowlarr) · Next.js, Prowlarr API: a torrent meta-search UI over a self-hosted indexer, with seed/size/date sorting. A front-end for my own self-hosting.
+
+**2023**
+
+- `keyword-scraper` · Node, AWS API Gateway, MongoDB: fan SERP scrapes across regional endpoints, then cluster keywords by result overlap. SEO at scale, with a real idea underneath.
+- `sls-crawler` / `google-searcher` / `sls-trends` · Express on Lambda, cheerio, puppeteer: a fleet of serverless scrapers for pages, Google search, and Trends. Data extraction at scale on cheap, self-warming Lambdas.
+- `cluster-logic` · T3, tRPC, Prisma: the keyword scraper given a real UI, with queued fan-out and mind-map clustering. Turning the scraper fleet into a tool.
+- `monorepo` · Turborepo, pnpm: two Next.js apps plus a shared prettier config and a UI package. My first real go at thinking in workspaces.
+- [`next-clerk-template`](https://github.com/nrjdalal/next-clerk-template) · Next.js 13, Clerk, Radix/shadcn: an auth-ready starter. Where I wired up conventional commits with commitlint and Husky.
+- `next-cli` · TypeScript, `curl | bash`: a create-next-app replacement that scaffolds my whole stack from a shell installer. The precursor to create-next-pro.
+- `catalogue` / `hookshops` · Next.js, Prisma then Drizzle, S3: a multi-shop product catalogue, then a single-tenant shop builder with auth and email. The e-commerce idea maturing over rewrites.
+- [`google-parser`](https://github.com/nrjdalal/google-parser) · Node, got-scraping, jsdom: a published npm package for browserless Google (and Amazon) SERP scraping (17 stars). My first package that shipped and iterated to v2.
+- [`pglaunch`](https://github.com/nrjdalal/pglaunch) · TypeScript, npm: a zero-config CLI that spins up disposable Postgres databases for dev (still maintained, v5+). A small tool that's genuinely useful years later.
+- [`shadcn-ui-snippets`](https://github.com/nrjdalal/shadcn-ui-snippets) · VSCode extension, Bun: type `cnx-alert` to drop in shadcn/ui components (117 stars). Building for a community, not just myself.
+- [`onset`](https://github.com/nrjdalal/onset) · Next.js 14, Drizzle/Postgres, Auth.js: a starter that teaches as it scaffolds, step by step (62 stars). Treating the docs as part of the product.
+- [`rdt-li`](https://github.com/nrjdalal/rdt-li) · Next.js, Drizzle/Postgres, NextAuth: a self-hostable URL shortener with real analytics and charts (255 stars). The one that actually caught on.
+- [`v0.nrjdalal.com`](https://github.com/nrjdalal/v0.nrjdalal.com) · Next.js 14, MDX: my personal portfolio, built as a clone-able open-source starter on the onset stack. Dogfooding my own work into my own site.
+
+**2024**
+
+- [`mydukaan-2024`](https://github.com/nrjdalal/mydukaan-2024) · Next.js, Tailwind: a pixel-faithful Figma-to-code payouts UI. A real company take-home (the Dukaan interview).
+- [`create-next-pro`](https://github.com/nrjdalal/create-next-pro) · Node, Inquirer: a `create-next-app` replacement that scaffolds my whole opinionated stack. My first published CLI.
+- [`lazy-dev`](https://github.com/nrjdalal/lazy-dev) · Next.js, shadcn: a dev-only floating panel for jumping between pages and bookmarking links while building (2 stars). A real product idea, not a scaffold.
+- [`readrave`](https://github.com/nrjdalal/readrave) · Next.js, Turborepo, pnpm: a docs tool, and my first real monorepo product. Buying it a domain made it feel real.
+- [`next-js-blaze-starter`](https://github.com/nrjdalal/next-js-blaze-starter) · Next.js 14, Stripe, Drizzle: a documented, opinionated SaaS starter with billing baked in. Productizing the starter, with payments.
+- [`commitsafe`](https://github.com/nrjdalal/commitsafe) · Node, node:crypto: encrypts `.env` files before they hit git, wired into git hooks. A near-miss with leaked secrets turned into a tool.
+- [`chat-app`](https://github.com/nrjdalal/chat-app) / `multiplayfire` · Next.js, Socket.IO, Bun: a realtime chat and a multiplayer-games shell on the same Socket.IO core. Stepping into real-time.
+- `html-scraper` / `puppeteer-scraper` · Hono on Lambda (SST): one scraping service with a fast HTTP mode and a headless-browser mode. Scraping, productionized on the edge.
+- [`ai-x-terminal`](https://github.com/nrjdalal/ai-x-terminal) · Node, OpenAI: an `ax` CLI that pipes your files and workspace into the model. My first bet on AI tooling.
+- [`use-tracking`](https://github.com/nrjdalal/use-tracking) · React, tsup: a genuinely zero-dependency analytics hook for Next.js. Learning to package a clean library.
+- [`npmignore`](https://github.com/nrjdalal/npmignore) · Next.js, TanStack Query: a faster, mobile-friendly search engine for npm. A real product, with a real domain.
+- [`shadcnext`](https://github.com/nrjdalal/shadcnext) · Node CLI: scaffolds a shadcn/ui project for Tailwind v4 when the official CLI didn't support it yet. A tool filling a timing gap.
+- [`spacewall`](https://github.com/nrjdalal/spacewall) · Next.js, SST, Drizzle, Upstash: an open-source link-in-bio builder with drag-and-drop, edge caching, and rate limiting. Proof I could ship a whole SaaS.
+
+**2025**
+
+- [`gitpick`](https://github.com/nrjdalal/gitpick) · TypeScript, Bun, zero deps: a `degit` replacement that clones any file, folder, or branch by URL (311 stars). Used by projects way bigger than mine.
+- [`awesome-templates`](https://github.com/nrjdalal/awesome-templates) · GitHub Actions, Bash, Bun: curated starter templates a cron rebuilds every 8 hours (27 stars). My first taste of running real automation on a schedule.
+- [`karabiner-human-config`](https://github.com/nrjdalal/karabiner-human-config) · TypeScript: a human-readable Karabiner config compiler, 15 lines to 170 (46 stars). Good enough to land on the official generators list.
+- [`smart-registry`](https://github.com/nrjdalal/smart-registry) · TypeScript: a zero-config shadcn registry builder that detects your deps and files for you (27 stars). The one I'm proudest of, traction or not.
+- [`better-next`](https://github.com/nrjdalal/better-next) · Next.js, Better Auth, Drizzle: add auth with a single `shadcn add` command, or use the template (13 stars). One-command DX was the whole point.
+- [`tailwind-animate`](https://github.com/nrjdalal/tailwind-animate) · CSS: a CSS-first, no-JS replacement for tailwindcss-animate on Tailwind v4 (8 stars). Riding the v4 migration.
+- A run of small published npm tools: [`colorwindcss`](https://github.com/nrjdalal/colorwindcss) (maps `oklch()` back to Tailwind color names), [`github-dashboard`](https://github.com/nrjdalal/github-dashboard) (a markdown repo table you splice into a README), [`zod-meta-parser`](https://github.com/nrjdalal/zod-meta-parser) (pull `.describe()` metadata out of Zod schemas), and [`the-typescript-starter`](https://github.com/nrjdalal/the-typescript-starter), the tsdown base the rest of my packages descend from. Shipping building blocks.
+- [`realtime-v2`](https://github.com/nrjdalal/realtime-v2) · mediasoup, ffmpeg, Socket.IO: a WebRTC SFU demo that transcodes RTP live (4 stars). Going deep on real-time for once.
+- [`virtual-next-routes`](https://github.com/nrjdalal/virtual-next-routes) · Vite, TanStack: Next.js-style file routing for TanStack Start (12 stars). My most credible TanStack contribution.
+- [`next.js-assistant`](https://github.com/nrjdalal/next.js-assistant) · VS Code extension: Next.js snippets and templates on the Marketplace. Shipping editor tooling on a new channel.
+- Full product attempts on my core Next + Better Auth + Drizzle stack: `langsdk` (an LLM chat app, ~228 commits), `launch.forum` (a discuss-request-launch idea forum), and `listkarlo` (a list app with custom auth). Not every one shipped, but each was a real build.
+- `next-hono-better-auth` / `next-hono-monorepo` · Next.js, Hono, Better Auth, Drizzle: the stack first as one app, then split into a Bun/Turborepo monorepo. The direct precursor to zerostarter.
+- [`better-start`](https://github.com/nrjdalal/better-start) · TanStack Start, Better Auth: an integration starter and walkthrough. Pushing the auth stack onto TanStack early.
+- [`msid`](https://github.com/nrjdalal/msid) · TypeScript: tiny monotonic, URL-safe, reversible IDs, seven characters for millisecond precision. A clean little primitive.
+- [`zerostarter`](https://github.com/nrjdalal/zerostarter) · Bun, Hono, Drizzle, TanStack: a type-safe SaaS monorepo (52 stars, this project). Everything I learned, in one place.
+- [`start-pro`](https://github.com/nrjdalal/start-pro) · TanStack Start, Bun: a starter that dogfoods my own virtual-next-routes (4 stars). The ecosystem eating its own tail.
+
+**2026**
+
+- [`wordloom`](https://github.com/nrjdalal/wordloom) · TypeScript, Bun, npm: a CLI that coins pronounceable brand names from CMUdict letter-patterns, with WordNet meanings inline. Back to shipping small, finished tools.
+- [`cloudflare-email-sending`](https://github.com/nrjdalal/cloudflare-email-sending) · Hono, Cloudflare Workers: a bearer-gated Worker that sends transactional mail from my own domain, no spoofing. Hono out at the edge.
+- `hermes-api` · Bun, Turborepo, Hono, Postgres: a loopback-only people-graph that resolves any platform identity to a contact and remembers every interaction. My starter stack, pointed at agent memory.
+
+---
+
+> `zerostarter`, the project this was published from, is open source on [GitHub](https://github.com/nrjdalal/zerostarter).
