@@ -30,7 +30,6 @@
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
         "@packages/auth": "workspace:*",
-        "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
         "better-auth": "catalog:",
@@ -143,7 +142,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/db": "workspace:*",
         "@packages/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
@@ -153,7 +151,6 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "babel-plugin-react-compiler": "catalog:",
-        "drizzle-orm": "catalog:",
         "shadcn": "catalog:",
         "sharp": "catalog:",
         "tailwindcss": "catalog:",
