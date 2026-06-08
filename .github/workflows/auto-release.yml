@@ -1,3 +1,5 @@
+# Personal repos: set RELEASE_TOKEN (admin PAT) so the release push can bypass canary's
+# require-PR rule; org repos fall back to GITHUB_TOKEN. See the push step.
 name: auto-release
 
 on:
@@ -90,8 +92,10 @@ jobs:
             if [ -z "$EXISTING" ]; then
               git tag "v$NEW_VERSION" "$BOUNDARY"
             fi
-            # atomic: branch and tag land together or not at all, no corrupting middle state
-            git push --atomic https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary "refs/tags/v$NEW_VERSION"
+            # atomic: branch and tag land together or not at all.
+            # RELEASE_TOKEN (admin PAT) bypasses canary's require-PR rule on personal repos;
+            # falls back to GITHUB_TOKEN, which bypasses via the Actions app in org repos.
+            git push --atomic https://x-access-token:${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary "refs/tags/v$NEW_VERSION"
             # publish a GitHub release whose notes mirror the changelog section
             NOTES=$(awk -v ver="## v$NEW_VERSION" '$0 == ver { flag = 1; next } /^## / { flag = 0 } flag' CHANGELOG.md)
             if ! gh release view "v$NEW_VERSION" > /dev/null 2>&1; then
