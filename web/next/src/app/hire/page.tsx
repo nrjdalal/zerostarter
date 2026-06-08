@@ -1,5 +1,6 @@
 import {
   RiArrowRightUpLine,
+  RiFileTextLine,
   RiGithubFill,
   RiLinkedinFill,
   RiMailLine,
@@ -11,11 +12,16 @@ import Link from "next/link"
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
 
-const ogImageUrl = `${config.app.url}/api/og/hire?t=${Date.now()}`
+const ogImageUrl = `${config.app.url}/api/og?${new URLSearchParams({
+  section: "Hire",
+  title: "Neeraj Dalal",
+  description: "AI-native product engineer",
+}).toString()}`
 
 export const metadata: Metadata = {
-  title: "nrjdalal",
-  description: "Crafting software that makes a difference.",
+  title: "Neeraj Dalal",
+  description:
+    "AI-native product engineer building SaaS, developer tools, and agent infrastructure.",
   openGraph: {
     type: "website",
     siteName: config.app.name,
@@ -25,7 +31,7 @@ export const metadata: Metadata = {
         url: ogImageUrl,
         width: 1200,
         height: 630,
-        alt: "nrjdalal - Crafting software that makes a difference",
+        alt: "Neeraj Dalal - AI-native product engineer",
       },
     ],
   },
@@ -34,6 +40,25 @@ export const metadata: Metadata = {
     images: [ogImageUrl],
   },
 }
+
+const proof: { value: string; label: string }[] = [
+  { value: "5+ years", label: "shipping production software" },
+  { value: "500+ PRs", label: "at LightWork AI" },
+  { value: "1,000+", label: "GitHub stars across open source" },
+  { value: "250+", label: "public repositories" },
+  { value: "10,000+", label: "installs across VS Code extensions" },
+  { value: "30,000+", label: "weekly npm downloads" },
+]
+
+const roles = [
+  "AI product engineer",
+  "Senior full-stack engineer",
+  "Founding engineer",
+  "Developer-experience engineer",
+  "Developer-tools engineer",
+  "Platform / product engineer",
+  "TypeScript / Next.js engineer",
+]
 
 const sections: {
   title: string
@@ -60,7 +85,7 @@ const sections: {
     projects: [
       {
         href: "https://lightwork.co",
-        title: "LightWorkAI",
+        title: "LightWork AI",
         description: "The future of property management.",
       },
     ],
@@ -108,52 +133,68 @@ const sections: {
       },
       {
         href: "https://github.com/nrjdalal/rdt-li",
-        title: "Redirect.link",
+        title: "rdt.li",
         description: "Self hostable, feature rich, minimalistic and open source URL shortener.",
       },
     ],
   },
 ]
 
+const buttonClass =
+  "bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+const headingClass = `${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`
+const linkClass = "border-border hover:border-ring border-b transition-colors"
+
 export default function Page() {
   return (
     <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
-      {/* About */}
+      {/* hook */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
         <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
 
-        <p>
-          Crafting software that makes a difference.{" "}
-          <span className={`${newsreader.className} font-medium tracking-wide italic`}>
-            I build developer tools and infrastructure.
-          </span>{" "}
-          Experimenting with new technologies and ideas.
-          <br />
-          <br />I am currently building{" "}
-          <Link
-            href={config.app.url}
-            className="border-border hover:border-ring border-b transition-colors"
-          >
-            ZeroStarter
-          </Link>
-          . When I'm out and about, you can find me on{" "}
-          <a
-            href="https://x.com/nrjdalal"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border-border hover:border-ring border-b transition-colors"
-          >
-            <RiTwitterXFill className="-mt-1 inline size-4.5" />
-          </a>
-          .
-        </p>
+        <div className="space-y-4">
+          <p>
+            AI-native product engineer building SaaS products, developer tools, and agent
+            infrastructure.{" "}
+            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+              I learn by shipping.
+            </span>
+          </p>
+          <p>
+            Five-plus years shipping production web apps, internal platforms, open-source developer
+            tools, and AI-native systems. Right now I'm a Product Engineer at{" "}
+            <a
+              href="https://lightwork.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClass}
+            >
+              LightWork AI
+            </a>
+            , building AI agent tooling and core product surfaces for an AI-powered
+            property-management platform.
+          </p>
+          <p>
+            Before that I helped take SaaS and AI products from 0 to 1, shipped scraping- and
+            automation-heavy SaaS, and built open-source tools now used by projects including{" "}
+            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+              TanStack, SST, Electric SQL, and Storybook
+            </span>
+            . I care about clean systems, fast builds, strong types, useful docs, and software that
+            survives real users.
+          </p>
+          <p className="font-medium">
+            Available for senior product engineering, full-stack TypeScript, AI tooling,
+            developer-experience, and founding-engineer roles.
+          </p>
+        </div>
 
         <div className="flex flex-wrap gap-3">
           <a
             href="https://github.com/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+            className={buttonClass}
           >
             <RiGithubFill className="size-4" />
             GitHub
@@ -162,7 +203,7 @@ export default function Page() {
             href="https://x.com/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+            className={buttonClass}
           >
             <RiTwitterXFill className="size-4" />
             @nrjdalal
@@ -171,37 +212,43 @@ export default function Page() {
             href="https://linkedin.com/in/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
+            className={buttonClass}
           >
             <RiLinkedinFill className="size-4" />
             LinkedIn
           </a>
-          <a
-            href="mailto:nrjdalal.dev@gmail.com"
-            className="bg-secondary hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors"
-          >
+          <a href="mailto:nrjdalal.dev@gmail.com" className={buttonClass}>
             <RiMailLine className="size-4" />
             nrjdalal.dev@gmail.com
           </a>
+          <Link href="/resume" className={buttonClass}>
+            <RiFileTextLine className="size-4" />
+            Resume
+          </Link>
         </div>
       </div>
 
-      {/* Work */}
+      {/* proof */}
+      <div className="container mx-auto max-w-3xl px-5">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3">
+          {proof.map((stat) => (
+            <div key={stat.value} className="space-y-1">
+              <div className="text-2xl font-semibold tracking-tight">{stat.value}</div>
+              <div className="text-muted-foreground text-sm">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* work */}
       <div className="container mx-auto grid max-w-3xl gap-8 px-5 sm:grid-cols-2">
         {sections.map((section) => (
           <div key={section.title} className="space-y-8">
-            <h1
-              className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
-            >
-              {section.title}
-            </h1>
+            <h1 className={headingClass}>{section.title}</h1>
             {section.projects.map((project) => (
               <div key={project.title} className="space-y-2">
                 {project.external === false ? (
-                  <Link
-                    href={project.href}
-                    className="border-border hover:border-ring border-b transition-colors"
-                  >
+                  <Link href={project.href} className={linkClass}>
                     {project.title}
                   </Link>
                 ) : (
@@ -210,7 +257,7 @@ export default function Page() {
                       href={project.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="border-border hover:border-ring border-b transition-colors"
+                      className={linkClass}
                     >
                       {project.title}
                     </a>
@@ -224,13 +271,47 @@ export default function Page() {
         ))}
       </div>
 
+      {/* writing */}
+      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+        <h1 className={headingClass}>writing</h1>
+        <div className="space-y-2">
+          <Link href="/blog/a-biography-written-in-code" className={linkClass}>
+            A Biography Written in Code
+          </Link>
+          <p className="text-muted-foreground mt-2">
+            The résumé is the clean version. The real one is six years, 250 repositories, and the
+            path from shell scripts to AI-agent infrastructure, the mistakes and patterns behind the
+            output. Read it if you want to understand how I think, not just what I shipped.
+          </p>
+        </div>
+      </div>
+
+      {/* hire me */}
+      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+        <h1 className={headingClass}>hire me</h1>
+        <div className="space-y-4">
+          <p>
+            I'm best suited for teams building ambitious products with a small, high-agency
+            engineering group. I can own features end to end, move between frontend and backend
+            without handoff friction, and build the internal tooling that keeps a team fast,
+            especially with TypeScript-heavy systems, AI product workflows, developer experience,
+            monorepos, scraping and data pipelines, or turning early ambiguity into something
+            shippable.
+          </p>
+          <p className="text-muted-foreground">{roles.join(" · ")}</p>
+          <p>
+            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+              The speed of a builder, the taste of someone who maintains tools for other developers,
+              and the judgment that comes from shipping enough software to know where the sharp
+              edges are.
+            </span>
+          </p>
+        </div>
+      </div>
+
       {/* hobbies */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1
-          className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
-        >
-          hobbies
-        </h1>
+        <h1 className={headingClass}>hobbies</h1>
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
@@ -247,26 +328,20 @@ export default function Page() {
 
       {/* connect */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1
-          className={`${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`}
-        >
-          connect
-        </h1>
+        <h1 className={headingClass}>connect</h1>
         <p>
           Want to chat? Leave a message on{" "}
           <a
             href="https://x.com/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
-            className="border-border hover:border-ring border-b transition-colors"
+            aria-label="X (Twitter)"
+            className={linkClass}
           >
             <RiTwitterXFill className="-mt-1 inline size-4.5" />
           </a>{" "}
           or send an email to{" "}
-          <a
-            href="mailto:nrjdalal.dev@gmail.com"
-            className="border-border hover:border-ring border-b transition-colors"
-          >
+          <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
             nrjdalal.dev@gmail.com
           </a>
           .

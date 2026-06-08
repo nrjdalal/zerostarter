@@ -9,12 +9,12 @@ ZeroStarter generates dynamic Open Graph images for social media previews using 
 
 ## Endpoints
 
-| Route                      | Purpose                     |
-| -------------------------- | --------------------------- |
-| `/api/og/home`             | Landing page preview        |
-| `/api/og/docs/[[...slug]]` | Documentation page previews |
-| `/api/og/blog/[[...slug]]` | Blog post previews          |
-| `/api/og/hire`             | Hire page preview           |
+| Route                                  | Purpose                                      |
+| -------------------------------------- | -------------------------------------------- |
+| `/api/og/home`                         | Landing page preview                         |
+| `/api/og/docs/[[...slug]]`             | Documentation page previews                  |
+| `/api/og/blog/[[...slug]]`             | Blog post previews                           |
+| `/api/og?section=&title=&description=` | Generic parameterized preview (hire, résumé) |
 
 ## How It Works
 
@@ -58,7 +58,7 @@ export function generateStaticParams() {
 }
 ```
 
-For a one-off route (no source), use `ImageResponse` directly — see `web/next/src/app/api/og/home/route.tsx` and `/hire/route.tsx` as references.
+For a one-off route (no source), use `ImageResponse` directly. See `web/next/src/app/api/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/api/og/route.tsx` endpoint (as the hire and résumé pages do).
 
 > **Note:** `takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
 
