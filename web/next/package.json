@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "build": "bun ../../.github/scripts/compress-images.ts && fumadocs-mdx && next build",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "dev": "next dev",
-    "start": "bun .next/standalone/web/next/server.js"
+    "start": "bun .next/standalone/web/next/server.js",
+    "test": "bun run test/run.ts -- test/",
+    "test:all": "bun run test/all.ts",
+    "test:e2e": "BROWSER_TESTS=true bun run test/run.ts --browser -- test/",
+    "test:visual": "bun run test/visual.ts",
+    "test:visual:update": "bun run test/visual.ts --update"
   },
   "dependencies": {
     "@api/hono": "workspace:*",

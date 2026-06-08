@@ -33,7 +33,12 @@
     "lint": "turbo run lint --summarize",
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
-    "start": "turbo run start"
+    "start": "turbo run start",
+    "test": "cd web/next && bun run test",
+    "test:all": "cd web/next && bun run test:all",
+    "test:e2e": "cd web/next && bun run test:e2e",
+    "test:visual": "cd web/next && bun run test:visual",
+    "test:visual:update": "cd web/next && bun run test:visual:update"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
