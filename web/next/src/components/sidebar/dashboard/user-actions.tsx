@@ -26,6 +26,12 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
 
+function getInitials(name: string) {
+  const words = name.trim().split(/\s+/)
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+
 export function SidebarDashboardUserActions({ user }: { user: User }) {
   const { isMobile } = useSidebar()
 
@@ -50,7 +56,7 @@ export function SidebarDashboardUserActions({ user }: { user: User }) {
           >
             <Avatar className="size-8 rounded-md">
               <AvatarImage src={user.image ?? ""} alt={user.name} />
-              <AvatarFallback className="rounded-md">ND</AvatarFallback>
+              <AvatarFallback className="rounded-md">{getInitials(user.name)}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
@@ -69,7 +75,7 @@ export function SidebarDashboardUserActions({ user }: { user: User }) {
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="size-8 rounded-md">
                     <AvatarImage src={user.image ?? ""} alt={user.name} />
-                    <AvatarFallback className="rounded-md">ND</AvatarFallback>
+                    <AvatarFallback className="rounded-md">{getInitials(user.name)}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>

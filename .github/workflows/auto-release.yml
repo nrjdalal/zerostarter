@@ -15,7 +15,7 @@ jobs:
   update-changelog:
     name: Update changelog branch
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref != 'changelog'
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'canary'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -32,13 +32,31 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Update changelog branch from main
-        id: update-changelog
+      - name: Commit changelog to canary
         run: |
-          git checkout main
-          git branch -D changelog 2>/dev/null || true
-          git checkout -b changelog
-          if [ -f CHANGELOG.md ] && [ -s CHANGELOG.md ]; then
+          # the changelog commit is mechanical (generated from already-reviewed PR titles),
+          # so it lands directly on canary instead of going through a PR
+          git checkout canary
+          # install first so every bunx below resolves the LOCKED versions
+          # (changelogen's output format is load-bearing for the content gate)
+          bun install --ignore-scripts
+          # the boundary this changelog covers; tagged below so the next run starts exactly here
+          BOUNDARY=$(git rev-parse HEAD)
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            # only changelog commits (or nothing) since the anchor: skip, but backfill the
+            # release if a previous run pushed the commit+tag and failed before publishing
+            if [ "$(git rev-list "$LAST_TAG"..HEAD --count --invert-grep --grep='^ci(changelog)')" = "0" ]; then
+              if ! gh release view "$LAST_TAG" > /dev/null 2>&1; then
+                NOTES=$(awk -v ver="## $LAST_TAG" '$0 == ver { flag = 1; next } /^## / { flag = 0 } flag' CHANGELOG.md)
+                gh release create "$LAST_TAG" --title "$LAST_TAG" --notes "$NOTES" --latest
+              fi
+              echo "No releasable commits since $LAST_TAG, skipping changelog"
+              exit 0
+            fi
+            bunx changelogen --bump --from "$LAST_TAG" --no-commit || true
+          elif [ -f CHANGELOG.md ] && [ -s CHANGELOG.md ]; then
+            # pre-tags fallback: anchor on the last commit that touched the changelog
             FROM_COMMIT=$(git log -1 --format=%H -- CHANGELOG.md 2>/dev/null || echo "")
             if [ -n "$FROM_COMMIT" ]; then
               bunx changelogen --bump --from "$FROM_COMMIT" --no-commit || true
@@ -49,32 +67,38 @@ jobs:
             bunx changelogen --bump --no-commit || true
           fi
           bunx oxfmt --write CHANGELOG.md
-          bun install --ignore-scripts
+          # refresh the build-graph snapshot for this release from a fresh CI build
+          # (env mirrors auto-check-build.yml so size labels match the PR-check build)
+          NODE_ENV=production SKIP_ENV_VALIDATION=true bunx turbo build
+          bun .github/scripts/build-sizes.ts --graph
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun .github/scripts/changelog-manager.ts
-          if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ]; then
-            git add CHANGELOG.md package.json
+          # gate intentionally ignores the svg: it only ships riding a real release
+          # (changelog or version change); alone it is never worth a commit.
+          # content check: a range of only filtered-out commit types still bumps,
+          # so also require at least one entry in the new section before releasing
+          SECTION=$(awk '/^## v/ { n++ } n == 1' CHANGELOG.md | sed '/^### ❤️ Contributors/,$d')
+          if [ -n "$(git status --porcelain CHANGELOG.md package.json)" ] && echo "$SECTION" | grep -q '^- '; then
+            git add CHANGELOG.md package.json .github/assets/graph-build.svg
             git commit -m "ci(changelog): update changelog and bump version"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git changelog --force
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            NEW_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+            # fail loudly on tag collision: proceeding would mislabel this changelog section
+            EXISTING=$(git rev-parse -q --verify "refs/tags/v$NEW_VERSION^{commit}" || true)
+            if [ -n "$EXISTING" ] && [ "$EXISTING" != "$BOUNDARY" ]; then
+              echo "::error::tag v$NEW_VERSION exists at $EXISTING but boundary is $BOUNDARY"
+              exit 1
+            fi
+            if [ -z "$EXISTING" ]; then
+              git tag "v$NEW_VERSION" "$BOUNDARY"
+            fi
+            # atomic: branch and tag land together or not at all, no corrupting middle state
+            git push --atomic https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary "refs/tags/v$NEW_VERSION"
+            # publish a GitHub release whose notes mirror the changelog section
+            NOTES=$(awk -v ver="## v$NEW_VERSION" '$0 == ver { flag = 1; next } /^## / { flag = 0 } flag' CHANGELOG.md)
+            if ! gh release view "v$NEW_VERSION" > /dev/null 2>&1; then
+              gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$NOTES" --latest
+            fi
           else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No releasable changelog content, skipping release"
           fi
-
-      - name: Create PR from changelog to canary
-        if: steps.update-changelog.outputs.has_changes == 'true'
-        run: |
-          PR_RESPONSE=$(curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:changelog&base=canary&state=open")
-
-          PR_NUMBER=$(echo "$PR_RESPONSE" | bunx fx 'x => x[0]?.number ?? null')
-
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
-            curl -sL -X POST \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls" \
-              -d "{\"title\": \"ci(changelog): 📖 update changelog and bump version\", \"head\": \"changelog\", \"base\": \"canary\", \"body\": \"Automatically generated PR to update changelog and version from main.\", \"draft\": true}"
-            echo "Created PR from changelog to canary"
-          else
-            echo "PR from changelog to canary already exists: #$PR_NUMBER"
-          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

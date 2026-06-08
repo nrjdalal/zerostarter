@@ -5,18 +5,48 @@ import type { NextConfig } from "next"
 
 getSafeEnv(env, "@web/next")
 
+function detectLibc() {
+  if (process.platform !== "linux") return undefined
+  try {
+    const report = process.report?.getReport() as { header?: { glibcVersionRuntime?: string } }
+    return report?.header?.glibcVersionRuntime ? "glibc" : "musl"
+  } catch {
+    return "musl"
+  }
+}
+
+const libc = detectLibc()
+const libcExcludes = {
+  glibc: [
+    "../../node_modules/.bun/@img+sharp-libvips-linuxmusl-*@*/**",
+    "../../node_modules/.bun/@img+sharp-linuxmusl-*@*/**",
+    "../../node_modules/.bun/@takumi-rs+core-linux-*-musl@*/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+  ],
+  musl: [
+    "../../node_modules/.bun/@img+sharp-libvips-linux-*@*/**",
+    "../../node_modules/.bun/@img+sharp-linux-*@*/**",
+    "../../node_modules/.bun/@takumi-rs+core-linux-*-gnu@*/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+  ],
+}
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  ...(libc && {
+    outputFileTracingExcludes: { "*": libcExcludes[libc] },
+    outputFileTracingIncludes: {
+      "/api/og": [
+        `node_modules/@takumi-rs/core-linux-*-${{ glibc: "gnu", musl: "musl" }[libc]}/**`,
+      ],
+    },
+  }),
   reactCompiler: true,
   rewrites: async () => {
     return [
       {
-        source: "/api/:path*",
-        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path*`,
-      },
-      {
-        source: "/api/search",
-        destination: `${env.NEXT_PUBLIC_APP_URL}/api/search`,
+        source: "/api/:path((?!og$|og/).*)",
+        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path`,
       },
       {
         source: "/blog/:path*.md",
@@ -36,7 +66,7 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-  serverExternalPackages: ["takumi-js"],
+  serverExternalPackages: ["@takumi-rs/core", "takumi-js"],
 }
 
 const withMDX = createMDX()

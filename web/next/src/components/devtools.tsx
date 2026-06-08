@@ -1,29 +1,8 @@
 "use client"
 
-import { RiCodeLine, RiExternalLinkLine } from "@remixicon/react"
+import { RiCodeLine } from "@remixicon/react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools/production"
 import { useEffect, useState } from "react"
-
-const config = {
-  WebNext: "nrjdalal/zerostarter.dev",
-  ApiHono: "nrjdalal/api.zerostarter.dev",
-  Github: "nrjdalal/zerostarter",
-}
-
-const Links = [
-  {
-    title: "WebNext",
-    url: `https://vercel.com/${config.WebNext}/deployments`,
-  },
-  {
-    title: "ApiHono",
-    url: `https://vercel.com/${config.ApiHono}/deployments`,
-  },
-  {
-    title: "Github",
-    url: `https://github.com/${config.Github}`,
-  },
-]
 
 export function DevTools() {
   const [expandDevtools, setExpandDevtools] = useState(false)
@@ -52,20 +31,6 @@ export function DevTools() {
       {expandDevtools && (
         <>
           <ReactQueryDevtools buttonPosition="top-right" />
-          <div className="fixed right-44 bottom-2 flex items-center gap-x-3">
-            {Links.map(({ title, url }) => (
-              <a
-                key={title}
-                className="flex items-center gap-1.5"
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span>{title}</span>
-                <RiExternalLinkLine className="mb-0.5 size-3" />
-              </a>
-            ))}
-          </div>
           <span className="ml-1">{width.toLocaleString()}</span>
           <span>x</span>
           <span>{height.toLocaleString()}</span>

@@ -1,8 +1,12 @@
+name: zerostarter
+
 services:
   api:
     build:
       context: .
       dockerfile: api/hono/Dockerfile
+      secrets:
+        - dotenv
     env_file:
       - .env
     environment:
@@ -14,9 +18,15 @@ services:
     build:
       context: .
       dockerfile: web/next/Dockerfile
+      secrets:
+        - dotenv
     env_file:
       - .env
     environment:
       - INTERNAL_API_URL=http://api:4000
     ports:
       - "3000:3000"
+
+secrets:
+  dotenv:
+    file: .env

@@ -1,6 +1,3 @@
-import { readFile, writeFile } from "node:fs/promises"
-import { resolve } from "node:path"
-
 import { globby } from "globby"
 
 // TODO: AI-generated script, replace later.
@@ -44,11 +41,11 @@ const sortObjectDeep = <T extends JSONValue>(value: T): T => {
 }
 
 const readJsonFile = async <T>(path: string): Promise<T> =>
-  JSON.parse(await readFile(path, "utf8")) as T
+  JSON.parse(await Bun.file(path).text()) as T
 
 const writeJsonFileIfChanged = async (path: string, nextValue: unknown, prevRaw: string) => {
   const nextRaw = JSON.stringify(nextValue, null, 2) + "\n"
-  if (nextRaw !== prevRaw) await writeFile(path, nextRaw, "utf8")
+  if (nextRaw !== prevRaw) await Bun.write(path, nextRaw)
 }
 
 const collectCatalogKeys = (pkg: PackageJson): Set<string> => {
@@ -68,14 +65,14 @@ const collectCatalogKeys = (pkg: PackageJson): Set<string> => {
   return keys
 }
 
-const scanUsedDeps = async (repoRoot: string, pkgPaths: string[]) => {
+const scanUsedDeps = async (pkgPaths: string[]) => {
   const usedDeps = new Set<string>()
   const usedVersions = new Map<string, Set<string>>()
 
   for (const relPath of pkgPaths) {
     let pkg: PackageJson
     try {
-      pkg = await readJsonFile<PackageJson>(resolve(repoRoot, relPath))
+      pkg = await readJsonFile<PackageJson>(relPath)
     } catch {
       continue
     }
@@ -124,10 +121,9 @@ const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string, Set<s
 }
 
 async function main() {
-  const repoRoot = process.cwd()
-  const rootPkgPath = resolve(repoRoot, "package.json")
+  const rootPkgPath = "package.json"
 
-  const rootRaw = await readFile(rootPkgPath, "utf8")
+  const rootRaw = await Bun.file(rootPkgPath).text()
   const rootPkg = JSON.parse(rootRaw) as PackageJson
 
   let rootMutated = false
@@ -143,7 +139,7 @@ async function main() {
   const catalogKeys = collectCatalogKeys(rootPkg)
 
   const pkgPaths = await globby("**/package.json", { gitignore: true })
-  const { usedDeps, usedVersions } = await scanUsedDeps(repoRoot, pkgPaths)
+  const { usedDeps, usedVersions } = await scanUsedDeps(pkgPaths)
 
   const { safeToMove, unsafeMissing } = pickSafeMoves(catalogKeys, usedVersions)
 
@@ -162,12 +158,11 @@ async function main() {
   }
 
   for (const relPath of pkgPaths) {
-    const absPath = resolve(repoRoot, relPath)
     let raw: string
     let pkg: PackageJson
 
     try {
-      raw = await readFile(absPath, "utf8")
+      raw = await Bun.file(relPath).text()
       pkg = JSON.parse(raw) as PackageJson
     } catch {
       continue
@@ -193,7 +188,7 @@ async function main() {
     }
 
     if (mutated) {
-      await writeJsonFileIfChanged(absPath, pkg, raw)
+      await writeJsonFileIfChanged(relPath, pkg, raw)
     }
   }
 
