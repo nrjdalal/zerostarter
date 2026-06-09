@@ -1,3 +1,15 @@
+## v0.0.18
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.17...v0.0.18)
+
+### 🩹 Fixes
+
+- **web:** Allow crawlers to fetch OG images under /api/og ([#447](https://github.com/nrjdalal/zerostarter/pull/447))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.17
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.16...v0.0.17)
