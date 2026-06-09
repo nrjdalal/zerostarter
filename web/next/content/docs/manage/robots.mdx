@@ -14,7 +14,7 @@ The `robots.txt` file provides instructions to search engine crawlers about whic
 The robots.txt file:
 
 - Allows all public pages to be crawled
-- Disallows API routes and private dashboard pages
+- Disallows API routes and private dashboard pages, except `/api/og` (so social unfurlers can fetch Open Graph preview images)
 - References the sitemap location
 - Uses Next.js `MetadataRoute.Robots` type
 
@@ -28,9 +28,11 @@ The robots.txt file:
 The robots.txt is implemented in `web/next/src/app/robots.ts` and configures:
 
 - **User-Agent**: `*` (all crawlers)
-- **Allowed**: All pages under `/` (public content)
+- **Allowed**:
+  - `/` - all public content
+  - `/api/og` - Open Graph image routes, so social unfurlers (Twitterbot, facebookexternalhit, LinkedInBot, Slackbot, Discordbot) can fetch link-preview images
 - **Disallowed**:
-  - `/api/` - API endpoints
+  - `/api/` - API endpoints (the more specific `/api/og` allow above wins by longest-match, so preview images stay crawlable)
   - `/dashboard/` - Dashboard routes
 - **Sitemap**: References `${baseUrl}/sitemap.xml`
 
@@ -40,5 +42,5 @@ The current configuration:
 
 - Allows all search engines (`User-Agent: *`)
 - Permits crawling of all public pages
-- Blocks API endpoints and dashboard routes
+- Blocks API endpoints (except the `/api/og` image routes) and dashboard routes
 - Points crawlers to the sitemap for efficient discovery
