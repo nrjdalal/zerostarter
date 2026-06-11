@@ -533,7 +533,7 @@ Add a doc or blog post? It's automatically in the sitemap. No manual updates nee
 ```ts
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: "*", allow: ["/", "/api/og"], disallow: ["/api/", "/dashboard/"] }],
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/dashboard/"] }],
     sitemap: `${baseUrl}/sitemap.xml`,
   }
 }
@@ -542,7 +542,7 @@ export default function robots(): MetadataRoute.Robots {
 **Dynamic OG images** generated per page:
 
 ```tsx
-// web/next/src/app/api/og/home/route.tsx
+// web/next/src/app/og/home/route.tsx
 export async function GET() {
   return new ImageResponse(
     <div

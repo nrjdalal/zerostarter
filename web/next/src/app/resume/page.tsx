@@ -5,7 +5,7 @@ import Link from "next/link"
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
 
-const ogImageUrl = `${config.app.url}/api/og?${new URLSearchParams({
+const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",
   title: "Neeraj Dalal",
   description: "AI-native engineer & SaaS architect",
