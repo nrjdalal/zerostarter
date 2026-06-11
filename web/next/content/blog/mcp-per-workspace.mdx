@@ -3,7 +3,7 @@ title: "One Machine, Many Identities: Per-Workspace MCP and Git in Claude Code"
 description: "Make MCP servers, GitHub auth, and git commit identity follow the directory you're in, so concurrent Claude Code sessions never bleed work, client, and personal accounts into each other. No manual switching, no shared global state to race."
 ---
 
-Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. Moments later the personal session points it at your personal account, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because `gh` has a single active account and both sessions share it. Switch it in one and you've switched it in the other.
+Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. Moments later the personal session points it at your personal account, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because when a command falls back to `gh`'s active account for github.com, that account is shared global state. Switch it in one and you've switched it in the other.
 
 ![Two Claude Code sessions both switching gh's single active account, so the work session's next call goes out as the wrong user](/blog/mcp-per-workspace/images/gh-account-clash.svg)
 
@@ -12,6 +12,14 @@ You can't fix this with discipline. There's no "remember to switch back" when tw
 This post wires up identity across three concerns (MCP servers, GitHub auth, and git commit identity) in five layers, so that `cd`-ing into a folder silently selects the right one. The examples use a work account (`acme-inc`) and a personal account (`nrjdalal`), but it scales to as many as you like.
 
 > Everything here is for [Claude Code](https://code.claude.com) on macOS/zsh, but the git and gh pieces apply to any terminal workflow.
+
+**Assumptions in the examples:**
+
+- Claude Code launched from the terminal, not a GUI app
+- GitHub.com accounts, not GitHub Enterprise Server
+- HTTPS git remotes if you want `git push`/`pull` to follow `GH_TOKEN`
+- zsh on macOS, with `gh auth setup-git` run once
+- Claude Code 2.1.173 for the ancestor `.mcp.json` walk-up
 
 ---
 
@@ -24,6 +32,12 @@ A global "current account" is a single mutable value that every terminal shares.
 ![Each directory resolves to its own identity: ~/work to the acme-inc GitHub account, its MCP servers, and the neeraj@acme.inc git email; ~/personal to nrjdalal, its MCP servers, and admin@nrjdalal.com; with nothing shared between them](/blog/mcp-per-workspace/images/scope-by-path.svg)
 
 Keep that distinction in mind. It's why we'll reach for a per-shell env var instead of `gh auth switch`, and for git's `includeIf` instead of a one-off `git config`.
+
+---
+
+## Prior Art, and What's Different
+
+Per-project MCP isn't new. Claude's own [MCP docs](https://code.claude.com/docs/en/mcp) cover scopes, precedence, and env expansion, and others have written about [per-project MCP servers in editors](https://taoofmac.com/space/blog/2025/10/04/1111). This post isn't claiming to invent that. The contribution is the layer most guides skip: making _identity_ (MCP tokens, the GitHub account behind `gh` and `git`, and your commit address) follow the directory, so it survives _concurrent_ sessions with no shared account to clobber.
 
 ---
 
@@ -70,6 +84,8 @@ The workspace-root `.mcp.json` is `project` scope. Sibling workspaces are _sibli
 
 > **Project vs. workspace, and a caveat.** Claude's docs call `.mcp.json` _project_ scope: a file at a repo root, meant to be committed. Here it sits one level up, at an **ancestor workspace** root _above_ your repos. The upward search that crosses repo boundaries to find it is observed behavior, not something the docs spell out, so I checked it (on Claude Code 2.1.173) with `claude mcp list`, where an inherited server shows up as `⏸ Pending approval`. If you lean on it, confirm it on your version.
 
+If a future Claude Code version stops discovering ancestor workspace files, the fallback is boring but safe: put a `.mcp.json` in each repo, symlink it from the workspace root, or add the servers with `local` scope per project. The identity-scoping pieces below still work either way.
+
 ---
 
 ## Layer 2: A Separate Token Per Workspace
@@ -109,6 +125,8 @@ GitHub's hosted MCP server authenticates with a token in a header rather than a 
 ```
 
 That `${GITHUB_TOKEN}` is an environment variable, expanded when the server connects. So if we can make `GITHUB_TOKEN` resolve to the right account based on the current directory, GitHub auth follows the folder on its own. There's a bonus, too: the `gh` CLI reads `GH_TOKEN`/`GITHUB_TOKEN` before its keyring, with `GH_TOKEN` taking precedence, so the hook sets **both** to the same value (an inherited `GH_TOKEN` would otherwise make `gh` disagree with the MCP header). That steers `gh`, and if `gh` is your git credential helper (set up once with `gh auth setup-git`), it steers `git push`/`pull` too. One token, three tools.
+
+One important boundary: this only affects Git network auth for **HTTPS remotes** configured to use `gh` as the credential helper. If your remote is `git@github.com:org/repo.git`, `GH_TOKEN` does nothing for `git push`; SSH keys and `ssh-agent` decide that path. Either use HTTPS remotes for this setup, or solve SSH identity separately with `~/.ssh/config` host aliases.
 
 The engine is a zsh `chpwd` hook that runs on every directory change. Here's the whole decision it makes on each `cd`:
 
@@ -177,7 +195,19 @@ Log both accounts into `gh` once (`gh auth login`), and the token is pulled live
 }
 ```
 
-The helper just runs `gh auth token -u "$1"` and prints `{"Authorization":"Bearer <token>"}`. The trade-off is the mirror image of the env-var approach: `headersHelper` scopes the token to the MCP connection alone, while exporting it is what you want when `gh` and `git` should resolve to the same account too.
+That helper (`~/.config/claude/github-mcp-headers.sh`) is a few lines. Claude Code runs it with a 10-second timeout once you've trusted the workspace, and expects a JSON object of headers on stdout:
+
+```sh
+#!/bin/sh
+set -eu
+
+user="${1:?usage: github-mcp-headers.sh <gh-user>}"
+tok="$(gh auth token -u "$user")"
+
+printf '{"Authorization":"Bearer %s"}' "$tok"
+```
+
+GitHub tokens are JSON-safe in practice, so `printf` is fine here; if you want to be airtight, JSON-encode the value instead. The trade-off is the mirror image of the env-var approach: `headersHelper` scopes the token to the MCP connection alone, while exporting it is what you want when `gh` and `git` should resolve to the same account too.
 
 ---
 
@@ -190,8 +220,8 @@ The wrong move is to paste that token straight into `.mcp.json`, a plaintext fil
 Store each workspace's token once, under its own keychain entry:
 
 ```bash
-security add-generic-password -a "$USER" -s slack-work-xoxp     -w 'xoxp-...'
-security add-generic-password -a "$USER" -s slack-personal-xoxp -w 'xoxp-...'
+security add-generic-password -U -a "$USER" -s slack-work-xoxp     -w 'xoxp-...'
+security add-generic-password -U -a "$USER" -s slack-personal-xoxp -w 'xoxp-...'
 ```
 
 Reference it by env var in each workspace's `.mcp.json`, never inline. The server always reads `SLACK_MCP_XOXP_TOKEN`; each workspace just feeds it from a different shell variable:
@@ -366,12 +396,6 @@ That's it. `cd ~/work/api` and you're the work account, with work connectors and
 ## When You Don't Need This
 
 Skip all of this if you've got one GitHub account, never run agents concurrently, or your `.mcp.json` is a team file that belongs committed in the repo (the normal _project_ scope). The payoff here is specific: multiple accounts, multiple agents, and multiple terminals overlapping on one machine. With a single identity there's nothing to clash over, and the plain global setup is simpler.
-
----
-
-## Prior Art, and What's Different
-
-Per-project MCP isn't new. Claude's own [MCP docs](https://code.claude.com/docs/en/mcp) cover scopes, precedence, and env expansion, and others have written about [per-project MCP servers in editors](https://taoofmac.com/space/blog/2025/10/04/1111). This post isn't claiming to invent that. The contribution is the layer most guides skip: making _identity_ (MCP tokens, the GitHub account behind `gh` and `git`, and your commit address) follow the directory, so it survives _concurrent_ sessions with no shared account to clobber.
 
 ---
 
