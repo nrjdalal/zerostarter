@@ -9,14 +9,14 @@ ZeroStarter generates dynamic Open Graph images for social media previews using 
 
 ## Endpoints
 
-| Route                                  | Purpose                                      |
-| -------------------------------------- | -------------------------------------------- |
-| `/api/og/home`                         | Landing page preview                         |
-| `/api/og/docs/[[...slug]]`             | Documentation page previews                  |
-| `/api/og/blog/[[...slug]]`             | Blog post previews                           |
-| `/api/og?section=&title=&description=` | Generic parameterized preview (hire, résumé) |
+| Route                              | Purpose                                      |
+| ---------------------------------- | -------------------------------------------- |
+| `/og/home`                         | Landing page preview                         |
+| `/og/docs/[[...slug]]`             | Documentation page previews                  |
+| `/og/blog/[[...slug]]`             | Blog post previews                           |
+| `/og?section=&title=&description=` | Generic parameterized preview (hire, résumé) |
 
-> **Note:** These routes live under `/api/`, which `robots.txt` disallows. An explicit `Allow: /api/og` keeps them crawlable so social unfurlers can fetch the preview images. See [robots.txt](/docs/manage/robots).
+> **Note:** These routes live at `/og`, deliberately not under `/api/`. Because `robots.txt` disallows `/api/`, keeping the OG routes off it is what lets social unfurlers fetch the preview images. See [robots.txt](/docs/manage/robots).
 
 ## How It Works
 
@@ -33,7 +33,7 @@ The shared utility at `web/next/src/lib/og-image.tsx` creates consistent images 
 
 ## Customizing
 
-To add OG images for a new content source, create a route at `web/next/src/app/api/og/<section>/[[...slug]]/route.tsx` that forwards to the shared helper:
+To add OG images for a new content source, create a route at `web/next/src/app/og/<section>/[[...slug]]/route.tsx` that forwards to the shared helper:
 
 ```tsx
 import { config } from "@/lib/config"
@@ -60,7 +60,7 @@ export function generateStaticParams() {
 }
 ```
 
-For a one-off route (no source), use `ImageResponse` directly. See `web/next/src/app/api/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/api/og/route.tsx` endpoint (as the hire and résumé pages do).
+For a one-off route (no source), use `ImageResponse` directly. See `web/next/src/app/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/og/route.tsx` endpoint (as the hire and résumé pages do).
 
 > **Note:** `takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
 
