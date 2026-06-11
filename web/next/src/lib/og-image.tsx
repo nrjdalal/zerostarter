@@ -41,6 +41,7 @@ export async function renderOgElement(element: ReactElement): Promise<Response> 
 export async function renderOgImage(options: RenderOgImageOptions): Promise<Response> {
   const { sectionName, title, description } = options
   const label = sectionName ? `${config.app.name} - ${sectionName}` : config.app.name
+  const titleFontSize = title.length > 50 ? 52 : title.length > 30 ? 64 : 72
 
   const element = (
     <div
@@ -72,10 +73,11 @@ export async function renderOgImage(options: RenderOgImageOptions): Promise<Resp
       <div
         style={{
           display: "flex",
-          fontSize: 72,
+          fontSize: titleFontSize,
           fontWeight: "bold",
           marginBottom: 30,
           lineHeight: 1.2,
+          maxWidth: 1040,
           background: "linear-gradient(90deg, #fff 0%, #a0a0a0 100%)",
           backgroundClip: "text",
           color: "transparent",

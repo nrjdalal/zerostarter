@@ -1,3 +1,15 @@
+## v0.0.21
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.20...v0.0.21)
+
+### 🩹 Fixes
+
+- **web:** Serve OG images from /og so social unfurlers can fetch them ([#454](https://github.com/nrjdalal/zerostarter/pull/454))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.20
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.19...v0.0.20)
