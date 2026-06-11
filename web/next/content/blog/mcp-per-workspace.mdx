@@ -96,9 +96,13 @@ __claude_resolve_identity() {
   local tok
   if tok="$(gh auth token -u "$gh_user" 2>/dev/null)" && [[ -n "$tok" ]]; then
     export GITHUB_TOKEN="$tok" GH_TOKEN="$tok"
+  else
+    print -u2 "mcp-tokens: no gh token for $gh_user; GITHUB_TOKEN/GH_TOKEN unset"
   fi
   if tok="$(security find-generic-password -a "$USER" -s "$slack_svc" -w 2>/dev/null)" && [[ -n "$tok" ]]; then
     export SLACK_MCP_XOXP_TOKEN="$tok"
+  else
+    print -u2 "mcp-tokens: $slack_svc not in keychain; SLACK_MCP_XOXP_TOKEN unset"
   fi
 }
 
@@ -118,12 +122,16 @@ security add-generic-password -U -a "$USER" -s slack-acme-mcp-xoxp -w 'xoxp-...'
 
 A few details earn the design its keep:
 
-- It clears the tokens first and **exports only when the lookup succeeds**, so a server never receives an empty `Bearer`.
+- It clears the tokens first and **exports only when the lookup succeeds**, warning on stderr otherwise, so a server never gets an empty `Bearer` and a missing token fails loudly, not silently.
 - It exports **both** `GITHUB_TOKEN` and `GH_TOKEN`. `gh` prefers `GH_TOKEN`, so setting only one risks an inherited `GH_TOKEN` making `gh` disagree with the MCP header.
 - It **caches the workspace** and only shells out when you actually cross into a different one, not on every `cd`.
 - The `__init__` sentinel forces a clean first resolve, so a fresh shell never trusts a token a parent leaked in.
 
 There's a bonus. Because `gh` reads `GH_TOKEN`/`GITHUB_TOKEN` before its keyring, that same variable also steers the `gh` CLI, and `git push`/`pull` when `gh` is your credential helper (`gh auth setup-git`). One token, three tools, **for HTTPS remotes only**; SSH remotes authenticate with keys and ignore `GH_TOKEN`.
+
+Why not a `.env` per workspace? Because then the filesystem becomes the secret store, with all the ways that rots: a stale token, a forgotten `export`, a `.env` committed by accident. Pulling from the `gh` keyring and the keychain keeps `.mcp.json` safe to read and the shell the only place identity lives.
+
+That's the split worth keeping: **the `.mcp.json` declares capabilities; the shell supplies identity.**
 
 ---
 
