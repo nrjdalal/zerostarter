@@ -1,0 +1,302 @@
+---
+title: "One Machine, Many Identities: Per-Workspace MCP and Git in Claude Code"
+description: "Route MCP servers, GitHub accounts, and git commit identity by directory, so work, client, and personal projects never bleed into each other. No manual switching, safe across concurrent terminals."
+---
+
+Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. Moments later the personal session points it at your personal account, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because `gh` has a single active account and both sessions share it. Switch it in one and you've switched it in the other.
+
+You can't fix this with discipline. There's no "remember to switch back" when two sessions are switching at the same time, each undoing the other. The culprit isn't forgetfulness, it's shared global state: one mutable "current account" that every terminal, session, and agent reads from and writes to. The same root cause turns up elsewhere too, as commits authored under the wrong email or an assistant's Linear connector still pointed at last week's workspace. The fix is to delete the shared value entirely and let identity follow where you _are_, not what something last toggled. Your directory already knows which org you're working for, so let it drive everything else.
+
+This post wires up identity across three concerns (MCP servers, GitHub auth, and git commit identity) in five layers, so that `cd`-ing into a folder silently selects the right one. The examples use a work account (`acme-inc`) and a personal account (`nrjdalal`), but it scales to as many as you like.
+
+> Everything here is for [Claude Code](https://code.claude.com) on macOS/zsh, but the git and gh pieces apply to any terminal workflow.
+
+---
+
+## The Mental Model
+
+There's one idea underneath all five layers: **scope by path, avoid global state.**
+
+A global "current account" is a single mutable value that every terminal shares. Flip it in one tab and you've flipped it everywhere, including the tab you forgot about. Path-based scoping is the opposite: each shell reads its own location and resolves its own identity, independently. Two terminals in two projects never fight, because there's nothing shared to fight over.
+
+Keep that distinction in mind. It's why we'll reach for a per-shell env var instead of `gh auth switch`, and for git's `includeIf` instead of a one-off `git config`.
+
+---
+
+## Layer 1: MCP Servers Per Workspace
+
+The tools your assistant can reach should match the project you're in: work Linear, work GitHub, and work Notion in work projects, personal connectors in personal ones. The alternative is one global pile of connectors where every session sees everything: duplicate tools, the wrong workspace's data a tab-complete away, and credentials sitting in projects that have no business touching them.
+
+### How
+
+Claude Code reads MCP servers from `.mcp.json`, and it **walks up the directory tree** to find one, crossing git repo boundaries on the way. That's the whole trick. Put a `.mcp.json` at the root of a workspace, and every project nested inside it inherits those servers:
+
+```
+~/work/
+├── .mcp.json          ← inherited by everything below
+├── api/
+└── dashboard/
+~/personal/
+├── .mcp.json          ← a completely different set
+└── blog/
+```
+
+A work `~/work/.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "linear-work": { "type": "http", "url": "https://mcp.linear.app/mcp" },
+    "notion-work": { "type": "http", "url": "https://mcp.notion.com/mcp" }
+  }
+}
+```
+
+Because the file sits at the workspace root (not inside any one git repo), it never gets committed to a teammate's checkout. It's your personal boundary config.
+
+MCP has three scopes, and precedence runs **local → project → user**:
+
+| Scope     | Stored in                   | Loads in            |
+| --------- | --------------------------- | ------------------- |
+| `local`   | `~/.claude.json` (per path) | one exact project   |
+| `project` | `.mcp.json` in the tree     | that tree (walk-up) |
+| `user`    | `~/.claude.json` (top)      | every project       |
+
+The workspace-root `.mcp.json` is `project` scope. Sibling workspaces are _siblings_, not ancestors, so `~/personal/` never sees `~/work/`'s servers. Isolation falls out of the directory structure for free.
+
+---
+
+## Layer 2: A Separate Token Per Workspace
+
+There's a catch. Claude Code keeps all its credentials in one global store, keyed by server name. So if `~/work` and `~/personal` both define a server literally named `linear`, they share a single OAuth token, and you can't be signed into two Linear workspaces at once.
+
+The fix is naming. Give each workspace's server a unique name and it gets its own credential entry and its own auth flow:
+
+```json
+// ~/work/.mcp.json
+{ "mcpServers": { "linear-work": { "type": "http", "url": "https://mcp.linear.app/mcp" } } }
+
+// ~/personal/.mcp.json
+{ "mcpServers": { "linear-personal": { "type": "http", "url": "https://mcp.linear.app/mcp" } } }
+```
+
+Same URL, different name, two independent tokens. When you authenticate each one, you choose which Linear workspace to grant it.
+
+> This naming rule only applies to **OAuth** servers (Linear, Notion), because their tokens are _stored_. The GitHub server below carries its token in a header instead, so it plays by different rules, which is exactly what makes the next layer possible.
+
+---
+
+## Layer 3: A GitHub Account That Follows the Folder
+
+GitHub's hosted MCP server authenticates with a token in a header rather than a stored OAuth grant:
+
+```json
+{
+  "github": {
+    "type": "http",
+    "url": "https://api.githubcopilot.com/mcp/",
+    "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" }
+  }
+}
+```
+
+That `${GITHUB_TOKEN}` is an environment variable, expanded when the server connects. So if we can make `GITHUB_TOKEN` resolve to the right account based on the current directory, GitHub auth follows the folder on its own. There's a bonus, too: the `gh` CLI prefers `GH_TOKEN`/`GITHUB_TOKEN` over its keyring, so the same variable steers `gh` as well, and if `gh` is your git credential helper (set up once with `gh auth setup-git`), it steers `git push`/`pull` too. One variable, three tools.
+
+The engine is a zsh `chpwd` hook that runs on every directory change. Drop this in `~/.config/claude/mcp-tokens.zsh` (`chmod 600`):
+
+```zsh
+# Pick the GitHub token for the workspace you're in.
+# Both accounts live in the gh keyring, so no secrets are written to disk.
+
+# Which account does this directory want? Empty means none.
+__github_account_for_pwd() {
+  case "${PWD}/" in
+    "$HOME/work/"*)     print -r -- acme-inc ;;
+    "$HOME/personal/"*) print -r -- nrjdalal ;;
+    *)                  print -r -- "" ;;
+  esac
+}
+
+__pick_github_token() {
+  local want="$(__github_account_for_pwd)"
+  [[ "$want" == "$__github_account" ]] && return   # account unchanged, skip the gh call
+
+  if [[ -z "$want" ]]; then
+    unset GITHUB_TOKEN; __github_account=""; return
+  fi
+
+  local tok="$(gh auth token -u "$want" 2>/dev/null)"
+  if [[ -n "$tok" ]]; then
+    export GITHUB_TOKEN="$tok"; __github_account="$want"
+  else                                             # locked keyring, logged out, or a typo
+    unset GITHUB_TOKEN; __github_account=""
+    print -u2 "mcp-tokens: 'gh auth token -u $want' returned nothing; GITHUB_TOKEN unset"
+  fi
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd __pick_github_token   # fires on every cd
+
+__github_account="__init__"              # sentinel: force the first resolve,
+__pick_github_token                       # so a fresh shell never trusts an inherited token
+```
+
+Three things make this safe to run on every `cd`. It never exports an empty token: a failed or out-of-workspace lookup unsets `GITHUB_TOKEN` rather than sending `Bearer ` with nothing after it. It caches the resolved account, so `gh` only runs when the workspace actually changes identity, not on every `cd` inside a tree. And the `__init__` sentinel forces the first run to resolve from scratch, clearing any `GITHUB_TOKEN` a parent shell may have leaked in.
+
+Source it from `~/.zshrc`:
+
+```zsh
+[ -f "$HOME/.config/claude/mcp-tokens.zsh" ] && source "$HOME/.config/claude/mcp-tokens.zsh"
+```
+
+Log both accounts into `gh` once (`gh auth login`), and the token is pulled live from the keyring with `gh auth token -u <account>`. Nothing sensitive ever lands in a dotfile.
+
+> No second account in `gh`? Swap that line for a Personal Access Token: `export GITHUB_TOKEN="ghp_..."`. The mechanism is identical, only the source of the token changes.
+
+---
+
+## Layer 4: stdio Servers and Secrets from the Keychain
+
+OAuth servers store their own tokens. The GitHub server reads one from a header. But some servers are neither: a _stdio_ server is a local process the assistant spawns, and it often needs a plain secret (an API key, a workspace token) that has no OAuth flow at all. Slack's community MCP server is the usual example.
+
+The wrong move is to paste that token straight into `.mcp.json`, a plaintext file you might sync, share, or accidentally commit. Do exactly what we did for GitHub: keep the secret out of the file and inject it through the environment, sourced from somewhere safe. On macOS that's the keychain.
+
+Store the token once:
+
+```bash
+security add-generic-password -a "$USER" -s slack-mcp-xoxp -w 'xoxp-...'
+```
+
+Reference it by env var in `.mcp.json`, never inline:
+
+```json
+{
+  "slack": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "slack-mcp-server@1.3.0", "--transport", "stdio"],
+    "env": { "SLACK_MCP_XOXP_TOKEN": "${SLACK_MCP_XOXP_TOKEN}" }
+  }
+}
+```
+
+And pin the version, don't float it. `@latest` runs whatever was published most recently, sight unseen, and a stdio server is a local process you're handing your Slack token. One bad release would execute on your machine with that token sitting in its environment, so pin a version you've actually reviewed (`@1.3.0` above) and bump it deliberately.
+
+Then resolve it in the same `mcp-tokens.zsh`, with the same fail-fast discipline. Export only if the lookup actually returned something, so a locked keychain or a missing entry fails loudly instead of feeding the server an empty token:
+
+```zsh
+# Slack stdio server: token from the macOS keychain, never on disk.
+__slack_token="$(security find-generic-password -a "$USER" -s slack-mcp-xoxp -w 2>/dev/null)"
+if [[ -n "$__slack_token" ]]; then
+  export SLACK_MCP_XOXP_TOKEN="$__slack_token"
+else
+  unset SLACK_MCP_XOXP_TOKEN
+  print -u2 "mcp-tokens: slack-mcp-xoxp not in keychain; SLACK_MCP_XOXP_TOKEN unset"
+fi
+unset __slack_token
+```
+
+The principle is identical to Layer 3: the `.mcp.json` holds a _reference_ (`${SLACK_MCP_XOXP_TOKEN}`), and the real secret lives in the OS credential store, resolved at shell start. Anyone who reads your dotfiles or your committed config learns nothing.
+
+> This token isn't directory-scoped in the example, it loads once at shell start because there's a single Slack. Juggling more than one? Move the `security` lookup into `case` branches keyed on `${PWD}`, exactly like the GitHub token, and the right Slack follows the folder too.
+
+---
+
+## Layer 5: The Right Name on Every Commit
+
+Auth answers "who am I acting as." It says nothing about the name stamped on a commit, which is git's own `user.email`, and by default it's global. So you can authenticate as your work account yet author commits with your personal address. Annoying, and on some teams, a compliance problem.
+
+Git solves this natively with **conditional includes**. In `~/.gitconfig`:
+
+```ini
+[user]
+    name = Neeraj Dalal
+    email = admin@nrjdalal.com        # personal is the default
+
+[includeIf "gitdir:~/work/"]
+    path = ~/.config/git/work.gitconfig
+```
+
+And `~/.config/git/work.gitconfig`:
+
+```ini
+[user]
+    name = Neeraj Dalal
+    email = neeraj@acme.inc           # work override, only under ~/work/
+```
+
+The `gitdir:` pattern matches any repo whose path falls under `~/work/`. The trailing slash makes it recurse. It's read-only and evaluated per repository, so it's correct no matter what any other terminal is doing.
+
+---
+
+## Why Concurrent Terminals Don't Clash
+
+This is the payoff, and the reason we avoided `gh auth switch` throughout. Open two terminals (one in `~/work/api`, one in `~/personal/blog`) and run them at the same time:
+
+- **gh auth**: `GITHUB_TOKEN` is a _per-process_ env var. Each shell holds its own value from its own `cwd`. There is no shared "active account" being toggled.
+- **git identity**: `includeIf` is _per-path and read-only_. A commit in `~/work` always resolves the work email; a commit in `~/personal` always personal.
+- **MCP**: each session loads its `.mcp.json` at launch, and distinct server names (`linear-work` vs `linear-personal`) mean even the stored tokens never collide.
+
+Nothing mutates shared state, so there's nothing to race. The one thing that _is_ global (gh's keyring "active account") only matters outside your mapped directories, where `GITHUB_TOKEN` is unset and gh falls back to it.
+
+> The corollary: **don't** reach for `gh auth switch` in this setup. It's the single command that touches global state. Let the directory drive, and never think about it again.
+
+---
+
+## Verify It
+
+Never trust a setup you haven't checked. From inside a session in a given workspace, ask the GitHub MCP server who it authenticated as:
+
+```
+get_me  →  { "login": "acme-inc", "email": "neeraj@acme.inc" }
+```
+
+And confirm the shell-level identity in each tree:
+
+```bash
+# in ~/work
+gh api user --jq .login        # acme-inc
+git config user.email          # neeraj@acme.inc
+
+# in ~/personal
+gh api user --jq .login        # nrjdalal
+git config user.email          # admin@nrjdalal.com
+```
+
+If a work session ever reports your personal account, the token didn't resolve. Nine times out of ten it's one of the gotchas below.
+
+---
+
+## Gotchas Worth Knowing
+
+**Environment is captured at launch.** A running process keeps the environment it started with, and `${GITHUB_TOKEN}` is read when the MCP server connects. The value has to already be present in whatever shell launches your editor or agent. Two consequences:
+
+- `~/.zshrc` runs only for _interactive_ shells. Launch from a GUI app, an IDE, or a terminal tab you opened before adding the hook, and `GITHUB_TOKEN` is empty. The GitHub server then sends `Authorization: Bearer ` with nothing after it, and the endpoint replies `HTTP 400`. The fix is to launch from a fresh terminal sitting inside the workspace. If you need coverage in non-interactive contexts too, move the `source` line to `~/.zshenv`, which every shell reads (at the cost of a `gh` call on shells spawned inside a workspace).
+- Edited the hook? Already-running sessions won't pick it up. Relaunch them.
+
+**Project servers ask for approval once.** A `.mcp.json` discovered up the tree shows as `⏸ Pending approval` the first time, a deliberate gate for shared config. Approve it once per workspace and it sticks.
+
+**Renaming an OAuth server orphans its token.** Credentials are keyed by server name, so renaming `linear` to `linear-work` leaves the old token stranded and the new name signed out. Re-run the auth flow after any rename.
+
+**`gh auth switch` quietly retires.** Once `GITHUB_TOKEN` is set, gh prefers it over the keyring, so `gh auth switch` is a no-op inside your mapped directories. That is the intent: the folder is the switch now, and the keyring's "active account" only governs directories you haven't mapped.
+
+---
+
+## The Whole Thing, In Four Files
+
+```
+~/work/.mcp.json                    # work MCP servers (linear-work, notion-work, github, slack)
+~/personal/.mcp.json                # personal MCP servers (linear-personal, notion-personal, github)
+~/.config/claude/mcp-tokens.zsh     # chpwd hook → GITHUB_TOKEN by directory, + keychain-backed secrets
+~/.config/git/work.gitconfig        # work commit identity, included for ~/work/
+```
+
+Plus two one-line edits: a `source` in `~/.zshrc` and an `includeIf` in `~/.gitconfig`.
+
+That's it. `cd ~/work/api` and you're the work account, with work connectors and your work email. `cd ~/personal/blog` and you're you. No toggles, no foot-guns, no cross-contamination, and it all holds up when you've got five terminals open at once.
+
+---
+
+- **GitHub**: [github.com/nrjdalal/zerostarter](https://github.com/nrjdalal/zerostarter)
+- **Docs**: [zerostarter.dev/docs](https://zerostarter.dev/docs)
+- **Updates**: [@nrjdalal](https://x.com/nrjdalal)
