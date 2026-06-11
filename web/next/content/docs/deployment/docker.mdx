@@ -25,11 +25,15 @@ This starts both the frontend (Next.js) and backend (Hono) services:
 The `docker-compose.yml` file defines two services:
 
 ```yaml
+name: zerostarter
+
 services:
   api:
     build:
       context: .
       dockerfile: api/hono/Dockerfile
+      secrets:
+        - dotenv
     env_file:
       - .env
     environment:
@@ -41,13 +45,21 @@ services:
     build:
       context: .
       dockerfile: web/next/Dockerfile
+      secrets:
+        - dotenv
     env_file:
       - .env
     environment:
       - INTERNAL_API_URL=http://api:4000
     ports:
       - "3000:3000"
+
+secrets:
+  dotenv:
+    file: .env
 ```
+
+The `dotenv` build secret is required: both Dockerfiles mount it at build time (`--mount=type=secret,id=dotenv,target=/app/.env,required=true`), since env validation runs during the build.
 
 ### Key Configuration
 
@@ -59,17 +71,19 @@ services:
 
 ## Building Individual Images
 
+Both Dockerfiles need the `dotenv` build secret, so pass `--secret id=dotenv,src=.env` to `docker build`.
+
 ### Backend (Hono API)
 
 ```bash
-docker build -f api/hono/Dockerfile -t zerostarter-api .
+docker build --secret id=dotenv,src=.env -f api/hono/Dockerfile -t zerostarter-api .
 docker run -p 4000:4000 --env-file .env zerostarter-api
 ```
 
 ### Frontend (Next.js)
 
 ```bash
-docker build -f web/next/Dockerfile -t zerostarter-web .
+docker build --secret id=dotenv,src=.env -f web/next/Dockerfile -t zerostarter-web .
 docker run -p 3000:3000 --env-file .env zerostarter-web
 ```
 

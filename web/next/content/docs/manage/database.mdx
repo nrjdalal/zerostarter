@@ -13,25 +13,44 @@ The database client is initialized in `packages/db/src/index.ts` using Bun's nat
 
 ```ts
 import { env } from "@packages/env/db"
-import { drizzle } from "drizzle-orm/bun-sql"
 import { SQL } from "bun"
+import { drizzle } from "drizzle-orm/bun-sql"
 
-const client = new SQL({
-  url: env.POSTGRES_URL,
-  tls: isProduction() ? { rejectUnauthorized: true } : false,
-  connectionTimeout: 10,
-  idleTimeout: 30,
-  maxLifetime: 0,
-})
+import * as schema from "@/schema"
 
-export const db = drizzle({ client, schema })
+let db
+
+if (env.NODE_ENV === "production") {
+  const client = new SQL(env.POSTGRES_URL, {
+    connectionTimeout: 10,
+    idleTimeout: 30,
+    maxLifetime: 0,
+    tls: { rejectUnauthorized: true },
+  })
+  db = drizzle({ client, schema })
+} else {
+  // reuse one client across hot reloads
+  if (!global.db) {
+    const client = new SQL(env.POSTGRES_URL, {
+      connectionTimeout: 10,
+      idleTimeout: 30,
+      maxLifetime: 0,
+    })
+    global.db = drizzle({ client, schema })
+  }
+  db = global.db
+}
+
+export { db }
 ```
+
+The connection string is passed positionally to `new SQL(...)`, and the branch is keyed on `env.NODE_ENV === "production"` (TLS is only set in the production branch).
 
 ### Connection Pooling
 
-- **Production**: New client per import, TLS enabled with certificate verification
-- **Non-production**: Singleton pattern via `globalThis.db` to reuse connections across hot reloads
-- **Docker**: When `INTERNAL_API_URL` is set, `localhost` in `POSTGRES_URL` is automatically replaced with `host.docker.internal`
+- **Production**: a single client created at module load, with TLS and certificate verification
+- **Non-production**: singleton via `globalThis.db` to reuse connections across hot reloads
+- **Docker**: when `INTERNAL_API_URL` is set, `localhost` in `POSTGRES_URL` is replaced with `host.docker.internal` (in `packages/env/src/db.ts`)
 
 ## Schema
 

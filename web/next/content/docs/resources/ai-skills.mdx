@@ -11,81 +11,55 @@ Skills are written in Markdown with frontmatter metadata, making them both human
 
 ## Available Skills
 
-### Git Commit
+### agent-browser
 
-**Location**: `.agents/skills/git/commit/SKILL.md`
+**Location**: `.agents/skills/agent-browser/SKILL.md` (frontmatter `name: agent-browser`)
 
-Creates atomic commits with conventional commit message format.
+A browser-automation CLI for AI agents: navigate pages, fill forms, click, screenshot, scrape data, test web apps, and even automate Electron apps. It is an external skill vendored from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) and tracked in `skills-lock.json`. The committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI itself with `agent-browser skills get core`.
 
-**Triggers**: When user asks to "commit", "save changes", or "create a commit"
-
-**Workflow**:
-
-1. **Inspect Changes**: Review both staged and unstaged changes
-2. **Stage Changes**: Stage related changes together (one logical unit per commit)
-3. **Commit**: Create commit with conventional message format
-4. **Push (Optional)**: Only push if user explicitly requests it
-
-**Default Behavior**: The skill stages and commits changes but does **not** push automatically. This prevents accidental pushes to remote branches and gives users control over when changes are shared.
-
-**Push Confirmation**: To push after committing, the user must explicitly request it (e.g., "commit and push", "push the changes", or respond affirmatively when asked). If the user only asks to "commit" or "save changes", the skill stops after creating the commit.
-
-**Message Format**:
-
-```
-<type>(<scope>): <subject>
-
-<body>
-```
-
-| Element     | Description                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| **Type**    | `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`, `ci` |
-| **Scope**   | Optional area in parentheses (package, component, feature name)           |
-| **Subject** | Imperative mood, lowercase, no period, ≤80 chars                          |
-| **Body**    | Optional; explain "why" not "what"; wrap at 80 chars                      |
-
-**Examples**:
-
-```
-feat(auth): add OAuth provider support
-fix(api): prevent duplicate webhook delivery
-refactor(web): extract auth middleware into separate module
-docs(readme): update installation steps
-chore(deps): bump dependencies to latest versions
-```
+**Install**: `npm i -g agent-browser && agent-browser install`
 
 ### Turbo Build Graph
 
-**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md`
+**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md` (frontmatter `name: turbo-generate-build-graph`)
 
-Generates a styled SVG visualization of Turborepo task dependencies.
+Generates a dark-mode-friendly SVG visualization of Turborepo task dependencies.
 
-**Triggers**: When user asks to "visualize dependencies", "generate build graph", or "update pipeline diagram"
+**Triggers**: When the user asks to "visualize dependencies", "generate a build graph", or "update the pipeline diagram"
 
 **Workflow**:
 
-1. **Generate Raw Graph**: `npx turbo run build --graph=graph.dot`, then render with Graphviz: `dot -Tsvg graph.dot -o graph.svg` (turbo 2.x renders `.svg` with its own rough built-in renderer, so emit DOT and use `dot`)
-2. **Clean Up Labels**: Remove prefixes and internal placeholders
-3. **Style for Dark Mode**: Apply transparent background and GitHub blue theme
-4. **Move to Public Assets**: Save to `web/next/public/graph-build.svg`
+1. **Generate the raw graph**: emit DOT and render with Graphviz, removing the intermediate file. Requires Graphviz (`brew install graphviz` on macOS):
 
-**Output**: A dark-mode-friendly SVG that can be embedded in README:
+   ```bash
+   npx turbo run build --graph=graph.dot
+   dot -Tsvg graph.dot -o graph.svg && rm graph.dot
+   ```
+
+2. **Clean up labels**: strip the `[root] ` prefix, the `#build` suffix, and replace the `___ROOT___` placeholder with the project name.
+3. **Style for dark mode**: transparent background with GitHub-blue (`#1f6feb`) nodes and text.
+4. **Move to assets**: save to `.github/assets/graph-build.svg`.
+
+**Output**: a dark-mode-friendly SVG embedded in the README:
 
 ```markdown
-![Build Graph](/graph-build.svg)
+![Build Graph](.github/assets/graph-build.svg)
 ```
 
 ## Skill Structure
 
-Each skill follows a standard structure:
+A skill is a directory (optionally nested under a category) containing a `SKILL.md`:
 
 ```
 .agents/skills/
-└── <category>/
-    └── <skill-name>/
+├── agent-browser/
+│   └── SKILL.md
+└── turbo/
+    └── generate-build-graph/
         └── SKILL.md
 ```
+
+Externally-sourced skills like `agent-browser` are recorded in the root `skills-lock.json` with their `source`, `sourceType`, `skillPath`, and `computedHash`, so they can be re-synced and integrity-checked. There is no committed install script; the lock file is the source of record.
 
 ### SKILL.md Format
 
@@ -170,7 +144,9 @@ Skills in `.agents/skills/` are automatically available to Cursor's AI assistant
 ## Skills
 
 This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.
-````
+```
+
+Today the skills live in `.agents/skills`; `.claude/skills` is the conventional Claude Code location and is picked up automatically if you add it.
 
 ### GitHub Copilot
 
@@ -187,3 +163,4 @@ The structured format makes skills easy to parse programmatically for custom AI 
 - **Document edge cases**: Handle errors and special situations
 - **Use standard commands**: Prefer project scripts over raw commands
 - **Version control**: Skills evolve with the project
+````
