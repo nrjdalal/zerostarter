@@ -1,3 +1,15 @@
+## v0.0.19
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.18...v0.0.19)
+
+### 🚀 Enhancements
+
+- **web:** Add per-workspace MCP and git identity blog post ([#449](https://github.com/nrjdalal/zerostarter/pull/449))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.18
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.17...v0.0.18)
