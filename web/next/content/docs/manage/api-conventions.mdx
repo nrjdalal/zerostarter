@@ -49,7 +49,7 @@ When a Zod validation fails, the response includes the full issues array:
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Validation failed",
+    "message": "Invalid request payload",
     "issues": [{ "path": ["name"], "message": "Required" }]
   }
 }
@@ -80,12 +80,14 @@ Configured in `api/hono/src/index.ts`:
 
 ### Rate Limiting
 
-Rate limit keys are resolved in priority order:
+The key generator resolves keys in this priority order:
 
 1. **User ID** — If authenticated (highest priority)
 2. **API Key** — Hash of `Authorization` header
 3. **IP Address** — Detected via [Arcjet IP](https://arcjet.com)
 4. **Random UUID** — Fallback if IP detection fails
+
+In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active; no limiter passes an API key, so that tier is dead until you wire `getApiKey` into a limiter.
 
 | Context         | Limit        | Window | Environment Variable                            |
 | --------------- | ------------ | ------ | ----------------------------------------------- |
@@ -121,6 +123,7 @@ Applied to protected routes (e.g., `/api/v1/*`):
 /api/openapi.json       → OpenAPI specification
 /api/docs               → Scalar API documentation UI
 /api/auth/*             → Better Auth handlers (session, OAuth, etc.)
+/api/agents/*           → Agent sign-in (local only, trusted Origin)
 /api/v1/*               → Protected routes (requires auth middleware)
   /api/v1/session       → Current session data
   /api/v1/user          → Current user data
@@ -159,10 +162,10 @@ export const v1Router = new Hono().use("/*", authMiddleware).get(
 )
 ```
 
-2. Register in `api/hono/src/index.ts` if it's a new router:
+2. Register in `api/hono/src/index.ts` if it's a new router. The app sets `.basePath("/api")`, so the route path is relative to `/api`:
 
 ```ts
-.route("/api/v1", v1Router)
+const routes = app.basePath("/api").route("/v1", v1Router) // served at /api/v1
 ```
 
 3. The route is automatically available in the frontend via `apiClient.v1.items.$get()`

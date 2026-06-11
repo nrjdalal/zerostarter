@@ -20,6 +20,8 @@ Blog content is managed using Fumadocs and stored in `web/next/content/blog/`.
 3. Write content using MDX syntax
 4. Add entry to `web/next/content/blog/meta.json`
 
+Images for a post are committed as static assets under `web/next/public/blog/<slug>/images/` and referenced by absolute path, e.g. `![Diagram](/blog/<slug>/images/diagram.svg)`.
+
 ## Configuration
 
 Blog source is configured in `web/next/source.config.ts`:
@@ -27,6 +29,11 @@ Blog source is configured in `web/next/source.config.ts`:
 ```ts
 export const blog = defineDocs({
   dir: "content/blog",
+  docs: {
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
 })
 ```
 
@@ -34,6 +41,6 @@ Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** 
 
 ```json
 {
-  "pages": ["index", "web-development-2026"]
+  "pages": ["index", "mcp-per-workspace", "a-biography-written-in-code", "web-development-2026"]
 }
 ```

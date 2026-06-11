@@ -35,7 +35,7 @@ pre-commit:
       stage_fixed: true
     build:
       run: bun run build
-      interactive: true
+      use_stdin: true
 
 commit-msg:
   commands:
@@ -61,7 +61,7 @@ The `.lintstagedrc.json` defines what runs on staged files:
 
 ```json
 {
-  "*": ["oxfmt --no-error-on-unmatched-pattern", "oxlint"],
+  "*": ["oxfmt --no-error-on-unmatched-pattern", "oxlint --no-error-on-unmatched-pattern"],
   "package.json": ["bun .github/scripts/deps-manager.ts"]
 }
 ```
@@ -102,11 +102,11 @@ bun run format:check
 
 ## Linting with Oxlint
 
-Oxlint runs automatically via lint-staged. For manual linting:
+Oxlint runs automatically via lint-staged on staged files at commit time. `bun run lint` runs the Turbo `lint` pipeline; to lint the whole tree directly, run Oxlint yourself:
 
 ```bash
-# Lint all files
-bun run lint
+# Lint the entire tree
+bunx oxlint
 ```
 
 Oxlint is significantly faster than ESLint while catching common issues.
@@ -156,17 +156,16 @@ feat!: remove deprecated API endpoints
 ## Running Checks Manually
 
 ```bash
-# All checks (what CI runs)
+# What CI runs (auto-check-build.yml)
 bun audit --audit-level high
 bun run lint
 bun run build
+
+# Type checking (run locally; not part of the CI build workflow)
 bun run check-types
 
 # Format all files
 bun run format
-
-# Just type checking
-bun run check-types
 ```
 
 ## CI/CD Integration

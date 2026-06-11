@@ -20,16 +20,16 @@ ZeroStarter generates dynamic Open Graph images for social media previews using 
 
 ## How It Works
 
-OG images are generated as static routes at build time using `generateStaticParams`. They return PNG images with immutable cache headers (1 year).
+The docs and blog routes are prerendered at build time (`export const dynamic = "force-static"` plus `generateStaticParams`), `/og/home` is static with no params, and the generic `/og` route is `force-dynamic` so it can render from query params on demand. Every route returns a PNG with immutable cache headers (1 year).
 
 The shared utility at `web/next/src/lib/og-image.tsx` creates consistent images with:
 
 - Dark gradient background
-- Page title and description
+- Page title and description (the title scales down and wraps for long headings)
 - Section label (e.g., "Documentation", "Blog")
 - App name branding
 
-`ImageResponse` is imported from `takumi-js/response`, and `takumi-js` is listed in `serverExternalPackages` in `next.config.ts` so the native/WASM renderer loads at runtime.
+It renders with the `render` function from `takumi-js` (not `ImageResponse`), returning a `Response` with the PNG bytes. In `next.config.ts`, both `@takumi-rs/core` and `takumi-js` are listed in `serverExternalPackages`, and `outputFileTracingIncludes` maps the `/og` route to the native `@takumi-rs/core` binary so it ships with that function.
 
 ## Customizing
 
@@ -60,7 +60,7 @@ export function generateStaticParams() {
 }
 ```
 
-For a one-off route (no source), use `ImageResponse` directly. See `web/next/src/app/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/og/route.tsx` endpoint (as the hire and résumé pages do).
+For a one-off route (no source), build a React element and pass it to `renderOgElement` from `@/lib/og-image`. See `web/next/src/app/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/og/route.tsx` endpoint, which calls `renderOgImage` with `section`/`title`/`description` (as the hire and résumé pages do).
 
 > **Note:** `takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
 

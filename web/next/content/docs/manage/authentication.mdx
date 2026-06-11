@@ -5,13 +5,13 @@ description: Authentication system with Better Auth, supporting OAuth providers,
 
 ## Overview
 
-ZeroStarter uses [Better Auth](https://better-auth.com) for authentication, configured in the `@packages/auth` package. It supports multiple sign-in methods, multi-tenant organizations with teams, and session management with cross-subdomain cookie support.
+ZeroStarter uses [Better Auth](https://better-auth.com) for authentication, configured in the `@packages/auth` package. It supports multiple sign-in methods, multi-tenant organizations with teams, and session management with cross-subdomain cookie support. The Better Auth OpenAPI plugin is also enabled, exposing an auth API reference at `/api/auth/reference`.
 
 ## Sign-In Methods
 
 ### Magic Link
 
-Users can sign in with their email address. A magic link is sent to their inbox, and clicking it authenticates them and redirects to the dashboard.
+The sign-in UI includes an email magic-link flow (`authClient.signIn.magicLink`, registered via the `magicLinkClient()` plugin in `web/next/src/lib/auth/client.ts`). The matching server-side `magicLink` plugin and email sender are not enabled by default, so the flow is not functional out of the box. To turn it on, add the `magicLink` plugin to `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
 
 ### OAuth Providers
 
@@ -21,6 +21,10 @@ Two social providers are configured:
 - **Google** — Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
 Both redirect to `/dashboard` after successful authentication.
+
+### Agent Sign-In (local only)
+
+For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a fixed `AgentZero` user (`agent@zerostarter.dev`) and mints a session cookie directly. It is gated to the `local` environment and a trusted `Origin` header. See `api/hono/src/routers/agents.ts`.
 
 ### Adding OAuth Providers
 
@@ -131,7 +135,7 @@ API routes are rate-limited using `hono-rate-limiter` with [Arcjet IP](https://a
 | Requests per window | 60               | `HONO_RATE_LIMIT`           |
 | Window duration     | 60,000ms (1 min) | `HONO_RATE_LIMIT_WINDOW_MS` |
 
-Rate limit keys are resolved in order: authenticated user ID, API key, then IP address.
+Authenticated requests use a per-user limiter set to twice the configured limit (`HONO_RATE_LIMIT * 2`, 120 by default). Rate limit keys are resolved in order: authenticated user ID, API key, then IP address.
 
 ## Environment Variables
 
