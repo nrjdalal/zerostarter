@@ -2,10 +2,10 @@ import { instance } from "@viz-js/viz"
 
 // Same method as build-sizes.ts: emit DOT, render via @viz-js/viz (Graphviz as
 // wasm, no `dot` binary needed), then post-process the SVG for a transparent
-// background and the project accent (#f97316). Run manually to (re)generate:
+// background and the project accent (#06b6d4). Run manually to (re)generate:
 //   bun .github/scripts/blog-graphs.ts
 
-const ACCENT = "#f97316"
+const ACCENT = "#06b6d4"
 
 const theme = (svg: string): string =>
   svg
