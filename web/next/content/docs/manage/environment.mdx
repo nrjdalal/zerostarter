@@ -23,7 +23,7 @@ The `NODE_ENV` environment variable is centralized in `@packages/env` and valida
 
 ### Single Source of Truth
 
-All environment variables are stored in a single `.env` file at the project root. The `@packages/env` package automatically loads this file using `dotenv` configured in `packages/env/src/lib/utils.ts`.
+All environment variables are stored in a single `.env` file at the project root. The `@packages/env` package automatically loads this file using `dotenv` configured in `packages/env/src/lib/utils.ts`. If a `NODE_ENV` value is set and matches a known stage, a stage-specific `.env.<NODE_ENV>` file (e.g. `.env.production`) is then layered on top with `override: true`.
 
 ### Package-Specific Validation
 
@@ -34,7 +34,7 @@ Each package defines only the environment variables it needs:
 - **`db`**: `POSTGRES_URL`
 - **`web-next`**:
   - **Server**: `INTERNAL_API_URL` (server-side only, for internal service-to-service calls)
-  - **Client**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (exposed to browser)
+  - **Client**: `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_API_URL` (required), `NEXT_PUBLIC_NODE_ENV`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (exposed to browser)
 
 **Important**: Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
 
@@ -57,7 +57,10 @@ export const env = createEnv({
     HONO_PORT: z.coerce.number().default(4000),
     HONO_RATE_LIMIT: z.coerce.number().default(60),
     HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
-    HONO_TRUSTED_ORIGINS: z.string().transform(...),
+    HONO_TRUSTED_ORIGINS: z
+      .string()
+      .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
+      .pipe(z.array(z.url())),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -67,8 +70,12 @@ export const env = createEnv({
     HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
   },
+  emptyStringAsUndefined: true,
+  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 })
 ```
+
+Setting `SKIP_ENV_VALIDATION=true` bypasses validation entirely, which is how CI and Docker builds run before real secrets are present. `emptyStringAsUndefined` treats empty strings as missing so optional vars fall back to their defaults.
 
 ### Usage in Packages
 

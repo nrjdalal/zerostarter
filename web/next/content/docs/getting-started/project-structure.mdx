@@ -34,6 +34,7 @@ The backend API server built with [Hono](https://hono.dev).
 - **`src/index.ts`**: Main application entry point, exports `AppType` for type-safe RPC
 - **`src/routers/`**: API route handlers
   - `auth.ts`: Authentication routes (Better Auth handler)
+  - `agents.ts`: Local-only agent sign-in (`/api/agents/sign-in-as`)
   - `v1.ts`: Protected API routes requiring authentication
 - **`src/middlewares/`**: Custom middlewares
   - `auth.ts`: Authentication middleware for protected routes
@@ -63,8 +64,8 @@ The frontend application built with [Next.js 16](https://nextjs.org).
 Shared authentication logic using [Better Auth](https://better-auth.com).
 
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
-- Supports GitHub and Google OAuth, magic links
-- Organization and teams plugin for multi-tenant support
+- Supports GitHub and Google OAuth
+- Organization and teams plugin for multi-tenant support, plus the Better Auth OpenAPI plugin
 - Exports session types for type safety
 
 ### `packages/db/`
@@ -80,10 +81,12 @@ Database schema and configuration using [Drizzle ORM](https://orm.drizzle.team).
 
 Type-safe environment variables using [@t3-oss/env-core](https://env.t3.gg).
 
+- **`src/index.ts`**: Barrel exporting shared helpers (`getSafeEnv`, `getBuildVersion`, `isLocal`)
 - **`src/api-hono.ts`**: API server environment variables
 - **`src/auth.ts`**: Authentication environment variables
 - **`src/db.ts`**: Database environment variables
 - **`src/web-next.ts`**: Frontend environment variables (client and server)
+- **`src/lib/`**: `constants.ts` (the `NODE_ENV` enum) and `utils.ts` (dotenv loader, redaction)
 
 ### `packages/tsconfig/`
 

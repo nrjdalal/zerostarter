@@ -18,7 +18,7 @@ Dark mode is handled by `next-themes` with system preference detection:
 </ThemeProvider>
 ```
 
-The theme toggle component at `web/next/src/components/mode-toggle.tsx` cycles through: **system → light → dark → system**.
+The `ModeToggle` component at `web/next/src/components/mode-toggle.tsx` is a smart toggle: from `system` it switches to the opposite of the OS preference, it flips between `light` and `dark` while they diverge from the OS preference, and it returns to `system` once the explicit theme matches the OS preference again.
 
 ## CSS Variables
 
@@ -52,21 +52,28 @@ Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
 export default { plugins: { "@tailwindcss/postcss": {} } }
 ```
 
-The global CSS imports Tailwind, animations, and fonts:
+`web/next/src/app/globals.css` imports Tailwind, animations, and the Fumadocs UI and shadcn presets:
 
 ```css
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource-variable/dm-sans";
-@import "@fontsource-variable/jetbrains-mono";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "shadcn/tailwind.css";
 ```
+
+It then wires the design tokens to Tailwind v4 via an `@theme inline` block that maps `--color-*` utilities to the `--*` custom properties (background, foreground, primary, card, popover, chart, sidebar, radius, and so on).
 
 ## Fonts
 
-Two variable fonts are included:
+Fonts are loaded with `next/font/local` from `.woff2` files in `web/next/src/fonts/`, defined in `web/next/src/lib/fonts.ts` (not via `@fontsource`). Four variable fonts are included:
 
-- **DM Sans** — Primary UI font (body text, headings)
-- **JetBrains Mono** — Monospace font (code blocks)
+- **DM Sans**: Primary UI font (body text, headings)
+- **JetBrains Mono**: Monospace font (code blocks)
+- **Caveat**: Handwriting accent font
+- **Newsreader**: Serif accent font
+
+Each exposes a CSS variable (e.g. `--font-dm-sans`) that the `@theme inline` block maps onto Tailwind's font utilities.
 
 ## Component Styling
 

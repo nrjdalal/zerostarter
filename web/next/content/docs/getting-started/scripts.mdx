@@ -15,8 +15,8 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 
 ### Maintenance
 
-- `bun run clean`: Clean the cache and build artifacts.
-- `bun run lint`: Lint the codebase using Oxlint.
+- `bun run clean`: Remove build artifacts and caches (`.next`, `.turbo`, `dist`, etc.) plus all `node_modules` and generated typedefs. Re-run `bun install` afterward.
+- `bun run lint`: Run the Turbo `lint` pipeline. Oxlint also runs on staged files at commit time; to lint the whole tree directly, use `bunx oxlint`.
 - `bun run format`: Format the codebase using Oxfmt.
 - `bun run format:check`: Check formatting without making changes.
 - `bun run check-types`: Check the types of the codebase.

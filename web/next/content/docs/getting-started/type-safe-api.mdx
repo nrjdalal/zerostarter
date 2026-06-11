@@ -24,7 +24,7 @@ import { apiClient } from "@/lib/api/client"
 // Fully typed request and response
 const res = await apiClient.health.$get()
 const { data } = await res.json()
-// data is typed as { message: string, environment: string, version: string }
+// data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
 ```
 
 ### Authenticated Requests
@@ -48,7 +48,9 @@ import { apiClient } from "@/lib/api/client"
 // Get current session and user (via Better Auth)
 const res = await apiClient.auth["get-session"].$get()
 const data = await res.json()
-// data is typed as { session: Session, user: User } | null
+// `/api/auth/*` is a raw Better Auth handler, so this response is not RPC-typed.
+// For a typed Session, use the server helper in web/next/src/lib/auth/index.ts,
+// which casts the result to `Session` (and returns null on an empty body).
 ```
 
 ## Backend Routes

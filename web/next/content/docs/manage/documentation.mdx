@@ -27,8 +27,15 @@ Documentation source is configured in `web/next/source.config.ts`:
 ```ts
 export const docs = defineDocs({
   dir: "content/docs",
+  docs: {
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
 })
 ```
+
+`includeProcessedMarkdown` keeps the rendered Markdown around so the `llms.txt` routes can serve a plain-text version of each page.
 
 Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
 
@@ -70,29 +77,21 @@ Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** 
 
 ## Search
 
-Full-text search indexes all documentation and blog content via an API endpoint at `web/next/src/app/api/search/route.ts`:
+Full-text search indexes the documentation via a route handler at `web/next/src/app/api/search/route.ts`. It is built from `docsSource` with `createFromSource`, which wires up the Orama index automatically:
 
 ```ts
-import { createSearchAPI } from "fumadocs-core/search/server"
-import { source } from "@/lib/source"
+import { createFromSource } from "fumadocs-core/search/server"
 
-export const { GET } = createSearchAPI("advanced", {
-  indexes: source.getPages().map((page) => ({
-    title: page.data.title,
-    description: page.data.description,
-    url: page.url,
-    id: page.url,
-    structuredData: page.data.structuredData,
-  })),
+import { docsSource } from "@/lib/source"
+
+export const { GET } = createFromSource(docsSource, {
+  // https://docs.orama.com/docs/orama-js/supported-languages
+  language: "english",
 })
 ```
 
-The Next.js config rewrites `/api/search` to the internal app URL to avoid CORS issues:
-
-```ts
-{ source: "/api/search", destination: `${env.NEXT_PUBLIC_APP_URL}/api/search` }
-```
+Only the docs source is indexed; the blog is not part of search. Because this is a real Next.js route handler, it takes precedence over the generic `/api/:path*` rewrite in `next.config.ts` (which forwards the rest of `/api/*` to the backend), so no dedicated search rewrite is needed.
 
 ### Keyboard Shortcut
 
-Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog from any docs page. The search dialog supports full-text search across all content, heading-level results, and keyboard navigation.
+Press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) to open the search dialog from any docs page. The search dialog supports full-text search across the documentation, heading-level results, and keyboard navigation.

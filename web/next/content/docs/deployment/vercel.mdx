@@ -48,14 +48,14 @@ NEXT_PUBLIC_USERJOT_URL=your_userjot_url
 
 ### Configuration
 
-| Option           | Value                                        |
-| ---------------- | -------------------------------------------- |
-| Root Directory   | `api/hono`                                   |
-| Framework        | Hono                                         |
-| Install Command  | `cd ../.. && bun install --ignore-scripts`   |
-| Build Command    | `cd ../.. && turbo build --filter=@api/hono` |
-| Output Directory | `dist`                                       |
-| Bun Version      | 1.3.10                                       |
+| Option           | Value                                               |
+| ---------------- | --------------------------------------------------- |
+| Root Directory   | `api/hono`                                          |
+| Framework        | Hono                                                |
+| Install Command  | `cd ../.. && bun install --ignore-scripts`          |
+| Build Command    | `cd ../.. && turbo build:vercel --filter=@api/hono` |
+| Output Directory | `vercel-bundle`                                     |
+| Bun Version      | 1.3.10                                              |
 
 ### Environment Variables
 
