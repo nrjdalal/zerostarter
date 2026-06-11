@@ -16,7 +16,7 @@ function getOgImageUrl(): string {
   if (existsSync(staticOgPath)) {
     return `${config.app.url}/og/home.png?t=${Date.now()}`
   }
-  return `${config.app.url}/api/og/home?t=${Date.now()}`
+  return `${config.app.url}/og/home?t=${Date.now()}`
 }
 
 const ogImageUrl = getOgImageUrl()

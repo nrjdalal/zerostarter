@@ -36,16 +36,14 @@ const nextConfig: NextConfig = {
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
     outputFileTracingIncludes: {
-      "/api/og": [
-        `node_modules/@takumi-rs/core-linux-*-${{ glibc: "gnu", musl: "musl" }[libc]}/**`,
-      ],
+      "/og": [`node_modules/@takumi-rs/core-linux-*-${{ glibc: "gnu", musl: "musl" }[libc]}/**`],
     },
   }),
   reactCompiler: true,
   rewrites: async () => {
     return [
       {
-        source: "/api/:path((?!og$|og/).*)",
+        source: "/api/:path*",
         destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path`,
       },
       {

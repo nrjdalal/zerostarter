@@ -12,7 +12,7 @@ import Link from "next/link"
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
 
-const ogImageUrl = `${config.app.url}/api/og?${new URLSearchParams({
+const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Hire",
   title: "Neeraj Dalal",
   description: "AI-native product engineer",
