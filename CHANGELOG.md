@@ -1,3 +1,15 @@
+## v0.0.22
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.21...v0.0.22)
+
+### 🩹 Fixes
+
+- **web:** Wrap long OG image titles so they stay inside the frame ([#456](https://github.com/nrjdalal/zerostarter/pull/456))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.21
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.20...v0.0.21)
