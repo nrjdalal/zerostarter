@@ -166,7 +166,7 @@ That's the whole point. Open one terminal in `~/acme/api` and another in `~/nrjd
 - **Commit identity** is per-path and read-only through `includeIf`.
 - **MCP servers** load from each session's own `.mcp.json` at launch, with distinct names (`linear-acme` vs `linear-nrjdalal`) so even stored OAuth tokens never collide.
 
-Nothing mutates shared state, so there's nothing to race. The one global thing left, gh's keyring "active account", only matters _outside_ your mapped directories, where the tokens are unset.
+Nothing mutates shared state, so there's nothing to race. The one global thing left, gh's keyring "active account", only matters _outside_ your mapped trees. A repo that lives somewhere other than `~/acme` or `~/nrjdalal` gets no workspace tokens and commits under your default (personal) identity, which is the safe fallback.
 
 ---
 
