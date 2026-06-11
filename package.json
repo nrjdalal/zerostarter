@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -96,7 +96,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "date-fns": "^4.2.1",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
