@@ -21,7 +21,7 @@ There's one idea underneath all five layers: **scope by path, avoid global state
 
 A global "current account" is a single mutable value that every terminal shares. Flip it in one tab and you've flipped it everywhere, including the tab you forgot about. Path-based scoping is the opposite: each shell reads its own location and resolves its own identity, independently. Two terminals in two projects never fight, because there's nothing shared to fight over.
 
-![Each directory resolves to its own identity: ~/work to the acme-inc account, token, and email; ~/personal to the nrjdalal account, token, and email; with nothing shared between them](/diagrams/scope-by-path.svg)
+![Each directory resolves to its own identity: ~/work to the acme-inc GitHub account, its MCP servers, and the neeraj@acme.inc git email; ~/personal to nrjdalal, its MCP servers, and admin@nrjdalal.com; with nothing shared between them](/diagrams/scope-by-path.svg)
 
 Keep that distinction in mind. It's why we'll reach for a per-shell env var instead of `gh auth switch`, and for git's `includeIf` instead of a one-off `git config`.
 
@@ -179,7 +179,7 @@ Reference it by env var in `.mcp.json`, never inline:
 
 ```json
 {
-  "slack": {
+  "slack-work": {
     "type": "stdio",
     "command": "npx",
     "args": ["-y", "slack-mcp-server@1.3.0", "--transport", "stdio"],
@@ -206,7 +206,7 @@ unset __slack_token
 
 The principle is identical to Layer 3: the `.mcp.json` holds a _reference_ (`${SLACK_MCP_XOXP_TOKEN}`), and the real secret lives in the OS credential store, resolved at shell start. Anyone who reads your dotfiles or your committed config learns nothing.
 
-> This token isn't directory-scoped in the example, it loads once at shell start because there's a single Slack. Juggling more than one? Move the `security` lookup into `case` branches keyed on `${PWD}`, exactly like the GitHub token, and the right Slack follows the folder too.
+> This token isn't directory-scoped in the example: it loads once at shell start because there's a single Slack. Juggling more than one? Move the `security` lookup into `case` branches keyed on `${PWD}`, exactly like the GitHub token, and the right Slack follows the folder too.
 
 ---
 
@@ -293,7 +293,7 @@ If a work session ever reports your personal account, the token didn't resolve. 
 ## The Whole Thing, In Four Files
 
 ```
-~/work/.mcp.json                    # work MCP servers (linear-work, notion-work, github, slack)
+~/work/.mcp.json                    # work MCP servers (linear-work, notion-work, github, slack-work)
 ~/personal/.mcp.json                # personal MCP servers (linear-personal, notion-personal, github)
 ~/.config/claude/mcp-tokens.zsh     # chpwd hook → GITHUB_TOKEN by directory, + keychain-backed secrets
 ~/.config/git/work.gitconfig        # work commit identity, included for ~/work/
