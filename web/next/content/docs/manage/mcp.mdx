@@ -1,0 +1,80 @@
+---
+title: MCP Server
+description: Serve the documentation to AI agents over the Model Context Protocol.
+---
+
+## Overview
+
+ZeroStarter exposes its documentation to AI agents through a [Model Context Protocol](https://modelcontextprotocol.io) server at `/api/mcp`. It uses the Streamable HTTP transport (no install for consumers) and lives in the Hono backend, built with [`@hono/mcp`](https://github.com/honojs/middleware/tree/main/packages/mcp).
+
+The server is in the backend on purpose: it is the home of the product API (auth, database, rate limiting), so authenticated product tools can be added next to your routes later. The documentation tools read the docs over HTTP from the web app's existing [llms.txt](/docs/manage/llms-txt) and [search](/docs/manage/documentation) endpoints, so they always reflect the published docs.
+
+Because the frontend rewrites `/api/:path*` to the backend, the server is reachable at `https://<your-app>/api/mcp` on the main domain, and also directly at the backend's own URL.
+
+## Tools
+
+| Tool          | Input           | Returns                                                                                |
+| ------------- | --------------- | -------------------------------------------------------------------------------------- |
+| `list_docs`   | none            | The documentation index (every page with its title, link, and description)             |
+| `get_doc`     | `path: string`  | A single page as Markdown (accepts `manage/og-images`, `index`, or a leading `/docs/`) |
+| `search_docs` | `query: string` | Matching pages and sections with their URLs; read one in full with `get_doc`           |
+
+Agents typically `list_docs` or `search_docs` to find a page, then `get_doc` to read it in full.
+
+## Connecting
+
+Add it to Claude Code with one line (no install):
+
+```bash
+claude mcp add --transport http zerostarter https://zerostarter.dev/api/mcp
+```
+
+For local development (with both apps running via `bun dev`):
+
+```bash
+claude mcp add --transport http zerostarter http://localhost:3000/api/mcp
+```
+
+In a `.mcp.json` config, use `type: "http"` (or its alias `"streamable-http"`):
+
+```json
+{
+  "mcpServers": {
+    "zerostarter": {
+      "type": "http",
+      "url": "https://zerostarter.dev/api/mcp"
+    }
+  }
+}
+```
+
+You can inspect it interactively with `npx @modelcontextprotocol/inspector` pointed at the same URL.
+
+## How It Works
+
+The server is defined in `api/hono/src/routers/mcp.ts` and mounted at `/api/mcp`:
+
+- A single `McpServer` and `StreamableHTTPTransport` are created once; the route connects lazily and forwards each request with `transport.handleRequest(c)`.
+- `list_docs` and `get_doc` fetch the web app's `/llms.txt` index and `/llms.txt/docs/<slug>` pages (the same Markdown the llms.txt routes serve).
+- `search_docs` calls the web app's `/api/search` (Orama) endpoint and formats the hits.
+- The web app's URL is taken from `HONO_TRUSTED_ORIGINS`. Only the Streamable HTTP transport is used (no SSE, no Redis), so the server runs statelessly.
+
+## Adding a Tool
+
+Register more tools on the `McpServer` in `api/hono/src/routers/mcp.ts`. Because the server lives in the backend, product tools can call your services, database, and authenticated context directly:
+
+```ts
+mcpServer.registerTool(
+  "tool_name",
+  {
+    title: "Human title",
+    description: "What it does and when to use it.",
+    inputSchema: { query: z.string() },
+  },
+  async ({ query }) => {
+    return { content: [{ type: "text", text: `result for ${query}` }] }
+  },
+)
+```
+
+Return `{ content: [...], isError: true }` to signal a tool-level error.

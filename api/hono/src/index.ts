@@ -9,7 +9,7 @@ import { z } from "zod"
 
 import { errorHandler } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
-import { agentsRouter, authRouter, v1Router } from "@/routers"
+import { agentsRouter, authRouter, mcpRouter, v1Router } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
 
@@ -90,6 +90,7 @@ const { data } = await response.json()`,
   )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)
+  .route("/mcp", mcpRouter)
   .route("/v1", v1Router)
   .get(
     "/openapi.json",

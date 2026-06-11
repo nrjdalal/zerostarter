@@ -21,6 +21,7 @@
     "manage/theming",
     "manage/og-images",
     "manage/llms-txt",
+    "manage/mcp",
     "manage/robots",
     "manage/sitemap",
     "deployment/docker",
