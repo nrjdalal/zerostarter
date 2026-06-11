@@ -1,3 +1,15 @@
+## v0.0.20
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.19...v0.0.20)
+
+### 🚀 Enhancements
+
+- **web:** Rewrite per-workspace MCP blog around a single chpwd hook ([#452](https://github.com/nrjdalal/zerostarter/pull/452))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.19
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.18...v0.0.19)
