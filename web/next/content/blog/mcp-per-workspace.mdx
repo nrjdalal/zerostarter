@@ -5,6 +5,8 @@ description: "Route MCP servers, GitHub accounts, and git commit identity by dir
 
 Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. Moments later the personal session points it at your personal account, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because `gh` has a single active account and both sessions share it. Switch it in one and you've switched it in the other.
 
+![Two Claude Code sessions both switching gh's single active account, so the work session's next call goes out as the wrong user](/diagrams/gh-account-clash.svg)
+
 You can't fix this with discipline. There's no "remember to switch back" when two sessions are switching at the same time, each undoing the other. The culprit isn't forgetfulness, it's shared global state: one mutable "current account" that every terminal, session, and agent reads from and writes to. The same root cause turns up elsewhere too, as commits authored under the wrong email or an assistant's Linear connector still pointed at last week's workspace. The fix is to delete the shared value entirely and let identity follow where you _are_, not what something last toggled. Your directory already knows which org you're working for, so let it drive everything else.
 
 This post wires up identity across three concerns (MCP servers, GitHub auth, and git commit identity) in five layers, so that `cd`-ing into a folder silently selects the right one. The examples use a work account (`acme-inc`) and a personal account (`nrjdalal`), but it scales to as many as you like.
@@ -18,6 +20,8 @@ This post wires up identity across three concerns (MCP servers, GitHub auth, and
 There's one idea underneath all five layers: **scope by path, avoid global state.**
 
 A global "current account" is a single mutable value that every terminal shares. Flip it in one tab and you've flipped it everywhere, including the tab you forgot about. Path-based scoping is the opposite: each shell reads its own location and resolves its own identity, independently. Two terminals in two projects never fight, because there's nothing shared to fight over.
+
+![Each directory resolves to its own identity: ~/work to the acme-inc account, token, and email; ~/personal to the nrjdalal account, token, and email; with nothing shared between them](/diagrams/scope-by-path.svg)
 
 Keep that distinction in mind. It's why we'll reach for a per-shell env var instead of `gh auth switch`, and for git's `includeIf` instead of a one-off `git config`.
 
@@ -102,7 +106,11 @@ GitHub's hosted MCP server authenticates with a token in a header rather than a 
 
 That `${GITHUB_TOKEN}` is an environment variable, expanded when the server connects. So if we can make `GITHUB_TOKEN` resolve to the right account based on the current directory, GitHub auth follows the folder on its own. There's a bonus, too: the `gh` CLI prefers `GH_TOKEN`/`GITHUB_TOKEN` over its keyring, so the same variable steers `gh` as well, and if `gh` is your git credential helper (set up once with `gh auth setup-git`), it steers `git push`/`pull` too. One variable, three tools.
 
-The engine is a zsh `chpwd` hook that runs on every directory change. Drop this in `~/.config/claude/mcp-tokens.zsh` (`chmod 600`):
+The engine is a zsh `chpwd` hook that runs on every directory change. Here's the whole decision it makes on each `cd`:
+
+![Flowchart: on cd, if the directory is under ~/work set GITHUB_TOKEN to the acme-inc token, else if under ~/personal set it to the nrjdalal token, otherwise unset GITHUB_TOKEN](/diagrams/chpwd-flow.svg)
+
+Drop it in `~/.config/claude/mcp-tokens.zsh` (`chmod 600`):
 
 ```zsh
 # Pick the GitHub token for the workspace you're in.
