@@ -16,11 +16,9 @@ const EDGE = `color="${ACCENT}", fontcolor="${ACCENT}", penwidth=1.5, fontname="
 
 const theme = (svg: string): string =>
   svg
-    .replaceAll('fill="white"', 'fill="none"')
-    .replaceAll('fill="#ffffff"', 'fill="none"')
-    .replaceAll('fill="#fff"', 'fill="none"')
-    .replaceAll('fill="black"', `fill="${ACCENT}"`)
-    .replaceAll('stroke="black"', `stroke="${ACCENT}"`)
+    // strip the opaque background; case-insensitive so an uppercase #FFFFFF can't slip through
+    .replace(/fill="(?:white|#fff|#ffffff)"/gi, 'fill="none"')
+    .replace(/(fill|stroke)="black"/gi, `$1="${ACCENT}"`)
 
 const graphs: Array<{ name: string; dot: string }> = [
   {

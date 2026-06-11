@@ -76,7 +76,7 @@ There's a catch. Claude Code keeps all its credentials in one global store, keye
 
 The fix is naming. Give each workspace's server a unique name and it gets its own credential entry and its own auth flow:
 
-```json
+```jsonc
 // ~/work/.mcp.json
 { "mcpServers": { "linear-work": { "type": "http", "url": "https://mcp.linear.app/mcp" } } }
 
@@ -178,7 +178,7 @@ security add-generic-password -a "$USER" -s slack-personal-xoxp -w 'xoxp-...'
 
 Reference it by env var in each workspace's `.mcp.json`, never inline. The server always reads `SLACK_MCP_XOXP_TOKEN`; each workspace just feeds it from a different shell variable:
 
-```json
+```jsonc
 // ~/work/.mcp.json
 {
   "slack-work": {
@@ -298,6 +298,8 @@ If a work session ever reports your personal account, the token didn't resolve. 
 
 - `~/.zshrc` runs only for _interactive_ shells. Launch from a GUI app, an IDE, or a terminal tab you opened before adding the hook, and `GITHUB_TOKEN` is empty. The GitHub server then sends `Authorization: Bearer ` with nothing after it, and the endpoint replies `HTTP 400`. The fix is to launch from a fresh terminal sitting inside the workspace. If you need coverage in non-interactive contexts too, move the `source` line to `~/.zshenv`, which every shell reads (at the cost of a `gh` call on shells spawned inside a workspace).
 - Edited the hook? Already-running sessions won't pick it up. Relaunch them.
+
+**Your token rides along with child processes.** `export GITHUB_TOKEN` puts it in the environment of everything you spawn inside a mapped workspace, `npx` and `bun` running third-party code included. It's the same reason Layer 4 pins the Slack server to a reviewed version: only run code you trust inside a tree that resolves a token.
 
 **Project servers ask for approval once.** A `.mcp.json` discovered up the tree shows as `⏸ Pending approval` the first time, a deliberate gate for shared config. Approve it once per workspace and it sticks.
 
