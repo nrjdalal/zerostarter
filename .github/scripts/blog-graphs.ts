@@ -51,7 +51,7 @@ const graphs: Array<{ name: string; dot: string }> = [
   work        [label=<<B>~/work/*</B>>];
   work_id     [label=<<FONT POINT-SIZE="13">gh: <B>acme-inc</B></FONT><BR/><FONT POINT-SIZE="11">MCP: linear-work · notion-work · slack-work<BR/>git: neeraj@acme.inc</FONT>>, fillcolor="${FILL_STRONG}"];
   personal    [label=<<B>~/personal/*</B>>];
-  personal_id [label=<<FONT POINT-SIZE="13">gh: <B>nrjdalal</B></FONT><BR/><FONT POINT-SIZE="11">MCP: linear-personal · notion-personal<BR/>git: admin@nrjdalal.com</FONT>>, fillcolor="${FILL_STRONG}"];
+  personal_id [label=<<FONT POINT-SIZE="13">gh: <B>nrjdalal</B></FONT><BR/><FONT POINT-SIZE="11">MCP: linear-personal · notion-personal · slack-personal<BR/>git: admin@nrjdalal.com</FONT>>, fillcolor="${FILL_STRONG}"];
 
   work     -> work_id     [label="resolves to"];
   personal -> personal_id [label="resolves to"];

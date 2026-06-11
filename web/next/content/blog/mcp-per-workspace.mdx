@@ -169,44 +169,61 @@ OAuth servers store their own tokens. The GitHub server reads one from a header.
 
 The wrong move is to paste that token straight into `.mcp.json`, a plaintext file you might sync, share, or accidentally commit. Do exactly what we did for GitHub: keep the secret out of the file and inject it through the environment, sourced from somewhere safe. On macOS that's the keychain.
 
-Store the token once:
+Store each workspace's token once, under its own keychain entry:
 
 ```bash
-security add-generic-password -a "$USER" -s slack-mcp-xoxp -w 'xoxp-...'
+security add-generic-password -a "$USER" -s slack-work-xoxp     -w 'xoxp-...'
+security add-generic-password -a "$USER" -s slack-personal-xoxp -w 'xoxp-...'
 ```
 
-Reference it by env var in `.mcp.json`, never inline:
+Reference it by env var in each workspace's `.mcp.json`, never inline. The server always reads `SLACK_MCP_XOXP_TOKEN`; each workspace just feeds it from a different shell variable:
 
 ```json
+// ~/work/.mcp.json
 {
   "slack-work": {
     "type": "stdio",
     "command": "npx",
     "args": ["-y", "slack-mcp-server@1.3.0", "--transport", "stdio"],
-    "env": { "SLACK_MCP_XOXP_TOKEN": "${SLACK_MCP_XOXP_TOKEN}" }
+    "env": { "SLACK_MCP_XOXP_TOKEN": "${SLACK_MCP_XOXP_TOKEN_WORK}" }
+  }
+}
+
+// ~/personal/.mcp.json
+{
+  "slack-personal": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "slack-mcp-server@1.3.0", "--transport", "stdio"],
+    "env": { "SLACK_MCP_XOXP_TOKEN": "${SLACK_MCP_XOXP_TOKEN_PERSONAL}" }
   }
 }
 ```
 
 And pin the version, don't float it. `@latest` runs whatever was published most recently, sight unseen, and a stdio server is a local process you're handing your Slack token. One bad release would execute on your machine with that token sitting in its environment, so pin a version you've actually reviewed (`@1.3.0` above) and bump it deliberately.
 
-Then resolve it in the same `mcp-tokens.zsh`, with the same fail-fast discipline. Export only if the lookup actually returned something, so a locked keychain or a missing entry fails loudly instead of feeding the server an empty token:
+Then resolve both in the same `mcp-tokens.zsh`, with the same fail-fast discipline: export only if the lookup actually returned something, so a locked keychain or a missing entry fails loudly instead of feeding the server an empty token:
 
 ```zsh
-# Slack stdio server: token from the macOS keychain, never on disk.
-__slack_token="$(security find-generic-password -a "$USER" -s slack-mcp-xoxp -w 2>/dev/null)"
-if [[ -n "$__slack_token" ]]; then
-  export SLACK_MCP_XOXP_TOKEN="$__slack_token"
-else
-  unset SLACK_MCP_XOXP_TOKEN
-  print -u2 "mcp-tokens: slack-mcp-xoxp not in keychain; SLACK_MCP_XOXP_TOKEN unset"
-fi
-unset __slack_token
+# Slack stdio servers: tokens from the macOS keychain, never on disk. Each
+# workspace's .mcp.json reads its own var, so both can load at shell start.
+__pick_slack() {   # $1 = keychain service, $2 = env var to set
+  local tok="$(security find-generic-password -a "$USER" -s "$1" -w 2>/dev/null)"
+  if [[ -n "$tok" ]]; then
+    export "${2}=${tok}"
+  else
+    unset "$2"
+    print -u2 "mcp-tokens: $1 not in keychain; $2 unset"
+  fi
+}
+__pick_slack slack-work-xoxp     SLACK_MCP_XOXP_TOKEN_WORK
+__pick_slack slack-personal-xoxp SLACK_MCP_XOXP_TOKEN_PERSONAL
+unset -f __pick_slack
 ```
 
-The principle is identical to Layer 3: the `.mcp.json` holds a _reference_ (`${SLACK_MCP_XOXP_TOKEN}`), and the real secret lives in the OS credential store, resolved at shell start. Anyone who reads your dotfiles or your committed config learns nothing.
+The principle is identical to Layer 3: the `.mcp.json` holds a _reference_ (`${SLACK_MCP_XOXP_TOKEN_WORK}`), and the real secret lives in the OS credential store, resolved at shell start. Anyone who reads your dotfiles or your committed config learns nothing.
 
-> This token isn't directory-scoped in the example: it loads once at shell start because there's a single Slack. Juggling more than one? Move the `security` lookup into `case` branches keyed on `${PWD}`, exactly like the GitHub token, and the right Slack follows the folder too.
+> Notice there's no `chpwd` hook here. `GITHUB_TOKEN` has to be directory-scoped because `gh`, `git`, and the GitHub server all read that one fixed name. Slack is easier: each server reads its own `SLACK_MCP_XOXP_TOKEN`, fed from a distinct shell variable, so the two never collide and both can just load at startup. Distinct names beat shared mutable state, the same lesson as Layer 2.
 
 ---
 
@@ -294,7 +311,7 @@ If a work session ever reports your personal account, the token didn't resolve. 
 
 ```
 ~/work/.mcp.json                    # work MCP servers (linear-work, notion-work, github, slack-work)
-~/personal/.mcp.json                # personal MCP servers (linear-personal, notion-personal, github)
+~/personal/.mcp.json                # personal MCP servers (linear-personal, notion-personal, github, slack-personal)
 ~/.config/claude/mcp-tokens.zsh     # chpwd hook → GITHUB_TOKEN by directory, + keychain-backed secrets
 ~/.config/git/work.gitconfig        # work commit identity, included for ~/work/
 ```
