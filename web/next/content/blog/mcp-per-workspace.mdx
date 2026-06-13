@@ -32,7 +32,7 @@ Claude Code reads MCP servers from a `.mcp.json`, and it searches _upward_ from 
 └── .mcp.json        ← a different set entirely
 ```
 
-A work `~/acme/.mcp.json` holds its GitHub server and Slack:
+A work `~/acme/.mcp.json` holds its GitHub server, Linear, Notion, and Slack:
 
 ```json
 {
@@ -42,6 +42,8 @@ A work `~/acme/.mcp.json` holds its GitHub server and Slack:
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" }
     },
+    "linear-acme": { "type": "http", "url": "https://mcp.linear.app/mcp" },
+    "notion-acme": { "type": "http", "url": "https://mcp.notion.com/mcp" },
     "slack-acme": {
       "type": "stdio",
       "command": "npx",
@@ -57,7 +59,7 @@ A work `~/acme/.mcp.json` holds its GitHub server and Slack:
 
 `~/nrjdalal/.mcp.json` mirrors it with `*-nrjdalal` names. (`SLACK_MCP_ADD_MESSAGE_TOOL` lets the agent post to Slack, not just read; drop it for read-only.) Three things matter here:
 
-- **Suffix every server with the workspace** (`github-acme`, `slack-acme`). It matters most when you add OAuth servers like Linear or Notion the same way: Claude Code stores their tokens keyed by server name, so two both called `linear` would share one token and you couldn't be signed into both workspaces. This isolates credentials; it isn't an access-control boundary.
+- **Give OAuth servers unique names** (`linear-acme`, not `linear`). Claude Code stores their tokens keyed by server name, so two servers both called `linear` would share one token and you couldn't be signed into both Linear workspaces. This isolates credentials; it isn't an access-control boundary.
 - **The GitHub and Slack servers take their tokens from environment variables** (`${GITHUB_TOKEN}`, `${SLACK_MCP_XOXP_TOKEN}`), not a stored grant. That's the hook into the next piece.
 - **Pin the stdio server's version.** `npx ...@latest` runs whatever shipped most recently, sight unseen, and you're handing it a token; pin a version you've reviewed.
 
