@@ -73,8 +73,8 @@ Both `${GITHUB_TOKEN}` and `${SLACK_MCP_XOXP_TOKEN}` are read from the environme
 
 ```zsh
 # ~/.config/claude/mcp-tokens.zsh: one hook, every per-workspace secret from $PWD.
-#   ~/acme/      → gh: acme       slack: slack-acme-mcp-xoxp
-#   ~/nrjdalal/  → gh: nrjdalal   slack: slack-nrjdalal-mcp-xoxp
+#   ~/acme/      → gh: acme       slack: SLACK_MCP_XOXP_TOKEN_ACME
+#   ~/nrjdalal/  → gh: nrjdalal   slack: SLACK_MCP_XOXP_TOKEN_NRJDALAL
 __claude_resolve_identity() {
   local ws
   case "${PWD}/" in
@@ -86,23 +86,27 @@ __claude_resolve_identity() {
   __claude_ws="$ws"
   unset GITHUB_TOKEN GH_TOKEN SLACK_MCP_XOXP_TOKEN    # clear the previous (and any inherited) tokens
 
-  local gh_user slack_svc
+  local gh_user="" slack_svc=""
   case "$ws" in
-    acme)     gh_user=acme;     slack_svc=slack-acme-mcp-xoxp ;;
-    nrjdalal) gh_user=nrjdalal; slack_svc=slack-nrjdalal-mcp-xoxp ;;
+    acme)     gh_user=acme;     slack_svc=SLACK_MCP_XOXP_TOKEN_ACME ;;
+    nrjdalal) gh_user=nrjdalal; slack_svc=SLACK_MCP_XOXP_TOKEN_NRJDALAL ;;
     *)        return ;;                              # outside a mapped workspace: nothing set
   esac
 
   local tok
-  if tok="$(gh auth token -u "$gh_user" 2>/dev/null)" && [[ -n "$tok" ]]; then
-    export GITHUB_TOKEN="$tok" GH_TOKEN="$tok"
-  else
-    print -u2 "mcp-tokens: no gh token for $gh_user; GITHUB_TOKEN/GH_TOKEN unset"
+  if [[ -n "$gh_user" ]]; then
+    if tok="$(gh auth token -u "$gh_user" 2>/dev/null)" && [[ -n "$tok" ]]; then
+      export GITHUB_TOKEN="$tok" GH_TOKEN="$tok"
+    else
+      print -u2 "mcp-tokens: no gh token for $gh_user; GITHUB_TOKEN/GH_TOKEN unset"
+    fi
   fi
-  if tok="$(security find-generic-password -a "$USER" -s "$slack_svc" -w 2>/dev/null)" && [[ -n "$tok" ]]; then
-    export SLACK_MCP_XOXP_TOKEN="$tok"
-  else
-    print -u2 "mcp-tokens: $slack_svc not in keychain; SLACK_MCP_XOXP_TOKEN unset"
+  if [[ -n "$slack_svc" ]]; then
+    if tok="$(security find-generic-password -a "$USER" -s "$slack_svc" -w 2>/dev/null)" && [[ -n "$tok" ]]; then
+      export SLACK_MCP_XOXP_TOKEN="$tok"
+    else
+      print -u2 "mcp-tokens: $slack_svc not in keychain; SLACK_MCP_XOXP_TOKEN unset"
+    fi
   fi
 }
 
@@ -115,7 +119,7 @@ __claude_resolve_identity
 Source it from `~/.zshrc`, log both accounts into `gh` once (`gh auth login`), and store each Slack token in the keychain once:
 
 ```sh
-security add-generic-password -U -a "$USER" -s slack-acme-mcp-xoxp -w 'xoxp-...'
+security add-generic-password -U -a "$USER" -s SLACK_MCP_XOXP_TOKEN_ACME -w 'xoxp-...'
 ```
 
 ![Flowchart: on cd, if the directory is under ~/acme resolve the acme tokens, else if under ~/nrjdalal resolve the nrjdalal tokens, otherwise leave all tokens unset](/blog/mcp-per-workspace/images/chpwd-flow.svg)
@@ -123,6 +127,7 @@ security add-generic-password -U -a "$USER" -s slack-acme-mcp-xoxp -w 'xoxp-...'
 A few details earn the design its keep:
 
 - It clears the tokens first and **exports only when the lookup succeeds**, warning on stderr otherwise, so a server never gets an empty `Bearer` and a missing token fails loudly, not silently.
+- **Each lookup is guarded by what the workspace scopes**, so a workspace with only a GitHub account (no Slack) resolves its token and skips the keychain entirely, with no spurious warning for a token it never wanted.
 - It exports **both** `GITHUB_TOKEN` and `GH_TOKEN`. `gh` prefers `GH_TOKEN`, so setting only one risks an inherited `GH_TOKEN` making `gh` disagree with the MCP header.
 - It **caches the workspace** and only shells out when you actually cross into a different one, not on every `cd`.
 - The `__init__` sentinel forces a clean first resolve, so a fresh shell never trusts a token a parent leaked in.
@@ -194,6 +199,8 @@ In `~/acme` that prints `acme` and `neeraj@acme.com`; in `~/nrjdalal`, `nrjdalal
 ---
 
 `cd ~/acme/api` and you're the work account, with work tools and your work email. `cd ~/nrjdalal/blog` and you're you. No toggles, no foot-guns, and it holds up with five terminals open at once, because not one of them shares anything to clash over.
+
+I later built **[inscope](https://github.com/nrjdalal/inscope)** to generate all of this from one small config: the per-workspace `.mcp.json`, the chpwd hook, and the git `includeIf`. Same approach as above, just automated, so you don't hand-edit the `case` arms as you add or move workspaces.
 
 ---
 
