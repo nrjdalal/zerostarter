@@ -1,3 +1,15 @@
+## v0.0.23
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.22...v0.0.23)
+
+### 📖 Documentation
+
+- Sync documentation with current code and practices ([#458](https://github.com/nrjdalal/zerostarter/pull/458))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.22
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.21...v0.0.22)
