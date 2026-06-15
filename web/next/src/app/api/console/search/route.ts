@@ -3,9 +3,7 @@ import { createFromSource } from "fumadocs-core/search/server"
 import { getConsoleSession } from "@/lib/auth/console"
 import { consoleSource } from "@/lib/source"
 
-// Gated search for the private console docs. Same access check as the rest of
-// /console: returns 404 for anyone without console access so the index never
-// leaks. Never statically cached.
+// Gated console docs search: 404 for anyone without console access so the index never leaks; never statically cached.
 export const dynamic = "force-dynamic"
 
 const search = createFromSource(consoleSource, {
