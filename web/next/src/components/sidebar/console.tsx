@@ -1,6 +1,6 @@
 "use client"
 
-import { RiArrowLeftLine, RiBookLine, RiDashboardLine } from "@remixicon/react"
+import { RiBookLine, RiDashboardLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -19,6 +19,20 @@ const mainItems = [
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
+// Sidebar-header slot for the console: shows the docs search only inside the
+// docs section, matching the public /docs sidebar (search sits in the header,
+// nav scrolls below). Hidden when the sidebar is collapsed to icons.
+export function SidebarConsoleHeader() {
+  const pathname = usePathname()
+  if (!pathname?.startsWith("/console/docs")) return null
+
+  return (
+    <div className="group-data-[collapsible=icon]:hidden">
+      <SidebarDocsSearch />
+    </div>
+  )
+}
+
 export function SidebarConsoleContent() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
@@ -26,28 +40,11 @@ export function SidebarConsoleContent() {
     if (isMobile) setOpenMobile(false)
   }
 
-  // Inside the docs section the sidebar swaps to docs navigation: a back entry
-  // to return to the main console menu, then the grouped doc nav (reusing the
-  // public docs renderer).
+  // Inside the docs section the sidebar swaps to the grouped doc nav (reusing
+  // the public docs renderer). Search lives in the header (SidebarConsoleHeader)
+  // and the header brand links back to /console.
   if (pathname?.startsWith("/console/docs")) {
-    return (
-      <>
-        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-          <SidebarDocsSearch />
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Back" render={<Link href="/console" onClick={close} />}>
-                <RiArrowLeftLine />
-                <span>Back</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarDocsContent groups={config.console.groups} />
-      </>
-    )
+    return <SidebarDocsContent groups={config.console.groups} />
   }
 
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { SidebarConsoleContent } from "@/components/sidebar/console"
+import { SidebarConsoleContent, SidebarConsoleHeader } from "@/components/sidebar/console"
 import { SidebarShell } from "@/components/sidebar/shell"
 import { SidebarUserMenu } from "@/components/sidebar/user-menu"
 import { SidebarMenu } from "@/components/ui/sidebar"
@@ -22,6 +22,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
     <SidebarShell
       badge="Console"
       homeHref="/console"
+      header={<SidebarConsoleHeader />}
       nav={<SidebarConsoleContent />}
       footer={
         <SidebarMenu>
