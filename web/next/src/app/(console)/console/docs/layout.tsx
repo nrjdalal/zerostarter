@@ -12,7 +12,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           enabled: false,
         }}
         search={{
-          enabled: false,
+          options: {
+            api: "/api/console/search",
+          },
         }}
       >
         <DocsLayout

@@ -4,7 +4,7 @@ import { RiArrowLeftLine, RiBookLine, RiDashboardLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { SidebarDocsContent } from "@/components/sidebar/docs"
+import { SidebarDocsContent, SidebarDocsSearch } from "@/components/sidebar/docs"
 import {
   SidebarGroup,
   SidebarMenu,
@@ -32,6 +32,9 @@ export function SidebarConsoleContent() {
   if (pathname?.startsWith("/console/docs")) {
     return (
       <>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+          <SidebarDocsSearch />
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
