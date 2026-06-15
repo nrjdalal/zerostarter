@@ -6,7 +6,7 @@ import { notFound } from "next/navigation"
 
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
 import { config } from "@/lib/config"
-import type { blogSource, docsSource } from "@/lib/source"
+import type { blogSource, consoleSource, docsSource } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
 
 export function baseOptions(): BaseLayoutProps {
@@ -17,7 +17,7 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
-type Source = typeof blogSource | typeof docsSource
+type Source = typeof blogSource | typeof docsSource | typeof consoleSource
 type Page = NonNullable<ReturnType<Source["getPage"]>>
 
 interface PageData {

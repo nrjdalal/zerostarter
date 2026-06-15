@@ -1,0 +1,26 @@
+---
+title: Introduction
+description: Private internal documentation for the ZeroStarter admin console.
+---
+
+This documentation is private. It is served only inside the access-protected
+`/console` area and is never exposed through public search, the sitemap, or the
+`llms.txt` indexes.
+
+## Access
+
+Console access is controlled by the `console` field on the user record:
+
+- Grant it with `UPDATE "user" SET console = 'admin' WHERE email = '…';` (or `bun run db:studio`). It is intentionally not settable through the auth API.
+- Any non-empty value grants full console access today; there is no per-role differentiation yet.
+- Sessions are cached for up to 5 minutes (`session.cookieCache`), so granting or revoking access can take up to ~5 minutes to take effect (or until the user signs in again). To cut off an account immediately, revoke its sessions rather than only clearing `console`.
+
+## Sections
+
+- [Incident Response](/console/docs/runbooks/incident-response) - Internal runbook for handling incidents.
+
+## Adding pages
+
+Drop MDX files into `web/next/content/console`. They are loaded through the
+dedicated `consoleDocs` Fumadocs collection and inherit the same access checks
+as the rest of the console.

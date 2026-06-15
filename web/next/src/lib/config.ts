@@ -36,6 +36,30 @@ export const config = {
     // example: enableAnalytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true",
   },
 
+  // Console (internal admin area) docs navigation
+  console: {
+    groups: [
+      {
+        label: "Getting Started",
+        items: [
+          {
+            title: "Introduction",
+            url: "/console/docs",
+          },
+        ],
+      },
+      {
+        label: "Runbooks",
+        items: [
+          {
+            title: "Incident Response",
+            url: "/console/docs/runbooks/incident-response",
+          },
+        ],
+      },
+    ],
+  },
+
   // Sidebar navigation configuration
   sidebar: {
     groups: [
