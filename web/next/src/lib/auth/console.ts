@@ -6,13 +6,14 @@ import { auth } from "@/lib/auth"
  * Server-side guard for the entire /console area.
  *
  * Access is keyed off the user's `console` field: null for normal users, a
- * non-null value (e.g. "admin") for internal users. Calls `notFound()` (a
+ * non-empty value (e.g. "admin") for internal users. Calls `notFound()` (a
  * default 404) when the visitor is unauthenticated or has no console access. It
  * never redirects, so an unauthorized visitor cannot tell a protected route
  * from a non-existent one. Returns the session for authorized callers.
  *
- * Note: today any non-null `console` grants full access; there is no per-role
- * check yet (admin === any-non-null).
+ * Note: today any non-empty `console` grants full access; there is no per-role
+ * check yet (admin === any non-empty value). The guard is fail-closed: null,
+ * undefined, and "" are all denied.
  *
  * The console layout calls this, which covers rendering of every nested route.
  * But layouts and pages render in parallel on the server, so a page's data

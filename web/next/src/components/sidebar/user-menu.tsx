@@ -4,7 +4,7 @@ import { env } from "@packages/env/web-next"
 import { RiExpandUpDownLine, RiLogoutBoxLine, RiMessage2Line } from "@remixicon/react"
 import { type User } from "better-auth/types"
 import Link from "next/link"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -29,6 +29,7 @@ function getInitials(name: string) {
 // Shared sidebar user dropdown (avatar, identity, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
 export function SidebarUserMenu({ user }: { user: User }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
 
   return (
     <SidebarMenuItem>
@@ -91,7 +92,7 @@ export function SidebarUserMenu({ user }: { user: User }) {
             className="cursor-pointer"
             onClick={async () => {
               await authClient.signOut()
-              redirect("/")
+              router.push("/")
             }}
           >
             <RiLogoutBoxLine />

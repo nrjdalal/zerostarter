@@ -12,7 +12,7 @@ This documentation is private. It is served only inside the access-protected
 Console access is controlled by the `console` field on the user record:
 
 - Grant it with `UPDATE "user" SET console = 'admin' WHERE email = '…';` (or `bun run db:studio`). It is intentionally not settable through the auth API.
-- Any non-null value grants full console access today; there is no per-role differentiation yet.
+- Any non-empty value grants full console access today; there is no per-role differentiation yet.
 - Sessions are cached for up to 5 minutes (`session.cookieCache`), so granting or revoking access can take up to ~5 minutes to take effect (or until the user signs in again). To cut off an account immediately, revoke its sessions rather than only clearing `console`.
 
 ## Sections
