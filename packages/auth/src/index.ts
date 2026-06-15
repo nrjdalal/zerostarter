@@ -40,6 +40,16 @@ export const auth = betterAuth({
   onAPIError: {
     throw: true,
   },
+  user: {
+    additionalFields: {
+      // Null for normal users; a non-null value (e.g. "admin") grants access to the privileged /console area. `input: false` blocks self-assignment.
+      console: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+  },
   session: {
     cookieCache: {
       enabled: true,

@@ -1,0 +1,18 @@
+---
+title: Introduction
+description: Private internal documentation for the ZeroStarter admin console.
+---
+
+This documentation is private. It is served only inside the access-protected
+`/console` area and is never exposed through public search, the sitemap, or the
+`llms.txt` indexes.
+
+## Sections
+
+- [Incident Response](/console/docs/runbooks/incident-response) - Internal runbook for handling incidents.
+
+## Adding pages
+
+Drop MDX files into `web/next/content/console`. They are loaded through the
+dedicated `consoleDocs` Fumadocs collection and inherit the same access checks
+as the rest of the console.

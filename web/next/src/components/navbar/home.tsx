@@ -77,7 +77,7 @@ export function Navbar() {
     setToDashboard(false)
   }, [pathname])
 
-  if (pathname?.startsWith("/dashboard")) return null
+  if (pathname?.startsWith("/console") || pathname?.startsWith("/dashboard")) return null
 
   const navLinks = [
     { href: "/docs", label: "Documentation" },

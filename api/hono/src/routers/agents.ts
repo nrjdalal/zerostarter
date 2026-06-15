@@ -1,7 +1,9 @@
 import { auth } from "@packages/auth"
+import { db, user as userTable } from "@packages/db"
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { makeSignature } from "better-auth/crypto"
+import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { setCookie } from "hono/cookie"
 
@@ -43,6 +45,9 @@ export const agentsRouter = new Hono()
         user = raced.user
       }
     }
+
+    // The local-only agent is an internal account, so grant it console access.
+    await db.update(userTable).set({ console: "admin" }).where(eq(userTable.id, user.id))
 
     const session = await ctx.internalAdapter.createSession(user.id)
     const signed = `${session.token}.${await makeSignature(session.token, ctx.secret)}`

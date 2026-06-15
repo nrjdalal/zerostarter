@@ -136,3 +136,10 @@
 #nd-page {
   @apply mt-10;
 }
+
+.console-docs {
+  --fd-banner-height: 0px;
+  #nd-page {
+    @apply mt-0;
+  }
+}
