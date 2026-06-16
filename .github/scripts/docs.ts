@@ -107,6 +107,8 @@ async function run() {
 
   for (const [name, collection] of Object.entries(docsConfig)) {
     const base = BASE[name]
+    // Content dir mirrors the URL base: /console/docs -> content/console/docs (the on-disk path matches the route).
+    const dir = base ? base.slice(1) : name
     const onWarn = (msg: string) => warnings.push(`[${name}] ${msg}`)
     const seen = new Set<string>()
     const declared = collectionPages(collection as DocsCollection, onWarn)
@@ -123,7 +125,7 @@ async function run() {
     const declaredFiles = new Set(
       declared.map((page) => page.file).filter((file): file is string => file !== null),
     )
-    const existing = await existingSlugs(name)
+    const existing = await existingSlugs(dir)
     for (const fileSlug of existing) {
       if (!declaredFiles.has(fileSlug))
         onWarn(`"${fileSlug}.mdx" exists but is not listed in docs.config`)
@@ -134,7 +136,7 @@ async function run() {
         onWarn(`"${slug}" is not under the ${name} base (${base})`)
         continue
       }
-      const filePath = path.join(CONTENT, name, `${file}.mdx`)
+      const filePath = path.join(CONTENT, dir, `${file}.mdx`)
       if (!existing.has(file)) {
         if (strict) {
           onWarn(`"${slug}" (${file}.mdx) is in docs.config but has no file`)
@@ -158,7 +160,7 @@ async function run() {
       metaPages.push(file)
     }
     await Bun.write(
-      path.join(CONTENT, name, "meta.json"),
+      path.join(CONTENT, dir, "meta.json"),
       JSON.stringify({ pages: metaPages }, null, 2) + "\n",
     )
   }
