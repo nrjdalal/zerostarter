@@ -10,7 +10,7 @@ import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/
 
 const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
 
-// URL base per collection; must match the fumadocs loader baseUrl in web/next/src/lib/source.ts.
+// URL base per docs.config collection; must match its loader baseUrl in source.ts. Blog is hand-maintained (not in docs.config), so it is intentionally excluded.
 const BASE: Record<string, string> = { docs: "/docs", console: "/console/docs" }
 
 type Page = { slug: string; meta: DocsMeta }
@@ -108,19 +108,17 @@ async function run() {
   for (const [name, collection] of Object.entries(docsConfig)) {
     const base = BASE[name]
     const onWarn = (msg: string) => warnings.push(`[${name}] ${msg}`)
-    const declared = collectionPages(collection as DocsCollection, onWarn).map(
-      ({ slug, meta }) => ({
-        slug,
-        file: toFile(base, slug),
-        meta,
-      }),
-    )
-
     const seen = new Set<string>()
-    for (const { slug } of declared) {
-      if (seen.has(slug)) onWarn(`duplicate slug in docs.config: "${slug}"`)
-      seen.add(slug)
-    }
+    const declared = collectionPages(collection as DocsCollection, onWarn)
+      .map(({ slug, meta }) => ({ slug, file: toFile(base, slug), meta }))
+      .filter((page) => {
+        if (seen.has(page.slug)) {
+          onWarn(`duplicate slug in docs.config: "${page.slug}" (skipped)`)
+          return false
+        }
+        seen.add(page.slug)
+        return true
+      })
 
     const declaredFiles = new Set(
       declared.map((page) => page.file).filter((file): file is string => file !== null),
