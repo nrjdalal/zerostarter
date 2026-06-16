@@ -11,7 +11,6 @@ function resolveItems(items: DocsItem[]): NavNode[] {
       const resolved = resolveItems(value)
       if (resolved.length) nodes.push({ label: key, items: resolved })
     } else {
-      if (value.publish === false) continue
       nodes.push({ title: value.label ?? value.title, url: key })
     }
   }

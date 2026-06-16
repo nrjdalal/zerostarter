@@ -52,8 +52,7 @@ async function existingSlugs(dir: string): Promise<Set<string>> {
 }
 
 // Block-style YAML scalar; double-quotes (JSON-escaped, a subset of YAML) only when the plain form would be ambiguous.
-function yamlScalar(value: string | boolean): string {
-  if (typeof value === "boolean") return String(value)
+function yamlScalar(value: string): string {
   const needsQuote =
     value === "" ||
     value !== value.trim() ||
@@ -66,18 +65,17 @@ function yamlScalar(value: string | boolean): string {
   return needsQuote ? JSON.stringify(value) : value
 }
 
-const toFrontmatter = (fields: Record<string, string | boolean>): string =>
+const toFrontmatter = (fields: Record<string, string>): string =>
   Object.entries(fields)
     .map(([key, value]) => `${key}: ${yamlScalar(value)}`)
     .join("\n") + "\n"
 
-// Full managed frontmatter for a page, defaults expanded (label written only when it differs from title; publish defaults to true).
-function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string | boolean> {
-  const fields: Record<string, string | boolean> = { slug }
+// Full managed frontmatter for a page; label is written only when it differs from title.
+function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string> {
+  const fields: Record<string, string> = { slug }
   if (meta.label && meta.label !== meta.title) fields.label = meta.label
   fields.title = meta.title
   if (meta.description !== undefined) fields.description = meta.description
-  fields.publish = meta.publish ?? true
   return fields
 }
 
@@ -156,9 +154,8 @@ async function run() {
 
     const metaPages: string[] = []
     const inMeta = new Set<string>()
-    for (const { file, meta } of declared) {
-      if (meta.publish === false || file === null || !existing.has(file) || inMeta.has(file))
-        continue
+    for (const { file } of declared) {
+      if (file === null || !existing.has(file) || inMeta.has(file)) continue
       inMeta.add(file)
       metaPages.push(file)
     }

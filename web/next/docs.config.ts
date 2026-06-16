@@ -1,7 +1,7 @@
 import type { DocsConfig } from "./src/lib/docs/types"
 
 // Single source of truth for docs structure and metadata. Groups are ordered arrays; each item is a single-key record keyed by a page URL (value = metadata) or a subgroup label (value = nested items). Keys are literal URLs ("/docs" = the docs index).
-// title/description/publish are synced into each MDX's frontmatter by the web/next build/dev (.github/scripts/docs.ts); `label` overrides the sidebar label (defaults to title), and `publish: false` removes the page from nav/meta only (not a privacy guarantee; see types.ts).
+// title/description are synced into each MDX's frontmatter by the web/next build/dev (.github/scripts/docs.ts); `label` overrides the sidebar label (defaults to title).
 const docsConfig = {
   docs: {
     "Getting Started": [
