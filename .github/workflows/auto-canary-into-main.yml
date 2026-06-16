@@ -25,6 +25,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          AHEAD=$(gh api repos/${{ github.repository }}/compare/main...canary --jq '.ahead_by')
+          if [ "$AHEAD" -eq 0 ]; then
+            echo "canary has no commits ahead of main. Nothing to release. Skipping."
+            exit 0
+          fi
           EXISTING=$(gh pr list --head canary --base main --state open --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
             echo "Pull request #$EXISTING already exists. Skipping creation."

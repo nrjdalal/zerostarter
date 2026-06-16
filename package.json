@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -53,6 +53,9 @@
     "svgo": "catalog:",
     "turbo": "catalog:"
   },
+  "overrides": {
+    "esbuild": "^0.28.1"
+  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -103,7 +106,7 @@
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
     "fumadocs-core": "16.8.12",
-    "fumadocs-mdx": "^15.0.7",
+    "fumadocs-mdx": "^15.0.12",
     "fumadocs-ui": "16.8.12",
     "globby": "^16.1.1",
     "hono": "^4.12.21",
@@ -118,7 +121,7 @@
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
     "postgres": "^3.4.9",
-    "posthog-js": "^1.374.2",
+    "posthog-js": "^1.386.8",
     "react": "^19.2.6",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.6",

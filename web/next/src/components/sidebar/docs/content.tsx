@@ -19,7 +19,20 @@ import {
 } from "@/components/ui/sidebar"
 import { config } from "@/lib/config"
 
-export function SidebarDocsContent() {
+type NavItem = { readonly title: string; readonly url: string }
+type NavGroup =
+  | { readonly label: string; readonly items: readonly NavItem[] }
+  | {
+      readonly label: string
+      readonly collapsible?: boolean
+      readonly categories: Readonly<Record<string, readonly NavItem[]>>
+    }
+
+export function SidebarDocsContent({
+  groups = config.sidebar.groups,
+}: {
+  groups?: readonly NavGroup[]
+}) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -38,7 +51,7 @@ export function SidebarDocsContent() {
 
   return (
     <>
-      {config.sidebar.groups.map((group) => (
+      {groups.map((group) => (
         <SidebarGroup key={group.label}>
           <SidebarGroupLabel className="pl-2.5">{group.label}</SidebarGroupLabel>
           <SidebarMenu className={"categories" in group ? "space-y-0" : "space-y-0.5"}>

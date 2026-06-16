@@ -1,3 +1,15 @@
+## v0.0.24
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.23...v0.0.24)
+
+### 📖 Documentation
+
+- **web:** Sync the per-workspace hook with inscope and link it ([fb1e55f](https://github.com/nrjdalal/zerostarter/commit/fb1e55f))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.23
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.22...v0.0.23)
