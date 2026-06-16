@@ -18,9 +18,7 @@ function resolveItems(items: DocsItem[]): NavNode[] {
   return nodes
 }
 
-// Builds the sidebar nav for a collection from docs.config (recursively). A page is keyed by its
-// URL (used directly as the link); a subgroup is keyed by its label. Titles come from the config
-// (nav ?? title). Pure (the key is the URL), so no source lookup is needed.
+// Builds the sidebar nav for a collection from docs.config: a page is keyed by its URL (used directly as the link), a subgroup by its label; titles come from the config (label ?? title).
 export function resolveDocsNav(collection: keyof typeof docsConfig): NavGroup[] {
   return Object.entries(docsConfig[collection]).map(([label, items]) => ({
     label,

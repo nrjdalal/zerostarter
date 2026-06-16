@@ -5,13 +5,8 @@ import { Glob } from "bun"
 import docsConfig from "../../web/next/docs.config"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
 
-// Derives content/<collection>/meta.json (reading order + prev/next) from docs.config and owns
-// the per-page frontmatter (slug/title/description/publish, plus label when it differs from title)
-// MDX, so authors only write the body. Page keys are full URLs; the collection base is stripped
-// to locate the .mdx and to build meta.json. Runs inside the web/next build and dev scripts:
-// without --strict (dev) it writes meta.json + frontmatter and scaffolds missing pages; with
-// --strict (build) it validates only and fails on any drift or missing file, never writing.
-// meta.json is git-ignored; docs.config is the single source.
+// Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
+// Runs in the web/next build (--strict: validate only, fail on drift/missing) and dev (write meta.json + frontmatter, scaffold missing pages). meta.json is git-ignored; docs.config is the single source.
 
 const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
 
@@ -20,22 +15,24 @@ const BASE: Record<string, string> = { docs: "/docs", console: "/console/docs" }
 
 type Page = { slug: string; meta: DocsMeta }
 
-// Recursively collect page entries in reading order. An item keyed to an array is a subgroup;
-// an item keyed to an object is a page (key = URL).
-function pagesOf(items: DocsItem[]): Page[] {
+// Collect page entries in reading order; an item keyed to an array is a subgroup, one keyed to an object is a page (key = URL). Warns on malformed multi-key items.
+function pagesOf(items: DocsItem[], onWarn: (msg: string) => void): Page[] {
   const out: Page[] = []
   for (const item of items) {
+    const keys = Object.keys(item)
+    if (keys.length !== 1)
+      onWarn(`item must have exactly one key, found [${keys.join(", ")}]; using only the first`)
     const entry = Object.entries(item)[0]
     if (!entry) continue
     const [key, value] = entry
-    if (Array.isArray(value)) out.push(...pagesOf(value))
+    if (Array.isArray(value)) out.push(...pagesOf(value, onWarn))
     else out.push({ slug: key, meta: value })
   }
   return out
 }
 
-const collectionPages = (collection: DocsCollection): Page[] =>
-  Object.values(collection).flatMap(pagesOf)
+const collectionPages = (collection: DocsCollection, onWarn: (msg: string) => void): Page[] =>
+  Object.values(collection).flatMap((items) => pagesOf(items, onWarn))
 
 // Map a page URL to its content file (relative, no extension); null if it is not under the base.
 function toFile(base: string | undefined, slug: string): string | null {
@@ -54,8 +51,7 @@ async function existingSlugs(dir: string): Promise<Set<string>> {
   return slugs
 }
 
-// Block-style YAML scalar, double-quoting (JSON-escaped, a subset of YAML's) only when the plain
-// form would be ambiguous.
+// Block-style YAML scalar; double-quotes (JSON-escaped, a subset of YAML) only when the plain form would be ambiguous.
 function yamlScalar(value: string | boolean): string {
   if (typeof value === "boolean") return String(value)
   const needsQuote =
@@ -75,7 +71,7 @@ const toFrontmatter = (fields: Record<string, string | boolean>): string =>
     .map(([key, value]) => `${key}: ${yamlScalar(value)}`)
     .join("\n") + "\n"
 
-// The full managed frontmatter for a page, with defaults expanded (nav -> title, publish -> true).
+// Full managed frontmatter for a page, defaults expanded (label written only when it differs from title; publish defaults to true).
 function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string | boolean> {
   const fields: Record<string, string | boolean> = { slug }
   if (meta.label && meta.label !== meta.title) fields.label = meta.label
@@ -87,8 +83,7 @@ function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string 
 
 type SyncResult = "ok" | "wrote" | "drift"
 
-// The generator owns the whole frontmatter, so it compares the rendered block byte-for-byte: an
-// already-synced file never churns, and any hand edit shows up as drift.
+// Compares the rendered frontmatter block byte-for-byte (the generator owns it): an in-sync file never churns, and a hand edit shows up as drift.
 async function syncFrontmatter(
   file: string,
   slug: string,
@@ -114,15 +109,18 @@ async function run() {
 
   for (const [name, collection] of Object.entries(docsConfig)) {
     const base = BASE[name]
-    const declared = collectionPages(collection as DocsCollection).map(({ slug, meta }) => ({
-      slug,
-      file: toFile(base, slug),
-      meta,
-    }))
+    const onWarn = (msg: string) => warnings.push(`[${name}] ${msg}`)
+    const declared = collectionPages(collection as DocsCollection, onWarn).map(
+      ({ slug, meta }) => ({
+        slug,
+        file: toFile(base, slug),
+        meta,
+      }),
+    )
 
     const seen = new Set<string>()
     for (const { slug } of declared) {
-      if (seen.has(slug)) warnings.push(`[${name}] duplicate slug in docs.config: "${slug}"`)
+      if (seen.has(slug)) onWarn(`duplicate slug in docs.config: "${slug}"`)
       seen.add(slug)
     }
 
@@ -131,20 +129,19 @@ async function run() {
     )
     const existing = await existingSlugs(name)
     for (const fileSlug of existing) {
-      if (!declaredFiles.has(fileSlug)) {
-        warnings.push(`[${name}] "${fileSlug}.mdx" exists but is not listed in docs.config`)
-      }
+      if (!declaredFiles.has(fileSlug))
+        onWarn(`"${fileSlug}.mdx" exists but is not listed in docs.config`)
     }
 
     for (const { slug, file, meta } of declared) {
       if (file === null) {
-        warnings.push(`[${name}] "${slug}" is not under the ${name} base (${base})`)
+        onWarn(`"${slug}" is not under the ${name} base (${base})`)
         continue
       }
       const filePath = path.join(CONTENT, name, `${file}.mdx`)
       if (!existing.has(file)) {
         if (strict) {
-          warnings.push(`[${name}] "${slug}" (${file}.mdx) is in docs.config but has no file`)
+          onWarn(`"${slug}" (${file}.mdx) is in docs.config but has no file`)
           continue
         }
         await Bun.write(filePath, `---\n${toFrontmatter(frontmatterFields(slug, meta))}---\n\n`)
@@ -153,11 +150,8 @@ async function run() {
         continue
       }
       const result = await syncFrontmatter(filePath, slug, meta, strict)
-      if (result === "drift") {
-        warnings.push(`[${name}] "${file}.mdx" frontmatter is out of sync with docs.config`)
-      } else if (result === "wrote") {
-        console.log(`[${name}] synced ${file}.mdx frontmatter`)
-      }
+      if (result === "drift") onWarn(`"${file}.mdx" frontmatter is out of sync with docs.config`)
+      else if (result === "wrote") console.log(`[${name}] synced ${file}.mdx frontmatter`)
     }
 
     const metaPages: string[] = []
@@ -176,10 +170,14 @@ async function run() {
 
   if (warnings.length) {
     const log = strict ? console.error : console.warn
-    log(
-      `\ndocs ${strict ? "error" : "warning"}(s):\n${warnings.map((w) => `  - ${w}`).join("\n")}\n`,
-    )
-    if (strict) process.exit(1)
+    log(`\ndocs ${strict ? "error" : "warning"}(s):\n${warnings.map((w) => `  - ${w}`).join("\n")}`)
+    if (strict) {
+      console.error(
+        "\nRun `bun .github/scripts/docs.ts` (or start the dev server) to regenerate, then commit.\n",
+      )
+      process.exit(1)
+    }
+    console.warn("")
   }
 }
 

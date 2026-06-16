@@ -2,8 +2,7 @@ import { pageSchema } from "fumadocs-core/source/schema"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 import { z } from "zod"
 
-// docs.config.ts owns these fields; the docs generator syncs the full set into each MDX's
-// frontmatter, so the schema must accept them (nav defaults to title, publish defaults to true).
+// docs.config.ts owns these fields; the generator syncs them into each MDX, so the schema must accept them (label defaults to title, publish to true).
 const docsSchema = pageSchema.extend({
   slug: z.string().optional(),
   label: z.string().optional(),

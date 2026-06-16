@@ -1,21 +1,16 @@
-// Single source of truth for docs structure + metadata. The sidebar, meta.json (reading
-// order + prev/next), MDX frontmatter, and existence checks are all derived from
-// web/next/docs.config.ts.
+// Single source of truth for docs structure + metadata; the sidebar, meta.json, MDX frontmatter, and existence checks all derive from web/next/docs.config.ts.
 
-// Per-page metadata, stored under the page's URL key (e.g. "/docs/getting-started/architecture").
-// title/description/publish are synced into the MDX frontmatter; `label` overrides the sidebar
-// label (defaults to title, written only when it differs); `publish: false` drops the page from
-// nav/tree and marks it a draft.
+// Per-page metadata, stored under the page's URL key (e.g. "/docs/getting-started/architecture"); title/description/publish are synced into the MDX frontmatter.
 export type DocsMeta = {
   title: string
   description?: string
+  // Sidebar label; defaults to title and is written to frontmatter only when it differs.
   label?: string
+  // false removes the page from the sidebar nav and meta.json ordering only; the file still builds a reachable route, so use the console collection for truly private docs.
   publish?: boolean
 }
 
-// One ordered entry in a group: a single-key record. If the value is metadata it's a page
-// (key = the page's URL); if the value is an array it's a nested subgroup (key = label), to
-// any depth.
+// One ordered entry in a group: a single-key record keyed by a page URL (value = metadata) or a subgroup label (value = nested items), nestable to any depth.
 export type DocsItem = Record<string, DocsMeta | DocsItem[]>
 
 // A collection maps group labels to their ordered items.
@@ -27,8 +22,7 @@ export type DocsConfig = {
   console: DocsCollection
 }
 
-// Resolved sidebar shape (output of resolveDocsNav, consumed by SidebarDocsContent):
-// a page is a leaf with a url; a group is a label with nested nodes.
+// Resolved sidebar shape (output of resolveDocsNav): a page is a leaf with a url, a group is a label with nested nodes.
 export type NavItem = { title: string; url: string }
 export type NavGroup = { label: string; items: NavNode[] }
 export type NavNode = NavItem | NavGroup
