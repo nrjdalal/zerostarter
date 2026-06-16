@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "bun ../../.github/scripts/compress-images.ts && fumadocs-mdx && next build",
+    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
     "check-types": "tsc --noEmit",
-    "dev": "next dev",
+    "dev": "bun ../../.github/scripts/docs.ts && next dev",
     "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {
