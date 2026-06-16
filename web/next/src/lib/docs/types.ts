@@ -14,7 +14,7 @@ export type DocsItem = Record<string, DocsMeta | DocsItem[]>
 // A collection maps group labels to their ordered items.
 export type DocsCollection = Record<string, DocsItem[]>
 
-// Collection names map 1:1 to content/<name> directories.
+// Each collection's content dir mirrors its URL base: docs -> content/docs, console -> content/console/docs.
 export type DocsConfig = {
   docs: DocsCollection
   console: DocsCollection
