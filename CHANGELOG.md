@@ -1,3 +1,19 @@
+## v0.0.25
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.24...v0.0.25)
+
+### 🚀 Enhancements
+
+- Add internal admin console at /console ([#464](https://github.com/nrjdalal/zerostarter/pull/464))
+
+### 🩹 Fixes
+
+- **deps:** Resolve high audit advisories (esbuild, protobufjs) ([#466](https://github.com/nrjdalal/zerostarter/pull/466))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.24
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.23...v0.0.24)
