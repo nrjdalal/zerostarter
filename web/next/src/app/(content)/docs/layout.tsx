@@ -11,6 +11,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
+import { resolveDocsNav } from "@/lib/docs/nav"
 import { baseOptions } from "@/lib/fumadocs"
 import { docsSource } from "@/lib/source"
 
@@ -22,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <SidebarDocsSearch />
         </SidebarHeader>
         <SidebarContent>
-          <SidebarDocsContent />
+          <SidebarDocsContent groups={resolveDocsNav("docs")} />
         </SidebarContent>
         <SidebarFooter className="border-t">
           <SidebarDocsFooter />

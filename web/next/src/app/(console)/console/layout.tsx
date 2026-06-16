@@ -5,6 +5,7 @@ import { SidebarShell } from "@/components/sidebar/shell"
 import { SidebarUserMenu } from "@/components/sidebar/user-menu"
 import { SidebarMenu } from "@/components/ui/sidebar"
 import { assertConsoleAccess } from "@/lib/auth/console"
+import { resolveDocsNav } from "@/lib/docs/nav"
 
 // Force per-request rendering so the access check runs on every request and the console is never statically prerendered/cached for anonymous users.
 export const dynamic = "force-dynamic"
@@ -23,7 +24,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       badge="Console"
       homeHref="/console"
       header={<SidebarConsoleHeader />}
-      nav={<SidebarConsoleContent />}
+      nav={<SidebarConsoleContent docsGroups={resolveDocsNav("console")} />}
       footer={
         <SidebarMenu>
           <SidebarUserMenu user={session.user} />

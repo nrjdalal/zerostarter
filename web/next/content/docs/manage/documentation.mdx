@@ -1,4 +1,5 @@
 ---
+slug: /docs/manage/documentation
 title: Documentation
 description: Manage documentation content and search.
 ---
@@ -7,73 +8,64 @@ description: Manage documentation content and search.
 
 Documentation is managed using [Fumadocs](https://fumadocs.vercel.app) and stored in `web/next/content/docs/`. Full-text search is powered by [Orama](https://orama.com) via Fumadocs.
 
-## Content Structure
+## Source of truth
 
-- **Location**: `web/next/content/docs/`
-- **Format**: MDX files with frontmatter
-- **Configuration**: Defined in `web/next/source.config.ts` and `web/next/content/docs/meta.json`
+`web/next/docs.config.ts` is the single source for docs structure and metadata. It maps each collection (`docs`, `console`) to ordered groups; every entry is keyed by the page's URL, and subgroups nest as `{ "Label": [...] }`:
 
-## Creating Documentation
+```ts
+docs: {
+  "Getting Started": [
+    { "/docs": { title: "Introduction", description: "..." } },
+    { "/docs/getting-started/architecture": { title: "Architecture", description: "..." } },
+  ],
+  Manage: [
+    {
+      Authentication: [
+        { "/docs/manage/authentication": { title: "Authentication", label: "Auth & Organizations", description: "..." } },
+      ],
+    },
+  ],
+}
+```
 
-1. Create a new `.mdx` file in `web/next/content/docs/`
-2. Add frontmatter with `title` and `description`
-3. Write content using MDX syntax
-4. Add entry to `web/next/content/docs/meta.json`
+`title`/`description` are the page metadata; `label` overrides the sidebar text when it should differ from the title.
+
+## Generated artifacts
+
+A generator (`.github/scripts/docs.ts`) runs inside the `web/next` build and dev. From `docs.config.ts` it:
+
+- writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
+- generates `content/docs/meta.json` (reading order + prev/next), which is **git-ignored — never edit it by hand**;
+- scaffolds a stub MDX in dev for any page declared in the config but missing on disk;
+- fails the build under `--strict` if the config and files have drifted, with a hint to re-run the generator.
+
+## Creating a page
+
+1. Add an entry under the right group in `web/next/docs.config.ts`, keyed by the page URL (e.g. `"/docs/manage/my-page"`), with its `title` and `description`.
+2. Run the dev server (or `bun .github/scripts/docs.ts`) — it scaffolds `content/docs/manage/my-page.mdx` with the frontmatter filled in.
+3. Write the body. Leave the frontmatter and `meta.json` alone; both are regenerated from the config.
 
 ## Configuration
 
-Documentation source is configured in `web/next/source.config.ts`:
+The fumadocs source is configured in `web/next/source.config.ts`, with its frontmatter schema extended so the generated `slug`/`label` fields are accepted:
 
 ```ts
+import { pageSchema } from "fumadocs-core/source/schema"
+import { defineDocs } from "fumadocs-mdx/config"
+import { z } from "zod"
+
+const docsSchema = pageSchema.extend({
+  slug: z.string().optional(),
+  label: z.string().optional(),
+})
+
 export const docs = defineDocs({
   dir: "content/docs",
-  docs: {
-    postprocess: {
-      includeProcessedMarkdown: true,
-    },
-  },
+  docs: { schema: docsSchema, postprocess: { includeProcessedMarkdown: true } },
 })
 ```
 
 `includeProcessedMarkdown` keeps the rendered Markdown around so the `llms.txt` routes can serve a plain-text version of each page.
-
-Pages are listed in `web/next/content/docs/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
-
-```json
-{
-  "pages": [
-    "index",
-    "getting-started/architecture",
-    "getting-started/project-structure",
-    "getting-started/type-safe-api",
-    "getting-started/setup",
-    "getting-started/scripts",
-    "getting-started/roadmap",
-    "manage/authentication",
-    "manage/dashboard",
-    "manage/database",
-    "manage/api-conventions",
-    "manage/analytics",
-    "manage/blog",
-    "manage/code-quality",
-    "manage/documentation",
-    "manage/feedback",
-    "manage/environment",
-    "manage/release",
-    "manage/theming",
-    "manage/og-images",
-    "manage/llms-txt",
-    "manage/robots",
-    "manage/sitemap",
-    "deployment/docker",
-    "deployment/vercel",
-    "resources/ai-skills",
-    "resources/ide-setup",
-    "resources/infisical",
-    "contributing"
-  ]
-}
-```
 
 ## Search
 
