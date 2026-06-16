@@ -52,9 +52,8 @@ vercel-bundle/
 .npmrc
 *.local.json
 cookies.txt
+web/next/content/console/meta.json
+web/next/content/docs/meta.json
 
 # git overrides
 !.env.example
-
-# visual-parity screenshots (machine-specific baselines, regenerate locally)
-web/next/test/screenshots/

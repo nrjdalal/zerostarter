@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { config } from "@/lib/config"
+import type { NavGroup } from "@/lib/docs/types"
 
 const mainItems = [
   { title: "Dashboard", url: "/console", icon: RiDashboardLine, exact: true },
@@ -31,7 +31,7 @@ export function SidebarConsoleHeader() {
   )
 }
 
-export function SidebarConsoleContent() {
+export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
@@ -40,7 +40,7 @@ export function SidebarConsoleContent() {
 
   // Docs section swaps to the grouped doc nav (search is in the header; the brand links back to /console).
   if (pathname?.startsWith("/console/docs")) {
-    return <SidebarDocsContent groups={config.console.groups} />
+    return <SidebarDocsContent groups={docsGroups} />
   }
 
   return (

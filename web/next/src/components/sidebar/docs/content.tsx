@@ -17,36 +17,22 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { config } from "@/lib/config"
+import type { NavGroup, NavItem, NavNode } from "@/lib/docs/types"
 
-type NavItem = { readonly title: string; readonly url: string }
-type NavGroup =
-  | { readonly label: string; readonly items: readonly NavItem[] }
-  | {
-      readonly label: string
-      readonly collapsible?: boolean
-      readonly categories: Readonly<Record<string, readonly NavItem[]>>
-    }
+const isPage = (node: NavNode): node is NavItem => "url" in node
 
-export function SidebarDocsContent({
-  groups = config.sidebar.groups,
-}: {
-  groups?: readonly NavGroup[]
-}) {
+function collectUrls(nodes: NavNode[]): string[] {
+  return nodes.flatMap((node) => (isPage(node) ? [node.url] : collectUrls(node.items)))
+}
+
+export function SidebarDocsContent({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const isCategoryActive = (items: ReadonlyArray<{ readonly url: string }>) => {
-    return items.some(
-      (item) =>
-        pathname === item.url ||
-        pathname === item.url + "/" ||
-        pathname?.startsWith(item.url + "/"),
-    )
-  }
-
-  const isItemActive = (url: string) => {
-    return pathname === url || pathname === url + "/" || pathname?.startsWith(url + "/")
+  const isActive = (url: string): boolean =>
+    pathname === url || pathname === url + "/" || (pathname?.startsWith(url + "/") ?? false)
+  const close = () => {
+    if (isMobile) setOpenMobile(false)
   }
 
   return (
@@ -54,47 +40,18 @@ export function SidebarDocsContent({
       {groups.map((group) => (
         <SidebarGroup key={group.label}>
           <SidebarGroupLabel className="pl-2.5">{group.label}</SidebarGroupLabel>
-          <SidebarMenu className={"categories" in group ? "space-y-0" : "space-y-0.5"}>
-            {"items" in group &&
-              group.items.map((item) => {
-                const isActive = pathname === item.url || pathname === item.url + "/"
-                const isSetupItem = item.url === "/docs/getting-started/setup"
-
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      className={
-                        isSetupItem ? "border data-active:font-normal" : "data-active:font-normal"
-                      }
-                      render={
-                        <Link
-                          href={item.url}
-                          onClick={() => {
-                            if (isMobile) {
-                              setOpenMobile(false)
-                            }
-                          }}
-                        />
-                      }
-                    >
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            {"categories" in group &&
-              Object.entries(group.categories).map(([category, items]) => (
-                <CollapsibleCategory
-                  key={category}
-                  category={category}
-                  items={items}
-                  isActive={isCategoryActive(items)}
-                  isItemActive={isItemActive}
-                  isMobile={isMobile}
-                  setOpenMobile={setOpenMobile}
-                />
-              ))}
+          <SidebarMenu
+            className={group.items.some((node) => !isPage(node)) ? "space-y-0" : "space-y-0.5"}
+          >
+            {group.items.map((node) => (
+              <NavTreeNode
+                key={isPage(node) ? node.url : node.label}
+                node={node}
+                sub={false}
+                isActive={isActive}
+                close={close}
+              />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       ))}
@@ -102,65 +59,91 @@ export function SidebarDocsContent({
   )
 }
 
-function CollapsibleCategory({
-  category,
-  items,
+function NavTreeNode({
+  node,
+  sub,
   isActive,
-  isItemActive,
-  isMobile,
-  setOpenMobile,
+  close,
 }: {
-  category: string
-  items: ReadonlyArray<{ readonly url: string; readonly title: string }>
-  isActive: boolean
-  isItemActive: (url: string) => boolean
-  isMobile: boolean
-  setOpenMobile: (open: boolean) => void
+  node: NavNode
+  sub: boolean
+  isActive: (url: string) => boolean
+  close: () => void
 }) {
-  const [open, setOpen] = useState(isActive)
+  if (!isPage(node)) {
+    return <NavTreeGroup group={node} sub={sub} isActive={isActive} close={close} />
+  }
+
+  const active = isActive(node.url)
+
+  if (sub) {
+    return (
+      <SidebarMenuSubItem>
+        <SidebarMenuSubButton isActive={active} render={<Link href={node.url} onClick={close} />}>
+          <span>{node.title}</span>
+        </SidebarMenuSubButton>
+      </SidebarMenuSubItem>
+    )
+  }
+
+  const isSetupItem = node.url === "/docs/getting-started/setup"
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={active}
+        className={isSetupItem ? "border data-active:font-normal" : "data-active:font-normal"}
+        render={<Link href={node.url} onClick={close} />}
+      >
+        <span>{node.title}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
+
+function NavTreeGroup({
+  group,
+  sub,
+  isActive,
+  close,
+}: {
+  group: NavGroup
+  sub: boolean
+  isActive: (url: string) => boolean
+  close: () => void
+}) {
+  const active = collectUrls(group.items).some((url) => isActive(url))
+  const [open, setOpen] = useState(active)
 
   useEffect(() => {
-    if (isActive) {
-      setOpen(true)
-    }
-  }, [isActive])
+    if (active) setOpen(true)
+  }, [active])
+
+  const Trigger = sub ? SidebarMenuSubButton : SidebarMenuButton
+  const Item = sub ? SidebarMenuSubItem : SidebarMenuItem
 
   return (
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      defaultOpen={isActive}
+      defaultOpen={active}
       className="group"
-      render={<SidebarMenuItem />}
+      render={<Item />}
     >
-      <CollapsibleTrigger render={<SidebarMenuButton tooltip={category} />}>
+      <CollapsibleTrigger render={<Trigger {...(sub ? {} : { tooltip: group.label })} />}>
         <RiArrowRightSLine className="transition-transform duration-200 group-data-[state=open]:rotate-90" />
-        <span>{category}</span>
+        <span>{group.label}</span>
       </CollapsibleTrigger>
       <CollapsibleContent>
         <SidebarMenuSub className="mr-0 gap-y-0.5 pr-0 pl-2">
-          {items.map((item) => {
-            const itemActive = isItemActive(item.url)
-            return (
-              <SidebarMenuSubItem key={item.url}>
-                <SidebarMenuSubButton
-                  isActive={itemActive}
-                  render={
-                    <Link
-                      href={item.url}
-                      onClick={() => {
-                        if (isMobile) {
-                          setOpenMobile(false)
-                        }
-                      }}
-                    />
-                  }
-                >
-                  <span>{item.title}</span>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            )
-          })}
+          {group.items.map((node) => (
+            <NavTreeNode
+              key={isPage(node) ? node.url : node.label}
+              node={node}
+              sub={true}
+              isActive={isActive}
+              close={close}
+            />
+          ))}
         </SidebarMenuSub>
       </CollapsibleContent>
     </Collapsible>
