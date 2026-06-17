@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { blogSource } from "@/lib/source"
+import { getPublishedBlogPosts } from "@/lib/blog"
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
@@ -9,12 +9,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 })
 
-// Renders the /blog listing from the posts themselves (newest first by `date`), so adding a post needs no manual list or meta.json edit. Excludes the blog index page.
+// Renders published posts from the posts themselves, so adding a post needs no manual list or meta.json edit.
 export function BlogList() {
-  const posts = blogSource
-    .getPages()
-    .filter((page) => page.url !== "/blog")
-    .sort((a, b) => b.data.date.localeCompare(a.data.date) || a.url.localeCompare(b.url))
+  const posts = getPublishedBlogPosts()
 
   return (
     <div className="not-prose flex flex-col gap-6">

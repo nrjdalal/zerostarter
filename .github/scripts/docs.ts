@@ -101,22 +101,30 @@ async function syncFrontmatter(
   return "wrote"
 }
 
-// The blog is content-driven: each post owns its frontmatter and `date` orders the listing. This derives content/blog/meta.json (index first, then posts newest-first) so the order is never hand-maintained.
+const todayIsoDate = () => new Date().toISOString().slice(0, 10)
+
+// The blog is content-driven: each post owns its frontmatter and `date` controls publishing/order. This derives content/blog/meta.json (index first, then published posts newest-first) so the order is never hand-maintained.
 async function generateBlogMeta(warnings: string[]): Promise<void> {
   const dir = "blog"
+  const today = todayIsoDate()
   const slugs = await existingSlugs(dir)
-  const posts: { slug: string; date: string }[] = []
+  const posts: { slug: string; date: string; draft: boolean }[] = []
   for (const slug of slugs) {
     if (slug === "index") continue
     const text = await Bun.file(path.join(CONTENT, dir, `${slug}.mdx`)).text()
     const match = text.match(/^---\n([\s\S]*?)\n---/)
-    const data = match ? (Bun.YAML.parse(match[1] ?? "") as { date?: unknown }) : null
+    const data = match
+      ? (Bun.YAML.parse(match[1] ?? "") as { date?: unknown; draft?: unknown })
+      : null
     const date = typeof data?.date === "string" ? data.date : ""
     if (!date) warnings.push(`[blog] "${slug}.mdx" is missing a \`date\` in frontmatter`)
-    posts.push({ slug, date })
+    posts.push({ slug, date, draft: data?.draft === true })
   }
   posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug))
-  const pages = [...(slugs.has("index") ? ["index"] : []), ...posts.map((p) => p.slug)]
+  const pages = [
+    ...(slugs.has("index") ? ["index"] : []),
+    ...posts.filter((post) => post.date && !post.draft && post.date <= today).map((p) => p.slug),
+  ]
   await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }
 

@@ -1,24 +1,30 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 
-import {
-  createGenerateStaticParams,
-  generatePageMetadata,
-  getPageData,
-  renderPageContent,
-} from "@/lib/fumadocs"
+import { generatePublishedBlogParams, isPublishedBlogPage } from "@/lib/blog"
+import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
+export const dynamicParams = false
+
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
-  const pageData = await getPageData(props.params, blogSource)
-  return renderPageContent(pageData)
+  const params = await props.params
+  const page = blogSource.getPage(params.slug)
+  if (!page || !isPublishedBlogPage(page)) notFound()
+
+  return renderPageContent({ page, source: blogSource })
 }
 
-export const generateStaticParams = createGenerateStaticParams(blogSource)
+export const generateStaticParams = generatePublishedBlogParams
 
 export async function generateMetadata(props: {
   params: Promise<{ slug?: string[] }>
 }): Promise<Metadata> {
-  return generatePageMetadata(props.params, {
+  const params = await props.params
+  const page = blogSource.getPage(params.slug)
+  if (!page || !isPublishedBlogPage(page)) notFound()
+
+  return generatePageMetadata(Promise.resolve(params), {
     source: blogSource,
     ogPath: "/og/blog",
     ogType: "article",

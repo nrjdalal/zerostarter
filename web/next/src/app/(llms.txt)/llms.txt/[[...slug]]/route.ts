@@ -2,12 +2,14 @@ import { notFound } from "next/navigation"
 
 import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
+import { generatePublishedBlogParams, getPublishedBlogPosts, isPublishedBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const revalidate = false
+export const dynamicParams = false
 
 async function createPageResponse(
   page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,
@@ -69,14 +71,8 @@ ${docsIndex}
     notFound()
   }
 
-  const source = isBlog ? blogSource : docsSource
-
   if (isBlog && slug.length === 1) {
-    const blogPages = sortByMeta(
-      blogSource.getPages().filter((p) => p.url !== "/blog"),
-      blogMeta.pages,
-      "/blog",
-    )
+    const blogPages = sortByMeta(getPublishedBlogPosts(), blogMeta.pages, "/blog")
     const blogIndex = blogPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
       .join("\n")
@@ -105,11 +101,17 @@ ${blogIndex}
   }
 
   if (isDocs && slug.length === 1) {
-    return createPageResponse(source.getPage([]), true)
+    return createPageResponse(docsSource.getPage([]), true)
   }
 
   const pageSlug = slug.slice(1)
-  return createPageResponse(source.getPage(pageSlug), isDocs)
+  if (isBlog) {
+    const page = blogSource.getPage(pageSlug)
+    if (!page || !isPublishedBlogPage(page)) notFound()
+    return createPageResponse(page, false)
+  }
+
+  return createPageResponse(docsSource.getPage(pageSlug), true)
 }
 
 export function generateStaticParams() {
@@ -117,7 +119,7 @@ export function generateStaticParams() {
   const docsParams = docsSource.generateParams().map((params) => ({
     slug: ["docs", ...(params.slug ?? [])],
   }))
-  const blogParams = blogSource.generateParams().map((params) => ({
+  const blogParams = generatePublishedBlogParams().map((params) => ({
     slug: ["blog", ...(params.slug ?? [])],
   }))
   return [...indexParams, ...docsParams, ...blogParams]

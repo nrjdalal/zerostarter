@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next"
 
+import { getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
-import { blogSource, docsSource } from "@/lib/source"
+import { docsSource } from "@/lib/source"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = config.app.url
@@ -25,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   // Blog pages
-  const blogPages = blogSource.getPages().filter((p) => p.url !== "/blog")
+  const blogPages = getPublishedBlogPosts()
   const blogRoutes: MetadataRoute.Sitemap = blogPages.map((page) => ({
     url: `${baseUrl}${page.url}`,
     lastModified: new Date(),
