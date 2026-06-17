@@ -40,7 +40,7 @@ The blog source and its frontmatter schema are configured in `web/next/source.co
 ```ts
 const blogSchema = pageSchema.extend({
   date: z
-    .union([z.string(), z.date()])
+    .union([z.iso.date(), z.date()])
     .transform((value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value)),
   author: z.string().optional(),
   tags: z.array(z.string()).optional(),

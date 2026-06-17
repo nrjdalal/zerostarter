@@ -10,9 +10,9 @@ const docsSchema = pageSchema.extend({
 
 // Blog posts own their own metadata in frontmatter; `date` (ISO, required) drives ordering and the /blog listing. The generator builds content/blog/meta.json from it.
 const blogSchema = pageSchema.extend({
-  // Accept a quoted string or an unquoted YAML date, normalizing to an ISO date string (YYYY-MM-DD) so the generator and the schema agree.
+  // Accept a quoted ISO date string or an unquoted YAML date, normalized to a YYYY-MM-DD string. z.iso.date() enforces the format so the string-based sort stays correct and agrees with the generator.
   date: z
-    .union([z.string(), z.date()])
+    .union([z.iso.date(), z.date()])
     .transform((value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value)),
   author: z.string().optional(),
   tags: z.array(z.string()).optional(),
