@@ -17,14 +17,16 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 ### Maintenance
 
 - `bun run clean`: Remove build artifacts and caches (`.next`, `.turbo`, `dist`, etc.) plus all `node_modules` and generated typedefs. Re-run `bun install` afterward.
-- `bun run lint`: Run the Turbo `lint` pipeline. Oxlint also runs on staged files at commit time; to lint the whole tree directly, use `bunx oxlint`.
+- `bun run lint`: Run the Turbo `lint` pipeline, which is currently a no-op placeholder (the `lint` task is empty and no workspace defines a `lint` script). Real linting happens via lint-staged with Oxlint on staged files at commit time; to lint the whole tree directly, use `bunx oxlint`.
 - `bun run format`: Format the codebase using Oxfmt.
 - `bun run format:check`: Check formatting without making changes.
-- `bun run check-types`: Check the types of the codebase.
+- `bun run check-types`: Check the types of the codebase (runs the Turbo `check-types` pipeline, then `check-types:scripts`).
+- `bun run check-types:scripts`: Type-check the repo scripts with `tsgo -p .github/scripts/tsconfig.json`.
 
 ### Production
 
-- `bun run build`: Build the applications.
+- `bun run build`: Build the applications. Runs `turbo run build --summarize` and then `bun .github/scripts/build-sizes.ts`, which reports each workspace's build size after every build. The `web/next` build itself runs `compress-images.ts` first (Sharp and SVGO optimization of `web/next/public`), then the docs generator (`--strict`), then `fumadocs-mdx`, then `next build`.
+- `bun run build:vercel`: Turbo `build:vercel` task used for Vercel deployments (run via `turbo run build:vercel`). The `api/hono` workspace bundles its output with tsdown for the Bun target.
 - `bun run start`: Start the production servers.
 
 ### Database
@@ -38,3 +40,4 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 - `bun run shadcn:update`: Update all shadcn/ui components.
 - `bun run devtools`: Open Turborepo DevTools.
 - `bun run prepare`: Install git hooks via Lefthook.
+- `bun run postinstall`: Normalize and sort the `catalog:` dependency entries via `bun .github/scripts/deps-manager.ts` (runs automatically after `bun install`).

@@ -39,6 +39,10 @@ import { apiClient } from "@/lib/api/client"
 const res = await apiClient.v1.session.$get()
 const { data } = await res.json()
 // data is typed as Session, or error contains { code: string, message: string }
+
+// Get the current user (also requires authentication)
+const userRes = await apiClient.v1.user.$get()
+const { data: user } = await userRes.json()
 ```
 
 ### Session Data

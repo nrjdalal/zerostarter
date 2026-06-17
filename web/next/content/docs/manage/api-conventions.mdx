@@ -58,8 +58,8 @@ When a Zod validation fails, the response includes the full issues array:
 
 ### Environment-Aware Errors
 
-- **Local/Development**: Error messages include the actual error details for debugging
-- **Production**: Generic `"Internal Server Error"` message to avoid leaking internals
+- **Local only**: Error messages include the actual error details for debugging. Detailed messages are shown only when `isLocal(env.NODE_ENV)`, i.e. `NODE_ENV === "local"` (`api/hono/src/lib/error.ts`).
+- **All other environments**: Generic `"Internal Server Error"` message to avoid leaking internals. `development`, `test`, `staging`, and `production` all get the generic message.
 
 ## Middleware Stack
 
@@ -76,6 +76,7 @@ Configured in `api/hono/src/index.ts`:
 - **Origins**: From `HONO_TRUSTED_ORIGINS` (comma-separated URLs)
 - **Methods**: GET, OPTIONS, POST, PUT
 - **Headers**: content-type, authorization
+- **Exposed Headers**: content-length
 - **Credentials**: Enabled (for cookies)
 - **Max Age**: 600 seconds
 
