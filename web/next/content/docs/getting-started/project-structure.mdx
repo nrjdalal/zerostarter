@@ -40,6 +40,7 @@ The backend API server built with [Hono](https://hono.dev).
 - **`src/middlewares/`**: Custom middlewares
   - `auth.ts`: Authentication middleware for protected routes
   - `rate-limiter.ts`: Rate limiting middleware
+- **`src/lib/error.ts`**: Centralized `errorHandler` (formats Zod validation and internal errors)
 
 ### `web/next/`
 
@@ -48,7 +49,11 @@ The frontend application built with [Next.js 16](https://nextjs.org).
 - **`src/app/`**: Next.js App Router pages and layouts
   - `(content)/`: Documentation and blog pages
   - `(protected)/`: Authenticated user pages (dashboard)
+  - `(console)/`: Access-gated privileged admin console at `/console` (docs live under `/console/docs`)
   - `(llms.txt)/`: Auto-generated AI documentation endpoints
+  - `og/`: Dynamic Open Graph image routes
+  - `robots.ts`: `robots.txt` generation
+  - `sitemap.ts`: Sitemap generation
 - **`src/components/`**: React components
   - `ui/`: Shadcn UI components
   - `sidebar/`: Navigation sidebar components
@@ -65,6 +70,7 @@ The frontend application built with [Next.js 16](https://nextjs.org).
 Shared authentication logic using [Better Auth](https://better-auth.com).
 
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
+- **`src/lib/utils.ts`**: Cookie domain and prefix helpers (`getCookieDomain`, `getCookiePrefix`) for cross-subdomain and environment-specific cookies
 - Supports GitHub and Google OAuth
 - Organization and teams plugin for multi-tenant support, plus the Better Auth OpenAPI plugin
 - Exports session types for type safety
@@ -82,12 +88,12 @@ Database schema and configuration using [Drizzle ORM](https://orm.drizzle.team).
 
 Type-safe environment variables using [@t3-oss/env-core](https://env.t3.gg).
 
-- **`src/index.ts`**: Barrel exporting shared helpers (`getSafeEnv`, `getBuildVersion`, `isLocal`)
+- **`src/index.ts`**: Barrel exporting shared helpers and version info (`getSafeEnv`, plus `VERSION`, `GIT_SHA`, `BUILD_VERSION`, `getBuildVersion`, the `NODE_ENV` enum, and the env checkers `isLocal`/`isDevelopment`/`isTest`/`isStaging`/`isProduction`). `BUILD_VERSION` and `getBuildVersion` are the ones actually consumed (for example in `web/next/src/lib/config.ts`).
 - **`src/api-hono.ts`**: API server environment variables
 - **`src/auth.ts`**: Authentication environment variables
 - **`src/db.ts`**: Database environment variables
 - **`src/web-next.ts`**: Frontend environment variables (client and server)
-- **`src/lib/`**: `constants.ts` (the `NODE_ENV` enum) and `utils.ts` (dotenv loader, redaction)
+- **`src/lib/`**: `constants.ts` (the `NODE_ENV` enum, `VERSION`/`GIT_SHA`/`BUILD_VERSION`, `getBuildVersion`, and the env checkers `isLocal`/`isDevelopment`/`isTest`/`isStaging`/`isProduction`) and `utils.ts` (dotenv loader, redaction)
 
 ### `packages/tsconfig/`
 
@@ -101,3 +107,7 @@ Shared TypeScript configuration files for consistent settings across packages.
 | `turbo.json`   | Turborepo build configuration and global environment variables |
 | `lefthook.yml` | Git hooks configuration for linting and formatting             |
 | `.env`         | Environment variables (create from `.env.example`)             |
+
+### Bun catalog convention
+
+The root `package.json` defines a `catalog:` block listing a single version for each shared dependency. Every workspace then references those deps with `catalog:` instead of a literal version, so the whole monorepo stays on one version per package. The `.github/scripts/deps-manager.ts` script normalizes and sorts these entries; it runs on `postinstall` and via lint-staged whenever a `package.json` is staged.

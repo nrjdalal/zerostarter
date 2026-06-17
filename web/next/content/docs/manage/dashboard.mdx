@@ -44,10 +44,10 @@ Located at `web/next/src/components/sidebar/dashboard/org-switcher.tsx`:
 
 Located at `web/next/src/components/sidebar/dashboard/user-actions.tsx`:
 
-- Displays user avatar, name, and email
-- Links to documentation
-- Optional feedback link (if `NEXT_PUBLIC_USERJOT_URL` is set)
-- Sign out action with redirect to home
+- Links to documentation, with a version badge
+- Renders the shared `SidebarUserMenu`
+
+The user avatar, name, and email, the optional feedback link (shown when `NEXT_PUBLIC_USERJOT_URL` is set), and the sign-out action all live in the shared `SidebarUserMenu` component at `web/next/src/components/sidebar/user-menu.tsx`. Sign-out redirects to the home page.
 
 ## Adding Dashboard Pages
 
@@ -77,7 +77,9 @@ export default async function SettingsPage() {
 
 ## Sidebar Configuration
 
-The sidebar uses the shadcn/ui `Sidebar` component with `collapsible="icon"` mode. It consists of:
+The sidebar chrome is not built inline in the layout. It lives in the shared `SidebarShell` component at `web/next/src/components/sidebar/shell.tsx`, which is reused by both the dashboard and console layouts. The layout passes in the badge, header, and footer; `SidebarShell` owns the provider, header brand, content, footer, and rail.
+
+The shell uses the shadcn/ui `Sidebar` component with `collapsible="icon"` mode. It consists of:
 
 - **Header**: App name with RC badge, sidebar trigger
 - **Content**: Empty by default (add navigation items here)

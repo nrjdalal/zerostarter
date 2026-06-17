@@ -37,3 +37,5 @@ The endpoint is implemented in `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]
 - Automatic markdown generation with links and metadata
 - `docsSource` from Fumadocs for documentation
 - `blogSource` from Fumadocs for blog content
+
+Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`, which calls `page.data.getText("processed")`. That processed output only exists because each collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`, which is the gate that enables the processed-markdown output (see the Documentation page for more on this flag).

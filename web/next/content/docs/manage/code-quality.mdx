@@ -53,6 +53,12 @@ Runs before each commit in sequence (piped):
 2. **lint-staged**: Format and lint only staged files
 3. **Build**: Verify the project builds successfully
 
+### Audit overrides (AUDIT.md)
+
+`bun audit --audit-level high` is the gate that decides whether a vulnerable dependency blocks a commit. When an advisory can only be resolved with a dependency `overrides` entry in `package.json` (for example a transitive package that has no patched release yet), that override must be recorded in `AUDIT.md` at the repo root.
+
+`AUDIT.md` is the canonical record of every active override. Each entry documents the advisory, why an override is needed, the residual risk, and the exit criteria for removing it. The file is intentionally kept even when there are no active overrides, so do not delete it.
+
 ### Commit-msg Hook
 
 Validates commit messages follow conventional commit format.
