@@ -1,12 +1,14 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { isPublishedBlogPage } from "@/lib/blog"
+import { generatePublishedBlogParams, isPublishedBlogPage } from "@/lib/blog"
 import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
 export const dynamic = "force-static"
 export const revalidate = 60
+
+export const generateStaticParams = generatePublishedBlogParams
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params

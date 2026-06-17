@@ -27,3 +27,11 @@ export function getPublishedBlogPosts(): BlogPage[] {
     .filter((page) => isPublishedBlogPost(page, today))
     .sort(compareBlogPosts)
 }
+
+export function generatePublishedBlogParams() {
+  const today = todayIsoDate()
+  return blogSource.generateParams().filter((params) => {
+    const page = blogSource.getPage(params.slug)
+    return page ? isPublishedBlogPage(page, today) : false
+  })
+}

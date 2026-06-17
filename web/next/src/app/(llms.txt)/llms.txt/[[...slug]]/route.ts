@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import docsMeta from "@/../content/docs/meta.json"
-import { getPublishedBlogPosts, isPublishedBlogPage } from "@/lib/blog"
+import { generatePublishedBlogParams, getPublishedBlogPosts, isPublishedBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
@@ -118,7 +118,7 @@ export function generateStaticParams() {
   const docsParams = docsSource.generateParams().map((params) => ({
     slug: ["docs", ...(params.slug ?? [])],
   }))
-  const blogParams = blogSource.generateParams().map((params) => ({
+  const blogParams = generatePublishedBlogParams().map((params) => ({
     slug: ["blog", ...(params.slug ?? [])],
   }))
   return [...indexParams, ...docsParams, ...blogParams]
