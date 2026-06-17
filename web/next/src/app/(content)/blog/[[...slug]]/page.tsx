@@ -5,7 +5,8 @@ import { isPublishedBlogPage } from "@/lib/blog"
 import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+export const revalidate = 60
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params

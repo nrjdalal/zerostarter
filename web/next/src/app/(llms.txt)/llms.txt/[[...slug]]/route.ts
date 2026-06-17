@@ -7,7 +7,8 @@ import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+export const revalidate = 60
 
 async function createPageResponse(
   page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,

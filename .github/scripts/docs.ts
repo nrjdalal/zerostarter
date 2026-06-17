@@ -103,7 +103,7 @@ async function syncFrontmatter(
 
 const todayIsoDate = () => new Date().toISOString().slice(0, 10)
 
-// The blog is content-driven: each post owns its frontmatter and `date` controls publishing/order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same publish rule at request time.
+// The blog is content-driven: each post owns its frontmatter and `date` controls publishing/order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same publish rule during render/revalidation.
 async function generateBlogMeta(warnings: string[]): Promise<void> {
   const dir = "blog"
   const today = todayIsoDate()

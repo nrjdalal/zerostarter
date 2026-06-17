@@ -5,7 +5,8 @@ import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
 import { blogSource } from "@/lib/source"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+export const revalidate = 60
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params

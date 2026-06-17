@@ -5,7 +5,8 @@ import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { docsSource } from "@/lib/source"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+export const revalidate = 60
 
 export async function GET() {
   const pages = [

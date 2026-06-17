@@ -4,7 +4,8 @@ import { getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { docsSource } from "@/lib/source"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-static"
+export const revalidate = 60
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = config.app.url
