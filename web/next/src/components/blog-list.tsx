@@ -14,7 +14,7 @@ export function BlogList() {
   const posts = blogSource
     .getPages()
     .filter((page) => page.url !== "/blog")
-    .sort((a, b) => (a.data.date < b.data.date ? 1 : -1))
+    .sort((a, b) => b.data.date.localeCompare(a.data.date) || a.url.localeCompare(b.url))
 
   return (
     <div className="not-prose flex flex-col gap-6">

@@ -11,13 +11,13 @@ Blog content lives in `web/next/content/blog/` as MDX files. The blog is content
 ## Creating a Blog Post
 
 1. Create a new `.mdx` file in `web/next/content/blog/`.
-2. Add frontmatter with `title`, `description`, and `date` (all required), plus optional `author` and `tags`. Quote the date so it stays a string rather than being parsed as a timestamp:
+2. Add frontmatter with `title`, `description`, and `date` (all required), plus optional `author` and `tags`. The date is a `YYYY-MM-DD` value, quoted or unquoted (it is normalized to an ISO date string):
 
 ```yaml
 ---
 title: "My Post Title"
 description: "A short summary of the post."
-date: "2026-06-11"
+date: 2026-06-11
 ---
 ```
 
@@ -39,7 +39,9 @@ The blog source and its frontmatter schema are configured in `web/next/source.co
 
 ```ts
 const blogSchema = pageSchema.extend({
-  date: z.string(),
+  date: z
+    .union([z.string(), z.date()])
+    .transform((value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value)),
   author: z.string().optional(),
   tags: z.array(z.string()).optional(),
 })

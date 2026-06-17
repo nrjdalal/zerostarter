@@ -115,7 +115,7 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
     if (!date) warnings.push(`[blog] "${slug}.mdx" is missing a \`date\` in frontmatter`)
     posts.push({ slug, date })
   }
-  posts.sort((a, b) => (a.date < b.date ? 1 : -1))
+  posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug))
   const pages = [...(slugs.has("index") ? ["index"] : []), ...posts.map((p) => p.slug)]
   await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }
