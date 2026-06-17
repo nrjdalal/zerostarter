@@ -33,10 +33,11 @@ Each package defines only the environment variables it needs:
 
 - **`api-hono`**: `HONO_APP_URL`, `HONO_PORT`, `HONO_RATE_LIMIT`, `HONO_RATE_LIMIT_WINDOW_MS`, `HONO_TRUSTED_ORIGINS`
 - **`auth`**: `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`
-- **`db`**: `POSTGRES_URL`
+- **`db`**: `POSTGRES_URL`. When `INTERNAL_API_URL` is set, the `db` package rewrites `localhost` in `POSTGRES_URL` to `host.docker.internal` so containers can reach a database on the host.
 - **`web-next`**:
   - **Server**: `INTERNAL_API_URL` (server-side only, for internal service-to-service calls)
-  - **Client**: `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_API_URL` (required), `NEXT_PUBLIC_NODE_ENV`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (exposed to browser)
+  - **Client (required)**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, and `NEXT_PUBLIC_NODE_ENV`. `NEXT_PUBLIC_NODE_ENV` is not a value you set: it is derived at runtime from `process.env.NODE_ENV`, mirroring the stage enum to the browser.
+  - **Client (optional)**: `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (all exposed to browser)
 
 **Important**: Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
 
@@ -77,7 +78,7 @@ export const env = createEnv({
 })
 ```
 
-Setting `SKIP_ENV_VALIDATION=true` bypasses validation entirely, which is how CI and Docker builds run before real secrets are present. `emptyStringAsUndefined` treats empty strings as missing so optional vars fall back to their defaults.
+Setting `SKIP_ENV_VALIDATION=true` bypasses validation entirely, which is how CI and Docker builds run before real secrets are present. In `web-next`, when `SKIP_ENV_VALIDATION` is `"true"` and `NEXT_PUBLIC_APP_URL` or `NEXT_PUBLIC_API_URL` is unset, each is substituted with `https://polyfill.url` so the build can proceed. `emptyStringAsUndefined` treats empty strings as missing so optional vars fall back to their defaults.
 
 ### Usage in Packages
 

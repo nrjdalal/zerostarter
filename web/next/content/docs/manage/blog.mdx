@@ -21,6 +21,8 @@ Blog content is managed using Fumadocs and stored in `web/next/content/blog/`.
 3. Write content using MDX syntax
 4. Add entry to `web/next/content/blog/meta.json`
 
+Unlike the docs system, the blog is not config-driven. `.github/scripts/docs.ts` intentionally excludes the blog (it is not part of `web/next/docs.config.ts`), so `web/next/content/blog/meta.json` is hand-maintained and committed to the repo. This is the opposite of `web/next/content/docs/meta.json` and the console one, which are generated from `docs.config.ts` and git-ignored, so you must never hand-edit those.
+
 Images for a post are committed as static assets under `web/next/public/blog/<slug>/images/` and referenced by absolute path, e.g. `![Diagram](/blog/<slug>/images/diagram.svg)`.
 
 ## Configuration
@@ -38,10 +40,12 @@ export const blog = defineDocs({
 })
 ```
 
-Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** - it determines the order pages appear in navigation:
+Pages are listed in `web/next/content/blog/meta.json`. **The sequence matters** - it determines the order pages appear in the Fumadocs page-tree and the prev/next links:
 
 ```json
 {
   "pages": ["index", "mcp-per-workspace", "a-biography-written-in-code", "web-development-2026"]
 }
 ```
+
+The visible post listing shown at `/blog` is not driven by `meta.json`. It is hand-curated in `web/next/content/blog/index.mdx`, so a new post must also be added there to appear in the list.

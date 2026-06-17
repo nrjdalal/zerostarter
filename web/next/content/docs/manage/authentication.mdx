@@ -22,7 +22,7 @@ Two social providers are configured:
 - **GitHub** — Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
 - **Google** — Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
-Both redirect to `/dashboard` after successful authentication.
+The auth config (`packages/auth/src/index.ts`) does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 
 ### Agent Sign-In (local only)
 
@@ -48,6 +48,12 @@ socialProviders: {
 ```
 
 4. Add the environment variables to `packages/env/src/auth.ts`
+
+## Console Access
+
+The privileged `/console` area is gated by a `console` user field (defined in `packages/auth/src/index.ts` and backed by a `console` text column on the `user` table in `packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` treats any non-empty value as full console access.
+
+The field is declared with `input: false`, so it is **not** settable through the auth API. To grant access, set the `console` column directly on the user row (for example via `bun run db:studio`); any non-empty value works. For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `console: "admin"` on the `AgentZero` user.
 
 ## Organizations & Teams
 
@@ -102,6 +108,7 @@ Sessions are stored in the `session` database table with:
 - **Cross-subdomain cookies** — Automatically configured when using subdomains
 - **IP address and user agent tracking** for security
 - **Session expiration** with automatic cleanup
+- **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache. Because of the cache, revoking a user's access can take up to about 5 minutes to take effect unless their sessions are revoked.
 
 ### Server-Side Session Access
 

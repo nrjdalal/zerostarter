@@ -1,3 +1,15 @@
+## v0.0.27
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.26...v0.0.27)
+
+### 💅 Refactors
+
+- **web:** Move console docs to content/console/docs to mirror the URL ([#470](https://github.com/nrjdalal/zerostarter/pull/470))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.26
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.25...v0.0.26)

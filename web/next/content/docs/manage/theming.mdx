@@ -12,11 +12,23 @@ ZeroStarter uses [Tailwind CSS v4](https://tailwindcss.com) with CSS custom prop
 
 Dark mode is handled by `next-themes` with system preference detection:
 
-```ts
+```tsx
 // web/next/src/app/providers.tsx
-<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-  {children}
-</ThemeProvider>
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
+export function InnerProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
+      <Toaster richColors />
+    </NextThemesProvider>
+  )
+}
 ```
 
 The `ModeToggle` component at `web/next/src/components/mode-toggle.tsx` is a smart toggle: from `system` it switches to the opposite of the OS preference, it flips between `light` and `dark` while they diverge from the OS preference, and it returns to `system` once the explicit theme matches the OS preference again.
@@ -50,7 +62,13 @@ These variables are consumed by Tailwind utility classes like `bg-background`, `
 Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
 
 ```ts
-export default { plugins: { "@tailwindcss/postcss": {} } }
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+}
+
+export default config
 ```
 
 `web/next/src/app/globals.css` imports Tailwind, animations, and the Fumadocs UI and shadcn presets:
@@ -74,7 +92,7 @@ Fonts are loaded with `next/font/local` from `.woff2` files in `web/next/src/fon
 - **Caveat**: Handwriting accent font
 - **Newsreader**: Serif accent font
 
-Each exposes a CSS variable (e.g. `--font-dm-sans`) that the `@theme inline` block maps onto Tailwind's font utilities.
+Each exposes a CSS variable (e.g. `--font-dm-sans`). Only DM Sans and JetBrains Mono are wired into Tailwind's font utilities by the `@theme inline` block, which maps `--font-sans: var(--font-dm-sans)` and `--font-mono: var(--font-jetbrains-mono)`. Caveat and Newsreader are exposed as CSS variables (`--font-caveat`, `--font-newsreader`) only, so use them via those variables directly.
 
 ## Component Styling
 
