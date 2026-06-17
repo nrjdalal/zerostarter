@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation"
 
-import { generatePublishedBlogParams, isPublishedBlogPage } from "@/lib/blog"
+import { isPublishedBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
 import { blogSource } from "@/lib/source"
 
-export const dynamic = "force-static"
-export const dynamicParams = false
+export const dynamic = "force-dynamic"
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
@@ -19,10 +18,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
     defaultTitle: `${config.app.name} - Blog`,
     defaultDescription: `Blog post from ${config.app.name}`,
   })
-}
-
-export function generateStaticParams() {
-  return generatePublishedBlogParams().map((params) => ({
-    slug: params.slug ?? [],
-  }))
 }

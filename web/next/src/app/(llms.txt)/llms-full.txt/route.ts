@@ -1,4 +1,3 @@
-import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
 import { getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
@@ -6,12 +5,12 @@ import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { docsSource } from "@/lib/source"
 
-export const revalidate = false
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const pages = [
     ...sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs"),
-    ...sortByMeta(getPublishedBlogPosts(), blogMeta.pages, "/blog"),
+    ...getPublishedBlogPosts(),
   ]
 
   const scanned = await Promise.all(pages.map(getLLMText))

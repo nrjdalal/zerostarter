@@ -1,15 +1,13 @@
 import { notFound } from "next/navigation"
 
-import blogMeta from "@/../content/blog/meta.json"
 import docsMeta from "@/../content/docs/meta.json"
-import { generatePublishedBlogParams, getPublishedBlogPosts, isPublishedBlogPage } from "@/lib/blog"
+import { getPublishedBlogPosts, isPublishedBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
 import { blogSource, docsSource } from "@/lib/source"
 
-export const revalidate = false
-export const dynamicParams = false
+export const dynamic = "force-dynamic"
 
 async function createPageResponse(
   page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,
@@ -72,7 +70,7 @@ ${docsIndex}
   }
 
   if (isBlog && slug.length === 1) {
-    const blogPages = sortByMeta(getPublishedBlogPosts(), blogMeta.pages, "/blog")
+    const blogPages = getPublishedBlogPosts()
     const blogIndex = blogPages
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
       .join("\n")
@@ -119,7 +117,7 @@ export function generateStaticParams() {
   const docsParams = docsSource.generateParams().map((params) => ({
     slug: ["docs", ...(params.slug ?? [])],
   }))
-  const blogParams = generatePublishedBlogParams().map((params) => ({
+  const blogParams = blogSource.generateParams().map((params) => ({
     slug: ["blog", ...(params.slug ?? [])],
   }))
   return [...indexParams, ...docsParams, ...blogParams]
