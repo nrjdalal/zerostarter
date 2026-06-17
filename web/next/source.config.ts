@@ -8,6 +8,13 @@ const docsSchema = pageSchema.extend({
   label: z.string().optional(),
 })
 
+// Blog posts own their own metadata in frontmatter; `date` (ISO, required) drives ordering and the /blog listing. The generator builds content/blog/meta.json from it.
+const blogSchema = pageSchema.extend({
+  date: z.string(),
+  author: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+})
+
 export const docs = defineDocs({
   dir: "content/docs",
   docs: {
@@ -21,6 +28,7 @@ export const docs = defineDocs({
 export const blog = defineDocs({
   dir: "content/blog",
   docs: {
+    schema: blogSchema,
     postprocess: {
       includeProcessedMarkdown: true,
     },

@@ -53,7 +53,11 @@ export function renderPageContent({ page, source }: PageData) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            a: createRelativeLink(source, page),
+            // createRelativeLink only resolves links via the loader's URLs (runtime-safe for any source); the cast collapses the Source union, which no longer unifies once collections have divergent schemas.
+            a: createRelativeLink(
+              source as typeof docsSource,
+              page as NonNullable<ReturnType<(typeof docsSource)["getPage"]>>,
+            ),
           })}
         />
       </DocsBody>

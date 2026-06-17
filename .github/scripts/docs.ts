@@ -10,7 +10,7 @@ import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/
 
 const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
 
-// URL base per docs.config collection; must match its loader baseUrl in source.ts. Blog is hand-maintained (not in docs.config), so it is intentionally excluded.
+// URL base per docs.config collection; must match its loader baseUrl in source.ts. The blog is content-driven (not in docs.config); its meta.json is generated from post dates by generateBlogMeta().
 const BASE: Record<string, string> = { docs: "/docs", console: "/console/docs" }
 
 type Page = { slug: string; meta: DocsMeta }
@@ -101,6 +101,25 @@ async function syncFrontmatter(
   return "wrote"
 }
 
+// The blog is content-driven: each post owns its frontmatter and `date` orders the listing. This derives content/blog/meta.json (index first, then posts newest-first) so the order is never hand-maintained.
+async function generateBlogMeta(warnings: string[]): Promise<void> {
+  const dir = "blog"
+  const slugs = await existingSlugs(dir)
+  const posts: { slug: string; date: string }[] = []
+  for (const slug of slugs) {
+    if (slug === "index") continue
+    const text = await Bun.file(path.join(CONTENT, dir, `${slug}.mdx`)).text()
+    const match = text.match(/^---\n([\s\S]*?)\n---/)
+    const data = match ? (Bun.YAML.parse(match[1] ?? "") as { date?: unknown }) : null
+    const date = typeof data?.date === "string" ? data.date : ""
+    if (!date) warnings.push(`[blog] "${slug}.mdx" is missing a \`date\` in frontmatter`)
+    posts.push({ slug, date })
+  }
+  posts.sort((a, b) => (a.date < b.date ? 1 : -1))
+  const pages = [...(slugs.has("index") ? ["index"] : []), ...posts.map((p) => p.slug)]
+  await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
+}
+
 async function run() {
   const strict = process.argv.includes("--strict")
   const warnings: string[] = []
@@ -164,6 +183,8 @@ async function run() {
       JSON.stringify({ pages: metaPages }, null, 2) + "\n",
     )
   }
+
+  await generateBlogMeta(warnings)
 
   if (warnings.length) {
     const log = strict ? console.error : console.warn
