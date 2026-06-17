@@ -6,7 +6,7 @@ import { notFound } from "next/navigation"
 
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
 import { config } from "@/lib/config"
-import type { blogSource, consoleSource, docsSource } from "@/lib/source"
+import { blogSource, consoleSource, docsSource } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
 
 export function baseOptions(): BaseLayoutProps {
@@ -18,24 +18,40 @@ export function baseOptions(): BaseLayoutProps {
 }
 
 type Source = typeof blogSource | typeof docsSource | typeof consoleSource
-type Page = NonNullable<ReturnType<Source["getPage"]>>
+type Page<S extends Source> = Parameters<S["resolveHref"]>[1]
 
-interface PageData {
-  page: Page
-  source: Source
+interface PageData<S extends Source> {
+  page: Page<S>
+  source: S
 }
 
-export async function getPageData(
+type AnyPageData =
+  | PageData<typeof docsSource>
+  | PageData<typeof blogSource>
+  | PageData<typeof consoleSource>
+
+export async function getPageData<S extends Source>(
   params: Promise<{ slug?: string[] }>,
-  source: Source,
-): Promise<PageData> {
+  source: S,
+): Promise<PageData<S>> {
   const resolvedParams = await params
   const page = source.getPage(resolvedParams.slug)
   if (!page) notFound()
-  return { page, source }
+  return { page: page as Page<S>, source }
 }
 
-export function renderPageContent({ page, source }: PageData) {
+function createPageRelativeLink(data: AnyPageData): ReturnType<typeof createRelativeLink> {
+  if (data.source === blogSource) {
+    return createRelativeLink(blogSource, data.page as Page<typeof blogSource>)
+  }
+  if (data.source === consoleSource) {
+    return createRelativeLink(consoleSource, data.page as Page<typeof consoleSource>)
+  }
+  return createRelativeLink(docsSource, data.page as Page<typeof docsSource>)
+}
+
+export function renderPageContent(data: AnyPageData) {
+  const { page } = data
   const MDX = page.data.body
   const isDocsPage = page.url.startsWith("/docs")
   const isBlogMainPage = page.url === "/blog"
@@ -53,11 +69,7 @@ export function renderPageContent({ page, source }: PageData) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            // createRelativeLink only resolves links via the loader's URLs (runtime-safe for any source); the cast collapses the Source union, which no longer unifies once collections have divergent schemas.
-            a: createRelativeLink(
-              source as typeof docsSource,
-              page as NonNullable<ReturnType<(typeof docsSource)["getPage"]>>,
-            ),
+            a: createPageRelativeLink(data),
           })}
         />
       </DocsBody>

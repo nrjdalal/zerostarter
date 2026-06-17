@@ -3,6 +3,13 @@ import path from "node:path"
 import { Glob } from "bun"
 
 import docsConfig from "../../web/next/docs.config"
+import {
+  compareBlogPublications,
+  isPublishedBlogPublication,
+  normalizeBlogDate,
+  todayIsoDate,
+  type BlogPublication,
+} from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
 
 // Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
@@ -101,14 +108,12 @@ async function syncFrontmatter(
   return "wrote"
 }
 
-const todayIsoDate = () => new Date().toISOString().slice(0, 10)
-
 // The blog is content-driven: each post owns its frontmatter and `date` controls publishing/order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same publish rule during render/revalidation.
 async function generateBlogMeta(warnings: string[]): Promise<void> {
   const dir = "blog"
   const today = todayIsoDate()
   const slugs = await existingSlugs(dir)
-  const posts: { slug: string; date: string; draft: boolean }[] = []
+  const posts: BlogPublication[] = []
   for (const slug of slugs) {
     if (slug === "index") continue
     const text = await Bun.file(path.join(CONTENT, dir, `${slug}.mdx`)).text()
@@ -116,14 +121,21 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
     const data = match
       ? (Bun.YAML.parse(match[1] ?? "") as { date?: unknown; draft?: unknown })
       : null
-    const date = typeof data?.date === "string" ? data.date : ""
-    if (!date) warnings.push(`[blog] "${slug}.mdx" is missing a \`date\` in frontmatter`)
+    const date = normalizeBlogDate(data?.date)
+    if (!date) {
+      const message =
+        data?.date === undefined
+          ? `is missing a \`date\` in frontmatter`
+          : `has an invalid \`date\` in frontmatter; expected YYYY-MM-DD`
+      warnings.push(`[blog] "${slug}.mdx" ${message}`)
+      continue
+    }
     posts.push({ slug, date, draft: data?.draft === true })
   }
-  posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug))
+  posts.sort(compareBlogPublications)
   const pages = [
     ...(slugs.has("index") ? ["index"] : []),
-    ...posts.filter((post) => post.date && !post.draft && post.date <= today).map((p) => p.slug),
+    ...posts.filter((post) => isPublishedBlogPublication(post, today)).map((p) => p.slug),
   ]
   await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }

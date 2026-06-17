@@ -1,15 +1,18 @@
+import {
+  compareBlogPublications,
+  isPublishedBlogPublication,
+  todayIsoDate,
+} from "@/lib/blog-policy"
 import { blogSource } from "@/lib/source"
 
 type BlogPage = NonNullable<ReturnType<typeof blogSource.getPage>>
-
-const todayIsoDate = () => new Date().toISOString().slice(0, 10)
 
 export function isBlogIndexPage(page: BlogPage): boolean {
   return page.url === "/blog"
 }
 
 export function isPublishedBlogPost(page: BlogPage, today = todayIsoDate()): boolean {
-  return !isBlogIndexPage(page) && page.data.draft !== true && page.data.date <= today
+  return !isBlogIndexPage(page) && isPublishedBlogPublication(page.data, today)
 }
 
 export function isPublishedBlogPage(page: BlogPage, today = todayIsoDate()): boolean {
@@ -17,7 +20,10 @@ export function isPublishedBlogPage(page: BlogPage, today = todayIsoDate()): boo
 }
 
 export function compareBlogPosts(a: BlogPage, b: BlogPage): number {
-  return b.data.date.localeCompare(a.data.date) || a.url.localeCompare(b.url)
+  return compareBlogPublications(
+    { slug: a.url, date: a.data.date, draft: a.data.draft },
+    { slug: b.url, date: b.data.date, draft: b.data.draft },
+  )
 }
 
 export function getPublishedBlogPosts(): BlogPage[] {

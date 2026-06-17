@@ -13,6 +13,10 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 export function BlogList() {
   const posts = getPublishedBlogPosts()
 
+  if (posts.length === 0) {
+    return <p className="not-prose text-fd-muted-foreground">No posts published yet.</p>
+  }
+
   return (
     <div className="not-prose flex flex-col gap-6">
       {posts.map((post) => (
