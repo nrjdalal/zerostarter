@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next"
 
 import { getPublishedBlogPosts } from "@/lib/blog"
-import { toBlogDate } from "@/lib/blog-date"
+import { toBlogDate } from "@/lib/blog-policy"
 import { config } from "@/lib/config"
 import { docsSource } from "@/lib/source"
 

@@ -1,9 +1,8 @@
 import Link from "next/link"
 
 import { getPublishedBlogPosts } from "@/lib/blog"
-import { formatBlogDate } from "@/lib/blog-date"
+import { formatBlogDate } from "@/lib/blog-policy"
 
-// Renders published posts from the posts themselves, so adding a post needs no manual list or meta.json edit.
 export function BlogList() {
   const posts = getPublishedBlogPosts()
 

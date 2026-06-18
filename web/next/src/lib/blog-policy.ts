@@ -9,6 +9,12 @@ export interface BlogPublication {
 const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/
 const isoDateTimePattern =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-](\d{2}):(\d{2}))$/
+const blogDateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+})
 
 function isValidDateParts(year: number, month: number, day: number): boolean {
   const parsed = new Date(Date.UTC(year, month - 1, day))
@@ -67,6 +73,15 @@ export function blogTimestampToDate(timestamp: string): Date | null {
   if (!normalized) return null
   const date = new Date(normalized.includes("T") ? normalized : `${normalized}T00:00:00.000Z`)
   return Number.isNaN(date.getTime()) ? null : date
+}
+
+export function toBlogDate(timestamp: string): Date {
+  return blogTimestampToDate(timestamp) ?? new Date(`${timestamp.slice(0, 10)}T00:00:00.000Z`)
+}
+
+export function formatBlogDate(timestamp: string): string {
+  const date = blogTimestampToDate(timestamp)
+  return date ? blogDateFormatter.format(date) : timestamp
 }
 
 function blogTimestampTime(timestamp: string): number | null {

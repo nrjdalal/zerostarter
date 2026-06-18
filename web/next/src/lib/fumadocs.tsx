@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
-import { formatBlogDate, toBlogDate } from "@/lib/blog-date"
+import { formatBlogDate, toBlogDate } from "@/lib/blog-policy"
 import { config } from "@/lib/config"
 import { blogSource, consoleSource, docsSource } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
