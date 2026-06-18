@@ -5,6 +5,7 @@ import { generatePublicBlogParams, isBlogIndexPage, isPublicBlogPage } from "@/l
 import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
+// Scheduling depends on Next's default dynamicParams (true): a scheduled post not prebuilt by generateStaticParams renders on demand once published, and revalidate=60 refreshes cached surfaces within ~60s. Setting dynamicParams=false would 404 scheduled posts until a redeploy.
 export const dynamic = "force-static"
 export const revalidate = 60
 

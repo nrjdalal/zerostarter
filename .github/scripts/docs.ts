@@ -146,6 +146,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
       : null
     let createdAt = normalizeBlogTimestamp(data?.createdAt)
     if (!createdAt) {
+      // Dev (non-strict) builds backfill a missing createdAt into the source .mdx and log it for review/commit; --strict only warns and never mutates files.
       if (data?.createdAt === undefined && !strict) {
         createdAt = localIsoDate(now)
         await Bun.write(file, addBlogCreatedAt(text, createdAt))
@@ -183,6 +184,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
     posts.push({ slug, createdAt, draft: data?.draft === true, publishedAt })
   }
   posts.sort(compareBlogPostPublishOrder)
+  // meta.json (the page tree) intentionally lists only posts published at build time, so a scheduled post joins prev/next nav only after the next deploy; /blog and the runtime publish policy are the canonical public surfaces.
   const pages = [
     ...(slugs.has("index") ? ["index"] : []),
     ...posts.filter((post) => isBlogPostPublished(post, now)).map((p) => p.slug),
