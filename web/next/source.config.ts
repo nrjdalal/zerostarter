@@ -2,7 +2,7 @@ import { pageSchema } from "fumadocs-core/source/schema"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 import { z } from "zod"
 
-import { normalizeBlogDate, normalizeBlogPublishAt } from "./src/lib/blog-policy"
+import { normalizeBlogDate, normalizeBlogPublishedAt } from "./src/lib/blog-policy"
 
 // docs.config.ts owns these fields; the generator syncs them into each MDX, so the schema must accept them (label defaults to title).
 const docsSchema = pageSchema.extend({
@@ -17,11 +17,11 @@ const blogDateSchema = z.union([z.iso.date(), z.date()]).transform((value, ctx) 
   return z.NEVER
 })
 
-const blogPublishAtSchema = z
+const blogPublishedAtSchema = z
   .union([z.iso.date(), z.iso.datetime({ offset: true }), z.date()])
   .transform((value, ctx) => {
-    const publishAt = normalizeBlogPublishAt(value)
-    if (publishAt) return publishAt
+    const publishedAt = normalizeBlogPublishedAt(value)
+    if (publishedAt) return publishedAt
     ctx.addIssue({
       code: "custom",
       message: "Expected YYYY-MM-DD or ISO datetime with timezone",
@@ -29,11 +29,11 @@ const blogPublishAtSchema = z
     return z.NEVER
   })
 
-// Blog posts own their own metadata in frontmatter; `date` drives display/order, `publishAt` schedules release, and `draft` hides a post regardless of date.
+// Blog posts own their own metadata in frontmatter; `publishedAt` drives publishing/order, and `draft` hides a post regardless of timestamps.
 const blogSchema = pageSchema.extend({
-  date: blogDateSchema,
-  lastEdited: blogDateSchema.optional(),
-  publishAt: blogPublishAtSchema.optional(),
+  createdAt: blogDateSchema,
+  updatedAt: blogDateSchema.optional(),
+  publishedAt: blogPublishedAtSchema.optional(),
   draft: z.boolean().optional(),
   author: z.string().optional(),
   tags: z.array(z.string()).optional(),

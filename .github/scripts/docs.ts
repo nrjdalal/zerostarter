@@ -7,7 +7,7 @@ import {
   compareBlogPublications,
   isPublishedBlogPublication,
   normalizeBlogDate,
-  normalizeBlogPublishAt,
+  normalizeBlogPublishedAt,
   type BlogPublication,
 } from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
@@ -108,7 +108,7 @@ async function syncFrontmatter(
   return "wrote"
 }
 
-// The blog is content-driven: each post owns its frontmatter and `date` controls order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same draft/publishAt rule during render/revalidation.
+// The blog is content-driven: each post owns its frontmatter and `publishedAt` controls order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same draft/publishedAt rule during render/revalidation.
 async function generateBlogMeta(warnings: string[]): Promise<void> {
   const dir = "blog"
   const now = new Date()
@@ -120,36 +120,41 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
     const match = text.match(/^---\n([\s\S]*?)\n---/)
     const data = match
       ? (Bun.YAML.parse(match[1] ?? "") as {
-          date?: unknown
+          createdAt?: unknown
           draft?: unknown
-          lastEdited?: unknown
-          publishAt?: unknown
+          publishedAt?: unknown
+          updatedAt?: unknown
         })
       : null
-    const date = normalizeBlogDate(data?.date)
-    if (!date) {
+    const createdAt = normalizeBlogDate(data?.createdAt)
+    if (!createdAt) {
       const message =
-        data?.date === undefined
-          ? `is missing a \`date\` in frontmatter`
-          : `has an invalid \`date\` in frontmatter; expected YYYY-MM-DD`
+        data?.createdAt === undefined
+          ? `is missing a \`createdAt\` in frontmatter`
+          : `has an invalid \`createdAt\` in frontmatter; expected YYYY-MM-DD`
       warnings.push(`[blog] "${slug}.mdx" ${message}`)
       continue
     }
-    if (data?.lastEdited !== undefined && !normalizeBlogDate(data.lastEdited)) {
-      warnings.push(`[blog] "${slug}.mdx" has an invalid \`lastEdited\`; expected YYYY-MM-DD`)
+    if (data?.updatedAt !== undefined && !normalizeBlogDate(data.updatedAt)) {
+      warnings.push(`[blog] "${slug}.mdx" has an invalid \`updatedAt\`; expected YYYY-MM-DD`)
     }
-    let publishAt: string | undefined
-    if (data?.publishAt !== undefined) {
-      const normalizedPublishAt = normalizeBlogPublishAt(data.publishAt)
-      if (!normalizedPublishAt) {
+    let publishedAt: string | undefined
+    if (data?.publishedAt !== undefined) {
+      const normalizedPublishedAt = normalizeBlogPublishedAt(data.publishedAt)
+      if (!normalizedPublishedAt) {
         warnings.push(
-          `[blog] "${slug}.mdx" has an invalid \`publishAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
+          `[blog] "${slug}.mdx" has an invalid \`publishedAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
         )
         continue
       }
-      publishAt = normalizedPublishAt
+      publishedAt = normalizedPublishedAt
+    } else if (data?.draft !== true) {
+      warnings.push(
+        `[blog] "${slug}.mdx" is missing \`publishedAt\`; add it or set \`draft: true\``,
+      )
+      continue
     }
-    posts.push({ slug, date, draft: data?.draft === true, publishAt })
+    posts.push({ slug, createdAt, draft: data?.draft === true, publishedAt })
   }
   posts.sort(compareBlogPublications)
   const pages = [

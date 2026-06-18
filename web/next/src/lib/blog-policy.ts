@@ -1,8 +1,8 @@
 export interface BlogPublication {
   slug: string
-  date: string
-  lastEdited?: string
-  publishAt?: string
+  createdAt: string
+  updatedAt?: string
+  publishedAt?: string
   draft?: boolean
 }
 
@@ -39,7 +39,7 @@ export function normalizeBlogDate(value: unknown): string | null {
   return null
 }
 
-export function normalizeBlogPublishAt(value: unknown): string | null {
+export function normalizeBlogPublishedAt(value: unknown): string | null {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return null
     const iso = value.toISOString()
@@ -77,20 +77,20 @@ export function normalizeBlogPublishAt(value: unknown): string | null {
   return Number.isNaN(Date.parse(value)) ? null : value
 }
 
-function blogPublishTime(publishAt: string): number | null {
-  const normalized = normalizeBlogPublishAt(publishAt)
+function blogPublishTime(publishedAt: string): number | null {
+  const normalized = normalizeBlogPublishedAt(publishedAt)
   if (!normalized) return null
   return Date.parse(normalized.includes("T") ? normalized : `${normalized}T00:00:00.000Z`)
 }
 
 export function isPublishedBlogPublication(
-  publication: Pick<BlogPublication, "draft" | "publishAt">,
+  publication: Pick<BlogPublication, "draft" | "publishedAt">,
   now = new Date(),
 ): boolean {
   if (publication.draft === true) return false
-  if (!publication.publishAt) return true
+  if (!publication.publishedAt) return false
 
-  const publishTime = blogPublishTime(publication.publishAt)
+  const publishTime = blogPublishTime(publication.publishedAt)
   return publishTime !== null && publishTime <= now.getTime()
 }
 
@@ -100,8 +100,8 @@ function blogDateTime(date: string): number | null {
 }
 
 export function compareBlogPublications(a: BlogPublication, b: BlogPublication): number {
-  const aTime = blogDateTime(a.date)
-  const bTime = blogDateTime(b.date)
+  const aTime = a.publishedAt ? blogPublishTime(a.publishedAt) : blogDateTime(a.createdAt)
+  const bTime = b.publishedAt ? blogPublishTime(b.publishedAt) : blogDateTime(b.createdAt)
   if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
   if (aTime === null) return 1
   if (bTime === null) return -1

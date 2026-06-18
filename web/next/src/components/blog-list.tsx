@@ -9,8 +9,8 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 })
 
-function formatBlogDate(date: string): string {
-  return dateFormatter.format(new Date(`${date.slice(0, 10)}T00:00:00.000Z`))
+function formatBlogDate(value: string): string {
+  return dateFormatter.format(new Date(`${value.slice(0, 10)}T00:00:00.000Z`))
 }
 
 // Renders published posts from the posts themselves, so adding a post needs no manual list or meta.json edit.
@@ -31,8 +31,8 @@ export function BlogList() {
           >
             {post.data.title}
           </Link>
-          <time className="text-fd-muted-foreground text-sm" dateTime={post.data.date}>
-            {formatBlogDate(post.data.date)}
+          <time className="text-fd-muted-foreground text-sm" dateTime={post.data.publishedAt}>
+            {formatBlogDate(post.data.publishedAt ?? post.data.createdAt)}
           </time>
           <p className="text-fd-muted-foreground">{post.data.description}</p>
         </article>
