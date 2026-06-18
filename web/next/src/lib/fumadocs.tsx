@@ -5,6 +5,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
+import { formatBlogDate, toBlogDate } from "@/lib/blog-date"
 import { config } from "@/lib/config"
 import { blogSource, consoleSource, docsSource } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
@@ -50,11 +51,24 @@ function createPageRelativeLink(data: AnyPageData): ReturnType<typeof createRela
   return createRelativeLink(docsSource, data.page as Page<typeof docsSource>)
 }
 
+function getBlogArticleDates(data: AnyPageData) {
+  if (data.source !== blogSource || data.page.url === "/blog") return null
+
+  const page = data.page as Page<typeof blogSource>
+  if (!page.data.publishedAt) return null
+
+  return {
+    publishedAt: page.data.publishedAt,
+    updatedAt: page.data.updatedAt,
+  }
+}
+
 export function renderPageContent(data: AnyPageData) {
   const { page } = data
   const MDX = page.data.body
   const isDocsPage = page.url.startsWith("/docs")
   const isBlogMainPage = page.url === "/blog"
+  const blogArticleDates = getBlogArticleDates(data)
 
   return (
     <DocsPage
@@ -66,6 +80,19 @@ export function renderPageContent(data: AnyPageData) {
         {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
       </DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      {blogArticleDates && (
+        <div className="not-prose text-fd-muted-foreground mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+          <time dateTime={blogArticleDates.publishedAt}>
+            Published {formatBlogDate(blogArticleDates.publishedAt)}
+          </time>
+          {blogArticleDates.updatedAt &&
+            blogArticleDates.updatedAt !== blogArticleDates.publishedAt && (
+              <time dateTime={blogArticleDates.updatedAt}>
+                Updated {formatBlogDate(blogArticleDates.updatedAt)}
+              </time>
+            )}
+        </div>
+      )}
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -102,23 +129,57 @@ export async function generatePageMetadata(
   const slugPath =
     resolvedParams.slug && resolvedParams.slug.length > 0 ? resolvedParams.slug.join("/") : ""
   const imageUrl = `${config.app.url}${ogPath}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
+  const blogArticle =
+    options.source === blogSource && page.url !== "/blog" ? (page as Page<typeof blogSource>) : null
+  const publishedTime = blogArticle?.data.publishedAt
+    ? toBlogDate(blogArticle.data.publishedAt).toISOString()
+    : undefined
+  const modifiedTime = blogArticle
+    ? toBlogDate(
+        blogArticle.data.updatedAt ?? blogArticle.data.publishedAt ?? blogArticle.data.createdAt,
+      ).toISOString()
+    : undefined
+  const openGraph =
+    ogType === "article"
+      ? {
+          type: "article" as const,
+          title: page.data.title,
+          description: page.data.description,
+          siteName: config.app.name,
+          url: pageUrl,
+          images: [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 630,
+              alt: page.data.title,
+            },
+          ],
+          publishedTime,
+          modifiedTime,
+          authors: blogArticle?.data.author ? [blogArticle.data.author] : undefined,
+          tags: blogArticle?.data.tags,
+        }
+      : {
+          type: "website" as const,
+          title: page.data.title,
+          description: page.data.description,
+          siteName: config.app.name,
+          url: pageUrl,
+          images: [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 630,
+              alt: page.data.title,
+            },
+          ],
+        }
 
   return {
     title: page.data.title,
     description: page.data.description,
-    openGraph: {
-      type: ogType,
-      siteName: config.app.name,
-      url: pageUrl,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: page.data.title,
-        },
-      ],
-    },
+    openGraph,
     other: {
       "og:logo": `${config.app.url}/favicon.ico`,
     },

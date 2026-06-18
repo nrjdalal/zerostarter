@@ -102,10 +102,10 @@ async function syncFrontmatter(
   strict: boolean,
 ): Promise<SyncResult> {
   const text = await Bun.file(file).text()
-  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
   const desired = toFrontmatter(frontmatterFields(slug, meta))
 
-  const currentBlock = match ? `${match[1] ?? ""}\n` : null
+  const currentBlock = match ? `${(match[1] ?? "").replaceAll("\r\n", "\n")}\n` : null
   if (currentBlock === desired) return "ok"
   if (strict) return "drift"
 
@@ -115,13 +115,14 @@ async function syncFrontmatter(
 }
 
 function addBlogCreatedAt(text: string, createdAt: string): string {
+  const newline = text.includes("\r\n") ? "\r\n" : "\n"
   const line = `createdAt: ${createdAt}`
-  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
-  if (!match) return `---\n${line}\n---\n\n${text}`
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
+  if (!match) return `---${newline}${line}${newline}---${newline}${newline}${text}`
 
-  const lines = (match[1] ?? "").split("\n")
+  const lines = (match[1] ?? "").split(/\r?\n/)
   lines.push(line)
-  return `---\n${lines.join("\n")}\n---\n${match[2] ?? ""}`
+  return `---${newline}${lines.join(newline)}${newline}---${newline}${match[2] ?? ""}`
 }
 
 // The blog is content-driven: each post owns its frontmatter and `publishedAt` controls order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same draft/publishedAt rule during render/revalidation.
@@ -134,7 +135,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
     if (slug === "index") continue
     const file = path.join(CONTENT, dir, `${slug}.mdx`)
     const text = await Bun.file(file).text()
-    const match = text.match(/^---\n([\s\S]*?)\n---/)
+    const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)
     const data = match
       ? (Bun.YAML.parse(match[1] ?? "") as {
           createdAt?: unknown
