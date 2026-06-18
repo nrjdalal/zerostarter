@@ -27,7 +27,7 @@ Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used
 3. Apply the export's `.variable` on `<html>` in layout.tsx
 4. Wire the role in globals.css `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`
 5. Verify: dev CSS emits hashed `/_next/static/media/*.woff2` URLs plus generated `"<family> Fallback"` faces; a production build (Vercel preview, protection-bypass header) emits `<link rel="preload" as="font">` for each file
-6. Public pages changed → re-run vitals and update the README table per AGENTS.md
+6. Public pages changed → re-run a production build and re-check web vitals / CLS before shipping
 
 ## Notes
 

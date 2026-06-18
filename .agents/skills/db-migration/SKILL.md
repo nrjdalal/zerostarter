@@ -13,7 +13,7 @@ PostgreSQL + Drizzle ORM. Schema lives in `packages/db/src/schema/`, migrations 
 
 - New table: create `packages/db/src/schema/<name>.ts` (see `auth.ts` for table definitions, relations, and indexes)
 - Export it from `packages/db/src/schema/index.ts`: `export * from "@/schema/<name>"`
-- Conventions: `text` primary keys (`crypto.randomUUID()` default for non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case column names, `CASCADE` on FK deletes, indexes on FK columns
+- Conventions: `text` primary keys (auth tables take their IDs from better-auth; new non-auth tables default with `.$defaultFn(() => crypto.randomUUID())`), `timestamp("created_at").defaultNow().notNull()`, snake_case column names, `CASCADE` on FK deletes, indexes on FK columns
 
 ### 2. Generate and review
 

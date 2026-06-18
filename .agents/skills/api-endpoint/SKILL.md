@@ -5,7 +5,7 @@ description: Add a typed Hono API endpoint following repo conventions, router, O
 
 # API Endpoint
 
-Reference implementation: `api/hono/src/routers/v1.ts` (validated, OpenAPI-documented routes). Conventions: `{ data }` / `{ error: { code, message } }` envelopes, OpenAPI via `hono-openapi`, end-to-end types via Hono RPC.
+Reference: `api/hono/src/routers/v1.ts` (OpenAPI-documented, auth-protected GET routes with `{ data }` envelopes and `x-codeSamples`). No input-validated route exists in the repo yet, so the validation snippet below establishes that pattern. Conventions: `{ data }` / `{ error: { code, message } }` envelopes, OpenAPI via `hono-openapi`, end-to-end types via Hono RPC.
 
 ## Workflow
 
@@ -18,8 +18,6 @@ import { sValidator } from "@hono/standard-validator"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
-
-import { validationHook } from "@/lib/validation"
 
 const bodySchema = z.object({
   // z.string().trim().pipe(...) for user-supplied strings
@@ -41,7 +39,14 @@ export const exampleRouter = new Hono().post(
       },
     },
   }),
-  sValidator("json", bodySchema, validationHook),
+  sValidator("json", bodySchema, (result, c) => {
+    if (!result.success) {
+      return c.json(
+        { error: { code: "VALIDATION_ERROR", message: "Invalid request payload", issues: result.error } },
+        400,
+      )
+    }
+  }),
   async (c) => {
     const body = c.req.valid("json")
     return c.json({ data: { message: "ok" } })
@@ -49,7 +54,7 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-- **Always** pass `validationHook` to `sValidator`, it produces the repo's `VALIDATION_ERROR` envelope
+- **Always** pass a failure hook to `sValidator` that returns the repo's `VALIDATION_ERROR` envelope (it mirrors the global `errorHandler` in `api/hono/src/lib/error.ts`, which only formats *thrown* `z.ZodError`s). Without a hook, `sValidator` returns its own `{ success: false, error }` 400 shape, which does NOT match the repo envelope. Extract the hook to `@/lib/validation` once more than one route needs it
 - Add an `x-codeSamples` block mirroring the existing routers so Scalar shows the RPC usage
 - Auth-protected routes go in `v1.ts` (behind `authMiddleware`, session/user on context); public routes get their own router
 

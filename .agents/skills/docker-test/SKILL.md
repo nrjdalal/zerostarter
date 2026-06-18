@@ -66,7 +66,7 @@ docker run --rm --entrypoint sh zerostarter-web -c \
   'find /app/node_modules \( -name "*linux-*-gnu*" -o -name "*sharp-linux-*" -o -name "*libvips-linux-*" \) ! -type l | grep . && echo "FAIL: glibc stack shipped" && exit 1; echo OK'
 ```
 
-Expect `OK`. Any hit means the excludes in `web/next/next.config.ts` stopped matching; fix the patterns, never delete the assertion.
+Expect `OK`. The probe greps the glibc stack, which is the right target for the musl alpine image (it prunes its opposite libc). The actual excludes in `web/next/next.config.ts` are libc-conditional and also prune a `@takumi-rs` stack, so they won't match these patterns verbatim. Any hit means those excludes stopped matching; fix the patterns, never delete the assertion.
 
 ## Notes
 
