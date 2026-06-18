@@ -20,13 +20,13 @@ export function isPublishedBlogPage(page: BlogPage, now = new Date()): boolean {
 export function compareBlogPosts(a: BlogPage, b: BlogPage): number {
   return compareBlogPublications(
     {
-      slug: a.url,
+      slug: a.slugs.join("/"),
       createdAt: a.data.createdAt,
       draft: a.data.draft,
       publishedAt: a.data.publishedAt,
     },
     {
-      slug: b.url,
+      slug: b.slugs.join("/"),
       createdAt: b.data.createdAt,
       draft: b.data.draft,
       publishedAt: b.data.publishedAt,
