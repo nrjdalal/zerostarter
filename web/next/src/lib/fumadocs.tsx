@@ -80,8 +80,15 @@ export function renderPageContent(data: AnyPageData) {
         {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
       </DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsBody>
+        <MDX
+          components={getMDXComponents({
+            a: createPageRelativeLink(data),
+          })}
+        />
+      </DocsBody>
       {blogArticleDates && (
-        <div className="not-prose text-fd-muted-foreground mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        <div className="not-prose text-fd-muted-foreground mt-4 flex flex-wrap gap-x-3 gap-y-1 text-sm">
           <time dateTime={blogArticleDates.publishedAt}>
             Published {formatBlogDate(blogArticleDates.publishedAt)}
           </time>
@@ -93,13 +100,6 @@ export function renderPageContent(data: AnyPageData) {
             )}
         </div>
       )}
-      <DocsBody>
-        <MDX
-          components={getMDXComponents({
-            a: createPageRelativeLink(data),
-          })}
-        />
-      </DocsBody>
     </DocsPage>
   )
 }
