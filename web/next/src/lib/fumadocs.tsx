@@ -88,7 +88,7 @@ export function renderPageContent(data: AnyPageData) {
         />
       </DocsBody>
       {blogArticleDates && (
-        <div className="not-prose text-fd-muted-foreground mt-4 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        <div className="not-prose text-fd-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">
           <time dateTime={blogArticleDates.publishedAt}>
             Published {formatBlogDate(blogArticleDates.publishedAt)}
           </time>
