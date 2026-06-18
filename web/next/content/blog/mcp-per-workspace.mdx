@@ -1,6 +1,8 @@
 ---
 title: "Race-Free Identity in Claude Code: Per-Workspace MCP, GitHub, and Git"
 description: "Make MCP servers, GitHub auth, and git commit identity follow the directory you're in, so concurrent Claude Code sessions never bleed work, client, and personal accounts into each other. No manual switching, no shared global state to race."
+createdAt: 2026-06-11
+publishedAt: 2026-06-11
 ---
 
 Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. A moment later the personal session points it at yours, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because both fall back to `gh`'s single active account for github.com, and that account is shared global state.

@@ -3,6 +3,12 @@ import path from "node:path"
 import { Glob } from "bun"
 
 import docsConfig from "../../web/next/docs.config"
+import {
+  compareBlogPostPublishOrder,
+  isBlogPostPublished,
+  normalizeBlogTimestamp,
+  type BlogPostMeta,
+} from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
 
 // Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
@@ -10,7 +16,7 @@ import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/
 
 const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
 
-// URL base per docs.config collection; must match its loader baseUrl in source.ts. Blog is hand-maintained (not in docs.config), so it is intentionally excluded.
+// URL base per docs.config collection; must match its loader baseUrl in source.ts. The blog is content-driven (not in docs.config); its meta.json is generated from post dates by generateBlogMeta().
 const BASE: Record<string, string> = { docs: "/docs", console: "/console/docs" }
 
 type Page = { slug: string; meta: DocsMeta }
@@ -81,6 +87,13 @@ function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string>
 
 type SyncResult = "ok" | "wrote" | "drift"
 
+function localIsoDate(now = new Date()): string {
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
 // Compares the rendered frontmatter block byte-for-byte (the generator owns it): an in-sync file never churns, and a hand edit shows up as drift.
 async function syncFrontmatter(
   file: string,
@@ -89,16 +102,94 @@ async function syncFrontmatter(
   strict: boolean,
 ): Promise<SyncResult> {
   const text = await Bun.file(file).text()
-  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
   const desired = toFrontmatter(frontmatterFields(slug, meta))
 
-  const currentBlock = match ? `${match[1] ?? ""}\n` : null
+  const currentBlock = match ? `${(match[1] ?? "").replaceAll("\r\n", "\n")}\n` : null
   if (currentBlock === desired) return "ok"
   if (strict) return "drift"
 
   const body = match ? (match[2] ?? "") : text.startsWith("\n") ? text : `\n${text}`
   await Bun.write(file, `---\n${desired}---\n${body}`)
   return "wrote"
+}
+
+function addBlogCreatedAt(text: string, createdAt: string): string {
+  const newline = text.includes("\r\n") ? "\r\n" : "\n"
+  const line = `createdAt: ${createdAt}`
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
+  if (!match) return `---${newline}${line}${newline}---${newline}${newline}${text}`
+
+  const lines = (match[1] ?? "").split(/\r?\n/)
+  lines.push(line)
+  return `---${newline}${lines.join(newline)}${newline}---${newline}${match[2] ?? ""}`
+}
+
+// The blog is content-driven: each post owns its frontmatter and `publishedAt` controls order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same draft/publishedAt rule during render/revalidation.
+async function generateBlogMeta(warnings: string[], strict: boolean): Promise<void> {
+  const dir = "blog"
+  const now = new Date()
+  const slugs = await existingSlugs(dir)
+  const posts: BlogPostMeta[] = []
+  for (const slug of slugs) {
+    if (slug === "index") continue
+    const file = path.join(CONTENT, dir, `${slug}.mdx`)
+    const text = await Bun.file(file).text()
+    const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+    const data = match
+      ? (Bun.YAML.parse(match[1] ?? "") as {
+          createdAt?: unknown
+          draft?: unknown
+          publishedAt?: unknown
+          updatedAt?: unknown
+        })
+      : null
+    let createdAt = normalizeBlogTimestamp(data?.createdAt)
+    if (!createdAt) {
+      // Dev (non-strict) builds backfill a missing createdAt into the source .mdx and log it for review/commit; --strict only warns and never mutates files.
+      if (data?.createdAt === undefined && !strict) {
+        createdAt = localIsoDate(now)
+        await Bun.write(file, addBlogCreatedAt(text, createdAt))
+        console.log(`[blog] added createdAt: ${createdAt} to ${slug}.mdx; review and commit it`)
+      } else {
+        const message =
+          data?.createdAt === undefined
+            ? `is missing a \`createdAt\` in frontmatter`
+            : `has an invalid \`createdAt\` in frontmatter; expected YYYY-MM-DD or ISO datetime with timezone`
+        warnings.push(`[blog] "${slug}.mdx" ${message}`)
+        continue
+      }
+    }
+    if (data?.updatedAt !== undefined && !normalizeBlogTimestamp(data.updatedAt)) {
+      warnings.push(
+        `[blog] "${slug}.mdx" has an invalid \`updatedAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
+      )
+    }
+    let publishedAt: string | undefined
+    if (data?.publishedAt !== undefined) {
+      const normalizedPublishedAt = normalizeBlogTimestamp(data.publishedAt)
+      if (!normalizedPublishedAt) {
+        warnings.push(
+          `[blog] "${slug}.mdx" has an invalid \`publishedAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
+        )
+        continue
+      }
+      publishedAt = normalizedPublishedAt
+    } else if (data?.draft !== true) {
+      warnings.push(
+        `[blog] "${slug}.mdx" is missing \`publishedAt\`; add it or set \`draft: true\``,
+      )
+      continue
+    }
+    posts.push({ slug, createdAt, draft: data?.draft === true, publishedAt })
+  }
+  posts.sort(compareBlogPostPublishOrder)
+  // meta.json (the page tree) intentionally lists only posts published at build time, so a scheduled post joins prev/next nav only after the next deploy; /blog and the runtime publish policy are the canonical public surfaces.
+  const pages = [
+    ...(slugs.has("index") ? ["index"] : []),
+    ...posts.filter((post) => isBlogPostPublished(post, now)).map((p) => p.slug),
+  ]
+  await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }
 
 async function run() {
@@ -164,6 +255,8 @@ async function run() {
       JSON.stringify({ pages: metaPages }, null, 2) + "\n",
     )
   }
+
+  await generateBlogMeta(warnings, strict)
 
   if (warnings.length) {
     const log = strict ? console.error : console.warn

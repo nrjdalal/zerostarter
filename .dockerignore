@@ -52,6 +52,7 @@ vercel-bundle/
 .npmrc
 *.local.json
 cookies.txt
+web/next/content/blog/meta.json
 web/next/content/console/docs/meta.json
 web/next/content/docs/meta.json
 

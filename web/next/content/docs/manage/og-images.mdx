@@ -21,7 +21,7 @@ ZeroStarter generates dynamic Open Graph images for social media previews using 
 
 ## How It Works
 
-The docs and blog routes are prerendered at build time (`export const dynamic = "force-static"` plus `generateStaticParams`), `/og/home` is static with no params, and the generic `/og` route is `force-dynamic` so it can render from query params on demand. Every route returns a PNG with immutable cache headers (1 year).
+The docs route is prerendered at build time (`export const dynamic = "force-static"` plus `generateStaticParams`), the blog route prebuilds currently published posts and uses 60-second revalidation so scheduled posts can become available without a rebuild, `/og/home` is static with no params, and the generic `/og` route is `force-dynamic` so it can render from query params on demand. Successful OG responses return PNGs with immutable cache headers (1 year).
 
 The shared utility at `web/next/src/lib/og-image.tsx` creates consistent images with:
 
