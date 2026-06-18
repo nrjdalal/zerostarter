@@ -128,6 +128,7 @@ export async function generatePageMetadata(
   const pageUrl = `${config.app.url}${page.url}`
   const slugPath =
     resolvedParams.slug && resolvedParams.slug.length > 0 ? resolvedParams.slug.join("/") : ""
+  // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
   const imageUrl = `${config.app.url}${ogPath}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
   const blogArticle =
     options.source === blogSource && page.url !== "/blog" ? (page as Page<typeof blogSource>) : null
