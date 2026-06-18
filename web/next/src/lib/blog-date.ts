@@ -1,4 +1,4 @@
-import { blogTimestampToDate, normalizeBlogTimestamp } from "@/lib/blog-policy"
+import { blogTimestampToDate } from "@/lib/blog-policy"
 
 const blogDateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
@@ -8,10 +8,10 @@ const blogDateFormatter = new Intl.DateTimeFormat("en-US", {
 })
 
 export function formatBlogDate(value: string): string {
-  const normalized = normalizeBlogTimestamp(value)
-  if (!normalized) return value
+  const date = blogTimestampToDate(value)
+  if (!date) return value
 
-  return blogDateFormatter.format(new Date(`${normalized.slice(0, 10)}T00:00:00.000Z`))
+  return blogDateFormatter.format(date)
 }
 
 export function toBlogDate(value: string): Date {
