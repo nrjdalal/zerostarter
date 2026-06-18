@@ -8,7 +8,7 @@ export function BlogList() {
   const posts = getPublishedBlogPosts()
 
   if (posts.length === 0) {
-    return <p className="not-prose text-fd-muted-foreground">No posts published yet.</p>
+    return <p className="not-prose text-muted-foreground">No posts published yet.</p>
   }
 
   return (
@@ -19,14 +19,14 @@ export function BlogList() {
           <article key={post.url} className="flex flex-col gap-1">
             <Link
               href={post.url}
-              className="text-fd-foreground text-lg font-medium no-underline hover:underline"
+              className="text-foreground text-lg font-medium no-underline hover:underline"
             >
               {post.data.title}
             </Link>
-            <time className="text-fd-muted-foreground text-sm" dateTime={timestamp}>
+            <time className="text-muted-foreground text-sm" dateTime={timestamp}>
               {formatBlogDate(timestamp)}
             </time>
-            <p className="text-fd-muted-foreground">{post.data.description}</p>
+            <p className="text-muted-foreground">{post.data.description}</p>
           </article>
         )
       })}
