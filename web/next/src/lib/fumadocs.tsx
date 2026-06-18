@@ -134,10 +134,8 @@ export async function generatePageMetadata(
   const publishedTime = blogArticle?.data.publishedAt
     ? toBlogDate(blogArticle.data.publishedAt).toISOString()
     : undefined
-  const modifiedTime = blogArticle
-    ? toBlogDate(
-        blogArticle.data.updatedAt ?? blogArticle.data.publishedAt ?? blogArticle.data.createdAt,
-      ).toISOString()
+  const modifiedTime = blogArticle?.data.publishedAt
+    ? toBlogDate(blogArticle.data.updatedAt ?? blogArticle.data.publishedAt).toISOString()
     : undefined
   const openGraph =
     ogType === "article"

@@ -14,7 +14,6 @@ export function BlogList() {
   return (
     <div className="not-prose flex flex-col gap-6">
       {posts.map((post) => {
-        const timestamp = post.data.publishedAt ?? post.data.createdAt
         return (
           <article key={post.url} className="flex flex-col gap-1">
             <Link
@@ -23,8 +22,8 @@ export function BlogList() {
             >
               {post.data.title}
             </Link>
-            <time className="text-muted-foreground text-sm" dateTime={timestamp}>
-              {formatBlogDate(timestamp)}
+            <time className="text-muted-foreground text-sm" dateTime={post.data.publishedAt}>
+              {formatBlogDate(post.data.publishedAt)}
             </time>
             <p className="text-muted-foreground">{post.data.description}</p>
           </article>

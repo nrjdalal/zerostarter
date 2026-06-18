@@ -4,12 +4,15 @@ import { compareBlogPublications, isPublishedBlogPublication } from "@/lib/blog-
 import { blogSource } from "@/lib/source"
 
 type BlogPage = NonNullable<ReturnType<typeof blogSource.getPage>>
+export type PublishedBlogPage = BlogPage & {
+  data: BlogPage["data"] & { publishedAt: string }
+}
 
 export function isBlogIndexPage(page: BlogPage): boolean {
   return page.url === "/blog"
 }
 
-export function isPublishedBlogPost(page: BlogPage, now = new Date()): boolean {
+export function isPublishedBlogPost(page: BlogPage, now = new Date()): page is PublishedBlogPage {
   return !isBlogIndexPage(page) && isPublishedBlogPublication(page.data, now)
 }
 
@@ -34,7 +37,7 @@ export function compareBlogPosts(a: BlogPage, b: BlogPage): number {
   )
 }
 
-export function getPublishedBlogPosts(now = new Date()): BlogPage[] {
+export function getPublishedBlogPosts(now = new Date()): PublishedBlogPage[] {
   return blogSource
     .getPages()
     .filter((page) => isPublishedBlogPost(page, now))
