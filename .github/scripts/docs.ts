@@ -7,7 +7,6 @@ import {
   compareBlogPublications,
   isPublishedBlogPublication,
   normalizeBlogDate,
-  todayIsoDate,
   type BlogPublication,
 } from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
@@ -111,7 +110,7 @@ async function syncFrontmatter(
 // The blog is content-driven: each post owns its frontmatter and `date` controls publishing/order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same publish rule during render/revalidation.
 async function generateBlogMeta(warnings: string[]): Promise<void> {
   const dir = "blog"
-  const today = todayIsoDate()
+  const now = new Date()
   const slugs = await existingSlugs(dir)
   const posts: BlogPublication[] = []
   for (const slug of slugs) {
@@ -126,7 +125,7 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
       const message =
         data?.date === undefined
           ? `is missing a \`date\` in frontmatter`
-          : `has an invalid \`date\` in frontmatter; expected YYYY-MM-DD`
+          : `has an invalid \`date\` in frontmatter; expected YYYY-MM-DD or ISO datetime with timezone`
       warnings.push(`[blog] "${slug}.mdx" ${message}`)
       continue
     }
@@ -135,7 +134,7 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
   posts.sort(compareBlogPublications)
   const pages = [
     ...(slugs.has("index") ? ["index"] : []),
-    ...posts.filter((post) => isPublishedBlogPublication(post, today)).map((p) => p.slug),
+    ...posts.filter((post) => isPublishedBlogPublication(post, now)).map((p) => p.slug),
   ]
   await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }
