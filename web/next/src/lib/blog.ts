@@ -32,16 +32,14 @@ export function compareBlogPosts(a: BlogPage, b: BlogPage): number {
   )
 }
 
-export function getPublishedBlogPosts(): BlogPage[] {
-  const now = new Date()
+export function getPublishedBlogPosts(now = new Date()): BlogPage[] {
   return blogSource
     .getPages()
     .filter((page) => isPublishedBlogPost(page, now))
     .sort(compareBlogPosts)
 }
 
-export function generatePublishedBlogParams() {
-  const now = new Date()
+export function generatePublishedBlogParams(now = new Date()) {
   return blogSource.generateParams().filter((params) => {
     const page = blogSource.getPage(params.slug)
     return page ? isPublishedBlogPage(page, now) : false

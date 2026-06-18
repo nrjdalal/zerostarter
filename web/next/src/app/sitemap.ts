@@ -1,15 +1,12 @@
 import { MetadataRoute } from "next"
 
 import { getPublishedBlogPosts } from "@/lib/blog"
+import { toBlogDate } from "@/lib/blog-date"
 import { config } from "@/lib/config"
 import { docsSource } from "@/lib/source"
 
 export const dynamic = "force-static"
 export const revalidate = 60
-
-function toSitemapDate(value: string): Date {
-  return new Date(value.includes("T") ? value : `${value}T00:00:00.000Z`)
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = config.app.url
@@ -36,9 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogPages = getPublishedBlogPosts()
   const blogRoutes: MetadataRoute.Sitemap = blogPages.map((page) => ({
     url: `${baseUrl}${page.url}`,
-    lastModified: toSitemapDate(
-      page.data.updatedAt ?? page.data.publishedAt ?? page.data.createdAt,
-    ),
+    lastModified: toBlogDate(page.data.updatedAt ?? page.data.publishedAt ?? page.data.createdAt),
     changeFrequency: "monthly" as const,
     priority: 0.9,
   }))

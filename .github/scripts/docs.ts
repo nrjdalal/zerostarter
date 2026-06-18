@@ -148,7 +148,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
       if (data?.createdAt === undefined && !strict) {
         createdAt = localIsoDate(now)
         await Bun.write(file, addBlogCreatedAt(text, createdAt))
-        console.log(`[blog] added createdAt to ${slug}.mdx`)
+        console.log(`[blog] added createdAt: ${createdAt} to ${slug}.mdx; review and commit it`)
       } else {
         const message =
           data?.createdAt === undefined

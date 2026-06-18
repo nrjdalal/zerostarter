@@ -62,10 +62,15 @@ export function normalizeBlogTimestamp(value: unknown): string | null {
   return Number.isNaN(Date.parse(value)) ? null : value
 }
 
-function blogTimestampTime(timestamp: string): number | null {
+export function blogTimestampToDate(timestamp: string): Date | null {
   const normalized = normalizeBlogTimestamp(timestamp)
   if (!normalized) return null
-  return Date.parse(normalized.includes("T") ? normalized : `${normalized}T00:00:00.000Z`)
+  const date = new Date(normalized.includes("T") ? normalized : `${normalized}T00:00:00.000Z`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function blogTimestampTime(timestamp: string): number | null {
+  return blogTimestampToDate(timestamp)?.getTime() ?? null
 }
 
 export function isPublishedBlogPublication(
