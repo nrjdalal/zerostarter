@@ -1,4 +1,4 @@
-export interface BlogPublication {
+export interface BlogPostMeta {
   slug: string
   createdAt: string
   updatedAt?: string
@@ -88,18 +88,18 @@ function blogTimestampTime(timestamp: string): number | null {
   return blogTimestampToDate(timestamp)?.getTime() ?? null
 }
 
-export function isPublishedBlogPublication(
-  publication: Pick<BlogPublication, "draft" | "publishedAt">,
+export function isBlogPostPublished(
+  post: Pick<BlogPostMeta, "draft" | "publishedAt">,
   now = new Date(),
 ): boolean {
-  if (publication.draft === true) return false
-  if (!publication.publishedAt) return false
+  if (post.draft === true) return false
+  if (!post.publishedAt) return false
 
-  const publishTime = blogTimestampTime(publication.publishedAt)
+  const publishTime = blogTimestampTime(post.publishedAt)
   return publishTime !== null && publishTime <= now.getTime()
 }
 
-export function compareBlogPublications(a: BlogPublication, b: BlogPublication): number {
+export function compareBlogPostPublishOrder(a: BlogPostMeta, b: BlogPostMeta): number {
   const aTime = blogTimestampTime(a.publishedAt ?? a.createdAt)
   const bTime = blogTimestampTime(b.publishedAt ?? b.createdAt)
   if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)

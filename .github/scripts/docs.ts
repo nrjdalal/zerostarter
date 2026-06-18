@@ -4,10 +4,10 @@ import { Glob } from "bun"
 
 import docsConfig from "../../web/next/docs.config"
 import {
-  compareBlogPublications,
-  isPublishedBlogPublication,
+  compareBlogPostPublishOrder,
+  isBlogPostPublished,
   normalizeBlogTimestamp,
-  type BlogPublication,
+  type BlogPostMeta,
 } from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
 
@@ -130,7 +130,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
   const dir = "blog"
   const now = new Date()
   const slugs = await existingSlugs(dir)
-  const posts: BlogPublication[] = []
+  const posts: BlogPostMeta[] = []
   for (const slug of slugs) {
     if (slug === "index") continue
     const file = path.join(CONTENT, dir, `${slug}.mdx`)
@@ -182,10 +182,10 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
     }
     posts.push({ slug, createdAt, draft: data?.draft === true, publishedAt })
   }
-  posts.sort(compareBlogPublications)
+  posts.sort(compareBlogPostPublishOrder)
   const pages = [
     ...(slugs.has("index") ? ["index"] : []),
-    ...posts.filter((post) => isPublishedBlogPublication(post, now)).map((p) => p.slug),
+    ...posts.filter((post) => isBlogPostPublished(post, now)).map((p) => p.slug),
   ]
   await Bun.write(path.join(CONTENT, dir, "meta.json"), JSON.stringify({ pages }, null, 2) + "\n")
 }

@@ -1,7 +1,7 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
-import { getPublishedBlogPageTree } from "@/lib/blog"
+import { getPublicBlogPageTree } from "@/lib/blog"
 import { baseOptions } from "@/lib/fumadocs"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {...baseOptions()}
           nav={{ enabled: false }}
           sidebar={{ enabled: false }}
-          tree={getPublishedBlogPageTree()}
+          tree={getPublicBlogPageTree()}
         >
           {children}
         </DocsLayout>

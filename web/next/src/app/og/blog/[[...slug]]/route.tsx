@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 
-import { generatePublishedBlogParams, isPublishedBlogPage } from "@/lib/blog"
+import { generatePublicBlogParams, isPublicBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
 import { blogSource } from "@/lib/source"
@@ -9,7 +9,7 @@ export const dynamic = "force-static"
 export const revalidate = 60
 
 export function generateStaticParams() {
-  return generatePublishedBlogParams().map((params) => ({
+  return generatePublicBlogParams().map((params) => ({
     slug: params.slug ?? [],
   }))
 }
@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
   const page = blogSource.getPage(slug)
-  if (!page || !isPublishedBlogPage(page)) notFound()
+  if (!page || !isPublicBlogPage(page)) notFound()
 
   return generateOgImage(slug, {
     source: blogSource,

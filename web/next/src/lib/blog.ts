@@ -1,6 +1,6 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
 
-import { compareBlogPublications, isPublishedBlogPublication } from "@/lib/blog-policy"
+import { compareBlogPostPublishOrder, isBlogPostPublished } from "@/lib/blog-policy"
 import { blogSource } from "@/lib/source"
 
 type BlogPage = NonNullable<ReturnType<typeof blogSource.getPage>>
@@ -13,15 +13,15 @@ export function isBlogIndexPage(page: BlogPage): boolean {
 }
 
 function isPublishedBlogPost(page: BlogPage, now = new Date()): page is PublishedBlogPage {
-  return !isBlogIndexPage(page) && isPublishedBlogPublication(page.data, now)
+  return !isBlogIndexPage(page) && isBlogPostPublished(page.data, now)
 }
 
-export function isPublishedBlogPage(page: BlogPage, now = new Date()): boolean {
+export function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
   return isBlogIndexPage(page) || isPublishedBlogPost(page, now)
 }
 
 function compareBlogPosts(a: BlogPage, b: BlogPage): number {
-  return compareBlogPublications(
+  return compareBlogPostPublishOrder(
     {
       slug: a.slugs.join("/"),
       createdAt: a.data.createdAt,
@@ -44,10 +44,10 @@ export function getPublishedBlogPosts(now = new Date()): PublishedBlogPage[] {
     .sort(compareBlogPosts)
 }
 
-export function generatePublishedBlogParams(now = new Date()) {
+export function generatePublicBlogParams(now = new Date()) {
   return blogSource.generateParams().filter((params) => {
     const page = blogSource.getPage(params.slug)
-    return page ? isPublishedBlogPage(page, now) : false
+    return page ? isPublicBlogPage(page, now) : false
   })
 }
 
@@ -68,12 +68,12 @@ function filterPublishedBlogNode(node: Node, publishedUrls: Set<string>): Node |
   return { ...folder, children } satisfies Folder
 }
 
-export function getPublishedBlogPageTree(now = new Date()): Root {
+export function getPublicBlogPageTree(now = new Date()): Root {
   const tree = blogSource.getPageTree()
   const publishedUrls = new Set(
     blogSource
       .getPages()
-      .filter((page) => isPublishedBlogPage(page, now))
+      .filter((page) => isPublicBlogPage(page, now))
       .map((page) => page.url),
   )
 

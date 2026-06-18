@@ -3,7 +3,7 @@ import Link from "next/link"
 import { getPublishedBlogPosts } from "@/lib/blog"
 import { formatBlogDate } from "@/lib/blog-policy"
 
-export function BlogList() {
+export function BlogPostList() {
   const posts = getPublishedBlogPosts()
 
   if (posts.length === 0) {
