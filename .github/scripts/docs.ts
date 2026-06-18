@@ -6,8 +6,7 @@ import docsConfig from "../../web/next/docs.config"
 import {
   compareBlogPublications,
   isPublishedBlogPublication,
-  normalizeBlogDate,
-  normalizeBlogPublishedAt,
+  normalizeBlogTimestamp,
   type BlogPublication,
 } from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
@@ -88,6 +87,13 @@ function frontmatterFields(slug: string, meta: DocsMeta): Record<string, string>
 
 type SyncResult = "ok" | "wrote" | "drift"
 
+function localIsoDate(now = new Date()): string {
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
 // Compares the rendered frontmatter block byte-for-byte (the generator owns it): an in-sync file never churns, and a hand edit shows up as drift.
 async function syncFrontmatter(
   file: string,
@@ -108,15 +114,26 @@ async function syncFrontmatter(
   return "wrote"
 }
 
+function addBlogCreatedAt(text: string, createdAt: string): string {
+  const line = `createdAt: ${createdAt}`
+  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  if (!match) return `---\n${line}\n---\n\n${text}`
+
+  const lines = (match[1] ?? "").split("\n")
+  lines.push(line)
+  return `---\n${lines.join("\n")}\n---\n${match[2] ?? ""}`
+}
+
 // The blog is content-driven: each post owns its frontmatter and `publishedAt` controls order. This derives content/blog/meta.json for the page tree; public blog surfaces apply the same draft/publishedAt rule during render/revalidation.
-async function generateBlogMeta(warnings: string[]): Promise<void> {
+async function generateBlogMeta(warnings: string[], strict: boolean): Promise<void> {
   const dir = "blog"
   const now = new Date()
   const slugs = await existingSlugs(dir)
   const posts: BlogPublication[] = []
   for (const slug of slugs) {
     if (slug === "index") continue
-    const text = await Bun.file(path.join(CONTENT, dir, `${slug}.mdx`)).text()
+    const file = path.join(CONTENT, dir, `${slug}.mdx`)
+    const text = await Bun.file(file).text()
     const match = text.match(/^---\n([\s\S]*?)\n---/)
     const data = match
       ? (Bun.YAML.parse(match[1] ?? "") as {
@@ -126,21 +143,29 @@ async function generateBlogMeta(warnings: string[]): Promise<void> {
           updatedAt?: unknown
         })
       : null
-    const createdAt = normalizeBlogDate(data?.createdAt)
+    let createdAt = normalizeBlogTimestamp(data?.createdAt)
     if (!createdAt) {
-      const message =
-        data?.createdAt === undefined
-          ? `is missing a \`createdAt\` in frontmatter`
-          : `has an invalid \`createdAt\` in frontmatter; expected YYYY-MM-DD`
-      warnings.push(`[blog] "${slug}.mdx" ${message}`)
-      continue
+      if (data?.createdAt === undefined && !strict) {
+        createdAt = localIsoDate(now)
+        await Bun.write(file, addBlogCreatedAt(text, createdAt))
+        console.log(`[blog] added createdAt to ${slug}.mdx`)
+      } else {
+        const message =
+          data?.createdAt === undefined
+            ? `is missing a \`createdAt\` in frontmatter`
+            : `has an invalid \`createdAt\` in frontmatter; expected YYYY-MM-DD or ISO datetime with timezone`
+        warnings.push(`[blog] "${slug}.mdx" ${message}`)
+        continue
+      }
     }
-    if (data?.updatedAt !== undefined && !normalizeBlogDate(data.updatedAt)) {
-      warnings.push(`[blog] "${slug}.mdx" has an invalid \`updatedAt\`; expected YYYY-MM-DD`)
+    if (data?.updatedAt !== undefined && !normalizeBlogTimestamp(data.updatedAt)) {
+      warnings.push(
+        `[blog] "${slug}.mdx" has an invalid \`updatedAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
+      )
     }
     let publishedAt: string | undefined
     if (data?.publishedAt !== undefined) {
-      const normalizedPublishedAt = normalizeBlogPublishedAt(data.publishedAt)
+      const normalizedPublishedAt = normalizeBlogTimestamp(data.publishedAt)
       if (!normalizedPublishedAt) {
         warnings.push(
           `[blog] "${slug}.mdx" has an invalid \`publishedAt\`; expected YYYY-MM-DD or ISO datetime with timezone`,
@@ -228,7 +253,7 @@ async function run() {
     )
   }
 
-  await generateBlogMeta(warnings)
+  await generateBlogMeta(warnings, strict)
 
   if (warnings.length) {
     const log = strict ? console.error : console.warn

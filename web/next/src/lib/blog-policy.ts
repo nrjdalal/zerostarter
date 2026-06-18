@@ -19,11 +19,11 @@ function isValidDateParts(year: number, month: number, day: number): boolean {
   )
 }
 
-export function normalizeBlogDate(value: unknown): string | null {
+export function normalizeBlogTimestamp(value: unknown): string | null {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return null
     const iso = value.toISOString()
-    return iso.endsWith("T00:00:00.000Z") ? iso.slice(0, 10) : null
+    return iso.endsWith("T00:00:00.000Z") ? iso.slice(0, 10) : iso
   }
 
   if (typeof value !== "string") return null
@@ -35,21 +35,6 @@ export function normalizeBlogDate(value: unknown): string | null {
     const day = Number(dateMatch[3])
     return isValidDateParts(year, month, day) ? value : null
   }
-
-  return null
-}
-
-export function normalizeBlogPublishedAt(value: unknown): string | null {
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return null
-    const iso = value.toISOString()
-    return iso.endsWith("T00:00:00.000Z") ? iso.slice(0, 10) : iso
-  }
-
-  if (typeof value !== "string") return null
-
-  const date = normalizeBlogDate(value)
-  if (date) return date
 
   const dateTimeMatch = value.match(isoDateTimePattern)
   if (!dateTimeMatch) return null
@@ -77,8 +62,8 @@ export function normalizeBlogPublishedAt(value: unknown): string | null {
   return Number.isNaN(Date.parse(value)) ? null : value
 }
 
-function blogPublishTime(publishedAt: string): number | null {
-  const normalized = normalizeBlogPublishedAt(publishedAt)
+function blogTimestampTime(timestamp: string): number | null {
+  const normalized = normalizeBlogTimestamp(timestamp)
   if (!normalized) return null
   return Date.parse(normalized.includes("T") ? normalized : `${normalized}T00:00:00.000Z`)
 }
@@ -90,18 +75,13 @@ export function isPublishedBlogPublication(
   if (publication.draft === true) return false
   if (!publication.publishedAt) return false
 
-  const publishTime = blogPublishTime(publication.publishedAt)
+  const publishTime = blogTimestampTime(publication.publishedAt)
   return publishTime !== null && publishTime <= now.getTime()
 }
 
-function blogDateTime(date: string): number | null {
-  const normalized = normalizeBlogDate(date)
-  return normalized ? Date.parse(`${normalized}T00:00:00.000Z`) : null
-}
-
 export function compareBlogPublications(a: BlogPublication, b: BlogPublication): number {
-  const aTime = a.publishedAt ? blogPublishTime(a.publishedAt) : blogDateTime(a.createdAt)
-  const bTime = b.publishedAt ? blogPublishTime(b.publishedAt) : blogDateTime(b.createdAt)
+  const aTime = blogTimestampTime(a.publishedAt ?? a.createdAt)
+  const bTime = blogTimestampTime(b.publishedAt ?? b.createdAt)
   if (aTime === null && bTime === null) return a.slug.localeCompare(b.slug)
   if (aTime === null) return 1
   if (bTime === null) return -1
