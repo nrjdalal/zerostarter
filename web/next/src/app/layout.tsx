@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 
 import "@/app/globals.css"
 
+// Intentional cache-bust (same rationale as generatePageMetadata): the timestamp ties the home OG URL to each deploy so scrapers refetch the regenerated image; not a bug.
 function getOgImageUrl(): string {
   const staticOgPath = join(process.cwd(), "public", "og", "home.png")
   if (existsSync(staticOgPath)) {

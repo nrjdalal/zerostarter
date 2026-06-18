@@ -1,11 +1,23 @@
+import { notFound } from "next/navigation"
+
+import { generatePublicBlogParams, isPublicBlogPage } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
 import { blogSource } from "@/lib/source"
 
 export const dynamic = "force-static"
+export const revalidate = 60
+
+export function generateStaticParams() {
+  return generatePublicBlogParams().map((params) => ({
+    slug: params.slug ?? [],
+  }))
+}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
+  const page = blogSource.getPage(slug)
+  if (!page || !isPublicBlogPage(page)) notFound()
 
   return generateOgImage(slug, {
     source: blogSource,
@@ -13,10 +25,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
     defaultTitle: `${config.app.name} - Blog`,
     defaultDescription: `Blog post from ${config.app.name}`,
   })
-}
-
-export function generateStaticParams() {
-  return blogSource.generateParams().map((params) => ({
-    slug: params.slug ?? [],
-  }))
 }

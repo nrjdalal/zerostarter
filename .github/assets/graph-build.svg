@@ -114,7 +114,7 @@
 <g id="node7" class="node">
 <title>@web/next</title>
 <ellipse fill="none" stroke="#f97316" cx="335.97" cy="-450" rx="103.34" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="335.97" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#f97316">@web/next (90.11 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="335.97" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#f97316">@web/next (90.33 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge12" class="edge">
