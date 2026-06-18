@@ -106,9 +106,7 @@ You MUST:
 
 ${scanned.join("\n\n---\n\n")}`,
     {
-      headers: {
-        ...llmTextHeaders,
-      },
+      headers: llmTextHeaders,
     },
   )
 }

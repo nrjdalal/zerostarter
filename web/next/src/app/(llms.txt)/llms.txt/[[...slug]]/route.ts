@@ -25,9 +25,7 @@ async function createPageResponse(
     : undefined
 
   return new Response(footer ? `${content}\n\n${footer}` : content, {
-    headers: {
-      ...llmTextHeaders,
-    },
+    headers: llmTextHeaders,
   })
 }
 
@@ -56,9 +54,7 @@ ${docsIndex}
 - [Blog](${config.app.url}/blog.md): Latest articles and updates about ${config.app.name}
 `,
       {
-        headers: {
-          ...llmTextHeaders,
-        },
+        headers: llmTextHeaders,
       },
     )
   }
@@ -92,9 +88,7 @@ ${blogIndex}
 - [Documentation](${config.app.url}/llms.txt): Complete documentation for ${config.app.name}
 `,
       {
-        headers: {
-          ...llmTextHeaders,
-        },
+        headers: llmTextHeaders,
       },
     )
   }

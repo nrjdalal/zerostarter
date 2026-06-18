@@ -1,6 +1,10 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
 
-import { compareBlogPostPublishOrder, isBlogPostPublished } from "@/lib/blog-policy"
+import {
+  compareBlogPostPublishOrder,
+  isBlogPostPublished,
+  type BlogPostMeta,
+} from "@/lib/blog-policy"
 import { blogSource } from "@/lib/source"
 
 type BlogPage = NonNullable<ReturnType<typeof blogSource.getPage>>
@@ -8,6 +12,7 @@ type PublishedBlogPage = BlogPage & {
   data: BlogPage["data"] & { publishedAt: string }
 }
 
+// Naming: "public" includes the /blog index plus published posts (routes, params, page tree); "published" is posts only, excluding the index (listings, sitemap, llms).
 export function isBlogIndexPage(page: BlogPage): boolean {
   return page.url === "/blog"
 }
@@ -20,21 +25,17 @@ export function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
   return isBlogIndexPage(page) || isPublishedBlogPost(page, now)
 }
 
+function toBlogPostMeta(page: BlogPage): BlogPostMeta {
+  return {
+    slug: page.slugs.join("/"),
+    createdAt: page.data.createdAt,
+    draft: page.data.draft,
+    publishedAt: page.data.publishedAt,
+  }
+}
+
 function compareBlogPosts(a: BlogPage, b: BlogPage): number {
-  return compareBlogPostPublishOrder(
-    {
-      slug: a.slugs.join("/"),
-      createdAt: a.data.createdAt,
-      draft: a.data.draft,
-      publishedAt: a.data.publishedAt,
-    },
-    {
-      slug: b.slugs.join("/"),
-      createdAt: b.data.createdAt,
-      draft: b.data.draft,
-      publishedAt: b.data.publishedAt,
-    },
-  )
+  return compareBlogPostPublishOrder(toBlogPostMeta(a), toBlogPostMeta(b))
 }
 
 export function getPublishedBlogPosts(now = new Date()): PublishedBlogPage[] {
