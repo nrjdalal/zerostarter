@@ -6,8 +6,7 @@
     "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
     "check-types": "tsc --noEmit",
     "dev": "bun ../../.github/scripts/docs.ts && next dev",
-    "start": "bun .next/standalone/web/next/server.js",
-    "test": "bun test src/lib/blog-policy.test.ts"
+    "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {
     "@api/hono": "workspace:*",
