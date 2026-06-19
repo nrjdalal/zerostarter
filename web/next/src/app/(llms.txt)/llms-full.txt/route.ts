@@ -37,7 +37,7 @@ You MUST:
 - \`packages/auth/\` - Shared authentication logic (Better Auth)
 - \`packages/db/\` - Database schema and Drizzle configuration
 - \`packages/env/\` - Type-safe environment variables (Zod validation)
-- \`packages/tsconfig/\` - Shared TypeScript configuration
+- \`packages/config/\` - Shared build config (TypeScript base + tsdown factory)
 
 **Workspace Packages:**
 - Import backend types: \`import type { AppType } from "@api/hono"\`

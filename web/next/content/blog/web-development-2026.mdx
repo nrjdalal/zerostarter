@@ -38,7 +38,7 @@ ZeroStarter uses a monorepo—multiple applications and packages in a single rep
     ├── auth/           # Authentication logic (used by API)
     ├── db/             # Database schema (single source of truth)
     ├── env/            # Environment variable validation
-    └── tsconfig/       # Shared TypeScript configuration
+    └── config/         # Shared build config (TS base + tsdown)
 ```
 
 The API imports auth logic from `@packages/auth`. The database schema in `@packages/db` is the single source of truth. TypeScript configuration is consistent across all packages.

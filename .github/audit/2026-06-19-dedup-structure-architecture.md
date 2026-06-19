@@ -17,7 +17,7 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 | 3   | ✅ ~~Remove `overrides.hono` + its AUDIT.md section (verify with clean install)~~ (done in #481: override + AUDIT.md section removed)                                     | medium     | ✓ verified | S      |
 | 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                        | medium     | ✓ verified | S      |
 | 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)   | medium     | ✓ verified | S      |
-| 6   | Collapse 3 near-identical `tsdown.config.ts` into a shared factory                                                                                                        | low        | high       | M      |
+| 6   | ✅ ~~Collapse 3 near-identical `tsdown.config.ts` into a shared factory~~ (done in #481: `@packages/tsconfig`→`@packages/config` + a `definePackageConfig` factory)       | low        | high       | M      |
 | 7   | `getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate                                                                                                      | medium     | high       | S      |
 | 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                | medium     | high       | M      |
 | 9   | Stop mirroring `.gitignore` into `.dockerignore` 1:1 (excludes nothing Docker-specific)                                                                                   | medium     | high       | S      |
@@ -148,9 +148,9 @@ Both Dockerfiles (`:2`), both `vercel.json` (`api/hono/vercel.json:7`, `web/next
 Global IP limiter on `*` (`index.ts:18-30`) then a second per-user limiter (`limit*2`) hand-invoked at the end of `authMiddleware` (`middlewares/auth.ts:34`). Authed `/v1/*` requests pass through both buckets; plausibly intentional but undocumented and double-counts.
 **Fix:** document the two-tier intent, or compose the user limiter as a normal `.use()` on `v1Router` instead of manual invocation.
 
-### 4.4 `packages/tsconfig/base.json` ships DOM/JSX libs to backend packages
+### 4.4 `packages/config/tsconfig.json` ships DOM/JSX libs to backend packages
 
-`base.json:5` (`lib:["dom","dom.iterable","esnext"]`) + `:14` (`jsx:"react-jsx"`) are inherited by `db`/`auth`/`env`/`api`, none of which render React DOM (api overrides to `hono/jsx`). A backend file could reference `window` without a compile error.
+`tsconfig.json:5` (`lib:["dom","dom.iterable","esnext"]`) + `:14` (`jsx:"react-jsx"`) are inherited by `db`/`auth`/`env`/`api`, none of which render React DOM (api overrides to `hono/jsx`). A backend file could reference `window` without a compile error.
 **Fix (optional):** split into `base.json` (server-safe) + `react.json` (extends base, adds DOM + react-jsx); web extends the latter.
 
 ### 4.5 Docs sidebar is a second shell
@@ -164,7 +164,7 @@ Global IP limiter on `*` (`index.ts:18-30`) then a second per-user limiter (`lim
 
 - **Package layering** is acyclic and correct: `env ← db ← auth ← api`; no `api`↔`web` cross-imports; `web` consumes only `@packages/env`.
 - **Scoped env exports** — `package.json` `exports` map enforces per-consumer subsets (`@packages/env/db`, `/auth`, `/api-hono`, `/web-next`); the per-app split is a real abstraction, not copy-paste.
-- **All tsconfigs** correctly extend `@packages/tsconfig/base.json` with no duplicated compilerOptions.
+- **All tsconfigs** correctly extend `@packages/config/tsconfig.json` with no duplicated compilerOptions.
 - **The three `lib/utils.ts`** (auth, env, web) share only a filename — content is fully disjoint. Not a dup.
 - **Console access policy** centralized in `lib/auth/console.ts`, consumed by both the console layout and the gated search route — no duplicated rule.
 - **Client/server boundaries** correct: session read server-side in layouts and passed as `user` prop; `authClient.useSession` used only where reactive client state is genuinely needed (navbar toggle, live org list).
