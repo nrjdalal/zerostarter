@@ -8,6 +8,7 @@ This file provides guidance to AI coding agents when working with code in this r
 - NEVER: Include "Co-authored-by" in commit messages.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
+- Write audit reports (any kind) to `.github/audit/` as dated files (`YYYY-MM-DD-<topic>.md`).
 
 ## Logging in (agents)
 
