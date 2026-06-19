@@ -16,7 +16,7 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 | 2   | 🚫 ~~Fix `ui/sonner.tsx`: wire it into `providers.tsx` or delete it~~ (won't fix: kept as shadcn registry surface, like the other intentionally-unused `ui/*` primitives) | medium     | ✓ verified | S      |
 | 3   | ✅ ~~Remove `overrides.hono` + its AUDIT.md section (verify with clean install)~~ (done in #481: override + AUDIT.md section removed)                                     | medium     | ✓ verified | S      |
 | 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                        | medium     | ✓ verified | S      |
-| 5   | Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)                                                                              | medium     | ✓ verified | S      |
+| 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)   | medium     | ✓ verified | S      |
 | 6   | Collapse 3 near-identical `tsdown.config.ts` into a shared factory                                                                                                        | low        | high       | M      |
 | 7   | `getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate                                                                                                      | medium     | high       | S      |
 | 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                | medium     | high       | M      |
@@ -93,6 +93,7 @@ Identical trigger className (`user-menu.tsx:41`, `org-switcher.tsx:125`), identi
 
 The shadcn `SidebarTrigger` (`ui/sidebar.tsx:247-267`) has **0** importers; both call sites (`(content)/docs/layout.tsx:13`, `sidebar/shell.tsx:13`) use `@/components/zeroui/sidebar-trigger`, a hard fork that adds size/children/`variant="secondary"`. The dead shadcn export survives every shadcn re-sync. `zeroui/` holds this one file and overlaps conceptually with `ui/`. A stale `// used at @/app/docs/layout.tsx` comment in the fork is incomplete (also used in shell.tsx).
 **Fix:** keep one trigger. Either fold the customizations into the `ui/sidebar.tsx` primitive and delete `zeroui/`, or move the fork into `ui/`/`sidebar/` and retire the `zeroui/` namespace.
+**Done (#481):** folded into the `ui/sidebar.tsx` primitive (optional `children` label) and deleted `zeroui/`. The extension is re-applied on every shadcn sync by `.github/scripts/shadcn-customize.ts` (idempotent, asserts each transform) so it survives re-syncs instead of being a dead fork; the floating/edge-tab behavior moved to `sidebar/floating-trigger.tsx`.
 
 ### 2.3 Dead env exports ✓
 
