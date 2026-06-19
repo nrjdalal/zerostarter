@@ -173,7 +173,6 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "hono": "^4.12.25",
   },
   "catalog": {
     "@arcjet/ip": "^1.4.0",
