@@ -40,7 +40,7 @@ The backend API server built with [Hono](https://hono.dev).
 - **`src/middlewares/`**: Custom middlewares
   - `auth.ts`: Authentication middleware for protected routes
   - `rate-limiter.ts`: Rate limiting middleware
-- **`src/lib/error.ts`**: Centralized `errorHandler` (formats Zod validation and internal errors)
+- **`src/lib/error.ts`**: Centralized `errorHandler` (formats Zod validation and internal errors) plus a `jsonError()` helper for consistent `{ error: { code, message } }` envelopes
 
 ### `web/next/`
 
