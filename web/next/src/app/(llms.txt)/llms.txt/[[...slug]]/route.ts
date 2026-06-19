@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import docsMeta from "@/../content/docs/meta.json"
-import { generatePublicBlogParams, getPublishedBlogPosts, isPublicBlogPage } from "@/lib/blog"
+import { generatePublicBlogParams, getPublicBlogPage, getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
 import { sortByMeta } from "@/lib/sort-by-meta"
@@ -99,9 +99,7 @@ ${blogIndex}
 
   const pageSlug = slug.slice(1)
   if (isBlog) {
-    const page = blogSource.getPage(pageSlug)
-    if (!page || !isPublicBlogPage(page)) notFound()
-    return createPageResponse(page, false)
+    return createPageResponse(getPublicBlogPage(pageSlug), false)
   }
 
   return createPageResponse(docsSource.getPage(pageSlug), true)

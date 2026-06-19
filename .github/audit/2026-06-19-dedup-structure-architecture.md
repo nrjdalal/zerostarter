@@ -18,7 +18,7 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 | 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                        | medium     | ✓ verified | S      |
 | 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)   | medium     | ✓ verified | S      |
 | 6   | ✅ ~~Collapse 3 near-identical `tsdown.config.ts` into a shared factory~~ (done in #481: `@packages/tsconfig`→`@packages/config` + a `definePackageConfig` factory)       | low        | high       | M      |
-| 7   | `getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate                                                                                                      | medium     | high       | S      |
+| 7   | ✅ ~~`getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate~~ (done in #481: `getPublicBlogPage(slug, now?)` in `lib/blog.ts`, all 4 sites gate through it) | medium     | high       | S      |
 | 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                | medium     | high       | M      |
 | 9   | Stop mirroring `.gitignore` into `.dockerignore` 1:1 (excludes nothing Docker-specific)                                                                                   | medium     | high       | S      |
 | 10  | Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)                                                                                        | low        | ✓ verified | S      |
@@ -43,6 +43,7 @@ Same `const page = blogSource.getPage(slug); if (!page || !isPublicBlogPage(page
 
 `lib/blog.ts` owns the policy but not this resolve-and-gate step.
 **Fix:** add `getPublicBlogPage(slug, now?)` to `lib/blog.ts` (mirrors `getPageData` in `fumadocs.tsx`); call from all four sites.
+**Done (#481):** `getPublicBlogPage(slug, now?)` added to `lib/blog.ts`; the Page, `generateMetadata`, OG, and llms.txt sites all call it (the OG route uses it purely as a 404 gate, since it renders from `slug`).
 
 ### 1.3 Three `tsdown.config.ts` files are near-identical
 
