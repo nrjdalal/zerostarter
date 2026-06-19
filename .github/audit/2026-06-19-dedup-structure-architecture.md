@@ -10,19 +10,19 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 
 ## Prioritized actions
 
-| #   | Action                                                                                                                                                                    | Severity   | Confidence | Effort |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- | ------ |
-| 1   | ✅ ~~Make `bun run lint` actually lint (add `lint: oxlint` to each workspace, or point root script at oxlint directly)~~ (done in #481: root `lint` now runs `oxlint`)    | **medium** | ✓ verified | S      |
-| 2   | 🚫 ~~Fix `ui/sonner.tsx`: wire it into `providers.tsx` or delete it~~ (won't fix: kept as shadcn registry surface, like the other intentionally-unused `ui/*` primitives) | medium     | ✓ verified | S      |
-| 3   | ✅ ~~Remove `overrides.hono` + its AUDIT.md section (verify with clean install)~~ (done in #481: override + AUDIT.md section removed)                                     | medium     | ✓ verified | S      |
-| 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                        | medium     | ✓ verified | S      |
-| 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)   | medium     | ✓ verified | S      |
-| 6   | ✅ ~~Collapse 3 near-identical `tsdown.config.ts` into a shared factory~~ (done in #481: `@packages/tsconfig`→`@packages/config` + a `definePackageConfig` factory)       | low        | high       | M      |
-| 7   | ✅ ~~`getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate~~ (done in #481: `getPublicBlogPage(slug, now?)` in `lib/blog.ts`, all 4 sites gate through it) | medium     | high       | S      |
-| 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                | medium     | high       | M      |
-| 9   | Stop mirroring `.gitignore` into `.dockerignore` 1:1 (excludes nothing Docker-specific)                                                                                   | medium     | high       | S      |
-| 10  | Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)                                                                                        | low        | ✓ verified | S      |
-| 11  | `jsonError()` helper for the 6 hand-written API error envelopes                                                                                                           | low        | high       | S      |
+| #   | Action                                                                                                                                                                              | Severity   | Confidence | Effort |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- | ------ |
+| 1   | ✅ ~~Make `bun run lint` actually lint (add `lint: oxlint` to each workspace, or point root script at oxlint directly)~~ (done in #481: root `lint` now runs `oxlint`)              | **medium** | ✓ verified | S      |
+| 2   | 🚫 ~~Fix `ui/sonner.tsx`: wire it into `providers.tsx` or delete it~~ (won't fix: kept as shadcn registry surface, like the other intentionally-unused `ui/*` primitives)           | medium     | ✓ verified | S      |
+| 3   | ✅ ~~Remove `overrides.hono` + its AUDIT.md section (verify with clean install)~~ (done in #481: override + AUDIT.md section removed)                                               | medium     | ✓ verified | S      |
+| 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                                  | medium     | ✓ verified | S      |
+| 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)             | medium     | ✓ verified | S      |
+| 6   | ✅ ~~Collapse 3 near-identical `tsdown.config.ts` into a shared factory~~ (done in #481: `@packages/tsconfig`→`@packages/config` + a `definePackageConfig` factory)                 | low        | high       | M      |
+| 7   | ✅ ~~`getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate~~ (done in #481: `getPublicBlogPage(slug, now?)` in `lib/blog.ts`, all 4 sites gate through it)           | medium     | high       | S      |
+| 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                          | medium     | high       | M      |
+| 9   | 🚫 ~~Stop mirroring `.gitignore` into `.dockerignore` 1:1~~ (won't fix: keep the `.gitignore`/`.dockerignore` mirror in sync; Docker-only divergence not worth it)                  | medium     | high       | S      |
+| 10  | Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)                                                                                                  | low        | ✓ verified | S      |
+| 11  | ✅ ~~`jsonError()` helper for the 6 hand-written API error envelopes~~ (done in #481: `jsonError(c, status, code, message, extra?)` in `lib/error.ts`, all sites routed through it) | low        | high       | S      |
 
 ---
 
@@ -69,6 +69,7 @@ Identical trigger className (`user-menu.tsx:41`, `org-switcher.tsx:125`), identi
 
 `{ error: { code, message } }` literal at `index.ts:33` (NOT_FOUND), `index.ts:42` (FORBIDDEN), `middlewares/auth.ts:28` (UNAUTHORIZED), `middlewares/rate-limiter.ts:36` (TOO_MANY_REQUESTS), `routers/agents.ts:17`, plus the central `lib/error.ts:7-18`. No typed helper enforces the shape.
 **Fix:** `jsonError(c, status, code, message, extra?)` in `lib/error.ts`; route all inline cases through it.
+**Done (#481):** `jsonError` added to `lib/error.ts` (generic on status so the RPC `AppType` is preserved); the 5 inline envelopes (NOT_FOUND, FORBIDDEN, UNAUTHORIZED, TOO_MANY_REQUESTS, AGENTS_LOGIN_FAILED) and both `errorHandler` branches (VALIDATION_ERROR, INTERNAL_SERVER_ERROR) route through it. Verified: check-types green, envelopes byte-identical at runtime.
 
 ### 1.8 Lower-value repeats (batch when touching the files)
 
@@ -119,6 +120,7 @@ The shadcn `SidebarTrigger` (`ui/sidebar.tsx:247-267`) has **0** importers; both
 
 Byte-identical except the header comment (`.dockerignore:59`). It excludes none of what a build context should: `.git/`, `.github/` (minus `scripts`), `.agents/`, `.claude/`, `*.md`, `CHANGELOG.md`, `AUDIT.md`. Both Dockerfiles `COPY . .` in the prune stage (`*/Dockerfile:6`), so git history + all agent tooling ship into the build context.
 **Fix:** give `.dockerignore` Docker-specific excludes (re-include `!.github/scripts`, which the prepare stage needs at `*/Dockerfile:10`). Note: the `ignore-sync` skill currently enforces the 1:1 mirror — that skill's contract needs revisiting, not just the file.
+**Decision (#481): won't fix.** `.dockerignore` stays a 1:1 mirror of `.gitignore` (the `ignore-sync` invariant). Diverging the files for Docker-only excludes is not worth it: the savings are marginal (~14 MB `.git` + agent tooling), and excluding `.git` drops the baked sha from a Docker `BUILD_VERSION` (`getGitSha` falls back to `""`). The `.github/*` + `!.github/scripts` re-include is itself a standard pattern; the call is about keeping the two files in sync, not feasibility.
 
 ### 3.3 Bun `1.3.10` pinned in 5 places that must move together
 
