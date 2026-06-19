@@ -10,19 +10,19 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 
 ## Prioritized actions
 
-| #   | Action                                                                                                            | Severity   | Confidence | Effort |
-| --- | ----------------------------------------------------------------------------------------------------------------- | ---------- | ---------- | ------ |
-| 1   | Make `bun run lint` actually lint (add `lint: oxlint` to each workspace, or point root script at oxlint directly) | **medium** | ✓ verified | S      |
-| 2   | Fix `ui/sonner.tsx`: wire it into `providers.tsx` or delete it                                                    | medium     | ✓ verified | S      |
-| 3   | Remove `overrides.hono` + its AUDIT.md section (verify with clean install)                                        | medium     | ✓ verified | S      |
-| 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                | medium     | ✓ verified | S      |
-| 5   | Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)                      | medium     | ✓ verified | S      |
-| 6   | Collapse 3 near-identical `tsdown.config.ts` into a shared factory                                                | low        | high       | M      |
-| 7   | `getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate                                              | medium     | high       | S      |
-| 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                        | medium     | high       | M      |
-| 9   | Stop mirroring `.gitignore` into `.dockerignore` 1:1 (excludes nothing Docker-specific)                           | medium     | high       | S      |
-| 10  | Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)                                | low        | ✓ verified | S      |
-| 11  | `jsonError()` helper for the 6 hand-written API error envelopes                                                   | low        | high       | S      |
+| #   | Action                                                                                                                                                                    | Severity   | Confidence | Effort |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- | ------ |
+| 1   | ✅ ~~Make `bun run lint` actually lint (add `lint: oxlint` to each workspace, or point root script at oxlint directly)~~ (done in #481: root `lint` now runs `oxlint`)    | **medium** | ✓ verified | S      |
+| 2   | 🚫 ~~Fix `ui/sonner.tsx`: wire it into `providers.tsx` or delete it~~ (won't fix: kept as shadcn registry surface, like the other intentionally-unused `ui/*` primitives) | medium     | ✓ verified | S      |
+| 3   | ✅ ~~Remove `overrides.hono` + its AUDIT.md section (verify with clean install)~~ (done in #481: override + AUDIT.md section removed)                                     | medium     | ✓ verified | S      |
+| 4   | Route the home OG route through `renderOgImage` instead of rebuilding the template                                                                                        | medium     | ✓ verified | S      |
+| 5   | Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)                                                                              | medium     | ✓ verified | S      |
+| 6   | Collapse 3 near-identical `tsdown.config.ts` into a shared factory                                                                                                        | low        | high       | M      |
+| 7   | `getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate                                                                                                      | medium     | high       | S      |
+| 8   | Shared sidebar dropdown shell for user-menu + org-switcher                                                                                                                | medium     | high       | M      |
+| 9   | Stop mirroring `.gitignore` into `.dockerignore` 1:1 (excludes nothing Docker-specific)                                                                                   | medium     | high       | S      |
+| 10  | Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)                                                                                        | low        | ✓ verified | S      |
+| 11  | `jsonError()` helper for the 6 hand-written API error envelopes                                                                                                           | low        | high       | S      |
 
 ---
 
@@ -87,6 +87,7 @@ Identical trigger className (`user-menu.tsx:41`, `org-switcher.tsx:125`), identi
 
 `providers.tsx:10` imports `Toaster` from the `sonner` package directly (`:36` `<Toaster richColors />`), so the local next-themes-aware wrapper at `ui/sonner.tsx:13-45` is dead.
 **Fix:** import `@/components/ui/sonner` in providers (gain theme integration) **or** delete `ui/sonner.tsx`.
+**Decision (#481):** won't fix. `ui/sonner.tsx` is kept as shadcn registry surface alongside the other intentionally-unused `ui/*` primitives (see §5); `providers.tsx` keeps the raw `<Toaster richColors />`.
 
 ### 2.2 `SidebarTrigger` fork — shadcn export is dead, `zeroui/` is a one-file namespace ✓
 
