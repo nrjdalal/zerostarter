@@ -30,7 +30,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@packages/tsconfig": "workspace:*",
+    "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "concurrently": "catalog:",

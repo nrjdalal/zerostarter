@@ -17,7 +17,7 @@
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
-    "@packages/tsconfig": "workspace:*",
+    "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
