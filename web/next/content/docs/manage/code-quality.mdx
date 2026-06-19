@@ -110,11 +110,11 @@ bun run format:check
 
 ## Linting with Oxlint
 
-Oxlint runs automatically via lint-staged on staged files at commit time. `bun run lint` runs the Turbo `lint` pipeline; to lint the whole tree directly, run Oxlint yourself:
+Oxlint runs automatically via lint-staged on staged files at commit time. To lint the entire monorepo in a single pass, run `bun run lint` (this is also what CI runs):
 
 ```bash
 # Lint the entire tree
-bunx oxlint
+bun run lint
 ```
 
 Oxlint is significantly faster than ESLint while catching common issues.
