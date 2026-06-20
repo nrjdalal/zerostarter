@@ -1,11 +1,12 @@
 "use client"
 
-import { RiAddLine, RiBuildingLine, RiExpandUpDownLine, RiLoaderLine } from "@remixicon/react"
+import { RiAddLine, RiBuildingLine, RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,20 +15,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth/client"
-import { cn, slugify } from "@/lib/utils"
+import { slugify } from "@/lib/utils"
 
 type Organization = {
   id: string
@@ -48,7 +40,6 @@ const formSchema = z.object({
 })
 
 export function SidebarDashboardOrgSwitcher() {
-  const { isMobile } = useSidebar()
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [isOrgTransitioning, setIsOrgTransitioning] = useState(false)
 
@@ -117,70 +108,47 @@ export function SidebarDashboardOrgSwitcher() {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer border"
-            />
-          }
-        >
-          <div className="bg-sidebar-accent text-sidebar-accent-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-            <RiBuildingLine className="size-4" />
-          </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">
-              {isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization")}
-            </span>
-            <span className="text-muted-foreground truncate text-xs">
-              {isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected")}
-            </span>
-          </div>
-          <RiExpandUpDownLine className="ml-auto size-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className={cn("w-(--anchor-width) min-w-56 rounded-lg", isMobile ? "mb-1" : "ml-3")}
-          side={isMobile ? "bottom" : "right"}
-          align="start"
-          sideOffset={4}
-        >
-          <DropdownMenuGroup>
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <div className="bg-sidebar-accent text-sidebar-accent-foreground flex size-8 items-center justify-center rounded-md">
-                  <RiBuildingLine className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {activeOrg?.name ?? "No organization"}
-                  </span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {activeOrg?.slug ?? "Create one to get started"}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          {organizations
-            .filter((org) => org.id !== activeOrg?.id)
-            .map((org) => (
-              <DropdownMenuItem
-                key={org.id}
-                className="cursor-pointer"
-                onClick={() => handleSetActive(org.id)}
-              >
-                <RiBuildingLine />
-                {org.name}
-              </DropdownMenuItem>
-            ))}
-          <DropdownMenuItem className="cursor-pointer" onClick={() => setCreateDialogOpen(true)}>
-            <RiAddLine />
-            Create organization
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <SidebarDropdownMenu
+        align="start"
+        mobileSide="bottom"
+        trigger={{
+          leading: (
+            <div className="bg-sidebar-accent text-sidebar-accent-foreground flex aspect-square size-8 items-center justify-center rounded-md">
+              <RiBuildingLine className="size-4" />
+            </div>
+          ),
+          primary: isOrgLoading ? "" : (activeOrg?.name ?? "Select Organization"),
+          secondary: isOrgLoading ? "" : (activeOrg?.slug ?? "No organization selected"),
+          secondaryClassName: "text-muted-foreground",
+        }}
+        header={{
+          leading: (
+            <div className="bg-sidebar-accent text-sidebar-accent-foreground flex size-8 items-center justify-center rounded-md">
+              <RiBuildingLine className="size-4" />
+            </div>
+          ),
+          primary: activeOrg?.name ?? "No organization",
+          secondary: activeOrg?.slug ?? "Create one to get started",
+          secondaryClassName: "text-muted-foreground",
+        }}
+      >
+        {organizations
+          .filter((org) => org.id !== activeOrg?.id)
+          .map((org) => (
+            <DropdownMenuItem
+              key={org.id}
+              className="cursor-pointer"
+              onClick={() => handleSetActive(org.id)}
+            >
+              <RiBuildingLine />
+              {org.name}
+            </DropdownMenuItem>
+          ))}
+        <DropdownMenuItem className="cursor-pointer" onClick={() => setCreateDialogOpen(true)}>
+          <RiAddLine />
+          Create organization
+        </DropdownMenuItem>
+      </SidebarDropdownMenu>
 
       <Dialog
         open={createDialogOpen}
