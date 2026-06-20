@@ -4,10 +4,9 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 
 - **📚 Documentation**: For comprehensive documentation, visit **[https://zerostarter.dev/docs](https://zerostarter.dev/docs)**.
 - **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
-- **🐦 X**: Follow **[@nrjdalal](https://twitter.com/nrjdalal)** for updates and don't forget to star the repository!
+- **🐦 X**: Follow **[@nrjdalal](https://x.com/nrjdalal)** for updates and don't forget to star the repository!
 
-> [!IMPORTANT]
-> ZeroStarter is currently in **Release Candidate (RC)** status. All implemented features are stable and production-ready. We're actively adding new features and integrations day-by-day.
+> ZeroStarter is stable and production-ready. We're actively adding new features and integrations day-by-day.
 
 ## ⚙️ Architecture and Tech Stack
 
@@ -21,7 +20,7 @@ A modern, type-safe, and high-performance SaaS starter template built with a mon
 - **Backend**: [Hono](https://hono.dev)
 - **RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end type safety with frontend client
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.com) with OAuth (GitHub, Google), magic links, organizations, and teams
+- **Authentication**: [Better Auth](https://better-auth.com) with OAuth (GitHub, Google), organizations, teams, and role-based access
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
 - **Styling**: [Tailwind CSS](https://tailwindcss.com)
 - **UI Components**: [Shadcn UI](https://ui.shadcn.com)
@@ -51,8 +50,9 @@ This project is a monorepo organized as follows:
 
 ## ✅ Implemented Features
 
-- **Authentication** — OAuth (GitHub, Google), magic links, session management
+- **Authentication** — OAuth (GitHub, Google) and session management
 - **Organizations & Teams** — Multi-tenant support with roles, invitations, and org switching
+- **Admin Console & Roles** — Role-based admin area at `/console`, gated by user role via the Better Auth admin plugin
 - **Analytics** — PostHog integration for product analytics, feature flags, and session recordings
 - **API Documentation** — Interactive docs at `/api/docs` powered by Scalar with auto-generated OpenAPI spec
 - **Rate Limiting** — Configurable per-user, per-API-key, and per-IP rate limiting
@@ -72,7 +72,7 @@ We're actively working on integrations for AI, email, background tasks, payments
 - **Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
 - **Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
 - **Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
-- **Enterprise-Grade Auth** — Better Auth with OAuth providers, magic links, multi-tenant organizations, teams, and role-based access
+- **Enterprise-Grade Auth** — Better Auth with OAuth providers, multi-tenant organizations, teams, and role-based access
 - **Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
 - **Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
 
@@ -153,6 +153,6 @@ MIT License — see [LICENSE.md](LICENSE.md) for details.
 
 ---
 
-**⭐ Star this repo** if you find it helpful, and follow [@nrjdalal](https://twitter.com/nrjdalal) for updates!
+**⭐ Star this repo** if you find it helpful, and follow [@nrjdalal](https://x.com/nrjdalal) for updates!
 
 <!-- trigger build: 7 -->

@@ -1,3 +1,15 @@
+## v0.0.33
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.32...v0.0.33)
+
+### 💅 Refactors
+
+- **config:** Centralize brand identity in @packages/config/site ([#491](https://github.com/nrjdalal/zerostarter/pull/491))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.32
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.31...v0.0.32)

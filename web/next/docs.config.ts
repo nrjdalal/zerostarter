@@ -57,7 +57,7 @@ const docsConfig = {
             "/docs/manage/authentication": {
               title: "Authentication",
               description:
-                "Authentication system with Better Auth, supporting OAuth providers, magic links, organizations, and teams.",
+                "Authentication system with Better Auth, supporting OAuth providers, organizations, teams, and role-based access.",
               label: "Auth & Organizations",
             },
           },

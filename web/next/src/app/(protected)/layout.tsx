@@ -30,7 +30,6 @@ export default async function Layout({ children }: { children: React.ReactNode }
 
   return (
     <SidebarShell
-      badge="RC"
       header={<SidebarDashboardOrgSwitcher />}
       footer={<SidebarDashboardUserActions user={session.user} />}
     >

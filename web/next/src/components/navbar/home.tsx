@@ -15,7 +15,6 @@ import { useEffect, useState } from "react"
 
 import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -91,9 +90,6 @@ export function Navbar() {
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {site.name}
-          <Badge variant="secondary" className="text-xs">
-            RC
-          </Badge>
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
@@ -178,9 +174,6 @@ export function Navbar() {
                   }
                 >
                   {site.name}
-                  <Badge variant="secondary" className="text-xs">
-                    RC
-                  </Badge>
                 </SheetTitle>
               </SheetHeader>
               <nav className="ml-4 flex flex-col gap-5">
