@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
@@ -97,11 +98,8 @@ const { data } = await response.json()`,
       documentation: {
         info: {
           version: BUILD_VERSION,
-          title: "ZeroStarter",
-          description: `API Reference for your ZeroStarter Instance.
-- [Dashboard](/dashboard) - Client-side dashboard application
-- [Better Auth Instance](/api/auth/reference) - Better Auth API reference
-- [hono/client](/docs/getting-started/type-safe-api) - Type-safe API client for frontend`,
+          title: site.name,
+          description: site.apiReferenceDescription,
         },
       },
     }),
@@ -109,7 +107,7 @@ const { data } = await response.json()`,
   .get(
     "/docs",
     Scalar({
-      pageTitle: "API Reference | ZeroStarter",
+      pageTitle: `API Reference | ${site.name}`,
       defaultHttpClient: {
         targetKey: "js",
         clientKey: "hono/client",

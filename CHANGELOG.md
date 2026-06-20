@@ -1,3 +1,15 @@
+## v0.0.32
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.31...v0.0.32)
+
+### 🚀 Enhancements
+
+- **auth:** Console roles via the better-auth admin plugin ([#489](https://github.com/nrjdalal/zerostarter/pull/489))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.31
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.30...v0.0.31)

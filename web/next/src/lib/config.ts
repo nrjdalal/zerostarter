@@ -10,12 +10,8 @@ const getInternalApiUrl = () => {
 }
 
 export const config = {
-  // Application configuration
+  // Runtime / env-derived app values (NOT brand — brand lives in @packages/config/site)
   app: {
-    name: "ZeroStarter",
-    description:
-      "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
-    tagline: "The SaaS Starter",
     url: env.NEXT_PUBLIC_APP_URL,
     version: BUILD_VERSION,
   },
@@ -24,16 +20,6 @@ export const config = {
   api: {
     url: env.NEXT_PUBLIC_API_URL,
     internalUrl: getInternalApiUrl(),
-  },
-
-  // Social links
-  social: {
-    github: "https://github.com/nrjdalal/zerostarter",
-  },
-
-  // Feature flags
-  features: {
-    // example: enableAnalytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true",
   },
 } as const
 
