@@ -24,17 +24,17 @@ import { cn } from "@/lib/utils"
 
 const socialLinks = [
   {
-    href: "https://x.com/nrjdalal",
+    href: config.social.x,
     icon: RiTwitterXFill,
     label: "X",
   },
   {
-    href: "https://discord.gg/38FeAUmHSZ",
+    href: config.social.discord,
     icon: RiDiscordFill,
     label: "Discord",
   },
   {
-    href: "https://github.com/nrjdalal/zerostarter",
+    href: config.social.github,
     icon: RiGithubFill,
     label: "GitHub",
   },
@@ -227,7 +227,7 @@ export function Navbar() {
                   }
                 >
                   <RiGithubFill className="size-4" />
-                  Get ZeroStarter
+                  Get {config.app.name}
                 </Button>
               </nav>
               {/* Mobile Social Links */}

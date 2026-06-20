@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import { BUILD_VERSION } from "@packages/env"
 import { env } from "@packages/env/web-next"
 
@@ -12,10 +13,9 @@ const getInternalApiUrl = () => {
 export const config = {
   // Application configuration
   app: {
-    name: "ZeroStarter",
-    description:
-      "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
-    tagline: "The SaaS Starter",
+    name: site.name,
+    description: site.description,
+    tagline: site.tagline,
     url: env.NEXT_PUBLIC_APP_URL,
     version: BUILD_VERSION,
   },
@@ -27,9 +27,7 @@ export const config = {
   },
 
   // Social links
-  social: {
-    github: "https://github.com/nrjdalal/zerostarter",
-  },
+  social: site.social,
 
   // Feature flags
   features: {
