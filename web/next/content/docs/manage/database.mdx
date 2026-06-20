@@ -59,22 +59,24 @@ The schema is defined in `packages/db/src/schema/auth.ts` and consists of 9 tabl
 
 ### Core Auth Tables
 
-| Table          | Purpose                   | Key Columns                                                                                                          |
-| -------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `user`         | Application users         | `id`, `name`, `email` (unique), `emailVerified`, `image`, `role` (console access), `banned`/`banReason`/`banExpires` |
-| `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId`      |
-| `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                              |
-| `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                             |
+| Table          | Purpose                   | Key Columns                                                                                                                       |
+| -------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `user`         | Application users         | `id`, `name`, `email` (unique), `emailVerified`, `image`, `role` (console access), `banned`/`banReason`/`banExpires`              |
+| `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId`, `impersonatedBy` |
+| `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                                           |
+| `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                                          |
+
+The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonatedBy` on `session` are not part of the original `0000` schema; they are introduced by the Better Auth Admin plugin in migration `0003_add_admin_plugin_fields.sql`.
 
 ### Organization & Team Tables
 
-| Table          | Purpose              | Key Columns                                                                 |
-| -------------- | -------------------- | --------------------------------------------------------------------------- |
-| `organization` | Workspaces           | `id`, `name`, `slug` (unique), `logo`, `metadata`                           |
-| `member`       | User↔Org membership  | `id`, `organizationId`, `userId`, `role` (default: "member")                |
-| `team`         | Sub-groups in orgs   | `id`, `name`, `organizationId`                                              |
-| `teamMember`   | User↔Team membership | `id`, `teamId`, `userId`                                                    |
-| `invitation`   | Pending invites      | `id`, `organizationId`, `email`, `role`, `status`, `expiresAt`, `inviterId` |
+| Table          | Purpose              | Key Columns                                                                           |
+| -------------- | -------------------- | ------------------------------------------------------------------------------------- |
+| `organization` | Workspaces           | `id`, `name`, `slug` (unique), `logo`, `metadata`                                     |
+| `member`       | User↔Org membership  | `id`, `organizationId`, `userId`, `role` (default: "member")                          |
+| `team`         | Sub-groups in orgs   | `id`, `name`, `organizationId`                                                        |
+| `teamMember`   | User↔Team membership | `id`, `teamId`, `userId`                                                              |
+| `invitation`   | Pending invites      | `id`, `organizationId`, `email`, `role`, `teamId`, `status`, `expiresAt`, `inviterId` |
 
 All foreign keys use `CASCADE` on delete. Tables include appropriate indexes on foreign key columns.
 
@@ -162,9 +164,9 @@ export default defineConfig({
 
 For production, use a managed PostgreSQL service:
 
-- [Neon](https://neon.tech) — Serverless Postgres
-- [Supabase](https://supabase.com) — Postgres with real-time
-- [Railway](https://railway.app) — Managed databases
+- [Neon](https://neon.tech): Serverless Postgres
+- [Supabase](https://supabase.com): Postgres with real-time
+- [Railway](https://railway.app): Managed databases
 
 For local development, you can create a database instantly with:
 

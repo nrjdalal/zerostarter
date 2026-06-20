@@ -50,7 +50,7 @@ commit-msg:
 Runs before each commit in sequence (piped):
 
 1. **Audit**: Security audit on `canary` branch (checks for vulnerable dependencies)
-2. **lint-staged**: Format and lint only staged files
+2. **lint-staged**: Format and lint only staged files. The command runs with `stage_fixed: true`, so any files the formatter rewrites are re-staged automatically and the fixes are included in the same commit.
 3. **Build**: Verify the project builds successfully
 
 ### Audit overrides (AUDIT.md)
@@ -119,6 +119,19 @@ bun run lint
 
 Oxlint is significantly faster than ESLint while catching common issues.
 
+Oxlint configuration in `.oxlintrc.jsonc`:
+
+```jsonc
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/**"],
+}
+```
+
+| Setting          | Value                                       | Description                              |
+| ---------------- | ------------------------------------------- | ---------------------------------------- |
+| `ignorePatterns` | `["**/*.lock", ".agents/**", ".claude/**"]` | Skip lock files and AI skill directories |
+
 ## Commit Message Convention
 
 Commits must follow [Conventional Commits](https://www.conventionalcommits.org):
@@ -131,6 +144,8 @@ Commits must follow [Conventional Commits](https://www.conventionalcommits.org):
 
 ### Types
 
+Commitlint extends `@commitlint/config-conventional`, which accepts these 11 Conventional Commits types:
+
 | Type       | Description                                             |
 | ---------- | ------------------------------------------------------- |
 | `feat`     | New feature                                             |
@@ -142,6 +157,8 @@ Commits must follow [Conventional Commits](https://www.conventionalcommits.org):
 | `test`     | Adding or updating tests                                |
 | `chore`    | Maintenance (dependencies, build scripts)               |
 | `ci`       | CI/CD changes                                           |
+| `build`    | Build system or external dependency changes             |
+| `revert`   | Reverting a previous commit                             |
 
 ### Examples
 
@@ -164,10 +181,11 @@ feat!: remove deprecated API endpoints
 ## Running Checks Manually
 
 ```bash
-# What CI runs (auto-check-build.yml)
-bun audit --audit-level high
-bun run lint
-bun run build
+# What CI runs (auto-check-build.yml). CI exports NODE_ENV=production and
+# SKIP_ENV_VALIDATION=true so the build runs before real secrets are present.
+NODE_ENV=production SKIP_ENV_VALIDATION=true bun audit --audit-level high
+NODE_ENV=production SKIP_ENV_VALIDATION=true bun run lint
+NODE_ENV=production SKIP_ENV_VALIDATION=true bun run build
 
 # Type checking (run locally; not part of the CI build workflow)
 bun run check-types
@@ -175,6 +193,8 @@ bun run check-types
 # Format all files
 bun run format
 ```
+
+Unlike CI, the local pre-commit `build` step runs without `SKIP_ENV_VALIDATION`, so it validates your real `.env`. A missing or invalid required variable will fail the commit locally even though the same build passes in CI.
 
 ## CI/CD Integration
 
@@ -187,6 +207,9 @@ GitHub Actions runs these checks on every PR:
     bun audit --audit-level high
     bun run lint
     bun run build
+  env:
+    NODE_ENV: production
+    SKIP_ENV_VALIDATION: true
 ```
 
 ## Skipping Hooks
@@ -197,8 +220,11 @@ In rare cases, you can skip hooks:
 # Skip all hooks (use sparingly!)
 git commit --no-verify -m "emergency fix"
 
-# Skip specific hook
+# Skip all Lefthook hooks (LEFTHOOK=0 disables every hook, not just one)
 LEFTHOOK=0 git commit -m "message"
+
+# Skip a single command, e.g. just the build step
+LEFTHOOK_EXCLUDE=build git commit -m "message"
 ```
 
 **Warning**: Only skip hooks for emergencies. CI will still catch issues.

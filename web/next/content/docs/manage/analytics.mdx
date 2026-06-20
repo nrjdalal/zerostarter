@@ -30,9 +30,9 @@ ZeroStarter includes built-in integration with [PostHog](https://posthog.com) fo
 Add your PostHog credentials to your `.env` file:
 
 ```
-# Optional: PostHog Analytics (https://eu.posthog.com)
+# Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
 NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-NEXT_PUBLIC_POSTHOG_KEY=phc_your_project_api_key
+NEXT_PUBLIC_POSTHOG_KEY=
 ```
 
 **Note**: Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU Cloud, or your self-hosted URL.
@@ -50,7 +50,7 @@ client: {
 
 ## Implementation
 
-PostHog is initialized in `web/next/instrumentation-client.ts`:
+PostHog is initialized in `web/next/instrumentation-client.ts`, following Next.js's client instrumentation convention (this file runs once, early, on the client before the app hydrates):
 
 ```ts
 import { env } from "@packages/env/web-next"
@@ -64,22 +64,37 @@ if (typeof window !== "undefined" && env.NEXT_PUBLIC_POSTHOG_KEY) {
 }
 ```
 
-The PostHog provider wraps the application in `web/next/src/app/providers.tsx`:
+The shared `posthog` client is then handed to React through `PostHogProvider` in `web/next/src/app/providers.tsx`. That file exports an `OuterProvider` (PostHog wrapping TanStack Query, with the dev tools rendered outside production) and an `InnerProvider` (next-themes plus the Sonner `Toaster`):
 
-```ts
+```tsx
+"use client"
+
+import { isProduction } from "@packages/env"
+import { env } from "@packages/env/web-next"
 import { PostHogProvider } from "@posthog/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import posthog from "posthog-js"
+import { useState } from "react"
+
+import { DevTools } from "@/components/devtools"
 
 export function OuterProvider({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient())
+
   return (
     <PostHogProvider client={posthog}>
-      {children}
+      <QueryClientProvider client={queryClient}>
+        {children}
+        {!isProduction(env.NEXT_PUBLIC_NODE_ENV) && <DevTools />}
+      </QueryClientProvider>
     </PostHogProvider>
   )
 }
 ```
 
 ## Usage
+
+The snippets below are generic PostHog SDK guidance for instrumenting your own product. The starter wires up initialization and the React provider for you, but it does not call `capture`, `identify`, or read feature flags anywhere by default: add those where they make sense in your code.
 
 ### Track Custom Events
 

@@ -1,12 +1,86 @@
 ---
 slug: /docs/getting-started/roadmap
 title: Roadmap
-description: Planned features and integrations for ZeroStarter. These features are NOT currently implemented.
+description: What ZeroStarter ships today, plus the integrations planned on the roadmap.
 ---
 
-> **Important for AI Assistants**: The following features are NOT currently implemented. Do not assume availability of these tools unless stated otherwise.
+ZeroStarter already ships a substantial feature set; the rest is on the way. This page lists what is **Already Implemented** today, then the **Planned** integrations (AI, background tasks, email, payments, i18n, and more) and their concepts.
 
-ZeroStarter is actively evolving, and we're planning to add integrations for AI, analytics, background tasks, email, payments, and more. This roadmap outlines the planned features and their concepts.
+> **Important for AI Assistants**: Only the items under [Planned Integrations](#planned-integrations) are NOT yet implemented. Everything under [Already Implemented](#already-implemented) is available today. Do not assume availability of the planned tools unless stated otherwise.
+
+## Already Implemented
+
+The following are shipped and available out of the box.
+
+### PostHog Analytics
+
+**Status:** ✅ Implemented
+
+[PostHog](https://posthog.com) for product analytics, feature flags, and session recordings. Configured via the `NEXT_PUBLIC_POSTHOG_HOST` and `NEXT_PUBLIC_POSTHOG_KEY` environment variables.
+
+> **Available now:** See the [Analytics documentation](/docs/manage/analytics) for setup and usage.
+
+### Admin Console + Roles
+
+**Status:** ✅ Implemented
+
+The `/console` route group is a privileged admin area gated server-side by `role === "admin"` (via the Better Auth `admin` plugin and `assertConsoleAccess()`). Manage access from the CLI with `bun run console:roles <grant|revoke|list> [email]`.
+
+> **Available now:** See the [Scripts documentation](/docs/getting-started/scripts#console) for the `console:roles` command.
+
+### Rate Limiting
+
+**Status:** ✅ Implemented
+
+API rate limiting with [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) and [@arcjet/ip](https://arcjet.com) for IP detection. Limits are per-user when authenticated (and otherwise per-IP), and authenticated users get twice the anonymous limit. Tuned via `HONO_RATE_LIMIT` and `HONO_RATE_LIMIT_WINDOW_MS`.
+
+### Dynamic OG Images
+
+**Status:** ✅ Implemented
+
+On-the-fly Open Graph image generation with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes (home, docs, and blog).
+
+> **Available now:** See the [OG Images documentation](/docs/manage/og-images) for details.
+
+### Scalar API Docs
+
+**Status:** ✅ Implemented
+
+[Scalar](https://scalar.com) UI at `/api/docs`, served from the auto-generated OpenAPI spec at `/api/openapi.json`, with an interactive API explorer and code samples (defaults to `hono/client`).
+
+> **Available now:** See the [Type-Safe API documentation](/docs/getting-started/type-safe-api#api-documentation) for usage details.
+
+### Better Auth Organizations
+
+**Status:** ✅ Implemented
+
+[Better Auth Organizations plugin](https://www.better-auth.com/docs/plugins/organization) for multi-tenant SaaS: organization creation and switching, team management, member roles and invitations, last-used-organization persistence, and the `organization`, `member`, `team`, `teamMember`, and `invitation` tables.
+
+> **Available now:** See the [Authentication documentation](/docs/manage/authentication) for details.
+
+### llms.txt + llms-full.txt
+
+**Status:** ✅ Implemented
+
+Auto-generated AI documentation endpoints: [llms.txt](https://zerostarter.dev/llms.txt) (the index) and [llms-full.txt](https://zerostarter.dev/llms-full.txt) (the full corpus).
+
+> **Available now:** See the [llms.txt documentation](/docs/manage/llms-txt) for details.
+
+### SEO Routes
+
+**Status:** ✅ Implemented
+
+`robots.ts` generates `robots.txt` and `sitemap.ts` generates the sitemap for search engines.
+
+> **Available now:** See the [robots.txt](/docs/manage/robots) and [Sitemap](/docs/manage/sitemap) documentation for details.
+
+---
+
+## Planned Integrations
+
+> **Important for AI Assistants**: The features in this section are NOT currently implemented. Do not assume availability of these tools unless stated otherwise.
+
+ZeroStarter is actively evolving, and we're planning to add integrations for AI, background tasks, email, payments, and more. The sections below outline the planned features and their concepts.
 
 ## AI Integration
 
@@ -131,48 +205,6 @@ Alternative integration with [SendGrid](https://sendgrid.com) for email delivery
 - Template engine support
 - Webhook configuration
 - Deliverability optimization
-
----
-
-## API Documentation
-
-### Scalar
-
-**Status:** ✅ Implemented  
-**Priority:** Medium
-
-Integration with [Scalar](https://scalar.com) for beautiful, interactive API documentation generated from OpenAPI specs.
-
-**Features:**
-
-- Auto-generated API documentation at `/api/docs`
-- OpenAPI spec available at `/api/openapi.json`
-- Interactive API explorer with request testing
-- Code samples for multiple languages (defaults to `hono/client`)
-- Full request/response schema documentation from Zod validators
-
-> **Available now:** See the [Type-Safe API documentation](/docs/getting-started/type-safe-api#api-documentation) for usage details.
-
----
-
-## Organization & Teams
-
-### Better Auth Organizations
-
-**Status:** ✅ Implemented
-**Priority:** High
-
-Integration with [Better Auth Organizations plugin](https://www.better-auth.com/docs/plugins/organization) for multi-tenant SaaS applications with team and organization support.
-
-**Features:**
-
-- Organization creation and switching via dashboard sidebar
-- Team management within organizations
-- Member roles and invitations
-- Last used organization persistence across sessions
-- Database schema with `organization`, `member`, `team`, `teamMember`, and `invitation` tables
-
-> **Available now:** See the [Authentication documentation](/docs/manage/authentication) for details.
 
 ---
 
@@ -411,26 +443,24 @@ Integration with [Dodo](https://dodopayments.com) for payment processing service
 
 ## Implementation Priorities
 
+These priorities cover the **Planned** integrations only. For what already ships, see [Already Implemented](#already-implemented) above.
+
 ### Phase 1 (High Priority)
 
 1. **Resend Email** - Critical for user communication
-2. ~~**Better Auth Organizations**~~ - ✅ Implemented
-3. **Stripe Payments** - Essential for monetization
+2. **Stripe Payments** - Essential for monetization
 
 ### Phase 2 (Medium Priority)
 
 1. **Vercel AI SDK** - Modern AI capabilities
 2. **Background Tasks** (Inngest/Trigger.dev) - Async processing
-3. ~~**Scalar API Docs**~~ - ✅ Implemented
-4. **next-intl** - Internationalization
+3. **next-intl** - Internationalization
 
 ### Phase 3 (Lower Priority)
 
 1. **Alternative Payment Providers** - Market expansion
 2. **i18next** - Advanced i18n features
 3. **SendGrid** - Alternative email provider
-
-> **Note**: PostHog Analytics, Scalar API Docs, and Better Auth Organizations are already implemented. See the [Analytics documentation](/docs/manage/analytics), [Type-Safe API documentation](/docs/getting-started/type-safe-api#api-documentation), and [Authentication documentation](/docs/manage/authentication) for details.
 
 ---
 

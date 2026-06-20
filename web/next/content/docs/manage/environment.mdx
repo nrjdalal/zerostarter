@@ -91,6 +91,29 @@ import { env } from "@packages/env/api-hono"
 import { env } from "@packages/env/web-next"
 ```
 
+### Shared Helpers
+
+The package root (`@packages/env`) also re-exports a few stage-aware helpers, separate from the per-package validated `env` objects:
+
+```ts
+import {
+  isLocal,
+  isDevelopment,
+  isTest,
+  isStaging,
+  isProduction,
+  getSafeEnv,
+  VERSION,
+  GIT_SHA,
+  BUILD_VERSION,
+  getBuildVersion,
+} from "@packages/env"
+```
+
+- **Stage checkers** (`isLocal`, `isDevelopment`, `isTest`, `isStaging`, `isProduction`): each takes a `NODE_ENV` string and returns whether it matches that stage, e.g. `isProduction(env.NEXT_PUBLIC_NODE_ENV)`.
+- **`getSafeEnv(env, appName?)`**: returns a copy of the given env object with sensitive keys (anything whose name contains `key`, `secret`, `token`, `password`, `postgres_url`, `db_url`, or `database_url`) replaced by a redacted placeholder. It only logs the result when `NODE_ENV` is `local`, so it is safe to call when wiring up diagnostics.
+- **Build version helpers** (`VERSION`, `GIT_SHA`, `BUILD_VERSION`, `getBuildVersion()`): the version and commit metadata injected at build time. `getBuildVersion()` prefers the platform's deploy-time SHA (`VERCEL_GIT_COMMIT_SHA`) when present, falling back to the baked `BUILD_VERSION`.
+
 ## Creating and Managing
 
 1. **Create `.env` file**: Copy `.env.example` to `.env` at the project root
@@ -99,8 +122,11 @@ import { env } from "@packages/env/web-next"
    - Add to `.env` file
    - Define in the appropriate package's env file (`packages/env/src/*.ts`)
    - Add to `server` or `client` schema with Zod validation
+   - Map it in the same file's `runtimeEnv` object (e.g. `MY_VAR: process.env.MY_VAR`). This step is mandatory: `@t3-oss/env-core` only reads values listed in `runtimeEnv`, so a variable in the schema but missing here is `undefined` at runtime.
    - Add to `turbo.json`: Include the variable in the `globalEnv` array so Turbo's cache invalidates correctly when it changes
 4. **Validation**: Each package validates only its declared variables at runtime
+
+**`globalEnv` exception**: `NEXT_PUBLIC_NODE_ENV` is not a real variable you set and is not added to `turbo.json`'s `globalEnv`. Its `runtimeEnv` mapping derives it from `process.env.NODE_ENV` (which is already in `globalEnv`), so listing it separately would be redundant.
 
 ## Features
 

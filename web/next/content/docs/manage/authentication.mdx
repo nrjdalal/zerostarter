@@ -19,8 +19,8 @@ The sign-in UI includes an email magic-link flow (`authClient.signIn.magicLink`,
 
 Two social providers are configured:
 
-- **GitHub** — Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
-- **Google** — Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+- **GitHub**: Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+- **Google**: Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
 The auth config (`packages/auth/src/index.ts`) does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 
@@ -51,13 +51,13 @@ socialProviders: {
 
 ## Console Access
 
-The privileged `/console` area uses the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else stays on the default `user` role and gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a grant or revoke takes effect on the next request rather than waiting out the session cache.
+The privileged `/console` area uses the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column plus `banned`/`banReason`/`banExpires` to the `user` table and an `impersonatedBy` column to the `session` table (`packages/db/src/schema/auth.ts`). The `impersonatedBy` field is set when an admin impersonates another user, recording the acting admin's id on the impersonated session. The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else stays on the default `user` role and gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a grant or revoke takes effect on the next request rather than waiting out the session cache.
 
-There is no env-based access list — the `role` is the single source of truth, set explicitly:
+There is no env-based access list: the `role` is the single source of truth, set explicitly:
 
-- **Helper script (manual):** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`). It writes `user.role` directly via `POSTGRES_URL`. Use this to bootstrap the first admin.
+- **Helper script (manual):** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`), backed by `.github/scripts/console-roles.ts`. It writes `user.role` directly via `POSTGRES_URL`. Use this to bootstrap the first admin.
 - **Or** `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
-- **Or**, once an admin exists, the plugin's `setRole` API — the basis for the console user-management dashboard, where admins manage everyone else's roles.
+- **Or**, once an admin exists, the Better Auth `setRole` admin API to grant the role to other users (a console user-management UI is not built yet).
 
 For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user for local development.
 
@@ -67,12 +67,12 @@ The [Better Auth Organizations plugin](https://www.better-auth.com/docs/plugins/
 
 ### Features
 
-- **Organization creation** — Users can create organizations from the dashboard sidebar
-- **Organization switching** — Switch between organizations via the sidebar dropdown
-- **Last used org persistence** — The last selected organization is saved in a cookie and restored on next login
-- **Teams** — Teams can be created within organizations
-- **Member roles** — Members have roles (default: "member") within organizations
-- **Invitations** — Invite users to organizations via email
+- **Organization creation**: Users can create organizations from the dashboard sidebar
+- **Organization switching**: Switch between organizations via the sidebar dropdown
+- **Last used org persistence**: The last selected organization is saved in a cookie and restored on next login
+- **Teams**: Teams can be created within organizations
+- **Member roles**: Members have roles (default: "member") within organizations
+- **Invitations**: Invite users to organizations via email
 
 ### Database Schema
 
@@ -111,7 +111,7 @@ await authClient.organization.create({ name: "Acme Inc.", slug: "acme" })
 Sessions are stored in the `session` database table with:
 
 - **Token-based authentication** via secure cookies
-- **Cross-subdomain cookies** — Automatically configured when using subdomains
+- **Cross-subdomain cookies**: Automatically configured when using subdomains
 - **IP address and user agent tracking** for security
 - **Session expiration** with automatic cleanup
 - **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache. Because of the cache, revoking a user's access can take up to about 5 minutes to take effect unless their sessions are revoked.
@@ -150,7 +150,7 @@ API routes are rate-limited using `hono-rate-limiter` with [Arcjet IP](https://a
 | Requests per window | 60               | `HONO_RATE_LIMIT`           |
 | Window duration     | 60,000ms (1 min) | `HONO_RATE_LIMIT_WINDOW_MS` |
 
-Authenticated requests use a per-user limiter set to twice the configured limit (`HONO_RATE_LIMIT * 2`, 120 by default). Rate limit keys are resolved in order: authenticated user ID, API key, then IP address.
+Authenticated requests use a per-user limiter set to twice the configured limit (`HONO_RATE_LIMIT * 2`, 120 by default). Rate limit keys are resolved in order: authenticated user ID, API key, IP address, then a random UUID fallback when IP detection fails. The API-key tier is currently unwired (no limiter passes an API key, so that tier is effectively dead until you wire `getApiKey` into a limiter). See [API Conventions](/docs/manage/api-conventions) for the authoritative breakdown.
 
 ## Environment Variables
 

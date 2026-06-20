@@ -89,27 +89,27 @@ docker build --secret id=dotenv,src=.env -f web/next/Dockerfile -t zerostarter-w
 docker run -p 3000:3000 --env-file .env zerostarter-web
 ```
 
+### Image internals
+
+Both Dockerfiles share the same shape:
+
+- Base image `oven/bun:1.3.10-alpine`.
+- Four stages: `base` -> `prepare` -> `builder` -> `runner`. The `prepare` stage runs `turbo prune <workspace> --docker` to produce a pruned, workspace-only build context, so each image installs and builds just the dependencies it needs.
+- The final `runner` stage runs as the non-root `USER bun`.
+
+The web image additionally relies on Next.js `output: "standalone"`: the builder copies `.next/static` and `public` into the standalone bundle manually, then the runner starts it with `bun server.js`. The api image just copies its `bundle/` output and runs `bun bundle/index.mjs`.
+
 ## Environment Variables
 
-Ensure your `.env` file contains all required variables before building:
+`.env.example` is the source of truth for the full variable set. Copy it to `.env`, fill in every value, and set `NODE_ENV=production` for a production build (the example ships with `NODE_ENV=local`).
 
+```bash
+cp .env.example .env
 ```
-NODE_ENV=production
 
-# Server variables
-HONO_APP_URL=http://localhost:4000
-HONO_TRUSTED_ORIGINS=http://localhost:3000
-BETTER_AUTH_SECRET=your_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-POSTGRES_URL=your_postgres_url
+`NEXT_PUBLIC_NODE_ENV` is required by the web env schema but is derived automatically from `NODE_ENV` (it is not a separate line you set), so setting `NODE_ENV` covers it.
 
-# Client variables
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
+The `.dockerignore` excludes every `.env*` file except `.env.example`, so the build never bakes your real `.env` into the image. Secrets reach the build only through the `dotenv` build secret (mounted at `/app/.env`) and reach the running container through `--env-file .env` (or docker-compose `env_file`).
 
 ## Internal Communication
 
@@ -135,6 +135,10 @@ For production, use a managed PostgreSQL service:
 - [Railway](https://railway.app) - Managed databases
 
 > **Note**: This project requires PostgreSQL. MySQL-compatible providers like PlanetScale are not supported without substantial rework (schema migration, SQL/driver changes).
+
+### Migrations
+
+Docker images do not run database migrations. Only the Vercel build applies them (via `.github/scripts/migrate-on-deploy.ts`). When deploying with Docker, run `bun run db:migrate` against your database separately before or alongside rolling out the new images.
 
 ### Container Registry
 
@@ -210,6 +214,6 @@ docker compose down -v
 # Verify env vars are loaded
 docker compose config
 
-# Run with explicit env file
-docker compose --env-file .env.production up
+# Confirm the resolved .env values
+docker compose run --rm api env
 ```

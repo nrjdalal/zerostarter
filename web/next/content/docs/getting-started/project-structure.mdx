@@ -23,7 +23,7 @@ This project is a monorepo organized as follows:
     ├── auth/            # Shared authentication logic (Better Auth)
     ├── db/              # Database schema and Drizzle configuration
     ├── env/             # Type-safe environment variables
-    └── config/          # Shared build config (TS base + tsdown)
+    └── config/          # Shared config: TS base, tsdown factory, and src/site.ts (brand identity)
 ```
 
 ## Directory Details
@@ -34,6 +34,7 @@ The backend API server built with [Hono](https://hono.dev).
 
 - **`src/index.ts`**: Main application entry point, exports `AppType` for type-safe RPC
 - **`src/routers/`**: API route handlers
+  - `index.ts`: Barrel re-exporting every router
   - `auth.ts`: Authentication routes (Better Auth handler)
   - `agents.ts`: Local-only agent sign-in (`/api/agents/sign-in-as`)
   - `v1.ts`: Protected API routes requiring authentication
@@ -59,8 +60,9 @@ The frontend application built with [Next.js 16](https://nextjs.org).
   - `sidebar/`: Navigation sidebar components
 - **`src/lib/`**: Shared utilities
   - `api/client.ts`: Type-safe API client using Hono RPC
-  - `auth/`: Authentication client and utilities
+  - `auth/`: Authentication client and utilities (including `console.ts`, the `/console` access gate)
   - `config.ts`: Application configuration
+  - Content and SEO helpers: `blog.ts`, `blog-policy.ts`, `llms.ts`, `og-image.tsx`, `fumadocs.tsx`, `source.ts`, `sort-by-meta.ts`, and the `docs/` helpers
 - **`content/`**: MDX content
   - `docs/`: Documentation pages
   - `blog/`: Blog posts
@@ -72,7 +74,7 @@ Shared authentication logic using [Better Auth](https://better-auth.com).
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
 - **`src/lib/utils.ts`**: Cookie domain and prefix helpers (`getCookieDomain`, `getCookiePrefix`) for cross-subdomain and environment-specific cookies
 - Supports GitHub and Google OAuth
-- Organization and teams plugin for multi-tenant support, plus the Better Auth OpenAPI plugin
+- Organization and teams plugin for multi-tenant support, the Better Auth OpenAPI plugin, and the `admin` plugin (gates the entire `/console` area by `role === "admin"`)
 - Exports session types for type safety
 
 ### `packages/db/`
@@ -97,7 +99,11 @@ Type-safe environment variables using [@t3-oss/env-core](https://env.t3.gg).
 
 ### `packages/config/`
 
-Shared build config for the workspace: the TypeScript base (`tsconfig.json`, extended by every package) plus a `tsdown` factory (`definePackageConfig`) that the backend packages' `tsdown.config.ts` files call.
+Shared config for the workspace:
+
+- **`tsconfig.json`**: The TypeScript base, extended by every package.
+- **`tsdown.ts`**: The `tsdown` factory (`definePackageConfig`) that the backend packages' `tsdown.config.ts` files call. It lives at the package root (exported as `@packages/config/tsdown`), not under `src/`.
+- **`src/site.ts`**: The brand/site identity (name, description, social links, injectable content), exported as `@packages/config/site`. This is the single source a fork edits to rebrand, consumed by both `api/hono` and `web/next`.
 
 ## Key Files
 
