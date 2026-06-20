@@ -27,7 +27,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
 - **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
-- **Data & Forms**: [TanStack Query](https://tanstack.com/query) with [TanStack Form](https://tanstack.com/form) and [React Hook Form](https://react-hook-form.com)
+- **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Validation**: [Zod](https://zod.dev), shared across the API and forms
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
