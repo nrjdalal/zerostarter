@@ -29,6 +29,8 @@ Review the generated SQL in `packages/db/drizzle/` before applying. Check `meta/
 bun run db:migrate
 ```
 
+Local / ad-hoc only. On Vercel the **API build auto-applies pending migrations** on production and canary deploys (`.github/scripts/migrate-on-deploy.ts`, gated on `VERCEL_ENV`/branch; PR previews are skipped), so merging a migration to canary applies it automatically on the next deploy.
+
 ### 4. Make the running stack see it
 
 ```bash
