@@ -57,7 +57,6 @@
         "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
         "better-auth": "catalog:",
-        "drizzle-orm": "catalog:",
       },
       "devDependencies": {
         "@packages/config": "workspace:*",

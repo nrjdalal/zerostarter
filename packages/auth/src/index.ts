@@ -18,7 +18,6 @@ import {
   openAPI as openAPIPlugin,
   organization as organizationPlugin,
 } from "better-auth/plugins"
-import { eq } from "drizzle-orm"
 
 import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 
@@ -44,28 +43,6 @@ export const auth = betterAuth({
   }),
   onAPIError: {
     throw: true,
-  },
-  databaseHooks: {
-    session: {
-      create: {
-        // Promote configured admin emails to the `admin` role on every sign-in (covers existing accounts, not just sign-up), so setting CONSOLE_ADMIN_EMAILS + re-login grants console access without a manual DB edit.
-        before: async (newSession) => {
-          if (env.CONSOLE_ADMIN_EMAILS.length === 0) return
-          const [u] = await db
-            .select({ email: user.email, emailVerified: user.emailVerified, role: user.role })
-            .from(user)
-            .where(eq(user.id, newSession.userId))
-            .limit(1)
-          if (
-            u?.emailVerified &&
-            u.role !== "admin" &&
-            env.CONSOLE_ADMIN_EMAILS.includes(u.email.toLowerCase())
-          ) {
-            await db.update(user).set({ role: "admin" }).where(eq(user.id, newSession.userId))
-          }
-        },
-      },
-    },
   },
   session: {
     cookieCache: {

@@ -10,11 +10,11 @@ This documentation is private. It is served only inside the access-protected
 
 ## Access
 
-Console access is controlled by the user's `role` (the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin)); only `role === "admin"` may enter `/console`.
+Console access is granted when **either** the user's `role === "admin"` ([Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin)) **or** their verified email is listed in `CONSOLE_ADMIN_EMAILS`.
 
-- **Bootstrap:** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated env var). A matching, email-verified account is promoted to `admin` on **every sign-in**, so adding an email (even for an existing account) and re-logging-in grants access with no manual database edit.
-- **Grant/revoke at runtime:** an existing admin uses the plugin's `setRole` (or `UPDATE "user" SET role = 'admin' WHERE email = '…';`). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
-- The console guard reads the session with `disableCookieCache`, so a role change takes effect on the next `/console` request (it does not wait out the 5-minute `session.cookieCache`). To cut off an account everywhere immediately, ban it or revoke its sessions.
+- **Bootstrap root admins (env):** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated). The gate matches them against the signed-in user's email, so a listed account gets access with no DB write and no re-login. Break-glass for a fresh deploy.
+- **Dashboard-assigned roles (DB):** an admin sets `user.role` via the plugin's `setRole` (or `UPDATE "user" SET role = 'admin' WHERE email = '…';`). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
+- The check runs only on `/console` requests (against the already-loaded session), so normal logins never pay for it. The guard reads the session with `disableCookieCache`, so a role change takes effect on the next request (it does not wait out the 5-minute `session.cookieCache`). To cut off an account everywhere immediately, ban it or revoke its sessions.
 
 ## Sections
 

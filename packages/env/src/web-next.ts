@@ -7,6 +7,16 @@ import { NODE_ENV } from "@/lib/constants"
 export const env = createEnv({
   server: {
     NODE_ENV,
+    CONSOLE_ADMIN_EMAILS: z
+      .string()
+      .optional()
+      .transform((s) =>
+        (s ?? "")
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.email())),
     INTERNAL_API_URL: z.url().optional(),
   },
   clientPrefix: "NEXT_PUBLIC_",
@@ -20,6 +30,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    CONSOLE_ADMIN_EMAILS: process.env.CONSOLE_ADMIN_EMAILS,
     INTERNAL_API_URL: process.env.INTERNAL_API_URL,
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ??

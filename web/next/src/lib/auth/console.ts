@@ -1,12 +1,20 @@
+import { env } from "@packages/env/web-next"
 import { notFound } from "next/navigation"
 
 import { auth } from "@/lib/auth"
 
-// Single source of truth for console access (fail-closed on the user's `admin` role); shared by the layout guard and the gated search route so the rule can't drift.
+// Single source of truth for console access; shared by the layout guard and the gated search route so the rule can't drift.
+// Access is granted to the `admin` role (dashboard-assigned) or to a bootstrap root admin listed in CONSOLE_ADMIN_EMAILS.
+// The check runs only here (on the already-loaded session), so normal logins never pay for it.
 export async function getConsoleSession() {
-  // Bypass the session cookie cache so a role change (e.g. promotion/demotion) takes effect immediately on this privileged gate.
+  // Bypass the session cookie cache so a role change takes effect immediately on this privileged gate.
   const session = await auth.api.getSession({ disableCookieCache: true })
-  return session?.user?.role === "admin" ? session : null
+  const user = session?.user
+  if (!user) return null
+  if (user.role === "admin") return session
+  if (user.emailVerified && env.CONSOLE_ADMIN_EMAILS.includes(user.email.toLowerCase()))
+    return session
+  return null
 }
 
 // Server-side guard for /console: notFound() (never a redirect) for users without access. Layouts and pages render in parallel, so any console page reading sensitive data must gate itself too.
