@@ -1,3 +1,27 @@
+## v0.0.30
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.29...v0.0.30)
+
+### 🚀 Enhancements
+
+- **db:** Auto-apply migrations on canary/production deploys ([#483](https://github.com/nrjdalal/zerostarter/pull/483))
+
+### 💅 Refactors
+
+- **scripts:** Make the shadcn sync self-reconcile every override ([#482](https://github.com/nrjdalal/zerostarter/pull/482))
+- **web:** Extract a SidebarDropdownMenu shell for user-menu + org-switcher ([#8](https://github.com/nrjdalal/zerostarter/pull/8), [#484](https://github.com/nrjdalal/zerostarter/pull/484))
+
+### 🏡 Chore
+
+- **agents:** Adopt dev/tooling skills from cafe fork, drop stale turbo skill ([#476](https://github.com/nrjdalal/zerostarter/pull/476))
+- **web:** Sync shadcn (carousel centering, spinner data-slot) ([#478](https://github.com/nrjdalal/zerostarter/pull/478))
+- Audit remediation (2026-06-19) ([#481](https://github.com/nrjdalal/zerostarter/pull/481))
+- Close out the 2026-06-19 audit; remind to delete branches in merge notice ([#486](https://github.com/nrjdalal/zerostarter/pull/486))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.29
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.28...v0.0.29)

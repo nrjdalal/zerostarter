@@ -24,7 +24,7 @@ export function SidebarUserMenu({ user }: { user: User }) {
 
   const avatar = (
     <Avatar className="size-8 rounded-md after:hidden">
-      <AvatarImage src={user.image ?? ""} alt={user.name} />
+      <AvatarImage src={user.image ?? ""} alt={user.name} className="rounded-md" />
       <AvatarFallback className="rounded-md">{getInitials(user.name)}</AvatarFallback>
     </Avatar>
   )
