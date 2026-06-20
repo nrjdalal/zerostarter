@@ -749,9 +749,9 @@ bun dev`
                 Is it production-ready?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Yes! ZeroStarter is currently in Release Candidate (RC) status. All implemented
-                features are stable and production-ready. We're actively adding new features and
-                integrations day-by-day. The codebase follows best practices and is battle-tested.
+                Yes! All implemented features are stable and production-ready. We're actively adding
+                new features and integrations day-by-day. The codebase follows best practices and is
+                battle-tested.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">

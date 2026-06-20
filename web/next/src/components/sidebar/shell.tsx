@@ -23,7 +23,7 @@ export async function SidebarShell({
   footer,
   children,
 }: {
-  badge: string
+  badge?: string
   homeHref?: string
   header?: React.ReactNode
   nav?: React.ReactNode
@@ -44,9 +44,11 @@ export async function SidebarShell({
               className="flex items-center gap-2 px-1.5 py-2 font-bold group-data-[collapsible=icon]:hidden"
             >
               {site.name}
-              <Badge variant="secondary" className="text-xs">
-                {badge}
-              </Badge>
+              {badge && (
+                <Badge variant="secondary" className="text-xs">
+                  {badge}
+                </Badge>
+              )}
             </Link>{" "}
             <SidebarTrigger variant="secondary" className="bg-sidebar cursor-pointer border" />
           </div>
