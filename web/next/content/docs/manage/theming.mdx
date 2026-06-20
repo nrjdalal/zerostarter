@@ -61,7 +61,7 @@ These variables are consumed by Tailwind utility classes like `bg-background`, `
 
 Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
 
-```ts
+```js
 const config = {
   plugins: {
     "@tailwindcss/postcss": {},
@@ -81,7 +81,7 @@ export default config
 @import "shadcn/tailwind.css";
 ```
 
-It then wires the design tokens to Tailwind v4 via an `@theme inline` block that maps `--color-*` utilities to the `--*` custom properties (background, foreground, primary, card, popover, chart, sidebar, radius, and so on).
+A `@custom-variant dark (&:is(.dark *))` declaration teaches Tailwind to treat the `.dark` class (toggled by `next-themes`) as the trigger for `dark:` utilities. It then wires the design tokens to Tailwind v4 via an `@theme inline` block that maps `--color-*` utilities to the `--*` custom properties (background, foreground, primary, card, popover, chart, sidebar, radius, fonts, and so on).
 
 ## Fonts
 
@@ -92,7 +92,7 @@ Fonts are loaded with `next/font/local` from `.woff2` files in `web/next/src/fon
 - **Caveat**: Handwriting accent font
 - **Newsreader**: Serif accent font
 
-Each exposes a CSS variable (e.g. `--font-dm-sans`). Only DM Sans and JetBrains Mono are wired into Tailwind's font utilities by the `@theme inline` block, which maps `--font-sans: var(--font-dm-sans)` and `--font-mono: var(--font-jetbrains-mono)`. Caveat and Newsreader are exposed as CSS variables (`--font-caveat`, `--font-newsreader`) only, so use them via those variables directly.
+Each exposes a CSS variable (e.g. `--font-dm-sans`). Only DM Sans and JetBrains Mono are wired into Tailwind's font utilities by the `@theme inline` block, which maps `--font-sans: var(--font-dm-sans)`, `--font-mono: var(--font-jetbrains-mono)`, and `--font-heading: var(--font-sans)` (so headings track the sans family unless you repoint it). Caveat and Newsreader are exposed as CSS variables (`--font-caveat`, `--font-newsreader`) only, so use them via those variables directly.
 
 ## Component Styling
 
@@ -123,3 +123,9 @@ import { cn } from "@/lib/utils"
 1. Edit CSS variables in `web/next/src/app/globals.css` for global color changes
 2. Use Tailwind utility classes that reference the CSS variables
 3. Update `components.json` and run `bun run shadcn:update` to regenerate components with a different preset
+
+### Customizations and the shadcn sync
+
+`bun run shadcn:update` wipes the `web/next/src/components/ui/` directory and re-scaffolds it from the shadcn registry, so any hand-edits to files in `ui/` (or registry-controlled lines in `globals.css`) are lost on the next sync. Instead, every local override is re-applied afterward by `.github/scripts/shadcn-customize.ts`, which the sync runs at the end. That script restores files the project owns outright, patches the registry components it extends (button, spinner, sidebar) by shape rather than text, and re-applies the `--font-sans: var(--font-dm-sans), sans-serif` line in `globals.css` via its `patchGlobals` step.
+
+So customizations that must survive a sync belong in (or guarded by) `shadcn-customize.ts`, not hand-edited into `ui/`. Each patch is idempotent and throws if its target is missing, so a registry shape change fails the sync loudly rather than silently dropping an override.

@@ -26,7 +26,7 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 ### Production
 
 - `bun run build`: Build the applications. Runs `turbo run build --summarize` and then `bun .github/scripts/build-sizes.ts`, which reports each workspace's build size after every build. The `web/next` build itself runs `compress-images.ts` first (Sharp and SVGO optimization of `web/next/public`), then the docs generator (`--strict`), then `fumadocs-mdx`, then `next build`.
-- `bun run build:vercel`: Turbo `build:vercel` task used for Vercel deployments (run via `turbo run build:vercel`). The `api/hono` workspace bundles its output with tsdown for the Bun target.
+- `build:vercel`: There is no root `bun run build:vercel` script; it is a Turbo task run via `turbo run build:vercel` during Vercel deployments. In the `api/hono` workspace this first runs `tsdown` (producing `dist/`), then `bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --external hono` to produce the deployed `vercel-bundle/`.
 - `bun run start`: Start the production servers.
 
 ### Database
@@ -35,9 +35,13 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 - `bun run db:migrate`: Run Drizzle migrations.
 - `bun run db:studio`: Open Drizzle Studio to view/edit data.
 
+### Console
+
+- `bun run console:roles`: Manage admin console access by setting a user's `role` (Better Auth `admin` plugin). Runs `bun .github/scripts/console-roles.ts <grant|revoke|list> [email]`: `grant <email>` sets `role = admin` (console access), `revoke <email>` sets `role = user`, and `list` shows the current console admins.
+
 ### Utilities
 
-- `bun run shadcn:update`: Update all shadcn/ui components.
+- `bun run shadcn:update`: Update all shadcn/ui components (runs the update script, then `bun i`).
 - `bun run devtools`: Open Turborepo DevTools.
 - `bun run prepare`: Install git hooks via Lefthook.
 - `bun run postinstall`: Normalize and sort the `catalog:` dependency entries via `bun .github/scripts/deps-manager.ts` (runs automatically after `bun install`).

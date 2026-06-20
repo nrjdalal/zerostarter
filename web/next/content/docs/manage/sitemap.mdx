@@ -36,14 +36,18 @@ The sitemap is implemented in `web/next/src/app/sitemap.ts` and uses:
   - Documentation pages: priority 0.9, weekly updates
   - Blog posts: priority 0.9, monthly updates
 
+The route is `force-static` with `revalidate = 60`, so the generated sitemap is regenerated at most once a minute.
+
 ## Structure
 
 The sitemap includes:
 
 - **Static Routes**: Home page (priority 1.0, weekly updates)
 - **Documentation**: All pages from `docsSource` (priority 0.9, weekly updates)
-- **Blog**: Published posts from `blogSource`, excluding the blog index page (priority 0.9, monthly updates)
+- **Blog**: Published posts from `getPublishedBlogPosts()` (priority 0.9, monthly updates)
 
-Blog entries use `updatedAt` for `lastModified` when present, otherwise `publishedAt`.
+The blog index page is excluded because `getPublishedBlogPosts()` returns only individual published posts (it filters out the `/blog` index), not because `sitemap.ts` does any filtering of its own.
+
+Home and documentation entries set `lastModified` to the build time (`new Date()`). Blog entries use `updatedAt` for `lastModified` when present, otherwise `publishedAt`.
 
 All entries are automatically sorted alphabetically by URL for consistency.

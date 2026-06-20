@@ -10,7 +10,7 @@ We welcome contributions to ZeroStarter! This guide outlines the process for con
 
 ## Contributing
 
-Contributions welcome — any help is appreciated!
+Contributions welcome, any help is appreciated!
 
 - Fork the repo and create a branch (use descriptive names, e.g. `feat/{name}` or `fix/{name}`).
 - Make your changes, add tests if applicable, and run the checks:
@@ -20,12 +20,14 @@ Contributions welcome — any help is appreciated!
   - `bun run format`
   - `bun run lint`
 - Follow the repo conventions documented in `AGENTS.md` (`CLAUDE.md` is a symlink to it): use `@/` imports where applicable, never include "Co-authored-by" in commit messages, and keep comments on a single line.
-- Follow the existing code style and commit message conventions. Commits use [Conventional Commits](https://www.conventionalcommits.org) and are enforced by Commitlint via the `commit-msg` hook, so use one of the nine supported types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`) described in [Code Quality](/docs/manage/code-quality).
+- Follow the existing code style and commit message conventions. Commits use [Conventional Commits](https://www.conventionalcommits.org) and are enforced by Commitlint via the `commit-msg` hook, so use one of the types accepted by `@commitlint/config-conventional` (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`) described in [Code Quality](/docs/manage/code-quality).
 - Open a PR against the `canary` branch (the default development branch) describing the change, motivation, and any migration notes; link related issues.
 - For breaking changes or large features, open an issue first to discuss the approach.
 - By contributing you agree to the MIT license and the project's Code of Conduct.
 
-The dependency audit runs first: `bun audit --audit-level high` is the first pre-commit check (`lefthook.yml`) and the first CI gate (`.github/workflows/auto-check-build.yml`), ahead of build, check-types, format, and lint.
+The dependency audit runs first where it runs: `bun audit --audit-level high` is the first CI gate (`.github/workflows/auto-check-build.yml`), ahead of build, check-types, format, and lint. As a pre-commit check (`lefthook.yml`) it is scoped to the `canary` branch only (`only: ref: canary`), so committing on a feature branch skips it locally; CI runs it regardless.
+
+Merged changes flow from `canary` to `main` through the release process. See [Release Management](/docs/manage/release) for how versions and changelogs are cut.
 
 Thank you for helping improve ZeroStarter!
 

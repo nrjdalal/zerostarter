@@ -6,61 +6,59 @@ description: Pre-defined skills for AI assistants and LLM agents to help with co
 
 ## Overview
 
-ZeroStarter includes a `.agents/skills` directory containing structured instructions for AI assistants and LLM agents. These skills help AI tools like Cursor, GitHub Copilot, and other AI coding assistants perform common tasks correctly and consistently.
+ZeroStarter ships a set of structured skills for AI assistants and LLM agents. Each skill is a directory containing a `SKILL.md`: Markdown with frontmatter metadata, so it is both human-readable and machine-parseable. These skills help AI tools perform common repo tasks correctly and consistently.
 
-Skills are written in Markdown with frontmatter metadata, making them both human-readable and machine-parseable.
+The same 11 skills live in **both** `.agents/skills/` and `.claude/skills/`. Both directories exist and contain the full set (they are mirrored copies). `.claude/skills/` is the conventional Claude Code location; `.agents/skills/` is the tool-agnostic location referenced from `AGENTS.md`.
 
 ## Available Skills
 
-### agent-browser
+| Skill                        | What it does                                                                                                                                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent-browser`              | Browser automation CLI for AI agents: navigate pages, fill forms, click, screenshot, scrape data, test web apps, and automate Electron apps.                                                                                       |
+| `api-endpoint`               | Add a typed Hono API endpoint following repo conventions: router, OpenAPI docs, validation envelope, RPC client wiring. Use when adding or modifying API routes in `api/hono`.                                                     |
+| `audit`                      | Run the dependency security audit and maintain `AUDIT.md`. Use when auditing dependencies, when the pre-commit audit hook fails on canary, or when `bun audit` reports vulnerabilities.                                            |
+| `db-migration`               | Create and apply database schema changes with Drizzle. Use when adding or modifying tables, columns, or indexes in `@packages/db`, or when asked for a migration.                                                                  |
+| `dev`                        | Start, restart, and verify the ZeroStarter dev stack (Next.js on 3000, Hono API on 4000). Use when running the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.                     |
+| `docker-test`                | Build and smoke-test the Docker images with docker compose. Use when touching Dockerfiles, the bundle build, compose config, or anything that changes how containers are packaged.                                                 |
+| `fonts`                      | Add or swap web fonts by fetching latin variable woff2 files from fontsource and localizing them through `next/font/local`. Use when changing brand fonts, adding a font role, or debugging font loading, preload, or CLS.         |
+| `gh-commit`                  | Create atomic commits with conventional commit format. Use when asked to commit, save changes, or create a commit.                                                                                                                 |
+| `github-pull-request-review` | Turn-based PR review with hard role separation, runnable as an async two-session loop or a single-session transcript. The reviewer posts a formal review, the author addresses each finding, alternating until both are satisfied. |
+| `ignore-sync`                | Keep `.dockerignore` in sync with `.gitignore`. Use whenever an entry is added to or removed from `.gitignore`, or when auditing why the Docker build context is bloated.                                                          |
+| `shadcn-sync`                | Run and reconcile the shadcn component sync (`bun run shadcn:update`). Use when refreshing shadcn components, or when a sync regresses a local customization or breaks the build.                                                  |
 
-**Location**: `.agents/skills/agent-browser/SKILL.md` (frontmatter `name: agent-browser`)
+Of these, only `agent-browser` is externally vendored: it is sourced from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) and tracked in the root `skills-lock.json` (with its `source`, `sourceType`, `skillPath`, and `computedHash`) so it can be re-synced and integrity-checked. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. The other 10 skills are repo-authored.
 
-A browser-automation CLI for AI agents: navigate pages, fill forms, click, screenshot, scrape data, test web apps, and even automate Electron apps. It is an external skill vendored from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) and tracked in `skills-lock.json`. The committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI itself with `agent-browser skills get core`.
-
-**Install**: `npm i -g agent-browser && agent-browser install`
-
-### Turbo Build Graph
-
-**Location**: `.agents/skills/turbo/generate-build-graph/SKILL.md` (frontmatter `name: turbo-generate-build-graph`)
-
-Generates a dark-mode-friendly SVG visualization of Turborepo task dependencies.
-
-**Triggers**: When the user asks to "visualize dependencies", "generate a build graph", or "update the pipeline diagram"
-
-**Workflow**:
-
-1. **Generate the raw graph**: emit DOT and render with Graphviz, removing the intermediate file. Requires Graphviz (`brew install graphviz` on macOS):
-
-   ```bash
-   npx turbo run build --graph=graph.dot
-   dot -Tsvg graph.dot -o graph.svg && rm graph.dot
-   ```
-
-2. **Clean up labels**: strip the `[root] ` prefix, the `#build` suffix, and replace the `___ROOT___` placeholder with the project name.
-3. **Style for dark mode**: transparent background with GitHub-blue (`#1f6feb`) nodes and text.
-4. **Move to assets**: save to `.github/assets/graph-build.svg`.
-
-**Output**: a dark-mode-friendly SVG embedded in the README:
-
-```markdown
-![Build Graph](.github/assets/graph-build.svg)
-```
+**Install agent-browser**: `npm i -g agent-browser && agent-browser install`
 
 ## Skill Structure
 
-A skill is a directory (optionally nested under a category) containing a `SKILL.md`:
+Skills sit in a flat layout: each is a directory directly under `.agents/skills/` (and mirrored under `.claude/skills/`), with no category nesting.
 
 ```
 .agents/skills/
 ├── agent-browser/
 │   └── SKILL.md
-└── turbo/
-    └── generate-build-graph/
-        └── SKILL.md
+├── api-endpoint/
+│   └── SKILL.md
+├── audit/
+│   └── SKILL.md
+├── db-migration/
+│   └── SKILL.md
+├── dev/
+│   └── SKILL.md
+├── docker-test/
+│   └── SKILL.md
+├── fonts/
+│   └── SKILL.md
+├── gh-commit/
+│   └── SKILL.md
+├── github-pull-request-review/
+│   └── SKILL.md
+├── ignore-sync/
+│   └── SKILL.md
+└── shadcn-sync/
+    └── SKILL.md
 ```
-
-Externally-sourced skills like `agent-browser` are recorded in the root `skills-lock.json` with their `source`, `sourceType`, `skillPath`, and `computedHash`, so they can be re-synced and integrity-checked. There is no committed install script; the lock file is the source of record.
 
 ### SKILL.md Format
 
@@ -81,7 +79,6 @@ Description of the skill.
 ```bash
 command to run
 ```
-````
 
 - Notes about this step
 - Important considerations
@@ -89,65 +86,62 @@ command to run
 ### 2. Second Step
 
 ...
-
 ````
 
 ## Creating Custom Skills
 
 To create a new skill:
 
-1. Create a directory: `.agents/skills/<category>/<skill-name>/`
+1. Create a directory: `.agents/skills/<skill-name>/`
 2. Add a `SKILL.md` file with:
    - Frontmatter with `name` and `description`
    - Clear workflow steps
    - Code examples with commands
    - Notes and edge cases
+3. Mirror it into `.claude/skills/<skill-name>/` so Claude Code picks it up too.
 
 **Example Custom Skill**:
 
-```markdown
+````markdown
 ---
-name: db-migration
-description: Creates and runs database migrations. Use when user asks to update database schema.
+name: deploy-preview
+description: Deploys a preview build to the staging environment. Use when the user asks to ship a preview.
 ---
 
-# Database Migration
+# Deploy Preview
 
-Creates type-safe database migrations with Drizzle.
+Builds and pushes a preview deployment.
 
 ## Workflow
 
-### 1. Create Migration
+### 1. Build
 
 ```bash
-bun run db:generate
-````
-
-### 2. Review Migration
-
-Check the generated SQL in `packages/db/drizzle/`
-
-### 3. Apply Migration
-
-```bash
-bun run db:migrate
+bun run build
 ```
 
+### 2. Deploy
+
+```bash
+bun run deploy:preview
+```
 ````
 
 ## Integration with AI Tools
 
+### Claude Code
+
+Skills in `.claude/skills/` are picked up automatically. The mirrored copies in `.agents/skills/` keep the set available to other tools.
+
 ### Cursor
 
-Skills in `.agents/skills/` are automatically available to Cursor's AI assistant when referenced in `AGENTS.md`:
+Skills are available to Cursor's AI assistant when referenced from `AGENTS.md`:
 
 ```markdown
 ## Skills
 
 This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.
 ```
-
-Today the skills live in `.agents/skills`; `.claude/skills` is the conventional Claude Code location and is picked up automatically if you add it.
 
 ### GitHub Copilot
 
@@ -163,5 +157,5 @@ The structured format makes skills easy to parse programmatically for custom AI 
 - **Include examples**: Show expected inputs and outputs
 - **Document edge cases**: Handle errors and special situations
 - **Use standard commands**: Prefer project scripts over raw commands
+- **Keep both copies in sync**: Mirror changes across `.agents/skills` and `.claude/skills`
 - **Version control**: Skills evolve with the project
-````

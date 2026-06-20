@@ -8,8 +8,8 @@ description: Configure and manage user feedback collection.
 
 ZeroStarter includes optional integration for collecting user feedback. When configured, feedback links appear in two locations:
 
-1. **Docs Sidebar Footer**: A feedback link appears in the docs sidebar footer
-2. **Dashboard User Menu**: A feedback option appears in the user dropdown menu in the dashboard sidebar
+1. **Docs Sidebar Footer**: A feedback link appears in the docs sidebar footer, alongside the app version (`v{version}`)
+2. **Dashboard User Menu**: A feedback option appears in the user dropdown menu in the dashboard sidebar, directly above "Log out"
 
 Both locations allow users to submit feedback and only appear when the feedback URL is configured.
 
@@ -20,9 +20,11 @@ Both locations allow users to submit feedback and only appear when the feedback 
 Add your feedback URL to your `.env` file:
 
 ```
-# Optional: Manage user feedback `https://zerostarter.dev/docs/manage/feedback`
+# Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
 NEXT_PUBLIC_USERJOT_URL=
 ```
+
+The variable maps to [UserJot](https://userjot.com) by default (hence the name), but it accepts any feedback URL: set it to whatever destination you want the links to open.
 
 ### 2. Environment Configuration
 
@@ -38,8 +40,8 @@ The feedback links will automatically appear in both locations when `NEXT_PUBLIC
 
 ## Features
 
-- **Docs Sidebar Footer**: Feedback link appears in the docs sidebar footer
-- **Dashboard User Menu**: Feedback option appears in the user dropdown menu (between user info and logout)
+- **Docs Sidebar Footer**: Feedback link appears in the docs sidebar footer, with `v{version}` shown next to it. When feedback is unset, the footer still shows just the version.
+- **Dashboard User Menu**: Feedback option appears in the user dropdown menu, directly above "Log out". The user's identity (avatar, name, email) is the dropdown trigger and header; there is no separate user-info menu row between the items.
 - **Optional**: Only loads when `NEXT_PUBLIC_USERJOT_URL` is configured
 - **External Link**: Opens feedback URL in a new tab
 

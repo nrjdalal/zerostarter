@@ -38,14 +38,14 @@ Defined in `.vscode/settings.json`:
 The Oxc extension reads the project's root config files, so editor and CLI behavior match:
 
 - `.oxlintrc.jsonc`: Oxlint rules
-- `.oxfmtrc.jsonc`: Oxfmt formatting (no semicolons, sorted imports, Tailwind class sorting)
+- `.oxfmtrc.jsonc`: Oxfmt formatting (no semicolons, sorted imports, Tailwind class sorting); it ignores `.agents/**` and `.claude/**`, so the AI skill docs are left untouched.
 
 You can also run them from the terminal without VS Code:
 
 ```bash
 bun run format        # format the tree with Oxfmt
 bun run format:check  # check formatting without writing
-bunx oxlint           # lint the tree with Oxlint
+bun run lint          # lint the tree with Oxlint
 ```
 
 See [Code Quality](/docs/manage/code-quality) for how these run automatically on commit.

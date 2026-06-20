@@ -8,6 +8,16 @@ description: Secrets Management on Autopilot.
 
 All-in-one platform to securely manage application configuration and secrets across your team and infrastructure. Used by Fortune 500 enterprises, international governments, and fastest-growing startups. Save time and boost security.
 
+## How ZeroStarter uses Infisical
+
+The repo ships a committed `.infisical.json` at the root that records the `workspaceId` linking this checkout to an Infisical project. With it in place, `infisical export` can write the root `.env` (or stage-specific `.env.<stage>`) files that the `@packages/env/*` modules then validate at runtime. Infisical is the source of secrets; the `.env` files are the local artifact those secrets land in.
+
+```sh
+infisical export --env=dev --output-file=./.env
+```
+
+This is optional: if you populate the `.env` files another way, ZeroStarter runs the same. The sections below cover installing and using the CLI.
+
 ## Self-Hosting
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/infisical-resend?referralCode=nrjdalal&utm_medium=integration&utm_source=template&utm_campaign=generic)
@@ -54,7 +64,7 @@ infisical init
 
 Link a local project to your Infisical project. Once connected, you can then access the secrets locally from the connected Infisical project.
 
-> This command creates a `.infisical.json` file containing your Project ID.
+> This command creates a `.infisical.json` file containing your `workspaceId`.
 
 ### Export
 
@@ -65,7 +75,7 @@ infisical export --env=dev --output-file=./.env.development
 ```
 
 - `--env`: The environment to export secrets for, defaults to `dev`. Can be one of: `dev`, `staging`, `prod`.
-- `--projectId`: By default the project id is retrieved from the `.infisical.json` located at the root of your local project. This flag allows you to override this behavior by explicitly defining the project to fetch your secrets from.
+- `--projectId`: By default the project (the `workspaceId`) is retrieved from the `.infisical.json` located at the root of your local project. This flag allows you to override this behavior by explicitly defining the project to fetch your secrets from.
 
 ### Read more
 

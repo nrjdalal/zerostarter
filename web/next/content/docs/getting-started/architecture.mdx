@@ -13,19 +13,23 @@ ZeroStarter is built with a modern, type-safe tech stack designed for high perfo
 ![Graph Build](/graph-build.svg)
 
 - **Runtime & Build System**: [Bun](https://bun.sh) + [Turborepo](https://turbo.build)
-- **Frontend**: [Next.js 16](https://nextjs.org)
+- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, bundled by Turbopack)
 - **Backend**: [Hono](https://hono.dev)
 - **RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end type safety with frontend client
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.com)
+- **Authentication**: [Better Auth](https://better-auth.com) with organizations, teams, and an `admin` plugin
+- **Admin Console**: `/console` route group gated by `role === "admin"` (Better Auth `admin` plugin)
+- **Rate Limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com) for IP detection
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
 - **Styling**: [Tailwind CSS](https://tailwindcss.com)
-- **UI Components**: [Shadcn UI](https://ui.shadcn.com)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com) built on [Base UI](https://base-ui.com) primitives
 - **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
+- **Forms**: [TanStack Form](https://tanstack.com/form/latest)
 - **Validation**: [Zod](https://zod.dev)
-- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
-- **API Documentation**: [Scalar](https://scalar.com) with auto-generated OpenAPI spec at `/api/docs`
-- **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
+- **Dynamic OG Images**: [takumi-js](https://github.com/kane50613/takumi) for Open Graph image generation
+- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev) (bundles the backend packages), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
+- **API Documentation**: [Scalar](https://scalar.com) UI at `/api/docs`, served from the auto-generated OpenAPI spec at `/api/openapi.json`
+- **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt) and [llms-full.txt](https://zerostarter.dev/llms-full.txt)
 - **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
 
 ### Roadmap

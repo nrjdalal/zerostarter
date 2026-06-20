@@ -35,15 +35,25 @@ docs: {
 A generator (`.github/scripts/docs.ts`) runs inside the `web/next` build and dev. From `docs.config.ts` it:
 
 - writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
-- generates `content/docs/meta.json` (reading order + prev/next), which is **git-ignored — never edit it by hand**;
+- generates `content/docs/meta.json` (reading order + prev/next), which is **git-ignored, never edit it by hand**;
 - scaffolds a stub MDX in dev for any page declared in the config but missing on disk;
 - fails the build under `--strict` if the config and files have drifted, with a hint to re-run the generator.
 
 ## Creating a page
 
 1. Add an entry under the right group in `web/next/docs.config.ts`, keyed by the page URL (e.g. `"/docs/manage/my-page"`), with its `title` and `description`.
-2. Run the dev server (or `bun .github/scripts/docs.ts`) — it scaffolds `content/docs/manage/my-page.mdx` with the frontmatter filled in.
+2. Run the dev server (or `bun .github/scripts/docs.ts`): it scaffolds `content/docs/manage/my-page.mdx` with the frontmatter filled in.
 3. Write the body. Leave the frontmatter and `meta.json` alone; both are regenerated from the config.
+
+## Collections
+
+`web/next/source.config.ts` defines three Fumadocs collections, not just `docs`/`console`:
+
+- `docs` (`content/docs/`): the public documentation, indexed by search, sitemap, and `llms.txt`.
+- `blog` (`content/blog/`): the public blog (see [Blog](/docs/manage/blog)).
+- `consoleDocs` (`content/console/docs/`): private docs served only under the access-protected `/console` area.
+
+The `console` collection is private by construction: its source (`consoleSource` in `web/next/src/lib/source.ts`) is intentionally not referenced by any public route, so it is excluded from public search, the sitemap, and `llms.txt`. `docs.config.ts` maps the `docs` and `console` collections to ordered sidebar groups.
 
 ## Configuration
 
@@ -82,7 +92,7 @@ export const { GET } = createFromSource(docsSource, {
 })
 ```
 
-Only the docs source is indexed; the blog is not part of search. Because this is a real Next.js route handler, it takes precedence over the generic `/api/:path*` rewrite in `next.config.ts` (which forwards the rest of `/api/*` to the backend), so no dedicated search rewrite is needed.
+Only the docs source is indexed; the blog and the private `console` docs are not part of search. Because this is a real Next.js route handler, it takes precedence over the generic `/api/:path*` rewrite in `next.config.ts` (which forwards the rest of `/api/*` to the backend), so no dedicated search rewrite is needed.
 
 ### Keyboard Shortcut
 
