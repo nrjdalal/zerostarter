@@ -46,7 +46,7 @@ const docsConfig = {
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: `Planned features and integrations for ${site.name}. These features are NOT currently implemented.`,
+          description: `What ${site.name} ships today, plus the integrations planned on the roadmap.`,
         },
       },
     ],
