@@ -26,21 +26,22 @@ Grounded in two studies: the verified swap manifest (exact files/lines), and the
 
 The CLI mirrors inscope so it matches the author's established taste and reuses the same toolchain as zerostarter:
 
-- **Zero runtime dependencies.** Arg parsing via `node:util` `parseArgs` + a hand-rolled top-level `switch` dispatch. Interactive prompts hand-rolled on `node:readline` (a `_prompt.ts` with text/confirm/hidden/selectOne/selectMany). TTY-gated ANSI color, no chalk.
+- **Almost zero runtime deps.** Arg parsing via `node:util` `parseArgs` + a hand-rolled `switch` dispatch; prompts hand-rolled on `node:readline`; TTY-gated ANSI color, no chalk. The one runtime dependency is **ts-morph**, for AST-precise edits of TS files (the same tool zerostarter uses in `shadcn-customize.ts`); JSON files (`package.json`, `.infisical.json`) are edited by parse and re-serialize.
 - **Single unscoped bin**, pure ESM (`"type": "module"`), `#!/usr/bin/env node` shebang authored in the bin entry. Dual-purpose: a `bin` and an importable `exports` library.
 - **Build with tsdown** (two configs: library entry + bin entry), minified ESM into `dist/`, Node target, Bun for dev.
 - **Toolchain identical to zerostarter and inscope**: oxlint, oxfmt, lefthook, commitlint + config-conventional, changelogen, conventional commits, manual version bump then CI publish + tag.
 - **Reused patterns**: pure-render + apply generators with golden snapshot tests; atomic writes (temp + rename, preserve mode); flags-vs-interactive gating (a provided flag suppresses its prompt; `-y` and non-TTY force defaults); a read-only `--dry-run`/`diff` preview; a `doctor` health check; "Next steps" output after every mutating run.
-- **Scaffolder additions inscope lacks** (we add): fetching the template (gitpick), `git init`, template-tree copying, and the find/replace pass.
+- **Scaffolder additions inscope lacks** (we add): fetching the template (gitpick), `git init`, ts-morph edits for TS files, dropping bundled text templates for the stripped surfaces, and a final scoped find/replace.
 
 ## 4. Distribution and repo
 
-- A **separate published npm package** in its own repo (like inscope), not a workspace inside zerostarter.
-- Why separate: zerostarter stays a clean template; the CLI is an external tool; `init` even removes the `init` skill from the fork. Bundling CLI source in zerostarter's tree would ship the CLI into every fork and complicate the strip.
+- A workspace **inside the zerostarter monorepo at `packages/cli`** (package name `zerostarter`), picked up by the existing `packages/*` glob (no `workspaces` change), and published to npm from there.
+- Why in-repo: the CLI's swap manifest is tightly coupled to zerostarter's file layout, so co-locating them means one PR updates the template and the CLI together (no drift, the same reason the `init`/`fork-sync` skills live in-repo). It reuses the monorepo's catalog, shared TS/tsdown configs, lint/format, and CI.
+- It ships in a fresh gitpick like the skills do, and `init` strips `packages/cli` from a converted fork (forks invoke the published `bunx zerostarter`, not the source). The npm package version is independent of the site/template version.
 
 ## 5. The conversion engine (verified swap manifest)
 
-Four classes of work. Structured per-file edits (Class 1) carry the load-bearing config; content/assets/meta are deletes + template drops + a final find/replace for stragglers.
+Four classes of work. Class 1 edits the load-bearing config in place: TS files (`site.ts`, the navbar entry) via **ts-morph** (navigate to the node, set its value, leave the rest untouched), JSON files by parse and re-serialize. Content, assets, and meta are deletes plus bundled-template drops plus a final scoped find/replace for stragglers.
 
 ### Class 1: mechanical swaps (deterministic from a few prompt answers)
 
@@ -102,7 +103,7 @@ So `init` is essentially: `zerostarter init my-product`, and you get a building,
 
 ## 7. Templates the CLI ships
 
-So the converted tree still builds, the CLI carries minimal templates it drops in after stripping: a generic `page.tsx` home, a minimal `README.md`, `docs/index.mdx`, a genericized `blog/index.mdx`, and an optional placeholder `og/home.png`/`favicon.ico`. These are rendered from the input and placeholder values (pure-render functions, golden-snapshot tested).
+So the converted tree still builds, the CLI bundles ready text templates under `templates/` and drops them straight in to replace the stripped surfaces: a generic `page.tsx` home, a minimal `README.md`, `docs/index.mdx`, a genericized `blog/index.mdx`, and a placeholder `og/home.png`/`favicon.ico`. A couple of hold-points (the project name, the repo URL) are filled from the input; the rest is static text the user edits later. The templates are golden-snapshot tested.
 
 ## 8. Init flow
 
@@ -120,12 +121,12 @@ So the converted tree still builds, the CLI carries minimal templates it drops i
 ## 9. Package layout (mirroring inscope)
 
 ```
-zerostarter/                      (its own repo)
+packages/cli/                     (workspace in the zerostarter monorepo)
   bin/
     index.ts                      shebang + parseArgs dispatch + help/version
     commands/{init,sync,doctor}.ts
-    _prompt.ts                    text/confirm/select primitives (node:readline)
-    _git.ts                       fetch (gitpick), git init, remote parse
+    commands/_prompt.ts           text/confirm/select primitives (node:readline)
+    commands/_git.ts              fetch (gitpick), git init, remote parse  (P1+)
   src/
     manifest.ts                   the swap manifest as data (files, ops, prompt-var map)
     prompts.ts                    gather + detect + validate inputs
