@@ -9,6 +9,11 @@ export const site = {
     x: "https://x.com/nrjdalal",
     discord: "https://discord.gg/38FeAUmHSZ",
   },
+  // Local-only dev agent identity (api/hono agents router).
+  agent: {
+    name: "AgentZero",
+    email: "agent@zerostarter.dev",
+  },
 } as const
 
 export type Site = typeof site

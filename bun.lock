@@ -31,6 +31,7 @@
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
         "@packages/auth": "workspace:*",
+        "@packages/config": "workspace:*",
         "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
@@ -42,7 +43,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "concurrently": "catalog:",
