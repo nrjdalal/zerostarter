@@ -40,7 +40,7 @@ Net: of ~35 content pages the vast majority STRIP; anchors = 1 doc + 1 blog + 1 
 
 Name/description/URL bits are config-driven (from `site` + env) and auto-rebrand. But one surface carries hardcoded **starter dev-meta** a product fork must NOT expose:
 
-- `(llms.txt)/llms-full.txt/route.ts` — **~85-line hardcoded preamble**: monorepo structure, workspace import examples, canonical tech stack, and project rules (no-semicolons, Drizzle migrations, env conventions). This is starter onboarding meta — fine on `zerostarter.dev` (a dev tool), wrong for a product's `llms-full`. **INIT: replace with a minimal product header** (`site.name`/`site.description` + the scanned docs/blog). Largely redundant anyway with the architecture/project-structure docs already scanned in. NOT config to centralize — strip/replace at init.
+- `(llms.txt)/llms-full.txt/route.ts` — the ~85-line preamble (monorepo layout, workspace imports, tech stack, project rules) is now **extracted to `site.llmsFullPreamble`** (injectable) and rewritten to match the current stack. A fork overrides it via config (set its own, or empty it) rather than editing route code. Likewise the OpenAPI reference description → `site.apiReferenceDescription`. So these are config-injectable now, not route edits.
 - `(llms.txt)/llms.txt/[[...slug]]/route.ts` — header + index; name/description from `site`. Generic structure, KEEP (config-driven).
 - `web/next/src/lib/llms.ts` — `getLLMText` wrapper. Generic, KEEP.
 - `web/next/src/app/sitemap.ts`, `web/next/src/app/robots.ts` — `config.app.url` + doc/blog URLs. Config-driven, KEEP.
