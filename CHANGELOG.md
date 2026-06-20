@@ -1,3 +1,19 @@
+## v0.0.36
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.35...v0.0.36)
+
+### 📖 Documentation
+
+- Rewrite the documentation from a thorough code audit ([#499](https://github.com/nrjdalal/zerostarter/pull/499))
+
+### 🏡 Chore
+
+- Prune dead code surfaced by the audit ([#498](https://github.com/nrjdalal/zerostarter/pull/498))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.35
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.34...v0.0.35)
