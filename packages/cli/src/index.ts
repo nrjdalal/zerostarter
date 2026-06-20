@@ -1,2 +1,3 @@
-// Library surface for the zerostarter CLI; the conversion engine will be exported here (P2+).
-export const VERSION = "0.0.0"
+export { convertRepo } from "@/convert"
+export { brandScan, type ScanHit } from "@/scan"
+export type { Brand } from "@/templates"

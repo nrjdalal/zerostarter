@@ -1,6 +1,10 @@
 import { existsSync, readdirSync } from "node:fs"
-import { basename, resolve } from "node:path"
+import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
+
+import { convertRepo } from "@/convert"
+import { detectRepo, fetchZerostarter, gitInit } from "@/git"
+import { exists } from "@/io"
 
 import { promptText } from "./_prompt"
 
@@ -8,27 +12,34 @@ const helpMessage = `Usage:
   $ zerostarter init [dir] [options]
 
 Scaffold zerostarter into dir (default .) and convert it into a clean product.
-The dir name becomes the project name; everything else is left as a placeholder
-to fill in later.
+The dir name becomes the project name; everything else is left as a TODO
+placeholder to fill in later. If the dir already holds a zerostarter clone it is
+converted in place; otherwise the latest zerostarter is fetched into it first.
 
 Options:
   -y, --yes      Skip prompts; fail instead of prompting when input is needed
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
 
-const isEmptyDir = (dir: string): boolean => {
-  if (!existsSync(dir)) return true
-  return readdirSync(dir).filter((f) => f !== ".git").length === 0
-}
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "app"
+
+const isEmptyDir = (dir: string): boolean =>
+  !existsSync(dir) || readdirSync(dir).filter((f) => f !== ".git").length === 0
+
+const isZerostarter = (dir: string): boolean => exists(join(dir, "packages/config/src/site.ts"))
 
 export const init = async (argv: string[]) => {
-  const { values, positionals } = parseArgs({
-    args: argv,
+  const { positionals, values } = parseArgs({
     allowPositionals: true,
+    args: argv,
     options: {
-      yes: { type: "boolean", short: "y" },
       "dry-run": { type: "boolean" },
-      help: { type: "boolean", short: "h" },
+      help: { short: "h", type: "boolean" },
+      yes: { short: "y", type: "boolean" },
     },
   })
 
@@ -40,25 +51,55 @@ export const init = async (argv: string[]) => {
   const interactive = Boolean(process.stdout.isTTY) && !values.yes
 
   let dir = positionals[0] ?? "."
+  const firstTarget = resolve(dir)
+  const convertInPlace = isZerostarter(firstTarget)
 
-  // Guard a non-empty current dir: prompt for a dir name rather than scaffolding over existing files.
-  if (dir === "." && !isEmptyDir(".")) {
+  if (!convertInPlace && !isEmptyDir(firstTarget)) {
     if (!interactive) {
       throw new Error(
-        "Current directory is not empty. Pass a target dir, for example: zerostarter init my-product",
+        "Target directory is not empty. Pass an empty target dir, for example: zerostarter init my-product",
       )
     }
-    const answer = await promptText("Current directory is not empty. New project directory")
+    const answer = await promptText("Target directory is not empty. New project directory")
     if (!answer) throw new Error("No directory name provided.")
     dir = answer
   }
 
   const target = resolve(dir)
-  const projectName = basename(target)
+  const name = basename(target)
+  const detected = detectRepo(exists(target) ? target : process.cwd())
+  const brand = {
+    name,
+    owner: detected?.owner ?? "your-org",
+    repo: detected?.repo ?? slugify(name),
+  }
 
-  // TODO(P1+): fetch zerostarter into the target, then run the conversion engine.
-  console.log(`zerostarter init${values["dry-run"] ? " (dry run)" : ""}`)
-  console.log(`  target: ${target}`)
-  console.log(`  name:   ${projectName}`)
-  console.log(`  engine: not implemented yet (P0 skeleton)`)
+  if (values["dry-run"]) {
+    console.log("zerostarter init (dry run)")
+    console.log(`  target: ${target}`)
+    console.log(`  name:   ${name}  (${brand.owner}/${brand.repo})`)
+    console.log(`  mode:   ${isZerostarter(target) ? "convert in place" : "fetch + convert"}`)
+    return
+  }
+
+  if (!isZerostarter(target)) {
+    console.log(`Fetching zerostarter into ${target} ...`)
+    fetchZerostarter(target)
+  }
+
+  console.log("Converting to a clean product ...")
+  convertRepo(target, brand)
+
+  if (!exists(join(target, ".git"))) {
+    gitInit(target, "chore: initialize from zerostarter")
+  }
+
+  console.log("\nDone. Next steps:")
+  console.log(`  cd ${dir}`)
+  console.log(
+    "  # fill the TODO placeholders in packages/config/src/site.ts, package.json, README.md",
+  )
+  console.log("  bun install")
+  console.log("  cp .env.example .env   # then set your values")
+  console.log("  bun dev")
 }

@@ -72,6 +72,9 @@
       "bin": {
         "zerostarter": "dist/bin/index.mjs",
       },
+      "dependencies": {
+        "ts-morph": "catalog:",
+      },
       "devDependencies": {
         "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
