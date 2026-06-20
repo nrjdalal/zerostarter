@@ -14,20 +14,27 @@ Marker sweep used: `zerostarter | nrjdalal | neeraj | dalal | agentzero | discor
 - `web/next/src/app/hire/page.tsx` — personal "hire me" page. DELETE.
 - `web/next/src/app/resume/page.tsx` — personal résumé; hardcodes personal repos (rdt-li, shadcn-ui-snippets, smart-registry, onset, karabiner-human-config, gitpick) + bio. DELETE.
 
-## C. Blog content — STRIP (keep ≥1 generic anchor)
+## C. Blog content — STRIP all, keep 1 format anchor
 
-- `web/next/content/blog/a-biography-written-in-code.mdx` (personal) — DELETE.
-- `web/next/content/blog/mcp-per-workspace.mdx` (personal/tooling) — DELETE.
-- `web/next/content/blog/web-development-2026.mdx` (opinion) — DELETE.
-- `web/next/content/blog/index.mdx` — blog landing copy — GENERICIZE.
-- `web/next/content/blog/meta.json` — lists the 3 posts — UPDATE to anchor set.
-- `web/next/public/blog/mcp-per-workspace/images/{chpwd-flow,gh-account-clash,scope-by-path}.svg` — DELETE with the post.
+All posts are personal/starter content; a product writes its own.
 
-## D. Docs content — KEEP (generic starter docs) but DE-BRAND naming/URLs
+- `a-biography-written-in-code.mdx` — the author's personal essay. STRIP.
+- `web-development-2026.mdx` — opinion piece + heavy ZeroStarter promo. STRIP.
+- `mcp-per-workspace.mdx` — long-form technical post. **ANCHOR** (best blog format template: sections, SVG diagrams, code, numbered steps); keep structure, replace content. Its `public/blog/mcp-per-workspace/images/*.svg` ride along until the content is replaced.
+- `blog/index.mdx` — landing copy → GENERICIZE. `blog/meta.json` — UPDATE to the anchor set.
 
-- `web/next/docs.config.ts` — SINGLE SOURCE of docs titles/descriptions; 9 "ZeroStarter" refs (index, architecture, project-structure, setup, roadmap, docker, contributing, console intro). De-brand/template here; it syncs into MDX frontmatter via `.github/scripts/docs.ts`.
-- `web/next/content/docs/**/*.mdx` — generic starter docs that NAME ZeroStarter / `zerostarter.dev` / repo URLs in prose. Highest: `deployment/docker.mdx` (11), `getting-started/setup.mdx` (7), `getting-started/{roadmap,architecture}.mdx` (4), `contributing.mdx` (4), `resources/ide-setup.mdx` (3), `manage/authentication.mdx` (3), `deployment/vercel.mdx` (3); plus ~1 each across most `manage/*`. KEEP content, scrub naming/links.
-- `web/next/content/console/docs/{index,runbooks/incident-response}.mdx` + `meta.json` — "ZeroStarter admin console". KEEP, de-brand.
+## D. Docs content — STRIP (starter/dev-meta), keep 1 format anchor
+
+Re-audited through the product lens (subagent classification, tightened): ~all docs document the STARTER's own stack / tooling / setup / wiring (self-documenting). A product publishes ITS OWN docs, so the init strips the starter docs and keeps one as a format anchor. Matches the fork-sync "drop starter docs, keep one sample" rule. **NOT keep-and-de-brand as I first assumed.**
+
+- `web/next/docs.config.ts` — docs structure + metadata source (now reads `site.name`, so naming auto-rebrands). The init regenerates the structure for the product's own doc set.
+- `getting-started/*` (architecture, project-structure, setup, scripts, type-safe-api, roadmap) — the starter's structure/setup/stack. STRIP.
+- `manage/*` (16: auth, database, dashboard, api-conventions, environment, code-quality, blog, documentation, release, og-images, llms-txt, robots, sitemap, analytics, feedback, theming) — the starter's subsystem wiring/tooling. STRIP. (`analytics` / `feedback` / `theming` / `resources/infisical` are generic-integration guides a fork MAY retain as INTERNAL dev reference, but default-strip from public docs.)
+- `deployment/{docker,vercel}.mdx` (starter-specific deploy), `resources/{ai-skills,ide-setup,infisical}.mdx` (starter dev resources), `contributing.mdx` (contributing to the starter) — STRIP.
+- `docs/index.mdx` — docs landing. **ANCHOR** (keep one doc as the product's docs entry / format template; content replaced).
+- Console: `console/docs/index.mdx` — STRIP; `runbooks/incident-response.mdx` — **ANCHOR** (generic runbook template); `meta.json` — UPDATE.
+
+Net: of ~35 content pages the vast majority STRIP; anchors = 1 doc + 1 blog + 1 console runbook; no meaningful default-KEEP (the looser "generic integration" docs are at most optional internal dev reference).
 
 ## E. Dynamic content surfaces — mostly config-driven, EXCEPT a hardcoded starter-meta preamble
 
