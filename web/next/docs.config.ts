@@ -1,3 +1,5 @@
+import { site } from "@packages/config/site"
+
 import type { DocsConfig } from "./src/lib/docs/types"
 
 // Single source of truth for docs structure and metadata. Groups are ordered arrays; each item is a single-key record keyed by a page URL (value = metadata) or a subgroup label (value = nested items). Keys are literal URLs ("/docs" = the docs index).
@@ -8,20 +10,19 @@ const docsConfig = {
       {
         "/docs": {
           title: "Introduction",
-          description:
-            "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
+          description: site.description,
         },
       },
       {
         "/docs/getting-started/architecture": {
           title: "Architecture",
-          description: "Learn about the architecture and tech stack used in ZeroStarter.",
+          description: `Learn about the architecture and tech stack used in ${site.name}.`,
         },
       },
       {
         "/docs/getting-started/project-structure": {
           title: "Project Structure",
-          description: "Understand the monorepo structure and organization of ZeroStarter.",
+          description: `Understand the monorepo structure and organization of ${site.name}.`,
         },
       },
       {
@@ -33,7 +34,7 @@ const docsConfig = {
       {
         "/docs/getting-started/setup": {
           title: "Setup",
-          description: "Step-by-step guide to install and set up ZeroStarter.",
+          description: `Step-by-step guide to install and set up ${site.name}.`,
         },
       },
       {
@@ -45,8 +46,7 @@ const docsConfig = {
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description:
-            "Planned features and integrations for ZeroStarter. These features are NOT currently implemented.",
+          description: `Planned features and integrations for ${site.name}. These features are NOT currently implemented.`,
         },
       },
     ],
@@ -194,7 +194,7 @@ const docsConfig = {
       {
         "/docs/deployment/docker": {
           title: "Docker Deployment",
-          description: "Deploy ZeroStarter with Docker and Docker Compose.",
+          description: `Deploy ${site.name} with Docker and Docker Compose.`,
           label: "Docker",
         },
       },
@@ -217,7 +217,7 @@ const docsConfig = {
       {
         "/docs/resources/ide-setup": {
           title: "IDE Setup",
-          description: "Recommended IDE configuration for ZeroStarter.",
+          description: `Recommended IDE configuration for ${site.name}.`,
         },
       },
       {
@@ -231,7 +231,7 @@ const docsConfig = {
       {
         "/docs/contributing": {
           title: "Contributing",
-          description: "Guidelines for contributing to ZeroStarter.",
+          description: `Guidelines for contributing to ${site.name}.`,
         },
       },
     ],
@@ -241,7 +241,7 @@ const docsConfig = {
       {
         "/console/docs": {
           title: "Introduction",
-          description: "Private internal documentation for the ZeroStarter admin console.",
+          description: `Private internal documentation for the ${site.name} admin console.`,
         },
       },
     ],
