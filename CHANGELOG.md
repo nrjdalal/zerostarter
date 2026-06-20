@@ -1,3 +1,15 @@
+## v0.0.35
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.34...v0.0.35)
+
+### 📖 Documentation
+
+- Rewrite the README and reorder the landing features ([#495](https://github.com/nrjdalal/zerostarter/pull/495))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.34
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.33...v0.0.34)
