@@ -12,9 +12,9 @@ This documentation is private. It is served only inside the access-protected
 
 Console access is controlled by the user's `role` (the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin)); only `role === "admin"` may enter `/console`.
 
-- **Bootstrap:** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated env var). A matching, email-verified account is promoted to `admin` on sign-up — no manual database edit needed on a fresh deploy.
+- **Bootstrap:** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated env var). A matching, email-verified account is promoted to `admin` on **every sign-in**, so adding an email (even for an existing account) and re-logging-in grants access with no manual database edit.
 - **Grant/revoke at runtime:** an existing admin uses the plugin's `setRole` (or `UPDATE "user" SET role = 'admin' WHERE email = '…';`). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
-- Sessions are cached for up to 5 minutes (`session.cookieCache`), so a role change can take up to ~5 minutes to take effect (or until the user signs in again). To cut off an account immediately, ban it or revoke its sessions rather than only changing `role`.
+- The console guard reads the session with `disableCookieCache`, so a role change takes effect on the next `/console` request (it does not wait out the 5-minute `session.cookieCache`). To cut off an account everywhere immediately, ban it or revoke its sessions.
 
 ## Sections
 

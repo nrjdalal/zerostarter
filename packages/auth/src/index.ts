@@ -46,15 +46,22 @@ export const auth = betterAuth({
     throw: true,
   },
   databaseHooks: {
-    user: {
+    session: {
       create: {
-        // Promote the configured root admin to the `admin` role on first sign-up, so a fresh deploy gets console access without a manual DB edit.
-        after: async (createdUser) => {
+        // Promote configured admin emails to the `admin` role on every sign-in (covers existing accounts, not just sign-up), so setting CONSOLE_ADMIN_EMAILS + re-login grants console access without a manual DB edit.
+        before: async (newSession) => {
+          if (env.CONSOLE_ADMIN_EMAILS.length === 0) return
+          const [u] = await db
+            .select({ email: user.email, emailVerified: user.emailVerified, role: user.role })
+            .from(user)
+            .where(eq(user.id, newSession.userId))
+            .limit(1)
           if (
-            createdUser.emailVerified &&
-            env.CONSOLE_ADMIN_EMAILS.includes(createdUser.email.toLowerCase())
+            u?.emailVerified &&
+            u.role !== "admin" &&
+            env.CONSOLE_ADMIN_EMAILS.includes(u.email.toLowerCase())
           ) {
-            await db.update(user).set({ role: "admin" }).where(eq(user.id, createdUser.id))
+            await db.update(user).set({ role: "admin" }).where(eq(user.id, newSession.userId))
           }
         },
       },

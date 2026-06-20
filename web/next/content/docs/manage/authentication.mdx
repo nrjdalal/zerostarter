@@ -51,11 +51,11 @@ socialProviders: {
 
 ## Console Access
 
-The privileged `/console` area is gated by the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; every other account stays on the default `user` role and gets a `notFound()`.
+The privileged `/console` area is gated by the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; every other account stays on the default `user` role and gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a role change takes effect on the next request rather than waiting out the session cache.
 
 Grant access in one of two ways:
 
-- **Bootstrap (env):** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated) in `packages/env/src/auth.ts`. A `databaseHooks` hook promotes a matching, email-verified account to `admin` on sign-up, so a fresh deploy gets console access without touching the database.
+- **Bootstrap (env):** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated) in `packages/env/src/auth.ts`. A `databaseHooks` hook promotes a matching, email-verified account to `admin` on **every sign-in**, so adding an email (even to an existing account) and re-logging-in grants console access with no manual DB edit.
 - **Runtime:** an existing admin promotes others via the plugin's `setRole` API (the basis for a console user-management dashboard), or directly with `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
 
 For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user.

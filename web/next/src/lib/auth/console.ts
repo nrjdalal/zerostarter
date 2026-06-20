@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth"
 
 // Single source of truth for console access (fail-closed on the user's `admin` role); shared by the layout guard and the gated search route so the rule can't drift.
 export async function getConsoleSession() {
-  const session = await auth.api.getSession()
+  // Bypass the session cookie cache so a role change (e.g. promotion/demotion) takes effect immediately on this privileged gate.
+  const session = await auth.api.getSession({ disableCookieCache: true })
   return session?.user?.role === "admin" ? session : null
 }
 
