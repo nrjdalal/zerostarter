@@ -1,4 +1,5 @@
-import { config } from "@/lib/config"
+import { site } from "@packages/config/site"
+
 import { generateOgImage } from "@/lib/og-image"
 import { docsSource } from "@/lib/source"
 
@@ -10,8 +11,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   return generateOgImage(slug, {
     source: docsSource,
     sectionName: "Documentation",
-    defaultTitle: `${config.app.name} - Documentation`,
-    defaultDescription: `Documentation for ${config.app.name}`,
+    defaultTitle: `${site.name} - Documentation`,
+    defaultDescription: `Documentation for ${site.name}`,
   })
 }
 

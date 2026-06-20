@@ -1,4 +1,5 @@
-import { config } from "@/lib/config"
+import { site } from "@packages/config/site"
+
 import { renderOgElement } from "@/lib/og-image"
 
 export const dynamic = "force-static"
@@ -30,7 +31,7 @@ export async function GET() {
           color: "transparent",
         }}
       >
-        {config.app.name}
+        {site.name}
       </div>
       <div
         style={{
@@ -43,7 +44,7 @@ export async function GET() {
           paddingRight: 40,
         }}
       >
-        {config.app.description}
+        {site.description}
       </div>
     </div>,
   )

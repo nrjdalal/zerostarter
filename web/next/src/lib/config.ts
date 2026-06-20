@@ -1,4 +1,3 @@
-import { site } from "@packages/config/site"
 import { BUILD_VERSION } from "@packages/env"
 import { env } from "@packages/env/web-next"
 
@@ -11,11 +10,8 @@ const getInternalApiUrl = () => {
 }
 
 export const config = {
-  // Application configuration
+  // Runtime / env-derived app values (NOT brand — brand lives in @packages/config/site)
   app: {
-    name: site.name,
-    description: site.description,
-    tagline: site.tagline,
     url: env.NEXT_PUBLIC_APP_URL,
     version: BUILD_VERSION,
   },
@@ -24,14 +20,6 @@ export const config = {
   api: {
     url: env.NEXT_PUBLIC_API_URL,
     internalUrl: getInternalApiUrl(),
-  },
-
-  // Social links
-  social: site.social,
-
-  // Feature flags
-  features: {
-    // example: enableAnalytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true",
   },
 } as const
 

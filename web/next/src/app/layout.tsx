@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 
+import { site } from "@packages/config/site"
 import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
@@ -24,20 +25,20 @@ const ogImageUrl = getOgImageUrl()
 
 export const metadata: Metadata = {
   title: {
-    default: `${config.app.name} - ${config.app.tagline}`,
-    template: `%s | ${config.app.name}`,
+    default: `${site.name} - ${site.tagline}`,
+    template: `%s | ${site.name}`,
   },
-  description: config.app.description,
+  description: site.description,
   openGraph: {
     type: "website",
-    siteName: config.app.name,
+    siteName: site.name,
     url: config.app.url,
     images: [
       {
         url: ogImageUrl,
         width: 1200,
         height: 630,
-        alt: `${config.app.name} - ${config.app.tagline}`,
+        alt: `${site.name} - ${site.tagline}`,
       },
     ],
   },

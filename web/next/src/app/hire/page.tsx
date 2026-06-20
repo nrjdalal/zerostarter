@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import {
   RiArrowRightUpLine,
   RiFileTextLine,
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     "AI-native product engineer building SaaS, developer tools, and agent infrastructure.",
   openGraph: {
     type: "website",
-    siteName: config.app.name,
+    siteName: site.name,
     url: `${config.app.url}/hire`,
     images: [
       {

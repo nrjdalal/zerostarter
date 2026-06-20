@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 import { createRelativeLink } from "fumadocs-ui/mdx"
@@ -13,7 +14,7 @@ import { getMDXComponents } from "@/mdx-components"
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: config.app.name,
+      title: site.name,
     },
   }
 }
@@ -144,7 +145,7 @@ export async function generatePageMetadata(
           type: "article" as const,
           title: page.data.title,
           description: page.data.description,
-          siteName: config.app.name,
+          siteName: site.name,
           url: pageUrl,
           images: [
             {
@@ -163,7 +164,7 @@ export async function generatePageMetadata(
           type: "website" as const,
           title: page.data.title,
           description: page.data.description,
-          siteName: config.app.name,
+          siteName: site.name,
           url: pageUrl,
           images: [
             {
