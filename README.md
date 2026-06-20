@@ -1,95 +1,70 @@
-# ZeroStarter - The SaaS Starter
+# ZeroStarter
 
-A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
+> The SaaS Starter. A modern, type-safe, and high-performance SaaS starter template built as a Bun + Turborepo monorepo.
 
-- **📚 Documentation**: For comprehensive documentation, visit **[https://zerostarter.dev/docs](https://zerostarter.dev/docs)**.
-- **🤖 AI/LLM Users**: For optimized documentation, use **[https://zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)**.
-- **🐦 X**: Follow **[@nrjdalal](https://x.com/nrjdalal)** for updates and don't forget to star the repository!
+- **📚 Documentation**: [zerostarter.dev/docs](https://zerostarter.dev/docs)
+- **🤖 AI / LLMs**: [zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)
+- **🐦 X**: [@nrjdalal](https://x.com/nrjdalal)
+- **💬 Discord**: [Join the community](https://discord.gg/38FeAUmHSZ)
 
 > ZeroStarter is stable and production-ready. We're actively adding new features and integrations day-by-day.
 
 ## ⚙️ Architecture and Tech Stack
 
 > [!NOTE]
-> For detailed information about the architecture and tech stack, see the [Architecture documentation](https://zerostarter.dev/docs/getting-started/architecture).
+> For a deeper dive, see the [Architecture documentation](https://zerostarter.dev/docs/getting-started/architecture).
 
 ![Graph Build](./.github/assets/graph-build.svg)
 
-- **Runtime & Build System**: [Bun](https://bun.sh) + [Turborepo](https://turbo.build)
-- **Frontend**: [Next.js 16](https://nextjs.org)
-- **Backend**: [Hono](https://hono.dev)
-- **RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end type safety with frontend client
-- **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.com) with OAuth (GitHub, Google), organizations, teams, and role-based access
-- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
-- **Styling**: [Tailwind CSS](https://tailwindcss.com)
-- **UI Components**: [Shadcn UI](https://ui.shadcn.com)
-- **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
-- **Validation**: [Zod](https://zod.dev)
-- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
-- **API Documentation**: [Scalar](https://scalar.com) with auto-generated OpenAPI spec at `/api/docs`
-- **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
-- **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
+Every item below is wired and working out of the box, not just a dependency in `package.json`.
 
-This project is a monorepo organized as follows:
+- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
+- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev)
+- **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
+- **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`
+- **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
+- **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
+- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
+- **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
+- **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
+- **Data & Forms**: [TanStack Query](https://tanstack.com/query) with [TanStack Form](https://tanstack.com/form) and [React Hook Form](https://react-hook-form.com)
+- **Validation**: [Zod](https://zod.dev), shared across the API and forms
+- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay
+- **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
+- **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
+- **SEO**: sitemap, robots, and per-page metadata, indexable by default
+- **Tooling**: [Oxlint](https://oxc.rs) and [Oxfmt](https://oxc.rs) with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
+- **Automated Releases**: changelog generation and a canary-to-main release flow
+
+## 📂 Monorepo Structure
 
 ```
 .
 ├── api/
-│   └── hono/      # Backend API server (Hono)
+│   └── hono/      # Backend API (Hono): /api/v1, /api/auth, /api/agents, /api/docs
 ├── web/
-│   └── next/      # Frontend application (Next.js)
+│   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
 └── packages/
-    ├── auth/      # Shared authentication logic (Better Auth)
-    ├── db/        # Database schema and Drizzle configuration
-    ├── env/       # Type-safe environment variables
-    └── config/    # Shared build config (TS base + tsdown)
+    ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
+    ├── db/        # Drizzle ORM schema and PostgreSQL client
+    ├── env/       # Type-safe environment variables (t3-oss/env + Zod)
+    └── config/    # Shared config: TS/tsdown bases and the `site` brand identity
 ```
 
-📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**
+Two deployable apps (`api/hono` and `web/next`) and four shared packages. Brand identity lives in one place, `@packages/config/site`, so a fork rebrands by editing a single file.
 
-## ✅ Implemented Features
-
-- **Authentication** — OAuth (GitHub, Google) and session management
-- **Organizations & Teams** — Multi-tenant support with roles, invitations, and org switching
-- **Admin Console & Roles** — Role-based admin area at `/console`, gated by user role via the Better Auth admin plugin
-- **Analytics** — PostHog integration for product analytics, feature flags, and session recordings
-- **API Documentation** — Interactive docs at `/api/docs` powered by Scalar with auto-generated OpenAPI spec
-- **Rate Limiting** — Configurable per-user, per-API-key, and per-IP rate limiting
-
-## 🗺️ Roadmap
-
-We're actively working on integrations for AI, email, background tasks, payments, and more.
-
-📖 **[View detailed roadmap →](https://zerostarter.dev/docs/getting-started/roadmap)**
-
-## 🔥 Why ZeroStarter?
-
-**Architecture & Best Practices as a Service** — ZeroStarter isn't just a starter template, it's a complete blueprint for building production-ready SaaS applications with battle-tested patterns and practices.
-
-- **Modular Architecture** — Clean, plug-and-play packages that work independently or together. Swap components, extend functionality, or customize without breaking the system
-- **End-to-End Type Safety** — Hono RPC ensures type safety from database to frontend. Catch errors at compile time, ship with confidence
-- **Clean Code Practices** — Well-structured monorepo with separation of concerns, making it easy to understand, maintain, and scale
-- **Production-Ready Performance** — Optimized with Bun runtime and Turborepo for blazing-fast development and builds
-- **Beautiful UI Out of the Box** — Shadcn UI components with Tailwind CSS, ready to customize or use as-is
-- **Enterprise-Grade Auth** — Better Auth with OAuth providers, multi-tenant organizations, teams, and role-based access
-- **Comprehensive Documentation** — Every pattern, practice, and decision documented with Fumadocs and AI-optimized [llms.txt](https://zerostarter.dev/llms.txt)
-- **Deploy-Ready** — Docker and Vercel configurations included, so you can ship to production in minutes, not days
-
-📖 **[View full why ZeroStarter? →](https://zerostarter.dev)**
+📖 **[Full project structure →](https://zerostarter.dev/docs/getting-started/project-structure)**
 
 ## 🔌 Type-Safe API Client
 
 > [!NOTE]
-> For comprehensive details and examples, see the [Type-Safe API documentation](https://zerostarter.dev/docs/getting-started/type-safe-api).
+> For details and examples, see the [Type-Safe API documentation](https://zerostarter.dev/docs/getting-started/type-safe-api).
 
-This starter utilizes [Hono RPC](https://hono.dev/docs/guides/rpc) to provide end-to-end type safety between the backend and frontend.
+ZeroStarter uses [Hono RPC](https://hono.dev/docs/guides/rpc) for end-to-end type safety between the backend and frontend.
 
-- **Backend**: Routes defined in `api/hono/src/routers` are exported as `AppType` at `api/hono/src/index.ts`.
-- **Frontend**: The client at `web/next/src/lib/api/client.ts` infers `AppType` request/response types using `hono/client`.
-- **API Docs**: Interactive API documentation available at `/api/docs` powered by [Scalar](https://scalar.com).
-
-### Usage Example
+- **Backend**: routes in `api/hono/src/routers` are exported as `AppType` from `@api/hono`.
+- **Frontend**: the client at `web/next/src/lib/api/client.ts` infers request and response types from `AppType`.
+- **API Docs**: an interactive reference is served at `/api/docs` (OpenAPI spec at `/api/openapi.json`).
 
 ```ts
 import { apiClient } from "@/lib/api/client"
@@ -99,7 +74,14 @@ const res = await apiClient.health.$get()
 const { data } = await res.json()
 ```
 
-📖 **[Type-Safe API documentation→](https://zerostarter.dev/docs/getting-started/type-safe-api)**
+## 🔥 Why ZeroStarter?
+
+- **End-to-end type safety**: one type flows from the database through the API to the frontend, so breaking changes fail at compile time, not in production.
+- **Modular by design**: shared packages for auth, database, env, and config that you can swap or extend without fighting the system.
+- **Production-ready**: Docker and Vercel configs, migrations on deploy, rate limiting, and SEO are set up from the first commit.
+- **Forkable**: brand identity is centralized in `@packages/config/site`, so making it your own is a one-file change.
+
+📖 **[Read more →](https://zerostarter.dev)**
 
 ## 🚀 Quick Start
 
@@ -111,37 +93,61 @@ cd zerostarter
 # Install dependencies
 bun install
 
-# Set up environment variables (see docs)
+# Configure environment (see .env.example for what's required)
 cp .env.example .env
 
-# Set up database
+# Set up the database
 bun run db:generate
 bun run db:migrate
 
-# Start development
+# Start the dev servers (web on :3000, api on :4000)
 bun dev
 ```
 
+You will need a PostgreSQL database and GitHub plus Google OAuth credentials. PostHog analytics and user feedback are optional.
+
 📖 **[Complete setup guide →](https://zerostarter.dev/docs/getting-started/setup)**
+
+## 📜 Scripts
+
+| Command                           | Description                                 |
+| --------------------------------- | ------------------------------------------- |
+| `bun dev`                         | Start the api and web dev servers           |
+| `bun run build`                   | Build every workspace                       |
+| `bun run check-types`             | Type-check every workspace                  |
+| `bun run lint` / `bun run format` | Lint with Oxlint / format with Oxfmt        |
+| `bun run db:generate`             | Generate Drizzle migrations from the schema |
+| `bun run db:migrate`              | Apply pending migrations                    |
+| `bun run db:studio`               | Open Drizzle Studio                         |
+| `bun run console:roles`           | Grant, revoke, or list admin console access |
+| `bun run shadcn:update`           | Update shadcn/ui components                 |
+
+📖 **[All scripts →](https://zerostarter.dev/docs/getting-started/scripts)**
 
 ## 📚 Documentation
 
-- **[📖 Full Documentation](https://zerostarter.dev/docs)** — Everything you need to know
-- **[🏗️ Architecture](https://zerostarter.dev/docs/getting-started/architecture)** — Deep dive into the tech stack
-- **[📂 Project Structure](https://zerostarter.dev/docs/getting-started/project-structure)** — Monorepo organization
-- **[🔐 Authentication](https://zerostarter.dev/docs/manage/authentication)** — Auth, organizations, and teams
-- **[🔌 Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)** — Hono RPC client examples
-- **[⚙️ Scripts](https://zerostarter.dev/docs/getting-started/scripts)** — Available commands
-- **[🚀 Deployment](https://zerostarter.dev/docs/deployment/vercel)** — Deploy to production
-- **[🤖 AI/LLM Users](https://zerostarter.dev/llms.txt)** — Optimized documentation
+- **[Getting Started](https://zerostarter.dev/docs)**: introduction, architecture, and project structure
+- **[Authentication & Organizations](https://zerostarter.dev/docs/manage/authentication)**: OAuth, orgs, teams, and roles
+- **[Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)**: the Hono RPC client
+- **[Database](https://zerostarter.dev/docs/manage/database)**: schema and migrations
+- **[Environment Variables](https://zerostarter.dev/docs/manage/environment)**: configuration
+- **[Deployment](https://zerostarter.dev/docs/deployment/vercel)**: Vercel and Docker
+- **[AI / LLMs](https://zerostarter.dev/llms.txt)**: optimized documentation
+
+## 🚢 Deployment
+
+ZeroStarter ships as two deployable apps that share one PostgreSQL database.
+
+- **Vercel**: deploy `web/next` and `api/hono` as separate projects. The API runs pending migrations on deploy.
+- **Docker**: `docker compose up` builds and runs both apps from the included multi-stage Dockerfiles.
+
+📖 **[Deployment guides →](https://zerostarter.dev/docs/deployment/vercel)**
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our contributing guidelines first.
+Contributions are welcome. Please read the [contributing guide](https://zerostarter.dev/docs/contributing) first.
 
-📖 **[View contributing guidelines →](https://zerostarter.dev/docs/contributing)**
-
-## ❤️ Amazing Contributors
+## ❤️ Contributors
 
 <a href="https://github.com/nrjdalal/zerostarter/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=nrjdalal/zerostarter" />
@@ -149,10 +155,10 @@ Contributions are welcome! Please read our contributing guidelines first.
 
 ## 📄 License
 
-MIT License — see [LICENSE.md](LICENSE.md) for details.
+MIT License. See [LICENSE.md](LICENSE.md) for details.
 
 ---
 
-**⭐ Star this repo** if you find it helpful, and follow [@nrjdalal](https://x.com/nrjdalal) for updates!
+**⭐ Star this repo** if it helps, and follow [@nrjdalal](https://x.com/nrjdalal) for updates.
 
 <!-- trigger build: 7 -->
