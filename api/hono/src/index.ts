@@ -99,10 +99,7 @@ const { data } = await response.json()`,
         info: {
           version: BUILD_VERSION,
           title: site.name,
-          description: `API Reference for your ${site.name} Instance.
-- [Dashboard](/dashboard) - Client-side dashboard application
-- [Better Auth Instance](/api/auth/reference) - Better Auth API reference
-- [hono/client](/docs/getting-started/type-safe-api) - Type-safe API client for frontend`,
+          description: site.apiReferenceDescription,
         },
       },
     }),
