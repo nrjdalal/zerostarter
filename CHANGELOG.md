@@ -1,3 +1,15 @@
+## v0.0.31
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.30...v0.0.31)
+
+### 🩹 Fixes
+
+- **web:** Round the sidebar avatar image to match the squared container ([#487](https://github.com/nrjdalal/zerostarter/pull/487))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.30
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.29...v0.0.30)

@@ -59,12 +59,12 @@ The schema is defined in `packages/db/src/schema/auth.ts` and consists of 9 tabl
 
 ### Core Auth Tables
 
-| Table          | Purpose                   | Key Columns                                                                                                     |
-| -------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `user`         | Application users         | `id`, `name`, `email` (unique), `emailVerified`, `image`, `console` (privileged-access field)                   |
-| `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId` |
-| `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                         |
-| `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                        |
+| Table          | Purpose                   | Key Columns                                                                                                          |
+| -------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `user`         | Application users         | `id`, `name`, `email` (unique), `emailVerified`, `image`, `role` (console access), `banned`/`banReason`/`banExpires` |
+| `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId`      |
+| `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                              |
+| `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                             |
 
 ### Organization & Team Tables
 
@@ -117,11 +117,13 @@ bun run db:studio
 
 ### Existing Migrations
 
-| Migration                           | Description                                                                                    |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `0000_zero_starter.sql`             | Core auth tables: user, session, account, verification                                         |
-| `0001_better_auth_organization.sql` | Organization support: organization, team, teamMember, member, invitation + session columns     |
-| `0002_perfect_young_avengers.sql`   | Adds the `console` column to the `user` table (`ALTER TABLE "user" ADD COLUMN "console" text`) |
+| Migration                            | Description                                                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `0000_zero_starter.sql`              | Core auth tables: user, session, account, verification                                                               |
+| `0001_better_auth_organization.sql`  | Organization support: organization, team, teamMember, member, invitation + session columns                           |
+| `0002_perfect_young_avengers.sql`    | Adds the `console` column to the `user` table (`ALTER TABLE "user" ADD COLUMN "console" text`)                       |
+| `0003_add_admin_plugin_fields.sql`   | Better Auth Admin plugin fields: `role`/`banned`/`ban_reason`/`ban_expires` on user, `impersonated_by` on session    |
+| `0004_drop_legacy_console_field.sql` | Backfills `role = 'admin'` from any non-empty `console`, then drops the legacy column (carries existing admins over) |
 
 ## Adding New Tables
 

@@ -51,9 +51,15 @@ socialProviders: {
 
 ## Console Access
 
-The privileged `/console` area is gated by a `console` user field (defined in `packages/auth/src/index.ts` and backed by a `console` text column on the `user` table in `packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` treats any non-empty value as full console access.
+The privileged `/console` area uses the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else stays on the default `user` role and gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a grant or revoke takes effect on the next request rather than waiting out the session cache.
 
-The field is declared with `input: false`, so it is **not** settable through the auth API. To grant access, set the `console` column directly on the user row (for example via `bun run db:studio`); any non-empty value works. For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `console: "admin"` on the `AgentZero` user.
+There is no env-based access list — the `role` is the single source of truth, set explicitly:
+
+- **Helper script (manual):** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`). It writes `user.role` directly via `POSTGRES_URL`. Use this to bootstrap the first admin.
+- **Or** `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
+- **Or**, once an admin exists, the plugin's `setRole` API — the basis for the console user-management dashboard, where admins manage everyone else's roles.
+
+For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user for local development.
 
 ## Organizations & Teams
 
