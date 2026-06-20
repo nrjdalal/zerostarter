@@ -15,12 +15,12 @@ Grounded in two studies: the verified swap manifest (exact files/lines), and the
 - Package and bin: **`zerostarter`** (unscoped, single word), matching the `inscope` convention. Not `create-zerostarter`.
 - Run via `bunx zerostarter <command>` (or `npx zerostarter`).
 - Commands:
-  - `zerostarter init [name|owner/repo]`: convert a fresh zerostarter clone in place into a clean product. Takes one optional name or repo; auto-detects from the git remote or the directory name if omitted. Getting the clone is gitpick's or GitHub's "Use this template" job, not the CLI's.
+  - `zerostarter init [dir]`: scaffold a new product from zerostarter into `dir` (default `.`), then convert it. The dir name becomes the project name. If `dir` is omitted or `.` and the current directory is not empty, it prompts for a dir name instead of scaffolding over existing files.
   - `zerostarter sync`: re-baseline a fork on upstream (absorbs the fork-sync skill).
   - `zerostarter doctor`: optional health check (leftover upstream branding, missing env scope, etc.).
   - Global: `-v/--version`, `-h/--help`, `-y/--yes` (non-interactive), `--dry-run`.
 
-Cloning the scaffold stays a one-liner (gitpick or GitHub "Use this template"); the CLI owns only the hard parts: the conversion (`init`) and the re-baseline (`sync`).
+`init` fetches the latest zerostarter into the target dir (via gitpick), converts it, and `git init`s a clean history: one command, no separate scaffold step (which is why there is no `new`). `sync` is the only other command, for re-baselining an existing fork.
 
 ## 3. Build conventions (from inscope)
 
@@ -31,7 +31,7 @@ The CLI mirrors inscope so it matches the author's established taste and reuses 
 - **Build with tsdown** (two configs: library entry + bin entry), minified ESM into `dist/`, Node target, Bun for dev.
 - **Toolchain identical to zerostarter and inscope**: oxlint, oxfmt, lefthook, commitlint + config-conventional, changelogen, conventional commits, manual version bump then CI publish + tag.
 - **Reused patterns**: pure-render + apply generators with golden snapshot tests; atomic writes (temp + rename, preserve mode); flags-vs-interactive gating (a provided flag suppresses its prompt; `-y` and non-TTY force defaults); a read-only `--dry-run`/`diff` preview; a `doctor` health check; "Next steps" output after every mutating run.
-- **Scaffolder additions inscope lacks** (we add): template-tree copying and the find/replace pass. No clone or git-init step: the user already has the clone.
+- **Scaffolder additions inscope lacks** (we add): fetching the template (gitpick), `git init`, template-tree copying, and the find/replace pass.
 
 ## 4. Distribution and repo
 
@@ -93,12 +93,12 @@ Apply most-specific first, and exclude `.agents/skills/{init,fork-sync}/` (inten
 
 The CLI does not interrogate the user. It takes a single input and leaves everything else as a clear placeholder the user fills in later (in `site.ts` and `package.json`, which are already the one-stop config).
 
-- **The one input**: a project name, or a GitHub `owner/repo`. Resolution order: the positional arg (`zerostarter init <name|owner/repo>`), else the `origin` git remote (`owner/repo`), else the directory name. A single confirm is the only interaction, and `--yes` skips even that.
-- **Derived from the input** (the only values the CLI actually sets): the project name (`site.name`), the package name, and, when an `owner/repo` is known, the repository URLs (`package.json` `repository`/`homepage`/`bugs`, `site.social.github`, `rulesets` `source`, the changelog fallback, the build-graph label, the docker-compose name). A bare name with no repo leaves the repo URLs as a `your-org/<name>` placeholder.
+- **The one input**: the target dir, `zerostarter init [dir]` (default `.`). The project name is the dir's base name (`my-product` gives the name "my-product"; `.` uses the current dir's name). If the arg is omitted or `.` and the current directory is not empty, it prompts for a dir name rather than scaffolding over existing files. A single confirm is the only other interaction, and `--yes` skips it.
+- **Derived from the input** (the only value the CLI actually sets): the project name, used for `site.name`, the package name, the docker-compose name, the build-graph label, and the changelog fallback. A fresh scaffold has no git remote, so the repository URLs (`package.json` `repository`/`homepage`/`bugs`, `site.social.github`, `rulesets` `source`) become a `your-org/<name>` placeholder until you set a remote.
 - **Left as placeholders for the user** (NOT prompted): `site.ts` `description`, `tagline`, `social.x`, `social.discord`, `agent.{name,email}`; `package.json` `author` and `funding`; `LICENSE.md` holder; the `.env.example` doc-link host. Each gets an obvious placeholder (for example `"TODO: your product description"`) so a brand-scan and a glance at `site.ts` show exactly what is left to fill.
 - **Emptied, never carried** (starter dev-meta that must not leak): `site.llmsFullPreamble` and `site.apiReferenceDescription` reset to `""`; `.infisical.json` deleted.
 
-So `init` is essentially: `zerostarter init` plus one name, and you get a building, de-branded canvas; fill the details whenever.
+So `init` is essentially: `zerostarter init my-product`, and you get a building, de-branded canvas at `./my-product`; fill the details whenever.
 
 ## 7. Templates the CLI ships
 
@@ -106,15 +106,16 @@ So the converted tree still builds, the CLI carries minimal templates it drops i
 
 ## 8. Init flow
 
-1. Preflight: clean git tree; confirm this is a fresh zerostarter scaffold.
-2. Resolve the one input (arg, else git remote, else directory name); set the derived values and placeholder the rest.
-3. Class 1 structured swaps (atomic writes).
+1. Resolve the target dir (the arg, else `.`). If it is `.` or omitted and the current directory is not empty, prompt for a dir name. Create the dir.
+2. Fetch the latest zerostarter into the dir (gitpick `tree/main`); the project name is the dir's base name.
+3. Class 1 structured swaps (atomic writes): set the name-derived values, placeholder the rest, empty the dev-meta, delete `.infisical.json`.
 4. Class 2 strip + drop templates; fix the navbar; regenerate `docs.config.ts` + `meta.json`.
 5. Class 3 assets prune/replace.
-6. Class 4 meta scrub; remove the `init` skill.
+6. Class 4 meta scrub; remove the `init`/`fork-sync` skills the product does not need.
 7. Find/replace stragglers (scoped, post-delete).
-8. Verify: `bun install`; `SKIP_ENV_VALIDATION=true bun run build`; brand-scan (`rg -i "zerostarter|nrjdalal|neeraj|dalal|agentzero"` returns only intentional refs).
-9. Print "Next steps" (fill the `site.ts` placeholders, set env from the fork's own scope, push, deploy).
+8. `git init` + initial commit (a clean history, not zerostarter's).
+9. Verify: `bun install`; `SKIP_ENV_VALIDATION=true bun run build`; brand-scan returns only intentional refs.
+10. Print "Next steps" (fill the `site.ts` placeholders, set env, push, deploy).
 
 ## 9. Package layout (mirroring inscope)
 
@@ -124,7 +125,7 @@ zerostarter/                      (its own repo)
     index.ts                      shebang + parseArgs dispatch + help/version
     commands/{init,sync,doctor}.ts
     _prompt.ts                    text/confirm/select primitives (node:readline)
-    _git.ts                       remote parse (detect owner/repo)
+    _git.ts                       fetch (gitpick), git init, remote parse
   src/
     manifest.ts                   the swap manifest as data (files, ops, prompt-var map)
     prompts.ts                    gather + detect + validate inputs
@@ -156,6 +157,6 @@ zerostarter/                      (its own repo)
 - **P2** Class 1 generators (structured config swaps) + golden snapshots.
 - **P3** Class 2 content strip + templates + docs.config regeneration.
 - **P4** Class 3/4 assets prune + meta scrub + scoped find/replace.
-- **P5** Verify (install/build/brand-scan) + Next steps.
+- **P5** Fetch into the dir (gitpick) + `git init` + verify (install/build/brand-scan) + Next steps.
 - **P6** `sync` command (port the fork-sync procedure).
 - Every phase: golden tests, plus one real end-to-end run against a throwaway clone, brand-scanned to zero.
