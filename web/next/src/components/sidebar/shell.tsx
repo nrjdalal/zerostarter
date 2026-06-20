@@ -1,16 +1,17 @@
 import { cookies } from "next/headers"
 import Link from "next/link"
 
+import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
+import { AdaptiveShellSidebar } from "@/components/sidebar/shell-sidebar"
 import { Badge } from "@/components/ui/badge"
 import {
-  Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarProvider,
   SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { SidebarTrigger } from "@/components/zeroui/sidebar-trigger"
 import { config } from "@/lib/config"
 
 // Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail) and the persisted open state; callers supply the badge, nav, and footer.
@@ -35,7 +36,7 @@ export async function SidebarShell({
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <Sidebar collapsible="icon">
+      <AdaptiveShellSidebar>
         <SidebarHeader>
           <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:mx-auto">
             <Link
@@ -47,15 +48,18 @@ export async function SidebarShell({
                 {badge}
               </Badge>
             </Link>{" "}
-            <SidebarTrigger className="bg-sidebar cursor-pointer border" />
+            <SidebarTrigger variant="secondary" className="bg-sidebar cursor-pointer border" />
           </div>
           {header}
         </SidebarHeader>
         <SidebarContent>{nav}</SidebarContent>
         <SidebarFooter>{footer}</SidebarFooter>
         <SidebarRail />
-      </Sidebar>
-      <main>{children}</main>
+      </AdaptiveShellSidebar>
+      <main>
+        <SidebarFloatingTrigger />
+        {children}
+      </main>
     </SidebarProvider>
   )
 }

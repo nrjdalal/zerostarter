@@ -4,6 +4,8 @@ import { hash, randomUUIDv7 } from "bun"
 import type { Context } from "hono"
 import { rateLimiter } from "hono-rate-limiter"
 
+import { jsonError } from "@/lib/error"
+
 function generateRateLimitKey(
   c: Context,
   getUserId?: (c: Context) => string | undefined,
@@ -32,8 +34,7 @@ export function createRateLimiter(config: RateLimiterConfig = {}) {
     limit,
     windowMs,
     keyGenerator: (c) => generateRateLimitKey(c, getUserId, getApiKey),
-    handler: (c) =>
-      c.json({ error: { code: "TOO_MANY_REQUESTS", message: "Too Many Requests" } }, 429),
+    handler: (c) => jsonError(c, 429, "TOO_MANY_REQUESTS", "Too Many Requests"),
   })
 }
 

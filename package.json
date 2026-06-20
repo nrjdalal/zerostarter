@@ -30,7 +30,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "postinstall": "bun .github/scripts/deps-manager.ts",
-    "lint": "turbo run lint --summarize",
+    "lint": "oxlint",
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start"
@@ -54,8 +54,7 @@
     "turbo": "catalog:"
   },
   "overrides": {
-    "esbuild": "^0.28.1",
-    "hono": "^4.12.25"
+    "esbuild": "^0.28.1"
   },
   "commitlint": {
     "extends": [

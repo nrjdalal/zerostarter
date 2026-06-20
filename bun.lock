@@ -41,7 +41,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
+        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "concurrently": "catalog:",
@@ -58,11 +58,18 @@
         "better-auth": "catalog:",
       },
       "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
+        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
+      },
+    },
+    "packages/config": {
+      "name": "@packages/config",
+      "version": "0.0.1",
+      "devDependencies": {
+        "tsdown": "catalog:",
       },
     },
     "packages/db": {
@@ -73,7 +80,7 @@
         "drizzle-orm": "catalog:",
       },
       "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
+        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "drizzle-kit": "catalog:",
@@ -91,16 +98,12 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
+        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
-    },
-    "packages/tsconfig": {
-      "name": "@packages/tsconfig",
-      "version": "0.0.1",
     },
     "web/next": {
       "name": "@web/next",
@@ -144,7 +147,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/tsconfig": "workspace:*",
+        "@packages/config": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
         "@types/bun": "catalog:",
@@ -173,7 +176,6 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "hono": "^4.12.25",
   },
   "catalog": {
     "@arcjet/ip": "^1.4.0",
@@ -689,11 +691,11 @@
 
     "@packages/auth": ["@packages/auth@workspace:packages/auth"],
 
+    "@packages/config": ["@packages/config@workspace:packages/config"],
+
     "@packages/db": ["@packages/db@workspace:packages/db"],
 
     "@packages/env": ["@packages/env@workspace:packages/env"],
-
-    "@packages/tsconfig": ["@packages/tsconfig@workspace:packages/tsconfig"],
 
     "@posthog/core": ["@posthog/core@1.32.5", "", { "dependencies": { "@posthog/types": "^1.386.4" } }, "sha512-Vmr6LZms7QEP1ljfTRRBVtLkeEHMrTmLECt0FXPLwUIgPwxOgvBdAYwRMWyP13WuN/XQweo1tJ9J1DxHNAF3qg=="],
 

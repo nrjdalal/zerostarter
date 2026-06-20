@@ -1,4 +1,5 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
+import { notFound } from "next/navigation"
 
 import {
   compareBlogPostPublishOrder,
@@ -23,6 +24,13 @@ function isPublishedBlogPost(page: BlogPage, now = new Date()): page is Publishe
 
 export function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
   return isBlogIndexPage(page) || isPublishedBlogPost(page, now)
+}
+
+// Calls notFound(), so only valid in a request context (Server Component or route handler).
+export function getPublicBlogPage(slug?: string[], now = new Date()): BlogPage {
+  const page = blogSource.getPage(slug)
+  if (!page || !isPublicBlogPage(page, now)) notFound()
+  return page
 }
 
 function toBlogPostMeta(page: BlogPage): BlogPostMeta {

@@ -18,7 +18,7 @@
     "better-auth": "catalog:"
   },
   "devDependencies": {
-    "@packages/tsconfig": "workspace:*",
+    "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

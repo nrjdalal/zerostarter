@@ -5,7 +5,7 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 
 # Shadcn Sync
 
-`bun run shadcn:update` regenerates the whole shadcn layer from the registry: it wipes `web/next/src/components/ui` + `components.json`, re-inits, re-adds every component, formats, and runs the postinstall. It overwrites tracked files indiscriminately, so its output is never safe to commit as-is. The script only regenerates; you reconcile.
+`bun run shadcn:update` regenerates the whole shadcn layer from the registry: it wipes `web/next/src/components/ui` + `components.json`, re-inits, re-adds every component, re-applies our local extensions via `.github/scripts/shadcn-customize.ts`, formats, and runs the postinstall. It overwrites tracked files indiscriminately, so its output is never safe to commit as-is. The script only regenerates; you reconcile.
 
 ## Procedure
 
@@ -28,3 +28,4 @@ Run on a clean tree, then work the diff:
 - `add -a` re-adds ALL components, so unused ones (`calendar.tsx`, `chart.tsx`, ...) reappear every run. Expected — don't delete them to chase a dead-code report.
 - If the postinstall throws `ReferenceError` from `.github/scripts/deps-manager.ts`, the catalog rewrite is broken and takes the sync down; that script must write to its loop variable.
 - The root `catalog` is the source of truth for versions; trust it over whatever `@latest` drags into the lockfile.
+- `.github/scripts/shadcn-customize.ts` re-applies our local extensions after `add -a` (currently: `SidebarTrigger` gains an optional `children` label, derived from the freshly-synced source). It's idempotent and asserts each transform, so a shadcn shape change fails the sync loudly instead of silently dropping the extension. Expect the `SidebarTrigger` `children` delta in the diff and keep it; never hand-edit `ui/sidebar.tsx` to add it.

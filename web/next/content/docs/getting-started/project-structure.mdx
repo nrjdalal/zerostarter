@@ -23,7 +23,7 @@ This project is a monorepo organized as follows:
     ├── auth/            # Shared authentication logic (Better Auth)
     ├── db/              # Database schema and Drizzle configuration
     ├── env/             # Type-safe environment variables
-    └── tsconfig/        # Shared TypeScript configuration
+    └── config/          # Shared build config (TS base + tsdown)
 ```
 
 ## Directory Details
@@ -40,7 +40,7 @@ The backend API server built with [Hono](https://hono.dev).
 - **`src/middlewares/`**: Custom middlewares
   - `auth.ts`: Authentication middleware for protected routes
   - `rate-limiter.ts`: Rate limiting middleware
-- **`src/lib/error.ts`**: Centralized `errorHandler` (formats Zod validation and internal errors)
+- **`src/lib/error.ts`**: Centralized `errorHandler` (formats Zod validation and internal errors) plus a `jsonError()` helper for consistent `{ error: { code, message } }` envelopes
 
 ### `web/next/`
 
@@ -95,9 +95,9 @@ Type-safe environment variables using [@t3-oss/env-core](https://env.t3.gg).
 - **`src/web-next.ts`**: Frontend environment variables (client and server)
 - **`src/lib/`**: `constants.ts` (the `NODE_ENV` enum, `VERSION`/`GIT_SHA`/`BUILD_VERSION`, `getBuildVersion`, and the env checkers `isLocal`/`isDevelopment`/`isTest`/`isStaging`/`isProduction`) and `utils.ts` (dotenv loader, redaction)
 
-### `packages/tsconfig/`
+### `packages/config/`
 
-Shared TypeScript configuration files for consistent settings across packages.
+Shared build config for the workspace: the TypeScript base (`tsconfig.json`, extended by every package) plus a `tsdown` factory (`definePackageConfig`) that the backend packages' `tsdown.config.ts` files call.
 
 ## Key Files
 
