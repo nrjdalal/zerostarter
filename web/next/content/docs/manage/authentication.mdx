@@ -51,9 +51,14 @@ socialProviders: {
 
 ## Console Access
 
-The privileged `/console` area is gated by a `console` user field (defined in `packages/auth/src/index.ts` and backed by a `console` text column on the `user` table in `packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` treats any non-empty value as full console access.
+The privileged `/console` area is gated by the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; every other account stays on the default `user` role and gets a `notFound()`.
 
-The field is declared with `input: false`, so it is **not** settable through the auth API. To grant access, set the `console` column directly on the user row (for example via `bun run db:studio`); any non-empty value works. For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `console: "admin"` on the `AgentZero` user.
+Grant access in one of two ways:
+
+- **Bootstrap (env):** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated) in `packages/env/src/auth.ts`. A `databaseHooks` hook promotes a matching, email-verified account to `admin` on sign-up, so a fresh deploy gets console access without touching the database.
+- **Runtime:** an existing admin promotes others via the plugin's `setRole` API (the basis for a console user-management dashboard), or directly with `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
+
+For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user.
 
 ## Organizations & Teams
 

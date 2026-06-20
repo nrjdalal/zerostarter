@@ -47,8 +47,8 @@ export const agentsRouter = new Hono()
       }
     }
 
-    // The local-only agent is an internal account, so grant it console access.
-    await db.update(userTable).set({ console: "admin" }).where(eq(userTable.id, user.id))
+    // The local-only agent is an internal account, so grant it the admin role (console access).
+    await db.update(userTable).set({ role: "admin" }).where(eq(userTable.id, user.id))
 
     const session = await ctx.internalAdapter.createSession(user.id)
     const signed = `${session.token}.${await makeSignature(session.token, ctx.secret)}`

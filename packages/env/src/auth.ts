@@ -8,6 +8,16 @@ export const env = createEnv({
   server: {
     NODE_ENV,
     BETTER_AUTH_SECRET: z.string().min(1),
+    CONSOLE_ADMIN_EMAILS: z
+      .string()
+      .optional()
+      .transform((s) =>
+        (s ?? "")
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.email())),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),
@@ -21,6 +31,7 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    CONSOLE_ADMIN_EMAILS: process.env.CONSOLE_ADMIN_EMAILS,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

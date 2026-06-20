@@ -13,7 +13,12 @@ import {
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { openAPI as openAPIPlugin, organization as organizationPlugin } from "better-auth/plugins"
+import {
+  admin as adminPlugin,
+  openAPI as openAPIPlugin,
+  organization as organizationPlugin,
+} from "better-auth/plugins"
+import { eq } from "drizzle-orm"
 
 import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 
@@ -40,13 +45,18 @@ export const auth = betterAuth({
   onAPIError: {
     throw: true,
   },
-  user: {
-    additionalFields: {
-      // Null for normal users; a non-null value (e.g. "admin") grants access to the privileged /console area. `input: false` blocks self-assignment.
-      console: {
-        type: "string",
-        required: false,
-        input: false,
+  databaseHooks: {
+    user: {
+      create: {
+        // Promote the configured root admin to the `admin` role on first sign-up, so a fresh deploy gets console access without a manual DB edit.
+        after: async (createdUser) => {
+          if (
+            createdUser.emailVerified &&
+            env.CONSOLE_ADMIN_EMAILS.includes(createdUser.email.toLowerCase())
+          ) {
+            await db.update(user).set({ role: "admin" }).where(eq(user.id, createdUser.id))
+          }
+        },
       },
     },
   },
@@ -61,6 +71,7 @@ export const auth = betterAuth({
     organizationPlugin({
       teams: { enabled: true },
     }),
+    adminPlugin(),
   ],
   socialProviders: {
     github: {
