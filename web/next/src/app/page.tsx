@@ -16,6 +16,8 @@ import {
   RiShieldLine,
   RiSparklingLine,
   RiFlashlightLine,
+  RiShieldKeyholeLine,
+  RiSpeedLine,
 } from "@remixicon/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -268,7 +270,7 @@ bun dev`
               </Button>
             </div>
             <p className="text-muted-foreground mt-6 text-sm">
-              ⭐ Star us on GitHub • 100+ developers trust ZeroStarter
+              ⭐ Star us on GitHub • Open source & MIT licensed
             </p>
             <div className="mt-4 flex justify-center">
               <ApiStatus />
@@ -361,8 +363,8 @@ bun dev`
                 </div>
                 <CardTitle>Authentication</CardTitle>
                 <CardDescription>
-                  Better Auth integration with GitHub OAuth, email/password, magic links, and more.
-                  Add providers in minutes.
+                  Better Auth with GitHub & Google OAuth, organizations, teams, and role-based
+                  access. Add providers in minutes.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -486,6 +488,42 @@ bun dev`
                 </CardDescription>
               </CardHeader>
             </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiGroupLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Organizations & Teams</CardTitle>
+                <CardDescription>
+                  Multi-tenant out of the box with Better Auth: organizations, teams, member roles,
+                  and invitations, plus an org switcher in the dashboard.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiShieldKeyholeLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Admin Console & Roles</CardTitle>
+                <CardDescription>
+                  Role-based admin area at /console, gated by user role via the Better Auth admin
+                  plugin. Ships with internal docs and runbooks.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiSpeedLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Rate-Limited API</CardTitle>
+                <CardDescription>
+                  Built-in API rate limiting per IP, user, or API key, with sensible defaults and
+                  full configuration via environment variables.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </section>
@@ -559,8 +597,8 @@ bun dev`
                 <div>
                   <h3 className="mb-2 text-lg font-semibold">Enterprise-Grade Auth</h3>
                   <p className="text-muted-foreground text-sm">
-                    Better Auth integration with GitHub, Google, and more — fully configured and
-                    ready to extend. Secure by default.
+                    Better Auth with GitHub & Google OAuth, organizations, teams, and role-based
+                    access. Fully configured and ready to extend.
                   </p>
                 </div>
               </div>
@@ -603,73 +641,6 @@ bun dev`
                 colorScheme: "light dark",
               }}
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section aria-label="Testimonials" className="bg-muted/30 border-b py-24">
-        <div className="container mx-auto max-w-6xl px-5">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Loved by developers worldwide
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              See why developers are choosing ZeroStarter to accelerate their product launches.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex h-full flex-col justify-between">
-                <CardDescription className="mb-4 text-base">
-                  "ZeroStarter sped up my development process significantly. The type-safe API
-                  client alone saved me hours of debugging. Highly recommended!"
-                </CardDescription>
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 flex size-10 items-center justify-center rounded-full">
-                    <RiGroupLine className="text-primary size-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Developer</div>
-                    <div className="text-muted-foreground text-sm">Software Engineer</div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="flex h-full flex-col justify-between">
-                <CardDescription className="mb-4 text-base">
-                  "The monorepo architecture is clean and well-organized. Everything just works out
-                  of the box. Best starter kit I've used!"
-                </CardDescription>
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 flex size-10 items-center justify-center rounded-full">
-                    <RiGroupLine className="text-primary size-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Builder</div>
-                    <div className="text-muted-foreground text-sm">Full Stack Developer</div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="flex h-full flex-col justify-between">
-                <CardDescription className="mb-4 text-base">
-                  "Production-ready from day one. The documentation is excellent and the codebase is
-                  maintainable. Exactly what I needed!"
-                </CardDescription>
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 flex size-10 items-center justify-center rounded-full">
-                    <RiGroupLine className="text-primary size-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Creator</div>
-                    <div className="text-muted-foreground text-sm">Indie Hacker</div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
           </div>
         </div>
       </section>
@@ -816,7 +787,7 @@ bun dev`
             <span>
               Made with love by{" "}
               <a
-                href="https://twitter.com/nrjdalal"
+                href={site.social.x}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground font-medium transition-colors"
