@@ -12,7 +12,6 @@ export const auth = {
         if (opts?.disableCookieCache) url.searchParams.set("disableCookieCache", "true")
         const response = await fetch(url, {
           headers: Object.fromEntries((await headers()).entries()),
-          credentials: "include",
         })
         if (!response.ok) return null
         const text = await response.text()
