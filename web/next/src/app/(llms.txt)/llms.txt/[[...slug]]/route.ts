@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import { notFound } from "next/navigation"
 
 import docsMeta from "@/../content/docs/meta.json"
@@ -39,19 +40,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
       .join("\n")
 
     return new Response(
-      `# ${config.app.name}
+      `# ${site.name}
 
-> ${config.app.description}
+> ${site.description}
 
 ## Documentation
 
-> Complete documentation for ${config.app.name}
+> Complete documentation for ${site.name}
 
 ${docsIndex}
 
 ## Optional
 
-- [Blog](${config.app.url}/blog.md): Latest articles and updates about ${config.app.name}
+- [Blog](${config.app.url}/blog.md): Latest articles and updates about ${site.name}
 `,
       {
         headers: llmTextHeaders,
@@ -73,19 +74,19 @@ ${docsIndex}
       .join("\n")
 
     return new Response(
-      `# ${config.app.name}
+      `# ${site.name}
 
-> ${config.app.description}
+> ${site.description}
 
 ## Blog
 
-> Latest articles and updates about ${config.app.name}
+> Latest articles and updates about ${site.name}
 
 ${blogIndex}
 
 ## Optional
 
-- [Documentation](${config.app.url}/llms.txt): Complete documentation for ${config.app.name}
+- [Documentation](${config.app.url}/llms.txt): Complete documentation for ${site.name}
 `,
       {
         headers: llmTextHeaders,

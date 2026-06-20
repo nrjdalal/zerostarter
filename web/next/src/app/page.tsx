@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import {
   RiArrowRightLine,
   RiBookOpenLine,
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { config } from "@/lib/config"
 
 type Tech = {
   name: string
@@ -184,7 +184,7 @@ const res = await apiClient.health.$get()
 const { data } = await res.json()`
 
   const bashCode = `# Clone the template
-bunx gitpick ${config.social.github}/tree/main
+bunx gitpick ${site.social.github}/tree/main
 cd zerostarter
 
 # Install dependencies
@@ -244,14 +244,14 @@ bun dev`
               </span>
             </h1>
             <p className="text-muted-foreground mb-8 text-lg sm:text-xl lg:text-2xl">
-              {config.app.description} Deploy with one click and start building features on day one.
+              {site.description} Deploy with one click and start building features on day one.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button
                 role="link"
                 size="lg"
                 className="group h-12 px-8 text-base"
-                render={<a href={config.social.github} target="_blank" rel="noopener noreferrer" />}
+                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
                 Get ZeroStarter
@@ -787,15 +787,15 @@ bun dev`
             Ready to Build Your SaaS?
           </h2>
           <p className="text-muted-foreground mb-8 text-lg">
-            Start building your next project with {config.app.name} today. Skip the complex setups
-            and start building features on day one.
+            Start building your next project with {site.name} today. Skip the complex setups and
+            start building features on day one.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
               role="link"
               size="lg"
               className="group h-12 px-8 text-base"
-              render={<a href={config.social.github} target="_blank" rel="noopener noreferrer" />}
+              render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
             >
               <RiGithubFill className="size-5" />
               Get ZeroStarter

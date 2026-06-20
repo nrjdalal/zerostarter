@@ -1,3 +1,4 @@
+import { site } from "@packages/config/site"
 import { RiArrowRightUpLine } from "@remixicon/react"
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     "AI-native Product Engineer building SaaS, developer tools, and AI agent infrastructure. Experience, projects, skills.",
   openGraph: {
     type: "website",
-    siteName: config.app.name,
+    siteName: site.name,
     url: `${config.app.url}/resume`,
     images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "Neeraj Dalal - Résumé" }],
   },

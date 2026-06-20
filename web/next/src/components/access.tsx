@@ -1,5 +1,6 @@
 "use client"
 
+import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill, RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { usePathname } from "next/navigation"
@@ -78,9 +79,9 @@ export function Access() {
               <div className="flex size-8 items-center justify-center rounded-md">
                 <RiLayoutGridFill className="size-6" />
               </div>
-              <span className="sr-only">{config.app.name}</span>
+              <span className="sr-only">{site.name}</span>
             </div>
-            <h1 className="text-xl font-semibold">Welcome to {config.app.name}</h1>
+            <h1 className="text-xl font-semibold">Welcome to {site.name}</h1>
           </div>
           <form
             id="email"

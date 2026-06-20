@@ -4,6 +4,7 @@ title: Sitemap
 description: Auto-generated sitemap for search engines.
 ---
 
+import { site } from "@packages/config/site"
 import { config } from "@/lib/config"
 
 ## Overview
@@ -22,7 +23,7 @@ The sitemap automatically includes:
 
 ## Access Points
 
-- <a href={`${config.app.url}/sitemap.xml`}>sitemap.xml</a> - Complete sitemap for {config.app.name}
+- <a href={`${config.app.url}/sitemap.xml`}>sitemap.xml</a> - Complete sitemap for {site.name}
 
 ## Implementation
 

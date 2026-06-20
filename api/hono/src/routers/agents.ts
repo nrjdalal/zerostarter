@@ -1,4 +1,5 @@
 import { auth } from "@packages/auth"
+import { site } from "@packages/config/site"
 import { db, user as userTable } from "@packages/db"
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
@@ -9,8 +10,8 @@ import { setCookie } from "hono/cookie"
 
 import { jsonError } from "@/lib/error"
 
-const AGENT_EMAIL = "agent@zerostarter.dev"
-const AGENT_NAME = "AgentZero"
+const AGENT_EMAIL = site.agent.email
+const AGENT_NAME = site.agent.name
 
 export const agentsRouter = new Hono()
   .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))

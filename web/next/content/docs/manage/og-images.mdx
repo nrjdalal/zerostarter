@@ -37,7 +37,7 @@ It renders with the `render` function from `takumi-js` (not `ImageResponse`), re
 To add OG images for a new content source, create a route at `web/next/src/app/og/<section>/[[...slug]]/route.tsx` that forwards to the shared helper:
 
 ```tsx
-import { config } from "@/lib/config"
+import { site } from "@packages/config/site"
 import { generateOgImage } from "@/lib/og-image"
 import { yourSource } from "@/lib/source"
 
@@ -49,7 +49,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   return generateOgImage(slug, {
     source: yourSource,
     sectionName: "Your Section",
-    defaultTitle: `${config.app.name} - Your Section`,
+    defaultTitle: `${site.name} - Your Section`,
     defaultDescription: `Your default description`,
   })
 }

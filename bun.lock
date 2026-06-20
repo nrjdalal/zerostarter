@@ -31,6 +31,7 @@
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
         "@packages/auth": "workspace:*",
+        "@packages/config": "workspace:*",
         "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
         "@scalar/hono-api-reference": "catalog:",
@@ -42,7 +43,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "concurrently": "catalog:",
@@ -71,6 +71,7 @@
       "version": "0.0.1",
       "devDependencies": {
         "tsdown": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/db": {
@@ -114,6 +115,7 @@
         "@base-ui/react": "catalog:",
         "@hookform/resolvers": "catalog:",
         "@packages/auth": "workspace:*",
+        "@packages/config": "workspace:*",
         "@packages/env": "workspace:*",
         "@posthog/react": "catalog:",
         "@remixicon/react": "catalog:",
@@ -148,7 +150,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@packages/config": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
         "@types/bun": "catalog:",

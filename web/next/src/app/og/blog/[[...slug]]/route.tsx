@@ -1,5 +1,6 @@
+import { site } from "@packages/config/site"
+
 import { generatePublicBlogParams, getPublicBlogPage } from "@/lib/blog"
-import { config } from "@/lib/config"
 import { generateOgImage } from "@/lib/og-image"
 import { blogSource } from "@/lib/source"
 
@@ -19,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   return generateOgImage(slug, {
     source: blogSource,
     sectionName: "Blog",
-    defaultTitle: `${config.app.name} - Blog`,
-    defaultDescription: `Blog post from ${config.app.name}`,
+    defaultTitle: `${site.name} - Blog`,
+    defaultDescription: `Blog post from ${site.name}`,
   })
 }

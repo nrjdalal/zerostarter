@@ -1,8 +1,8 @@
+import { site } from "@packages/config/site"
 import { notFound } from "next/navigation"
 import type { ReactElement } from "react"
 import { render } from "takumi-js"
 
-import { config } from "@/lib/config"
 import type { blogSource, docsSource } from "@/lib/source"
 
 type Source = typeof blogSource | typeof docsSource
@@ -40,7 +40,7 @@ export async function renderOgElement(element: ReactElement): Promise<Response> 
 
 export async function renderOgImage(options: RenderOgImageOptions): Promise<Response> {
   const { sectionName, title, description } = options
-  const label = sectionName ? `${config.app.name} - ${sectionName}` : config.app.name
+  const label = sectionName ? `${site.name} - ${sectionName}` : site.name
   const titleFontSize = title.length > 50 ? 52 : title.length > 30 ? 64 : 72
 
   const element = (

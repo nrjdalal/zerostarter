@@ -4,6 +4,7 @@ title: robots.txt
 description: Search engine crawler instructions.
 ---
 
+import { site } from "@packages/config/site"
 import { config } from "@/lib/config"
 
 ## Overview
@@ -22,7 +23,7 @@ The robots.txt file:
 ## Access Points
 
 - <a href={`${config.app.url}/robots.txt`}>robots.txt</a> - Crawler instructions for
-  {config.app.name}
+  {site.name}
 
 ## Implementation
 
