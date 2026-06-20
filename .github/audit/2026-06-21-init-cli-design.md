@@ -15,13 +15,12 @@ Grounded in two studies: the verified swap manifest (exact files/lines), and the
 - Package and bin: **`zerostarter`** (unscoped, single word), matching the `inscope` convention. Not `create-zerostarter`.
 - Run via `bunx zerostarter <command>` (or `npx zerostarter`).
 - Commands:
-  - `zerostarter new <dir> [name]`: scaffold a fresh product: clone zerostarter, run the init conversion, then re-init git. The one-shot path that replaces "gitpick then convert by hand".
-  - `zerostarter init [name|owner/repo]`: convert the clone in the current directory in place (no clone). Takes one optional name or repo; auto-detects from the git remote or the directory name if omitted.
+  - `zerostarter init [name|owner/repo]`: convert a fresh zerostarter clone in place into a clean product. Takes one optional name or repo; auto-detects from the git remote or the directory name if omitted. Getting the clone is gitpick's or GitHub's "Use this template" job, not the CLI's.
   - `zerostarter sync`: re-baseline a fork on upstream (absorbs the fork-sync skill).
   - `zerostarter doctor`: optional health check (leftover upstream branding, missing env scope, etc.).
   - Global: `-v/--version`, `-h/--help`, `-y/--yes` (non-interactive), `--dry-run`.
 
-`new` and `init` share one engine; `new` only adds the clone and git steps around it.
+Cloning the scaffold stays a one-liner (gitpick or GitHub "Use this template"); the CLI owns only the hard parts: the conversion (`init`) and the re-baseline (`sync`).
 
 ## 3. Build conventions (from inscope)
 
@@ -32,7 +31,7 @@ The CLI mirrors inscope so it matches the author's established taste and reuses 
 - **Build with tsdown** (two configs: library entry + bin entry), minified ESM into `dist/`, Node target, Bun for dev.
 - **Toolchain identical to zerostarter and inscope**: oxlint, oxfmt, lefthook, commitlint + config-conventional, changelogen, conventional commits, manual version bump then CI publish + tag.
 - **Reused patterns**: pure-render + apply generators with golden snapshot tests; atomic writes (temp + rename, preserve mode); flags-vs-interactive gating (a provided flag suppresses its prompt; `-y` and non-TTY force defaults); a read-only `--dry-run`/`diff` preview; a `doctor` health check; "Next steps" output after every mutating run.
-- **Scaffolder additions inscope lacks** (we add): template-tree copying, `git clone`/`init`, and the find/replace pass.
+- **Scaffolder additions inscope lacks** (we add): template-tree copying and the find/replace pass. No clone or git-init step: the user already has the clone.
 
 ## 4. Distribution and repo
 
@@ -107,7 +106,7 @@ So the converted tree still builds, the CLI carries minimal templates it drops i
 
 ## 8. Init flow
 
-1. Preflight: clean git tree (or fresh dir for `new`); confirm this is a zerostarter scaffold.
+1. Preflight: clean git tree; confirm this is a fresh zerostarter scaffold.
 2. Resolve the one input (arg, else git remote, else directory name); set the derived values and placeholder the rest.
 3. Class 1 structured swaps (atomic writes).
 4. Class 2 strip + drop templates; fix the navbar; regenerate `docs.config.ts` + `meta.json`.
@@ -115,8 +114,7 @@ So the converted tree still builds, the CLI carries minimal templates it drops i
 6. Class 4 meta scrub; remove the `init` skill.
 7. Find/replace stragglers (scoped, post-delete).
 8. Verify: `bun install`; `SKIP_ENV_VALIDATION=true bun run build`; brand-scan (`rg -i "zerostarter|nrjdalal|neeraj|dalal|agentzero"` returns only intentional refs).
-9. `new` only: re-init git (drop upstream history), initial commit.
-10. Print "Next steps" (set env from the fork's own scope, push, deploy).
+9. Print "Next steps" (fill the `site.ts` placeholders, set env from the fork's own scope, push, deploy).
 
 ## 9. Package layout (mirroring inscope)
 
@@ -124,9 +122,9 @@ So the converted tree still builds, the CLI carries minimal templates it drops i
 zerostarter/                      (its own repo)
   bin/
     index.ts                      shebang + parseArgs dispatch + help/version
-    commands/{new,init,sync,doctor}.ts
+    commands/{init,sync,doctor}.ts
     _prompt.ts                    text/confirm/select primitives (node:readline)
-    _git.ts                       clone, remote parse, init, commit
+    _git.ts                       remote parse (detect owner/repo)
   src/
     manifest.ts                   the swap manifest as data (files, ops, prompt-var map)
     prompts.ts                    gather + detect + validate inputs
@@ -147,8 +145,7 @@ zerostarter/                      (its own repo)
 
 ## 11. Open decisions (with recommendations)
 
-- **Clone method for `new`**: `git clone --depth=1 --branch main` then remove `.git` and re-init (clean history), vs `gitpick` (subtree, no `.git`). Recommend `git clone --depth=1` + re-init for a clean, single-commit start; keep `gitpick` documented for the manual path.
-- **Scope now**: ship `init` + `new` first, add `sync` second (porting #480). Recommend this split.
+- **Scope now**: ship `init` first, add `sync` second (porting #480). Recommend this split.
 - **Content aggressiveness**: strip to one doc + one blog + one console-runbook anchor with minimal templates (build-green), not a fully blank tree. Recommend the anchor approach.
 - **Repo location**: separate repo (recommended) vs a publish-only workspace in zerostarter.
 
@@ -159,6 +156,6 @@ zerostarter/                      (its own repo)
 - **P2** Class 1 generators (structured config swaps) + golden snapshots.
 - **P3** Class 2 content strip + templates + docs.config regeneration.
 - **P4** Class 3/4 assets prune + meta scrub + scoped find/replace.
-- **P5** `new` (clone + git) + verify (install/build/brand-scan) + Next steps.
+- **P5** Verify (install/build/brand-scan) + Next steps.
 - **P6** `sync` command (port the fork-sync procedure).
 - Every phase: golden tests, plus one real end-to-end run against a throwaway clone, brand-scanned to zero.
