@@ -22,7 +22,7 @@ function isPublishedBlogPost(page: BlogPage, now = new Date()): page is Publishe
   return !isBlogIndexPage(page) && isBlogPostPublished(page.data, now)
 }
 
-export function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
+function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
   return isBlogIndexPage(page) || isPublishedBlogPost(page, now)
 }
 

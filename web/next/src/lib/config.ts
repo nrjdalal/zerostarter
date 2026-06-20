@@ -22,5 +22,3 @@ export const config = {
     internalUrl: getInternalApiUrl(),
   },
 } as const
-
-export type Config = typeof config
