@@ -35,7 +35,9 @@ The robots.txt is implemented in `web/next/src/app/robots.ts` and configures:
   - `/api/` - API endpoints
   - `/console/` - Admin console routes
   - `/dashboard/` - Dashboard routes
-- **Sitemap**: References `${baseUrl}/sitemap.xml`
+- **Sitemap**: References `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`
+
+The starter ships with no `noindex` directive or `X-Robots-Tag` header, so the site is indexable out of the box.
 
 ## Rules
 

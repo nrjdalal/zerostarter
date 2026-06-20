@@ -9,7 +9,7 @@ import { config } from "@/lib/config"
 
 ## Overview
 
-`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. It's accessible at `/llms.txt`, `/blog.md`, `/blog.txt`, `/blog/*.md`, `/blog/*.txt`, `/docs.md`, `/docs.txt`, `/docs/*.md`, and `/docs/*.txt`.
+`llms.txt` is an auto-generated documentation endpoint that provides structured content for AI assistants. The index routes are `/llms.txt` (docs index), `/llms.txt/docs`, `/llms.txt/blog`, and `/llms-full.txt`. Per-page markdown is served through the `.md` and `.txt` aliases under `/docs/*` and `/blog/*`.
 
 ## How It Works
 
@@ -24,19 +24,26 @@ The endpoint automatically scans documentation and published blog content, gener
 
 - <a href={`${config.app.url}/llms.txt`}>llms.txt</a> - Index for complete documentation for
   {site.name}
-- <a href={`${config.app.url}/blog.md`}>blog.md</a> - Index for latest articles and updates about
-  {site.name}
-- `.md` and `.txt` aliases are available for individual blog and docs pages under `/blog/*` and
-  `/docs/*`
+- <a href={`${config.app.url}/llms.txt/blog`}>llms.txt/blog</a> - Index for latest articles and
+  updates about {site.name}
 - <a href={`${config.app.url}/llms-full.txt`}>llms-full.txt</a> - Complete documentation in one page
   for AI assistants
+- Per-page `.md` and `.txt` aliases for individual docs and blog pages, e.g.
+  `/docs/manage/llms-txt.md` or `/blog/<slug>.txt`
+
+Only the per-page `.md`/`.txt` aliases under `/docs/*` and `/blog/*` are rewritten (see `rewrites` in `web/next/next.config.ts`). The top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms are not routes and return 404; use `/llms.txt/docs` and `/llms.txt/blog` for the index views.
 
 ## Implementation
 
-The endpoint is implemented in `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts` and uses:
+Two route handlers back these endpoints, and both are `force-static` with `revalidate = 60`:
 
-- Automatic markdown generation with links and metadata
-- `docsSource` from Fumadocs for documentation
-- `blogSource` from Fumadocs for published blog content
+- `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts` serves `/llms.txt` and the `/llms.txt/docs` and `/llms.txt/blog` index views, plus every per-page alias rewritten from `/docs/*` and `/blog/*`. It uses `docsSource` and `blogSource` from Fumadocs, sorts docs by `meta.json` order, and lists only published blog posts via `getPublishedBlogPosts()`. Console docs are deliberately excluded (privacy boundary).
+- `web/next/src/app/(llms.txt)/llms-full.txt/route.ts` serves `/llms-full.txt`: every docs and blog page concatenated into one file, prefixed with `site.llmsFullPreamble` from `packages/config/src/site.ts`.
 
-Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`, which calls `page.data.getText("processed")`. That processed output only exists because each collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`, which is the gate that enables the processed-markdown output (see the Documentation page for more on this flag).
+Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`, which:
+
+- Calls `page.data.getText("processed")` and falls back to `getText("raw")` if the processed output is unavailable. The processed output exists because each collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true` (see the Documentation page for more on this flag).
+- Runs `decodeHTML` from the `entities` package to undo Fumadocs' HTML-escaping (e.g. `&#x2A;` back to `*`), so the LLM text is clean.
+- Prefixes each page with a `# [title](url)` heading linking back to the live page.
+
+The per-page docs handler also appends a footer pointing back to `/llms.txt` so an assistant can find the rest of the navigation.

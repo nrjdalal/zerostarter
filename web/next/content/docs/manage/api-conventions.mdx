@@ -31,16 +31,21 @@ All API responses use a standardized JSON envelope:
 }
 ```
 
+This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors.
+
 ### Error Codes
 
-| Code                    | Status | When                                                      |
-| ----------------------- | ------ | --------------------------------------------------------- |
-| `NOT_FOUND`             | 404    | Route does not exist                                      |
-| `UNAUTHORIZED`          | 401    | Missing or invalid session                                |
-| `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production) |
-| `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                       |
-| `VALIDATION_ERROR`      | 400    | Zod schema validation failed                              |
-| `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                    |
+| Code                    | Status | When                                                          |
+| ----------------------- | ------ | ------------------------------------------------------------- |
+| `NOT_FOUND`             | 404    | Route does not exist                                          |
+| `UNAUTHORIZED`          | 401    | Missing or invalid session                                    |
+| `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production)     |
+| `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                           |
+| `VALIDATION_ERROR`      | 400    | Zod schema validation failed                                  |
+| `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                        |
+| `AGENTS_LOGIN_FAILED`   | 500    | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
+
+Beyond these shared codes, individual routers may define route-specific codes by calling `jsonError(c, status, code, message)` directly (as `agents.ts` does for `AGENTS_LOGIN_FAILED`).
 
 ### Validation Errors
 
@@ -65,9 +70,9 @@ When a Zod validation fails, the response includes the full issues array:
 
 Every request passes through these global middlewares in order:
 
-1. **CORS** — Allows configured trusted origins with credentials
-2. **Logger** — Logs request/response to console
-3. **Rate Limiter** — Enforces per-key rate limits
+1. **CORS**: Allows configured trusted origins with credentials
+2. **Logger**: Logs request/response to console
+3. **Rate Limiter**: Enforces per-key rate limits
 
 ### CORS Configuration
 
@@ -84,10 +89,10 @@ Configured in `api/hono/src/index.ts`:
 
 The key generator resolves keys in this priority order:
 
-1. **User ID** — If authenticated (highest priority)
-2. **API Key** — Hash of `Authorization` header
-3. **IP Address** — Detected via [Arcjet IP](https://arcjet.com)
-4. **Random UUID** — Fallback if IP detection fails
+1. **User ID**: If authenticated (highest priority)
+2. **API Key**: Hash of `Authorization` header
+3. **IP Address**: Detected via [Arcjet IP](https://arcjet.com)
+4. **Random UUID**: Fallback if IP detection fails
 
 In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active; no limiter passes an API key, so that tier is dead until you wire `getApiKey` into a limiter.
 
@@ -125,6 +130,7 @@ Applied to protected routes (e.g., `/api/v1/*`):
 /api/openapi.json       → OpenAPI specification
 /api/docs               → Scalar API documentation UI
 /api/auth/*             → Better Auth handlers (session, OAuth, etc.)
+/api/auth/get-session   → Session endpoint hit by the Next server-side auth.api.getSession helper
 /api/agents/*           → Agent sign-in (local only, trusted Origin)
 /api/v1/*               → Protected routes (requires auth middleware)
   /api/v1/session       → Current session data
@@ -136,12 +142,13 @@ Applied to protected routes (e.g., `/api/v1/*`):
 1. Create or edit a router in `api/hono/src/routers/`:
 
 ```ts
+import type { Session } from "@packages/auth"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 import { authMiddleware } from "@/middlewares"
 
-export const v1Router = new Hono().use("/*", authMiddleware).get(
+export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddleware).get(
   "/items",
   describeRoute({
     tags: ["Items"],
@@ -163,6 +170,8 @@ export const v1Router = new Hono().use("/*", authMiddleware).get(
   },
 )
 ```
+
+The `new Hono<{ Variables: Session }>()` generic (with `import type { Session } from "@packages/auth"`) is what makes `c.get("user")` and `c.get("session")` typed, matching the real `v1Router`. The `authMiddleware` populates those context variables.
 
 2. Register in `api/hono/src/index.ts` if it's a new router. The app sets `.basePath("/api")`, so the route path is relative to `/api`:
 

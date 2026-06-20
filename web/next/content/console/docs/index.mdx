@@ -12,9 +12,13 @@ This documentation is private. It is served only inside the access-protected
 
 Console access requires `user.role === "admin"` ([Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin)). There is no env list; the `role` is set explicitly.
 
-- **Bootstrap the first admin:** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`), or `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
-- **Manage the rest from the console:** an admin sets others' `user.role` via the plugin's `setRole` (the console user-management dashboard). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
+- **Bootstrap the first admin:** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`), or `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`. The `console:roles` script talks to the database directly, so `POSTGRES_URL` must be set in your environment (load your `.env`); it exits with an error otherwise.
+- **Manage roles:** there is no user-management dashboard yet (the console root page renders `null`). For now, set `user.role` with the `console:roles` CLI or directly via SQL (the same commands used to bootstrap the first admin). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
 - The guard reads the session with `disableCookieCache`, so a grant/revoke takes effect on the next `/console` request (it does not wait out the 5-minute `session.cookieCache`). To cut an account off everywhere immediately, ban it or revoke its sessions.
+
+## Local agent access
+
+The local **Login (agents)** sign-in (`api/hono/src/routers/agents.ts`) signs in as the `AgentZero` user and grants it `role: "admin"`, so that account has full console access. This is local-only: the route is gated by `isLocal(NODE_ENV)` and a trusted `Origin` header, and returns a 404 anywhere else. It is for local development and agent workflows, not a production access path.
 
 ## Sections
 

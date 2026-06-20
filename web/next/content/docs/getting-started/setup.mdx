@@ -12,7 +12,7 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (v1.3.0 or later)
+- [Bun](https://bun.sh) (v1.3.10 or later, matching the repo's `packageManager` pin)
 
 ### Setup
 
@@ -79,6 +79,8 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    # Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
    NEXT_PUBLIC_USERJOT_URL=
    ```
+
+   > **Note**: Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
 
 ### Database Setup
 

@@ -62,24 +62,42 @@ const data = await res.json()
 
 ### Adding New Routes
 
-Define routes in `api/hono/src/routers/`:
+Define routes in `api/hono/src/routers/`. Typing the `Hono` instance with `{ Variables: Session }` makes `c.get("session")` and `c.get("user")` fully typed after the auth middleware runs:
 
 ```ts
 // api/hono/src/routers/v1.ts
+import type { Session } from "@packages/auth"
 import { Hono } from "hono"
+import { describeRoute, resolver } from "hono-openapi"
+import { z } from "zod"
+
 import { authMiddleware } from "@/middlewares"
 
-export const v1Router = new Hono()
+export const v1Router = new Hono<{
+  Variables: Session
+}>()
   .use("/*", authMiddleware)
-  .get("/session", (c) => {
-    const data = c.get("session")
-    return c.json({ data })
-  })
-  .post("/items", async (c) => {
-    const body = await c.req.json()
-    const data = { id: "123", ...body }
-    return c.json({ data })
-  })
+  .get(
+    "/session",
+    describeRoute({
+      tags: ["v1"],
+      description: "Get current session only",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ data: z.object({ id: z.string() }) })),
+            },
+          },
+        },
+      },
+    }),
+    (c) => {
+      const data = c.get("session")
+      return c.json({ data })
+    },
+  )
 ```
 
 ### Request Validation
@@ -110,16 +128,18 @@ The API client is configured in `web/next/src/lib/api/client.ts`:
 ```ts
 import type { AppType } from "@api/hono"
 import { hc } from "hono/client"
+
 import { config } from "@/lib/config"
 
 type Client = ReturnType<typeof hc<AppType>>
+
 const hcWithType = (...args: Parameters<typeof hc>): Client => hc<AppType>(...args)
 
 const url = config.api.internalUrl ? config.api.internalUrl : config.api.url
 
 const honoClient = hcWithType(url, {
   init: {
-    credentials: "include", // Include cookies for auth
+    credentials: "include",
   },
 })
 
@@ -166,6 +186,7 @@ app.get(
               z.object({
                 data: z.object({
                   message: z.string(),
+                  version: z.string(),
                   environment: z.string(),
                 }),
               }),
@@ -176,7 +197,7 @@ app.get(
     },
   }),
   (c) => {
-    const data = { message: "ok", environment: "production" }
+    const data = { message: "ok", version: "1.0.0", environment: "production" }
     return c.json({ data })
   },
 )

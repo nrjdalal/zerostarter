@@ -22,6 +22,10 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
 2. **Changelog Generation**: The release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
 
+## Feature PRs into canary
+
+Day-to-day work lands on `canary` through feature PRs. **Squash-merge** these so each PR becomes a single commit on `canary`, and delete the branch afterward to keep the remote clean (the `auto-labeler.yml` workflow posts this guidance on every PR opened against `canary`). The merge-commit method is reserved for the `canary` → `main` release PR below, which is what lets `main` keep shared history with `canary`.
+
 ## Workflow
 
 The release pipeline spans two workflows. Only the `canary` → `main` PR is reviewed by a human; everything after it is automatic.
@@ -52,7 +56,7 @@ Mark the draft ready, review it, and merge it into `main` with a merge commit. M
 
 ### Changelog, version, and release (automatic)
 
-`auto-release.yml` checks out `canary` directly (there is no separate `changelog` branch) and:
+`auto-release.yml` checks out `canary` directly (there is no separate `changelog` branch, despite the workflow's job being named "Update changelog branch": that name is just a label, and the actual behavior is a direct commit to `canary`) and:
 
 - Generates `CHANGELOG.md` with `changelogen --bump` from the last `v*` tag
 - Bumps the version in `package.json`
@@ -69,6 +73,14 @@ The changelog commit is mechanical (generated from already-reviewed PR titles), 
 ### Build Checks
 
 `auto-check-build.yml` runs on pull requests targeting `canary` or `main` (and on pull request reviews), executing `bun audit --audit-level high`, `bun run lint`, and `bun run build` with `NODE_ENV=production` and `SKIP_ENV_VALIDATION=true`.
+
+The same workflow also runs `auto-labeler.yml`, which adds package/area labels (and merge-method guidance) plus a dynamic approval label (`0/1`, `1/1`, or `APPROVED`) used to gate the release PR.
+
+## Production Deployment
+
+Both `main` and `canary` deploy through Vercel (configured by the `vercel.json` files under `web/next/` and `api/hono/`). Database migrations are not applied by the Next.js build: they run during the API build via `.github/scripts/migrate-on-deploy.ts`, which is invoked from `api/hono/vercel.json`'s `buildCommand` before the API is built.
+
+`migrate-on-deploy.ts` only applies pending Drizzle migrations when `VERCEL_ENV=production` **or** the deploy ref is `canary`; on every other deploy (including PR previews) it logs a skip and exits, so an unmerged migration is never applied against the shared database from a preview. Because the migration runs at build time, a valid `POSTGRES_URL` must be available to the production and `canary` builds (preview builds skip the step and do not need it).
 
 ## GitHub Releases
 
