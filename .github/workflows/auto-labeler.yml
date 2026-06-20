@@ -374,7 +374,7 @@ jobs:
             try {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: prNumber,
-                body: `${marker}\n> [!IMPORTANT]\n> Merge with a **squash commit** (not merge), so canary stays one commit per PR and shared-history merges stay reserved for release PRs.`
+                body: `${marker}\n> [!IMPORTANT]\n> Merge with a **squash commit** (not merge), so canary stays one commit per PR and shared-history merges stay reserved for release PRs.\n> Delete the branch after merging to keep the remote clean.`
               });
               console.log('Posted merge-method guidance comment.');
             } catch (error) {

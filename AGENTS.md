@@ -5,9 +5,11 @@ This file provides guidance to AI coding agents when working with code in this r
 ## Instructions
 
 - ALWAYS: Use `@/` for imports, if applicable.
+- ALWAYS: Keep documentation in sync with every change. Whenever code, structure, conventions, or tooling change, update the matching docs in the same change (e.g. `web/next/content/docs/`, `README.md`, the `llms.txt`/`llms-full.txt` context routes, skill docs under `.agents/skills/` and `.claude/skills/`, and these agent guides `AGENTS.md`/`CLAUDE.md`). Docs must never drift.
 - NEVER: Include "Co-authored-by" in commit messages.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
+- Write audit reports (any kind) to `.github/audit/` as dated files (`YYYY-MM-DD-<topic>.md`).
 
 ## Logging in (agents)
 

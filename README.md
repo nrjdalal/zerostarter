@@ -44,7 +44,7 @@ This project is a monorepo organized as follows:
     ├── auth/      # Shared authentication logic (Better Auth)
     ├── db/        # Database schema and Drizzle configuration
     ├── env/       # Type-safe environment variables
-    └── tsconfig/  # Shared TypeScript configuration
+    └── config/    # Shared build config (TS base + tsdown)
 ```
 
 📖 **[View full architecture →](https://zerostarter.dev/docs/getting-started/architecture)**

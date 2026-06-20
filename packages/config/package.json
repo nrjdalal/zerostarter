@@ -1,0 +1,17 @@
+{
+  "name": "@packages/config",
+  "version": "0.0.1",
+  "private": true,
+  "files": [
+    "tsconfig.json",
+    "tsdown.ts"
+  ],
+  "type": "module",
+  "exports": {
+    "./tsconfig.json": "./tsconfig.json",
+    "./tsdown": "./tsdown.ts"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:"
+  }
+}

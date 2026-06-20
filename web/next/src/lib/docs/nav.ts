@@ -24,3 +24,8 @@ export function resolveDocsNav(collection: keyof typeof docsConfig): NavGroup[] 
     items: resolveItems(items as DocsItem[]),
   }))
 }
+
+// True when the pathname sits inside a docs collection (any "docs" path segment, e.g. /docs/* or /console/docs/*). Single source for the docs-mode UX: offcanvas sidebar + desktop edge tab.
+export function isDocsPath(pathname: string): boolean {
+  return pathname.split("/").includes("docs")
+}

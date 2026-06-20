@@ -79,7 +79,7 @@ const nodeSizes: Record<string, number> = {
   "@packages/auth": await dirSize("packages/auth/dist", "*.d.mts"),
   "@packages/db": await dirSize("packages/db/dist", "*.d.mts"),
   "@packages/env": await dirSize("packages/env/dist", "*.d.mts"),
-  "@packages/tsconfig": 0,
+  "@packages/config": 0,
 }
 
 // turbo 2.x renders --graph=*.svg with its own renderer, so emit DOT and render via
@@ -114,11 +114,11 @@ const svg = rendered
   .replaceAll('fill="white"', 'fill="none"')
   .replaceAll('fill="#ffffff"', 'fill="none"')
   .replaceAll('fill="#fff"', 'fill="none"')
-  .replaceAll('fill="black"', 'fill="#f97316"')
-  .replace(/stroke="[^"]*"/g, 'stroke="#f97316"')
-  .replace(/stroke:[^;]*;/g, "stroke:#f97316;")
-  .replace(/<text([^>]*)>/g, '<text$1 fill="#f97316">')
-  .replaceAll('stroke="#f97316" points="-4,4', 'stroke="none" points="-4,4')
+  .replaceAll('fill="black"', 'fill="#3b82f6"')
+  .replace(/stroke="[^"]*"/g, 'stroke="#3b82f6"')
+  .replace(/stroke:[^;]*;/g, "stroke:#3b82f6;")
+  .replace(/<text([^>]*)>/g, '<text$1 fill="#3b82f6">')
+  .replaceAll('stroke="#3b82f6" points="-4,4', 'stroke="none" points="-4,4')
 
 await Bun.write(OUTPUT, svg)
 console.log(`graph-build: wrote ${OUTPUT} (${(svg.length / 1024).toFixed(1)} kB)`)

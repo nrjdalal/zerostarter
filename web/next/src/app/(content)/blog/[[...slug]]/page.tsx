@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-import { generatePublicBlogParams, isBlogIndexPage, isPublicBlogPage } from "@/lib/blog"
+import { generatePublicBlogParams, getPublicBlogPage, isBlogIndexPage } from "@/lib/blog"
 import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
 import { blogSource } from "@/lib/source"
 
@@ -14,9 +13,8 @@ export function generateStaticParams() {
 }
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
-  const params = await props.params
-  const page = blogSource.getPage(params.slug)
-  if (!page || !isPublicBlogPage(page)) notFound()
+  const { slug } = await props.params
+  const page = getPublicBlogPage(slug)
 
   return renderPageContent({ page, source: blogSource })
 }
@@ -25,8 +23,7 @@ export async function generateMetadata(props: {
   params: Promise<{ slug?: string[] }>
 }): Promise<Metadata> {
   const params = await props.params
-  const page = blogSource.getPage(params.slug)
-  if (!page || !isPublicBlogPage(page)) notFound()
+  const page = getPublicBlogPage(params.slug)
 
   return generatePageMetadata(Promise.resolve(params), {
     source: blogSource,
