@@ -51,14 +51,15 @@ socialProviders: {
 
 ## Console Access
 
-The privileged `/console` area uses the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access when **either** the user's `role === "admin"` **or** the user's verified email is listed in `CONSOLE_ADMIN_EMAILS`; everyone else gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a role change takes effect on the next request rather than waiting out the session cache.
+The privileged `/console` area uses the [Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin) (`packages/auth/src/index.ts`), which adds a `role` column to the `user` table (`packages/db/src/schema/auth.ts`). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else stays on the default `user` role and gets a `notFound()`. The guard reads the session with `disableCookieCache`, so a grant or revoke takes effect on the next request rather than waiting out the session cache.
 
-Two complementary ways to grant access:
+There is no env-based access list — the `role` is the single source of truth, set explicitly:
 
-- **Bootstrap root admins (env):** list emails in `CONSOLE_ADMIN_EMAILS` (comma-separated) in `packages/env/src/web-next.ts`. These are checked at the gate against the signed-in user's email, so a listed account gets console access with no DB write and no re-login. This is the break-glass path for a fresh deploy.
-- **Dashboard-assigned roles (DB):** an admin sets `user.role` via the plugin's `setRole` API (the basis for a console user-management dashboard), or directly with `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
+- **Helper script (manual):** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`). It writes `user.role` directly via `POSTGRES_URL`. Use this to bootstrap the first admin.
+- **Or** `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
+- **Or**, once an admin exists, the plugin's `setRole` API — the basis for the console user-management dashboard, where admins manage everyone else's roles.
 
-The gate check is evaluated only on `/console` requests (against the already-loaded session), so normal logins never pay for it. For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user.
+For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user for local development.
 
 ## Organizations & Teams
 
