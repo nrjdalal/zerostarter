@@ -19,7 +19,7 @@ The architecture is sound. Package layering is clean and acyclic (`env ← db �
 | 5   | ✅ ~~Resolve the `SidebarTrigger` fork (retire dead shadcn export / `zeroui/` one-file namespace)~~ (done in #481: extended via post-sync generator, `zeroui/` retired)                         | medium     | ✓ verified | S      |
 | 6   | ✅ ~~Collapse 3 near-identical `tsdown.config.ts` into a shared factory~~ (done in #481: `@packages/tsconfig`→`@packages/config` + a `definePackageConfig` factory)                             | low        | high       | M      |
 | 7   | ✅ ~~`getPublicBlogPage()` helper to replace the 4× blog resolve-and-gate~~ (done in #481: `getPublicBlogPage(slug, now?)` in `lib/blog.ts`, all 4 sites gate through it)                       | medium     | high       | S      |
-| 8   | ⏭️ Shared sidebar dropdown shell for user-menu + org-switcher (deferred to its own PR)                                                                                                          | medium     | high       | M      |
+| 8   | ✅ ~~Shared sidebar dropdown shell for user-menu + org-switcher~~ (done in #484: `SidebarDropdownMenu` shell; consumers supply leading + identity + items)                                      | medium     | high       | M      |
 | 9   | 🚫 ~~Stop mirroring `.gitignore` into `.dockerignore` 1:1~~ (won't fix: keep the `.gitignore`/`.dockerignore` mirror in sync; Docker-only divergence not worth it)                              | medium     | high       | S      |
 | 10  | 🚫 ~~Remove dead env exports (`isDevelopment`/`isTest`/`isStaging`/`NodeEnv` re-export)~~ (won't fix: kept as intentional env API surface for downstream apps; all 5 checkers verified working) | low        | ✓ verified | S      |
 | 11  | ✅ ~~`jsonError()` helper for the 6 hand-written API error envelopes~~ (done in #481: `jsonError(c, status, code, message, extra?)` in `lib/error.ts`, all sites routed through it)             | low        | high       | S      |
@@ -64,6 +64,7 @@ Same `const page = blogSource.getPage(slug); if (!page || !isPublicBlogPage(page
 
 Identical trigger className (`user-menu.tsx:41`, `org-switcher.tsx:125`), identical content className (`user-menu.tsx:56`, `org-switcher.tsx:143`), and the identity block (`grid flex-1 text-left text-sm leading-tight` + truncated name/secondary) appears 4× (`user-menu.tsx:49,68`, `org-switcher.tsx:132,154`).
 **Fix:** extract a `SidebarDropdownMenu` shell (icon/avatar + primary/secondary slots + content wrapper); consumers supply only menu items.
+**Done (#484):** `SidebarDropdownMenu` (`components/sidebar/dropdown-menu.tsx`) owns the trigger, the identity header, and the content wrapper (`align`/`mobileSide`); `user-menu` and `org-switcher` pass only `leading`/`primary`/`secondary` + items. Behaviour-preserving — consumer slots keep the per-component deltas (avatar vs icon box, muted secondary, distinct trigger/header fallback text). Verified in-browser: both dropdowns render trigger + identity header + items correctly.
 
 ### 1.7 API error envelope hand-written in ~6 places
 
