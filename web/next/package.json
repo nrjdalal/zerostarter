@@ -11,7 +11,6 @@
   "dependencies": {
     "@api/hono": "workspace:*",
     "@base-ui/react": "catalog:",
-    "@hookform/resolvers": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
@@ -38,7 +37,6 @@
     "react": "catalog:",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:",
-    "react-hook-form": "catalog:",
     "react-resizable-panels": "catalog:",
     "recharts": "catalog:",
     "shiki": "catalog:",
