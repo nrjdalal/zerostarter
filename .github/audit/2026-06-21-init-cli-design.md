@@ -15,8 +15,8 @@ Grounded in two studies: the verified swap manifest (exact files/lines), and the
 - Package and bin: **`zerostarter`** (unscoped, single word), matching the `inscope` convention. Not `create-zerostarter`.
 - Run via `bunx zerostarter <command>` (or `npx zerostarter`).
 - Commands:
-  - `zerostarter new <dir>`: scaffold a fresh product: clone zerostarter, then run the init conversion, then re-init git. The one-shot path that replaces "gitpick then convert by hand".
-  - `zerostarter init`: convert the clone in the current directory in place (no clone). For people who already gitpicked.
+  - `zerostarter new <dir> [name]`: scaffold a fresh product: clone zerostarter, run the init conversion, then re-init git. The one-shot path that replaces "gitpick then convert by hand".
+  - `zerostarter init [name|owner/repo]`: convert the clone in the current directory in place (no clone). Takes one optional name or repo; auto-detects from the git remote or the directory name if omitted.
   - `zerostarter sync`: re-baseline a fork on upstream (absorbs the fork-sync skill).
   - `zerostarter doctor`: optional health check (leftover upstream branding, missing env scope, etc.).
   - Global: `-v/--version`, `-h/--help`, `-y/--yes` (non-interactive), `--dry-run`.
@@ -88,23 +88,27 @@ Config is centralized: editing `site.ts` rebrands every dynamic surface (metadat
 ### Find/replace stragglers (run only AFTER the Class 2/3 deletes)
 
 Apply most-specific first, and exclude `.agents/skills/{init,fork-sync}/` (intentional upstream refs), `CHANGELOG.md` (never ported), and `.github/audit/`:
-`agent@zerostarter.dev` -> agentEmail; full GitHub/X/Discord URLs -> the prompt values; `nrjdalal/zerostarter` -> `{owner}/{repo}`; `zerostarter.dev` -> appHost; `AgentZero` -> agentName; `/tmp/zerostarter-dev.log` -> `/tmp/{repoName}-dev.log`; `zerostarter-web` -> `{repoName}-web`; bare `zerostarter` -> repoName. The load-bearing config is handled by Class 1 structured edits; reserve the token sweep for meta-doc/skill stragglers.
+`agent@zerostarter.dev` -> agentEmail placeholder; full GitHub/X/Discord URLs -> the derived or placeholder values; `nrjdalal/zerostarter` -> `{owner}/{repo}`; `zerostarter.dev` -> appHost; `AgentZero` -> agentName; `/tmp/zerostarter-dev.log` -> `/tmp/{repoName}-dev.log`; `zerostarter-web` -> `{repoName}-web`; bare `zerostarter` -> repoName. The load-bearing config is handled by Class 1 structured edits; reserve the token sweep for meta-doc/skill stragglers.
 
-## 6. Prompts (minimal set) and detection
+## 6. Input: one value, the rest are placeholders
 
-Required (★ auto-detected, confirm-only): **productName, productDescription, productTagline, repoOwner★, repoName★, authorName, appUrl**. Everything else has a safe default (genericize, empty, or delete).
+The CLI does not interrogate the user. It takes a single input and leaves everything else as a clear placeholder the user fills in later (in `site.ts` and `package.json`, which are already the one-stop config).
 
-- Detect, do not prompt: `repoOwner`/`repoName` from `git remote get-url origin` (else prompt); `authorName`/`authorEmail` from `git config`; `currentYear` from the clock; `githubUrl` composed from owner/repo; `agentName`/`agentEmail` defaulted from the product name.
-- Flag-or-prompt for each (so `--yes`/CI is fully non-interactive).
+- **The one input**: a project name, or a GitHub `owner/repo`. Resolution order: the positional arg (`zerostarter init <name|owner/repo>`), else the `origin` git remote (`owner/repo`), else the directory name. A single confirm is the only interaction, and `--yes` skips even that.
+- **Derived from the input** (the only values the CLI actually sets): the project name (`site.name`), the package name, and, when an `owner/repo` is known, the repository URLs (`package.json` `repository`/`homepage`/`bugs`, `site.social.github`, `rulesets` `source`, the changelog fallback, the build-graph label, the docker-compose name). A bare name with no repo leaves the repo URLs as a `your-org/<name>` placeholder.
+- **Left as placeholders for the user** (NOT prompted): `site.ts` `description`, `tagline`, `social.x`, `social.discord`, `agent.{name,email}`; `package.json` `author` and `funding`; `LICENSE.md` holder; the `.env.example` doc-link host. Each gets an obvious placeholder (for example `"TODO: your product description"`) so a brand-scan and a glance at `site.ts` show exactly what is left to fill.
+- **Emptied, never carried** (starter dev-meta that must not leak): `site.llmsFullPreamble` and `site.apiReferenceDescription` reset to `""`; `.infisical.json` deleted.
+
+So `init` is essentially: `zerostarter init` plus one name, and you get a building, de-branded canvas; fill the details whenever.
 
 ## 7. Templates the CLI ships
 
-So the converted tree still builds, the CLI carries minimal templates it drops in after stripping: a generic `page.tsx` home, a minimal `README.md`, `docs/index.mdx`, a genericized `blog/index.mdx`, and an optional placeholder `og/home.png`/`favicon.ico`. These are rendered from the prompt vars (pure-render functions, golden-snapshot tested).
+So the converted tree still builds, the CLI carries minimal templates it drops in after stripping: a generic `page.tsx` home, a minimal `README.md`, `docs/index.mdx`, a genericized `blog/index.mdx`, and an optional placeholder `og/home.png`/`favicon.ico`. These are rendered from the input and placeholder values (pure-render functions, golden-snapshot tested).
 
 ## 8. Init flow
 
 1. Preflight: clean git tree (or fresh dir for `new`); confirm this is a zerostarter scaffold.
-2. Detect git remote + git config; gather the rest via prompts (or flags).
+2. Resolve the one input (arg, else git remote, else directory name); set the derived values and placeholder the rest.
 3. Class 1 structured swaps (atomic writes).
 4. Class 2 strip + drop templates; fix the navbar; regenerate `docs.config.ts` + `meta.json`.
 5. Class 3 assets prune/replace.
@@ -151,11 +155,10 @@ zerostarter/                      (its own repo)
 ## 12. Implementation phases
 
 - **P0** Scaffold the `zerostarter` package (inscope conventions: tsdown dual build, bin dispatch, `_prompt.ts`, toolchain).
-- **P1** Prompts + git-remote/config detection + validation + `--dry-run`/`--yes`.
+- **P1** Resolve the single input (arg / git remote / dir name) + the placeholder map + validation + `--dry-run`/`--yes`.
 - **P2** Class 1 generators (structured config swaps) + golden snapshots.
 - **P3** Class 2 content strip + templates + docs.config regeneration.
 - **P4** Class 3/4 assets prune + meta scrub + scoped find/replace.
 - **P5** `new` (clone + git) + verify (install/build/brand-scan) + Next steps.
 - **P6** `sync` command (port the fork-sync procedure).
 - Every phase: golden tests, plus one real end-to-end run against a throwaway clone, brand-scanned to zero.
-  </content>
