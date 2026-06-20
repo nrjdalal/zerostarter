@@ -10,11 +10,11 @@ This documentation is private. It is served only inside the access-protected
 
 ## Access
 
-Console access is controlled by the `console` field on the user record:
+Console access requires `user.role === "admin"` ([Better Auth Admin plugin](https://www.better-auth.com/docs/plugins/admin)). There is no env list; the `role` is set explicitly.
 
-- Grant it with `UPDATE "user" SET console = 'admin' WHERE email = '…';` (or `bun run db:studio`). It is intentionally not settable through the auth API.
-- Any non-empty value grants full console access today; there is no per-role differentiation yet.
-- Sessions are cached for up to 5 minutes (`session.cookieCache`), so granting or revoking access can take up to ~5 minutes to take effect (or until the user signs in again). To cut off an account immediately, revoke its sessions rather than only clearing `console`.
+- **Bootstrap the first admin:** `bun run console:roles grant you@example.com` (also `revoke <email>` and `list`), or `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
+- **Manage the rest from the console:** an admin sets others' `user.role` via the plugin's `setRole` (the console user-management dashboard). Roles are `admin` and the default `user`; finer tiers can be added later via the plugin's access control.
+- The guard reads the session with `disableCookieCache`, so a grant/revoke takes effect on the next `/console` request (it does not wait out the 5-minute `session.cookieCache`). To cut an account off everywhere immediately, ban it or revoke its sessions.
 
 ## Sections
 
