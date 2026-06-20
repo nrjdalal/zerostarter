@@ -29,12 +29,17 @@ Marker sweep used: `zerostarter | nrjdalal | neeraj | dalal | agentzero | discor
 - `web/next/content/docs/**/*.mdx` — generic starter docs that NAME ZeroStarter / `zerostarter.dev` / repo URLs in prose. Highest: `deployment/docker.mdx` (11), `getting-started/setup.mdx` (7), `getting-started/{roadmap,architecture}.mdx` (4), `contributing.mdx` (4), `resources/ide-setup.mdx` (3), `manage/authentication.mdx` (3), `deployment/vercel.mdx` (3); plus ~1 each across most `manage/*`. KEEP content, scrub naming/links.
 - `web/next/content/console/docs/{index,runbooks/incident-response}.mdx` + `meta.json` — "ZeroStarter admin console". KEEP, de-brand.
 
-## E. Dynamic content surfaces — config-driven (no edits); they EMIT B/C/D
+## E. Dynamic content surfaces — mostly config-driven, EXCEPT a hardcoded starter-meta preamble
 
-- `web/next/src/lib/llms.ts` + `(llms.txt)/llms.txt/[[...slug]]/route.ts` + `(llms.txt)/llms-full.txt/route.ts` — assemble ALL docs+blog bodies + `config.app.url`. (This is the "LLM text" you saw exposing custom content.)
-- `web/next/src/app/sitemap.ts`, `web/next/src/app/robots.ts` — `config.app.url` + every doc/blog URL.
-- `web/next/src/app/og/{route,home/route,docs/[[...slug]]/route,blog/[[...slug]]/route}.tsx` + `web/next/src/lib/og-image.tsx` — render `config.app.name` into images.
-- Disposition: none directly; they auto-rebrand from config and shrink as B/C/D are stripped.
+Name/description/URL bits are config-driven (from `site` + env) and auto-rebrand. But one surface carries hardcoded **starter dev-meta** a product fork must NOT expose:
+
+- `(llms.txt)/llms-full.txt/route.ts` — **~85-line hardcoded preamble**: monorepo structure, workspace import examples, canonical tech stack, and project rules (no-semicolons, Drizzle migrations, env conventions). This is starter onboarding meta — fine on `zerostarter.dev` (a dev tool), wrong for a product's `llms-full`. **INIT: replace with a minimal product header** (`site.name`/`site.description` + the scanned docs/blog). Largely redundant anyway with the architecture/project-structure docs already scanned in. NOT config to centralize — strip/replace at init.
+- `(llms.txt)/llms.txt/[[...slug]]/route.ts` — header + index; name/description from `site`. Generic structure, KEEP (config-driven).
+- `web/next/src/lib/llms.ts` — `getLLMText` wrapper. Generic, KEEP.
+- `web/next/src/app/sitemap.ts`, `web/next/src/app/robots.ts` — `config.app.url` + doc/blog URLs. Config-driven, KEEP.
+- `web/next/src/app/og/{route,home/route,docs/[[...slug]]/route,blog/[[...slug]]/route}.tsx` + `web/next/src/lib/og-image.tsx` — render `site.name`. Config-driven, KEEP.
+
+zerostarter keeps the preamble; the init strips it for product forks. **General principle:** "generic to the starter" is not the same as "keep for a product" — starter dev-meta (stack/conventions) is still strip/replace at init. This likely also applies to parts of the **Manage docs (D)** that describe the starter's own tooling — revisit.
 
 ## F. Assets
 
