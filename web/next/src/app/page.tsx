@@ -371,6 +371,30 @@ bun dev`
             <Card className="hover:border-primary/50 border-2 transition-colors">
               <CardHeader>
                 <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiGroupLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Organizations & Teams</CardTitle>
+                <CardDescription>
+                  Multi-tenant out of the box with Better Auth: organizations, teams, member roles,
+                  and invitations, plus an org switcher in the dashboard.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiShieldKeyholeLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Admin Console & Roles</CardTitle>
+                <CardDescription>
+                  Role-based admin area at /console, gated by user role via the Better Auth admin
+                  plugin. Ships with internal docs and runbooks.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
                   <RiDatabase2Line className="text-primary size-6" />
                 </div>
                 <CardTitle>Database & ORM</CardTitle>
@@ -383,12 +407,12 @@ bun dev`
             <Card className="hover:border-primary/50 border-2 transition-colors">
               <CardHeader>
                 <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiFlashlightLine className="text-primary size-6" />
+                  <RiSpeedLine className="text-primary size-6" />
                 </div>
-                <CardTitle>High Performance</CardTitle>
+                <CardTitle>Rate-Limited API</CardTitle>
                 <CardDescription>
-                  Built on Bun runtime and Turborepo for lightning-fast development and builds.
-                  Optimized for production.
+                  Built-in API rate limiting per IP, user, or API key, with sensible defaults and
+                  full configuration via environment variables.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -419,24 +443,12 @@ bun dev`
             <Card className="hover:border-primary/50 border-2 transition-colors">
               <CardHeader>
                 <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiRocketLine className="text-primary size-6" />
+                  <RiFlashlightLine className="text-primary size-6" />
                 </div>
-                <CardTitle>One-Click Deployment</CardTitle>
+                <CardTitle>High Performance</CardTitle>
                 <CardDescription>
-                  Docker and Vercel configurations included. Deploy to production in minutes, not
-                  days. Pre-configured CI/CD.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiBookOpenLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Documentation & llms.txt</CardTitle>
-                <CardDescription>
-                  Fumadocs with auto-generated llms.txt endpoint. Full-text search and structured
-                  content for AI assistants.
+                  Built on Bun runtime and Turborepo for lightning-fast development and builds.
+                  Optimized for production.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -479,48 +491,36 @@ bun dev`
             <Card className="hover:border-primary/50 border-2 transition-colors">
               <CardHeader>
                 <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiBookOpenLine className="text-primary size-6" />
+                </div>
+                <CardTitle>Documentation & llms.txt</CardTitle>
+                <CardDescription>
+                  Fumadocs with auto-generated llms.txt endpoint. Full-text search and structured
+                  content for AI assistants.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
+                  <RiRocketLine className="text-primary size-6" />
+                </div>
+                <CardTitle>One-Click Deployment</CardTitle>
+                <CardDescription>
+                  Docker and Vercel configurations included. Deploy to production in minutes, not
+                  days. Pre-configured CI/CD.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary/50 border-2 transition-colors">
+              <CardHeader>
+                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
                   <RiGitBranchLine className="text-primary size-6" />
                 </div>
                 <CardTitle>Automated Releases</CardTitle>
                 <CardDescription>
                   Automated changelog generation and release workflow. Draft PRs for canary to main
                   and changelog updates.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiGroupLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Organizations & Teams</CardTitle>
-                <CardDescription>
-                  Multi-tenant out of the box with Better Auth: organizations, teams, member roles,
-                  and invitations, plus an org switcher in the dashboard.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiShieldKeyholeLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Admin Console & Roles</CardTitle>
-                <CardDescription>
-                  Role-based admin area at /console, gated by user role via the Better Auth admin
-                  plugin. Ships with internal docs and runbooks.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiSpeedLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Rate-Limited API</CardTitle>
-                <CardDescription>
-                  Built-in API rate limiting per IP, user, or API key, with sensible defaults and
-                  full configuration via environment variables.
                 </CardDescription>
               </CardHeader>
             </Card>

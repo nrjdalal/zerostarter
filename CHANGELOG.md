@@ -1,3 +1,15 @@
+## v0.0.34
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.33...v0.0.34)
+
+### 🚀 Enhancements
+
+- **web:** Refresh the marketing landing and drop the RC status ([#493](https://github.com/nrjdalal/zerostarter/pull/493))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.33
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.32...v0.0.33)
