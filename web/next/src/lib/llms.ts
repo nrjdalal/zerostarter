@@ -1,3 +1,5 @@
+import { decodeHTML } from "entities"
+
 import { config } from "@/lib/config"
 
 type LLMPage = {
@@ -20,6 +22,9 @@ export async function getLLMText(page: LLMPage) {
   } catch {
     body = (await page.data.getText("raw")).trim()
   }
+
+  // Fumadocs' processed markdown HTML-escapes some chars (e.g. **bold** -> &#x2A;*); decode so the LLM text is clean.
+  body = decodeHTML(body)
 
   const pageTitle = page.data.title ?? page.url
 
