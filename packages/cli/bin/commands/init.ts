@@ -3,7 +3,7 @@ import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
-import { detectRepo, fetchZerostarter, gitInit } from "@/git"
+import { detectRepo, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
 import { promptText } from "./_prompt"
@@ -88,12 +88,17 @@ export const init = async (argv: string[]) => {
     fetchZerostarter(target)
   }
 
+  // Story mode: commit the pristine starter first (fresh repos only), so the
+  // conversion lands as its own reviewable "re-baseline" diff on top.
+  if (!exists(join(target, ".git"))) {
+    gitInit(target)
+    gitCommitAll(target, "chore: scaffold from zerostarter")
+  }
+
   console.log("Removing the author's content, assets, and skills and rebranding ...")
   convertRepo(target, brand)
 
-  if (!exists(join(target, ".git"))) {
-    gitInit(target, "chore: initialize from zerostarter")
-  }
+  gitCommitAll(target, `chore: re-baseline as ${name}`)
 
   console.log("\nDone. Next steps:")
   console.log(`  cd ${dir}`)

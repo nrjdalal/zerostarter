@@ -20,9 +20,17 @@ export const detectRepo = (dir: string): { owner: string; repo: string } | null 
   return null
 }
 
-// Start a clean history in `dir`: fresh git repo plus an initial commit.
-export const gitInit = (dir: string, message: string): void => {
+// Start a fresh git repo in `dir` (no commit yet).
+export const gitInit = (dir: string): void => {
   run("git", ["init", "-q"], dir)
+}
+
+// Stage everything and commit. No-op if there is nothing to commit (e.g. a re-run).
+export const gitCommitAll = (dir: string, message: string): void => {
   run("git", ["add", "-A"], dir)
-  run("git", ["commit", "-q", "-m", message], dir)
+  try {
+    run("git", ["commit", "-q", "-m", message], dir)
+  } catch {
+    // nothing to commit
+  }
 }
