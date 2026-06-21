@@ -102,6 +102,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
           description: site.apiReferenceDescription,
         },
       },
+      // Applied to every GET/POST route (add other verbs as needed); a route's own responses override these.
       defaultOptions: {
         GET: { responses: errorResponses },
         POST: { responses: errorResponses },

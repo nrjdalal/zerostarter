@@ -24,7 +24,7 @@ export const errorHandler = (err: Error, c: Context) => {
   return jsonError(c, 500, "INTERNAL_SERVER_ERROR", message)
 }
 
-// Standard error envelope shape; the single source for the runtime errors above and the OpenAPI docs.
+// Shape of the error envelope jsonError emits; reused by the OpenAPI error responses below.
 export const errorEnvelope = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
 })
