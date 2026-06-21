@@ -72,9 +72,10 @@ export const newsreader = localFont({
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string): void => {
+  const today = new Date().toISOString().slice(0, 10)
   write(p(root, "web/next/content/docs/index.mdx"), docsIndexTemplate())
-  write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate())
-  write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate())
+  write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate(today))
+  write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate(today))
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndexTemplate())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")

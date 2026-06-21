@@ -8,16 +8,22 @@ export const fetchZerostarter = (dir: string, ref = "main"): void => {
   run("bunx", ["gitpick@5.4.1", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
+// Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.
+export const bunInstall = (dir: string): void => {
+  run("bun", ["install"], dir)
+}
+
 // Start a fresh git repo in `dir` (no commit yet).
 export const gitInit = (dir: string): void => {
   run("git", ["init", "-q"], dir)
 }
 
-// Stage everything and commit. No-op if there is nothing to commit (e.g. a re-run).
+// Stage everything and commit, bypassing the fork's hooks (bun install may have installed
+// lefthook in the scaffold). No-op if there is nothing to commit (e.g. a re-run).
 export const gitCommitAll = (dir: string, message: string): void => {
   run("git", ["add", "-A"], dir)
   try {
-    run("git", ["commit", "-q", "-m", message], dir)
+    run("git", ["commit", "--no-verify", "-q", "-m", message], dir)
   } catch {
     // nothing to commit
   }
