@@ -58,6 +58,7 @@ export function SidebarDashboardOrgSwitcher() {
     validators: {
       onSubmit: formSchema,
       onChange: formSchema,
+      onBlur: formSchema,
     },
     onSubmit: async ({ value }) => {
       setIsOrgTransitioning(true)
@@ -188,6 +189,7 @@ export function SidebarDashboardOrgSwitcher() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
+                        autoComplete="off"
                         disabled={form.state.isSubmitting}
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}

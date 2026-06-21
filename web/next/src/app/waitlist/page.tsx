@@ -56,7 +56,6 @@ function WaitlistCount() {
 }
 
 export default function WaitlistPage() {
-  const [loading, setLoading] = useState(false)
   const [joined, setJoined] = useState(false)
   const queryClient = useQueryClient()
 
@@ -69,24 +68,19 @@ export default function WaitlistPage() {
       onBlur: formSchema,
     },
     onSubmit: async ({ value }) => {
-      setLoading(true)
-      try {
-        const res = await apiClient.waitlist.$post({
-          json: { email: value.email, subject: value.subject },
-        })
-        if (!res.ok) {
-          const body = (await res.json().catch(() => null)) as {
-            error?: { message?: string }
-          } | null
-          toast.error(body?.error?.message ?? "Something went wrong. Please try again.")
-          return
-        }
-        setJoined(true)
-        toast.success("You're on the waitlist!")
-        queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
-      } finally {
-        setLoading(false)
+      const res = await apiClient.waitlist.$post({
+        json: { email: value.email, subject: value.subject },
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: { message?: string }
+        } | null
+        toast.error(body?.error?.message ?? "Something went wrong. Please try again.")
+        return
       }
+      setJoined(true)
+      toast.success("You're on the waitlist!")
+      queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
     },
   })
 
@@ -142,8 +136,9 @@ export default function WaitlistPage() {
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
                       placeholder="you@example.com"
+                      autoComplete="email"
                       className="h-12 px-4 text-base"
-                      disabled={loading}
+                      disabled={form.state.isSubmitting}
                     />
                     {isInvalid && (
                       <FieldError
@@ -155,8 +150,17 @@ export default function WaitlistPage() {
                 )
               }}
             </form.Field>
-            <Button type="submit" size="lg" className="h-12 px-6 text-base" disabled={loading}>
-              {loading ? <RiLoaderLine className="animate-spin" /> : "Join the waitlist"}
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12 px-6 text-base"
+              disabled={form.state.isSubmitting}
+            >
+              {form.state.isSubmitting ? (
+                <RiLoaderLine className="animate-spin" />
+              ) : (
+                "Join the waitlist"
+              )}
             </Button>
           </form>
         )}

@@ -108,6 +108,7 @@ export function Access() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
                         placeholder="you@example.com"
+                        autoComplete="email"
                         disabled={loader === "email"}
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
