@@ -1,3 +1,19 @@
+## v0.0.43
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.42...v0.0.43)
+
+### 🚀 Enhancements
+
+- **cli:** Install on init, timezone-safe blog dates, trim scaffold + drop dead deps ([#516](https://github.com/nrjdalal/zerostarter/pull/516))
+
+### 🏡 Chore
+
+- **db:** Squash migrations into a single baseline ([#517](https://github.com/nrjdalal/zerostarter/pull/517))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.42
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.41...v0.0.42)
