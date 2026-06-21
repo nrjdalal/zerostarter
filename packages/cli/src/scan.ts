@@ -24,6 +24,8 @@ export const brandScan = (root: string): ScanHit[] => {
           "--glob",
           "!bun.lock",
           "--glob",
+          "!README.md",
+          "--glob",
           "!.git",
           marker,
           root,
