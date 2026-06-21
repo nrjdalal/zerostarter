@@ -1,3 +1,15 @@
+## v0.0.38
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.37...v0.0.38)
+
+### 🏡 Chore
+
+- **version:** Reset all non-root workspace versions to 0.0.0 ([#506](https://github.com/nrjdalal/zerostarter/pull/506))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.37
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.36...v0.0.37)
