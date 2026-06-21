@@ -38,6 +38,7 @@ The backend API server built with [Hono](https://hono.dev).
   - `auth.ts`: Authentication routes (Better Auth handler)
   - `agents.ts`: Local-only agent sign-in (`/api/agents/sign-in-as`)
   - `v1.ts`: Protected API routes requiring authentication
+  - `waitlist.ts`: Public waitlist signup + approximate count (`/api/waitlist`)
 - **`src/middlewares/`**: Custom middlewares
   - `auth.ts`: Authentication middleware for protected routes
   - `rate-limiter.ts`: Rate limiting middleware
@@ -52,6 +53,7 @@ The frontend application built with [Next.js 16](https://nextjs.org).
   - `(protected)/`: Authenticated user pages (dashboard)
   - `(console)/`: Access-gated privileged admin console at `/console` (docs live under `/console/docs`)
   - `(llms.txt)/`: Auto-generated AI documentation endpoints
+  - `waitlist/`: Public waitlist landing. A freshly scaffolded fork's home (`page.tsx`) redirects here until you build your product; remove it by deleting `app/waitlist/`, `routers/waitlist.ts`, and `schema/waitlist.ts`
   - `og/`: Dynamic Open Graph image routes
   - `robots.ts`: `robots.txt` generation
   - `sitemap.ts`: Sitemap generation
