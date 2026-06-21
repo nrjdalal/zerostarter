@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { apiClient } from "@/lib/api/client"
+import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
@@ -40,9 +40,8 @@ export function Access() {
     queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
-      const res = await apiClient.auth.providers.$get()
-      if (!res.ok) throw new Error("Failed to load auth providers")
-      const { data } = await res.json()
+      const { data, error } = await unwrap(apiClient.auth.providers.$get())
+      if (error) throw new Error("Failed to load auth providers")
       return data.providers
     },
   })

@@ -33,6 +33,23 @@ All API responses use a standardized JSON envelope:
 
 This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors.
 
+### Consuming responses on the client
+
+On the frontend, wrap any RPC call in `unwrap` (from `@/lib/api/client`) to get a `{ data, error }` result — exactly one is non-null, and it never throws:
+
+```ts
+import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.waitlist.$get())
+if (error) {
+  // error: { code, message }
+} else {
+  // data
+}
+```
+
+With TanStack Query, `throw` on the error arm in a `queryFn` (so the query reports `isError`), or handle it in a `useMutation` `onSuccess`.
+
 ### Error Codes
 
 | Code                    | Status | When                                                          |
@@ -193,8 +210,7 @@ describeRoute({
     "x-codeSamples": [{
       lang: "typescript",
       label: "hono/client",
-      source: `const res = await apiClient.v1.session.$get()
-const { data } = await res.json()`,
+      source: `const { data, error } = await unwrap(apiClient.v1.session.$get())`,
     }],
   } as object),
   responses: { ... },

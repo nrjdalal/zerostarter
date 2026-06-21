@@ -178,12 +178,10 @@ export const techStack: Tech[] = [
 ]
 
 export default async function Home() {
-  const typescriptCode = `import { apiClient } from "@/lib/api/client"
+  const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
-// Fully typed request and response
-// TypeScript knows exactly what you're getting!
-const res = await apiClient.health.$get()
-const { data } = await res.json()`
+// Fully typed { data, error } — TypeScript knows exactly what you're getting!
+const { data, error } = await unwrap(apiClient.health.$get())`
 
   const bashCode = `# Clone the template
 bunx gitpick ${site.social.github}/tree/main

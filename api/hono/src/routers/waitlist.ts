@@ -28,10 +28,9 @@ export const waitlistRouter = new Hono()
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.waitlist.$get())`,
           },
         ],
       } as object),
@@ -64,10 +63,9 @@ const { data } = await response.json()`,
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$post({ json: { email: "you@example.com" } })
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`,
           },
         ],
       } as object),

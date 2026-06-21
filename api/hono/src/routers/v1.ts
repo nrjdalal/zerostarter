@@ -40,10 +40,9 @@ export const v1Router = new Hono<{
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.v1.session.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.v1.session.$get())`,
           },
         ],
       } as object),
@@ -73,10 +72,9 @@ const { data } = await response.json()`,
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.v1.user.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.v1.user.$get())`,
           },
         ],
       } as object),

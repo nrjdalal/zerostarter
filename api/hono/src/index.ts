@@ -56,10 +56,9 @@ const routes = app
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.health.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.health.$get())`,
           },
         ],
       } as object),
