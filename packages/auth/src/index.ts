@@ -24,6 +24,14 @@ import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
 
+export type SocialProvider = "github" | "google"
+
+// A provider is enabled only when both of its OAuth credentials are set; a fork can ship with any subset (or none, relying on magic link).
+export const enabledSocialProviders: SocialProvider[] = [
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? (["github"] as const) : []),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (["google"] as const) : []),
+]
+
 export const auth = betterAuth({
   baseURL: env.HONO_APP_URL,
   trustedOrigins: env.HONO_TRUSTED_ORIGINS,
@@ -58,14 +66,12 @@ export const auth = betterAuth({
     adminPlugin(),
   ],
   socialProviders: {
-    github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    },
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
+    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+      ? { github: { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET } }
+      : {}),
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? { google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET } }
+      : {}),
   },
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
