@@ -26,7 +26,7 @@ description: Internal documentation.
 
 # Introduction
 
-Internal admin documentation. Replace this page with your own.
+Your team's internal docs live here.
 `
 
 // Drop a generic content stub so the app builds once the author's content is gone.
@@ -49,7 +49,7 @@ const rebrand = (root: string, b: Brand): void => {
   pkg.bugs = `https://github.com/${b.owner}/${b.repo}/issues`
   pkg.repository = `${b.owner}/${b.repo}`
   pkg.funding = `https://github.com/sponsors/${b.owner}`
-  pkg.author = { name: "TODO: your name", email: "", url: "" }
+  pkg.author = { name: "Your name here", email: "", url: "" }
   writeJson(path, pkg)
 }
 

@@ -12,8 +12,8 @@ export const siteTemplate = ({
 }: Brand): string => `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
   name: "${name}",
-  description: "TODO: your product description.",
-  tagline: "TODO: your tagline.",
+  description: "${name} is just getting started. Tell its story here.",
+  tagline: "Your tagline, ready when you are.",
   social: {
     github: "https://github.com/${owner}/${repo}",
     x: "",
@@ -43,7 +43,7 @@ description: ${DOCS_INDEX_DESCRIPTION}
 
 # Introduction
 
-Welcome to the documentation. Replace this page with your product's docs.
+This is your documentation home. Start writing, this page is yours.
 `
 
 // web/next/content/blog/index.mdx: generic blog landing.
@@ -68,7 +68,7 @@ publishedAt: 2026-01-01
 
 ## Hello World
 
-This is a sample post. Replace it with your own writing.
+Your very first post. Replace it with something worth reading.
 `
 
 // web/next/docs.config.ts: regenerated to the stub doc set (one public anchor + the console anchor).

@@ -101,7 +101,7 @@ export const init = async (argv: string[]) => {
   console.log("  cp .env.example .env   # then set your values")
   console.log("  bun dev")
   console.log("\n  # then make it yours:")
-  console.log("  #   packages/config/src/site.ts  fill the TODO placeholders")
+  console.log("  #   packages/config/src/site.ts  set the description and tagline")
   console.log("  #   web/next/content             replace the docs/blog stub")
   console.log("  #   web/next/public              add your assets")
 }
