@@ -3,7 +3,7 @@ import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
-import { detectRepo, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
+import { fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
 import { promptConfirm, promptText } from "./_prompt"
@@ -21,12 +21,6 @@ Options:
   -y, --yes      Skip prompts; fail instead of prompting when input is needed
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
-
-const slugify = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "app"
 
 const isEmptyDir = (dir: string): boolean =>
   !existsSync(dir) || readdirSync(dir).filter((f) => f !== ".git").length === 0
@@ -68,17 +62,12 @@ export const init = async (argv: string[]) => {
 
   const target = resolve(dir)
   const name = basename(target)
-  const detected = detectRepo(target)
-  const brand = {
-    name,
-    owner: detected?.owner ?? "your-org",
-    repo: detected?.repo ?? slugify(name),
-  }
+  const brand = { name }
 
   if (values["dry-run"]) {
     console.log("zerostarter init (dry run)")
     console.log(`  target: ${target}`)
-    console.log(`  name:   ${name}  (${brand.owner}/${brand.repo})`)
+    console.log(`  name:   ${name}`)
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
     return
   }

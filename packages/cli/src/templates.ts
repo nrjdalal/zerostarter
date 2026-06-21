@@ -1,21 +1,17 @@
 export interface Brand {
   name: string
-  owner: string
-  repo: string
 }
 
 // packages/config/src/site.ts: regenerated with the product name, repo URL, and placeholders.
 export const siteTemplate = ({
   name,
-  owner,
-  repo,
 }: Brand): string => `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
   name: "${name}",
   description: "${name} is just getting started. Tell its story here.",
   tagline: "Your tagline, ready when you are.",
   social: {
-    github: "https://github.com/${owner}/${repo}",
+    github: "",
     x: "",
     discord: "",
   },

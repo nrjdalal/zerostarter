@@ -11,12 +11,11 @@ import {
   siteTemplate,
 } from "../src/templates"
 
-const brand = { name: "Acme", owner: "acme-co", repo: "acme" }
+const brand = { name: "Acme" }
 
 test("siteTemplate carries the brand and leaks no upstream identity", () => {
   const out = siteTemplate(brand)
   expect(out).toContain('name: "Acme"')
-  expect(out).toContain("https://github.com/acme-co/acme")
   expect(out).not.toContain("zerostarter")
   expect(out).not.toContain("nrjdalal")
 })

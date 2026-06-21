@@ -15,6 +15,13 @@ import {
 
 const p = (root: string, ...parts: string[]): string => join(root, ...parts)
 
+// npm-safe package name derived from the project name.
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "app"
+
 // Directories a fork supplies itself: the author's content, assets, and agent skills
 // (skills live in .agents/skills, symlinked from .claude/skills and .github/skills).
 const IGNORED_DIRS = [
@@ -101,7 +108,7 @@ const rebrand = (root: string, b: Brand): void => {
   write(p(root, "packages/config/src/site.ts"), siteTemplate(b))
   const path = p(root, "package.json")
   const pkg = readJson<Record<string, unknown>>(path)
-  pkg.name = b.repo
+  pkg.name = slugify(b.name)
   pkg.version = "0.0.0"
   delete pkg.homepage
   delete pkg.bugs

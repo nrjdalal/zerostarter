@@ -1,11 +1,11 @@
 {
   "extends": "@packages/config/tsconfig.json",
   "compilerOptions": {
-    "types": ["node", "bun"],
+    "types": ["bun"],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

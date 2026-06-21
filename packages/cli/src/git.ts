@@ -8,18 +8,6 @@ export const fetchZerostarter = (dir: string, ref = "main"): void => {
   run("bunx", ["gitpick@5.4.1", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
-// Detect "owner/repo" from the dir's origin remote, if it has one.
-export const detectRepo = (dir: string): { owner: string; repo: string } | null => {
-  try {
-    const url = run("git", ["remote", "get-url", "origin"], dir).trim()
-    const match = url.match(/github\.com[:/]([^/]+)\/(.+?)(?:\.git)?$/)
-    if (match) return { owner: match[1], repo: match[2] }
-  } catch {
-    // no remote
-  }
-  return null
-}
-
 // Start a fresh git repo in `dir` (no commit yet).
 export const gitInit = (dir: string): void => {
   run("git", ["init", "-q"], dir)
