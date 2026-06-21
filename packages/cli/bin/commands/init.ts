@@ -3,7 +3,7 @@ import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
-import { fetchZerostarter, gitCommitAll, gitInit } from "@/git"
+import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
 import { promptConfirm, promptText } from "./_prompt"
@@ -98,11 +98,13 @@ export const init = async (argv: string[]) => {
   console.log("Removing the author's content, assets, and skills and rebranding ...")
   convertRepo(target, brand)
 
+  console.log("Installing dependencies ...")
+  bunInstall(target)
+
   gitCommitAll(target, `chore: re-baseline as ${name}`)
 
   console.log("\nDone. Next steps:")
   console.log(`  cd ${dir}`)
-  console.log("  bun install")
   console.log("  cp .env.example .env   # then set your values")
   console.log("  bun dev")
   console.log("\n  # then make it yours:")

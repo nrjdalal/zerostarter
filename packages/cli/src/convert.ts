@@ -72,9 +72,16 @@ export const newsreader = localFont({
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string): void => {
+  // Stamp the earlier of the local and UTC date: its UTC midnight is always <= now (never hidden), and it matches the author's own calendar day when their timezone is behind UTC.
+  const now = new Date()
+  const utc = now.toISOString().slice(0, 10)
+  const local = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+    .map((n) => String(n).padStart(2, "0"))
+    .join("-")
+  const today = local < utc ? local : utc
   write(p(root, "web/next/content/docs/index.mdx"), docsIndexTemplate())
-  write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate())
-  write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate())
+  write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate(today))
+  write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate(today))
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndexTemplate())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")

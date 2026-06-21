@@ -7,5 +7,4 @@ export default defineConfig({
     "bin/index": "bin/index.ts",
   },
   minify: true,
-  outDir: "dist",
 })
