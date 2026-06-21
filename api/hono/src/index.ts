@@ -8,7 +8,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, jsonError } from "@/lib/error"
+import { errorHandler, errorResponses, jsonError } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -101,6 +101,10 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
           title: site.name,
           description: site.apiReferenceDescription,
         },
+      },
+      defaultOptions: {
+        GET: { responses: errorResponses },
+        POST: { responses: errorResponses },
       },
     }),
   )
