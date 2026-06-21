@@ -90,17 +90,7 @@ const fixDangling = (root: string): void => {
 // Point config that would otherwise misattribute the fork at the new repo.
 const fixConfig = (root: string, b: Brand): void => {
   replaceInFile(p(root, ".github/FUNDING.yml"), [["github: nrjdalal", `github: ${b.owner}`]])
-  for (const rs of ["main", "canary"]) {
-    replaceInFile(p(root, `.github/rulesets/${rs}.json`), [
-      ["nrjdalal/zerostarter", `${b.owner}/${b.repo}`],
-    ])
-  }
-  replaceInFile(p(root, ".github/scripts/changelog-manager.ts"), [
-    ['"nrjdalal"', `"${b.owner}"`],
-    ['"zerostarter"', `"${b.repo}"`],
-  ])
   replaceInFile(p(root, ".github/scripts/build-sizes.ts"), [["zerostarter", b.repo]])
-  replaceInFile(p(root, "docker-compose.yml"), [["name: zerostarter", `name: ${b.repo}`]])
 }
 
 // Regenerate the centralized brand file and rename the root package.
