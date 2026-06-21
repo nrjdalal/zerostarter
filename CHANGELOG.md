@@ -1,3 +1,15 @@
+## v0.0.39
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.38...v0.0.39)
+
+### 🩹 Fixes
+
+- Stop hardcoding nrjdalal/zerostarter so forks aren't mispinned ([#508](https://github.com/nrjdalal/zerostarter/pull/508))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.38
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.37...v0.0.38)
