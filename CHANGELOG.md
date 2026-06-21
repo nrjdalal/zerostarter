@@ -1,3 +1,15 @@
+## v0.0.40
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.39...v0.0.40)
+
+### 🩹 Fixes
+
+- Derive build-graph root label from root package.json name ([#510](https://github.com/nrjdalal/zerostarter/pull/510))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.39
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.38...v0.0.39)
