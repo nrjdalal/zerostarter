@@ -13,16 +13,20 @@ ZeroStarter uses [Better Auth](https://better-auth.com) for authentication, conf
 
 ### Magic Link
 
-The sign-in UI includes an email magic-link flow (`authClient.signIn.magicLink`, registered via the `magicLinkClient()` plugin in `web/next/src/lib/auth/client.ts`). The matching server-side `magicLink` plugin and email sender are not enabled by default, so the flow is not functional out of the box. To turn it on, add the `magicLink` plugin to `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
+The sign-in UI can show an email magic-link flow (`authClient.signIn.magicLink`, registered via the `magicLinkClient()` plugin in `web/next/src/lib/auth/client.ts`). The server-side `magicLink` plugin and its email sender are not enabled by default, so the email field is **hidden** until you wire it up rather than shown as a dead control: `packages/auth/src/index.ts` derives `magicLinkEnabled` from whether the `magicLink` plugin is registered, the public `GET /api/auth/providers` route lists `magic-link` among the enabled providers when it is, and `web/next/src/components/access.tsx` renders the email field only when `magic-link` is present. To turn it on, add the `magicLink` plugin to the `plugins` array in `packages/auth/src/index.ts` (which flips `magicLinkEnabled` automatically) and implement `sendMagicLink` to deliver the email.
 
 ### OAuth Providers
 
-Two social providers are configured:
+Two social providers are supported, and each is **optional**: a provider registers only when both of its credentials are present, so a fork can ship with GitHub, Google, both, or neither (relying on magic link).
 
-- **GitHub**: Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
-- **Google**: Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+- **GitHub**: set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+- **Google**: set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
-The auth config (`packages/auth/src/index.ts`) does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
+`packages/auth/src/index.ts` builds `socialProviders` conditionally from those env vars and exports `enabledSocialProviders` (the providers that are actually configured) plus `enabledProviders` (those plus `magic-link` when enabled). The public `GET /api/auth/providers` route (`api/hono/src/routers/auth.ts`) returns `enabledProviders`, and the sign-in UI (`web/next/src/components/access.tsx`) fetches it to render only the buttons for configured providers. Toggling either built-in provider is therefore just an env change; the UI follows automatically. Adding a brand-new provider also takes a small code change (see below).
+
+Note: if a deployed fork configures no OAuth providers and does not enable magic link, the sign-in dialog renders a "No sign-in options are configured yet." message (the local-only agent sign-in is hidden in production). Configure at least one provider, or wire up magic link, before shipping a login surface.
+
+The auth config does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 
 ### Agent Sign-In (local only)
 
@@ -32,22 +36,21 @@ For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a
 
 1. Create OAuth credentials with the provider
 2. Add the client ID and secret to your `.env` file
-3. Configure the provider in `packages/auth/src/index.ts`:
+3. Add the variables to `packages/env/src/auth.ts` as `.optional()` (so the app still boots without them)
+4. Register the provider conditionally in `packages/auth/src/index.ts`, extend the `SocialProvider` union with its key, and add it to `enabledSocialProviders` so the route advertises it:
 
 ```ts
 socialProviders: {
-  github: {
-    clientId: env.GITHUB_CLIENT_ID,
-    clientSecret: env.GITHUB_CLIENT_SECRET,
-  },
-  google: {
-    clientId: env.GOOGLE_CLIENT_ID,
-    clientSecret: env.GOOGLE_CLIENT_SECRET,
-  },
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+    ? { github: { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET } }
+    : {}),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+    ? { google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET } }
+    : {}),
 },
 ```
 
-4. Add the environment variables to `packages/env/src/auth.ts`
+5. Add a button for it in `web/next/src/components/access.tsx`, gated on the provider appearing in the fetched list (copy the GitHub/Google blocks and swap the icon). Skipping this leaves the provider enabled server-side with no button to trigger it.
 
 ## Console Access
 
@@ -157,9 +160,9 @@ Authenticated requests use a per-user limiter set to twice the configured limit 
 | Variable               | Description                                               |
 | ---------------------- | --------------------------------------------------------- |
 | `BETTER_AUTH_SECRET`   | Secret key for signing tokens (`openssl rand -base64 32`) |
-| `GITHUB_CLIENT_ID`     | GitHub OAuth app client ID                                |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret                            |
-| `GOOGLE_CLIENT_ID`     | Google OAuth client ID                                    |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                                |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth app client ID (optional)                     |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret (optional)                 |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID (optional)                         |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (optional)                     |
 | `HONO_APP_URL`         | Backend URL (used as Better Auth base URL)                |
 | `HONO_TRUSTED_ORIGINS` | Allowed CORS origins                                      |
