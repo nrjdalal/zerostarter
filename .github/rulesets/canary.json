@@ -2,7 +2,6 @@
   "name": "canary",
   "target": "branch",
   "source_type": "Repository",
-  "source": "nrjdalal/zerostarter",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
