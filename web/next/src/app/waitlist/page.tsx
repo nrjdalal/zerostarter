@@ -74,12 +74,12 @@ export default function WaitlistPage() {
       if (!res.ok) {
         let message = "Something went wrong. Please try again."
         try {
-          const body = (await res.json()) as { error?: { message?: string } }
-          if (body.error && body.error.message) {
+          const body = await res.json()
+          if ("error" in body) {
             message = body.error.message
           }
         } catch {
-          // malformed error body: keep the default message
+          // non-JSON error body: keep the default message
         }
         toast.error(message)
         return
