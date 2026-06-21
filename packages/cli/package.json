@@ -1,0 +1,45 @@
+{
+  "name": "zerostarter",
+  "version": "0.0.0",
+  "description": "Scaffold a clean product from the zerostarter SaaS starter, and keep forks in sync with upstream.",
+  "keywords": [
+    "cli",
+    "saas",
+    "scaffold",
+    "starter",
+    "template",
+    "zerostarter"
+  ],
+  "homepage": "https://github.com/nrjdalal/zerostarter#readme",
+  "bugs": "https://github.com/nrjdalal/zerostarter/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Neeraj Dalal",
+    "email": "admin@nrjdalal.com",
+    "url": "https://nrjdalal.com"
+  },
+  "repository": "nrjdalal/zerostarter",
+  "funding": "https://github.com/sponsors/nrjdalal",
+  "bin": {
+    "zerostarter": "dist/bin/index.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.mjs",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc --noEmit",
+    "dev": "tsdown --watch",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@packages/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}
