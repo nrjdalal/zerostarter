@@ -6,16 +6,16 @@ import { convertRepo } from "@/convert"
 import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
-import { promptConfirm, promptText } from "./_prompt"
+import { green, isInteractive, orange, promptConfirm, promptText } from "./_prompt"
 
 const helpMessage = `Usage:
   $ zerostarter init [dir] [options]
 
-Scaffold zerostarter into dir (default .) as a fresh product. The author's
+Scaffold ZeroStarter into dir (default .) as a fresh product. The author's
 content, public assets, and agent skills are left out for you to supply; the
 dir name becomes the project name and site.ts + package.json are rebranded. If
-the dir already holds a zerostarter clone it is used in place; otherwise the
-latest zerostarter is fetched into it first.
+the dir already holds a ZeroStarter clone it is used in place; otherwise the
+latest ZeroStarter is fetched into it first.
 
 Options:
   -y, --yes      Skip prompts; fail instead of prompting when input is needed
@@ -43,7 +43,7 @@ export const init = async (argv: string[]) => {
     return
   }
 
-  const interactive = Boolean(process.stdout.isTTY) && !values.yes
+  const interactive = isInteractive() && !values.yes
 
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
@@ -84,7 +84,7 @@ export const init = async (argv: string[]) => {
   }
 
   if (!isZerostarter(target)) {
-    console.log(`Fetching zerostarter into ${target} ...`)
+    console.log("Fetching the latest ZeroStarter ...")
     fetchZerostarter(target)
   }
 
@@ -95,7 +95,7 @@ export const init = async (argv: string[]) => {
     gitCommitAll(target, "chore: scaffold from zerostarter")
   }
 
-  console.log("Removing the author's content, assets, and skills and rebranding ...")
+  console.log("Removing starter content and rebranding ...")
   convertRepo(target, brand)
 
   console.log("Installing dependencies ...")
@@ -103,12 +103,17 @@ export const init = async (argv: string[]) => {
 
   gitCommitAll(target, `chore: re-baseline as ${name}`)
 
-  console.log("\nDone. Next steps:")
-  console.log(`  cd ${dir}`)
-  console.log("  cp .env.example .env   # then set your values")
-  console.log("  bun dev")
-  console.log("\n  # then make it yours:")
-  console.log("  #   packages/config/src/site.ts  set the description and tagline")
-  console.log("  #   web/next/content             replace the docs/blog stub")
-  console.log("  #   web/next/public              add your assets")
+  const tips: [string, string][] = [
+    ["packages/config/src/site.ts", "your brand: name, tagline, links"],
+    ["web/next/content", "your docs and blog"],
+    ["web/next/public", "your logo and assets"],
+  ]
+
+  console.log(`\n${green("✓")} ${name} is ready.\n`)
+  console.log("Next steps:")
+  if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
+  console.log(`  ${orange("cp .env.example .env")}  # add your secrets`)
+  console.log(`  ${orange("bun dev")}`)
+  console.log("\nMake it yours:")
+  for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
 }

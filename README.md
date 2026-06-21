@@ -86,12 +86,9 @@ const { data } = await res.json()
 ## 🚀 Quick Start
 
 ```bash
-# Clone the template
-bunx gitpick https://github.com/nrjdalal/zerostarter/tree/main
-cd zerostarter
-
-# Install dependencies
-bun install
+# In a new, empty directory (its name becomes your project name):
+# scaffold a fresh product from ZeroStarter (fetches, rebrands, installs)
+npx zerostarter@latest init
 
 # Configure environment (see .env.example for what's required)
 cp .env.example .env

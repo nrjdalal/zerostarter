@@ -8,16 +8,15 @@ const { author, name, version } = pkg
 const helpMessage = `Version:
   ${name}@${version}
 
-Scaffold a clean product from the zerostarter SaaS starter, and keep forks in
-sync with upstream.
+Go from zero to a production-ready SaaS, rebranded and ready to ship.
 
 Usage:
   $ ${name} <command> [options]
 
 Commands:
-  init [dir]     Scaffold zerostarter into dir (default .) as a fresh product.
+  init [dir]     Scaffold ZeroStarter into dir (default .) as a fresh product.
                  The dir name becomes the project name.
-  sync           Re-baseline an existing fork on zerostarter's latest scaffold
+  sync           Re-baseline an existing fork on ZeroStarter's latest scaffold
 
 Options:
   -v, --version  Display version
