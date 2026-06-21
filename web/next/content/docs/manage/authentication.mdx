@@ -35,7 +35,7 @@ For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a
 1. Create OAuth credentials with the provider
 2. Add the client ID and secret to your `.env` file
 3. Add the variables to `packages/env/src/auth.ts` as `.optional()` (so the app still boots without them)
-4. Register the provider conditionally in `packages/auth/src/index.ts`, and add it to `enabledSocialProviders` so the UI knows to show it:
+4. Register the provider conditionally in `packages/auth/src/index.ts`, extend the `SocialProvider` union with its key, and add it to `enabledSocialProviders` so the route advertises it:
 
 ```ts
 socialProviders: {
@@ -47,6 +47,8 @@ socialProviders: {
     : {}),
 },
 ```
+
+5. Add a button for it in `web/next/src/components/access.tsx`, gated on the provider appearing in the fetched list (copy the GitHub/Google blocks and swap the icon). Skipping this leaves the provider enabled server-side with no button to trigger it.
 
 ## Console Access
 
