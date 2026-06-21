@@ -32,7 +32,7 @@ All environment variables are stored in a single `.env` file at the project root
 Each package defines only the environment variables it needs:
 
 - **`api-hono`**: `HONO_APP_URL`, `HONO_PORT`, `HONO_RATE_LIMIT`, `HONO_RATE_LIMIT_WINDOW_MS`, `HONO_TRUSTED_ORIGINS`
-- **`auth`**: `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`
+- **`auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, plus the optional OAuth pairs `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (a provider registers only when both halves of its pair are set)
 - **`db`**: `POSTGRES_URL`. When `INTERNAL_API_URL` is set, the `db` package rewrites `localhost` in `POSTGRES_URL` to `host.docker.internal` so containers can reach a database on the host.
 - **`web-next`**:
   - **Server**: `INTERNAL_API_URL` (server-side only, for internal service-to-service calls)

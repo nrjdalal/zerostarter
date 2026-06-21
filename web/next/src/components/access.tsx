@@ -3,6 +3,7 @@
 import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill, RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
+import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { apiClient } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
@@ -32,6 +34,21 @@ export function Access() {
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
+
+  // Render only the buttons for configured providers (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final list with no flash.
+  const { data: providers } = useQuery({
+    queryKey: ["auth-providers"],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const res = await apiClient.auth.providers.$get()
+      if (!res.ok) throw new Error("Failed to load auth providers")
+      const { data } = await res.json()
+      return data.providers
+    },
+  })
+  const githubEnabled = providers?.includes("github") ?? false
+  const googleEnabled = providers?.includes("google") ?? false
+  const hasAlternatives = isDev || githubEnabled || googleEnabled
 
   useEffect(() => {
     setLoader(null)
@@ -127,70 +144,80 @@ export function Access() {
               Sign in/up
             </Button>
           </form>
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">OR</span>
-          </div>
-          <div className="grid gap-4">
-            {isDev && (
-              <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
-                <Button type="submit" variant="outline" className="w-full cursor-pointer">
-                  Login (agents)
-                </Button>
-              </form>
-            )}
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full cursor-pointer"
-              onClick={async () => {
-                setLoader("github")
-                const res = await authClient.signIn.social({
-                  provider: "github",
-                  callbackURL: `${config.app.url}/dashboard`,
-                })
-                if (res.error) {
-                  toast.error(res.error.message)
-                  setLoader(null)
-                }
-              }}
-              disabled={loader === "github"}
-            >
-              {loader === "github" ? (
-                <RiLoaderLine className="size-5 animate-spin" />
-              ) : (
-                <RiGithubFill className="size-5" />
-              )}
-              Continue with Github
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full cursor-pointer"
-              onClick={async () => {
-                setLoader("google")
-                const res = await authClient.signIn.social({
-                  provider: "google",
-                  callbackURL: `${config.app.url}/dashboard`,
-                })
-                if (res.error) {
-                  toast.error(res.error.message)
-                  setLoader(null)
-                }
-              }}
-              disabled={loader === "google"}
-            >
-              {loader === "google" ? (
-                <RiLoaderLine className="size-5 animate-spin" />
-              ) : (
-                <RiGoogleFill className="size-5" />
-              )}
-              Continue with Google
-            </Button>
-            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-              By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
-              <a href="#">Privacy Policy</a>.
-            </div>
-          </div>
+          {hasAlternatives && (
+            <>
+              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">
+                  OR
+                </span>
+              </div>
+              <div className="grid gap-4">
+                {isDev && (
+                  <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
+                    <Button type="submit" variant="outline" className="w-full cursor-pointer">
+                      Login (agents)
+                    </Button>
+                  </form>
+                )}
+                {githubEnabled && (
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="w-full cursor-pointer"
+                    onClick={async () => {
+                      setLoader("github")
+                      const res = await authClient.signIn.social({
+                        provider: "github",
+                        callbackURL: `${config.app.url}/dashboard`,
+                      })
+                      if (res.error) {
+                        toast.error(res.error.message)
+                        setLoader(null)
+                      }
+                    }}
+                    disabled={loader === "github"}
+                  >
+                    {loader === "github" ? (
+                      <RiLoaderLine className="size-5 animate-spin" />
+                    ) : (
+                      <RiGithubFill className="size-5" />
+                    )}
+                    Continue with Github
+                  </Button>
+                )}
+                {googleEnabled && (
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="w-full cursor-pointer"
+                    onClick={async () => {
+                      setLoader("google")
+                      const res = await authClient.signIn.social({
+                        provider: "google",
+                        callbackURL: `${config.app.url}/dashboard`,
+                      })
+                      if (res.error) {
+                        toast.error(res.error.message)
+                        setLoader(null)
+                      }
+                    }}
+                    disabled={loader === "google"}
+                  >
+                    {loader === "google" ? (
+                      <RiLoaderLine className="size-5 animate-spin" />
+                    ) : (
+                      <RiGoogleFill className="size-5" />
+                    )}
+                    Continue with Google
+                  </Button>
+                )}
+                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                  By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
+                  <a href="#">Privacy Policy</a>.
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
