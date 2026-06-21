@@ -85,6 +85,10 @@ const { data } = await res.json()
 
 ## 🚀 Quick Start
 
+<p align="center">
+  <img src=".github/assets/cli.gif" alt="zerostarter init scaffolds a rebranded product from ZeroStarter" width="900" />
+</p>
+
 ```bash
 # In a new, empty directory (its name becomes your project name):
 # scaffold a fresh product from ZeroStarter (fetches, rebrands, installs)
