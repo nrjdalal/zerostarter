@@ -41,7 +41,7 @@ export function Access() {
     staleTime: Infinity,
     queryFn: async () => {
       const { data, error } = await unwrap(apiClient.auth.providers.$get())
-      if (error) throw new Error("Failed to load auth providers")
+      if (error) throw new Error(error.message)
       return data.providers
     },
   })

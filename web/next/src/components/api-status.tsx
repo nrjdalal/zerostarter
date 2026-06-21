@@ -9,7 +9,7 @@ export function ApiStatus() {
     queryKey: ["api-health"],
     queryFn: async () => {
       const { data, error } = await unwrap(apiClient.health.$get())
-      if (error) throw new Error("Systems are facing issues")
+      if (error) throw new Error(error.message)
       return data
     },
     refetchInterval: 30000,
