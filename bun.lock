@@ -26,7 +26,7 @@
     },
     "api/hono": {
       "name": "@api/hono",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "dependencies": {
         "@arcjet/ip": "catalog:",
         "@hono/standard-validator": "catalog:",
@@ -52,7 +52,7 @@
     },
     "packages/auth": {
       "name": "@packages/auth",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "dependencies": {
         "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
@@ -66,9 +66,23 @@
         "typescript": "catalog:",
       },
     },
+    "packages/cli": {
+      "name": "zerostarter",
+      "version": "0.0.0",
+      "bin": {
+        "zerostarter": "dist/bin/index.mjs",
+      },
+      "devDependencies": {
+        "@packages/config": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/config": {
       "name": "@packages/config",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "devDependencies": {
         "tsdown": "catalog:",
         "typescript": "catalog:",
@@ -76,7 +90,7 @@
     },
     "packages/db": {
       "name": "@packages/db",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "dependencies": {
         "@packages/env": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -93,7 +107,7 @@
     },
     "packages/env": {
       "name": "@packages/env",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "dependencies": {
         "@t3-oss/env-core": "catalog:",
         "dotenv": "catalog:",
@@ -109,7 +123,7 @@
     },
     "web/next": {
       "name": "@web/next",
-      "version": "0.0.1",
+      "version": "0.0.0",
       "dependencies": {
         "@api/hono": "workspace:*",
         "@base-ui/react": "catalog:",
@@ -2199,6 +2213,8 @@
     "yocto-spinner": ["yocto-spinner@1.2.0", "", { "dependencies": { "yoctocolors": "^2.1.1" } }, "sha512-Yw0hUB6UA3o4YUgKy3oSe9a4cxoaZ9sBfYDw+JSxo6Id0KoJGoxzPA24qqUXYKBWABs/zDSGTz9kww7t3F0XGw=="],
 
     "yoctocolors": ["yoctocolors@2.1.2", "", {}, "sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug=="],
+
+    "zerostarter": ["zerostarter@workspace:packages/cli"],
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 

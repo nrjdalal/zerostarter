@@ -1,3 +1,15 @@
+## v0.0.41
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.40...v0.0.41)
+
+### 🏡 Chore
+
+- Drop sample incident-response runbook, make console docs index generic ([#512](https://github.com/nrjdalal/zerostarter/pull/512))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.40
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.39...v0.0.40)
