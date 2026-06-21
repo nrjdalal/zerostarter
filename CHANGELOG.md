@@ -1,3 +1,15 @@
+## v0.0.45
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.44...v0.0.45)
+
+### 🩹 Fixes
+
+- **deps:** Restore ts-morph used by .github/scripts/shadcn-customize.ts ([#521](https://github.com/nrjdalal/zerostarter/pull/521))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.44
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.43...v0.0.44)
