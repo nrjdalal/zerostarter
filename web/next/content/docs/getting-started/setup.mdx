@@ -16,24 +16,15 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 ### Setup
 
-1. Clone this template:
+1. Scaffold your product. In a new, empty directory (its name becomes your project name), run:
 
    ```bash
-   bunx gitpick https://github.com/nrjdalal/zerostarter/tree/main
-   cd zerostarter
+   npx zerostarter@latest init
    ```
 
-   > **Note**: The `main` branch is the latest stable release.
+   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, and installs dependencies.
 
-2. Install dependencies:
-
-   ```bash
-   bun install
-   ```
-
-   > **Note**: If the installation fails, try using `bun install --ignore-scripts`
-
-3. Set up environment variables:
+2. Set up environment variables:
 
    Copy the example file and fill in your values:
 
