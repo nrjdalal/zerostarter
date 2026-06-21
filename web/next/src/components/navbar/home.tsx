@@ -42,25 +42,27 @@ const socialLinks = [
 function SocialLinks({ onClick }: { onClick?: () => void }) {
   return (
     <div className="flex items-center gap-5 lg:gap-3">
-      {socialLinks.map((link) => (
-        <Tooltip key={link.href}>
-          <TooltipTrigger
-            render={
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground/60 hover:text-foreground transition-colors"
-                aria-label={link.label}
-                onClick={onClick}
-              />
-            }
-          >
-            <link.icon className="size-6" aria-hidden="true" />
-          </TooltipTrigger>
-          <TooltipContent>{link.label}</TooltipContent>
-        </Tooltip>
-      ))}
+      {socialLinks
+        .filter((link) => link.href)
+        .map((link) => (
+          <Tooltip key={link.href}>
+            <TooltipTrigger
+              render={
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/60 hover:text-foreground transition-colors"
+                  aria-label={link.label}
+                  onClick={onClick}
+                />
+              }
+            >
+              <link.icon className="size-6" aria-hidden="true" />
+            </TooltipTrigger>
+            <TooltipContent>{link.label}</TooltipContent>
+          </Tooltip>
+        ))}
     </div>
   )
 }
@@ -210,16 +212,20 @@ export function Navbar() {
                     </Link>
                   )
                 })}
-                <Button
-                  role="link"
-                  size="sm"
-                  className="mt-2 w-fit"
-                  onClick={() => setIsOpen(false)}
-                  render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
-                >
-                  <RiGithubFill className="size-4" />
-                  Get {site.name}
-                </Button>
+                {site.social.github && (
+                  <Button
+                    role="link"
+                    size="sm"
+                    className="mt-2 w-fit"
+                    onClick={() => setIsOpen(false)}
+                    render={
+                      <a href={site.social.github} target="_blank" rel="noopener noreferrer" />
+                    }
+                  >
+                    <RiGithubFill className="size-4" />
+                    Get {site.name}
+                  </Button>
+                )}
               </nav>
               {/* Mobile Social Links */}
               <div className="mt-2.5 ml-4 flex items-center gap-2.5">
