@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import pkg from "../package.json" with { type: "json" }
+import { hyperlink, red } from "./commands/_prompt"
 import { init } from "./commands/init"
 import { sync } from "./commands/sync"
 
@@ -23,7 +24,7 @@ Options:
   -h, --help     Display help
 
 Author:
-  ${author.name} <${author.email}> (${author.url})`
+  ${author.name} <${author.email}> (${hyperlink(author.url)})`
 
 const main = async () => {
   try {
@@ -46,12 +47,12 @@ const main = async () => {
         console.log(`${name}@${version}`)
         return
       default:
-        console.error(`Unknown command: ${cmd}\n`)
+        console.error(red(`Unknown command: ${cmd}\n`))
         console.log(helpMessage)
         process.exit(1)
     }
   } catch (err) {
-    console.error(err instanceof Error ? err.message : String(err))
+    console.error(red(err instanceof Error ? err.message : String(err)))
     process.exit(1)
   }
 }

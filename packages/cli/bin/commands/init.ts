@@ -6,7 +6,7 @@ import { convertRepo } from "@/convert"
 import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
-import { green, isInteractive, orange, promptConfirm, promptText } from "./_prompt"
+import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
   $ zerostarter init [dir] [options]
@@ -74,7 +74,7 @@ export const init = async (argv: string[]) => {
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
-      `Convert ${target} in place? This rewrites files and commits.`,
+      yellow(`Convert ${target} in place? This rewrites files and commits.`),
       false,
     )
     if (!ok) {
