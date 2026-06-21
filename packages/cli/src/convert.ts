@@ -22,6 +22,7 @@ const REMOVE_PATHS = [
   ".github/reviews",
   ".infisical.json",
   ".github/assets/graph-build.svg",
+  "LICENSE.md",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
@@ -82,10 +83,6 @@ const fixDangling = (root: string): void => {
 
 // Point config that would otherwise misattribute the fork at the new repo.
 const fixConfig = (root: string, b: Brand): void => {
-  const year = new Date().getFullYear()
-  replaceInFile(p(root, "LICENSE.md"), [
-    ["Copyright (c) 2025 Neeraj Dalal", `Copyright (c) ${year} ${b.owner}`],
-  ])
   replaceInFile(p(root, ".github/FUNDING.yml"), [["github: nrjdalal", `github: ${b.owner}`]])
   for (const rs of ["main", "canary"]) {
     replaceInFile(p(root, `.github/rulesets/${rs}.json`), [
@@ -107,11 +104,12 @@ const rebrand = (root: string, b: Brand): void => {
   const pkg = readJson<Record<string, unknown>>(path)
   pkg.name = b.repo
   pkg.version = "0.0.0"
-  pkg.homepage = `https://github.com/${b.owner}/${b.repo}#readme`
-  pkg.bugs = `https://github.com/${b.owner}/${b.repo}/issues`
-  pkg.repository = `${b.owner}/${b.repo}`
-  pkg.funding = `https://github.com/sponsors/${b.owner}`
-  pkg.author = { name: "Your name here", email: "", url: "" }
+  delete pkg.homepage
+  delete pkg.bugs
+  delete pkg.license
+  delete pkg.author
+  delete pkg.repository
+  delete pkg.funding
   writeJson(path, pkg)
   // Reset every workspace package to 0.0.0; the fork versions independently.
   for (const ws of ["api", "packages", "web"]) {
