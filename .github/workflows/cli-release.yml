@@ -84,15 +84,14 @@ jobs:
             git checkout $LATEST_COMMIT_SHA
             TAG="test"
             RELEASE_VERSION="0.0.0-${LATEST_COMMIT_SHA:0:7}"
-          elif [[ $PACKAGE_VERSION != $LATEST_VERSION ]]; then
+          elif [[ $GITHUB_REF_NAME == 'main' ]]; then
+            [[ $PACKAGE_VERSION == $LATEST_VERSION ]] && { echo "No version change on main. Skipping publish."; exit 0; }
             RELEASE_VERSION=$PACKAGE_VERSION
-            HAS_TAG=$(echo $PACKAGE_VERSION | grep -o '[a-zA-Z]*' | head -n 1)
-            TAG=$([[ -n "$HAS_TAG" ]] && echo $HAS_TAG || echo "latest")
+            TAG="latest"
           else
             TAG="canary"
-            RELEASE_VERSION=$(bunx semver $LATEST_VERSION -i minor)
             TAGGED_VERSION=$(echo $VERSIONS | bunx json $TAG)
-            RELEASE_VERSION=$([[ $TAGGED_VERSION == $RELEASE_VERSION* ]] && bunx semver $TAGGED_VERSION -i prerelease || echo $RELEASE_VERSION-$TAG.0)
+            RELEASE_VERSION=$([[ $TAGGED_VERSION == $PACKAGE_VERSION-canary* ]] && bunx semver $TAGGED_VERSION -i prerelease || echo $PACKAGE_VERSION-canary.0)
           fi
 
           bunx json -I -f package.json -e "this.version=\"$RELEASE_VERSION\""
