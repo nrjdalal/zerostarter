@@ -1,3 +1,15 @@
+## v0.0.37
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.36...v0.0.37)
+
+### 📖 Documentation
+
+- Order the intro to match the nav and drop the private console link ([#501](https://github.com/nrjdalal/zerostarter/pull/501))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.36
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.35...v0.0.36)
