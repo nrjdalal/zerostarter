@@ -26,6 +26,7 @@ const REMOVE_PATHS = [
   ".github/assets/graph-build.svg",
   "LICENSE.md",
   "CHANGELOG.md",
+  "bun.lock",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
