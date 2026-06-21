@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { apiClient } from "@/lib/api/client"
 
 const formSchema = z.object({
-  email: z.email({ message: "Please enter a valid email address." }),
+  email: z.email({ message: "Please enter a valid email address." }).max(254),
   // honeypot: unconstrained so it never blocks submission; the server silently drops bots
   subject: z.string(),
 })
@@ -35,7 +35,7 @@ function WaitlistCount() {
   // fixed-height slot so the count appearing never shifts the layout
   return (
     <div className="mt-10 flex h-7 items-center justify-center">
-      {typeof count === "number" && (
+      {typeof count === "number" && count > 0 && (
         <div className="animate-in fade-in flex items-center gap-3 duration-500">
           <AvatarGroup>
             <Avatar className="size-7">

@@ -12,8 +12,8 @@ const joinSchema = z.object({
   subject: z.string().optional(),
 })
 
-// advertised "N+" floor and rounding step, kept consistent everywhere
-const COUNT_FLOOR = 10
+// social proof: surface the count only once it's real (>= COUNT_MIN), rounded down in COUNT_STEP; below that return 0 so the client hides the badge (no fabricated numbers).
+const COUNT_MIN = 10
 const COUNT_STEP = 5
 
 export const waitlistRouter = new Hono()
@@ -21,7 +21,8 @@ export const waitlistRouter = new Hono()
     "/",
     describeRoute({
       tags: ["Waitlist"],
-      description: "Approximate waitlist count (floored to 10, rounded down in steps of 5)",
+      description:
+        "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
       ...({
         "x-codeSamples": [
           {
@@ -49,7 +50,7 @@ const { data } = await response.json()`,
     }),
     async (c) => {
       const exact = await db.$count(waitlist)
-      const count = Math.max(COUNT_FLOOR, Math.floor(exact / COUNT_STEP) * COUNT_STEP)
+      const count = exact >= COUNT_MIN ? Math.floor(exact / COUNT_STEP) * COUNT_STEP : 0
       return c.json({ data: { count } })
     },
   )
