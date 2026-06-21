@@ -48,7 +48,7 @@ if (error) {
 }
 ```
 
-With TanStack Query, `throw` on the error arm in a `queryFn` (so the query reports `isError`), or handle it in a `useMutation` `onSuccess`.
+With TanStack Query, `throw` on the error arm — in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
 
 ### Error Codes
 

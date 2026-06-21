@@ -20,6 +20,7 @@ export const apiClient = honoClient.api
 // Standard error shape, matching the jsonError envelope in api/hono/src/lib/error.ts.
 export type ApiError = { code: string; message: string }
 
+// Success payload from the { data } envelope; a body without `data` yields never and unwrap reports it as an error.
 type SuccessData<B> = B extends { data: infer D } ? D : never
 
 export type ApiResult<B> = { data: SuccessData<B>; error: null } | { data: null; error: ApiError }
@@ -42,7 +43,10 @@ export async function unwrap<R extends RpcResponse>(
     }
     if (isRecord(body) && isRecord(body.error)) {
       const code = typeof body.error.code === "string" ? body.error.code : "ERROR"
-      const message = typeof body.error.message === "string" ? body.error.message : "Request failed"
+      const message =
+        typeof body.error.message === "string" && body.error.message
+          ? body.error.message
+          : "Request failed"
       return { data: null, error: { code, message } }
     }
     return { data: null, error: { code: "UNKNOWN_ERROR", message: "Unexpected response" } }
