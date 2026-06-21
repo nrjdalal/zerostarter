@@ -1,3 +1,15 @@
+## v0.0.44
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.43...v0.0.44)
+
+### 🩹 Fixes
+
+- **db:** Keep squashed baseline at the original 0000 timestamp ([#519](https://github.com/nrjdalal/zerostarter/pull/519))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.43
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.42...v0.0.43)
