@@ -31,7 +31,7 @@ export const site = {
 ## Monorepo Layout
 
 A Bun + Turborepo monorepo with two deployable apps and four shared packages:
-- \`api/hono/\` - backend API (Hono). Routers live in \`src/routers/\` and are served under \`/api\`: \`/api/v1\` (app API), \`/api/auth\` (Better Auth handler), \`/api/agents\` (local-only dev sign-in), \`/api/docs\` (Scalar reference).
+- \`api/hono/\` - backend API (Hono). Routers live in \`src/routers/\` and are served under \`/api\`: \`/api/v1\` (app API), \`/api/auth\` (Better Auth handler), \`/api/agents\` (local-only dev sign-in), \`/api/waitlist\` (public waitlist signup + count), \`/api/docs\` (Scalar reference).
 - \`web/next/\` - frontend (Next.js App Router). Route groups: \`(protected)\` (auth-gated dashboard) and \`(console)\` (admin console). Docs and blog are MDX under \`content/\`.
 - \`packages/auth/\` - the Better Auth instance (shared server config + plugins).
 - \`packages/db/\` - Drizzle ORM schema + client (PostgreSQL via Bun's SQL driver).

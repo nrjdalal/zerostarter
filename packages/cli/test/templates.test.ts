@@ -20,10 +20,10 @@ test("siteTemplate capitalizes the brand and leaks no upstream identity", () => 
   expect(out).not.toContain("nrjdalal")
 })
 
-test("homeTemplate reads the brand from site config", () => {
+test("homeTemplate redirects a fresh fork to the waitlist", () => {
   const out = homeTemplate()
-  expect(out).toContain('from "@packages/config/site"')
-  expect(out).toContain("site.name")
+  expect(out).toContain('from "next/navigation"')
+  expect(out).toContain('redirect("/waitlist")')
   expect(out).not.toContain("zerostarter")
 })
 

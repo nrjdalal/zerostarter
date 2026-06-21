@@ -29,16 +29,12 @@ export type Site = typeof site
 `
 }
 
-// web/next/src/app/page.tsx: a minimal generic home that reads the brand from site config.
-export const homeTemplate = (): string => `import { site } from "@packages/config/site"
+// web/next/src/app/page.tsx: a fresh fork has no product yet, so the home redirects to the waitlist.
+export const homeTemplate = (): string => `import { redirect } from "next/navigation"
 
+// Fresh fork: redirect to the waitlist until you build your real home page.
 export default function Home() {
-  return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{site.name}</h1>
-      <p className="text-muted-foreground max-w-xl text-lg">{site.description}</p>
-    </main>
-  )
+  redirect("/waitlist")
 }
 `
 
