@@ -6,7 +6,7 @@ import { convertRepo } from "@/convert"
 import { detectRepo, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
-import { promptText } from "./_prompt"
+import { promptConfirm, promptText } from "./_prompt"
 
 const helpMessage = `Usage:
   $ zerostarter init [dir] [options]
@@ -68,7 +68,7 @@ export const init = async (argv: string[]) => {
 
   const target = resolve(dir)
   const name = basename(target)
-  const detected = detectRepo(exists(target) ? target : process.cwd())
+  const detected = detectRepo(target)
   const brand = {
     name,
     owner: detected?.owner ?? "your-org",
@@ -81,6 +81,17 @@ export const init = async (argv: string[]) => {
     console.log(`  name:   ${name}  (${brand.owner}/${brand.repo})`)
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
     return
+  }
+
+  if (convertInPlace && interactive) {
+    const ok = await promptConfirm(
+      `Convert ${target} in place? This rewrites files and commits.`,
+      false,
+    )
+    if (!ok) {
+      console.log("Aborted.")
+      return
+    }
   }
 
   if (!isZerostarter(target)) {

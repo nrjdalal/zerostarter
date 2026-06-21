@@ -88,6 +88,18 @@ description: ${DOCS_INDEX_DESCRIPTION}
 This is your documentation home. Start writing, this page is yours.
 `
 
+// web/next/content/console/docs/index.mdx: generic console docs anchor.
+export const consoleIndexTemplate = (): string => `---
+slug: /console/docs
+title: Introduction
+description: Internal documentation.
+---
+
+# Introduction
+
+Your team's internal docs live here.
+`
+
 // web/next/content/blog/index.mdx: generic blog landing.
 export const blogIndexTemplate = (): string => `---
 title: Blog

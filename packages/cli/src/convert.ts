@@ -5,6 +5,7 @@ import {
   agentsTemplate,
   blogIndexTemplate,
   type Brand,
+  consoleIndexTemplate,
   docsConfigTemplate,
   docsIndexTemplate,
   homeTemplate,
@@ -62,38 +63,37 @@ export const newsreader = localFont({
 })
 `
 
-const consoleIndex = (): string => `---
-slug: /console/docs
-title: Introduction
-description: Internal documentation.
----
-
-# Introduction
-
-Your team's internal docs live here.
-`
-
 // Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/content/docs/index.mdx"), docsIndexTemplate())
   write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate())
   write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate())
-  write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndex())
+  write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndexTemplate())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")
   write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
   write(p(root, "AGENTS.md"), agentsTemplate())
 }
 
-// Clean up the references the route and font deletes leave dangling.
+// Clean up the references the route and font deletes leave dangling; fail loudly on drift.
 const fixDangling = (root: string): void => {
-  replaceInFile(p(root, "web/next/src/components/navbar/home.tsx"), [
+  const navOk = replaceInFile(p(root, "web/next/src/components/navbar/home.tsx"), [
     ['    { href: "/hire", label: "Hire" },\n', ""],
   ])
-  replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [
-    [CAVEAT_EXPORT, ""],
+  const caveatOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [[CAVEAT_EXPORT, ""]])
+  const newsreaderOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [
     [NEWSREADER_EXPORT, ""],
   ])
+  if (!caveatOk || !newsreaderOk) {
+    throw new Error(
+      "fonts.ts: caveat/newsreader exports not found, but their woff2 files were removed (template drift). Update packages/cli/src/convert.ts.",
+    )
+  }
+  if (!navOk) {
+    throw new Error(
+      "navbar/home.tsx: /hire entry not found (template drift). Update packages/cli/src/convert.ts.",
+    )
+  }
 }
 
 // Regenerate the centralized brand file and rename the root package.

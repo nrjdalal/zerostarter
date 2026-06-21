@@ -32,10 +32,8 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "tsdown --watch"
-  },
-  "dependencies": {
-    "ts-morph": "catalog:"
+    "dev": "tsdown --watch",
+    "test": "bun test"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
