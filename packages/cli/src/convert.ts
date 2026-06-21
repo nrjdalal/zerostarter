@@ -35,6 +35,7 @@ const REMOVE_PATHS = [
   "LICENSE.md",
   "CHANGELOG.md",
   "bun.lock",
+  "skills-lock.json",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
