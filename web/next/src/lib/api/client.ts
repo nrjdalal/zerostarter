@@ -42,7 +42,8 @@ export async function unwrap<R extends RpcResponse>(
       return { data: body.data as SuccessData<Awaited<ReturnType<R["json"]>>>, error: null }
     }
     if (isRecord(body) && isRecord(body.error)) {
-      const code = typeof body.error.code === "string" ? body.error.code : "ERROR"
+      const code =
+        typeof body.error.code === "string" && body.error.code ? body.error.code : "ERROR"
       const message =
         typeof body.error.message === "string" && body.error.message
           ? body.error.message
