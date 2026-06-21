@@ -70,13 +70,11 @@ Guidance for AI coding agents working in this repository.
 The local dev API exposes a sign-in-as endpoint for the agent identity in \`@packages/config/site\` (\`site.agent\`). It is local-only and requires a trusted Origin. See \`api/hono/src/routers/agents.ts\`.
 `
 
-// web/next/content/docs/index.mdx: docs anchor. Description must match docs.config.ts.
-export const DOCS_INDEX_DESCRIPTION = "Documentation."
-
+// web/next/content/docs/index.mdx: docs anchor. The description must match docs.config.ts.
 export const docsIndexTemplate = (): string => `---
 slug: /docs
 title: Introduction
-description: ${DOCS_INDEX_DESCRIPTION}
+description: Documentation.
 ---
 
 # Introduction
@@ -131,7 +129,7 @@ const docsConfig = {
       {
         "/docs": {
           title: "Introduction",
-          description: "${DOCS_INDEX_DESCRIPTION}",
+          description: "Documentation.",
         },
       },
     ],
