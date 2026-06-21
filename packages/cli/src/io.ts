@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
 
 export const exists = (path: string): boolean => existsSync(path)
@@ -13,8 +13,6 @@ export const write = (path: string, content: string): void => {
 export const remove = (path: string): void => {
   rmSync(path, { force: true, recursive: true })
 }
-
-export const list = (path: string): string[] => (existsSync(path) ? readdirSync(path) : [])
 
 export const readJson = <T = Record<string, unknown>>(path: string): T =>
   JSON.parse(read(path)) as T

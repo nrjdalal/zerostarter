@@ -1,6 +1,6 @@
 import { join } from "node:path"
 
-import { exists, list, readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { readJson, remove, replaceInFile, write, writeJson } from "@/io"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -24,6 +24,7 @@ const REMOVE_PATHS = [
   ".github/reviews",
   ".infisical.json",
   ".github/assets/graph-build.svg",
+  ".github/FUNDING.yml",
   "LICENSE.md",
   "CHANGELOG.md",
   "bun.lock",
@@ -87,12 +88,6 @@ const fixDangling = (root: string): void => {
   ])
 }
 
-// Point config that would otherwise misattribute the fork at the new repo.
-const fixConfig = (root: string, b: Brand): void => {
-  replaceInFile(p(root, ".github/FUNDING.yml"), [["github: nrjdalal", `github: ${b.owner}`]])
-  replaceInFile(p(root, ".github/scripts/build-sizes.ts"), [["zerostarter", b.repo]])
-}
-
 // Regenerate the centralized brand file and rename the root package.
 const rebrand = (root: string, b: Brand): void => {
   write(p(root, "packages/config/src/site.ts"), siteTemplate(b))
@@ -107,22 +102,11 @@ const rebrand = (root: string, b: Brand): void => {
   delete pkg.repository
   delete pkg.funding
   writeJson(path, pkg)
-  // Reset every workspace package to 0.0.0; the fork versions independently.
-  for (const ws of ["api", "packages", "web"]) {
-    for (const sub of list(p(root, ws))) {
-      const subPath = p(root, ws, sub, "package.json")
-      if (!exists(subPath)) continue
-      const subPkg = readJson<Record<string, unknown>>(subPath)
-      subPkg.version = "0.0.0"
-      writeJson(subPath, subPkg)
-    }
-  }
 }
 
 export const convertRepo = (root: string, brand: Brand): void => {
   for (const dir of [...IGNORED_DIRS, ...REMOVE_PATHS]) remove(p(root, dir))
   scaffoldContent(root)
   fixDangling(root)
-  fixConfig(root, brand)
   rebrand(root, brand)
 }
