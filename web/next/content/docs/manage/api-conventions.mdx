@@ -31,7 +31,25 @@ All API responses use a standardized JSON envelope:
 }
 ```
 
-This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors.
+This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors. The shape lives once as the `errorEnvelope` schema in that file; the typed client and the OpenAPI docs both derive from it.
+
+### Consuming responses on the client
+
+The typed client returns `res.json()` as a `{ data } | { error }` union — `AppType` (in `api/hono/src/index.ts`) wraps the routes with `ApplyGlobalResponse` so the error envelope is part of every route's type. Narrow it with `"error" in body`:
+
+```ts
+import { apiClient } from "@/lib/api/client"
+
+const res = await apiClient.waitlist.$get()
+const body = await res.json()
+if ("error" in body) {
+  // body.error: { code, message }
+} else {
+  // body.data
+}
+```
+
+With TanStack Query, throw on the error arm and the query surfaces it through `isError`.
 
 ### Error Codes
 
@@ -194,7 +212,8 @@ describeRoute({
       lang: "typescript",
       label: "hono/client",
       source: `const res = await apiClient.v1.session.$get()
-const { data } = await res.json()`,
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
     }],
   } as object),
   responses: { ... },

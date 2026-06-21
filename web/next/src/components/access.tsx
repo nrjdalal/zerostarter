@@ -41,9 +41,9 @@ export function Access() {
     staleTime: Infinity,
     queryFn: async () => {
       const res = await apiClient.auth.providers.$get()
-      if (!res.ok) throw new Error("Failed to load auth providers")
-      const { data } = await res.json()
-      return data.providers
+      const body = await res.json()
+      if ("error" in body) throw new Error("Failed to load auth providers")
+      return body.data.providers
     },
   })
   const githubEnabled = providers?.includes("github") ?? false

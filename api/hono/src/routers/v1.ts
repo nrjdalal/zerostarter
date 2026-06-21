@@ -42,8 +42,9 @@ export const v1Router = new Hono<{
             label: "hono/client",
             source: `import { apiClient } from "@/lib/api/client"
 
-const response = await apiClient.v1.session.$get()
-const { data } = await response.json()`,
+const res = await apiClient.v1.session.$get()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
           },
         ],
       } as object),
@@ -75,8 +76,9 @@ const { data } = await response.json()`,
             label: "hono/client",
             source: `import { apiClient } from "@/lib/api/client"
 
-const response = await apiClient.v1.user.$get()
-const { data } = await response.json()`,
+const res = await apiClient.v1.user.$get()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
           },
         ],
       } as object),

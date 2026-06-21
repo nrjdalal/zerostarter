@@ -9,10 +9,9 @@ export function ApiStatus() {
     queryKey: ["api-health"],
     queryFn: async () => {
       const res = await apiClient.health.$get()
-      if (!res.ok) {
-        throw new Error("Systems are facing issues")
-      }
-      return res.json()
+      const body = await res.json()
+      if ("error" in body) throw new Error("Systems are facing issues")
+      return body.data
     },
     refetchInterval: 30000,
   })

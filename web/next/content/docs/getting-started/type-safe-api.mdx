@@ -19,13 +19,15 @@ This starter utilizes [Hono RPC](https://hono.dev/docs/guides/rpc) to provide en
 
 ### Basic Request
 
+`res.json()` returns a `{ data } | { error }` union — the error arm is declared on the server via `ApplyGlobalResponse`. Narrow it with `"error" in body`:
+
 ```ts
 import { apiClient } from "@/lib/api/client"
 
-// Fully typed request and response
 const res = await apiClient.health.$get()
-const { data } = await res.json()
-// data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)
+// body.data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
 ```
 
 ### Authenticated Requests
@@ -37,12 +39,9 @@ import { apiClient } from "@/lib/api/client"
 
 // Protected route - requires authentication
 const res = await apiClient.v1.session.$get()
-const { data } = await res.json()
-// data is typed as Session, or error contains { code: string, message: string }
-
-// Get the current user (also requires authentication)
-const userRes = await apiClient.v1.user.$get()
-const { data: user } = await userRes.json()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)
+// body.data is typed as Session
 ```
 
 ### Session Data

@@ -3,7 +3,7 @@
 import { site } from "@packages/config/site"
 import { RiCheckLine, RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -26,9 +26,9 @@ function WaitlistCount() {
     queryKey: ["waitlist-count"],
     queryFn: async () => {
       const res = await apiClient.waitlist.$get()
-      if (!res.ok) return null
-      const { data } = await res.json()
-      return data.count
+      const body = await res.json()
+      if ("error" in body) return null
+      return body.data.count
     },
   })
 
@@ -56,9 +56,27 @@ function WaitlistCount() {
 }
 
 export default function WaitlistPage() {
-  const [loading, setLoading] = useState(false)
   const [joined, setJoined] = useState(false)
   const queryClient = useQueryClient()
+
+  const joinWaitlist = useMutation({
+    mutationFn: async (value: { email: string; subject: string }) => {
+      const res = await apiClient.waitlist.$post({ json: value })
+      return res.json()
+    },
+    onSuccess: (body) => {
+      if ("error" in body) {
+        toast.error(body.error.message)
+        return
+      }
+      setJoined(true)
+      toast.success("You're on the waitlist!")
+      queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
+    },
+    onError: () => {
+      toast.error("Something went wrong. Please try again.")
+    },
+  })
 
   const form = useForm({
     // `subject` is a honeypot: humans never see it, bots fill it (dodges browser autofill)
@@ -68,25 +86,8 @@ export default function WaitlistPage() {
       onChange: formSchema,
       onBlur: formSchema,
     },
-    onSubmit: async ({ value }) => {
-      setLoading(true)
-      try {
-        const res = await apiClient.waitlist.$post({
-          json: { email: value.email, subject: value.subject },
-        })
-        if (!res.ok) {
-          const body = (await res.json().catch(() => null)) as {
-            error?: { message?: string }
-          } | null
-          toast.error(body?.error?.message ?? "Something went wrong. Please try again.")
-          return
-        }
-        setJoined(true)
-        toast.success("You're on the waitlist!")
-        queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
-      } finally {
-        setLoading(false)
-      }
+    onSubmit: ({ value }) => {
+      joinWaitlist.mutate(value)
     },
   })
 
@@ -143,7 +144,7 @@ export default function WaitlistPage() {
                       aria-invalid={isInvalid}
                       placeholder="you@example.com"
                       className="h-12 px-4 text-base"
-                      disabled={loading}
+                      disabled={joinWaitlist.isPending}
                     />
                     {isInvalid && (
                       <FieldError
@@ -155,8 +156,17 @@ export default function WaitlistPage() {
                 )
               }}
             </form.Field>
-            <Button type="submit" size="lg" className="h-12 px-6 text-base" disabled={loading}>
-              {loading ? <RiLoaderLine className="animate-spin" /> : "Join the waitlist"}
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12 px-6 text-base"
+              disabled={joinWaitlist.isPending}
+            >
+              {joinWaitlist.isPending ? (
+                <RiLoaderLine className="animate-spin" />
+              ) : (
+                "Join the waitlist"
+              )}
             </Button>
           </form>
         )}

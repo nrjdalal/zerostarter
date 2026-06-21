@@ -4,11 +4,12 @@ import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
+import type { ApplyGlobalResponse } from "hono/client"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, jsonError } from "@/lib/error"
+import { errorEnvelope, errorHandler, jsonError } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -32,6 +33,14 @@ app.use(
 
 app.onError(errorHandler)
 app.notFound((c) => jsonError(c, 404, "NOT_FOUND", "Not Found"))
+
+// The standard error envelope, surfaced on every documented route in the OpenAPI docs.
+const errorResponses = Object.fromEntries(
+  [400, 401, 403, 404, 429, 500].map((status) => [
+    status,
+    { description: "Error", content: { "application/json": { schema: resolver(errorEnvelope) } } },
+  ]),
+)
 
 const routes = app
   .get("/", (c) => {
@@ -58,8 +67,9 @@ const routes = app
             label: "hono/client",
             source: `import { apiClient } from "@/lib/api/client"
 
-const response = await apiClient.health.$get()
-const { data } = await response.json()`,
+const res = await apiClient.health.$get()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
           },
         ],
       } as object),
@@ -103,6 +113,10 @@ const { data } = await response.json()`,
           description: site.apiReferenceDescription,
         },
       },
+      defaultOptions: {
+        GET: { responses: errorResponses },
+        POST: { responses: errorResponses },
+      },
     }),
   )
   .get(
@@ -119,7 +133,11 @@ const { data } = await response.json()`,
     }),
   )
 
-export type AppType = typeof routes
+// The server owns the response shape: ApplyGlobalResponse adds the error envelope to every route's type.
+export type AppType = ApplyGlobalResponse<
+  typeof routes,
+  Record<400 | 401 | 403 | 404 | 429 | 500, { json: z.infer<typeof errorEnvelope> }>
+>
 
 export default {
   port: env.HONO_PORT,

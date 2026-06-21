@@ -69,9 +69,11 @@ ZeroStarter uses [Hono RPC](https://hono.dev/docs/guides/rpc) for end-to-end typ
 ```ts
 import { apiClient } from "@/lib/api/client"
 
-// Fully typed request and response
+// Fully typed { data } | { error } union
 const res = await apiClient.health.$get()
-const { data } = await res.json()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)
+// body.data is fully typed
 ```
 
 ## 🔥 Why ZeroStarter?

@@ -30,8 +30,9 @@ export const waitlistRouter = new Hono()
             label: "hono/client",
             source: `import { apiClient } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$get()
-const { data } = await response.json()`,
+const res = await apiClient.waitlist.$get()
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
           },
         ],
       } as object),
@@ -66,8 +67,9 @@ const { data } = await response.json()`,
             label: "hono/client",
             source: `import { apiClient } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$post({ json: { email: "you@example.com" } })
-const { data } = await response.json()`,
+const res = await apiClient.waitlist.$post({ json: { email: "you@example.com" } })
+const body = await res.json()
+if ("error" in body) throw new Error(body.error.message)`,
           },
         ],
       } as object),
