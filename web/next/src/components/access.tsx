@@ -35,7 +35,7 @@ export function Access() {
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
 
-  // Render only the buttons for configured providers (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final list with no flash.
+  // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
   const { data: providers } = useQuery({
     queryKey: ["auth-providers"],
     staleTime: Infinity,
@@ -48,7 +48,9 @@ export function Access() {
   })
   const githubEnabled = providers?.includes("github") ?? false
   const googleEnabled = providers?.includes("google") ?? false
+  const magicLinkEnabled = providers?.includes("magic-link") ?? false
   const hasAlternatives = isDev || githubEnabled || googleEnabled
+  const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
   useEffect(() => {
     setLoader(null)
@@ -100,123 +102,130 @@ export function Access() {
             </div>
             <h1 className="text-xl font-semibold">Welcome to {site.name}</h1>
           </div>
-          <form
-            id="email"
-            className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-          >
-            <FieldGroup>
-              <form.Field name="email">
-                {(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                      <Input
-                        id={field.name}
-                        type="email"
-                        name={field.name}
-                        className="focus:placeholder:opacity-0"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        placeholder="you@example.com"
-                        disabled={loader === "email"}
-                      />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              </form.Field>
-            </FieldGroup>
-            <Button
-              form="email"
-              type="submit"
-              variant="secondary"
-              className="w-full cursor-pointer"
-              disabled={loader === "email"}
+          {magicLinkEnabled && (
+            <form
+              id="email"
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault()
+                form.handleSubmit()
+              }}
             >
-              {loader === "email" ? <RiLoaderLine className="size-5 animate-spin" /> : null}
-              Sign in/up
-            </Button>
-          </form>
+              <FieldGroup>
+                <form.Field name="email">
+                  {(field) => {
+                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                        <Input
+                          id={field.name}
+                          type="email"
+                          name={field.name}
+                          className="focus:placeholder:opacity-0"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          placeholder="you@example.com"
+                          disabled={loader === "email"}
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    )
+                  }}
+                </form.Field>
+              </FieldGroup>
+              <Button
+                form="email"
+                type="submit"
+                variant="secondary"
+                className="w-full cursor-pointer"
+                disabled={loader === "email"}
+              >
+                {loader === "email" ? <RiLoaderLine className="size-5 animate-spin" /> : null}
+                Sign in/up
+              </Button>
+            </form>
+          )}
+          {magicLinkEnabled && hasAlternatives && (
+            <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+              <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">
+                OR
+              </span>
+            </div>
+          )}
           {hasAlternatives && (
-            <>
-              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">
-                  OR
-                </span>
-              </div>
-              <div className="grid gap-4">
-                {isDev && (
-                  <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
-                    <Button type="submit" variant="outline" className="w-full cursor-pointer">
-                      Login (agents)
-                    </Button>
-                  </form>
-                )}
-                {githubEnabled && (
-                  <Button
-                    variant="outline"
-                    type="button"
-                    className="w-full cursor-pointer"
-                    onClick={async () => {
-                      setLoader("github")
-                      const res = await authClient.signIn.social({
-                        provider: "github",
-                        callbackURL: `${config.app.url}/dashboard`,
-                      })
-                      if (res.error) {
-                        toast.error(res.error.message)
-                        setLoader(null)
-                      }
-                    }}
-                    disabled={loader === "github"}
-                  >
-                    {loader === "github" ? (
-                      <RiLoaderLine className="size-5 animate-spin" />
-                    ) : (
-                      <RiGithubFill className="size-5" />
-                    )}
-                    Continue with Github
+            <div className="grid gap-4">
+              {isDev && (
+                <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
+                  <Button type="submit" variant="outline" className="w-full cursor-pointer">
+                    Login (agents)
                   </Button>
-                )}
-                {googleEnabled && (
-                  <Button
-                    variant="outline"
-                    type="button"
-                    className="w-full cursor-pointer"
-                    onClick={async () => {
-                      setLoader("google")
-                      const res = await authClient.signIn.social({
-                        provider: "google",
-                        callbackURL: `${config.app.url}/dashboard`,
-                      })
-                      if (res.error) {
-                        toast.error(res.error.message)
-                        setLoader(null)
-                      }
-                    }}
-                    disabled={loader === "google"}
-                  >
-                    {loader === "google" ? (
-                      <RiLoaderLine className="size-5 animate-spin" />
-                    ) : (
-                      <RiGoogleFill className="size-5" />
-                    )}
-                    Continue with Google
-                  </Button>
-                )}
-                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                  By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
-                  <a href="#">Privacy Policy</a>.
-                </div>
+                </form>
+              )}
+              {githubEnabled && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full cursor-pointer"
+                  onClick={async () => {
+                    setLoader("github")
+                    const res = await authClient.signIn.social({
+                      provider: "github",
+                      callbackURL: `${config.app.url}/dashboard`,
+                    })
+                    if (res.error) {
+                      toast.error(res.error.message)
+                      setLoader(null)
+                    }
+                  }}
+                  disabled={loader === "github"}
+                >
+                  {loader === "github" ? (
+                    <RiLoaderLine className="size-5 animate-spin" />
+                  ) : (
+                    <RiGithubFill className="size-5" />
+                  )}
+                  Continue with Github
+                </Button>
+              )}
+              {googleEnabled && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full cursor-pointer"
+                  onClick={async () => {
+                    setLoader("google")
+                    const res = await authClient.signIn.social({
+                      provider: "google",
+                      callbackURL: `${config.app.url}/dashboard`,
+                    })
+                    if (res.error) {
+                      toast.error(res.error.message)
+                      setLoader(null)
+                    }
+                  }}
+                  disabled={loader === "google"}
+                >
+                  {loader === "google" ? (
+                    <RiLoaderLine className="size-5 animate-spin" />
+                  ) : (
+                    <RiGoogleFill className="size-5" />
+                  )}
+                  Continue with Google
+                </Button>
+              )}
+              <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
+                <a href="#">Privacy Policy</a>.
               </div>
-            </>
+            </div>
+          )}
+          {hasNoProviders && (
+            <p className="text-muted-foreground text-center text-sm">
+              No sign-in options are configured yet.
+            </p>
           )}
         </div>
       </DialogContent>

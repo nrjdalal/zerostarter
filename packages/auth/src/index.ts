@@ -25,6 +25,7 @@ const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
 
 export type SocialProvider = "github" | "google"
+export type AuthProvider = SocialProvider | "magic-link"
 
 // A provider is enabled only when both of its OAuth credentials are set; a fork can ship with any subset (or none, relying on magic link).
 export const enabledSocialProviders: SocialProvider[] = [
@@ -83,5 +84,16 @@ export const auth = betterAuth({
     }),
   },
 })
+
+// Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.
+export const magicLinkEnabled = (auth.options.plugins ?? []).some(
+  (p) => (p.id as string) === "magic-link",
+)
+
+// The unified list of enabled sign-in providers the UI reads: social providers plus magic link when its server plugin is registered.
+export const enabledProviders: AuthProvider[] = [
+  ...enabledSocialProviders,
+  ...(magicLinkEnabled ? (["magic-link"] as const) : []),
+]
 
 export type Session = typeof auth.$Infer.Session
