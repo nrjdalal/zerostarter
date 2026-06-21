@@ -14,8 +14,15 @@ import {
 
 const p = (root: string, ...parts: string[]): string => join(root, ...parts)
 
-// Directories a fork supplies itself: the author's content, assets, and agent skills.
-const IGNORED_DIRS = ["web/next/content", "web/next/public", ".agents/skills", ".claude/skills"]
+// Directories a fork supplies itself: the author's content, assets, and agent skills
+// (skills live in .agents/skills, symlinked from .claude/skills and .github/skills).
+const IGNORED_DIRS = [
+  "web/next/content",
+  "web/next/public",
+  ".agents/skills",
+  ".claude/skills",
+  ".github/skills",
+]
 
 // Author pages, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
 const REMOVE_PATHS = [
