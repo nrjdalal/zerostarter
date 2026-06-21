@@ -42,7 +42,7 @@
 <g id="node4" class="node">
 <title>@packages/db</title>
 <ellipse fill="none" stroke="#3b82f6" cx="172.2" cy="-234" rx="109.23" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="172.2" y="-229.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/db (5.59 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="172.2" y="-229.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/db (5.78 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/db -->
 <g id="edge3" class="edge">
@@ -114,7 +114,7 @@
 <g id="node7" class="node">
 <title>@web/next</title>
 <ellipse fill="none" stroke="#3b82f6" cx="322.2" cy="-450" rx="103.34" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="322.2" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (89.85 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="322.2" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (90.42 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge12" class="edge">

@@ -1,3 +1,15 @@
+## v0.0.46
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.45...v0.0.46)
+
+### 🚀 Enhancements
+
+- **waitlist:** Public signup + /waitlist page; fresh forks land there ([#523](https://github.com/nrjdalal/zerostarter/pull/523))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.45
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.44...v0.0.45)
