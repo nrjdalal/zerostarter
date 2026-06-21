@@ -241,7 +241,7 @@ const docsConfig = {
       {
         "/console/docs": {
           title: "Introduction",
-          description: `Private internal documentation for the ${site.name} admin console.`,
+          description: "Internal documentation.",
         },
       },
     ],

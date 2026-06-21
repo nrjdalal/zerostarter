@@ -1,6 +1,6 @@
 import { join } from "node:path"
 
-import { readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { exists, list, readJson, remove, replaceInFile, write, writeJson } from "@/io"
 import {
   blogIndexTemplate,
   type Brand,
@@ -66,6 +66,7 @@ const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/content/blog/hello-world.mdx"), sampleBlogPostTemplate())
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndex())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
+  write(p(root, "web/next/public/.gitkeep"), "")
 }
 
 // Clean up the references the route and font deletes leave dangling.
@@ -112,6 +113,16 @@ const rebrand = (root: string, b: Brand): void => {
   pkg.funding = `https://github.com/sponsors/${b.owner}`
   pkg.author = { name: "Your name here", email: "", url: "" }
   writeJson(path, pkg)
+  // Reset every workspace package to 0.0.0; the fork versions independently.
+  for (const ws of ["api", "packages", "web"]) {
+    for (const sub of list(p(root, ws))) {
+      const subPath = p(root, ws, sub, "package.json")
+      if (!exists(subPath)) continue
+      const subPkg = readJson<Record<string, unknown>>(subPath)
+      subPkg.version = "0.0.0"
+      writeJson(subPath, subPkg)
+    }
+  }
 }
 
 export const convertRepo = (root: string, brand: Brand): void => {
