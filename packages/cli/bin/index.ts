@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import pkg from "../package.json" with { type: "json" }
-import { doctor } from "./commands/doctor"
 import { init } from "./commands/init"
 import { sync } from "./commands/sync"
 
@@ -16,10 +15,9 @@ Usage:
   $ ${name} <command> [options]
 
 Commands:
-  init [dir]     Scaffold zerostarter into dir (default .), then convert it into
-                 a clean product. The dir name becomes the project name.
+  init [dir]     Scaffold zerostarter into dir (default .) as a fresh product.
+                 The dir name becomes the project name.
   sync           Re-baseline an existing fork on zerostarter's latest scaffold
-  doctor         Check a fork for leftover upstream branding and config gaps
 
 Options:
   -v, --version  Display version
@@ -39,8 +37,6 @@ const main = async () => {
         return await init(rest)
       case "sync":
         return await sync(rest)
-      case "doctor":
-        return await doctor(rest)
       case undefined:
       case "-h":
       case "--help":

@@ -11,10 +11,11 @@ import { promptText } from "./_prompt"
 const helpMessage = `Usage:
   $ zerostarter init [dir] [options]
 
-Scaffold zerostarter into dir (default .) and convert it into a clean product.
-The dir name becomes the project name; everything else is left as a TODO
-placeholder to fill in later. If the dir already holds a zerostarter clone it is
-converted in place; otherwise the latest zerostarter is fetched into it first.
+Scaffold zerostarter into dir (default .) as a fresh product. The author's
+content, public assets, and agent skills are left out for you to supply; the
+dir name becomes the project name and site.ts + package.json are rebranded. If
+the dir already holds a zerostarter clone it is used in place; otherwise the
+latest zerostarter is fetched into it first.
 
 Options:
   -y, --yes      Skip prompts; fail instead of prompting when input is needed
@@ -78,7 +79,7 @@ export const init = async (argv: string[]) => {
     console.log("zerostarter init (dry run)")
     console.log(`  target: ${target}`)
     console.log(`  name:   ${name}  (${brand.owner}/${brand.repo})`)
-    console.log(`  mode:   ${isZerostarter(target) ? "convert in place" : "fetch + convert"}`)
+    console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
     return
   }
 
@@ -87,7 +88,7 @@ export const init = async (argv: string[]) => {
     fetchZerostarter(target)
   }
 
-  console.log("Converting to a clean product ...")
+  console.log("Removing the author's content, assets, and skills and rebranding ...")
   convertRepo(target, brand)
 
   if (!exists(join(target, ".git"))) {
@@ -96,10 +97,11 @@ export const init = async (argv: string[]) => {
 
   console.log("\nDone. Next steps:")
   console.log(`  cd ${dir}`)
-  console.log(
-    "  # fill the TODO placeholders in packages/config/src/site.ts, package.json, README.md",
-  )
   console.log("  bun install")
   console.log("  cp .env.example .env   # then set your values")
   console.log("  bun dev")
+  console.log("\n  # then make it yours:")
+  console.log("  #   packages/config/src/site.ts  fill the TODO placeholders")
+  console.log("  #   web/next/content             replace the docs/blog stub")
+  console.log("  #   web/next/public              add your assets")
 }

@@ -32,53 +32,7 @@ export const site = {
 export type Site = typeof site
 `
 
-// web/next/src/app/page.tsx: a minimal generic home that builds and reads the brand from site config.
-export const homeTemplate = (): string => `import Link from "next/link"
-
-import { site } from "@packages/config/site"
-
-export default function Home() {
-  return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{site.name}</h1>
-      <p className="text-muted-foreground max-w-xl text-lg">{site.description}</p>
-      <div className="flex gap-3">
-        <Link
-          href="/docs"
-          className="bg-primary text-primary-foreground rounded-md px-5 py-2.5 text-sm font-medium"
-        >
-          Documentation
-        </Link>
-        <Link href="/dashboard" className="rounded-md border px-5 py-2.5 text-sm font-medium">
-          Dashboard
-        </Link>
-      </div>
-    </main>
-  )
-}
-`
-
-// README.md: a minimal product readme.
-export const readmeTemplate = ({ name, owner, repo }: Brand): string => `# ${name}
-
-> TODO: your product description.
-
-## Quick Start
-
-\`\`\`bash
-bun install
-cp .env.example .env
-bun run db:generate
-bun run db:migrate
-bun dev
-\`\`\`
-
-## Repository
-
-https://github.com/${owner}/${repo}
-`
-
-// web/next/content/docs/index.mdx: docs entry/anchor. Description must match docs.config.ts.
+// web/next/content/docs/index.mdx: docs anchor. Description must match docs.config.ts.
 export const DOCS_INDEX_DESCRIPTION = "Documentation."
 
 export const docsIndexTemplate = (): string => `---
@@ -89,7 +43,7 @@ description: ${DOCS_INDEX_DESCRIPTION}
 
 # Introduction
 
-Documentation. Replace this page with your own.
+Welcome to the documentation. Replace this page with your product's docs.
 `
 
 // web/next/content/blog/index.mdx: generic blog landing.
@@ -117,7 +71,7 @@ publishedAt: 2026-01-01
 This is a sample post. Replace it with your own writing.
 `
 
-// web/next/docs.config.ts: regenerated to the stripped doc set (one public anchor + the console docs).
+// web/next/docs.config.ts: regenerated to the stub doc set (one public anchor + the console anchor).
 export const docsConfigTemplate =
   (): string => `import type { DocsConfig } from "./src/lib/docs/types"
 
