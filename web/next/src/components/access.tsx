@@ -49,8 +49,8 @@ export function Access() {
   const githubEnabled = providers?.includes("github") ?? false
   const googleEnabled = providers?.includes("google") ?? false
   const magicLinkEnabled = providers?.includes("magic-link") ?? false
-  const hasSocial = isDev || githubEnabled || googleEnabled
-  const hasNoProviders = !magicLinkEnabled && !hasSocial
+  const hasAlternatives = isDev || githubEnabled || googleEnabled
+  const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
   useEffect(() => {
     setLoader(null)
@@ -148,14 +148,14 @@ export function Access() {
               </Button>
             </form>
           )}
-          {magicLinkEnabled && hasSocial && (
+          {magicLinkEnabled && hasAlternatives && (
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
               <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">
                 OR
               </span>
             </div>
           )}
-          {hasSocial && (
+          {hasAlternatives && (
             <div className="grid gap-4">
               {isDev && (
                 <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
