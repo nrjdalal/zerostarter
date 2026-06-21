@@ -7,15 +7,17 @@ export interface Brand {
 // packages/config/src/site.ts: regenerated with the product name, repo URL, and placeholders.
 export const siteTemplate = ({
   name,
+  owner,
+  repo,
 }: Brand): string => `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
   name: "${name}",
   description: "TODO: your product description.",
   tagline: "TODO: your tagline.",
   social: {
-    github: "https://github.com/nrjdalal",
-    x: "https://x.com/nrjdalal",
-    discord: "https://discord.gg/38FeAUmHSZ",
+    github: "https://github.com/${owner}/${repo}",
+    x: "",
+    discord: "",
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
@@ -71,9 +73,9 @@ bun run db:migrate
 bun dev
 \`\`\`
 
-## Forked From
+## Repository
 
-https://github.com/nrjdalal/zerostarter
+https://github.com/${owner}/${repo}
 `
 
 // web/next/content/docs/index.mdx: docs entry/anchor. Description must match docs.config.ts.
