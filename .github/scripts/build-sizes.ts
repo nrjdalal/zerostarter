@@ -72,6 +72,7 @@ if (!process.argv.includes("--graph")) process.exit(0)
 
 const OUTPUT = ".github/assets/graph-build.svg"
 const TMP_DOT = ".graph-build.tmp.dot"
+const rootName = JSON.parse(await Bun.file("package.json").text()).name
 
 const nodeSizes: Record<string, number> = {
   "@api/hono": bundleSize,
@@ -101,7 +102,7 @@ const labels = Object.entries(nodeSizes).map(
   ([pkg, size]) =>
     `\t"[root] ${pkg}#build" [label="${size ? `${pkg} (${formatSize(size)})` : pkg}"]`,
 )
-labels.push(`\t"[root] ___ROOT___" [label="zerostarter"]`)
+labels.push(`\t"[root] ___ROOT___" [label="${rootName}"]`)
 const viz = await instance()
 const rendered = viz.renderString(dotSrc.replace(/}\s*$/, `${labels.join("\n")}\n}`), {
   format: "svg",
@@ -110,7 +111,7 @@ const rendered = viz.renderString(dotSrc.replace(/}\s*$/, `${labels.join("\n")}\
 const svg = rendered
   .replaceAll("[root] ", "")
   .replaceAll("#build", "")
-  .replaceAll("___ROOT___", "zerostarter")
+  .replaceAll("___ROOT___", rootName)
   .replaceAll('fill="white"', 'fill="none"')
   .replaceAll('fill="#ffffff"', 'fill="none"')
   .replaceAll('fill="#fff"', 'fill="none"')
