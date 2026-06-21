@@ -22,7 +22,7 @@ Two social providers are supported, and each is **optional**: a provider registe
 - **GitHub**: set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
 - **Google**: set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
-`packages/auth/src/index.ts` builds `socialProviders` conditionally from those env vars and exports `enabledSocialProviders` (the providers that are actually configured). The public `GET /api/auth/providers` route (`api/hono/src/routers/auth.ts`) returns that list, and the sign-in UI (`web/next/src/components/access.tsx`) fetches it to render only the buttons for configured providers. Adding or removing a provider is therefore just an env change; the UI follows automatically.
+`packages/auth/src/index.ts` builds `socialProviders` conditionally from those env vars and exports `enabledSocialProviders` (the providers that are actually configured). The public `GET /api/auth/providers` route (`api/hono/src/routers/auth.ts`) returns that list, and the sign-in UI (`web/next/src/components/access.tsx`) fetches it to render only the buttons for configured providers. Toggling either built-in provider is therefore just an env change; the UI follows automatically. Adding a brand-new provider also takes a small code change (see below).
 
 The auth config does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 

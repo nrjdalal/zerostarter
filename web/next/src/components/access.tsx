@@ -35,12 +35,13 @@ export function Access() {
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
 
-  // Render only the social buttons for providers the API actually has configured (GET /api/auth/providers).
+  // Render only the buttons for configured providers (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final list with no flash.
   const { data: providers } = useQuery({
     queryKey: ["auth-providers"],
+    staleTime: Infinity,
     queryFn: async () => {
       const res = await apiClient.auth.providers.$get()
-      if (!res.ok) return [] as ("github" | "google")[]
+      if (!res.ok) throw new Error("Failed to load auth providers")
       const { data } = await res.json()
       return data.providers
     },
