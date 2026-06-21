@@ -89,7 +89,11 @@ const nodeSizes: Record<string, number> = {
 const { instance } = await import("@viz-js/viz")
 let dotSrc = ""
 try {
-  await $`bunx turbo run build --graph=${TMP_DOT}`.quiet()
+  // exclude the CLI workspace (packages/cli) from the product graph; it is absent in forks, so this no-ops there
+  const cliFilter = (await Bun.file("packages/cli/package.json").exists())
+    ? ["--filter=!./packages/cli"]
+    : []
+  await $`bunx turbo run build --graph=${TMP_DOT} ${cliFilter}`.quiet()
   dotSrc = await Bun.file(TMP_DOT).text()
 } finally {
   await Bun.file(TMP_DOT)

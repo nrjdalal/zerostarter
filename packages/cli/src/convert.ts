@@ -35,10 +35,14 @@ const IGNORED_DIRS = [
 // Author pages, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
 const REMOVE_PATHS = [
   "packages/cli",
+  ".github/workflows/cli-release.yml",
   ".github/audit",
   ".github/reviews",
   ".infisical.json",
   ".github/assets/graph-build.svg",
+  ".github/assets/cli.tape",
+  ".github/assets/setup.sh",
+  ".github/assets/cli.gif",
   ".github/FUNDING.yml",
   "LICENSE.md",
   "CHANGELOG.md",
