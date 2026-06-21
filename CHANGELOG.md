@@ -1,3 +1,19 @@
+## v0.0.42
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.41...v0.0.42)
+
+### 🚀 Enhancements
+
+- **cli:** Zerostarter init, convert the starter into a clean product ([#505](https://github.com/nrjdalal/zerostarter/pull/505))
+
+### 🏡 Chore
+
+- Remove legacy .github/reviews reports ([8b25428](https://github.com/nrjdalal/zerostarter/commit/8b25428))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.41
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.40...v0.0.41)

@@ -11,9 +11,9 @@ import {
   siteTemplate,
 } from "../src/templates"
 
-const brand = { name: "Acme" }
+const brand = { name: "acme" }
 
-test("siteTemplate carries the brand and leaks no upstream identity", () => {
+test("siteTemplate capitalizes the brand and leaks no upstream identity", () => {
   const out = siteTemplate(brand)
   expect(out).toContain('name: "Acme"')
   expect(out).not.toContain("zerostarter")
@@ -36,8 +36,8 @@ test("generated docs.config.ts is a valid DocsConfig satisfies block", () => {
 test("content + agent stubs are brand-free", () => {
   const stubs = [
     docsIndexTemplate(),
-    blogIndexTemplate(),
-    sampleBlogPostTemplate(),
+    blogIndexTemplate("2026-01-01"),
+    sampleBlogPostTemplate("2026-01-01"),
     consoleIndexTemplate(),
     agentsTemplate(),
   ]
