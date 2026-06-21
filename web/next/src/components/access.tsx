@@ -35,22 +35,22 @@ export function Access() {
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
 
-  // Render only the sign-in methods the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
-  const { data: methods } = useQuery({
-    queryKey: ["auth-methods"],
+  // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
+  const { data: providers } = useQuery({
+    queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
       const res = await apiClient.auth.providers.$get()
-      if (!res.ok) throw new Error("Failed to load auth methods")
+      if (!res.ok) throw new Error("Failed to load auth providers")
       const { data } = await res.json()
-      return data
+      return data.providers
     },
   })
-  const githubEnabled = methods?.providers.includes("github") ?? false
-  const googleEnabled = methods?.providers.includes("google") ?? false
-  const magicLinkEnabled = methods?.magicLink ?? false
+  const githubEnabled = providers?.includes("github") ?? false
+  const googleEnabled = providers?.includes("google") ?? false
+  const magicLinkEnabled = providers?.includes("magic-link") ?? false
   const hasSocial = isDev || githubEnabled || googleEnabled
-  const hasNoMethods = !magicLinkEnabled && !hasSocial
+  const hasNoProviders = !magicLinkEnabled && !hasSocial
 
   useEffect(() => {
     setLoader(null)
@@ -222,9 +222,9 @@ export function Access() {
               </div>
             </div>
           )}
-          {hasNoMethods && (
+          {hasNoProviders && (
             <p className="text-muted-foreground text-center text-sm">
-              No sign-in methods are configured yet.
+              No sign-in options are configured yet.
             </p>
           )}
         </div>
