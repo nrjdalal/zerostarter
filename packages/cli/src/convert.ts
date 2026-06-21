@@ -2,10 +2,12 @@ import { join } from "node:path"
 
 import { exists, list, readJson, remove, replaceInFile, write, writeJson } from "@/io"
 import {
+  agentsTemplate,
   blogIndexTemplate,
   type Brand,
   docsConfigTemplate,
   docsIndexTemplate,
+  homeTemplate,
   sampleBlogPostTemplate,
   siteTemplate,
 } from "@/templates"
@@ -23,6 +25,7 @@ const REMOVE_PATHS = [
   ".infisical.json",
   ".github/assets/graph-build.svg",
   "LICENSE.md",
+  "CHANGELOG.md",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
@@ -60,7 +63,7 @@ description: Internal documentation.
 Your team's internal docs live here.
 `
 
-// Drop a generic content stub so the app builds once the author's content is gone.
+// Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/content/docs/index.mdx"), docsIndexTemplate())
   write(p(root, "web/next/content/blog/index.mdx"), blogIndexTemplate())
@@ -68,6 +71,8 @@ const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndex())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")
+  write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
+  write(p(root, "AGENTS.md"), agentsTemplate())
 }
 
 // Clean up the references the route and font deletes leave dangling.

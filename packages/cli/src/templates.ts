@@ -32,6 +32,48 @@ export const site = {
 export type Site = typeof site
 `
 
+// web/next/src/app/page.tsx: a minimal generic home that reads the brand from site config.
+export const homeTemplate = (): string => `import Link from "next/link"
+
+import { site } from "@packages/config/site"
+
+export default function Home() {
+  return (
+    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center">
+      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{site.name}</h1>
+      <p className="text-muted-foreground max-w-xl text-lg">{site.description}</p>
+      <div className="flex gap-3">
+        <Link
+          href="/docs"
+          className="bg-primary text-primary-foreground rounded-md px-5 py-2.5 text-sm font-medium"
+        >
+          Documentation
+        </Link>
+        <Link href="/dashboard" className="rounded-md border px-5 py-2.5 text-sm font-medium">
+          Dashboard
+        </Link>
+      </div>
+    </main>
+  )
+}
+`
+
+// AGENTS.md (CLAUDE.md is a symlink to it): a generic agent guide.
+export const agentsTemplate = (): string => `# AGENTS.md
+
+Guidance for AI coding agents working in this repository.
+
+## Instructions
+
+- ALWAYS: Use \`@/\` for imports, if applicable.
+- ALWAYS: Keep documentation in sync with code changes.
+- Do not comment unnecessarily. Only comment when it is absolutely necessary, and keep comments on a single line.
+
+## Logging in (agents)
+
+The local dev API exposes a sign-in-as endpoint for the agent identity in \`@packages/config/site\` (\`site.agent\`). It is local-only and requires a trusted Origin. See \`api/hono/src/routers/agents.ts\`.
+`
+
 // web/next/content/docs/index.mdx: docs anchor. Description must match docs.config.ts.
 export const DOCS_INDEX_DESCRIPTION = "Documentation."
 
