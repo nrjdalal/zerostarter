@@ -1,8 +1,8 @@
-import { join } from "node:path"
+import { basename, extname, join } from "node:path"
 
 import { type ArrayLiteralExpression, Node, Project, SyntaxKind } from "ts-morph"
 
-import { exists, readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { exists, list, readJson, remove, replaceInFile, walk, write, writeJson } from "@/io"
 import {
   blogIndexTemplate,
   type Brand,
@@ -14,7 +14,7 @@ import {
   siteTemplate,
 } from "@/templates"
 
-// Straggler tokens, applied after the structural deletes. Most-specific first.
+// Brand tokens applied as a whole-tree sweep after the structural deletes. Most-specific first.
 const tokens = (b: Brand): Array<[string, string]> => [
   ["agent@zerostarter.dev", "agent@example.com"],
   ["https://github.com/nrjdalal/zerostarter", `https://github.com/${b.owner}/${b.repo}`],
@@ -22,6 +22,7 @@ const tokens = (b: Brand): Array<[string, string]> => [
   ["https://discord.gg/38FeAUmHSZ", ""],
   ["nrjdalal/zerostarter", `${b.owner}/${b.repo}`],
   ["zerostarter.dev", `${b.repo}.example.com`],
+  ["Neeraj Dalal", "TODO: your name"],
   ["AgentZero", "Agent"],
   ["/tmp/zerostarter-dev.log", `/tmp/${b.repo}-dev.log`],
   ["zerostarter-web", `${b.repo}-web`],
@@ -30,6 +31,41 @@ const tokens = (b: Brand): Array<[string, string]> => [
 ]
 
 const p = (root: string, ...parts: string[]): string => join(root, ...parts)
+
+// Directories the whole-tree token sweep never descends into.
+const SWEEP_SKIP_DIRS = new Set([
+  ".git",
+  "node_modules",
+  ".next",
+  ".turbo",
+  ".source",
+  ".vercel",
+  "dist",
+])
+
+// Files the sweep leaves untouched: the lockfile, generated history, and the fork's own README.
+const SWEEP_SKIP_FILES = new Set(["bun.lock", "CHANGELOG.md", "README.md"])
+
+// Binary extensions the sweep must not rewrite.
+const SWEEP_SKIP_EXT = new Set([
+  ".svg",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".avif",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".otf",
+  ".eot",
+  ".pdf",
+  ".mp4",
+  ".webm",
+  ".lock",
+])
 
 // Class 1: regenerate the centralized brand file.
 const rewriteSite = (root: string, b: Brand): void => {
@@ -50,7 +86,7 @@ const rewritePackageJson = (root: string, b: Brand): void => {
   writeJson(path, pkg)
 }
 
-// Class 1: the remaining text/JSON config files (rulesets, scripts, compose, env are covered by the final token pass).
+// Class 1: config files whose edits are not a plain token swap.
 const rewriteConfigs = (root: string, b: Brand): void => {
   replaceInFile(p(root, "LICENSE.md"), [
     ["Copyright (c) 2025 Neeraj Dalal", "Copyright (c) 2026 TODO: your name"],
@@ -87,18 +123,16 @@ const fixNavbar = (root: string): void => {
   if (removals.length) sf.saveSync()
 }
 
-// Class 2: strip blog posts to one anchor.
+// Class 2: clear the blog collection to a single sample and drop every per-post asset folder.
 const stripBlog = (root: string): void => {
   const blog = p(root, "web/next/content/blog")
-  remove(join(blog, "a-biography-written-in-code.mdx"))
-  remove(join(blog, "web-development-2026.mdx"))
-  remove(join(blog, "mcp-per-workspace.mdx"))
-  remove(p(root, "web/next/public/blog/mcp-per-workspace"))
+  for (const entry of list(blog)) remove(join(blog, entry))
   write(join(blog, "index.mdx"), blogIndexTemplate())
   write(join(blog, "hello-world.mdx"), sampleBlogPostTemplate())
+  const assets = p(root, "web/next/public/blog")
+  for (const entry of list(assets)) remove(join(assets, entry))
 }
 
-// Class 2: strip docs to one anchor, regenerate docs.config.ts.
 const consoleIndex = (): string => `---
 slug: /console/docs
 title: Introduction
@@ -110,24 +144,18 @@ description: Internal documentation.
 Internal admin documentation. Replace this page with your own.
 `
 
+// Class 2: clear the docs and console collections to one anchor each, regenerate docs.config.ts.
 const stripDocs = (root: string): void => {
   const docs = p(root, "web/next/content/docs")
-  for (const entry of [
-    "getting-started",
-    "manage",
-    "deployment",
-    "resources",
-    "contributing.mdx",
-  ]) {
-    remove(join(docs, entry))
-  }
+  for (const entry of list(docs)) remove(join(docs, entry))
   write(join(docs, "index.mdx"), docsIndexTemplate())
+  const consoleDocs = p(root, "web/next/content/console/docs")
+  for (const entry of list(consoleDocs)) remove(join(consoleDocs, entry))
+  write(join(consoleDocs, "index.mdx"), consoleIndex())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
-  write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndex())
-  remove(p(root, "web/next/content/console/docs/runbooks"))
 }
 
-// Class 3: prune branded and demo assets.
+// Class 3: prune the Next.js demo assets and the generated build graphs.
 const pruneAssets = (root: string): void => {
   for (const f of [
     "file.svg",
@@ -142,7 +170,7 @@ const pruneAssets = (root: string): void => {
   remove(p(root, ".github/assets/graph-build.svg"))
 }
 
-// Class 4: scrub agent/meta docs (the symlinks follow the real files).
+// Class 4: scrub the attribution comment (symlinks follow the real files).
 const scrubMeta = (root: string): void => {
   replaceInFile(p(root, "web/next/src/components/mode-toggle.tsx"), [
     ["  /* The smart toggle by @nrjdalal */\n", ""],
@@ -158,22 +186,16 @@ const removeStarterTooling = (root: string): void => {
   remove(p(root, ".github/audit"))
 }
 
-// Final scoped token sweep over the source tree.
+// Whole-tree token sweep: every text file picks up the rename, so new content needs no CLI change.
 const finalReplace = (root: string, b: Brand): void => {
-  const files = [
-    "AGENTS.md",
-    ".github/FUNDING.yml",
-    ".github/rulesets/main.json",
-    ".github/rulesets/canary.json",
-    ".github/scripts/changelog-manager.ts",
-    ".github/scripts/build-sizes.ts",
-    "docker-compose.yml",
-    ".env.example",
-    ".agents/skills/dev/SKILL.md",
-    ".agents/skills/fonts/SKILL.md",
-    ".agents/skills/docker-test/SKILL.md",
-  ]
-  for (const f of files) replaceInFile(p(root, f), tokens(b))
+  const pairs = tokens(b)
+  for (const file of walk(root, SWEEP_SKIP_DIRS)) {
+    const base = basename(file)
+    if (SWEEP_SKIP_FILES.has(base)) continue
+    if (base.startsWith(".env") && base !== ".env.example") continue
+    if (SWEEP_SKIP_EXT.has(extname(file).toLowerCase())) continue
+    replaceInFile(file, pairs)
+  }
 }
 
 export const convertRepo = (root: string, brand: Brand): void => {
