@@ -59,16 +59,17 @@ export default function WaitlistPage() {
   const queryClient = useQueryClient()
 
   const joinWaitlist = useMutation({
-    mutationFn: (value: { email: string; subject: string }) =>
-      unwrap(apiClient.waitlist.$post({ json: value })),
-    onSuccess: ({ error }) => {
-      if (error) {
-        toast.error(error.message)
-        return
-      }
+    mutationFn: async (value: { email: string; subject: string }) => {
+      const { error } = await unwrap(apiClient.waitlist.$post({ json: value }))
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
       setJoined(true)
       toast.success("You're on the waitlist!")
       queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
+    },
+    onError: (error) => {
+      toast.error(error.message)
     },
   })
 
