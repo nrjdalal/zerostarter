@@ -47,7 +47,7 @@ jobs:
     if: |
       always() && !failure() && !cancelled() && (
         github.event_name == 'push' ||
-        github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner && contains(github.event.comment.body, 'release')
+        github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner && startsWith(github.event.comment.body, '/release')
       )
     needs: [test]
     runs-on: ubuntu-latest
