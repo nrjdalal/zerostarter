@@ -4,6 +4,11 @@ import type { Context } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
+// Single source of the API error shape, reused by the OpenAPI error responses in index.ts.
+export const errorEnvelope = z.object({
+  error: z.object({ code: z.string(), message: z.string() }),
+})
+
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
   status: S,

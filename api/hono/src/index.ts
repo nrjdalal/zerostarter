@@ -8,7 +8,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, jsonError } from "@/lib/error"
+import { errorEnvelope, errorHandler, jsonError } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -32,6 +32,31 @@ app.use(
 
 app.onError(errorHandler)
 app.notFound((c) => jsonError(c, 404, "NOT_FOUND", "Not Found"))
+
+// Standard error envelope shown on every documented route, each with its own status code/message example.
+const errorResponses = Object.fromEntries(
+  (
+    [
+      [400, "VALIDATION_ERROR", "Invalid request payload"],
+      [401, "UNAUTHORIZED", "Unauthorized"],
+      [403, "FORBIDDEN", "Forbidden"],
+      [404, "NOT_FOUND", "Not Found"],
+      [429, "TOO_MANY_REQUESTS", "Too Many Requests"],
+      [500, "INTERNAL_SERVER_ERROR", "Internal Server Error"],
+    ] as const
+  ).map(([status, code, message]) => [
+    status,
+    {
+      description: message,
+      content: {
+        "application/json": {
+          schema: resolver(errorEnvelope),
+          example: { error: { code, message } },
+        },
+      },
+    },
+  ]),
+)
 
 const routes = app
   .get("/", (c) => {
@@ -102,6 +127,10 @@ const { data } = await response.json()`,
           title: site.name,
           description: site.apiReferenceDescription,
         },
+      },
+      defaultOptions: {
+        GET: { responses: errorResponses },
+        POST: { responses: errorResponses },
       },
     }),
   )
