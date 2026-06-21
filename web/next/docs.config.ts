@@ -241,15 +241,7 @@ const docsConfig = {
       {
         "/console/docs": {
           title: "Introduction",
-          description: `Private internal documentation for the ${site.name} admin console.`,
-        },
-      },
-    ],
-    Runbooks: [
-      {
-        "/console/docs/runbooks/incident-response": {
-          title: "Incident Response",
-          description: "Internal runbook for handling production incidents.",
+          description: "Internal documentation.",
         },
       },
     ],
