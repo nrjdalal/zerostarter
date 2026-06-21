@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.0",
+  "version": "0.0.7",
   "description": "Scaffold a clean product from the zerostarter SaaS starter, and keep forks in sync with upstream.",
   "keywords": [
     "cli",
