@@ -245,14 +245,6 @@ const docsConfig = {
         },
       },
     ],
-    Runbooks: [
-      {
-        "/console/docs/runbooks/incident-response": {
-          title: "Incident Response",
-          description: "Internal runbook for handling production incidents.",
-        },
-      },
-    ],
   },
 } satisfies DocsConfig
 

@@ -7,17 +7,15 @@ export interface Brand {
 // packages/config/src/site.ts: regenerated with the product name, repo URL, and placeholders.
 export const siteTemplate = ({
   name,
-  owner,
-  repo,
 }: Brand): string => `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
   name: "${name}",
   description: "TODO: your product description.",
   tagline: "TODO: your tagline.",
   social: {
-    github: "https://github.com/${owner}/${repo}",
-    x: "",
-    discord: "",
+    github: "https://github.com/nrjdalal",
+    x: "https://x.com/nrjdalal",
+    discord: "https://discord.gg/38FeAUmHSZ",
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
@@ -73,13 +71,13 @@ bun run db:migrate
 bun dev
 \`\`\`
 
-## Repository
+## Forked From
 
-https://github.com/${owner}/${repo}
+https://github.com/nrjdalal/zerostarter
 `
 
 // web/next/content/docs/index.mdx: docs entry/anchor. Description must match docs.config.ts.
-export const DOCS_INDEX_DESCRIPTION = "Product documentation."
+export const DOCS_INDEX_DESCRIPTION = "Documentation."
 
 export const docsIndexTemplate = (): string => `---
 slug: /docs
@@ -89,7 +87,7 @@ description: ${DOCS_INDEX_DESCRIPTION}
 
 # Introduction
 
-Welcome to the documentation. Replace this page with your product's docs.
+Documentation. Replace this page with your own.
 `
 
 // web/next/content/blog/index.mdx: generic blog landing.
@@ -138,14 +136,6 @@ const docsConfig = {
         "/console/docs": {
           title: "Introduction",
           description: "Internal documentation.",
-        },
-      },
-    ],
-    Runbooks: [
-      {
-        "/console/docs/runbooks/incident-response": {
-          title: "Incident Response",
-          description: "Internal runbook for handling production incidents.",
         },
       },
     ],

@@ -124,6 +124,7 @@ const stripDocs = (root: string): void => {
   write(join(docs, "index.mdx"), docsIndexTemplate())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndex())
+  remove(p(root, "web/next/content/console/docs/runbooks"))
 }
 
 // Class 3: prune branded and demo assets.

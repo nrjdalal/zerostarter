@@ -20,10 +20,6 @@ Console access requires `user.role === "admin"` ([Better Auth Admin plugin](http
 
 The local **Login (agents)** sign-in (`api/hono/src/routers/agents.ts`) signs in as the `AgentZero` user and grants it `role: "admin"`, so that account has full console access. This is local-only: the route is gated by `isLocal(NODE_ENV)` and a trusted `Origin` header, and returns a 404 anywhere else. It is for local development and agent workflows, not a production access path.
 
-## Sections
-
-- [Incident Response](/console/docs/runbooks/incident-response) - Internal runbook for handling incidents.
-
 ## Adding pages
 
 Drop MDX files into `web/next/content/console/docs`. They are loaded through the
