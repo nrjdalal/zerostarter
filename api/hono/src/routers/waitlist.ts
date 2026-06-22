@@ -4,7 +4,7 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { jsonError } from "@/lib/error"
+import { jsonError, validationErrorResponses } from "@/lib/error"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -28,10 +28,9 @@ export const waitlistRouter = new Hono()
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.waitlist.$get())`,
           },
         ],
       } as object),
@@ -64,10 +63,9 @@ const { data } = await response.json()`,
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.waitlist.$post({ json: { email: "you@example.com" } })
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`,
           },
         ],
       } as object),
@@ -82,10 +80,15 @@ const { data } = await response.json()`,
             },
           },
         },
+        ...validationErrorResponses,
       },
     }),
     sValidator("json", joinSchema, (result, c) => {
-      if (!result.success) return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address")
+      if (!result.success) {
+        return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address", {
+          issues: result.error,
+        })
+      }
     }),
     async (c) => {
       const { email, subject } = c.req.valid("json")

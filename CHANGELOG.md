@@ -1,3 +1,15 @@
+## v0.0.47
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.46...v0.0.47)
+
+### 🚀 Enhancements
+
+- **cli:** Polish init output, inscope colors, VHS demo; bump to 0.0.8 ([#529](https://github.com/nrjdalal/zerostarter/pull/529))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.46
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.45...v0.0.46)

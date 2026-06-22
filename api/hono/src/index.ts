@@ -8,7 +8,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, jsonError } from "@/lib/error"
+import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -56,10 +56,9 @@ const routes = app
           {
             lang: "typescript",
             label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
 
-const response = await apiClient.health.$get()
-const { data } = await response.json()`,
+const { data, error } = await unwrap(apiClient.health.$get())`,
           },
         ],
       } as object),
@@ -102,6 +101,11 @@ const { data } = await response.json()`,
           title: site.name,
           description: site.apiReferenceDescription,
         },
+      },
+      // Always-reachable errors (429/500) on every GET/POST; routes add 400/401 in their own responses. Add PUT/DELETE here if such routes appear.
+      defaultOptions: {
+        GET: { responses: globalErrorResponses },
+        POST: { responses: globalErrorResponses },
       },
     }),
   )

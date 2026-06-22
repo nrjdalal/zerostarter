@@ -2,17 +2,15 @@
 
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/lib/api/client"
+import { apiClient, unwrap } from "@/lib/api/client"
 
 export function ApiStatus() {
   const { isLoading, isError } = useQuery({
     queryKey: ["api-health"],
     queryFn: async () => {
-      const res = await apiClient.health.$get()
-      if (!res.ok) {
-        throw new Error("Systems are facing issues")
-      }
-      return res.json()
+      const { data, error } = await unwrap(apiClient.health.$get())
+      if (error) throw new Error(error.message)
+      return data
     },
     refetchInterval: 30000,
   })
