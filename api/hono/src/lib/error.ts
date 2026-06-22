@@ -45,6 +45,17 @@ export const errorEnvelope = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
 })
 
+// Validation errors also carry the failing fields, so document that on the 400 response.
+const validationErrorEnvelope = z.object({
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    issues: z
+      .array(z.object({ path: z.array(z.union([z.string(), z.number()])), message: z.string() }))
+      .optional(),
+  }),
+})
+
 // One OpenAPI error response, with its own code/message example.
 const errorResponse = (code: string, message: string) => ({
   description: message,
@@ -67,7 +78,21 @@ export const authErrorResponses: ResponsesWithResolver = {
   401: errorResponse("UNAUTHORIZED", "Unauthorized"),
 }
 
-// Add to routes with a request validator, the only thing that returns 400.
+// Add to routes with a request validator, the only thing that returns 400; the 400 also carries the per-field issues.
 export const validationErrorResponses: ResponsesWithResolver = {
-  400: errorResponse("VALIDATION_ERROR", "Invalid request payload"),
+  400: {
+    description: "Invalid request payload",
+    content: {
+      "application/json": {
+        schema: resolver(validationErrorEnvelope),
+        example: {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid request payload",
+            issues: [{ path: ["email"], message: "Invalid email address" }],
+          },
+        },
+      },
+    },
+  },
 }
