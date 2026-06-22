@@ -75,7 +75,7 @@ Shared authentication logic using [Better Auth](https://better-auth.com).
 
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
 - **`src/lib/utils.ts`**: Cookie domain and prefix helpers (`getCookieDomain`, `getCookiePrefix`) for cross-subdomain and environment-specific cookies
-- Supports GitHub and Google OAuth
+- Supports optional GitHub and Google OAuth (each enabled only when its credentials are set; the UI shows only configured providers via `GET /api/auth/providers`)
 - Organization and teams plugin for multi-tenant support, the Better Auth OpenAPI plugin, and the `admin` plugin (gates the entire `/console` area by `role === "admin"`)
 - Exports session types for type safety
 
@@ -85,6 +85,7 @@ Database schema and configuration using [Drizzle ORM](https://orm.drizzle.team).
 
 - **`src/schema/`**: Database table definitions
   - `auth.ts`: User, session, account, verification, organization, member, team, teamMember, and invitation tables
+  - `waitlist.ts`: Public waitlist signup table
 - **`drizzle/`**: Generated migrations
 - **`drizzle.config.ts`**: Drizzle Kit configuration
 

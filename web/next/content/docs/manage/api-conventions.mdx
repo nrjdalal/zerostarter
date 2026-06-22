@@ -35,7 +35,7 @@ This envelope is produced by the `jsonError(c, status, code, message, extra?)` h
 
 ### Consuming responses on the client
 
-On the frontend, wrap any RPC call in `unwrap` (from `@/lib/api/client`) to get a `{ data, error }` result — exactly one is non-null, and it never throws:
+On the frontend, wrap any RPC call in `unwrap` (from `@/lib/api/client`) to get a `{ data, error }` result, exactly one is non-null, and it never throws:
 
 ```ts
 import { apiClient, unwrap } from "@/lib/api/client"
@@ -48,7 +48,7 @@ if (error) {
 }
 ```
 
-With TanStack Query, `throw` on the error arm — in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
+With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
 
 ### Error Codes
 
@@ -226,10 +226,10 @@ describeRoute({
 
 ### Documenting error responses
 
-A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500 — the only statuses reachable on any matched route, via the global rate limiter and `onError`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
+A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500, the only statuses reachable on any matched route, via the global rate limiter and `onError`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
 
-- `authErrorResponses` (401) — spread into routes behind `authMiddleware` (e.g. `/api/v1/*`).
-- `validationErrorResponses` (400) — spread into routes with a request validator (e.g. the waitlist `POST`).
+- `authErrorResponses` (401), spread into routes behind `authMiddleware` (e.g. `/api/v1/*`).
+- `validationErrorResponses` (400), spread into routes with a request validator (e.g. the waitlist `POST`).
 
 ```ts
 responses: {
@@ -238,4 +238,4 @@ responses: {
 }
 ```
 
-So `/api/health` documents only 200/429/500, `/api/v1/*` adds 401, and validated routes add 400 — each error status shows its own code/message example.
+So `/api/health` documents only 200/429/500, `/api/v1/*` adds 401, and validated routes add 400, each error status shows its own code/message example.

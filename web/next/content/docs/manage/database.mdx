@@ -55,7 +55,7 @@ The connection string is passed positionally to `new SQL(...)`, and the branch i
 
 ## Schema
 
-The schema is defined in `packages/db/src/schema/auth.ts` and consists of 9 tables:
+The auth and organization schema is defined in `packages/db/src/schema/auth.ts` (9 tables); the public waitlist uses a standalone `waitlist` table in `packages/db/src/schema/waitlist.ts`.
 
 ### Core Auth Tables
 
@@ -79,6 +79,14 @@ The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonated
 | `invitation`   | Pending invites      | `id`, `organizationId`, `email`, `role`, `teamId`, `status`, `expiresAt`, `inviterId` |
 
 All foreign keys use `CASCADE` on delete. Tables include appropriate indexes on foreign key columns.
+
+### Waitlist
+
+| Table      | Purpose                | Key Columns                         |
+| ---------- | ---------------------- | ----------------------------------- |
+| `waitlist` | Public signup captures | `id`, `email` (unique), `createdAt` |
+
+The `waitlist` table is standalone (no foreign keys). The public `/waitlist` page and the `POST /api/waitlist` route write to it.
 
 ### Relations
 
@@ -119,9 +127,10 @@ bun run db:studio
 
 ### Existing Migrations
 
-| Migration               | Description                                                                                                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migration               | Description                                                                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `0000_zero_starter.sql` | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
+| `0001_waitlist.sql`     | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
 
 ## Adding New Tables
 
