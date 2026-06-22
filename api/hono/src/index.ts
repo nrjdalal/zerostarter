@@ -8,7 +8,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, errorResponses, jsonError } from "@/lib/error"
+import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -102,10 +102,10 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
           description: site.apiReferenceDescription,
         },
       },
-      // Applied to every GET/POST route (add other verbs as needed); a route's own responses override these.
+      // Only the always-reachable errors (429/500); routes add 400/401 in their own responses where they apply.
       defaultOptions: {
-        GET: { responses: errorResponses },
-        POST: { responses: errorResponses },
+        GET: { responses: globalErrorResponses },
+        POST: { responses: globalErrorResponses },
       },
     }),
   )

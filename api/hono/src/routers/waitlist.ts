@@ -4,7 +4,7 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { jsonError } from "@/lib/error"
+import { jsonError, validationErrorResponses } from "@/lib/error"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -80,6 +80,7 @@ const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "
             },
           },
         },
+        ...validationErrorResponses,
       },
     }),
     sValidator("json", joinSchema, (result, c) => {

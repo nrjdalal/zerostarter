@@ -3,6 +3,7 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
+import { authErrorResponses } from "@/lib/error"
 import { authMiddleware } from "@/middlewares"
 
 const sessionSchema = z.object({
@@ -55,6 +56,7 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())`,
             },
           },
         },
+        ...authErrorResponses,
       },
     }),
     (c) => {
@@ -87,6 +89,7 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())`,
             },
           },
         },
+        ...authErrorResponses,
       },
     }),
     (c) => {
