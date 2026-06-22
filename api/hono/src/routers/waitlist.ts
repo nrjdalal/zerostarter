@@ -84,7 +84,11 @@ const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "
       },
     }),
     sValidator("json", joinSchema, (result, c) => {
-      if (!result.success) return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address")
+      if (!result.success) {
+        return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address", {
+          issues: result.error,
+        })
+      }
     }),
     async (c) => {
       const { email, subject } = c.req.valid("json")

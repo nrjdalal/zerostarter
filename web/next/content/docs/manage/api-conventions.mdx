@@ -59,6 +59,7 @@ With TanStack Query, `throw` on the error arm — in a `queryFn` (so the query r
 | `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production)     |
 | `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                           |
 | `VALIDATION_ERROR`      | 400    | Zod schema validation failed                                  |
+| `BAD_REQUEST`           | 400    | Malformed JSON/form-data body (Hono `HTTPException`)          |
 | `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                        |
 | `AGENTS_LOGIN_FAILED`   | 500    | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
 
@@ -77,6 +78,10 @@ When a Zod validation fails, the response includes the full issues array:
   }
 }
 ```
+
+Route-level validators (e.g. `sValidator` on the waitlist `POST`) follow the same convention: a custom message plus the `issues` array. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
+
+A body that is present but unparseable (malformed JSON, malformed form-data) is a client error, not a server error: Hono throws an `HTTPException`, and `errorHandler` returns it with the thrown status (`400 BAD_REQUEST`) instead of masking it as a `500`.
 
 ### Environment-Aware Errors
 

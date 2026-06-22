@@ -2,6 +2,7 @@ import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import type { Context } from "hono"
 import { resolver, type ResponsesWithResolver } from "hono-openapi"
+import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
@@ -15,9 +16,24 @@ export function jsonError<S extends ContentfulStatusCode>(
   return c.json({ error: { code, message, ...extra } }, status)
 }
 
+// Code for an HTTPException, by status; Hono throws these for client errors (e.g. 400 on malformed JSON).
+const httpExceptionCodes: Record<number, string> = {
+  400: "BAD_REQUEST",
+  401: "UNAUTHORIZED",
+  403: "FORBIDDEN",
+  404: "NOT_FOUND",
+  429: "TOO_MANY_REQUESTS",
+}
+
 export const errorHandler = (err: Error, c: Context) => {
   if (err instanceof z.ZodError) {
     return jsonError(c, 400, "VALIDATION_ERROR", "Invalid request payload", { issues: err.issues })
+  }
+
+  // Honor the status Hono already chose (e.g. malformed JSON is a 400, not a 500); messages are dev-set and safe to surface.
+  if (err instanceof HTTPException) {
+    const code = httpExceptionCodes[err.status] ? httpExceptionCodes[err.status] : "ERROR"
+    return jsonError(c, err.status, code, err.message)
   }
 
   const message = isLocal(env.NODE_ENV) ? err.message : "Internal Server Error"
