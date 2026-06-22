@@ -102,7 +102,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
           description: site.apiReferenceDescription,
         },
       },
-      // Only the always-reachable errors (429/500); routes add 400/401 in their own responses where they apply.
+      // Always-reachable errors (429/500) on every GET/POST; routes add 400/401 in their own responses. Add PUT/DELETE here if such routes appear.
       defaultOptions: {
         GET: { responses: globalErrorResponses },
         POST: { responses: globalErrorResponses },
