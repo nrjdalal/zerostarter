@@ -19,7 +19,7 @@ This starter utilizes [Hono RPC](https://hono.dev/docs/guides/rpc) to provide en
 
 ### Basic Request
 
-Use `unwrap` from the client to get a `{ data, error }` result — exactly one is non-null, and it never throws:
+Use `unwrap` from the client to get a `{ data, error }` result, exactly one is non-null, and it never throws:
 
 ```ts
 import { apiClient, unwrap } from "@/lib/api/client"

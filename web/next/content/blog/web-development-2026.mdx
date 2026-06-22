@@ -1,6 +1,6 @@
 ---
 title: "How to Do Web Development in 2026"
-description: "Learn What Takes Years in a Week - The secret isn't learning more. It's starting with the right foundation. ZeroStarter teaches you practices that take years to learn—in a week."
+description: "Learn what takes years in a week. The secret isn't learning more, it's starting with the right foundation. ZeroStarter teaches you practices that take years to learn, in a week."
 createdAt: 2026-01-18
 publishedAt: 2026-01-18
 ---
@@ -9,7 +9,7 @@ Learn What Takes Years in a Week.
 
 **The secret isn't learning more. It's starting with the right foundation.**
 
-Here's an uncomfortable truth about web development in 2026: The gap between junior and senior developers isn't about knowing more syntax or frameworks. It's about understanding **practices**—the invisible systems that separate hobby projects from production software.
+Here's an uncomfortable truth about web development in 2026: The gap between junior and senior developers isn't about knowing more syntax or frameworks. It's about understanding **practices**, the invisible systems that separate hobby projects from production software.
 
 How do you structure a codebase that scales? How do you ensure type safety across your entire stack? How do you manage environment variables without production surprises? How do you set up a development workflow that catches problems early? How do you automate releases so changelogs write themselves?
 
@@ -29,19 +29,20 @@ These practices take years to learn through painful mistakes. Or you can absorb 
 
 ### How ZeroStarter approaches this
 
-ZeroStarter uses a monorepo—multiple applications and packages in a single repository:
+ZeroStarter uses a monorepo, multiple applications and packages in a single repository:
 
 ```
-├── api/hono/           # Backend API
-├── web/next/           # Frontend application
+├── api/hono/           # Backend API (Hono)
+├── web/next/           # Frontend application (Next.js)
 └── packages/
-    ├── auth/           # Authentication logic (used by API)
+    ├── auth/           # Better Auth: sessions, OAuth, organizations
+    ├── cli/            # `zerostarter` init CLI that scaffolds a fork
+    ├── config/         # Shared build config + brand/site metadata
     ├── db/             # Database schema (single source of truth)
-    ├── env/            # Environment variable validation
-    └── config/         # Shared build config (TS base + tsdown)
+    └── env/            # Environment variable validation
 ```
 
-The API imports auth logic from `@packages/auth`. The database schema in `@packages/db` is the single source of truth. TypeScript configuration is consistent across all packages.
+The API imports auth logic from `@packages/auth`. The database schema in `@packages/db` is the single source of truth. Brand and site metadata live once in `@packages/config/site`, so renaming a fork touches a single file. TypeScript configuration is consistent across all packages.
 
 [Turborepo](https://turbo.build) manages the build graph. Change `packages/db`? It rebuilds dependent packages. Unchanged packages use cache. Builds stay fast as the codebase grows.
 
@@ -60,7 +61,7 @@ The practice is **clear boundaries and code reuse**. How you achieve it depends 
 
 ## The Tech Stack
 
-Before diving into practices, here's what ZeroStarter uses—and why these choices work together:
+Before diving into practices, here's what ZeroStarter uses, and why these choices work together:
 
 | Layer      | Choice             | Why                                                     |
 | ---------- | ------------------ | ------------------------------------------------------- |
@@ -69,7 +70,7 @@ Before diving into practices, here's what ZeroStarter uses—and why these choic
 | Frontend   | Next.js            | App Router, Server Components, mature ecosystem         |
 | Backend    | Hono               | Ultra-fast, edge-compatible, type-safe RPC              |
 | Database   | PostgreSQL/Drizzle | Type-safe ORM, SQL-like syntax, zero runtime overhead   |
-| Auth       | Better Auth        | Self-hosted, flexible, TypeScript-first                 |
+| Auth       | Better Auth        | Self-hosted, orgs + teams + admin, magic link, TS-first |
 | Styling    | Tailwind + Shadcn  | Utility CSS, accessible components, copy-paste friendly |
 | Validation | Zod                | Runtime + compile-time types from one schema            |
 | Linting    | Oxlint + Oxfmt     | 50-100x faster than ESLint/Prettier                     |
@@ -85,9 +86,9 @@ Before diving into practices, here's what ZeroStarter uses—and why these choic
 
 ## Type-Safe API Communication
 
-**The principle**: The contract between frontend and backend should be enforced at compile time. If the backend changes a response shape, the frontend should know immediately—not when users report errors.
+**The principle**: The contract between frontend and backend should be enforced at compile time. If the backend changes a response shape, the frontend should know immediately, not when users report errors.
 
-**Why it matters**: The backend returns `{ userName: "John" }`. The frontend expects `{ username: "john" }`. Different casing, different property name. Without type safety, this becomes a runtime error—possibly only for some users, making it hard to reproduce.
+**Why it matters**: The backend returns `{ userName: "John" }`. The frontend expects `{ username: "john" }`. Different casing, different property name. Without type safety, this becomes a runtime error, possibly only for some users, making it hard to reproduce.
 
 ### How ZeroStarter approaches this
 
@@ -96,9 +97,9 @@ ZeroStarter uses [Hono RPC](https://hono.dev/docs/guides/rpc) to share types bet
 **Backend defines routes with types:**
 
 ```ts
-// api/hono/src/routers/v1.ts
+// Illustrative route. ZeroStarter validates with @hono/standard-validator (sValidator).
 import { Hono } from "hono"
-import { zValidator } from "@hono/zod-validator"
+import { sValidator } from "@hono/standard-validator"
 import { z } from "zod"
 
 const itemSchema = z.object({
@@ -111,8 +112,8 @@ export const v1Router = new Hono()
     const data = await db.query.items.findMany()
     return c.json({ data })
   })
-  .post("/items", zValidator("json", itemSchema), async (c) => {
-    const body = c.req.valid("json") // Typed from Zod schema
+  .post("/items", sValidator("json", itemSchema), async (c) => {
+    const body = c.req.valid("json") // Typed from the Zod schema
     const [data] = await db.insert(items).values(body).returning()
     return c.json({ data })
   })
@@ -125,7 +126,9 @@ export const v1Router = new Hono()
 import type { AppType } from "@api/hono"
 import { hc } from "hono/client"
 
-export const apiClient = hc<AppType>(config.api.url).api
+export const apiClient = hc<AppType>(config.api.url, {
+  init: { credentials: "include" },
+}).api
 ```
 
 Change the backend response? TypeScript errors appear in the frontend immediately. Rename a field? Every call site is flagged.
@@ -158,42 +161,52 @@ The practice is **type safety across the network boundary**. Whether you infer t
 
 ```ts
 // Success response
-{ "data": { message: "ok", version: "1.0.0" } }
+{ "data": { "message": "ok", "version": "1.0.0" } }
 
 // Error response
-{ "error": { code: "NOT_FOUND", message: "Not Found" } }
+{ "error": { "code": "NOT_FOUND", "message": "Not Found" } }
 ```
 
 **Global error handler** standardizes error responses:
 
 ```ts
-.onError((error, c) => {
-  if (error instanceof z.ZodError) {
-    return c.json({
-      error: {
-        code: "VALIDATION_ERROR",
-        message: "Invalid request payload",
-        issues: error.issues,
-      },
-    }, 400)
+// api/hono/src/lib/error.ts (wired into app.onError)
+export const errorHandler = (err: Error, c: Context) => {
+  if (err instanceof z.ZodError) {
+    return jsonError(c, 400, "VALIDATION_ERROR", "Invalid request payload", { issues: err.issues })
   }
-  return c.json({
-    error: {
-      code: "INTERNAL_SERVER_ERROR",
-      message: isLocal(env.NODE_ENV) ? error.message : "An unexpected error occurred",
-    },
-  }, 500)
-})
+  // Honor the status Hono already chose (e.g. malformed JSON is a 400, not a 500)
+  if (err instanceof HTTPException) {
+    const code = httpExceptionCodes[err.status] ? httpExceptionCodes[err.status] : "ERROR"
+    return jsonError(c, err.status, code, err.message)
+  }
+  const message = isLocal(env.NODE_ENV) ? err.message : "Internal Server Error"
+  return jsonError(c, 500, "INTERNAL_SERVER_ERROR", message)
+}
 ```
 
-Every error follows the same shape. Zod validation errors include the specific issues. Clients always know what to expect.
+Every error follows the same shape. Zod validation errors include the specific `issues`. Server errors are masked in production. Clients always know what to expect.
+
+**Consuming responses on the frontend** is symmetrical. The client wraps any call in `unwrap`, which returns a typed `{ data, error }` result and never throws:
+
+```ts
+// web/next/src/lib/api/client.ts
+const { data, error } = await unwrap(apiClient.v1.session.$get())
+if (error) {
+  // error.code and error.message are always present;
+  // validation failures also carry error.issues
+}
+```
+
+Exactly one of `data` or `error` is non-null, so call sites branch once and TypeScript narrows the rest.
 
 ### What you can learn
 
 Response standardization approaches vary:
 
 - **Wrapper types**: `{ data }` or `{ error }` at the top level
-- **HTTP status codes**: Use appropriate codes (400, 401, 404, 500)
+- **Result helpers**: a client `unwrap` so callers never wrap calls in try/catch
+- **HTTP status codes**: Use appropriate codes (400, 401, 404, 429, 500)
 - **Error codes**: Machine-readable codes like `VALIDATION_ERROR`
 - **Error tracking**: Sentry, Bugsnag, LogRocket for production monitoring
 
@@ -201,52 +214,114 @@ The practice is **consistent, predictable API responses**. When something fails,
 
 ---
 
-## Authentication
+## API Documentation
 
-**The principle**: Authentication should be secure by default, flexible enough to extend, and simple enough to understand. Users shouldn't think about security—it should just work.
+**The principle**: Your API should document itself. The spec, the interactive explorer, and the error responses should all come from the same source as the code, so they can never drift.
 
-**Why it matters**: Auth bugs are security bugs. A session that doesn't expire, a token that leaks, a callback URL that's not validated—these become vulnerabilities. Using a battle-tested library with secure defaults protects you from mistakes.
+**Why it matters**: Hand-written API docs rot. The moment a route changes and the docs don't, every consumer is working from a lie. Generated docs stay honest because they are the code.
 
 ### How ZeroStarter approaches this
 
-ZeroStarter uses [Better Auth](https://better-auth.com) with multiple providers:
+Routes are described with [hono-openapi](https://github.com/rhinobase/hono-openapi), which emits an OpenAPI document at `/api/openapi.json`. [Scalar](https://scalar.com) renders it as an interactive reference at `/api/docs`:
+
+```ts
+// api/hono/src/index.ts
+import { Scalar } from "@scalar/hono-api-reference"
+import { openAPIRouteHandler } from "hono-openapi"
+
+app
+  .basePath("/api")
+  // ...routes...
+  .get(
+    "/openapi.json",
+    openAPIRouteHandler(app, {
+      // 429 + 500 reach every GET/POST; routes add 400/401 in their own responses
+      defaultOptions: {
+        GET: { responses: globalErrorResponses },
+        POST: { responses: globalErrorResponses },
+      },
+    }),
+  )
+  .get("/docs", Scalar({ url: "/api/openapi.json" }))
+```
+
+Error responses are scoped per route, so the docs only advertise statuses a route can actually return. The helpers live in `api/hono/src/lib/error.ts`:
+
+```ts
+// a validated route behind auth advertises exactly what it can return
+responses: {
+  ...authErrorResponses,        // 401
+  ...validationErrorResponses,  // 400, includes the per-field issues array
+}
+```
+
+So `/api/health` documents 200/429/500, `/api/v1/*` adds 401, and validated routes add 400, each status with its own code/message example.
+
+### What you can learn
+
+API documentation approaches vary:
+
+- **Spec-first**: write OpenAPI by hand, then generate the server
+- **Code-first**: derive the spec from typed routes (ZeroStarter's approach)
+- **Explorers**: Scalar, Swagger UI, Redoc, Stoplight
+- **Contract tests**: verify the running API matches its spec
+
+The practice is **documentation generated from code**, so it never lies about what the API does.
+
+---
+
+## Authentication
+
+**The principle**: Authentication should be secure by default, flexible enough to extend, and simple enough to understand. Users shouldn't think about security, it should just work.
+
+**Why it matters**: Auth bugs are security bugs. A session that doesn't expire, a token that leaks, a callback URL that's not validated, these become vulnerabilities. Using a battle-tested library with secure defaults protects you from mistakes.
+
+### How ZeroStarter approaches this
+
+ZeroStarter uses [Better Auth](https://better-auth.com). OAuth providers are enabled only when their credentials are present, so a fork can ship with GitHub, Google, both, or none (relying on magic link):
 
 ```ts
 // packages/auth/src/index.ts
+// A provider is enabled only when both of its OAuth credentials are set.
+export const enabledSocialProviders = [
+  ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? (["github"] as const) : []),
+  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (["google"] as const) : []),
+]
+
 export const auth = betterAuth({
   baseURL: env.HONO_APP_URL,
   trustedOrigins: env.HONO_TRUSTED_ORIGINS,
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema: { user, session, account, verification },
+    schema: { user, session, account, organization /* ... */ },
   }),
+  plugins: [openAPIPlugin(), organizationPlugin({ teams: { enabled: true } }), adminPlugin()],
   socialProviders: {
-    github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    },
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
+    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+      ? { github: { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET } }
+      : {}),
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? { google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET } }
+      : {}),
   },
-  plugins: [openAPI()], // Auto-generated API docs
 })
 ```
 
-**Frontend auth client** with magic link support:
+**Multi-tenancy out of the box.** The `organization` plugin (with teams) and the `admin` plugin ship enabled, so organizations, teams, members, and roles exist from day one.
+
+**Frontend auth client** mirrors the server plugins:
 
 ```ts
+import { magicLinkClient, organizationClient } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
-import { magicLinkClient } from "better-auth/client/plugins"
 
 export const authClient = createAuthClient({
   baseURL: `${config.api.url}/api/auth`,
-  plugins: [magicLinkClient()],
+  plugins: [magicLinkClient(), organizationClient({ teams: { enabled: true } })],
 })
-
-export const { useSession, signIn, signUp, signOut } = authClient
 ```
+
+The UI reads an `enabledProviders` list, so OAuth buttons render only for configured providers, and the magic-link field shows only when its server plugin is registered.
 
 **Cross-subdomain cookies** for multi-app authentication:
 
@@ -273,13 +348,13 @@ Auth approaches vary:
 
 The practice is **secure, tested authentication**. Whether self-hosted or managed, the auth system should be secure by default and auditable.
 
-> **Try it yourself:** Clone ZeroStarter and run `bun dev` - authentication with GitHub and Google OAuth is ready to configure. See the [Setup guide](/docs/getting-started/setup#authentication-setup).
+> **Try it yourself:** Clone ZeroStarter and run `bun dev`. Configure GitHub and/or Google OAuth, or run with magic link only. See the [Setup guide](/docs/getting-started/setup#authentication-setup).
 
 ---
 
 ## Environment Variable Management
 
-**The principle**: Environment variables should be validated at startup and typed throughout your code. A missing variable should crash the app immediately with a clear error—not fail silently during a request.
+**The principle**: Environment variables should be validated at startup and typed throughout your code. A missing variable should crash the app immediately with a clear error, not fail silently during a request.
 
 **Why it matters**: `process.env.POSTGRES_URL` returns `string | undefined`. If it's undefined, when do you find out? Maybe immediately. Maybe five minutes later when the first database query runs. Maybe in production when a specific code path executes.
 
@@ -291,21 +366,30 @@ ZeroStarter uses [@t3-oss/env-core](https://env.t3.gg) with Zod schemas:
 // packages/env/src/api-hono.ts
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(["local", "development", "test", "staging", "production"]),
-    POSTGRES_URL: z.url(),
-    PORT: z.coerce.number().default(4000),
-    TRUSTED_ORIGINS: z.string().transform((s) => s.split(",")),
+    NODE_ENV,
+    HONO_APP_URL: z.url(),
+    HONO_PORT: z.coerce.number().default(4000),
+    HONO_RATE_LIMIT: z.coerce.number().default(60),
+    HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
+    HONO_TRUSTED_ORIGINS: z
+      .string()
+      .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
+      .pipe(z.array(z.url())),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    POSTGRES_URL: process.env.POSTGRES_URL,
-    PORT: process.env.PORT,
-    TRUSTED_ORIGINS: process.env.TRUSTED_ORIGINS,
+    HONO_APP_URL: process.env.HONO_APP_URL,
+    HONO_PORT: process.env.HONO_PORT,
+    HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,
+    HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,
+    HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
   },
+  emptyStringAsUndefined: true,
+  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 })
 ```
 
-Each package has its own env file, importing only what it needs. The auth package can't accidentally access database credentials. The frontend can't access server secrets.
+Each package has its own env file, importing only what it needs. The auth package can't accidentally access database credentials. The frontend can't access server secrets. Those `HONO_RATE_LIMIT` values feed a global rate limiter ([hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter)) that returns `429 TOO_MANY_REQUESTS`, with authenticated requests granted twice the limit.
 
 ### What you can learn
 
@@ -330,7 +414,7 @@ The practice is **validated, typed environment configuration**. The specific lib
 
 ### Branch Strategy
 
-ZeroStarter uses `canary` (development) and `main` (production) branches. Push to canary, a draft PR is automatically created for main. This ensures every production change goes through review.
+ZeroStarter uses `canary` (development) and `main` (production) branches. Push to canary, a draft PR is automatically created for main. Merging that PR with a merge commit lets the release automation cut a version. This ensures every production change goes through review.
 
 **Branch protection as code** via GitHub rulesets:
 
@@ -346,7 +430,8 @@ ZeroStarter uses `canary` (development) and `main` (production) branches. Push t
       "type": "pull_request",
       "parameters": {
         "required_approving_review_count": 1,
-        "dismiss_stale_reviews_on_push": true
+        "dismiss_stale_reviews_on_push": true,
+        "allowed_merge_methods": ["squash"]
       }
     }
   ]
@@ -372,9 +457,9 @@ But your team might prefer ticket references, emoji conventions, or freeform mes
 
 ## Code Quality Gates
 
-**The principle**: Catch problems before they enter the codebase. A bug caught at commit time costs minutes. The same bug in production costs hours—plus customer trust.
+**The principle**: Catch problems before they enter the codebase. A bug caught at commit time costs minutes. The same bug in production costs hours, plus customer trust.
 
-**Why it matters**: Code review is for logic and architecture. Humans shouldn't spend time catching formatting issues, linting errors, or type mismatches—that's what automation is for.
+**Why it matters**: Code review is for logic and architecture. Humans shouldn't spend time catching formatting issues, linting errors, or type mismatches, that's what automation is for.
 
 ### How ZeroStarter approaches this
 
@@ -386,6 +471,8 @@ pre-commit:
   commands:
     audit:
       run: bun audit --audit-level high
+      only:
+        - ref: canary # full advisory audit on canary
     lint-staged:
       run: bunx lint-staged --verbose
       stage_fixed: true # Auto-stage formatted files
@@ -441,21 +528,21 @@ issue_enrichment:
 **Auto-labeling** based on changed files:
 
 ```yaml
-# PR touches api/hono/ → gets @api/hono label
-# PR touches package.json → gets @dependencies label
-# PR touches .github/workflows/ → gets @workflows label
+# PR touches api/hono/ -> gets @api/hono label
+# PR touches package.json -> gets @dependencies label
+# PR touches .github/workflows/ -> gets @workflows label
 ```
 
 Labels are created automatically. Reviews can be filtered by area. You know at a glance what a PR affects.
 
-**In-repo code reviews** as reference:
+**In-repo audit reports** as reference:
 
 ```
-.github/reviews/
-└── 2025-12-26-cursor-composer-1.md  # Detailed review with findings
+.github/audit/
+└── 2026-06-21-docs-audit.md  # dated audit report with findings
 ```
 
-Past reviews are documented. Patterns are captured. New team members learn from history.
+Past audits are documented. Patterns are captured. New team members learn from history.
 
 ### What you can learn
 
@@ -494,7 +581,7 @@ jobs:
       - run: bun run build
 ```
 
-PRs are automatically labeled based on changed files. Approval status is tracked (`0/1` → `APPROVED`). You always know the state of every PR at a glance.
+PRs are automatically labeled based on changed files. Approval status is tracked (`0/1` to `APPROVED`). You always know the state of every PR at a glance.
 
 ### What you can learn
 
@@ -581,7 +668,7 @@ The practice is **automated SEO**. Sitemaps, meta tags, and social images should
 
 **The principle**: Dependencies should be consistent and secure. The same package should have the same version everywhere.
 
-**Why it matters**: Package A uses `zod@3.22`. Package B uses `zod@3.23`. They share types. Now you have subtle incompatibilities that only appear in specific combinations.
+**Why it matters**: Package A uses `zod@4.4`. Package B uses `zod@4.3`. They share types. Now you have subtle incompatibilities that only appear in specific combinations.
 
 ### How ZeroStarter approaches this
 
@@ -591,8 +678,8 @@ The practice is **automated SEO**. Sitemaps, meta tags, and social images should
 // Root package.json
 {
   "catalog": {
-    "zod": "^3.25.30",
-    "hono": "^4.7.10"
+    "zod": "^4.4.3",
+    "hono": "^4.12.26"
   }
 }
 
@@ -610,13 +697,13 @@ A script runs automatically on commits, migrating consistent versions to the cat
 **Shadcn update script** keeps UI components current:
 
 ```bash
-# .github/scripts/shadcn-update.sh
-bunx shadcn@latest add -a  # Update all components
-git restore package.json   # Keep our config
+# bun run shadcn:update -> .github/scripts/shadcn-update.sh
+bunx shadcn@latest add -a               # re-scaffold all components
+bun .github/scripts/shadcn-customize.ts # re-apply local customizations
 bun run format
 ```
 
-UI components stay updated. Accessibility improvements flow in. Security patches are applied.
+UI components stay updated. Accessibility improvements flow in. Security patches are applied, and local customizations are re-applied on top.
 
 ### What you can learn
 
@@ -632,7 +719,7 @@ The practice is **version consistency and automated updates**. How you achieve i
 
 ### How ZeroStarter approaches this
 
-When code merges to main, [changelogen](https://github.com/unjs/changelogen) automatically generates a changelog:
+When the `canary` to `main` release PR merges, [changelogen](https://github.com/unjs/changelogen) automatically generates a changelog:
 
 ```markdown
 ## v0.2.0
@@ -650,7 +737,7 @@ When code merges to main, [changelogen](https://github.com/unjs/changelogen) aut
 @nrjdalal
 ```
 
-The workflow bumps the version, updates CHANGELOG.md, and creates a PR to sync back.
+The workflow bumps the version, updates CHANGELOG.md, commits it back to canary, tags the release, and publishes a GitHub release with the same notes.
 
 ### What you can learn
 
@@ -691,7 +778,7 @@ Services communicate via Docker's internal network. `INTERNAL_API_URL` enables t
 
 ### What you can learn
 
-The practice is **reproducible, automated deployments**. Whether containers, serverless, or traditional—deployments should be consistent.
+The practice is **reproducible, automated deployments**. Whether containers, serverless, or traditional, deployments should be consistent.
 
 > **Deploy today:** ZeroStarter includes ready-to-use Docker and Vercel configurations. See the [Docker](/docs/deployment/docker) and [Vercel](/docs/deployment/vercel) deployment guides.
 
@@ -724,27 +811,23 @@ The component shows current breakpoint (SM, MD, LG), viewport dimensions, and qu
 
 See every query, its state, cache status, and refetch triggers. Data issues are visible.
 
-**Centralized config** with feature flags:
+**Centralized config**, split by concern:
 
 ```ts
-// web/next/src/lib/config.ts
+// web/next/src/lib/config.ts (runtime/env-derived values only)
 export const config = {
   app: {
-    name: "ZeroStarter",
     url: env.NEXT_PUBLIC_APP_URL,
+    version: BUILD_VERSION,
   },
-  features: {
-    // enableAnalytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true",
+  api: {
+    url: env.NEXT_PUBLIC_API_URL,
+    internalUrl: getInternalApiUrl(), // server-only, for direct API calls
   },
-  sidebar: {
-    groups: [
-      /* navigation structure */
-    ],
-  },
-}
+} as const
 ```
 
-App name in one place. Feature flags centralized. Navigation structure defined in code.
+Runtime values live here. Brand (name, description, URLs) lives once in `@packages/config/site`, so a fork rebrands by editing a single file.
 
 ### What you can learn
 
@@ -767,15 +850,19 @@ The practice is **optimized developer experience**. Fast feedback. Clear errors.
 
 ### How ZeroStarter approaches this
 
-**AGENTS.md** tells AI tools about project structure.
+**AGENTS.md** (with a `CLAUDE.md` companion) tells AI tools about project structure and conventions.
 
-**.skills/** contains structured instructions:
+**`.agents/skills/`** (mirrored to **`.claude/skills/`**) hold structured, runnable instructions for common tasks:
 
 ```
-.skills/
-├── git/commit/SKILL.md          # How to write commits
-└── turbo/generate-build-graph/SKILL.md
+.claude/skills/
+├── gh-commit/       # atomic conventional commits
+├── api-endpoint/    # add a typed Hono endpoint
+├── db-migration/    # Drizzle schema changes
+└── dev/             # run and verify the dev stack
 ```
+
+**Agent-friendly local sign-in.** A `Login (agents)` action signs in as a fixed `AgentZero` user via `/api/agents/sign-in-as` (local-only and trusted-origin gated), so an agent can exercise authenticated routes without a real OAuth dance.
 
 **llms.txt** auto-generates documentation optimized for AI:
 
@@ -788,26 +875,22 @@ Point an AI at the full docs and it understands your entire project.
 
 ### What you can learn
 
-The practice is **intentional context for AI tools**. Whether `.skills/`, `AGENTS.md`, or well-structured code—the goal is helping AI understand your patterns.
+The practice is **intentional context for AI tools**. Whether `.agents/skills/`, `AGENTS.md`, or well-structured code, the goal is helping AI understand your patterns.
 
-> **AI-ready from day one:** ZeroStarter's documentation is available at [/llms.txt](https://zerostarter.dev/llms.txt) - point your AI assistant there and it understands the entire project.
+> **AI-ready from day one:** ZeroStarter's documentation is available at [/llms.txt](https://zerostarter.dev/llms.txt). Point your AI assistant there and it understands the entire project.
 
 ---
 
 ## Getting Started
 
 ```bash
-# Clone the template
-bunx gitpick https://github.com/nrjdalal/zerostarter/tree/main
-cd zerostarter
-
-# Install dependencies
-bun install
+# Scaffold into a new, empty directory (its name becomes your project name)
+npx zerostarter@latest init
 
 # Set up environment
-cp .env.example .env  # Edit with your values
+cp .env.example .env  # edit with your values
 
-# Initialize database
+# Initialize the database
 bun run db:generate
 bun run db:migrate
 
@@ -815,7 +898,7 @@ bun run db:migrate
 bun dev
 ```
 
-Frontend runs on `localhost:3000`. Backend runs on `localhost:4000`. Types flow end-to-end. Commits are validated. Quality gates are active.
+`zerostarter init` fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, and installs dependencies. Frontend runs on `localhost:3000`. Backend runs on `localhost:4000`. Types flow end-to-end. Commits are validated. Quality gates are active.
 
 Explore the code. Read the patterns. Modify them for your needs.
 
