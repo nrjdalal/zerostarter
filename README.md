@@ -67,11 +67,10 @@ ZeroStarter uses [Hono RPC](https://hono.dev/docs/guides/rpc) for end-to-end typ
 - **API Docs**: an interactive reference is served at `/api/docs` (OpenAPI spec at `/api/openapi.json`).
 
 ```ts
-import { apiClient } from "@/lib/api/client"
+import { apiClient, unwrap } from "@/lib/api/client"
 
-// Fully typed request and response
-const res = await apiClient.health.$get()
-const { data } = await res.json()
+// Fully typed { data, error } result (never throws)
+const { data, error } = await unwrap(apiClient.health.$get())
 ```
 
 ## 🔥 Why ZeroStarter?

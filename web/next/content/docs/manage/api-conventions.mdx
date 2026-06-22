@@ -33,6 +33,23 @@ All API responses use a standardized JSON envelope:
 
 This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors.
 
+### Consuming responses on the client
+
+On the frontend, wrap any RPC call in `unwrap` (from `@/lib/api/client`) to get a `{ data, error }` result — exactly one is non-null, and it never throws:
+
+```ts
+import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.waitlist.$get())
+if (error) {
+  // error: { code, message }
+} else {
+  // data
+}
+```
+
+With TanStack Query, `throw` on the error arm — in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
+
 ### Error Codes
 
 | Code                    | Status | When                                                          |
@@ -42,6 +59,7 @@ This envelope is produced by the `jsonError(c, status, code, message, extra?)` h
 | `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production)     |
 | `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                           |
 | `VALIDATION_ERROR`      | 400    | Zod schema validation failed                                  |
+| `BAD_REQUEST`           | 400    | Malformed JSON/form-data body (Hono `HTTPException`)          |
 | `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                        |
 | `AGENTS_LOGIN_FAILED`   | 500    | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
 
@@ -60,6 +78,10 @@ When a Zod validation fails, the response includes the full issues array:
   }
 }
 ```
+
+Route-level validators (e.g. `sValidator` on the waitlist `POST`) follow the same convention: a custom message plus the `issues` array. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
+
+A body that is present but unparseable (malformed JSON, malformed form-data) is a client error, not a server error: Hono throws an `HTTPException`, and `errorHandler` returns it with the thrown status (`400 BAD_REQUEST`) instead of masking it as a `500`.
 
 ### Environment-Aware Errors
 
@@ -146,6 +168,7 @@ import type { Session } from "@packages/auth"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
+import { authErrorResponses } from "@/lib/error"
 import { authMiddleware } from "@/middlewares"
 
 export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddleware).get(
@@ -162,6 +185,7 @@ export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddlew
           },
         },
       },
+      ...authErrorResponses,
     },
   }),
   (c) => {
@@ -193,10 +217,25 @@ describeRoute({
     "x-codeSamples": [{
       lang: "typescript",
       label: "hono/client",
-      source: `const res = await apiClient.v1.session.$get()
-const { data } = await res.json()`,
+      source: `const { data, error } = await unwrap(apiClient.v1.session.$get())`,
     }],
   } as object),
   responses: { ... },
 })
 ```
+
+### Documenting error responses
+
+A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500 — the only statuses reachable on any matched route, via the global rate limiter and `onError`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
+
+- `authErrorResponses` (401) — spread into routes behind `authMiddleware` (e.g. `/api/v1/*`).
+- `validationErrorResponses` (400) — spread into routes with a request validator (e.g. the waitlist `POST`).
+
+```ts
+responses: {
+  200: { description: "OK", content: { ... } },
+  ...authErrorResponses,
+}
+```
+
+So `/api/health` documents only 200/429/500, `/api/v1/*` adds 401, and validated routes add 400 — each error status shows its own code/message example.

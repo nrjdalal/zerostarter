@@ -19,12 +19,13 @@ This starter utilizes [Hono RPC](https://hono.dev/docs/guides/rpc) to provide en
 
 ### Basic Request
 
-```ts
-import { apiClient } from "@/lib/api/client"
+Use `unwrap` from the client to get a `{ data, error }` result — exactly one is non-null, and it never throws:
 
-// Fully typed request and response
-const res = await apiClient.health.$get()
-const { data } = await res.json()
+```ts
+import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.health.$get())
+if (error) throw new Error(error.message)
 // data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
 ```
 
@@ -33,16 +34,11 @@ const { data } = await res.json()
 The API client is pre-configured with `credentials: "include"` for cookie-based authentication:
 
 ```ts
-import { apiClient } from "@/lib/api/client"
+import { apiClient, unwrap } from "@/lib/api/client"
 
 // Protected route - requires authentication
-const res = await apiClient.v1.session.$get()
-const { data } = await res.json()
-// data is typed as Session, or error contains { code: string, message: string }
-
-// Get the current user (also requires authentication)
-const userRes = await apiClient.v1.user.$get()
-const { data: user } = await userRes.json()
+const { data, error } = await unwrap(apiClient.v1.session.$get())
+// data is typed as Session (or null when error is set); error is { code, message } | null
 ```
 
 ### Session Data
