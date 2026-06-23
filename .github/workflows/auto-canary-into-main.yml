@@ -25,6 +25,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if ! gh api repos/${{ github.repository }}/branches/main >/dev/null 2>&1; then
+            echo "No main branch yet (fresh fork starts on canary). Nothing to release until main exists. Skipping."
+            exit 0
+          fi
           AHEAD=$(gh api repos/${{ github.repository }}/compare/main...canary --jq '.ahead_by')
           if [ "$AHEAD" -eq 0 ]; then
             echo "canary has no commits ahead of main. Nothing to release. Skipping."

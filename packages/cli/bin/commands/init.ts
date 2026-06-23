@@ -3,6 +3,7 @@ import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
+import { dockerRunning, provisionDatabase, seedEnv } from "@/db"
 import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
@@ -19,6 +20,7 @@ latest ZeroStarter is fetched into it first.
 
 Options:
   -y, --yes      Skip prompts; fail instead of prompting when input is needed
+      --db       Provision a local Postgres (pglaunch) and migrate; needs Docker
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
 
@@ -32,6 +34,7 @@ export const init = async (argv: string[]) => {
     allowPositionals: true,
     args: argv,
     options: {
+      db: { type: "boolean" },
       "dry-run": { type: "boolean" },
       help: { short: "h", type: "boolean" },
       yes: { short: "y", type: "boolean" },
@@ -103,6 +106,34 @@ export const init = async (argv: string[]) => {
 
   gitCommitAll(target, `chore: re-baseline as ${name}`)
 
+  console.log("Setting up .env (copied from .env.example, with a generated BETTER_AUTH_SECRET) ...")
+  seedEnv(target)
+
+  let dbReady = false
+  const dockerUp = dockerRunning()
+  let wantDb = false
+  if (values.db) {
+    wantDb = dockerUp
+    if (!dockerUp) console.log(yellow("  --db ignored: Docker is not running."))
+  } else if (interactive && dockerUp) {
+    wantDb = await promptConfirm(
+      "Docker detected. Provision a local database and run migrations now?",
+      true,
+    )
+  }
+  if (wantDb) {
+    try {
+      console.log("Provisioning a local database with pglaunch and migrating ...")
+      provisionDatabase(target)
+      dbReady = true
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.log(
+        yellow(`  Skipped database setup (${msg}); set it up later with pglaunch + db:migrate.`),
+      )
+    }
+  }
+
   const tips: [string, string][] = [
     ["packages/config/src/site.ts", "your brand: name, tagline, links"],
     ["web/next/content", "your docs and blog"],
@@ -112,7 +143,10 @@ export const init = async (argv: string[]) => {
   console.log(`\n${green("✓")} ${name} is ready.\n`)
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  console.log(`  ${orange("cp .env.example .env")}  # add your secrets`)
+  if (!dbReady) {
+    console.log(`  ${orange("bunx pglaunch -k")}  # start Postgres, set POSTGRES_URL in .env`)
+    console.log(`  ${orange("bun run db:migrate")}`)
+  }
   console.log(`  ${orange("bun dev")}`)
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
