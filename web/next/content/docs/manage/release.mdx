@@ -15,22 +15,25 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
 <Callout type="warn" title="Required GitHub settings">
 
-A fresh fork's Actions token is read-only by default. Under **Settings → Actions → General → Workflow permissions**, enable both:
-
-- ✅ **Read and write permissions**: lets the workflows create branches, commit the changelog, and tag releases.
-- ✅ **Allow GitHub Actions to create and approve pull requests**: lets `auto-canary-into-main` open the release PR.
-
-Without read-write permissions the Actions token gets `403 Resource not accessible by integration` and no release PR opens.
+A fresh fork's Actions token is read-only by default, so the release workflows get `403 Resource not accessible by integration` and no release PR opens until you grant write access.
 
 </Callout>
 
-<Callout type="warn" title="Fresh forks: push both branches">
+Under **Settings → Actions → General → Workflow permissions** (the pre-push hook prints a direct link to this page on your first push):
 
-A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. Push them together so `main` exists on the remote, because the Actions token cannot create a branch on a fork:
+1. Select **Read and write permissions** so the workflows can create branches, commit the changelog, and tag releases.
+2. Check **Allow GitHub Actions to create and approve pull requests** so `auto-canary-into-main` can open the release PR.
+3. Click **Save**.
 
-`git push origin canary main`
+![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/docs/release/workflow-permissions.png)
 
-If you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+<Callout title="Fresh forks: push canary into an empty repo">
+
+Create an **empty** GitHub repo (no README, so the first branch you push becomes the default), then:
+
+`git push origin canary`
+
+`canary` is pushed first, so GitHub makes it your default branch. A pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) then seeds `main` on your **next** push (a separate ref, so it never collides with your `canary` push), and `auto-canary-into-main` opens the release PR. No `gh` is needed, and the only thing you set by hand is the permissions above.
 
 </Callout>
 
