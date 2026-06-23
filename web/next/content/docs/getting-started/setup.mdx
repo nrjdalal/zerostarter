@@ -22,11 +22,11 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    npx zerostarter@latest init
    ```
 
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, and installs dependencies.
+   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on a `canary` branch (`main` is created on your first release).
 
 2. Set up environment variables:
 
-   Copy the example file and fill in your values:
+   `init` already creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. Open it and fill in your remaining values (OAuth credentials, and `POSTGRES_URL` if you did not let init provision one). Only if you are converting an existing checkout in place, or `.env` is missing, create it manually first (this leaves `BETTER_AUTH_SECRET` empty, so generate one):
 
    ```bash
    cp .env.example .env
