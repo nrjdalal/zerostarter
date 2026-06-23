@@ -1,7 +1,7 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiCheckLine, RiLoaderLine } from "@remixicon/react"
+import { RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
@@ -93,14 +93,13 @@ export default function WaitlistPage() {
         <p className="text-muted-foreground mb-8 max-w-md text-lg">{site.tagline}</p>
 
         {joined ? (
-          // same height/width as the form row, so submitting never shifts the layout
-          <div className="text-muted-foreground flex h-12 w-full items-center justify-center gap-2 text-base">
-            <RiCheckLine className="size-5 text-green-500" />
+          // matches the single-row form height so submitting never shifts the layout (sm+); on mobile the form stacks
+          <div className="flex min-h-12 w-full items-center justify-center text-lg text-green-500">
             {"You're on the list. We'll be in touch soon."}
           </div>
         ) : (
           <form
-            className="flex w-full items-center gap-2"
+            className="flex w-full flex-col gap-2 sm:flex-row sm:items-center"
             onSubmit={(e) => {
               e.preventDefault()
               form.handleSubmit()
@@ -125,7 +124,7 @@ export default function WaitlistPage() {
                 const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   // relative so the error can be absolutely positioned and never grow the row
-                  <Field data-invalid={isInvalid} className="relative flex-1">
+                  <Field data-invalid={isInvalid} className="relative w-full sm:flex-1">
                     <FieldLabel htmlFor={field.name} className="sr-only">
                       Email
                     </FieldLabel>
@@ -138,7 +137,7 @@ export default function WaitlistPage() {
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
                       placeholder="you@example.com"
-                      className="h-12 px-4 text-base"
+                      className="h-12 px-4 text-center text-base sm:text-left"
                       disabled={joinWaitlist.isPending}
                     />
                     {isInvalid && (
@@ -154,7 +153,7 @@ export default function WaitlistPage() {
             <Button
               type="submit"
               size="lg"
-              className="h-12 px-6 text-base"
+              className="h-12 w-full px-6 text-base sm:w-auto"
               disabled={joinWaitlist.isPending}
             >
               {joinWaitlist.isPending ? (
