@@ -5,7 +5,6 @@ title: Release Management
 description: Automate releases and changelog generation.
 ---
 
-import { Callout } from "fumadocs-ui/components/callout"
 import { Step, Steps } from "fumadocs-ui/components/steps"
 
 ## Overview
@@ -25,7 +24,7 @@ Without read-write permissions the Actions token gets `403 Resource not accessib
 
 </Callout>
 
-<Callout title="Fresh forks: push both branches">
+<Callout type="warn" title="Fresh forks: push both branches">
 
 A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. Push them together so `main` exists on the remote, because the Actions token cannot create a branch on a fork:
 

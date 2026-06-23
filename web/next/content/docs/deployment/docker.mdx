@@ -146,7 +146,7 @@ Docker images do NOT run database migrations. Run `bun run db:migrate` separatel
 
 </Callout>
 
-Docker images do not run database migrations. Only the Vercel build applies them (via `.github/scripts/migrate-on-deploy.ts`). When deploying with Docker, run `bun run db:migrate` against your database separately before or alongside rolling out the new images.
+Migrations are applied only by the Vercel build, via `.github/scripts/migrate-on-deploy.ts`. The Docker image has no equivalent build step.
 
 ### Container Registry
 

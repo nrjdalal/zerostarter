@@ -128,7 +128,7 @@ The API-key rate-limit tier is currently unwired and falls back to per-IP. No li
 
 </Callout>
 
-In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active; no limiter passes an API key, so that tier is dead until you wire `getApiKey` into a limiter.
+In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active.
 
 | Context         | Limit        | Window | Environment Variable                            |
 | --------------- | ------------ | ------ | ----------------------------------------------- |

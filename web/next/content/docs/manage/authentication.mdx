@@ -121,7 +121,7 @@ Sessions are stored in the `session` database table with:
 - **Cross-subdomain cookies**: Automatically configured when using subdomains
 - **IP address and user agent tracking** for security
 - **Session expiration** with automatic cleanup
-- **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache. Because of the cache, revoking a user's access can take up to about 5 minutes to take effect unless their sessions are revoked.
+- **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache.
 
 <Callout type="warn">
 
