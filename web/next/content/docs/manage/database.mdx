@@ -78,7 +78,13 @@ The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonated
 | `teamMember`   | User↔Team membership | `id`, `teamId`, `userId`                                                              |
 | `invitation`   | Pending invites      | `id`, `organizationId`, `email`, `role`, `teamId`, `status`, `expiresAt`, `inviterId` |
 
-All foreign keys use `CASCADE` on delete. Tables include appropriate indexes on foreign key columns.
+Tables include appropriate indexes on foreign key columns.
+
+<Callout type="warn">
+
+Foreign keys cascade on delete, so deleting an organization cascades to its members, teams, and invitations.
+
+</Callout>
 
 ### Waitlist
 

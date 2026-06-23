@@ -35,9 +35,15 @@ docs: {
 A generator (`.github/scripts/docs.ts`) runs inside the `web/next` build and dev. From `docs.config.ts` it:
 
 - writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
-- generates `content/docs/meta.json` (reading order + prev/next), which is **git-ignored, never edit it by hand**;
+- generates `content/docs/meta.json` (reading order + prev/next);
 - scaffolds a stub MDX in dev for any page declared in the config but missing on disk;
 - fails the build under `--strict` if the config and files have drifted, with a hint to re-run the generator.
+
+<Callout type="warn">
+
+`meta.json` is generated and git-ignored; never edit it by hand, as the generator overwrites it.
+
+</Callout>
 
 ## Creating a page
 

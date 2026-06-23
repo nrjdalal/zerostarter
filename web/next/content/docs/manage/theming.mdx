@@ -126,6 +126,12 @@ import { cn } from "@/lib/utils"
 
 ### Customizations and the shadcn sync
 
-`bun run shadcn:update` wipes the `web/next/src/components/ui/` directory and re-scaffolds it from the shadcn registry, so any hand-edits to files in `ui/` (or registry-controlled lines in `globals.css`) are lost on the next sync. Instead, every local override is re-applied afterward by `.github/scripts/shadcn-customize.ts`, which the sync runs at the end. That script restores files the project owns outright, patches the registry components it extends (button, spinner, sidebar) by shape rather than text, and re-applies the `--font-sans: var(--font-dm-sans), sans-serif` line in `globals.css` via its `patchGlobals` step.
+<Callout type="warn">
 
-So customizations that must survive a sync belong in (or guarded by) `shadcn-customize.ts`, not hand-edited into `ui/`. Each patch is idempotent and throws if its target is missing, so a registry shape change fails the sync loudly rather than silently dropping an override.
+`bun run shadcn:update` wipes `web/next/src/components/ui/` and silently loses any hand-edits there. Put overrides in `shadcn-customize.ts` instead.
+
+</Callout>
+
+The re-scaffold also drops registry-controlled lines in `globals.css`, not just files in `ui/`. Every override is instead re-applied afterward by `.github/scripts/shadcn-customize.ts`, which the sync runs at the end: it restores files the project owns outright, patches the registry components it extends (button, spinner, sidebar) by shape rather than text, and re-applies the `--font-sans: var(--font-dm-sans), sans-serif` line in `globals.css` via its `patchGlobals` step.
+
+Each patch is idempotent and throws if its target is missing, so a registry shape change fails the sync loudly rather than silently dropping an override.

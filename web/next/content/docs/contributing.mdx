@@ -25,6 +25,12 @@ Contributions welcome, any help is appreciated!
 - For breaking changes or large features, open an issue first to discuss the approach.
 - By contributing you agree to the MIT license and the project's Code of Conduct.
 
+<Callout type="warn">
+
+Open your PR against the `canary` branch (the default development branch), not `main`.
+
+</Callout>
+
 The dependency audit runs first where it runs: `bun audit --audit-level high` is the first CI gate (`.github/workflows/auto-check-build.yml`), ahead of build, check-types, format, and lint. As a pre-commit check (`lefthook.yml`) it is scoped to the `canary` branch only (`only: ref: canary`), so committing on a feature branch skips it locally; CI runs it regardless.
 
 Merged changes flow from `canary` to `main` through the release process. See [Release Management](/docs/manage/release) for how versions and changelogs are cut.

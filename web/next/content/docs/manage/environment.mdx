@@ -39,7 +39,11 @@ Each package defines only the environment variables it needs:
   - **Client (required)**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, and `NEXT_PUBLIC_NODE_ENV`. `NEXT_PUBLIC_NODE_ENV` is not a value you set: it is derived at runtime from `process.env.NODE_ENV`, mirroring the stage enum to the browser.
   - **Client (optional)**: `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (all exposed to browser)
 
-**Important**: Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
+<Callout type="warn">
+
+Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
+
+</Callout>
 
 ### Implementation
 
@@ -122,9 +126,15 @@ import {
    - Add to `.env` file
    - Define in the appropriate package's env file (`packages/env/src/*.ts`)
    - Add to `server` or `client` schema with Zod validation
-   - Map it in the same file's `runtimeEnv` object (e.g. `MY_VAR: process.env.MY_VAR`). This step is mandatory: `@t3-oss/env-core` only reads values listed in `runtimeEnv`, so a variable in the schema but missing here is `undefined` at runtime.
+   - Map it in the same file's `runtimeEnv` object (e.g. `MY_VAR: process.env.MY_VAR`).
    - Add to `turbo.json`: Include the variable in the `globalEnv` array so Turbo's cache invalidates correctly when it changes
 4. **Validation**: Each package validates only its declared variables at runtime
+
+<Callout type="warn">
+
+The `runtimeEnv` mapping is mandatory. A variable declared in the schema but missing from `runtimeEnv` is silently `undefined` at runtime.
+
+</Callout>
 
 **`globalEnv` exception**: `NEXT_PUBLIC_NODE_ENV` is not a real variable you set and is not added to `turbo.json`'s `globalEnv`. Its `runtimeEnv` mapping derives it from `process.env.NODE_ENV` (which is already in `globalEnv`), so listing it separately would be redundant.
 

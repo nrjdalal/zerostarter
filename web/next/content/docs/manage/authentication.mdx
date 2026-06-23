@@ -24,7 +24,11 @@ Two social providers are supported, and each is **optional**: a provider registe
 
 `packages/auth/src/index.ts` builds `socialProviders` conditionally from those env vars and exports `enabledSocialProviders` (the providers that are actually configured) plus `enabledProviders` (those plus `magic-link` when enabled). The public `GET /api/auth/providers` route (`api/hono/src/routers/auth.ts`) returns `enabledProviders`, and the sign-in UI (`web/next/src/components/access.tsx`) fetches it to render only the buttons for configured providers. Toggling either built-in provider is therefore just an env change; the UI follows automatically. Adding a brand-new provider also takes a small code change (see below).
 
-Note: if a deployed fork configures no OAuth providers and does not enable magic link, the sign-in dialog renders a "No sign-in options are configured yet." message (the local-only agent sign-in is hidden in production). Configure at least one provider, or wire up magic link, before shipping a login surface.
+<Callout type="warn">
+
+A deployed fork with no OAuth providers and no magic link renders a "No sign-in options are configured yet." message in the sign-in dialog (the local-only agent sign-in is hidden in production). Configure at least one provider, or wire up magic link, before shipping a login surface.
+
+</Callout>
 
 The auth config does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 
@@ -117,7 +121,13 @@ Sessions are stored in the `session` database table with:
 - **Cross-subdomain cookies**: Automatically configured when using subdomains
 - **IP address and user agent tracking** for security
 - **Session expiration** with automatic cleanup
-- **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache. Because of the cache, revoking a user's access can take up to about 5 minutes to take effect unless their sessions are revoked.
+- **Cookie cache**: `session.cookieCache` is enabled with `maxAge: 300` (`packages/auth/src/index.ts`), so the session is cached for about 5 minutes. The auth middleware (`api/hono/src/middlewares/auth.ts`) forwards the `session_data` cookie to prime this cache.
+
+<Callout type="warn">
+
+The 5-minute cookie cache means a role grant or revoke can take up to about 5 minutes to take effect unless the session is revoked.
+
+</Callout>
 
 ### Server-Side Session Access
 

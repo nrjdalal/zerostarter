@@ -16,7 +16,13 @@ ZeroStarter provides a comprehensive set of scripts for development, maintenance
 
 ### Maintenance
 
-- `bun run clean`: Remove build artifacts and caches (`.next`, `.turbo`, `dist`, etc.) plus all `node_modules` and generated typedefs. Re-run `bun install` afterward.
+- `bun run clean`: Remove build artifacts and caches (`.next`, `.turbo`, `dist`, etc.) plus all `node_modules` and generated typedefs.
+
+<Callout type="warn">
+
+`bun run clean` deletes `node_modules` and the generated typedefs, so you must re-run `bun install` afterward.
+
+</Callout>
 - `bun run lint`: Lint the entire monorepo with Oxlint in a single pass. Oxlint is also run on staged files at commit time via lint-staged.
 - `bun run format`: Format the codebase using Oxfmt.
 - `bun run format:check`: Check formatting without making changes.

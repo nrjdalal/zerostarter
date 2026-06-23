@@ -194,7 +194,11 @@ bun run check-types
 bun run format
 ```
 
+<Callout type="warn">
+
 Unlike CI, the local pre-commit `build` step runs without `SKIP_ENV_VALIDATION`, so it validates your real `.env`. A missing or invalid required variable will fail the commit locally even though the same build passes in CI.
+
+</Callout>
 
 ## CI/CD Integration
 
@@ -227,7 +231,11 @@ LEFTHOOK=0 git commit -m "message"
 LEFTHOOK_EXCLUDE=build git commit -m "message"
 ```
 
-**Warning**: Only skip hooks for emergencies. CI will still catch issues.
+<Callout type="warn">
+
+Only skip hooks for emergencies. CI will still catch issues.
+
+</Callout>
 
 ## Troubleshooting
 
