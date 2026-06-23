@@ -156,7 +156,7 @@ export const init = async (argv: string[]) => {
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
   console.log(
-    "canary becomes the default branch; your next push seeds main and opens the release PR. The hook prints the read-write Actions permissions link.",
+    "canary becomes the default branch; your next push seeds main and opens the release PR.",
   )
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)

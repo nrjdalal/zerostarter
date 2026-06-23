@@ -1,3 +1,15 @@
+## v0.0.54
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.53...v0.0.54)
+
+### 🏡 Chore
+
+- **cli:** Bump to 0.0.11 to publish canary-first init ([b2b7c38](https://github.com/nrjdalal/zerostarter/commit/b2b7c38))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.53
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.52...v0.0.53)
