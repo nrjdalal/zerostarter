@@ -13,9 +13,9 @@ export const bunInstall = (dir: string): void => {
   run("bun", ["install"], dir)
 }
 
-// Start a fresh git repo in `dir` (no commit yet).
+// Start a fresh git repo in `dir` on the `canary` working branch (no commit yet); `main` is the release target, created on the first canary->main release.
 export const gitInit = (dir: string): void => {
-  run("git", ["init", "-q"], dir)
+  run("git", ["init", "-q", "-b", "canary"], dir)
 }
 
 // Stage everything and commit, bypassing the fork's hooks (bun install may have installed

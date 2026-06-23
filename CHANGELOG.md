@@ -1,3 +1,15 @@
+## v0.0.49
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.48...v0.0.49)
+
+### 📖 Documentation
+
+- Refresh the 2026 web-dev post and sync the docs audit ([#537](https://github.com/nrjdalal/zerostarter/pull/537))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.48
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.47...v0.0.48)
