@@ -30,7 +30,7 @@ Bun v1.3.10 or later (matching the repo's `packageManager` pin). Docker is requi
 
    <Callout type="info">
 
-   You only need `git push origin canary`. A pre-push hook pushes `main` the first time (the `canary` to `main` release flow needs `main` on the remote) and prints the link to enable read-write Actions permissions.
+   You only need `git push origin canary`. Pushing `canary` first makes it your default branch; on your next push a pre-push hook seeds `main` (the `canary` to `main` release flow needs `main` on the remote) and prints a link to enable read-write Actions permissions. See [Release Management](/docs/manage/release) for the full flow.
 
    </Callout>
 
