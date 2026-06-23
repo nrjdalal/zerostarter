@@ -83,10 +83,10 @@ const ensureRemoteMain = (remote: string): void => {
   console.error(
     "zerostarter: enable read-write Actions permissions so the release workflow can run:",
   )
-  console.error(`  ${url || "GitHub repo Settings -> Actions -> General -> Workflow permissions"}`)
-  console.error(
-    '  Turn on "Read and write permissions" and "Allow GitHub Actions to create and approve pull requests".',
-  )
+  console.error(`  1. Open ${url || "your repo's Settings -> Actions -> General"}`)
+  console.error('  2. Under "Workflow permissions", select "Read and write permissions"')
+  console.error('  3. Check "Allow GitHub Actions to create and approve pull requests"')
+  console.error("  4. Click Save")
 }
 
 if (import.meta.main) ensureRemoteMain(process.argv[2] || "origin")

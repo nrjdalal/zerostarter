@@ -15,14 +15,17 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
 <Callout type="warn" title="Required GitHub settings">
 
-A fresh fork's Actions token is read-only by default. Under **Settings → Actions → General → Workflow permissions**, enable both:
-
-- ✅ **Read and write permissions**: lets the workflows create branches, commit the changelog, and tag releases.
-- ✅ **Allow GitHub Actions to create and approve pull requests**: lets `auto-canary-into-main` open the release PR.
-
-Without read-write permissions the Actions token gets `403 Resource not accessible by integration` and no release PR opens.
+A fresh fork's Actions token is read-only by default, so the release workflows get `403 Resource not accessible by integration` and no release PR opens until you grant write access.
 
 </Callout>
+
+Under **Settings → Actions → General → Workflow permissions** (the pre-push hook prints a direct link to this page on your first push):
+
+1. Select **Read and write permissions** so the workflows can create branches, commit the changelog, and tag releases.
+2. Check **Allow GitHub Actions to create and approve pull requests** so `auto-canary-into-main` can open the release PR.
+3. Click **Save**.
+
+![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/docs/release/workflow-permissions.png)
 
 <Callout title="Fresh forks: just push canary">
 
