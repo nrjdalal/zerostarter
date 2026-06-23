@@ -26,7 +26,7 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 2. Set up environment variables:
 
-   Copy the example file and fill in your values:
+   `init` already creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. Open it and fill in your remaining values (OAuth credentials, and `POSTGRES_URL` if you did not let init provision one). Only if you are converting an existing checkout in place, or `.env` is missing, create it manually first (this leaves `BETTER_AUTH_SECRET` empty, so generate one):
 
    ```bash
    cp .env.example .env

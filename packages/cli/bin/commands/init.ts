@@ -3,7 +3,7 @@ import { basename, join, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
-import { dockerRunning, provisionDatabase, seedEnv } from "@/db"
+import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
 import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
@@ -111,8 +111,11 @@ export const init = async (argv: string[]) => {
 
   let dbReady = false
   const dockerUp = dockerRunning()
+  const dbConfigured = hasPostgresUrl(target)
   let wantDb = false
-  if (values.db) {
+  if (dbConfigured) {
+    if (values.db) console.log(yellow("  --db ignored: POSTGRES_URL is already set in .env."))
+  } else if (values.db) {
     wantDb = dockerUp
     if (!dockerUp) console.log(yellow("  --db ignored: Docker is not running."))
   } else if (interactive && dockerUp) {

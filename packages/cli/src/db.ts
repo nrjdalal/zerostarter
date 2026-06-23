@@ -71,18 +71,23 @@ export const seedEnv = (dir: string): void => {
   }
 }
 
-// Launch a kept local Postgres via pglaunch and return the connection URL it prints.
+// True when .env already has a non-empty POSTGRES_URL, so init must not clobber a configured database.
+export const hasPostgresUrl = (dir: string): boolean => {
+  const envPath = join(dir, ".env")
+  return exists(envPath) && getEnvVar(envPath, "POSTGRES_URL") !== ""
+}
+
+// Launch a kept local Postgres via pglaunch and return the URL it prints (e.g. `postgres://postgres:postgres@localhost:<port>/postgres`; the postgresql:// scheme and query params are also accepted).
 const launchPostgres = (dir: string): string => {
   const out = capture("bunx", [PGLAUNCH, "-k"], dir)
-  const match = out.match(/postgres:\/\/[\w.:@\-/%]+/)
+  const match = out.match(/postgres(?:ql)?:\/\/[\w.:@\-/%?=&]+/)
   if (!match) throw new Error("pglaunch did not print a connection URL")
   return match[0]
 }
 
-// Provision a local database, point .env at it, and apply migrations.
+// Provision a local database, point .env at it, and apply the shipped migrations (a fresh fork ships its migration files, so db:generate is not needed).
 export const provisionDatabase = (dir: string): void => {
   const envPath = ensureEnv(dir)
   setEnvVar(envPath, "POSTGRES_URL", launchPostgres(dir))
-  runVisible("bun", ["run", "db:generate"], dir)
   runVisible("bun", ["run", "db:migrate"], dir)
 }
