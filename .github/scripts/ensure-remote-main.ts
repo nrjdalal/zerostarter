@@ -65,13 +65,18 @@ const remoteHasBranch = (remote: string, branch: string): boolean | null => {
   }
 }
 
+// Orange + OSC 8 hyperlink for the settings URL, matching the CLI palette; plain text when stderr is not a TTY.
+const orange = (s: string): string => (process.stderr.isTTY ? `\x1b[38;5;208m${s}\x1b[0m` : s)
+const link = (url: string): string =>
+  process.stderr.isTTY ? `\x1b]8;;${url}\x07${orange(url)}\x1b]8;;\x07` : url
+
 // Print the one manual step the Actions token cannot do for the user: grant itself write access.
 const printPermsInstructions = (remote: string): void => {
   const url = settingsUrl(remoteUrl(remote))
   console.error(
     "zerostarter: enable read-write Actions permissions so the release workflow can run:",
   )
-  console.error(`  1. Open ${url || "your repo's Settings -> Actions -> General"}`)
+  console.error(`  1. Open ${url ? link(url) : "your repo's Settings -> Actions -> General"}`)
   console.error('  2. Under "Workflow permissions", select "Read and write permissions"')
   console.error('  3. Check "Allow GitHub Actions to create and approve pull requests"')
   console.error("  4. Click Save")
