@@ -1,3 +1,15 @@
+## v0.0.53
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.52...v0.0.53)
+
+### 🚀 Enhancements
+
+- **cli:** Canary-first fork publish (pre-push hook, no gh) ([c6d49bc](https://github.com/nrjdalal/zerostarter/commit/c6d49bc))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.52
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.51...v0.0.52)
