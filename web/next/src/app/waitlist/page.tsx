@@ -123,7 +123,7 @@ export default function WaitlistPage() {
               {(field) => {
                 const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                 return (
-                  // relative so the error can be absolutely positioned and never grow the row
+                  // relative anchors the absolute (sm+) error; on mobile it stays in-flow so it never overlaps the stacked button
                   <Field data-invalid={isInvalid} className="relative w-full sm:flex-1">
                     <FieldLabel htmlFor={field.name} className="sr-only">
                       Email
@@ -142,7 +142,7 @@ export default function WaitlistPage() {
                     />
                     {isInvalid && (
                       <FieldError
-                        className="absolute top-full left-0 mt-1 text-left"
+                        className="mt-1 text-center sm:absolute sm:top-full sm:left-0 sm:text-left"
                         errors={field.state.meta.errors}
                       />
                     )}
