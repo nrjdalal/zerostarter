@@ -88,6 +88,9 @@ const ensureRemoteMain = (remote: string): void => {
   console.error('  2. Under "Workflow permissions", select "Read and write permissions"')
   console.error('  3. Check "Allow GitHub Actions to create and approve pull requests"')
   console.error("  4. Click Save")
+  console.error(
+    "zerostarter: main was pushed first, so set the default branch to canary (gh repo edit --default-branch canary) so pull requests target it.",
+  )
 }
 
 if (import.meta.main) ensureRemoteMain(process.argv[2] || "origin")

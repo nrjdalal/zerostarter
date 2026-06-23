@@ -33,6 +33,8 @@ A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main
 
 `git push origin canary`
 
+Because `main` is pushed first, GitHub makes it the default branch. Set the default to `canary` (**Settings → General → Default branch**, or `gh repo edit --default-branch canary`) so new pull requests target `canary`.
+
 </Callout>
 
 **Changelog generation**: the release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
