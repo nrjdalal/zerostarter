@@ -28,14 +28,12 @@ jobs:
           BRANCH_ERR="$(mktemp)"
           if ! gh api repos/${{ github.repository }}/branches/main >/dev/null 2>"$BRANCH_ERR"; then
             if grep -q "HTTP 404" "$BRANCH_ERR"; then
-              echo "No main branch yet (fresh fork starts on canary); seeding main from canary's root commit so the first release PR can open."
-              ROOT=$(git rev-list --max-parents=0 HEAD | tail -1)
-              gh api -X POST repos/${{ github.repository }}/git/refs -f ref="refs/heads/main" -f sha="$ROOT"
-            else
-              echo "Failed to check for the main branch:" >&2
-              cat "$BRANCH_ERR" >&2
-              exit 1
+              echo "No main branch yet. A fork's main is created by the CLI and pushed (git push origin canary main); nothing to release until it exists. Skipping."
+              exit 0
             fi
+            echo "Failed to check for the main branch:" >&2
+            cat "$BRANCH_ERR" >&2
+            exit 1
           fi
           AHEAD=$(gh api repos/${{ github.repository }}/compare/main...canary --jq '.ahead_by')
           if [ "$AHEAD" -eq 0 ]; then

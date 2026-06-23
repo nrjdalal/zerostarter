@@ -22,7 +22,7 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    npx zerostarter@latest init
    ```
 
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on a `canary` branch (`main` is created on your first release).
+   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead). When you publish to GitHub, push both branches together (`git push origin canary main`) so the `canary` to `main` release flow works. `main` must exist when `canary` is pushed; if you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
 
 2. Set up environment variables:
 

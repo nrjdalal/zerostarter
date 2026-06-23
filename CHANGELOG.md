@@ -1,3 +1,15 @@
+## v0.0.50
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.49...v0.0.50)
+
+### 🚀 Enhancements
+
+- **cli:** Init forks on canary, seed .env, offer local DB setup ([#539](https://github.com/nrjdalal/zerostarter/pull/539))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.49
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.48...v0.0.49)

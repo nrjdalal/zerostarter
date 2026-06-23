@@ -4,7 +4,7 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
-import { bunInstall, fetchZerostarter, gitCommitAll, gitInit } from "@/git"
+import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
 import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
@@ -96,6 +96,8 @@ export const init = async (argv: string[]) => {
   if (!exists(join(target, ".git"))) {
     gitInit(target)
     gitCommitAll(target, "chore: scaffold from zerostarter")
+    // Seed `main` at the scaffold commit so canary leads it by the re-baseline; the first push then opens a canary->main release PR (a fork's Actions token cannot create main itself).
+    gitBranch(target, "main")
   }
 
   console.log("Removing starter content and rebranding ...")
@@ -151,6 +153,10 @@ export const init = async (argv: string[]) => {
     console.log(`  ${orange("bun run db:migrate")}`)
   }
   console.log(`  ${orange("bun dev")}`)
+  console.log(
+    "\nWhen you push to GitHub, push both branches together (main must exist when canary is pushed):",
+  )
+  console.log(`  ${orange("git push origin canary main")}`)
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
 }
