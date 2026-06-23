@@ -1,11 +1,10 @@
 import { execFileSync } from "node:child_process"
 
-// Pre-push guard: make `main` exist on the remote so the first `git push origin canary` brings it
-// along, letting `auto-canary-into-main` open the release PR first time (a fork's Actions token
-// cannot create branches). Shared via lefthook.yml, so it runs in this repo and every fork alike;
-// a local git-config marker makes it a no-op once `main` is on the remote.
+// Pre-push guard: publish local `main` when the remote lacks it (first push) so a fork's `git push origin canary` lets auto-canary-into-main open the release PR; shared via lefthook.yml (runs here and in every fork), with a per-remote git-config marker that makes it a no-op afterward.
 
-const MARKER = "zerostarter.mainSeeded"
+// Per-remote, local-only marker: seeding one remote must not mark another seeded, and it is per-clone state, so it lives in git config and is never committed.
+export const markerKey = (remote: string): string =>
+  `zerostarter.mainSeeded.${remote.replace(/[^A-Za-z0-9-]/g, "-")}`
 
 const git = (args: string[]): string =>
   execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim()
@@ -16,17 +15,17 @@ export const settingsUrl = (remoteUrl: string): string => {
   return m ? `https://github.com/${m[1]}/${m[2]}/settings/actions` : ""
 }
 
-const seeded = (): boolean => {
+const seeded = (remote: string): boolean => {
   try {
-    return git(["config", "--local", "--get", MARKER]) === "true"
+    return git(["config", "--local", "--get", markerKey(remote)]) === "true"
   } catch {
     return false
   }
 }
 
-const markSeeded = (): void => {
+const markSeeded = (remote: string): void => {
   try {
-    git(["config", "--local", MARKER, "true"])
+    git(["config", "--local", markerKey(remote), "true"])
   } catch {
     // best-effort: a missing marker only costs one extra ls-remote on the next push
   }
@@ -42,7 +41,7 @@ const hasLocalMain = (): boolean => {
 }
 
 const ensureRemoteMain = (remote: string): void => {
-  if (seeded()) return
+  if (seeded(remote)) return
   if (!hasLocalMain()) return
 
   let remoteMain: string
@@ -52,7 +51,7 @@ const ensureRemoteMain = (remote: string): void => {
     return // remote unreachable: skip silently, never block the push, retry next time
   }
   if (remoteMain !== "") {
-    markSeeded()
+    markSeeded(remote)
     return
   }
 
@@ -61,8 +60,7 @@ const ensureRemoteMain = (remote: string): void => {
     `zerostarter: pushing main to ${remote} so the canary -> main release PR can open ...`,
   )
   try {
-    // --no-verify skips this very hook on the inner push (no recursion); ignore stdin so it does
-    // not consume the ref lines git fed to the outer push's hook.
+    // --no-verify skips this hook on the inner push (no recursion); ignore stdin so it leaves the outer hook's ref lines alone.
     execFileSync("git", ["push", "--no-verify", remote, "main"], {
       stdio: ["ignore", "inherit", "inherit"],
     })
@@ -72,7 +70,7 @@ const ensureRemoteMain = (remote: string): void => {
     )
     return // do not mark; let the canary push proceed so nothing is blocked
   }
-  markSeeded()
+  markSeeded(remote)
 
   let url = ""
   try {
