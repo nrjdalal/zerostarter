@@ -1,3 +1,15 @@
+## v0.0.56
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.55...v0.0.56)
+
+### 🚀 Enhancements
+
+- **web:** Restyle waitlist success message, stack form on mobile ([#549](https://github.com/nrjdalal/zerostarter/pull/549))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.55
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.54...v0.0.55)
