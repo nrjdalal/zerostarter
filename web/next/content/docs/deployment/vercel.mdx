@@ -63,6 +63,12 @@ NEXT_PUBLIC_USERJOT_URL=your_userjot_url
 
 ### Migrations on deploy
 
+<Callout type="warn">
+
+Production and `canary` builds need a reachable `POSTGRES_URL` at BUILD time, since migrations run during the build. PR previews skip migrating against the shared database.
+
+</Callout>
+
 The backend build command runs `.github/scripts/migrate-on-deploy.ts` before building. That script applies pending migrations with `bun run db:migrate`, but only when `VERCEL_ENV=production` or `VERCEL_GIT_COMMIT_REF=canary`; PR previews skip it (an unmerged migration must not run against the shared database). Because the migration runs at build time, production and canary builds need a reachable `POSTGRES_URL` available during the build.
 
 ### Environment Variables
@@ -104,7 +110,11 @@ Frontend and backend must be deployed as **two separate Vercel projects**. Each 
 4. Add frontend environment variables, using the backend URL from step 6 above for `NEXT_PUBLIC_API_URL`
 5. Click "Deploy"
 
-**Important**: Environment variables must be added separately to each project. Changes to one project do not affect the other, and deployments are triggered independently.
+<Callout type="warn">
+
+The frontend and backend are two separate Vercel projects. Environment variables are set per-project and do not propagate between them; deployments are triggered independently.
+
+</Callout>
 
 ## Custom Domains
 

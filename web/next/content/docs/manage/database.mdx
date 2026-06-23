@@ -80,6 +80,12 @@ The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonated
 
 All foreign keys use `CASCADE` on delete. Tables include appropriate indexes on foreign key columns.
 
+<Callout type="warn">
+
+Foreign keys cascade on delete, so deleting an organization cascades to its members, teams, and invitations.
+
+</Callout>
+
 ### Waitlist
 
 | Table      | Purpose                | Key Columns                         |

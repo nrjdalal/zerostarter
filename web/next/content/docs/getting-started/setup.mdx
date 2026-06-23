@@ -14,6 +14,12 @@ This guide will walk you through installing and setting up ZeroStarter on your l
 
 - [Bun](https://bun.sh) (v1.3.10 or later, matching the repo's `packageManager` pin)
 
+<Callout type="warn" title="Prerequisites">
+
+Bun v1.3.10 or later (matching the repo's `packageManager` pin). Docker is required for the `--db` database provisioning. A reachable PostgreSQL instance is required to run the app.
+
+</Callout>
+
 ### Setup
 
 1. Scaffold your product. In a new, empty directory (its name becomes your project name), run:
@@ -22,7 +28,13 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    npx zerostarter@latest init
    ```
 
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead). When you publish to GitHub, push both branches together (`git push origin canary main`) so the `canary` to `main` release flow works. `main` must exist when `canary` is pushed; if you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
+
+   <Callout type="warn">
+
+   When you publish to GitHub, push both branches together (`git push origin canary main`) so the `canary` to `main` release flow works. `main` must exist when `canary` is pushed; if you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+
+   </Callout>
 
 2. Set up environment variables:
 
@@ -71,7 +83,11 @@ This guide will walk you through installing and setting up ZeroStarter on your l
    NEXT_PUBLIC_USERJOT_URL=
    ```
 
-   > **Note**: Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
+   <Callout type="info">
+
+   Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
+
+   </Callout>
 
 ### Database Setup
 
