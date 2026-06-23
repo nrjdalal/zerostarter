@@ -1,3 +1,23 @@
+## v0.0.55
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.54...v0.0.55)
+
+### 🚀 Enhancements
+
+- **scripts:** Orange clickable Actions settings link in pre-push hook ([f6676d4](https://github.com/nrjdalal/zerostarter/commit/f6676d4))
+
+### 🩹 Fixes
+
+- **cli:** Drop premature Actions-permissions note from init next-steps ([5d3797c](https://github.com/nrjdalal/zerostarter/commit/5d3797c))
+
+### 🏡 Chore
+
+- **cli:** Bump to 0.0.12 to publish trimmed init + clickable perms link ([d956de2](https://github.com/nrjdalal/zerostarter/commit/d956de2))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.54
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.53...v0.0.54)
