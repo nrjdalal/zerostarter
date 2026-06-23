@@ -29,11 +29,9 @@ Under **Settings → Actions → General → Workflow permissions** (the pre-pus
 
 <Callout title="Fresh forks: just push canary">
 
-A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. A pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) pushes `main` to the remote on your first `git push origin canary`, because the Actions token cannot create a branch on a fork. It is a no-op once `main` exists on the remote.
+A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. On your first `git push origin canary`, a pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) publishes both `main` and `canary` (a fork's Actions token cannot create branches) and sets `canary` as the default branch via `gh`. It is a no-op once `main` exists on the remote.
 
 `git push origin canary`
-
-Because `main` is pushed first, GitHub makes it the default branch. Set the default to `canary` (**Settings → General → Default branch**, or `gh repo edit --default-branch canary`) so new pull requests target `canary`.
 
 </Callout>
 
