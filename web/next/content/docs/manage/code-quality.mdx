@@ -60,7 +60,7 @@ Runs before each commit in sequence (piped):
 
 ### Pre-push Hook
 
-Runs before `git push` (`.github/scripts/ensure-remote-main.ts`). On a fresh fork's first push it publishes `main` and `canary` to the remote and sets `canary` as the default branch via `gh` (a fork's Actions token cannot create branches), so a single `git push origin canary` is enough for the `canary` to `main` release flow to start. It then prints the link to enable read-write Actions permissions (the one thing it cannot set for you), and a local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op on every later push.
+Runs before `git push` (`.github/scripts/ensure-remote-main.ts`). On a fresh fork's first push it pushes `main` to the remote when it is missing, so a single `git push origin canary` is enough for the `canary` to `main` release flow to start (`main` must exist on the remote, because a fork's Actions token cannot create a branch). It then prints the link to enable read-write Actions permissions, and a local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op on every later push.
 
 ### Audit overrides (AUDIT.md)
 
