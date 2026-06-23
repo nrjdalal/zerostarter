@@ -27,13 +27,13 @@ Under **Settings → Actions → General → Workflow permissions** (the pre-pus
 
 ![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/docs/release/workflow-permissions.png)
 
-<Callout title="Fresh forks: just push canary">
+<Callout title="Fresh forks: push canary into an empty repo">
 
-A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. A pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) pushes `main` to the remote on your first `git push origin canary`, because the Actions token cannot create a branch on a fork. It is a no-op once `main` exists on the remote.
+Create an **empty** GitHub repo (no README, so the first branch you push becomes the default), then:
 
 `git push origin canary`
 
-Because `main` is pushed first, GitHub makes it the default branch. Set the default to `canary` (**Settings → General → Default branch**, or `gh repo edit --default-branch canary`) so new pull requests target `canary`.
+`canary` is pushed first, so GitHub makes it your default branch. A pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) then seeds `main` on your **next** push (a separate ref, so it never collides with your `canary` push), and `auto-canary-into-main` opens the release PR. No `gh` is needed, and the only thing you set by hand is the permissions above.
 
 </Callout>
 

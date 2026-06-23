@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { markerKey, settingsUrl } from "../../../.github/scripts/ensure-remote-main"
+import { markerKey, repoSlug, settingsUrl } from "../../../.github/scripts/ensure-remote-main"
 
 test("settingsUrl builds the Actions settings URL from an SSH remote", () => {
   expect(settingsUrl("git@github.com:acme/widgets.git")).toBe(
@@ -35,4 +35,10 @@ test("markerKey sanitizes a remote name into a valid git-config key", () => {
 
 test("markerKey prefixes a digit-leading remote so the key stays a valid git-config name", () => {
   expect(markerKey("2fork")).toBe("zerostarter.mainSeeded.r-2fork")
+})
+
+test("repoSlug detects GitHub remotes (SSH and HTTPS) and is empty otherwise", () => {
+  expect(repoSlug("git@github.com:acme/widgets.git")).toBe("acme/widgets")
+  expect(repoSlug("https://github.com/acme/widgets.git")).toBe("acme/widgets")
+  expect(repoSlug("https://gitlab.com/acme/widgets.git")).toBe("")
 })
