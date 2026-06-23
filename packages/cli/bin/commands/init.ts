@@ -153,7 +153,9 @@ export const init = async (argv: string[]) => {
     console.log(`  ${orange("bun run db:migrate")}`)
   }
   console.log(`  ${orange("bun dev")}`)
-  console.log("\nWhen you push to GitHub, push both branches so the release flow works:")
+  console.log(
+    "\nWhen you push to GitHub, push both branches together (main must exist when canary is pushed):",
+  )
   console.log(`  ${orange("git push origin canary main")}`)
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
