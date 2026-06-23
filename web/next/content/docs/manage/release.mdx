@@ -24,13 +24,11 @@ Without read-write permissions the Actions token gets `403 Resource not accessib
 
 </Callout>
 
-<Callout type="warn" title="Fresh forks: push both branches">
+<Callout title="Fresh forks: just push canary">
 
-A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. Push them together so `main` exists on the remote, because the Actions token cannot create a branch on a fork:
+A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. A pre-push hook (`.github/scripts/ensure-remote-main.ts`, wired in `lefthook.yml`) pushes `main` to the remote on your first `git push origin canary`, because the Actions token cannot create a branch on a fork. It is a no-op once `main` exists on the remote.
 
-`git push origin canary main`
-
-If you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+`git push origin canary`
 
 </Callout>
 

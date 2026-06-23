@@ -17,3 +17,8 @@ commit-msg:
   commands:
     commitlint:
       run: bunx commitlint --edit {1}
+
+pre-push:
+  commands:
+    ensure-main:
+      run: bun .github/scripts/ensure-remote-main.ts {1}
