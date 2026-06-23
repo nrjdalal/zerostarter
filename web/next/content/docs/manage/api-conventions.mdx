@@ -85,6 +85,12 @@ A body that is present but unparseable (malformed JSON, malformed form-data) is 
 
 ### Environment-Aware Errors
 
+<Callout type="warn">
+
+Detailed error messages surface only when `NODE_ENV === "local"`. Every other environment returns a generic message to avoid leaking internals.
+
+</Callout>
+
 - **Local only**: Error messages include the actual error details for debugging. Detailed messages are shown only when `isLocal(env.NODE_ENV)`, i.e. `NODE_ENV === "local"` (`api/hono/src/lib/error.ts`).
 - **All other environments**: Generic `"Internal Server Error"` message to avoid leaking internals. `development`, `test`, `staging`, and `production` all get the generic message.
 
@@ -116,7 +122,13 @@ The key generator resolves keys in this priority order:
 3. **IP Address**: Detected via [Arcjet IP](https://arcjet.com)
 4. **Random UUID**: Fallback if IP detection fails
 
-In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active; no limiter passes an API key, so that tier is dead until you wire `getApiKey` into a limiter.
+<Callout type="warn">
+
+The API-key rate-limit tier is currently unwired and falls back to per-IP. No limiter passes an API key, so that tier stays dead until you wire `getApiKey` into a limiter.
+
+</Callout>
+
+In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active.
 
 | Context         | Limit        | Window | Environment Variable                            |
 | --------------- | ------------ | ------ | ----------------------------------------------- |

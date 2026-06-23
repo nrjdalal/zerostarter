@@ -132,11 +132,21 @@ For production, use a managed PostgreSQL service:
 - [Supabase](https://supabase.com) - Postgres with real-time
 - [Railway](https://railway.app) - Managed databases
 
-> **Note**: This project requires PostgreSQL. MySQL-compatible providers like PlanetScale are not supported without substantial rework (schema migration, SQL/driver changes).
+<Callout type="warn">
+
+This project requires PostgreSQL. MySQL-compatible providers like PlanetScale are not supported without substantial rework (schema migration, SQL/driver changes).
+
+</Callout>
 
 ### Migrations
 
-Docker images do not run database migrations. Only the Vercel build applies them (via `.github/scripts/migrate-on-deploy.ts`). When deploying with Docker, run `bun run db:migrate` against your database separately before or alongside rolling out the new images.
+<Callout type="warn">
+
+Docker images do NOT run database migrations. Run `bun run db:migrate` separately before or alongside a rollout.
+
+</Callout>
+
+Migrations are applied only by the Vercel build, via `.github/scripts/migrate-on-deploy.ts`. The Docker image has no equivalent build step.
 
 ### Container Registry
 

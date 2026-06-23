@@ -17,7 +17,11 @@ ZeroStarter generates dynamic Open Graph images for social media previews using 
 | `/og/blog/[[...slug]]`             | Blog post previews                           |
 | `/og?section=&title=&description=` | Generic parameterized preview (hire, résumé) |
 
-> **Note:** These routes live at `/og`, deliberately not under `/api/`. Because `robots.txt` disallows `/api/`, keeping the OG routes off it is what lets social unfurlers fetch the preview images. See [robots.txt](/docs/manage/robots).
+<Callout type="info">
+
+These routes live at `/og`, deliberately not under `/api/`. Because `robots.txt` disallows `/api/`, keeping the OG routes off it is what lets social unfurlers fetch the preview images. See [robots.txt](/docs/manage/robots).
+
+</Callout>
 
 ## How It Works
 
@@ -69,9 +73,17 @@ export function generateStaticParams() {
 
 For a one-off route (no source), build a React element and pass it to `renderOgElement` from `@/lib/og-image`. See `web/next/src/app/og/home/route.tsx` as a reference. For a parameterized preview driven by query params, use the generic `web/next/src/app/og/route.tsx` endpoint. Note the two different names: `section` is the query-string key the route reads from the URL, which it passes as the `sectionName` argument to `renderOgImage` (the same arg name `generateOgImage` and the per-section routes take). So the URL uses `?section=...&title=...&description=...`, while the helper signature uses `sectionName`.
 
-> **Warning:** The `force-static` snippet above is fine for always-public sources like docs. For time-gated content (e.g. the blog, where posts have a `publishedAt`), copying it would prerender and expose OG images for unpublished posts. Such routes must gate on the published set and revalidate: add `export const revalidate = 60`, build params from only the published posts, and resolve through the published-only `getPublicBlogPage` helper. See `web/next/src/app/og/blog/[[...slug]]/route.tsx` as the reference for that pattern.
+<Callout type="error">
 
-> **Note:** `takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
+The `force-static` snippet above is fine for always-public sources like docs. For time-gated content (e.g. the blog, where posts have a `publishedAt`), copying it would prerender and expose OG images for unpublished posts. Such routes must gate on the published set and revalidate: add `export const revalidate = 60`, build params from only the published posts, and resolve through the published-only `getPublicBlogPage` helper. See `web/next/src/app/og/blog/[[...slug]]/route.tsx` as the reference for that pattern.
+
+</Callout>
+
+<Callout type="warn">
+
+`takumi-js` v1 changed the default `display` from `flex` to `inline`. Every flex container in your OG JSX must set `display: "flex"` explicitly (the existing routes already do this).
+
+</Callout>
 
 ## Metadata Integration
 

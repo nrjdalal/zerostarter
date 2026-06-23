@@ -35,7 +35,11 @@ NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
 NEXT_PUBLIC_POSTHOG_KEY=
 ```
 
-**Note**: Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU Cloud, or your self-hosted URL.
+<Callout type="info">
+
+Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU Cloud, or your self-hosted URL.
+
+</Callout>
 
 ### 3. Environment Configuration
 
@@ -94,7 +98,13 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
 
 ## Usage
 
-The snippets below are generic PostHog SDK guidance for instrumenting your own product. The starter wires up initialization and the React provider for you, but it does not call `capture`, `identify`, or read feature flags anywhere by default: add those where they make sense in your code.
+The snippets below are generic PostHog SDK guidance for instrumenting your own product.
+
+<Callout type="info">
+
+The starter wires up PostHog initialization and the React provider for you, but it does not call `capture`, `identify`, or read feature flags anywhere by default. Add those where they make sense in your code.
+
+</Callout>
 
 ### Track Custom Events
 

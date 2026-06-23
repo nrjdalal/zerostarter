@@ -13,14 +13,28 @@ ZeroStarter uses an automated release workflow that manages versioning, changelo
 
 ## Prerequisites
 
-1. Enable the following GitHub setting for the workflow to function:
+<Callout type="warn" title="Required GitHub settings">
 
-   **Settings → Actions → General → Workflow permissions**
-   - ✅ **Allow GitHub Actions to create and approve pull requests**
+A fresh fork's Actions token is read-only by default. Under **Settings → Actions → General → Workflow permissions**, enable both:
 
-   This setting is required for the automated workflows to create draft PRs.
+- ✅ **Read and write permissions**: lets the workflows create branches, commit the changelog, and tag releases.
+- ✅ **Allow GitHub Actions to create and approve pull requests**: lets `auto-canary-into-main` open the release PR.
 
-2. **Changelog Generation**: The release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
+Without read-write permissions the Actions token gets `403 Resource not accessible by integration` and no release PR opens.
+
+</Callout>
+
+<Callout type="warn" title="Fresh forks: push both branches">
+
+A fork from `zerostarter init` starts with `canary` (one commit ahead) and `main` locally. Push them together so `main` exists on the remote, because the Actions token cannot create a branch on a fork:
+
+`git push origin canary main`
+
+If you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+
+</Callout>
+
+**Changelog generation**: the release workflow uses `changelogen` to auto-generate the changelog from conventional commits. No additional configuration file is required.
 
 ## Feature PRs into canary
 

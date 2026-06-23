@@ -54,6 +54,12 @@ const data = await res.json()
 // which casts the result to `Session` (and returns null on an empty body).
 ```
 
+<Callout type="info">
+
+`/api/auth/*` is a raw Better Auth handler and is NOT RPC-typed. For typed session access, use the server helper in `web/next/src/lib/auth/index.ts`.
+
+</Callout>
+
 ## Backend Routes
 
 ### Adding New Routes
