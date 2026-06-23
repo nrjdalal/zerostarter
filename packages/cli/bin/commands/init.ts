@@ -152,7 +152,7 @@ export const init = async (argv: string[]) => {
     console.log(`  ${orange("bunx pglaunch -k")}  # start Postgres, set POSTGRES_URL in .env`)
     console.log(`  ${orange("bun run db:migrate")}`)
   }
-  console.log(`  ${orange("bun dev")}`)
+  console.log(`  ${orange("bun run dev")}`)
   console.log(
     "\nWhen you push to GitHub, push both branches together (main must exist when canary is pushed):",
   )
