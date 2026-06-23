@@ -65,7 +65,6 @@ export default function WaitlistPage() {
     },
     onSuccess: () => {
       setJoined(true)
-      toast.success("You're on the list.")
       queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
     },
     onError: (error) => {
