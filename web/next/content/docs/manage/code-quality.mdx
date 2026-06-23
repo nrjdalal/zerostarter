@@ -43,6 +43,11 @@ commit-msg:
   commands:
     commitlint:
       run: bunx commitlint --edit {1}
+
+pre-push:
+  commands:
+    ensure-main:
+      run: bun .github/scripts/ensure-remote-main.ts {1}
 ```
 
 ### Pre-commit Hook
@@ -52,6 +57,10 @@ Runs before each commit in sequence (piped):
 1. **Audit**: Security audit on `canary` branch (checks for vulnerable dependencies)
 2. **lint-staged**: Format and lint only staged files. The command runs with `stage_fixed: true`, so any files the formatter rewrites are re-staged automatically and the fixes are included in the same commit.
 3. **Build**: Verify the project builds successfully
+
+### Pre-push Hook
+
+Runs before `git push` (`.github/scripts/ensure-remote-main.ts`), on GitHub remotes only. Your first `git push origin canary` creates `canary`, which GitHub makes the default branch; on your next push the hook seeds `main` (a separate ref, so it never collides with the `canary` push) so `auto-canary-into-main` opens the release PR. It needs no `gh` or repo-admin (the default branch falls out of push order); the only manual step it prints is enabling read-write Actions permissions. A local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op once done.
 
 ### Audit overrides (AUDIT.md)
 

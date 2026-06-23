@@ -95,8 +95,8 @@ export const init = async (argv: string[]) => {
   // conversion lands as its own reviewable "re-baseline" diff on top.
   if (!exists(join(target, ".git"))) {
     gitInit(target)
-    gitCommitAll(target, "chore: scaffold from zerostarter")
-    // Seed `main` at the scaffold commit so canary leads it by the re-baseline; the first push then opens a canary->main release PR (a fork's Actions token cannot create main itself).
+    gitCommitAll(target, "ci(init): scaffold from zerostarter")
+    // Seed `main` locally at the scaffold commit so canary leads it; the pre-push hook publishes main on the second push (canary is pushed first, so GitHub makes it the default branch).
     gitBranch(target, "main")
   }
 
@@ -106,7 +106,7 @@ export const init = async (argv: string[]) => {
   console.log("Installing dependencies ...")
   bunInstall(target)
 
-  gitCommitAll(target, `chore: re-baseline as ${name}`)
+  gitCommitAll(target, `ci(init): re-baseline as ${name}`)
 
   console.log("Setting up .env (copied from .env.example, with a generated BETTER_AUTH_SECRET) ...")
   seedEnv(target)
@@ -153,10 +153,11 @@ export const init = async (argv: string[]) => {
     console.log(`  ${orange("bun run db:migrate")}`)
   }
   console.log(`  ${orange("bun run dev")}`)
+  console.log("\nPush to an empty GitHub repo when ready:")
+  console.log(`  ${orange("git push origin canary")}`)
   console.log(
-    "\nWhen you push to GitHub, push both branches together (main must exist when canary is pushed):",
+    "canary becomes the default branch; your next push seeds main and opens the release PR. The hook prints the read-write Actions permissions link.",
   )
-  console.log(`  ${orange("git push origin canary main")}`)
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
 }

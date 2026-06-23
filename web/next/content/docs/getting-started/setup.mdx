@@ -28,9 +28,9 @@ Bun v1.3.10 or later (matching the repo's `packageManager` pin). Docker is requi
 
    This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
 
-   <Callout type="warn">
+   <Callout type="info">
 
-   When you publish to GitHub, push both branches together (`git push origin canary main`) so the `canary` to `main` release flow works. `main` must exist when `canary` is pushed; if you push `canary` alone first, the release PR opens only on the next `canary` push or a manual `auto-canary-into-main` run.
+   You only need `git push origin canary`. A pre-push hook pushes `main` the first time (the `canary` to `main` release flow needs `main` on the remote) and prints the link to enable read-write Actions permissions.
 
    </Callout>
 
