@@ -32,3 +32,7 @@ test("markerKey is scoped per remote so seeding one does not mark another", () =
 test("markerKey sanitizes a remote name into a valid git-config key", () => {
   expect(markerKey("feature/fork")).toBe("zerostarter.mainSeeded.feature-fork")
 })
+
+test("markerKey prefixes a digit-leading remote so the key stays a valid git-config name", () => {
+  expect(markerKey("2fork")).toBe("zerostarter.mainSeeded.r-2fork")
+})

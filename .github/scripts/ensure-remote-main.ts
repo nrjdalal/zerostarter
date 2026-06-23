@@ -3,8 +3,11 @@ import { execFileSync } from "node:child_process"
 // Pre-push guard: publish local `main` when the remote lacks it (first push) so a fork's `git push origin canary` lets auto-canary-into-main open the release PR; shared via lefthook.yml (runs here and in every fork), with a per-remote git-config marker that makes it a no-op afterward.
 
 // Per-remote, local-only marker: seeding one remote must not mark another seeded, and it is per-clone state, so it lives in git config and is never committed.
-export const markerKey = (remote: string): string =>
-  `zerostarter.mainSeeded.${remote.replace(/[^A-Za-z0-9-]/g, "-")}`
+export const markerKey = (remote: string): string => {
+  // A git-config variable name must start with a letter, so prefix one when the remote does not.
+  const safe = remote.replace(/[^A-Za-z0-9-]/g, "-")
+  return `zerostarter.mainSeeded.${/^[A-Za-z]/.test(safe) ? safe : `r-${safe}`}`
+}
 
 const git = (args: string[]): string =>
   execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim()
