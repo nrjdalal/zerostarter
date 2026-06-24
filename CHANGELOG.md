@@ -1,3 +1,15 @@
+## v0.0.59
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.58...v0.0.59)
+
+### 🏡 Chore
+
+- Cleanup batch — zod error param, audit pre-push, CI concurrency ([#560](https://github.com/nrjdalal/zerostarter/pull/560))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.58
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.57...v0.0.58)
