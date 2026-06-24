@@ -24,7 +24,7 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
-  email: z.email({ message: "Please enter a valid email address." }),
+  email: z.email({ error: "Please enter a valid email address." }),
 })
 
 export function Access() {
