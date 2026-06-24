@@ -1,6 +1,6 @@
 "use client"
 
-import { RiBookLine, RiTerminalBoxLine } from "@remixicon/react"
+import { RiBookLine, RiDashboardLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -18,7 +18,7 @@ const mainItems = [
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
-// Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
+// Sidebar-header slot: a link back to the app Dashboard, plus the docs search inside /console/docs (matching public /docs).
 export function SidebarConsoleHeader() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
@@ -32,12 +32,10 @@ export function SidebarConsoleHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive={pathname === "/console" || pathname === "/console/"}
             tooltip="Dashboard"
-            className="data-active:font-normal"
-            render={<Link href="/console" onClick={close} />}
+            render={<Link href="/dashboard" onClick={close} />}
           >
-            <RiTerminalBoxLine />
+            <RiDashboardLine />
             <span>Dashboard</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
