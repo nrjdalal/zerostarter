@@ -1,14 +1,20 @@
 "use client"
 
 import { env } from "@packages/env/web-next"
-import { RiLogoutBoxLine, RiMessage2Line } from "@remixicon/react"
+import {
+  RiArrowRightSLine,
+  RiDashboardLine,
+  RiLogoutBoxLine,
+  RiMessage2Line,
+  RiTerminalBoxLine,
+} from "@remixicon/react"
 import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { SidebarMenuItem } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth/client"
 
@@ -19,8 +25,16 @@ function getInitials(name: string) {
 }
 
 // Shared sidebar user dropdown (avatar, identity, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
-export function SidebarUserMenu({ user }: { user: User }) {
+export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard" | "console" }) {
   const router = useRouter()
+
+  // The user menu is shared, so the cross-link points at the other workspace: dashboard -> console, console -> dashboard.
+  const crossLink =
+    area === "dashboard"
+      ? { label: "Console", href: "/console", icon: <RiTerminalBoxLine /> }
+      : area === "console"
+        ? { label: "Dashboard", href: "/dashboard", icon: <RiDashboardLine /> }
+        : null
 
   const avatar = (
     <Avatar className="size-8 rounded-md after:hidden">
@@ -33,6 +47,16 @@ export function SidebarUserMenu({ user }: { user: User }) {
   return (
     <SidebarMenuItem>
       <SidebarDropdownMenu trigger={identity} header={identity} align="end" mobileSide="top">
+        {crossLink && (
+          <>
+            <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
+              {crossLink.icon}
+              {crossLink.label}
+              <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {env.NEXT_PUBLIC_USERJOT_URL && (
           <DropdownMenuItem
             render={

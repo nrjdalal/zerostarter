@@ -1,6 +1,6 @@
 "use client"
 
-import { RiBookLine, RiDashboardLine } from "@remixicon/react"
+import { RiBookLine, RiTerminalBoxLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -15,7 +15,7 @@ import {
 import type { NavGroup } from "@/lib/docs/types"
 
 const mainItems = [
-  { title: "Dashboard", url: "/console", icon: RiDashboardLine, exact: true },
+  { title: "Dashboard", url: "/console", icon: RiTerminalBoxLine, exact: true },
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
