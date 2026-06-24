@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { SidebarDocsContent, SidebarDocsSearch } from "@/components/sidebar/docs"
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,19 +16,41 @@ import {
 import type { NavGroup } from "@/lib/docs/types"
 
 const mainItems = [
-  { title: "Dashboard", url: "/console", icon: RiDashboardLine, exact: true },
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
-// Sidebar-header slot: shows the docs search only inside /console/docs (matching public /docs); hidden when collapsed to icons.
+// Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
 export function SidebarConsoleHeader() {
   const pathname = usePathname()
-  if (!pathname?.startsWith("/console/docs")) return null
+  const { isMobile, setOpenMobile } = useSidebar()
+  const close = () => {
+    if (isMobile) setOpenMobile(false)
+  }
+  const isDocs = pathname ? pathname.startsWith("/console/docs") : false
 
   return (
-    <div className="group-data-[collapsible=icon]:hidden">
-      <SidebarDocsSearch />
-    </div>
+    <>
+      {!isDocs && (
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={pathname === "/console" || pathname === "/console/"}
+              tooltip="Dashboard"
+              className="data-active:font-normal"
+              render={<Link href="/console" onClick={close} />}
+            >
+              <RiDashboardLine />
+              <span>Dashboard</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
+      {isDocs && (
+        <div className="group-data-[collapsible=icon]:hidden">
+          <SidebarDocsSearch />
+        </div>
+      )}
+    </>
   )
 }
 
@@ -45,6 +68,7 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
 
   return (
     <SidebarGroup>
+      <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {mainItems.map((item) => {
           const isActive = item.exact

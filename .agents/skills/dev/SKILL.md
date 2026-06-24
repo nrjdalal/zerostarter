@@ -37,7 +37,7 @@ Also restart after changing `@packages/*` exports the API consumes (they resolve
 
 ## Agent login
 
-Sign in as `AgentZero` (local only, trusted Origin required):
+Sign in as `LocalAgent` (local only, trusted Origin required):
 
 ```bash
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as

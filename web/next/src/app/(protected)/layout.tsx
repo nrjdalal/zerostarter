@@ -31,7 +31,12 @@ export default async function Layout({ children }: { children: React.ReactNode }
   return (
     <SidebarShell
       header={<SidebarDashboardOrgSwitcher />}
-      footer={<SidebarDashboardUserActions user={session.user} />}
+      footer={
+        <SidebarDashboardUserActions
+          user={session.user}
+          canAccessConsole={session.user.role === "admin"}
+        />
+      }
     >
       {children}
     </SidebarShell>

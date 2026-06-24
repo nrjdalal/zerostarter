@@ -27,7 +27,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       nav={<SidebarConsoleContent docsGroups={resolveDocsNav("console")} />}
       footer={
         <SidebarMenu>
-          <SidebarUserMenu user={session.user} />
+          <SidebarUserMenu user={session.user} area="console" />
         </SidebarMenu>
       }
     >
