@@ -6,18 +6,49 @@ import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
+// Every code the API can put in the { error } envelope. Single source of truth: the TS union, the OpenAPI schema, and the web client all derive from this list. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
+export const ERROR_CODES = [
+  "AGENT_LOGIN_FAILED",
+  "BAD_REQUEST",
+  "ERROR",
+  "FORBIDDEN",
+  "INTERNAL_SERVER_ERROR",
+  "NOT_FOUND",
+  "TOO_MANY_REQUESTS",
+  "UNAUTHORIZED",
+  "VALIDATION_ERROR",
+] as const
+
+export type ErrorCode = (typeof ERROR_CODES)[number]
+
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
   status: S,
-  code: string,
+  code: ErrorCode,
   message: string,
   extra?: Record<string, unknown>,
 ) {
-  return c.json({ error: { code, message, ...extra } }, status)
+  return c.json({ error: { ...extra, code, message } }, status)
+}
+
+// Throw this anywhere and onError shapes the { error } envelope. Extends HTTPException so Hono treats it as a known error; carries our envelope's domain code and any extras (e.g. validation issues).
+export class ApiError extends HTTPException {
+  readonly code: ErrorCode
+  readonly extra?: Record<string, unknown>
+  constructor(
+    status: ContentfulStatusCode,
+    code: ErrorCode,
+    message: string,
+    extra?: Record<string, unknown>,
+  ) {
+    super(status, { message })
+    this.code = code
+    this.extra = extra
+  }
 }
 
 // Code for an HTTPException, by status; Hono throws these for client errors (e.g. 400 on malformed JSON).
-const httpExceptionCodes: Record<number, string> = {
+const httpExceptionCodes: Record<number, ErrorCode> = {
   400: "BAD_REQUEST",
   401: "UNAUTHORIZED",
   403: "FORBIDDEN",
@@ -26,6 +57,11 @@ const httpExceptionCodes: Record<number, string> = {
 }
 
 export const errorHandler = (err: Error, c: Context) => {
+  // Our domain errors carry their own code/extra; check before HTTPException since ApiError extends it.
+  if (err instanceof ApiError) {
+    return jsonError(c, err.status, err.code, err.message, err.extra)
+  }
+
   if (err instanceof z.ZodError) {
     return jsonError(c, 400, "VALIDATION_ERROR", "Invalid request payload", { issues: err.issues })
   }
@@ -42,13 +78,13 @@ export const errorHandler = (err: Error, c: Context) => {
 
 // Shape of the error envelope jsonError emits; reused by the OpenAPI error responses below.
 export const errorEnvelope = z.object({
-  error: z.object({ code: z.string(), message: z.string() }),
+  error: z.object({ code: z.enum(ERROR_CODES), message: z.string() }),
 })
 
 // Validation errors also carry the failing fields, so document that on the 400 response.
 const validationErrorEnvelope = z.object({
   error: z.object({
-    code: z.string(),
+    code: z.enum(ERROR_CODES),
     message: z.string(),
     issues: z
       .array(z.object({ path: z.array(z.union([z.string(), z.number()])), message: z.string() }))

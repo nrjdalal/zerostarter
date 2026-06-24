@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { setCookie } from "hono/cookie"
 
-import { jsonError } from "@/lib/error"
+import { ApiError } from "@/lib/error"
 
 const AGENT_EMAIL = site.agent.email
 const AGENT_NAME = site.agent.name
@@ -16,7 +16,9 @@ const AGENT_NAME = site.agent.name
 export const agentsRouter = new Hono()
   .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
-    const fail = (message: string) => jsonError(c, 500, "AGENTS_LOGIN_FAILED", message)
+    const fail = (message: string): never => {
+      throw new ApiError(500, "AGENT_LOGIN_FAILED", message)
+    }
 
     const origin = c.req.header("origin")
     if (!origin) return fail("missing Origin header")

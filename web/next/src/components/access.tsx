@@ -36,18 +36,18 @@ export function Access() {
   const isDev = process.env.NODE_ENV === "development"
 
   // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
-  const { data: providers } = useQuery({
+  const { data } = useQuery({
     queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
       const { data, error } = await unwrap(apiClient.auth.providers.$get())
       if (error) throw new Error(error.message)
-      return data.providers
+      return data
     },
   })
-  const githubEnabled = providers?.includes("github") ?? false
-  const googleEnabled = providers?.includes("google") ?? false
-  const magicLinkEnabled = providers?.includes("magic-link") ?? false
+  const githubEnabled = data?.providers.includes("github") ?? false
+  const googleEnabled = data?.providers.includes("google") ?? false
+  const magicLinkEnabled = data?.providers.includes("magic-link") ?? false
   const hasAlternatives = isDev || githubEnabled || googleEnabled
   const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
