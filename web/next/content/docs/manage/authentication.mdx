@@ -34,7 +34,7 @@ The auth config does not set a redirect for the social providers. The post-authe
 
 ### Agent Sign-In (local only)
 
-For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a fixed `AgentZero` user (`agent@zerostarter.dev`) and mints a session cookie directly. It is gated to the `local` environment and a trusted `Origin` header. See `api/hono/src/routers/agents.ts`.
+For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a fixed `LocalAgent` user (`agent@local.host`) and mints a session cookie directly. It is gated to the `local` environment and a trusted `Origin` header. See `api/hono/src/routers/agents.ts`.
 
 ### Adding OAuth Providers
 
@@ -66,7 +66,7 @@ There is no env-based access list: the `role` is the single source of truth, set
 - **Or** `bun run db:studio` / `UPDATE "user" SET role = 'admin' WHERE email = '…';`.
 - **Or**, once an admin exists, the Better Auth `setRole` admin API to grant the role to other users (a console user-management UI is not built yet).
 
-For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `AgentZero` user for local development.
+For reference, the local agent sign-in route (`api/hono/src/routers/agents.ts`) sets `role: "admin"` on the `LocalAgent` user for local development.
 
 ## Organizations & Teams
 
