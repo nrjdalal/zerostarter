@@ -31,7 +31,7 @@ All API responses use a standardized JSON envelope:
 }
 ```
 
-This envelope is produced by the `jsonError(c, status, code, message, extra?)` helper in `api/hono/src/lib/error.ts`, which is the standard way routers and middleware emit errors.
+Routes never build this envelope by hand. They `throw` — `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one — and the central `onError` handler in `api/hono/src/lib/error.ts` is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `onError` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
 
 ### Consuming responses on the client
 
@@ -50,20 +50,23 @@ if (error) {
 
 With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
 
+`error.code` is typed as the `ErrorCode` union (re-exported from `@api/hono`) plus the two transport codes `unwrap` itself produces (`NETWORK_ERROR`, `UNKNOWN_ERROR`), so it is a closed union on the client, with autocomplete and exhaustive `switch`.
+
 ### Error Codes
 
-| Code                    | Status | When                                                          |
-| ----------------------- | ------ | ------------------------------------------------------------- |
-| `NOT_FOUND`             | 404    | Route does not exist                                          |
-| `UNAUTHORIZED`          | 401    | Missing or invalid session                                    |
-| `FORBIDDEN`             | 403    | Insufficient permissions (e.g., `/headers` in production)     |
-| `TOO_MANY_REQUESTS`     | 429    | Rate limit exceeded                                           |
-| `VALIDATION_ERROR`      | 400    | Zod schema validation failed                                  |
-| `BAD_REQUEST`           | 400    | Malformed JSON/form-data body (Hono `HTTPException`)          |
-| `INTERNAL_SERVER_ERROR` | 500    | Unhandled server error                                        |
-| `AGENTS_LOGIN_FAILED`   | 500    | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
+| Code                    | Status   | When                                                          |
+| ----------------------- | -------- | ------------------------------------------------------------- |
+| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
+| `BAD_REQUEST`           | 400      | Malformed JSON/form-data body (Hono `HTTPException`)          |
+| `ERROR`                 | (varies) | `HTTPException` with a status not mapped to a specific code   |
+| `FORBIDDEN`             | 403      | Insufficient permissions (e.g., `/headers` in production)     |
+| `INTERNAL_SERVER_ERROR` | 500      | Unhandled server error                                        |
+| `NOT_FOUND`             | 404      | Route does not exist                                          |
+| `TOO_MANY_REQUESTS`     | 429      | Rate limit exceeded                                           |
+| `UNAUTHORIZED`          | 401      | Missing or invalid session                                    |
+| `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                  |
 
-Beyond these shared codes, individual routers may define route-specific codes by calling `jsonError(c, status, code, message)` directly (as `agents.ts` does for `AGENTS_LOGIN_FAILED`).
+These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts` — the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENT_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
 
 ### Validation Errors
 
@@ -79,7 +82,7 @@ When a Zod validation fails, the response includes the full issues array:
 }
 ```
 
-Route-level validators (e.g. `sValidator` on the waitlist `POST`) follow the same convention: a custom message plus the `issues` array. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
+Route-level validators (e.g. `sValidator` on the waitlist `POST`) `throw new ApiError(400, "VALIDATION_ERROR", message, { issues })` on failure, so `onError` shapes the 400 in one place. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
 
 A body that is present but unparseable (malformed JSON, malformed form-data) is a client error, not a server error: Hono throws an `HTTPException`, and `errorHandler` returns it with the thrown status (`400 BAD_REQUEST`) instead of masking it as a `500`.
 
@@ -208,6 +211,8 @@ export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddlew
 ```
 
 The `new Hono<{ Variables: Session }>()` generic (with `import type { Session } from "@packages/auth"`) is what makes `c.get("user")` and `c.get("session")` typed, matching the real `v1Router`. The `authMiddleware` populates those context variables.
+
+To emit an error from a handler, `throw new ApiError(status, code, message)` (a domain code) or `throw new HTTPException(status, { message })` (a standard one); `onError` builds the envelope, so never construct it inline.
 
 2. Register in `api/hono/src/index.ts` if it's a new router. The app sets `.basePath("/api")`, so the route path is relative to `/api`:
 

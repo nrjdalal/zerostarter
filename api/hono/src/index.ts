@@ -5,6 +5,7 @@ import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
+import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
@@ -40,7 +41,7 @@ const routes = app
   })
   .get("/headers", (c) => {
     if (env.NODE_ENV !== "local" && env.NODE_ENV !== "development") {
-      return jsonError(c, 403, "FORBIDDEN", "Forbidden")
+      throw new HTTPException(403, { message: "Forbidden" })
     }
     const data = c.req.header()
     return c.json({ data })
@@ -124,6 +125,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
   )
 
 export type AppType = typeof routes
+export type { ErrorCode } from "@/lib/error"
 
 export default {
   port: env.HONO_PORT,
