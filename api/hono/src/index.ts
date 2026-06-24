@@ -125,6 +125,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
   )
 
 export type AppType = typeof routes
+export type { ErrorCode } from "@/lib/error"
 
 export default {
   port: env.HONO_PORT,

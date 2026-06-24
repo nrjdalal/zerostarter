@@ -1,4 +1,4 @@
-import type { AppType } from "@api/hono"
+import type { AppType, ErrorCode } from "@api/hono"
 import { hc } from "hono/client"
 
 import { config } from "@/lib/config"
@@ -17,8 +17,11 @@ const honoClient = hcWithType(url, {
 
 export const apiClient = honoClient.api
 
-// Standard error shape, matching the jsonError envelope in api/hono/src/lib/error.ts; extras like the validation `issues` array are preserved.
-export type ApiError = { code: string; message: string } & Record<string, unknown>
+// Standard error shape, matching the jsonError envelope in api/hono/src/lib/error.ts; extras like the validation `issues` array are preserved. `code` is the API's ErrorCode union plus the transport codes unwrap itself produces.
+export type ApiError = {
+  code: ErrorCode | "NETWORK_ERROR" | "UNKNOWN_ERROR"
+  message: string
+} & Record<string, unknown>
 
 // Success payload from the { data } envelope; a body without `data` yields never and unwrap reports it as an error.
 type SuccessData<B> = B extends { data: infer D } ? D : never
@@ -42,8 +45,9 @@ export async function unwrap<R extends RpcResponse>(
       return { data: body.data as SuccessData<Awaited<ReturnType<R["json"]>>>, error: null }
     }
     if (isRecord(body) && isRecord(body.error)) {
-      const code =
+      const code = (
         typeof body.error.code === "string" && body.error.code ? body.error.code : "ERROR"
+      ) as ApiError["code"]
       const message =
         typeof body.error.message === "string" && body.error.message
           ? body.error.message

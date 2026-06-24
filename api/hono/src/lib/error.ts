@@ -6,10 +6,22 @@ import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
+// Every code the API can put in the { error } envelope. Single source of truth, shared to the web client so error.code is a closed union. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
+export type ErrorCode =
+  | "VALIDATION_ERROR"
+  | "BAD_REQUEST"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "TOO_MANY_REQUESTS"
+  | "INTERNAL_SERVER_ERROR"
+  | "AGENTS_LOGIN_FAILED"
+  | "ERROR"
+
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
   status: S,
-  code: string,
+  code: ErrorCode,
   message: string,
   extra?: Record<string, unknown>,
 ) {
@@ -18,11 +30,11 @@ export function jsonError<S extends ContentfulStatusCode>(
 
 // Throw this anywhere and onError shapes the { error } envelope. Extends HTTPException so Hono treats it as a known error; carries our envelope's domain code and any extras (e.g. validation issues).
 export class ApiError extends HTTPException {
-  readonly code: string
+  readonly code: ErrorCode
   readonly extra?: Record<string, unknown>
   constructor(
     status: ContentfulStatusCode,
-    code: string,
+    code: ErrorCode,
     message: string,
     extra?: Record<string, unknown>,
   ) {
@@ -33,7 +45,7 @@ export class ApiError extends HTTPException {
 }
 
 // Code for an HTTPException, by status; Hono throws these for client errors (e.g. 400 on malformed JSON).
-const httpExceptionCodes: Record<number, string> = {
+const httpExceptionCodes: Record<number, ErrorCode> = {
   400: "BAD_REQUEST",
   401: "UNAUTHORIZED",
   403: "FORBIDDEN",
