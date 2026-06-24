@@ -1,3 +1,19 @@
+## v0.0.57
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.56...v0.0.57)
+
+### 🩹 Fixes
+
+- **api:** JsonError code/message win over extra; sync error model docs ([#556](https://github.com/nrjdalal/zerostarter/pull/556))
+
+### 💅 Refactors
+
+- **api:** Contained error handling + typed ErrorCode union end-to-end ([#553](https://github.com/nrjdalal/zerostarter/pull/553))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.56
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.55...v0.0.56)
