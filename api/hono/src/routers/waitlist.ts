@@ -2,7 +2,7 @@ import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
 import { z } from "zod"
 
-import { defineRoute, ok, validate } from "@/lib/route"
+import { ok, scopeRoute, validate } from "@/lib/route"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -14,11 +14,12 @@ const joinSchema = z.object({
 const COUNT_MIN = 10
 const COUNT_STEP = 5
 
+const route = scopeRoute({ tags: ["Waitlist"] })
+
 export const waitlistRouter = new Hono()
   .get(
     "/",
-    defineRoute({
-      tags: ["Waitlist"],
+    route({
       description:
         "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
       output: z.object({ count: z.number().meta({ example: 40 }) }),
@@ -31,8 +32,7 @@ export const waitlistRouter = new Hono()
   )
   .post(
     "/",
-    defineRoute({
-      tags: ["Waitlist"],
+    route({
       description: "Join the waitlist",
       input: joinSchema,
       output: z.object({ message: z.string().meta({ example: "ok" }) }),
