@@ -11,8 +11,8 @@ export const site = {
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
-    name: "AgentZero",
-    email: "agent@zerostarter.dev",
+    name: "LocalAgent",
+    email: "agent@local.host",
   },
   // Injectable long-form text blocks. These are starter defaults; a fork overrides them to inject its own.
   // OpenAPI / Scalar reference description (api/hono/src/index.ts).

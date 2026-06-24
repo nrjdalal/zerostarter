@@ -13,7 +13,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Logging in (agents)
 
-Signs in as `AgentZero` (`agent@zerostarter.dev`). Click **Login (agents)** in the dev UI, or use curl:
+Signs in as `LocalAgent` (`agent@local.host`). Click **Login (agents)** in the dev UI, or use curl:
 
 ```bash
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
