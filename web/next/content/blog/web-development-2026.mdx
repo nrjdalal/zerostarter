@@ -167,11 +167,15 @@ The practice is **type safety across the network boundary**. Whether you infer t
 { "error": { "code": "NOT_FOUND", "message": "Not Found" } }
 ```
 
-**Global error handler** standardizes error responses:
+**Routes `throw`** — an `ApiError` for domain codes, or a Hono `HTTPException` for standard ones — and a single global handler turns every thrown error into the envelope:
 
 ```ts
 // api/hono/src/lib/error.ts (wired into app.onError)
 export const errorHandler = (err: Error, c: Context) => {
+  // Domain errors carry their own code/extra; check before HTTPException since ApiError extends it.
+  if (err instanceof ApiError) {
+    return jsonError(c, err.status, err.code, err.message, err.extra)
+  }
   if (err instanceof z.ZodError) {
     return jsonError(c, 400, "VALIDATION_ERROR", "Invalid request payload", { issues: err.issues })
   }
