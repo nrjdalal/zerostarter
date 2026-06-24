@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
-  email: z.email({ message: "Please enter a valid email address." }).max(254),
+  email: z.email({ error: "Please enter a valid email address." }).max(254),
   // honeypot: unconstrained so it never blocks submission; the server silently drops bots
   subject: z.string(),
 })
