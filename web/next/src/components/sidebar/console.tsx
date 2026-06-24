@@ -18,7 +18,7 @@ const mainItems = [
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
-// Sidebar-header slot: a link back to the app Dashboard, plus the docs search inside /console/docs (matching public /docs).
+// Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
 export function SidebarConsoleHeader() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
@@ -32,8 +32,10 @@ export function SidebarConsoleHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
+            isActive={pathname === "/console" || pathname === "/console/"}
             tooltip="Dashboard"
-            render={<Link href="/dashboard" onClick={close} />}
+            className="data-active:font-normal"
+            render={<Link href="/console" onClick={close} />}
           >
             <RiDashboardLine />
             <span>Dashboard</span>
