@@ -16,6 +16,22 @@ export function jsonError<S extends ContentfulStatusCode>(
   return c.json({ error: { code, message, ...extra } }, status)
 }
 
+// Throw this anywhere and onError shapes the { error } envelope. Extends HTTPException so Hono treats it as a known error; carries our envelope's domain code and any extras (e.g. validation issues).
+export class ApiError extends HTTPException {
+  readonly code: string
+  readonly extra?: Record<string, unknown>
+  constructor(
+    status: ContentfulStatusCode,
+    code: string,
+    message: string,
+    extra?: Record<string, unknown>,
+  ) {
+    super(status, { message })
+    this.code = code
+    this.extra = extra
+  }
+}
+
 // Code for an HTTPException, by status; Hono throws these for client errors (e.g. 400 on malformed JSON).
 const httpExceptionCodes: Record<number, string> = {
   400: "BAD_REQUEST",
@@ -26,6 +42,11 @@ const httpExceptionCodes: Record<number, string> = {
 }
 
 export const errorHandler = (err: Error, c: Context) => {
+  // Our domain errors carry their own code/extra; check before HTTPException since ApiError extends it.
+  if (err instanceof ApiError) {
+    return jsonError(c, err.status, err.code, err.message, err.extra)
+  }
+
   if (err instanceof z.ZodError) {
     return jsonError(c, 400, "VALIDATION_ERROR", "Invalid request payload", { issues: err.issues })
   }

@@ -4,7 +4,7 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { jsonError, validationErrorResponses } from "@/lib/error"
+import { ApiError, validationErrorResponses } from "@/lib/error"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -83,9 +83,10 @@ const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "
         ...validationErrorResponses,
       },
     }),
-    sValidator("json", joinSchema, (result, c) => {
+    // validation failures throw so onError shapes the 400 in one place
+    sValidator("json", joinSchema, (result) => {
       if (!result.success) {
-        return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address", {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid email address", {
           issues: result.error,
         })
       }
