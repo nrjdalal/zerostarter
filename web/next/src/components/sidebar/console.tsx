@@ -29,19 +29,21 @@ export function SidebarConsoleHeader() {
 
   return (
     <>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            isActive={pathname === "/console" || pathname === "/console/"}
-            tooltip="Dashboard"
-            className="data-active:font-normal"
-            render={<Link href="/console" onClick={close} />}
-          >
-            <RiDashboardLine />
-            <span>Dashboard</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      {!isDocs && (
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={pathname === "/console" || pathname === "/console/"}
+              tooltip="Dashboard"
+              className="data-active:font-normal"
+              render={<Link href="/console" onClick={close} />}
+            >
+              <RiDashboardLine />
+              <span>Dashboard</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
       {isDocs && (
         <div className="group-data-[collapsible=icon]:hidden">
           <SidebarDocsSearch />
