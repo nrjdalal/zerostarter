@@ -28,7 +28,7 @@ export function jsonError<S extends ContentfulStatusCode>(
   message: string,
   extra?: Record<string, unknown>,
 ) {
-  return c.json({ error: { code, message, ...extra } }, status)
+  return c.json({ error: { ...extra, code, message } }, status)
 }
 
 // Throw this anywhere and onError shapes the { error } envelope. Extends HTTPException so Hono treats it as a known error; carries our envelope's domain code and any extras (e.g. validation issues).
