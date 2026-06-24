@@ -15,19 +15,39 @@ import {
 import type { NavGroup } from "@/lib/docs/types"
 
 const mainItems = [
-  { title: "Dashboard", url: "/console", icon: RiTerminalBoxLine, exact: true },
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
 ] as const
 
-// Sidebar-header slot: shows the docs search only inside /console/docs (matching public /docs); hidden when collapsed to icons.
+// Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
 export function SidebarConsoleHeader() {
   const pathname = usePathname()
-  if (!pathname?.startsWith("/console/docs")) return null
+  const { isMobile, setOpenMobile } = useSidebar()
+  const close = () => {
+    if (isMobile) setOpenMobile(false)
+  }
+  const isDocs = pathname ? pathname.startsWith("/console/docs") : false
 
   return (
-    <div className="group-data-[collapsible=icon]:hidden">
-      <SidebarDocsSearch />
-    </div>
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname === "/console" || pathname === "/console/"}
+            tooltip="Dashboard"
+            className="data-active:font-normal"
+            render={<Link href="/console" onClick={close} />}
+          >
+            <RiTerminalBoxLine />
+            <span>Dashboard</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+      {isDocs && (
+        <div className="group-data-[collapsible=icon]:hidden">
+          <SidebarDocsSearch />
+        </div>
+      )}
+    </>
   )
 }
 
