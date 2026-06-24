@@ -1,3 +1,15 @@
+## v0.0.58
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.57...v0.0.58)
+
+### 🚀 Enhancements
+
+- **web:** Console/dashboard sidebar navigation + rename dev agent to LocalAgent ([#557](https://github.com/nrjdalal/zerostarter/pull/557))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.57
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.56...v0.0.57)
