@@ -9,11 +9,13 @@ import { logger } from "hono/logger"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
-import { defineRoute, ok } from "@/lib/route"
+import { routeGroup } from "@/lib/route"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
+
+const route = routeGroup({ tags: ["System"] })
 
 const app = new Hono()
 
@@ -35,18 +37,17 @@ app.onError(errorHandler)
 app.notFound((c) => jsonError(c, 404, "NOT_FOUND", "Not Found"))
 
 const routes = app
-  .get("/", (c) => ok(c, { version: BUILD_VERSION, environment: env.NODE_ENV }))
+  .get("/", (c) => c.json({ data: { version: BUILD_VERSION, environment: env.NODE_ENV } }))
   .get("/headers", (c) => {
     if (env.NODE_ENV !== "local" && env.NODE_ENV !== "development") {
       return jsonError(c, 403, "FORBIDDEN", "Forbidden")
     }
-    return ok(c, c.req.header())
+    return c.json({ data: c.req.header() })
   })
   .basePath("/api")
   .get(
     "/health",
-    defineRoute({
-      tags: ["System"],
+    route({
       description: "Get the system health",
       output: z.object({
         environment: z
@@ -56,7 +57,7 @@ const routes = app
         version: z.string().meta({ example: BUILD_VERSION }),
       }),
     }),
-    (c) => ok(c, { message: "ok", version: BUILD_VERSION, environment: env.NODE_ENV }),
+    (c) => c.json({ data: { message: "ok", version: BUILD_VERSION, environment: env.NODE_ENV } }),
   )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)

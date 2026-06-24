@@ -2,7 +2,7 @@ import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
 import { z } from "zod"
 
-import { ok, scopeRoute, validate } from "@/lib/route"
+import { routeGroup, validate } from "@/lib/route"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -14,7 +14,7 @@ const joinSchema = z.object({
 const COUNT_MIN = 10
 const COUNT_STEP = 5
 
-const route = scopeRoute({ tags: ["Waitlist"] })
+const route = routeGroup({ tags: ["Waitlist"] })
 
 export const waitlistRouter = new Hono()
   .get(
@@ -27,7 +27,7 @@ export const waitlistRouter = new Hono()
     async (c) => {
       const exact = await db.$count(waitlist)
       const count = exact >= COUNT_MIN ? Math.floor(exact / COUNT_STEP) * COUNT_STEP : 0
-      return ok(c, { count })
+      return c.json({ data: { count } })
     },
   )
   .post(
@@ -47,6 +47,6 @@ export const waitlistRouter = new Hono()
           .values({ email: email.toLowerCase() })
           .onConflictDoNothing({ target: waitlist.email })
       }
-      return ok(c, { message: "ok" })
+      return c.json({ data: { message: "ok" } })
     },
   )

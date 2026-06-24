@@ -2,7 +2,7 @@ import type { Session } from "@packages/auth"
 import { Hono } from "hono"
 import { z } from "zod"
 
-import { ok, scopeRoute } from "@/lib/route"
+import { routeGroup } from "@/lib/route"
 import { authMiddleware } from "@/middlewares"
 
 const sessionSchema = z.object({
@@ -26,15 +26,15 @@ const userSchema = z.object({
   updatedAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
 })
 
-const route = scopeRoute({ tags: ["v1"], auth: true })
+const route = routeGroup({ tags: ["v1"], auth: true })
 
 export const v1Router = new Hono<{
   Variables: Session
 }>()
   .use("/*", authMiddleware)
   .get("/session", route({ description: "Get current session only", output: sessionSchema }), (c) =>
-    ok(c, c.get("session")),
+    c.json({ data: c.get("session") }),
   )
   .get("/user", route({ description: "Get current user only", output: userSchema }), (c) =>
-    ok(c, c.get("user")),
+    c.json({ data: c.get("user") }),
   )
