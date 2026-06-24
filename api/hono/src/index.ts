@@ -3,12 +3,13 @@ import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
-import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
+import { openAPIRouteHandler } from "hono-openapi"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
+import { defineRoute, ok } from "@/lib/route"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -34,59 +35,28 @@ app.onError(errorHandler)
 app.notFound((c) => jsonError(c, 404, "NOT_FOUND", "Not Found"))
 
 const routes = app
-  .get("/", (c) => {
-    const data = { version: BUILD_VERSION, environment: env.NODE_ENV }
-    return c.json({ data })
-  })
+  .get("/", (c) => ok(c, { version: BUILD_VERSION, environment: env.NODE_ENV }))
   .get("/headers", (c) => {
     if (env.NODE_ENV !== "local" && env.NODE_ENV !== "development") {
       return jsonError(c, 403, "FORBIDDEN", "Forbidden")
     }
-    const data = c.req.header()
-    return c.json({ data })
+    return ok(c, c.req.header())
   })
   .basePath("/api")
   .get(
     "/health",
-    describeRoute({
+    defineRoute({
       tags: ["System"],
       description: "Get the system health",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.health.$get())`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({
-                  data: z.object({
-                    environment: z
-                      .enum(["local", "development", "test", "staging", "production"])
-                      .meta({ example: env.NODE_ENV }),
-                    message: z.string().meta({ example: "ok" }),
-                    version: z.string().meta({ example: BUILD_VERSION }),
-                  }),
-                }),
-              ),
-            },
-          },
-        },
-      },
+      output: z.object({
+        environment: z
+          .enum(["local", "development", "test", "staging", "production"])
+          .meta({ example: env.NODE_ENV }),
+        message: z.string().meta({ example: "ok" }),
+        version: z.string().meta({ example: BUILD_VERSION }),
+      }),
     }),
-    (c) => {
-      const data = { message: "ok", version: BUILD_VERSION, environment: env.NODE_ENV }
-      return c.json({ data })
-    },
+    (c) => ok(c, { message: "ok", version: BUILD_VERSION, environment: env.NODE_ENV }),
   )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)

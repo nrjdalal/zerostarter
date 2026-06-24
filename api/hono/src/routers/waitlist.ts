@@ -1,10 +1,8 @@
-import { sValidator } from "@hono/standard-validator"
 import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
-import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { jsonError, validationErrorResponses } from "@/lib/error"
+import { defineRoute, ok, validate } from "@/lib/route"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -19,77 +17,27 @@ const COUNT_STEP = 5
 export const waitlistRouter = new Hono()
   .get(
     "/",
-    describeRoute({
+    defineRoute({
       tags: ["Waitlist"],
       description:
         "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.waitlist.$get())`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({ data: z.object({ count: z.number().meta({ example: 40 }) }) }),
-              ),
-            },
-          },
-        },
-      },
+      output: z.object({ count: z.number().meta({ example: 40 }) }),
     }),
     async (c) => {
       const exact = await db.$count(waitlist)
       const count = exact >= COUNT_MIN ? Math.floor(exact / COUNT_STEP) * COUNT_STEP : 0
-      return c.json({ data: { count } })
+      return ok(c, { count })
     },
   )
   .post(
     "/",
-    describeRoute({
+    defineRoute({
       tags: ["Waitlist"],
       description: "Join the waitlist",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({ data: z.object({ message: z.string().meta({ example: "ok" }) }) }),
-              ),
-            },
-          },
-        },
-        ...validationErrorResponses,
-      },
+      input: joinSchema,
+      output: z.object({ message: z.string().meta({ example: "ok" }) }),
     }),
-    sValidator("json", joinSchema, (result, c) => {
-      if (!result.success) {
-        return jsonError(c, 400, "VALIDATION_ERROR", "Invalid email address", {
-          issues: result.error,
-        })
-      }
-    }),
+    validate(joinSchema),
     async (c) => {
       const { email, subject } = c.req.valid("json")
       // honeypot filled => silently accept without storing (bot)
@@ -99,6 +47,6 @@ const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "
           .values({ email: email.toLowerCase() })
           .onConflictDoNothing({ target: waitlist.email })
       }
-      return c.json({ data: { message: "ok" } })
+      return ok(c, { message: "ok" })
     },
   )

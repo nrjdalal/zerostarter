@@ -1,9 +1,8 @@
 import type { Session } from "@packages/auth"
 import { Hono } from "hono"
-import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { authErrorResponses } from "@/lib/error"
+import { defineRoute, ok } from "@/lib/route"
 import { authMiddleware } from "@/middlewares"
 
 const sessionSchema = z.object({
@@ -33,67 +32,21 @@ export const v1Router = new Hono<{
   .use("/*", authMiddleware)
   .get(
     "/session",
-    describeRoute({
+    defineRoute({
       tags: ["v1"],
       description: "Get current session only",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.v1.session.$get())`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(z.object({ data: sessionSchema })),
-            },
-          },
-        },
-        ...authErrorResponses,
-      },
+      output: sessionSchema,
+      auth: true,
     }),
-    (c) => {
-      const data = c.get("session")
-      return c.json({ data })
-    },
+    (c) => ok(c, c.get("session")),
   )
   .get(
     "/user",
-    describeRoute({
+    defineRoute({
       tags: ["v1"],
       description: "Get current user only",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.v1.user.$get())`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(z.object({ data: userSchema })),
-            },
-          },
-        },
-        ...authErrorResponses,
-      },
+      output: userSchema,
+      auth: true,
     }),
-    (c) => {
-      const data = c.get("user")
-      return c.json({ data })
-    },
+    (c) => ok(c, c.get("user")),
   )
