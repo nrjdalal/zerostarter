@@ -1,11 +1,6 @@
 pre-commit:
   piped: true
   commands:
-    audit:
-      run: bun audit --audit-level high
-      use_stdin: true
-      only:
-        - ref: canary
     lint-staged:
       run: bunx lint-staged --verbose
       stage_fixed: true
@@ -20,5 +15,9 @@ commit-msg:
 
 pre-push:
   commands:
+    audit:
+      run: bun audit --audit-level high
+      only:
+        - ref: canary
     ensure-main:
       run: bun .github/scripts/ensure-remote-main.ts {1}
