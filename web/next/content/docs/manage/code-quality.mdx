@@ -27,11 +27,6 @@ Git hooks are configured in `lefthook.yml`:
 pre-commit:
   piped: true
   commands:
-    audit:
-      run: bun audit --audit-level high
-      use_stdin: true
-      only:
-        - ref: canary
     lint-staged:
       run: bunx lint-staged --verbose
       stage_fixed: true
@@ -46,6 +41,10 @@ commit-msg:
 
 pre-push:
   commands:
+    audit:
+      run: bun audit --audit-level high
+      only:
+        - ref: canary
     ensure-main:
       run: bun .github/scripts/ensure-remote-main.ts {1}
 ```
@@ -54,17 +53,16 @@ pre-push:
 
 Runs before each commit in sequence (piped):
 
-1. **Audit**: Security audit on `canary` branch (checks for vulnerable dependencies)
-2. **lint-staged**: Format and lint only staged files. The command runs with `stage_fixed: true`, so any files the formatter rewrites are re-staged automatically and the fixes are included in the same commit.
-3. **Build**: Verify the project builds successfully
+1. **lint-staged**: Format and lint only staged files. The command runs with `stage_fixed: true`, so any files the formatter rewrites are re-staged automatically and the fixes are included in the same commit.
+2. **Build**: Verify the project builds successfully
 
 ### Pre-push Hook
 
-Runs before `git push` (`.github/scripts/ensure-remote-main.ts`), on GitHub remotes only. Your first `git push origin canary` creates `canary`, which GitHub makes the default branch; on your next push the hook seeds `main` (a separate ref, so it never collides with the `canary` push) so `auto-canary-into-main` opens the release PR. It needs no `gh` or repo-admin (the default branch falls out of push order); the only manual step it prints is enabling read-write Actions permissions. A local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op once done.
+Runs before `git push`. The **security audit** (`bun audit --audit-level high`) runs here, scoped to `canary` (`only: ref: canary`), so it checks for vulnerable dependencies before the branch leaves your machine without blocking offline commits. It also runs `ensure-main` (`.github/scripts/ensure-remote-main.ts`), on GitHub remotes only. Your first `git push origin canary` creates `canary`, which GitHub makes the default branch; on your next push the hook seeds `main` (a separate ref, so it never collides with the `canary` push) so `auto-canary-into-main` opens the release PR. It needs no `gh` or repo-admin (the default branch falls out of push order); the only manual step it prints is enabling read-write Actions permissions. A local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op once done.
 
 ### Audit overrides (AUDIT.md)
 
-`bun audit --audit-level high` is the gate that decides whether a vulnerable dependency blocks a commit. When an advisory can only be resolved with a dependency `overrides` entry in `package.json` (for example a transitive package that has no patched release yet), that override must be recorded in `AUDIT.md` at the repo root.
+`bun audit --audit-level high` is the gate that decides whether a vulnerable dependency blocks a push. When an advisory can only be resolved with a dependency `overrides` entry in `package.json` (for example a transitive package that has no patched release yet), that override must be recorded in `AUDIT.md` at the repo root.
 
 `AUDIT.md` is the canonical record of every active override. Each entry documents the advisory, why an override is needed, the residual risk, and the exit criteria for removing it. The file is intentionally kept even when there are no active overrides, so do not delete it.
 

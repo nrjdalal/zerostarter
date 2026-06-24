@@ -467,16 +467,12 @@ But your team might prefer ticket references, emoji conventions, or freeform mes
 
 ### How ZeroStarter approaches this
 
-[Lefthook](https://github.com/evilmartians/lefthook) runs checks before every commit:
+[Lefthook](https://github.com/evilmartians/lefthook) runs checks before commits and pushes:
 
 ```yaml
 pre-commit:
   piped: true # Run in sequence, stop on first failure
   commands:
-    audit:
-      run: bun audit --audit-level high
-      only:
-        - ref: canary # full advisory audit on canary
     lint-staged:
       run: bunx lint-staged --verbose
       stage_fixed: true # Auto-stage formatted files
@@ -487,6 +483,13 @@ commit-msg:
   commands:
     commitlint:
       run: bunx commitlint --edit {1}
+
+pre-push:
+  commands:
+    audit:
+      run: bun audit --audit-level high
+      only:
+        - ref: canary # full advisory audit on canary (network-dependent, off the commit path)
 ```
 
 **IDE configuration** is shared via `.vscode/settings.json`:
