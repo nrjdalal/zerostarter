@@ -68,7 +68,7 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Getting Started</SidebarGroupLabel>
+      <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {mainItems.map((item) => {
           const isActive = item.exact
