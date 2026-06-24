@@ -6,17 +6,20 @@ import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
-// Every code the API can put in the { error } envelope. Single source of truth, shared to the web client so error.code is a closed union. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
-export type ErrorCode =
-  | "AGENTS_LOGIN_FAILED"
-  | "BAD_REQUEST"
-  | "ERROR"
-  | "FORBIDDEN"
-  | "INTERNAL_SERVER_ERROR"
-  | "NOT_FOUND"
-  | "TOO_MANY_REQUESTS"
-  | "UNAUTHORIZED"
-  | "VALIDATION_ERROR"
+// Every code the API can put in the { error } envelope. Single source of truth: the TS union, the OpenAPI schema, and the web client all derive from this list. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
+export const ERROR_CODES = [
+  "AGENTS_LOGIN_FAILED",
+  "BAD_REQUEST",
+  "ERROR",
+  "FORBIDDEN",
+  "INTERNAL_SERVER_ERROR",
+  "NOT_FOUND",
+  "TOO_MANY_REQUESTS",
+  "UNAUTHORIZED",
+  "VALIDATION_ERROR",
+] as const
+
+export type ErrorCode = (typeof ERROR_CODES)[number]
 
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
@@ -75,13 +78,13 @@ export const errorHandler = (err: Error, c: Context) => {
 
 // Shape of the error envelope jsonError emits; reused by the OpenAPI error responses below.
 export const errorEnvelope = z.object({
-  error: z.object({ code: z.string(), message: z.string() }),
+  error: z.object({ code: z.enum(ERROR_CODES), message: z.string() }),
 })
 
 // Validation errors also carry the failing fields, so document that on the 400 response.
 const validationErrorEnvelope = z.object({
   error: z.object({
-    code: z.string(),
+    code: z.enum(ERROR_CODES),
     message: z.string(),
     issues: z
       .array(z.object({ path: z.array(z.union([z.string(), z.number()])), message: z.string() }))
