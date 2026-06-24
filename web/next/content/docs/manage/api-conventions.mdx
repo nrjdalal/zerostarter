@@ -56,7 +56,7 @@ With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query repo
 
 | Code                    | Status   | When                                                          |
 | ----------------------- | -------- | ------------------------------------------------------------- |
-| `AGENTS_LOGIN_FAILED`   | 500      | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
+| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
 | `BAD_REQUEST`           | 400      | Malformed JSON/form-data body (Hono `HTTPException`)          |
 | `ERROR`                 | (varies) | `HTTPException` with a status not mapped to a specific code   |
 | `FORBIDDEN`             | 403      | Insufficient permissions (e.g., `/headers` in production)     |
@@ -66,7 +66,7 @@ With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query repo
 | `UNAUTHORIZED`          | 401      | Missing or invalid session                                    |
 | `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                  |
 
-These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts` — the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENTS_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
+These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts` — the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENT_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
 
 ### Validation Errors
 

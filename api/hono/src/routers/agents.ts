@@ -17,7 +17,7 @@ export const agentsRouter = new Hono()
   .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
     const fail = (message: string): never => {
-      throw new ApiError(500, "AGENTS_LOGIN_FAILED", message)
+      throw new ApiError(500, "AGENT_LOGIN_FAILED", message)
     }
 
     const origin = c.req.header("origin")

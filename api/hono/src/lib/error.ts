@@ -8,7 +8,7 @@ import { z } from "zod"
 
 // Every code the API can put in the { error } envelope. Single source of truth: the TS union, the OpenAPI schema, and the web client all derive from this list. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
 export const ERROR_CODES = [
-  "AGENTS_LOGIN_FAILED",
+  "AGENT_LOGIN_FAILED",
   "BAD_REQUEST",
   "ERROR",
   "FORBIDDEN",
