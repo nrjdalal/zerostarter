@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { SidebarDocsContent, SidebarDocsSearch } from "@/components/sidebar/docs"
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -67,6 +68,7 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
 
   return (
     <SidebarGroup>
+      <SidebarGroupLabel>Getting Started</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {mainItems.map((item) => {
           const isActive = item.exact
