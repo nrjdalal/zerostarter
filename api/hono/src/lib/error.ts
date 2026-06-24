@@ -8,15 +8,15 @@ import { z } from "zod"
 
 // Every code the API can put in the { error } envelope. Single source of truth, shared to the web client so error.code is a closed union. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
 export type ErrorCode =
-  | "VALIDATION_ERROR"
+  | "AGENTS_LOGIN_FAILED"
   | "BAD_REQUEST"
-  | "UNAUTHORIZED"
+  | "ERROR"
   | "FORBIDDEN"
+  | "INTERNAL_SERVER_ERROR"
   | "NOT_FOUND"
   | "TOO_MANY_REQUESTS"
-  | "INTERNAL_SERVER_ERROR"
-  | "AGENTS_LOGIN_FAILED"
-  | "ERROR"
+  | "UNAUTHORIZED"
+  | "VALIDATION_ERROR"
 
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
