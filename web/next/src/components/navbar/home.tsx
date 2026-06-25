@@ -88,7 +88,7 @@ export function Navbar() {
   ]
 
   return (
-    <header className="bg-sidebar fixed top-0 left-0 z-50 w-full border-b">
+    <header className="bg-background fixed top-0 left-0 z-50 w-full border-b">
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {site.name}
