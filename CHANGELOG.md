@@ -1,3 +1,15 @@
+## v0.0.62
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.61...v0.0.62)
+
+### 🚀 Enhancements
+
+- **web:** Flush navbar + sidebars with background, fix docs active-link ([#566](https://github.com/nrjdalal/zerostarter/pull/566))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.61
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.60...v0.0.61)
