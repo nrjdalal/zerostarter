@@ -9,10 +9,10 @@ Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used
 
 ## Layout
 
-- `web/next/src/fonts/*.woff2` — vendored latin variable files
-- `web/next/src/lib/fonts.ts` — one `localFont` definition per family, each exporting a CSS variable
-- `web/next/src/app/layout.tsx` — the variables applied on `<html>`
-- `web/next/src/app/globals.css` — theme roles chain to the font variables (`--font-sans: var(--font-dm-sans), sans-serif`)
+- `web/next/src/fonts/*.woff2`, vendored latin variable files
+- `web/next/src/lib/fonts.ts`, one `localFont` definition per family, each exporting a CSS variable
+- `web/next/src/app/layout.tsx`, the variables applied on `<html>`
+- `web/next/src/app/globals.css`, theme roles chain to the font variables (`--font-sans: var(--font-dm-sans), sans-serif`)
 
 ## Add or swap a font
 

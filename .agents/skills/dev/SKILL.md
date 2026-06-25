@@ -16,7 +16,7 @@ curl -sS http://localhost:4000/api/health           # {"data":{"message":"ok",..
 curl -sS -o /dev/null -w "%{http_code}" http://localhost:3000/   # 200
 ```
 
-- Web: http://localhost:3000 — API: http://localhost:4000 (Scalar docs at `/api/docs`)
+- Web: http://localhost:3000, API: http://localhost:4000 (Scalar docs at `/api/docs`)
 - Logs: `tail -f /tmp/zerostarter-dev.log`
 
 ## Known trap: stale API routes

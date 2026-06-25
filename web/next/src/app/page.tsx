@@ -180,7 +180,7 @@ export const techStack: Tech[] = [
 export default async function Home() {
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
-// Fully typed { data, error } — TypeScript knows exactly what you're getting!
+// Fully typed { data, error }, TypeScript knows exactly what you're getting!
 const { data, error } = await unwrap(apiClient.health.$get())`
 
   const bashCode = `# Clone the template
@@ -532,8 +532,8 @@ bun dev`
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Why ZeroStarter?</h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              Architecture & Best Practices as a Service — ZeroStarter isn't just a starter
-              template, it's a complete blueprint for building production-ready SaaS applications.
+              Architecture & Best Practices as a Service, ZeroStarter isn't just a starter template,
+              it's a complete blueprint for building production-ready SaaS applications.
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-2">

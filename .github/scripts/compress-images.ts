@@ -129,7 +129,7 @@ for (let i = 0; i < svgFiles.length; i += CONCURRENCY) {
 if (!isCI) process.stdout.write("\r")
 
 if (results.length === 0) {
-  console.log(`compress-images: ${total} images — all optimal`)
+  console.log(`compress-images: ${total} images, all optimal`)
 } else {
   const maxName = Math.max(...results.map((r) => r.file.length))
   const maxBefore = Math.max(...results.map((r) => formatSize(r.before).length))

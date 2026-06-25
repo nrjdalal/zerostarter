@@ -31,7 +31,7 @@ All API responses use a standardized JSON envelope:
 }
 ```
 
-Routes never build this envelope by hand. They `throw` — `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one — and the central `onError` handler in `api/hono/src/lib/error.ts` is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `onError` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
+Routes never build this envelope by hand. They `throw`, `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one, and the central `onError` handler in `api/hono/src/lib/error.ts` is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `onError` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
 
 ### Consuming responses on the client
 
@@ -66,7 +66,7 @@ With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query repo
 | `UNAUTHORIZED`          | 401      | Missing or invalid session                                    |
 | `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                  |
 
-These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts` — the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENT_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
+These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`, the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENT_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
 
 ### Validation Errors
 
