@@ -1,3 +1,15 @@
+## v0.0.63
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.62...v0.0.63)
+
+### 🏡 Chore
+
+- Remove em-dashes across content, docs, and scripts ([#568](https://github.com/nrjdalal/zerostarter/pull/568))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.62
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.61...v0.0.62)
