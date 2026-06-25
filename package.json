@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.59",
+  "version": "0.0.60",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -63,7 +63,7 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "bun@1.3.10",
+  "packageManager": "bun@1.3.14",
   "catalog": {
     "@arcjet/ip": "^1.5.0",
     "@base-ui/react": "^1.6.0",

@@ -1,3 +1,19 @@
+## v0.0.60
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.59...v0.0.60)
+
+### 📖 Documentation
+
+- Sync audit-hook docs to pre-push (follow-up to #461) ([#563](https://github.com/nrjdalal/zerostarter/pull/563), [#461](https://github.com/nrjdalal/zerostarter/issues/461))
+
+### 🏡 Chore
+
+- Update deps ([a4441db](https://github.com/nrjdalal/zerostarter/commit/a4441db))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.59
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.58...v0.0.59)

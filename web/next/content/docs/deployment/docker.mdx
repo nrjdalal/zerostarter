@@ -91,7 +91,7 @@ docker run -p 3000:3000 --env-file .env zerostarter-web
 
 Both Dockerfiles share the same shape:
 
-- Base image `oven/bun:1.3.10-alpine`.
+- Base image `oven/bun:1.3.14-alpine`.
 - Four stages: `base` -> `prepare` -> `builder` -> `runner`. The `prepare` stage runs `turbo prune <workspace> --docker` to produce a pruned, workspace-only build context, so each image installs and builds just the dependencies it needs.
 - The final `runner` stage runs as the non-root `USER bun`.
 
