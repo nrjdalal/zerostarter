@@ -1,3 +1,15 @@
+## v0.0.64
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.63...v0.0.64)
+
+### 🩹 Fixes
+
+- **web:** Sidebar chevrons (right + rotate) and dropdown trigger highlight ([#570](https://github.com/nrjdalal/zerostarter/pull/570))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.63
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.62...v0.0.63)
