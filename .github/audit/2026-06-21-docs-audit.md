@@ -1,4 +1,4 @@
-# Documentation Audit — 2026-06-21
+# Documentation Audit, 2026-06-21
 
 Full audit of every page under `web/next/content/docs/**` (29 pages, plus the private `content/console/docs/**` collection) against the actual code. Six areas were audited in parallel, each cross-referencing the docs against the real implementation; every candidate fix was then verified before acting. The fixes were applied in the same change as this report.
 

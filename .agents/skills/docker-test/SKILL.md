@@ -23,7 +23,7 @@ docker compose down
 ## .env requirements
 
 - Builds consume `.env` as a BuildKit secret (compose wires `secrets: dotenv` from `./.env`; plain builds pass `--secret id=dotenv,src=.env`). The file mounts only during the build RUN and never lands in a layer; env validation runs in full during the build. Missing `.env` fails fast and clearly (compose: secret file not found; docker build: secret not provided).
-- Real images get the real `.env`. Simulation/smoke builds on a clean checkout get a dummy: `.env.example` with the empty required values filled —
+- Real images get the real `.env`. Simulation/smoke builds on a clean checkout get a dummy: `.env.example` with the empty required values filled -
 
   ```bash
   sed -e 's|^BETTER_AUTH_SECRET=$|BETTER_AUTH_SECRET=dummy|' \
@@ -46,7 +46,7 @@ docker compose down
 
 ## Self-containment check (catches runtime auto-install)
 
-When no `node_modules` exists, Bun auto-installs missing imports from npm at runtime — a container that "works" online may be quietly downloading packages on every cold start. The api runner stage ships only `bundle/`, so the bundle must be fully self-contained. Verify offline:
+When no `node_modules` exists, Bun auto-installs missing imports from npm at runtime, a container that "works" online may be quietly downloading packages on every cold start. The api runner stage ships only `bundle/`, so the bundle must be fully self-contained. Verify offline:
 
 ```bash
 docker run -d --name t-offline --network=none --env-file .env <image>
@@ -55,7 +55,7 @@ docker logs t-offline        # on failure: "Cannot find package 'X'" = unresolve
 docker rm -f t-offline
 ```
 
-Forensics on an online container: `docker diff <name> | grep .bun/install/cache` — entries there mean auto-install fired (history: `--external hono` in the bundle build did exactly this; hono was fetched from npm at cold start).
+Forensics on an online container: `docker diff <name> | grep .bun/install/cache`, entries there mean auto-install fired (history: `--external hono` in the bundle build did exactly this; hono was fetched from npm at cold start).
 
 ## Single-libc check (web image, catches silent re-bloat)
 

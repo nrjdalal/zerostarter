@@ -167,7 +167,7 @@ The practice is **type safety across the network boundary**. Whether you infer t
 { "error": { "code": "NOT_FOUND", "message": "Not Found" } }
 ```
 
-**Routes `throw`** — an `ApiError` for domain codes, or a Hono `HTTPException` for standard ones — and a single global handler turns every thrown error into the envelope:
+**Routes `throw`**, an `ApiError` for domain codes, or a Hono `HTTPException` for standard ones, and a single global handler turns every thrown error into the envelope:
 
 ```ts
 // api/hono/src/lib/error.ts (wired into app.onError)
