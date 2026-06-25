@@ -1,3 +1,15 @@
+## v0.0.61
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.60...v0.0.61)
+
+### 🏡 Chore
+
+- Bump Bun to 1.3.14 ([#564](https://github.com/nrjdalal/zerostarter/pull/564))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.60
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.59...v0.0.60)
