@@ -29,8 +29,7 @@ export function SidebarDocsContent({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const isActive = (url: string): boolean =>
-    pathname === url || pathname === url + "/" || (pathname?.startsWith(url + "/") ?? false)
+  const isActive = (url: string): boolean => pathname === url || pathname === url + "/"
   const close = () => {
     if (isMobile) setOpenMobile(false)
   }
