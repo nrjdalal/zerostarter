@@ -13,7 +13,7 @@ const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
 }).toString()}`
 
 export const metadata: Metadata = {
-  title: "Résumé — Neeraj Dalal",
+  title: "Résumé - Neeraj Dalal",
   description:
     "AI-native Product Engineer building SaaS, developer tools, and AI agent infrastructure. Experience, projects, skills.",
   openGraph: {
@@ -268,7 +268,7 @@ export default function Page() {
               >
                 {project.name}
               </a>
-              <RiArrowRightUpLine className="text-muted-foreground mb-1 inline size-4" /> —{" "}
+              <RiArrowRightUpLine className="text-muted-foreground mb-1 inline size-4" /> -{" "}
               {project.note}
             </li>
           ))}
@@ -281,7 +281,7 @@ export default function Page() {
         <ul className="text-muted-foreground list-disc space-y-1 pl-5">
           {skills.map((skill) => (
             <li key={skill.group}>
-              <span className="text-foreground font-medium">{skill.group}</span> — {skill.items}
+              <span className="text-foreground font-medium">{skill.group}</span>: {skill.items}
             </li>
           ))}
         </ul>

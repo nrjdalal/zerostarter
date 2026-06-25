@@ -5,8 +5,8 @@ import { Node, Project, SyntaxKind } from "ts-morph"
 
 // Re-applies every local override after `shadcn-update.sh` wipes ui/ and re-scaffolds the app.
 // Two strategies:
-//   restore — files we own outright; shadcn's version carries nothing we want, so reset to HEAD.
-//   patch   — registry components we extend; ts-morph locates the TSX nodes by shape (not text) so
+//   restore, files we own outright; shadcn's version carries nothing we want, so reset to HEAD.
+//   patch  , registry components we extend; ts-morph locates the TSX nodes by shape (not text) so
 //             attribute/param reordering can't break them; the lone globals.css value is a guarded
 //             string swap (a single stable line isn't worth a CSS parser).
 // Each patch is idempotent and throws if its target is absent, so a shadcn shape change fails the
