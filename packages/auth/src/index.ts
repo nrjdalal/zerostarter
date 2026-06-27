@@ -32,7 +32,9 @@ import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 
 const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
-const rpID = cookieDomain ? cookieDomain.slice(1) : new URL(env.HONO_APP_URL).hostname
+// rpID = the web origin's registrable host; set BETTER_AUTH_RP_ID for cross-subdomain setups (the host default avoids *.vercel.app public-suffix failures).
+const rpID =
+  env.BETTER_AUTH_RP_ID ?? new URL(env.HONO_TRUSTED_ORIGINS[0] ?? env.HONO_APP_URL).hostname
 
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link" | "passkey"

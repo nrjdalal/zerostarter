@@ -70,7 +70,14 @@ export function Access() {
       typeof PublicKeyCredential !== "undefined" &&
       typeof PublicKeyCredential.isConditionalMediationAvailable === "function"
     ) {
-      void authClient.signIn.passkey({ autoFill: true })
+      void authClient.signIn.passkey({
+        autoFill: true,
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = `${config.app.url}/dashboard`
+          },
+        },
+      })
     }
   }, [passkeyEnabled])
 

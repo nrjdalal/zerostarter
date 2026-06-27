@@ -1,6 +1,5 @@
 "use client"
 
-import { getAuthenticatorName } from "@better-auth/passkey"
 import {
   RiAddLine,
   RiDeleteBinLine,
@@ -45,14 +44,11 @@ import { authClient } from "@/lib/auth/client"
 type Passkey = {
   id: string
   name?: string | null
-  aaguid?: string | null
   createdAt: Date | string
 }
 
 function passkeyLabel(passkey: Passkey) {
-  if (passkey.name) return passkey.name
-  const resolved = passkey.aaguid && getAuthenticatorName(passkey.aaguid)
-  return resolved || "Passkey"
+  return passkey.name || "Passkey"
 }
 
 function AddPasskeyDialog() {
