@@ -53,7 +53,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { authClient } from "@/lib/auth/client"
-import { authenticatorName } from "@/lib/passkey-aaguids"
+import { authenticatorName } from "@/lib/passkey/aaguids"
 
 type Passkey = {
   id: string

@@ -134,11 +134,11 @@ bun run db:studio
 
 ### Existing Migrations
 
-| Migration                    | Description                                                                                                                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0000_zero_starter.sql`      | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
-| `0001_waitlist.sql`          | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
-| `0002_material_scorpion.sql` | Adds the `passkey` table (Better Auth passkey plugin / WebAuthn credentials), with a `userId` foreign key (cascade) and index                                                                  |
+| Migration               | Description                                                                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0000_zero_starter.sql` | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
+| `0001_waitlist.sql`     | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
+| `0002_passkey.sql`      | Adds the `passkey` table (Better Auth passkey plugin / WebAuthn credentials), with a `userId` foreign key (cascade) and index                                                                  |
 
 ## Adding New Tables
 
