@@ -241,7 +241,7 @@ export default function PasskeysSettingsPage() {
   const passkeys = data ?? []
 
   return (
-    <main className="mx-auto w-full max-w-2xl p-6">
+    <div className="mx-auto w-full max-w-2xl p-6">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">Passkeys</h1>
@@ -292,6 +292,6 @@ export default function PasskeysSettingsPage() {
           ))}
         </ItemGroup>
       )}
-    </main>
+    </div>
   )
 }
