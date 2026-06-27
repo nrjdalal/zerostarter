@@ -1,3 +1,15 @@
+## v0.0.65
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.64...v0.0.65)
+
+### 📖 Documentation
+
+- Sync audited, ordered tech stack across README and architecture ([#572](https://github.com/nrjdalal/zerostarter/pull/572))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.64
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.63...v0.0.64)
