@@ -8,9 +8,20 @@ import {
   RiPencilLine,
 } from "@remixicon/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { type ReactElement, useState } from "react"
 import { toast } from "sonner"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,82 +62,30 @@ function passkeyLabel(passkey: Passkey) {
   return passkey.name || "Passkey"
 }
 
-function AddPasskeyDialog() {
+// Shared add/rename dialog: the form, open state, and mutation skeleton live here so the two flows can't drift; callers supply the trigger and the submit.
+function PasskeyNameDialog({
+  mode,
+  initialName,
+  trigger,
+  onSubmit,
+}: {
+  mode: "add" | "rename"
+  initialName: string
+  trigger: ReactElement
+  onSubmit: (name: string) => Promise<void>
+}) {
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
+  const [name, setName] = useState(initialName)
 
-  const addPasskey = useMutation({
-    mutationFn: async (value: string) => {
-      const res = await authClient.passkey.addPasskey({ name: value })
-      if (res && res.error) throw new Error(res.error.message || "Failed to add passkey")
-    },
+  const mutation = useMutation({
+    mutationFn: onSubmit,
     onSuccess: () => {
-      toast.success("Passkey added")
-      queryClient.invalidateQueries({ queryKey: ["passkeys"] })
-      setName("")
-      setOpen(false)
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="cursor-pointer" />}>
-        <RiAddLine className="size-4" />
-        Add passkey
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add a passkey</DialogTitle>
-        </DialogHeader>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-            addPasskey.mutate(name.trim())
-          }}
-        >
-          <Field>
-            <FieldLabel htmlFor="passkey-name">Name</FieldLabel>
-            <Input
-              id="passkey-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. MacBook Touch ID"
-              disabled={addPasskey.isPending}
-            />
-          </Field>
-          <DialogFooter>
-            <Button type="submit" className="cursor-pointer" disabled={addPasskey.isPending}>
-              {addPasskey.isPending ? <RiLoaderLine className="size-4 animate-spin" /> : null}
-              Create passkey
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function RenamePasskeyDialog({ passkey }: { passkey: Passkey }) {
-  const queryClient = useQueryClient()
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState(passkey.name ?? "")
-
-  const renamePasskey = useMutation({
-    mutationFn: async (value: string) => {
-      const res = await authClient.passkey.updatePasskey({ id: passkey.id, name: value })
-      if (res && res.error) throw new Error(res.error.message || "Failed to rename passkey")
-    },
-    onSuccess: () => {
-      toast.success("Passkey renamed")
+      toast.success(mode === "add" ? "Passkey added" : "Passkey renamed")
       queryClient.invalidateQueries({ queryKey: ["passkeys"] })
       setOpen(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     },
   })
@@ -136,41 +95,35 @@ function RenamePasskeyDialog({ passkey }: { passkey: Passkey }) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (next) setName(passkey.name ?? "")
+        if (next) setName(initialName)
       }}
     >
-      <DialogTrigger
-        render={
-          <Button variant="ghost" size="icon" className="cursor-pointer" aria-label="Rename" />
-        }
-      >
-        <RiPencilLine className="size-4" />
-      </DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rename passkey</DialogTitle>
+          <DialogTitle>{mode === "add" ? "Add a passkey" : "Rename passkey"}</DialogTitle>
         </DialogHeader>
         <form
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
-            renamePasskey.mutate(name.trim())
+            mutation.mutate(name.trim())
           }}
         >
           <Field>
-            <FieldLabel htmlFor={`rename-${passkey.id}`}>Name</FieldLabel>
+            <FieldLabel htmlFor="passkey-name">Name</FieldLabel>
             <Input
-              id={`rename-${passkey.id}`}
+              id="passkey-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Passkey name"
-              disabled={renamePasskey.isPending}
+              placeholder={mode === "add" ? "e.g. MacBook Touch ID" : "Passkey name"}
+              disabled={mutation.isPending}
             />
           </Field>
           <DialogFooter>
-            <Button type="submit" className="cursor-pointer" disabled={renamePasskey.isPending}>
-              {renamePasskey.isPending ? <RiLoaderLine className="size-4 animate-spin" /> : null}
-              Save
+            <Button type="submit" className="cursor-pointer" disabled={mutation.isPending}>
+              {mutation.isPending ? <RiLoaderLine className="size-4 animate-spin" /> : null}
+              {mode === "add" ? "Create passkey" : "Save"}
             </Button>
           </DialogFooter>
         </form>
@@ -179,38 +132,99 @@ function RenamePasskeyDialog({ passkey }: { passkey: Passkey }) {
   )
 }
 
+function AddPasskeyDialog() {
+  return (
+    <PasskeyNameDialog
+      mode="add"
+      initialName=""
+      trigger={
+        <Button className="cursor-pointer">
+          <RiAddLine className="size-4" />
+          Add passkey
+        </Button>
+      }
+      onSubmit={async (name) => {
+        // Omit an empty name so the column stays NULL rather than persisting "".
+        const res = await authClient.passkey.addPasskey(name ? { name } : {})
+        if (res.error) throw new Error(res.error.message || "Failed to add passkey")
+      }}
+    />
+  )
+}
+
+function RenamePasskeyDialog({ passkey }: { passkey: Passkey }) {
+  return (
+    <PasskeyNameDialog
+      mode="rename"
+      initialName={passkey.name ?? ""}
+      trigger={
+        <Button variant="ghost" size="icon" className="cursor-pointer" aria-label="Rename">
+          <RiPencilLine className="size-4" />
+        </Button>
+      }
+      onSubmit={async (name) => {
+        const res = await authClient.passkey.updatePasskey({ id: passkey.id, name })
+        if (res.error) throw new Error(res.error.message || "Failed to rename passkey")
+      }}
+    />
+  )
+}
+
 function DeletePasskeyButton({ passkey }: { passkey: Passkey }) {
   const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
 
   const deletePasskey = useMutation({
     mutationFn: async () => {
       const res = await authClient.passkey.deletePasskey({ id: passkey.id })
-      if (res && res.error) throw new Error(res.error.message || "Failed to delete passkey")
+      if (res.error) throw new Error(res.error.message || "Failed to delete passkey")
     },
     onSuccess: () => {
       toast.success("Passkey removed")
       queryClient.invalidateQueries({ queryKey: ["passkeys"] })
+      setOpen(false)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message)
     },
   })
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-destructive cursor-pointer"
-      aria-label="Delete"
-      disabled={deletePasskey.isPending}
-      onClick={() => deletePasskey.mutate()}
-    >
-      {deletePasskey.isPending ? (
-        <RiLoaderLine className="size-4 animate-spin" />
-      ) : (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive cursor-pointer"
+            aria-label="Delete"
+          />
+        }
+      >
         <RiDeleteBinLine className="size-4" />
-      )}
-    </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete passkey?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Permanently removes this passkey ({passkeyLabel(passkey)}). If it is your only sign-in
+            method, make sure you can still sign in another way.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deletePasskey.isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            className="cursor-pointer"
+            disabled={deletePasskey.isPending}
+            onClick={() => deletePasskey.mutate()}
+          >
+            {deletePasskey.isPending ? <RiLoaderLine className="size-4 animate-spin" /> : null}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
