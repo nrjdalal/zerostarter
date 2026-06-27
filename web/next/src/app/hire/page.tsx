@@ -219,9 +219,9 @@ export default function Page() {
             <RiLinkedinFill className="size-4" />
             LinkedIn
           </a>
-          <a href="mailto:nrjdalal.dev@gmail.com" className={buttonClass}>
+          <a href="mailto:admin@nrjdalal.com" className={buttonClass}>
             <RiMailLine className="size-4" />
-            nrjdalal.dev@gmail.com
+            admin@nrjdalal.com
           </a>
           <Link href="/resume" className={buttonClass}>
             <RiFileTextLine className="size-4" />
@@ -343,8 +343,8 @@ export default function Page() {
             <RiTwitterXFill className="-mt-1 inline size-5" />
           </a>{" "}
           or send an email to{" "}
-          <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
-            nrjdalal.dev@gmail.com
+          <a href="mailto:admin@nrjdalal.com" className={linkClass}>
+            admin@nrjdalal.com
           </a>
           .
         </p>
