@@ -55,7 +55,7 @@ The connection string is passed positionally to `new SQL(...)`, and the branch i
 
 ## Schema
 
-The auth and organization schema is defined in `packages/db/src/schema/auth.ts` (9 tables); the public waitlist uses a standalone `waitlist` table in `packages/db/src/schema/waitlist.ts`.
+The auth and organization schema is defined in `packages/db/src/schema/auth.ts` (10 tables); the public waitlist uses a standalone `waitlist` table in `packages/db/src/schema/waitlist.ts`.
 
 ### Core Auth Tables
 
@@ -65,8 +65,9 @@ The auth and organization schema is defined in `packages/db/src/schema/auth.ts` 
 | `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId`, `impersonatedBy` |
 | `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                                           |
 | `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                                          |
+| `passkey`      | WebAuthn credentials      | `id`, `name`, `publicKey`, `userId`, `credentialID`, `counter`, `deviceType`, `backedUp`, `transports`, `aaguid`                  |
 
-The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonatedBy` on `session` are provided by the Better Auth Admin plugin and are part of the baseline schema.
+The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonatedBy` on `session` are provided by the Better Auth Admin plugin and are part of the baseline schema. The `passkey` table is provided by the Better Auth passkey plugin.
 
 ### Organization & Team Tables
 
@@ -133,10 +134,11 @@ bun run db:studio
 
 ### Existing Migrations
 
-| Migration               | Description                                                                                                                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0000_zero_starter.sql` | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
-| `0001_waitlist.sql`     | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
+| Migration                    | Description                                                                                                                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0000_zero_starter.sql`      | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
+| `0001_waitlist.sql`          | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
+| `0002_material_scorpion.sql` | Adds the `passkey` table (Better Auth passkey plugin / WebAuthn credentials), with a `userId` foreign key (cascade) and index                                                                  |
 
 ## Adding New Tables
 

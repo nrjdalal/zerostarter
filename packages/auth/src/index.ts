@@ -1,9 +1,12 @@
+import { passkey as passkeyPlugin } from "@better-auth/passkey"
+import { site } from "@packages/config/site"
 import {
   account,
   db,
   invitation,
   member,
   organization,
+  passkey,
   session,
   team,
   teamMember,
@@ -11,6 +14,12 @@ import {
   verification,
 } from "@packages/db"
 import { env } from "@packages/env/auth"
+// Re-exported so the passkey plugin's inferred `auth` type can name these @simplewebauthn types in the emitted dts (fixes tsgo TS2883 portability error).
+import type {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/server"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import {
@@ -23,9 +32,10 @@ import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
 
 const cookieDomain = getCookieDomain(env.HONO_APP_URL)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
+const rpID = cookieDomain ? cookieDomain.slice(1) : new URL(env.HONO_APP_URL).hostname
 
 export type SocialProvider = "github" | "google"
-export type AuthProvider = SocialProvider | "magic-link"
+export type AuthProvider = SocialProvider | "magic-link" | "passkey"
 
 // A provider is enabled only when both of its OAuth credentials are set; a fork can ship with any subset (or none, relying on magic link).
 export const enabledSocialProviders: SocialProvider[] = [
@@ -43,6 +53,7 @@ export const auth = betterAuth({
       invitation,
       member,
       organization,
+      passkey,
       session,
       team,
       teamMember,
@@ -65,6 +76,11 @@ export const auth = betterAuth({
       teams: { enabled: true },
     }),
     adminPlugin(),
+    passkeyPlugin({
+      rpID,
+      rpName: site.name,
+      origin: env.HONO_TRUSTED_ORIGINS,
+    }),
   ],
   socialProviders: {
     ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
@@ -90,10 +106,22 @@ export const magicLinkEnabled = (auth.options.plugins ?? []).some(
   (p) => (p.id as string) === "magic-link",
 )
 
-// The unified list of enabled sign-in providers the UI reads: social providers plus magic link when its server plugin is registered.
+// Passkey (WebAuthn) sign-in shows in the UI only when its server plugin is registered.
+export const passkeyEnabled = (auth.options.plugins ?? []).some(
+  (p) => (p.id as string) === "passkey",
+)
+
+// The unified list of enabled sign-in providers the UI reads: social providers plus magic link and passkey when their server plugins are registered.
 export const enabledProviders: AuthProvider[] = [
   ...enabledSocialProviders,
   ...(magicLinkEnabled ? (["magic-link"] as const) : []),
+  ...(passkeyEnabled ? (["passkey"] as const) : []),
 ]
 
 export type Session = typeof auth.$Infer.Session
+
+export type {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+}

@@ -76,6 +76,7 @@ Shared authentication logic using [Better Auth](https://better-auth.com).
 - **`src/index.ts`**: Auth configuration with database adapter and social providers
 - **`src/lib/utils.ts`**: Cookie domain and prefix helpers (`getCookieDomain`, `getCookiePrefix`) for cross-subdomain and environment-specific cookies
 - Supports optional GitHub and Google OAuth (each enabled only when its credentials are set; the UI shows only configured providers via `GET /api/auth/providers`)
+- Passkey (WebAuthn) sign-in via the Better Auth passkey plugin, managed at `/dashboard/settings/passkeys`
 - Organization and teams plugin for multi-tenant support, the Better Auth OpenAPI plugin, and the `admin` plugin (gates the entire `/console` area by `role === "admin"`)
 - Exports session types for type safety
 

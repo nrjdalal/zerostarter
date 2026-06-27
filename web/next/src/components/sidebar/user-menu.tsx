@@ -4,6 +4,7 @@ import { env } from "@packages/env/web-next"
 import {
   RiArrowRightSLine,
   RiDashboardLine,
+  RiKey2Line,
   RiLogoutBoxLine,
   RiMessage2Line,
   RiTerminalBoxLine,
@@ -57,6 +58,12 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
             <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuItem
+          render={<Link href="/dashboard/settings/passkeys" className="cursor-pointer" />}
+        >
+          <RiKey2Line />
+          Passkeys
+        </DropdownMenuItem>
         {env.NEXT_PUBLIC_USERJOT_URL && (
           <DropdownMenuItem
             render={

@@ -32,6 +32,12 @@ A deployed fork with no OAuth providers and no magic link renders a "No sign-in 
 
 The auth config does not set a redirect for the social providers. The post-authentication redirect is driven by the `callbackURL` passed to the client sign-in call.
 
+### Passkeys (WebAuthn)
+
+Passwordless sign-in with Touch ID, Face ID, or a hardware security key is enabled by the [Better Auth passkey plugin](https://www.better-auth.com/docs/plugins/passkey) (`@better-auth/passkey`). It is registered in `packages/auth/src/index.ts` with `rpID` (derived from the cookie domain, falling back to the `HONO_APP_URL` hostname), `rpName` (the brand `site.name`), and `origin` (`HONO_TRUSTED_ORIGINS`); the matching `passkeyClient()` is added in `web/next/src/lib/auth/client.ts`. Because the plugin ships enabled, `packages/auth/src/index.ts` derives `passkeyEnabled` from its registration and adds `passkey` to `enabledProviders`, so `GET /api/auth/providers` advertises it and `web/next/src/components/access.tsx` renders a "Sign in with a passkey" button. The email field also opts into conditional UI (`autoComplete="username webauthn"` plus a guarded `authClient.signIn.passkey({ autoFill: true })`), so saved passkeys surface in the browser's autofill picker where supported.
+
+Signed-in users manage their passkeys at `/dashboard/settings/passkeys` (`web/next/src/app/(protected)/dashboard/settings/passkeys/page.tsx`, linked from the sidebar user dropdown). The page lists, adds, renames, and deletes passkeys via `authClient.passkey.listUserPasskeys`, `addPasskey`, `updatePasskey`, and `deletePasskey`, labeling each with its name or `getAuthenticatorName(aaguid)`. Credentials are stored in the `passkey` table (`packages/db/src/schema/auth.ts`), which cascade-deletes with the user.
+
 ### Agent Sign-In (local only)
 
 For local development and AI agents, `POST /api/agents/sign-in-as` signs in as a fixed `LocalAgent` user (`agent@local.host`) and mints a session cookie directly. It is gated to the `local` environment and a trusted `Origin` header. See `api/hono/src/routers/agents.ts`.

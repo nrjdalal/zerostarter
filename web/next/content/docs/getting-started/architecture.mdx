@@ -19,7 +19,7 @@ ZeroStarter is built with a modern, type-safe tech stack designed for high perfo
 - **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs` (spec at `/api/openapi.json`)
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
-- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
+- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, passkeys (WebAuthn), organizations, and teams
 - **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth `admin` plugin
 - **Rate Limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) keyed per user, API key, or IP (with [@arcjet/ip](https://arcjet.com) for IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query/latest) for server state and [TanStack Form](https://tanstack.com/form/latest) for forms

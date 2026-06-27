@@ -1,7 +1,13 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiGithubFill, RiGoogleFill, RiLayoutGridFill, RiLoaderLine } from "@remixicon/react"
+import {
+  RiGithubFill,
+  RiGoogleFill,
+  RiKey2Line,
+  RiLayoutGridFill,
+  RiLoaderLine,
+} from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
@@ -29,7 +35,7 @@ const formSchema = z.object({
 
 export function Access() {
   const pathname = usePathname()
-  const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
+  const [loader, setLoader] = useState<"email" | "github" | "google" | "passkey" | null>(null)
   const [open, setOpen] = useState(false)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
@@ -48,13 +54,25 @@ export function Access() {
   const githubEnabled = data?.providers.includes("github") ?? false
   const googleEnabled = data?.providers.includes("google") ?? false
   const magicLinkEnabled = data?.providers.includes("magic-link") ?? false
-  const hasAlternatives = isDev || githubEnabled || googleEnabled
+  const passkeyEnabled = data?.providers.includes("passkey") ?? false
+  const hasAlternatives = isDev || githubEnabled || googleEnabled || passkeyEnabled
   const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
   useEffect(() => {
     setLoader(null)
     setOpen(false)
   }, [pathname])
+
+  // Conditional UI (autofill): when the browser supports it, surface saved passkeys directly in the email field's autofill picker. Guarded so SSR and unsupported browsers skip it.
+  useEffect(() => {
+    if (!passkeyEnabled || typeof window === "undefined") return
+    if (
+      typeof PublicKeyCredential !== "undefined" &&
+      typeof PublicKeyCredential.isConditionalMediationAvailable === "function"
+    ) {
+      void authClient.signIn.passkey({ autoFill: true })
+    }
+  }, [passkeyEnabled])
 
   const form = useForm({
     defaultValues: {
@@ -121,6 +139,7 @@ export function Access() {
                           id={field.name}
                           type="email"
                           name={field.name}
+                          autoComplete="username webauthn"
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}
@@ -162,6 +181,35 @@ export function Access() {
                     Login (agents)
                   </Button>
                 </form>
+              )}
+              {passkeyEnabled && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full cursor-pointer"
+                  onClick={async () => {
+                    setLoader("passkey")
+                    const res = await authClient.signIn.passkey({
+                      fetchOptions: {
+                        onSuccess: () => {
+                          window.location.href = `${config.app.url}/dashboard`
+                        },
+                      },
+                    })
+                    if (res && res.error) {
+                      toast.error(res.error.message)
+                      setLoader(null)
+                    }
+                  }}
+                  disabled={loader === "passkey"}
+                >
+                  {loader === "passkey" ? (
+                    <RiLoaderLine className="size-5 animate-spin" />
+                  ) : (
+                    <RiKey2Line className="size-5" />
+                  )}
+                  Sign in with a passkey
+                </Button>
               )}
               {githubEnabled && (
                 <Button

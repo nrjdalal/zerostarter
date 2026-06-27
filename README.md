@@ -25,7 +25,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
-- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
+- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, passkeys (WebAuthn), organizations, and teams
 - **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
@@ -46,7 +46,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 ├── web/
 │   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
 └── packages/
-    ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
+    ├── auth/      # Better Auth instance (OAuth, passkeys, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client
     ├── env/       # Type-safe environment variables (t3-oss/env + Zod)
     └── config/    # Shared config: TS/tsdown bases and the `site` brand identity
