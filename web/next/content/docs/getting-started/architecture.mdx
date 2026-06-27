@@ -12,25 +12,24 @@ ZeroStarter is built with a modern, type-safe tech stack designed for high perfo
 
 ![Graph Build](/graph-build.svg)
 
-- **Runtime & Build System**: [Bun](https://bun.sh) + [Turborepo](https://turbo.build)
-- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, bundled by Turbopack)
-- **Backend**: [Hono](https://hono.dev)
-- **RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end type safety with frontend client
-- **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.com) with organizations, teams, and an `admin` plugin
-- **Admin Console**: `/console` route group gated by `role === "admin"` (Better Auth `admin` plugin)
-- **Rate Limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com) for IP detection
+- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
+- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
+- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
+- **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
+- **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs` (spec at `/api/openapi.json`)
+- **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
+- **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
+- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
+- **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth `admin` plugin
+- **Rate Limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) keyed per user, API key, or IP (with [@arcjet/ip](https://arcjet.com) for IP detection)
+- **Data & Forms**: [TanStack Query](https://tanstack.com/query/latest) for server state and [TanStack Form](https://tanstack.com/form/latest) for forms
+- **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
-- **Styling**: [Tailwind CSS](https://tailwindcss.com)
-- **UI Components**: [Shadcn UI](https://ui.shadcn.com) built on [Base UI](https://base-ui.com) primitives
-- **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
-- **Forms**: [TanStack Form](https://tanstack.com/form/latest)
-- **Validation**: [Zod](https://zod.dev)
-- **Dynamic OG Images**: [takumi-js](https://github.com/kane50613/takumi) for Open Graph image generation
-- **Bundling, Linting & Formatting**: [tsdown](https://tsdown.dev) (bundles the backend packages), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
-- **API Documentation**: [Scalar](https://scalar.com) UI at `/api/docs`, served from the auto-generated OpenAPI spec at `/api/openapi.json`
-- **Documentation**: [Fumadocs](https://fumadocs.dev) with auto-generated [llms.txt](https://zerostarter.dev/llms.txt) and [llms-full.txt](https://zerostarter.dev/llms-full.txt)
-- **Automated Releases**: Automatically updated [Changelog](https://github.com/nrjdalal/zerostarter/releases) on release
+- **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt) and [llms-full.txt](https://zerostarter.dev/llms-full.txt)
+- **Dynamic OG Images**: [takumi-js](https://github.com/kane50613/takumi) for home, docs, and blog social cards
+- **SEO**: sitemap, robots, and per-page metadata, indexable by default
+- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
+- **Automated Releases**: changelog generation and a canary-to-main release flow
 
 ### Roadmap
 
