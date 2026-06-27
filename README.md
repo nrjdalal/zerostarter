@@ -19,7 +19,8 @@
 Every item below is wired and working out of the box, not just a dependency in `package.json`.
 
 - **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
-- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev)
+- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
+- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
 - **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
 - **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
@@ -28,12 +29,12 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
-- **Validation**: [Zod](https://zod.dev), shared across the API and forms
+- **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
 - **SEO**: sitemap, robots, and per-page metadata, indexable by default
-- **Tooling**: [Oxlint](https://oxc.rs) and [Oxfmt](https://oxc.rs) with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
+- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [Oxlint](https://oxc.rs) and [Oxfmt](https://oxc.rs), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
 - **Automated Releases**: changelog generation and a canary-to-main release flow
 
 ## 📂 Monorepo Structure
