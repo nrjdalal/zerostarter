@@ -82,6 +82,11 @@ export const auth = betterAuth({
       rpID,
       rpName: site.name,
       origin: env.HONO_TRUSTED_ORIGINS,
+      // residentKey "required" forces discoverable credentials (needed for usernameless autofill); userVerification "preferred" avoids blocking users without a biometric.
+      authenticatorSelection: {
+        residentKey: "required",
+        userVerification: "preferred",
+      },
     }),
   ],
   socialProviders: {
