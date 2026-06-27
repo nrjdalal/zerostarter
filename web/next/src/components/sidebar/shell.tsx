@@ -58,7 +58,7 @@ export async function SidebarShell({
         <SidebarFooter>{footer}</SidebarFooter>
         <SidebarRail />
       </AdaptiveShellSidebar>
-      <main>
+      <main className="flex min-w-0 flex-1 flex-col">
         <SidebarFloatingTrigger />
         {children}
       </main>
