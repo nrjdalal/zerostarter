@@ -1,3 +1,9 @@
+import { PasskeyUpsell } from "@/components/passkey-upsell"
+
 export default function Page() {
-  return null
+  return (
+    <div className="p-6">
+      <PasskeyUpsell />
+    </div>
+  )
 }

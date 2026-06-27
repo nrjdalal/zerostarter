@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "passkey_credentialId_uidx" ON "passkey" USING btree ("credential_id");

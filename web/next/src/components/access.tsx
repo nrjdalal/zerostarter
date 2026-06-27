@@ -15,6 +15,7 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -58,6 +59,12 @@ export function Access() {
   const hasAlternatives = isDev || githubEnabled || googleEnabled || passkeyEnabled
   const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
+  // Reads the non-httpOnly last_used_login_method cookie client-side after mount (avoids an SSR hydration mismatch) so we can hint the returning user's last method.
+  const [passkeyWasLast, setPasskeyWasLast] = useState(false)
+  useEffect(() => {
+    setPasskeyWasLast(authClient.isLastUsedLoginMethod("passkey"))
+  }, [])
+
   useEffect(() => {
     setLoader(null)
     setOpen(false)
@@ -67,9 +74,20 @@ export function Access() {
   useEffect(() => {
     if (!passkeyEnabled || typeof window === "undefined") return
     if (
-      typeof PublicKeyCredential !== "undefined" &&
-      typeof PublicKeyCredential.isConditionalMediationAvailable === "function"
+      typeof PublicKeyCredential === "undefined" ||
+      typeof PublicKeyCredential.isConditionalMediationAvailable !== "function"
     ) {
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      let available = false
+      try {
+        available = await PublicKeyCredential.isConditionalMediationAvailable()
+      } catch {
+        return
+      }
+      if (cancelled || !available) return
       void authClient.signIn.passkey({
         autoFill: true,
         fetchOptions: {
@@ -78,6 +96,9 @@ export function Access() {
           },
         },
       })
+    })()
+    return () => {
+      cancelled = true
     }
   }, [passkeyEnabled])
 
@@ -216,6 +237,11 @@ export function Access() {
                     <RiKey2Line className="size-5" />
                   )}
                   Sign in with a passkey
+                  {passkeyWasLast && (
+                    <Badge variant="secondary" className="ml-auto">
+                      Last used
+                    </Badge>
+                  )}
                 </Button>
               )}
               {githubEnabled && (

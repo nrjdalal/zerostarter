@@ -97,7 +97,10 @@ export const passkey = pgTable(
     aaguid: text("aaguid"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("passkey_userId_idx").on(table.userId)],
+  (table) => [
+    uniqueIndex("passkey_credentialId_uidx").on(table.credentialID),
+    index("passkey_userId_idx").on(table.userId),
+  ],
 )
 
 export const organization = pgTable(

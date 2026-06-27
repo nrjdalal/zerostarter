@@ -24,6 +24,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import {
   admin as adminPlugin,
+  lastLoginMethod as lastLoginMethodPlugin,
   openAPI as openAPIPlugin,
   organization as organizationPlugin,
 } from "better-auth/plugins"
@@ -78,6 +79,8 @@ export const auth = betterAuth({
       teams: { enabled: true },
     }),
     adminPlugin(),
+    // Tracks the last sign-in method in a non-httpOnly cookie so the UI can hint it; cookie-only (no storeInDatabase), so no migration.
+    lastLoginMethodPlugin(),
     passkeyPlugin({
       rpID,
       rpName: site.name,
@@ -113,12 +116,10 @@ export const magicLinkEnabled = (auth.options.plugins ?? []).some(
   (p) => (p.id as string) === "magic-link",
 )
 
-// Passkey (WebAuthn) sign-in shows in the UI only when its server plugin is registered.
 export const passkeyEnabled = (auth.options.plugins ?? []).some(
   (p) => (p.id as string) === "passkey",
 )
 
-// The unified list of enabled sign-in providers the UI reads: social providers plus magic link and passkey when their server plugins are registered.
 export const enabledProviders: AuthProvider[] = [
   ...enabledSocialProviders,
   ...(magicLinkEnabled ? (["magic-link"] as const) : []),

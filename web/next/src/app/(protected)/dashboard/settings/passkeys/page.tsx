@@ -3,6 +3,7 @@
 import {
   RiAddLine,
   RiDeleteBinLine,
+  RiErrorWarningLine,
   RiKey2Line,
   RiLoaderLine,
   RiPencilLine,
@@ -22,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,15 +53,19 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { authClient } from "@/lib/auth/client"
+import { authenticatorName } from "@/lib/passkey-aaguids"
 
 type Passkey = {
   id: string
   name?: string | null
+  aaguid?: string | null
+  deviceType?: "singleDevice" | "multiDevice"
+  backedUp?: boolean
   createdAt: Date | string
 }
 
 function passkeyLabel(passkey: Passkey) {
-  return passkey.name || "Passkey"
+  return passkey.name || authenticatorName(passkey.aaguid) || "Passkey"
 }
 
 // Shared add/rename dialog: the form, open state, and mutation skeleton live here so the two flows can't drift; callers supply the trigger and the submit.
@@ -229,7 +235,7 @@ function DeletePasskeyButton({ passkey }: { passkey: Passkey }) {
 }
 
 export default function PasskeysSettingsPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["passkeys"],
     queryFn: async () => {
       const res = await authClient.passkey.listUserPasskeys()
@@ -256,6 +262,18 @@ export default function PasskeysSettingsPage() {
         <div className="flex items-center justify-center py-12">
           <RiLoaderLine className="text-muted-foreground size-6 animate-spin" />
         </div>
+      ) : isError ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <RiErrorWarningLine className="size-6" />
+            </EmptyMedia>
+            <EmptyTitle>Unable to load passkeys</EmptyTitle>
+            <EmptyDescription>
+              Something went wrong loading your passkeys. Refresh the page to try again.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : passkeys.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -279,7 +297,10 @@ export default function PasskeysSettingsPage() {
                 <RiKey2Line className="size-5" />
               </ItemMedia>
               <ItemContent>
-                <ItemTitle>{passkeyLabel(passkey)}</ItemTitle>
+                <div className="flex items-center gap-2">
+                  <ItemTitle>{passkeyLabel(passkey)}</ItemTitle>
+                  <Badge variant="secondary">{passkey.backedUp ? "Synced" : "This device"}</Badge>
+                </div>
                 <ItemDescription>
                   Added {new Date(passkey.createdAt).toLocaleDateString()}
                 </ItemDescription>

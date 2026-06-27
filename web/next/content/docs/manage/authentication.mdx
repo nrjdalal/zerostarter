@@ -36,13 +36,17 @@ The auth config does not set a redirect for the social providers. The post-authe
 
 Passwordless sign-in with Touch ID, Face ID, or a hardware security key is enabled by the [Better Auth passkey plugin](https://www.better-auth.com/docs/plugins/passkey) (`@better-auth/passkey`). It is registered in `packages/auth/src/index.ts` with `rpID` (the web origin's registrable host, overridable via `BETTER_AUTH_RP_ID`), `rpName` (the brand `site.name`), and `origin` (`HONO_TRUSTED_ORIGINS`), plus `authenticatorSelection` (discoverable credentials with preferred user verification); the matching `passkeyClient()` is added in `web/next/src/lib/auth/client.ts`. Because the plugin ships enabled, `packages/auth/src/index.ts` derives `passkeyEnabled` from its registration and adds `passkey` to `enabledProviders`, so `GET /api/auth/providers` advertises it and `web/next/src/components/access.tsx` renders a "Sign in with a passkey" button. The email field also opts into conditional UI (`autoComplete="username webauthn"` plus a guarded `authClient.signIn.passkey({ autoFill: true })`), so saved passkeys surface in the browser's autofill picker where supported.
 
+The Better Auth `lastLoginMethod` plugin (registered in `packages/auth/src/index.ts`, with `lastLoginMethodClient()` in `web/next/src/lib/auth/client.ts`) records each user's last sign-in method in a non-httpOnly `better-auth.last_used_login_method` cookie (cookie-only, no database column, so no migration). When passkey was the last method, the sign-in dialog shows a subtle "Last used" badge on the passkey button via `authClient.isLastUsedLoginMethod("passkey")`.
+
+After login, the dashboard home (`web/next/src/app/(protected)/dashboard/page.tsx`) mounts `PasskeyUpsell` (`web/next/src/components/passkey-upsell.tsx`): if the user has zero passkeys (decided by the `listUserPasskeys` query, never by storage) and has not chosen "Don't show again" (a `passkey-upsell-dismissed` localStorage flag for that preference only), it shows one dismissible card linking to the manage page.
+
 <Callout type="warn">
   WebAuthn rejects an `rpID` that is a public suffix, so a default `*.vercel.app` deployment cannot
   register passkeys. Use a custom domain, or set `BETTER_AUTH_RP_ID` to your registrable domain (for
   split `app.`/`api.` subdomains, use the shared parent, e.g. `example.com`).
 </Callout>
 
-Signed-in users manage their passkeys at `/dashboard/settings/passkeys` (`web/next/src/app/(protected)/dashboard/settings/passkeys/page.tsx`, linked from the sidebar user dropdown). The page lists, adds, renames, and deletes passkeys via `authClient.passkey.listUserPasskeys`, `addPasskey`, `updatePasskey`, and `deletePasskey`, labeling each by its user-given name. Credentials are stored in the `passkey` table (`packages/db/src/schema/auth.ts`), which cascade-deletes with the user.
+Signed-in users manage their passkeys at `/dashboard/settings/passkeys` (`web/next/src/app/(protected)/dashboard/settings/passkeys/page.tsx`, linked from the sidebar user dropdown). The page lists, adds, renames, and deletes passkeys via `authClient.passkey.listUserPasskeys`, `addPasskey`, `updatePasskey`, and `deletePasskey`. Each row falls back from the user-given name to a friendly authenticator name resolved from the stored `aaguid` (a curated, client-safe map in `web/next/src/lib/passkey-aaguids.ts`, so `@better-auth/passkey` and its `@simplewebauthn/server` dependency stay out of the client bundle), then to "Passkey", and shows a "Synced" / "This device" badge from the credential's `backedUp` flag. Credentials are stored in the `passkey` table (`packages/db/src/schema/auth.ts`), which cascade-deletes with the user.
 
 ### Agent Sign-In (local only)
 
