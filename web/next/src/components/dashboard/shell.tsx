@@ -3,7 +3,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-const dashboardShellVariants = cva("mx-auto w-full p-6", {
+const dashboardShellVariants = cva("mx-auto w-full p-4 sm:p-6", {
   variants: {
     size: {
       sm: "max-w-2xl",
@@ -13,7 +13,7 @@ const dashboardShellVariants = cva("mx-auto w-full p-6", {
     },
   },
   defaultVariants: {
-    size: "lg",
+    size: "md",
   },
 })
 
