@@ -18,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import type { NavGroup, NavItem, NavNode } from "@/lib/docs/types"
+import { isActive as isActivePath } from "@/lib/utils"
 
 const isPage = (node: NavNode): node is NavItem => "url" in node
 
@@ -29,7 +30,7 @@ export function SidebarDocsContent({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
-  const isActive = (url: string): boolean => pathname === url || pathname === url + "/"
+  const isActive = (url: string): boolean => isActivePath(pathname, url)
   const close = () => {
     if (isMobile) setOpenMobile(false)
   }

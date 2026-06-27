@@ -148,7 +148,7 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
+    <main className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
       {/* hook */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
         <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
@@ -245,7 +245,7 @@ export default function Page() {
       <div className="container mx-auto grid max-w-3xl gap-8 px-5 sm:grid-cols-2">
         {sections.map((section) => (
           <div key={section.title} className="space-y-8">
-            <h1 className={headingClass}>{section.title}</h1>
+            <h2 className={headingClass}>{section.title}</h2>
             {section.projects.map((project) => (
               <div key={project.title} className="space-y-2">
                 {project.external === false ? (
@@ -274,7 +274,7 @@ export default function Page() {
 
       {/* writing */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={headingClass}>writing</h1>
+        <h2 className={headingClass}>writing</h2>
         <div className="space-y-2">
           <Link href="/blog/a-biography-written-in-code" className={linkClass}>
             A Biography Written in Code
@@ -289,7 +289,7 @@ export default function Page() {
 
       {/* hire me */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={headingClass}>hire me</h1>
+        <h2 className={headingClass}>hire me</h2>
         <div className="space-y-4">
           <p>
             I'm best suited for teams building ambitious products with a small, high-agency
@@ -312,7 +312,7 @@ export default function Page() {
 
       {/* hobbies */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={headingClass}>hobbies</h1>
+        <h2 className={headingClass}>hobbies</h2>
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
@@ -329,7 +329,7 @@ export default function Page() {
 
       {/* connect */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={headingClass}>connect</h1>
+        <h2 className={headingClass}>connect</h2>
         <p>
           Want to chat? Leave a message on{" "}
           <a
@@ -339,7 +339,7 @@ export default function Page() {
             aria-label="X (Twitter)"
             className={linkClass}
           >
-            <RiTwitterXFill className="-mt-1 inline size-4.5" />
+            <RiTwitterXFill className="-mt-1 inline size-5" />
           </a>{" "}
           or send an email to{" "}
           <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
@@ -348,6 +348,6 @@ export default function Page() {
           .
         </p>
       </div>
-    </div>
+    </main>
   )
 }

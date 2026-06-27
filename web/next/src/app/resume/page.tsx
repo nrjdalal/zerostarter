@@ -167,7 +167,7 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-base">
+    <main className="bg-background text-foreground min-h-screen space-y-16 py-36 text-base">
       {/* header */}
       <div className="container mx-auto max-w-3xl space-y-8 px-5">
         <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>résumé</h1>
@@ -316,6 +316,6 @@ export default function Page() {
           .
         </p>
       </div>
-    </div>
+    </main>
   )
 }

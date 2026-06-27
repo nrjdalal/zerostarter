@@ -5,7 +5,6 @@ import {
   RiArrowRightUpLine,
   RiDiscordFill,
   RiGithubFill,
-  RiLoaderLine,
   RiMenuLine,
   RiTwitterXFill,
 } from "@remixicon/react"
@@ -17,9 +16,10 @@ import { Access } from "@/components/access"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { authClient } from "@/lib/auth/client"
-import { cn } from "@/lib/utils"
+import { cn, isActive } from "@/lib/utils"
 
 const socialLinks = [
   {
@@ -95,9 +95,9 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Desktop Navigation */}
-          <nav aria-label="Main navigation" className="mx-5 hidden items-center gap-7.5 lg:flex">
+          <nav aria-label="Main navigation" className="mx-5 hidden items-center gap-8 lg:flex">
             {navLinks.map((link) => {
-              const isActive = !link.external && pathname?.startsWith(link.href)
+              const active = !link.external && isActive(pathname, link.href, { exact: false })
               if (link.external) {
                 return (
                   <a
@@ -118,7 +118,7 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "font-medium transition-colors",
-                    isActive ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
+                    active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
                   )}
                 >
                   {link.label}
@@ -140,7 +140,7 @@ export function Navbar() {
               onClick={() => setToDashboard(true)}
               render={<Link href="/dashboard" />}
             >
-              {toDashboard ? <RiLoaderLine className="animate-spin" /> : "Dashboard"}
+              {toDashboard ? <Spinner /> : "Dashboard"}
             </Button>
           ) : (
             <Access />
@@ -180,7 +180,7 @@ export function Navbar() {
               </SheetHeader>
               <nav className="ml-4 flex flex-col gap-5">
                 {navLinks.map((link) => {
-                  const isActive = !link.external && pathname?.startsWith(link.href)
+                  const active = !link.external && isActive(pathname, link.href, { exact: false })
                   if (link.external) {
                     return (
                       <a
@@ -202,9 +202,7 @@ export function Navbar() {
                       href={link.href}
                       className={cn(
                         "font-medium transition-colors",
-                        isActive
-                          ? "text-foreground"
-                          : "hover:text-foreground/80 text-foreground/60",
+                        active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
                       )}
                       onClick={() => setIsOpen(false)}
                     >

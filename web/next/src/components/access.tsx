@@ -1,7 +1,7 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiGithubFill, RiGoogleFill, RiLayoutGridFill, RiLoaderLine } from "@remixicon/react"
+import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
@@ -36,7 +37,7 @@ export function Access() {
   const isDev = process.env.NODE_ENV === "development"
 
   // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
@@ -87,7 +88,7 @@ export function Access() {
       <DialogTrigger render={<Button className="w-24 cursor-pointer" variant="outline" />}>
         Login
       </DialogTrigger>
-      <DialogContent className="max-w-md sm:max-w-md" initialFocus={false}>
+      <DialogContent className="max-w-md" initialFocus={false}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
         </DialogHeader>
@@ -104,7 +105,7 @@ export function Access() {
           {magicLinkEnabled && (
             <form
               id="email"
-              className="space-y-4"
+              className="flex flex-col gap-4"
               onSubmit={(e) => {
                 e.preventDefault()
                 form.handleSubmit()
@@ -142,7 +143,7 @@ export function Access() {
                 className="w-full cursor-pointer"
                 disabled={loader === "email"}
               >
-                {loader === "email" ? <RiLoaderLine className="size-5 animate-spin" /> : null}
+                {loader === "email" ? <Spinner /> : null}
                 Sign in/up
               </Button>
             </form>
@@ -181,11 +182,7 @@ export function Access() {
                   }}
                   disabled={loader === "github"}
                 >
-                  {loader === "github" ? (
-                    <RiLoaderLine className="size-5 animate-spin" />
-                  ) : (
-                    <RiGithubFill className="size-5" />
-                  )}
+                  {loader === "github" ? <Spinner /> : <RiGithubFill className="size-5" />}
                   Continue with Github
                 </Button>
               )}
@@ -207,24 +204,25 @@ export function Access() {
                   }}
                   disabled={loader === "google"}
                 >
-                  {loader === "google" ? (
-                    <RiLoaderLine className="size-5 animate-spin" />
-                  ) : (
-                    <RiGoogleFill className="size-5" />
-                  )}
+                  {loader === "google" ? <Spinner /> : <RiGoogleFill className="size-5" />}
                   Continue with Google
                 </Button>
               )}
-              <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
-                <a href="#">Privacy Policy</a>.
+              <div className="text-muted-foreground text-center text-xs text-balance">
+                By clicking continue, you agree to our Terms of Service and Privacy Policy.
               </div>
             </div>
           )}
-          {hasNoProviders && (
+          {isError ? (
             <p className="text-muted-foreground text-center text-sm">
-              No sign-in options are configured yet.
+              Could not load sign-in options. Refresh to try again.
             </p>
+          ) : (
+            hasNoProviders && (
+              <p className="text-muted-foreground text-center text-sm">
+                No sign-in options are configured yet.
+              </p>
+            )
           )}
         </div>
       </DialogContent>

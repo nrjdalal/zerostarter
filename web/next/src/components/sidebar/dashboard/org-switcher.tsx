@@ -1,6 +1,6 @@
 "use client"
 
-import { RiAddLine, RiBuildingLine, RiLoaderLine } from "@remixicon/react"
+import { RiAddLine, RiBuildingLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -18,6 +18,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth/client"
 import { slugify } from "@/lib/utils"
 
@@ -138,13 +139,18 @@ export function SidebarDashboardOrgSwitcher() {
             <DropdownMenuItem
               key={org.id}
               className="cursor-pointer"
+              disabled={isOrgTransitioning}
               onClick={() => handleSetActive(org.id)}
             >
               <RiBuildingLine />
               {org.name}
             </DropdownMenuItem>
           ))}
-        <DropdownMenuItem className="cursor-pointer" onClick={() => setCreateDialogOpen(true)}>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          disabled={isOrgTransitioning}
+          onClick={() => setCreateDialogOpen(true)}
+        >
           <RiAddLine />
           Create organization
         </DropdownMenuItem>
@@ -202,7 +208,7 @@ export function SidebarDashboardOrgSwitcher() {
               className="w-full cursor-pointer"
               disabled={form.state.isSubmitting}
             >
-              {form.state.isSubmitting ? <RiLoaderLine className="size-5 animate-spin" /> : null}
+              {form.state.isSubmitting ? <Spinner /> : null}
               Create organization
             </Button>
           </form>
