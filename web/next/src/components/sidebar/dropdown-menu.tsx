@@ -66,7 +66,10 @@ export function SidebarDropdownMenu({
         <RiExpandUpDownLine className="ml-auto size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className={cn("w-(--anchor-width) min-w-56 rounded-lg", isMobile ? "mb-1" : "ml-3")}
+        className={cn(
+          "w-(--anchor-width) min-w-56 rounded-lg",
+          isMobile ? (mobileSide === "top" ? "mb-1" : "mt-1") : "ml-3",
+        )}
         side={isMobile ? mobileSide : "right"}
         align={align}
         sideOffset={4}
