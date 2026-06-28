@@ -11,7 +11,6 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { cn } from "@/lib/utils"
 
 export function RouteError({
   error,
@@ -27,19 +26,17 @@ export function RouteError({
   }, [error])
 
   return (
-    <div className={cn("flex", className)}>
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>Something went wrong</EmptyTitle>
-          <EmptyDescription>An unexpected error occurred while loading this page.</EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button variant="outline" onClick={() => reset()}>
-            <RiRefreshLine />
-            Try again
-          </Button>
-        </EmptyContent>
-      </Empty>
-    </div>
+    <Empty className={className}>
+      <EmptyHeader>
+        <EmptyTitle>Something went wrong</EmptyTitle>
+        <EmptyDescription>An unexpected error occurred while loading this page.</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline" onClick={() => reset()}>
+          <RiRefreshLine />
+          Try again
+        </Button>
+      </EmptyContent>
+    </Empty>
   )
 }
