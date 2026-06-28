@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { cn } from "@/lib/utils"
 
 export function ApiStatus() {
   const { isLoading, isError } = useQuery({
@@ -23,7 +22,7 @@ export function ApiStatus() {
         variant="outline"
         role="status"
         aria-label="API status"
-        className={cn("h-8 gap-2 rounded-full border px-4 py-1.5 text-sm", "invisible")}
+        className="invisible h-8 gap-2 rounded-full border px-4 py-1.5 text-sm"
       >
         <span className="size-2 shrink-0 rounded-full" />
         <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
@@ -37,10 +36,7 @@ export function ApiStatus() {
         variant="destructive"
         role="status"
         aria-label="API status"
-        className={cn(
-          "h-8 gap-2 rounded-full border px-4 py-1.5 text-sm",
-          "border-destructive/20 animate-in fade-in duration-2000",
-        )}
+        className="border-destructive/20 animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
       >
         <span className="bg-destructive size-2 shrink-0 rounded-full" />
         <span className="min-w-48 text-center whitespace-nowrap">Systems are facing issues</span>
@@ -53,10 +49,7 @@ export function ApiStatus() {
       variant="outline"
       role="status"
       aria-label="API status"
-      className={cn(
-        "h-8 gap-2 rounded-full border px-4 py-1.5 text-sm",
-        "border-success/20 bg-success/10 text-success animate-in fade-in duration-2000",
-      )}
+      className="border-success/20 bg-success/10 text-success animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
     >
       <span className="bg-success size-2 shrink-0 rounded-full" />
       <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
