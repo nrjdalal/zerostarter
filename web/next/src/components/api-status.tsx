@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
+import { Badge } from "@/components/ui/badge"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 export function ApiStatus() {
@@ -17,38 +18,41 @@ export function ApiStatus() {
 
   if (isLoading) {
     return (
-      <div
+      <Badge
+        variant="outline"
         role="status"
         aria-label="API status"
-        className="invisible flex h-8 items-center justify-center gap-2 rounded-full border px-4 py-1.5 text-sm"
+        className="invisible h-8 gap-2 rounded-full border px-4 py-1.5 text-sm"
       >
-        <div className="size-2 shrink-0 rounded-full" />
-        <span className="w-45 text-center">All systems are operational</span>
-      </div>
+        <span className="size-2 shrink-0 rounded-full" />
+        <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
+      </Badge>
     )
   }
 
   if (isError) {
     return (
-      <div
+      <Badge
+        variant="destructive"
         role="status"
         aria-label="API status"
-        className="bg-destructive/10 text-destructive border-destructive/20 animate-in fade-in flex h-8 items-center justify-center gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
+        className="border-destructive/20 animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
       >
-        <div className="bg-destructive size-2 shrink-0 rounded-full" />
-        <span className="w-45 text-center">Systems are facing issues</span>
-      </div>
+        <span className="bg-destructive size-2 shrink-0 rounded-full" />
+        <span className="min-w-48 text-center whitespace-nowrap">Systems are facing issues</span>
+      </Badge>
     )
   }
 
   return (
-    <div
+    <Badge
+      variant="outline"
       role="status"
       aria-label="API status"
-      className="animate-in fade-in flex h-8 items-center justify-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-4 py-1.5 text-sm text-green-600 duration-2000 dark:text-green-400"
+      className="border-success/20 bg-success/10 text-success animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
     >
-      <div className="size-2 shrink-0 rounded-full bg-green-500" />
-      <span className="w-45 text-center">All systems are operational</span>
-    </div>
+      <span className="bg-success size-2 shrink-0 rounded-full" />
+      <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
+    </Badge>
   )
 }

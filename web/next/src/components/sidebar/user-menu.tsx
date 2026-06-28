@@ -11,6 +11,8 @@ import {
 import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -27,6 +29,7 @@ function getInitials(name: string) {
 // Shared sidebar user dropdown (avatar, identity, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
 export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard" | "console" }) {
   const router = useRouter()
+  const [signingOut, setSigningOut] = useState(false)
 
   // The user menu is shared, so the cross-link points at the other workspace: dashboard -> console, console -> dashboard.
   const crossLink =
@@ -73,10 +76,17 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          className="cursor-pointer"
+          disabled={signingOut}
           onClick={async () => {
-            await authClient.signOut()
-            router.push("/")
+            if (signingOut) return
+            setSigningOut(true)
+            try {
+              await authClient.signOut()
+              router.push("/")
+            } catch {
+              toast.error("Failed to sign out. Please try again.")
+              setSigningOut(false)
+            }
           }}
         >
           <RiLogoutBoxLine />

@@ -5,6 +5,7 @@ import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",
@@ -167,17 +168,17 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <div className="bg-background text-foreground min-h-screen space-y-16 py-36 text-base">
+    <main className="bg-background text-foreground min-h-dvh space-y-16 py-24 text-base">
       {/* header */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>résumé</h1>
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
+        <h1 className={cn(caveat.className, "text-3xl font-semibold tracking-wide")}>résumé</h1>
         <p className="text-lg">
           AI-native Product Engineer with 5+ years shipping production SaaS, developer tools,
           full-stack TypeScript systems, and AI agent infrastructure. Currently building AI-powered
           product surfaces and agent tooling at LightWork AI. Author of 250+ public repositories and
           open-source tools with 1,045+ GitHub stars, used by projects including TanStack, SST,
           Electric SQL, and Storybook.{" "}
-          <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+          <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
         </p>
@@ -208,7 +209,7 @@ export default function Page() {
       </div>
 
       {/* core strengths */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>core strengths</h2>
         <ul className="text-muted-foreground list-disc space-y-1 pl-5">
           {strengths.map((s) => (
@@ -218,7 +219,7 @@ export default function Page() {
       </div>
 
       {/* experience */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>experience</h2>
         {experience.map((job) => (
           <div key={job.company} className="space-y-2">
@@ -243,7 +244,7 @@ export default function Page() {
       </div>
 
       {/* selected projects */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>selected projects</h2>
         <p className="text-muted-foreground">
           1,045+ stars across{" "}
@@ -276,7 +277,7 @@ export default function Page() {
       </div>
 
       {/* skills */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>skills</h2>
         <ul className="text-muted-foreground list-disc space-y-1 pl-5">
           {skills.map((skill) => (
@@ -288,7 +289,7 @@ export default function Page() {
       </div>
 
       {/* education */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>education</h2>
         <div className="space-y-2">
           <p>B.Tech, Electronics &amp; Communication Engineering</p>
@@ -299,7 +300,7 @@ export default function Page() {
       </div>
 
       {/* the story behind the work */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>the story behind the work</h2>
         <p className="text-muted-foreground">
           This is the clean version. The real one is messier and more useful: 250 repositories, six
@@ -316,6 +317,6 @@ export default function Page() {
           .
         </p>
       </div>
-    </div>
+    </main>
   )
 }

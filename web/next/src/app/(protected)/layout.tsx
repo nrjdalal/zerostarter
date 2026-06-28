@@ -20,11 +20,13 @@ export default async function Layout({ children }: { children: React.ReactNode }
     if (lastOrgId) {
       const url = `${config.api.internalUrl || config.api.url}/api/auth/organization/set-active`
       const reqHeaders = Object.fromEntries((await headers()).entries())
-      await fetch(url, {
-        method: "POST",
-        headers: { ...reqHeaders, "content-type": "application/json" },
-        body: JSON.stringify({ organizationId: lastOrgId }),
-      }).catch(() => {})
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { ...reqHeaders, "content-type": "application/json" },
+          body: JSON.stringify({ organizationId: lastOrgId }),
+        })
+      } catch {}
     }
   }
 

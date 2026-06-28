@@ -30,6 +30,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -219,24 +220,22 @@ bun dev`
   })
 
   return (
-    <div className="flex flex-col select-none">
+    <main className="flex flex-col select-none">
       {/* Hero Section */}
       <section
         aria-label="Hero"
-        className="from-background via-background to-muted/20 relative flex min-h-screen flex-col overflow-hidden border-b bg-linear-to-b"
+        className="from-background via-background to-muted/20 relative flex min-h-dvh flex-col overflow-hidden border-b bg-linear-to-b"
       >
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
-        <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-5 py-12 sm:py-16">
+        <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
           <div className="mx-auto flex min-h-[700px] max-w-3xl flex-col justify-center text-center">
-            <div className="bg-muted/50 mx-auto mb-6 inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
-              <span>
-                The{" "}
-                <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
-                  scalable and production-ready
-                </span>{" "}
-                SaaS starter kit
-              </span>
-            </div>
+            <Badge variant="secondary" className="mx-auto mb-6">
+              The{" "}
+              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
+                scalable and production-ready
+              </span>{" "}
+              SaaS starter kit
+            </Badge>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
               Go from 0 to production in{" "}
               <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
@@ -328,7 +327,7 @@ bun dev`
 
       {/* Features Section */}
       <section aria-label="Features" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-5">
+        <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Game-changing features to launch at{" "}
@@ -528,7 +527,7 @@ bun dev`
 
       {/* Why ZeroStarter Section */}
       <section aria-label="Why ZeroStarter" className="bg-muted/30 border-b py-24">
-        <div className="container mx-auto max-w-6xl px-5">
+        <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Why ZeroStarter?</h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
@@ -619,7 +618,7 @@ bun dev`
 
       {/* Code Example Section */}
       <section aria-label="Code example" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-5">
+        <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Type-Safe API Calls
@@ -630,7 +629,7 @@ bun dev`
             </p>
           </div>
         </div>
-        <div className="w-full px-5">
+        <div className="w-full px-4 md:px-6">
           <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
             <div
               className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
@@ -645,7 +644,7 @@ bun dev`
 
       {/* Getting Started Section */}
       <section aria-label="Getting started" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-5">
+        <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Get Started in Minutes
@@ -655,7 +654,7 @@ bun dev`
             </p>
           </div>
         </div>
-        <div className="w-full px-5">
+        <div className="w-full px-4 md:px-6">
           <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
             <div
               className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
@@ -666,7 +665,7 @@ bun dev`
             />
           </div>
         </div>
-        <div className="container mx-auto mt-8 max-w-6xl px-5 text-center">
+        <div className="container mx-auto mt-8 max-w-6xl px-4 text-center md:px-6">
           <Button
             role="link"
             size="lg"
@@ -681,7 +680,7 @@ bun dev`
 
       {/* FAQ Section */}
       <section aria-label="FAQ" className="bg-muted/30 border-b py-24">
-        <div className="container mx-auto max-w-4xl px-5">
+        <div className="container mx-auto max-w-4xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Frequently Asked Questions
@@ -751,7 +750,7 @@ bun dev`
         aria-label="Call to action"
         className="from-background to-muted/20 bg-linear-to-b py-24"
       >
-        <div className="container mx-auto max-w-4xl px-5 text-center">
+        <div className="container mx-auto max-w-4xl px-4 text-center md:px-6">
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to Build Your SaaS?
           </h2>
@@ -796,6 +795,6 @@ bun dev`
           </div>
         </div>
       </section>
-    </div>
+    </main>
   )
 }

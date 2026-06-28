@@ -15,7 +15,7 @@ export function SidebarFloatingTrigger() {
       variant="secondary"
       size="default"
       className={cn(
-        "bg-sidebar fixed right-0 bottom-0 z-20 mr-6 mb-18 h-8 cursor-pointer border",
+        "bg-sidebar fixed right-0 bottom-0 z-20 mr-6 mb-16 h-8 border",
         isDocs ? "md:right-auto md:mb-48 md:size-7 md:rounded-l-none md:border-l-0" : "md:hidden",
       )}
     >

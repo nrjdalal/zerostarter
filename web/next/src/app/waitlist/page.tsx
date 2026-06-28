@@ -1,7 +1,6 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
@@ -12,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
@@ -26,6 +26,7 @@ function WaitlistCount() {
     queryKey: ["waitlist-count"],
     queryFn: async () => {
       const { data, error } = await unwrap(apiClient.waitlist.$get())
+      // swallowing the error is deliberate: the count is non-critical chrome, so a failure just hides it
       if (error) return null
       return data
     },
@@ -88,14 +89,14 @@ export default function WaitlistPage() {
   })
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center p-8 text-center">
+    <main className="flex min-h-dvh flex-col items-center justify-center p-8 text-center">
       <div className="mx-auto flex w-full max-w-xl flex-col items-center">
         <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">{site.name}</h1>
         <p className="text-muted-foreground mb-8 max-w-md text-lg">{site.tagline}</p>
 
         {joined ? (
           // matches the single-row form height so submitting never shifts the layout (sm+); on mobile the form stacks
-          <div className="flex min-h-12 w-full items-center justify-center text-lg text-green-500">
+          <div className="text-success flex min-h-12 w-full items-center justify-center text-lg">
             {"You're on the list. We'll be in touch soon."}
           </div>
         ) : (
@@ -157,11 +158,7 @@ export default function WaitlistPage() {
               className="h-12 w-full px-6 text-base sm:w-auto"
               disabled={joinWaitlist.isPending}
             >
-              {joinWaitlist.isPending ? (
-                <RiLoaderLine className="animate-spin" />
-              ) : (
-                "Join the waitlist"
-              )}
+              {joinWaitlist.isPending ? <Spinner /> : "Join the waitlist"}
             </Button>
           </form>
         )}

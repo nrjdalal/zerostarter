@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { getPublishedBlogPosts } from "@/lib/blog"
 import { formatBlogDate } from "@/lib/blog-policy"
 
@@ -7,7 +8,13 @@ export function BlogPostList() {
   const posts = getPublishedBlogPosts()
 
   if (posts.length === 0) {
-    return <p className="not-prose text-muted-foreground">No posts published yet.</p>
+    return (
+      <Empty className="not-prose">
+        <EmptyHeader>
+          <EmptyTitle>No posts published yet.</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
+    )
   }
 
   return (
