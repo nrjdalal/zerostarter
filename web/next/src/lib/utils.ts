@@ -20,10 +20,10 @@ export function slugify(value: string, id = 0) {
   return suffix ? base + "-" + suffix : base
 }
 
-// Shared nav active-state matcher. Default is exact-or-trailing-slash; pass { exact: false } for prefix matching.
+// Shared nav active-state matcher. Default = exact path (or its trailing-slash form); { exact: false } also matches child paths, but only at a segment boundary, never a bare prefix.
 export function isActive(pathname: string | null, href: string, opts?: { exact?: boolean }) {
   if (!pathname) return false
   const exact = opts && opts.exact === false ? false : true
   if (exact) return pathname === href || pathname === href + "/"
-  return pathname.startsWith(href)
+  return pathname === href || pathname.startsWith(href + "/")
 }
