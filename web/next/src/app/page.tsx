@@ -335,7 +335,7 @@ bun dev`
                 Zero speed
               </span>
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Everything you need to launch your SaaS in no time. Get all the core functionalities
               and integrations out of the box, so you can focus on the business.
             </p>
@@ -530,7 +530,7 @@ bun dev`
         <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Why ZeroStarter?</h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Architecture & Best Practices as a Service, ZeroStarter isn't just a starter template,
               it's a complete blueprint for building production-ready SaaS applications.
             </p>
@@ -623,7 +623,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Type-Safe API Calls
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Full type inference from backend to frontend. No more manual type definitions. See the
               magic happen.
             </p>
@@ -649,7 +649,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Get Started in Minutes
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Clone, install, and start building. It's that simple.
             </p>
           </div>
@@ -685,7 +685,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Have another question? Check out our documentation or reach out.
             </p>
           </div>
@@ -754,7 +754,7 @@ bun dev`
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to Build Your SaaS?
           </h2>
-          <p className="text-muted-foreground mb-8 text-base sm:text-lg">
+          <p className="text-muted-foreground mb-8 sm:text-lg">
             Start building your next project with {site.name} today. Skip the complex setups and
             start building features on day one.
           </p>
