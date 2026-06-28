@@ -224,7 +224,7 @@ bun dev`
       {/* Hero Section */}
       <section
         aria-label="Hero"
-        className="from-background via-background to-muted/20 relative flex min-h-dvh flex-col overflow-hidden border-b bg-linear-to-b"
+        className="from-background via-background to-muted/20 relative flex min-h-svh flex-col overflow-hidden border-b bg-linear-to-b"
       >
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
         <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
