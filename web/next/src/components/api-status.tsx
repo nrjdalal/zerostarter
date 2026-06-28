@@ -27,7 +27,7 @@ export function ApiStatus() {
         aria-label="API status"
         className={cn(pillClassName, "invisible")}
       >
-        <div className="size-2 shrink-0 rounded-full" />
+        <span className="size-2 shrink-0 rounded-full" />
         <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
       </Badge>
     )
@@ -41,7 +41,7 @@ export function ApiStatus() {
         aria-label="API status"
         className={cn(pillClassName, "border-destructive/20 animate-in fade-in duration-2000")}
       >
-        <div className="bg-destructive size-2 shrink-0 rounded-full" />
+        <span className="bg-destructive size-2 shrink-0 rounded-full" />
         <span className="min-w-48 text-center whitespace-nowrap">Systems are facing issues</span>
       </Badge>
     )
@@ -57,7 +57,7 @@ export function ApiStatus() {
         "border-success/20 bg-success/10 text-success animate-in fade-in duration-2000",
       )}
     >
-      <div className="bg-success size-2 shrink-0 rounded-full" />
+      <span className="bg-success size-2 shrink-0 rounded-full" />
       <span className="min-w-48 text-center whitespace-nowrap">All systems are operational</span>
     </Badge>
   )

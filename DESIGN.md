@@ -20,7 +20,7 @@
 
 - Stay on the Tailwind scale. No off-ladder one-offs (`gap-7.5`, `size-4.5`, `w-45`, `mb-18`, `text-[0.6rem]`); snap to the nearest step.
 - `gap-2` is the workhorse for tight clusters.
-- Dashboard pages use the `DashboardShell` wrapper: `max-w-4xl` default, padding `p-4 sm:p-6`. Do not hand-roll `p-*` or `max-w-*` on dashboard pages.
+- Dashboard and console pages use the collapsible `SidebarShell`. Their page content targets `max-w-4xl` with `p-4 sm:p-6` padding; the `DashboardShell` wrapper that encapsulates this is not in this codebase yet (it lands in a separate PR), so apply those values directly until it does.
 - Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter (hire and resume are aligned to home).
 
 ## Typography and headings
