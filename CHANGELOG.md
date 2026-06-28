@@ -1,3 +1,20 @@
+## v0.0.66
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.65...v0.0.66)
+
+### 🩹 Fixes
+
+- **web:** Clean up UI consistency from the audit ([#577](https://github.com/nrjdalal/zerostarter/pull/577))
+
+### 💅 Refactors
+
+- **web:** Cursor-pointer pass and DESIGN.md conventions ([#580](https://github.com/nrjdalal/zerostarter/pull/580))
+- Adopt Empty for the blog empty-state and consolidate the design skill ([#582](https://github.com/nrjdalal/zerostarter/pull/582))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.65
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.64...v0.0.65)
