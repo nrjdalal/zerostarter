@@ -14,6 +14,7 @@
 
 - Do NOT put `cursor-pointer` on action controls (form submit, dialog or menu triggers, toggles, mutation buttons, sign-in, sign-out). They keep the native arrow, even when the action eventually navigates (the standard classifies by element, not side-effect).
 - In practice no `cursor-pointer` class is needed at all: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor (matching Tailwind v4 and shadcn, and the CSS spec where pointer means link). A readOnly button-like input (the docs search trigger) uses `cursor-default` to avoid the text I-beam.
+- Exception: some primitives set their own cursor (e.g. `DropdownMenuItem` hard-codes `cursor-default`). A navigation item inside one (a `render={<Link/>}` menu item) needs an explicit `cursor-pointer` to restore the pointer, since the base overrides the anchor's native cursor.
 
 ## Spacing
 

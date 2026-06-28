@@ -52,7 +52,7 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
       <SidebarDropdownMenu trigger={identity} header={identity} align="end" mobileSide="top">
         {crossLink && (
           <>
-            <DropdownMenuItem render={<Link href={crossLink.href} />}>
+            <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
               {crossLink.icon}
               {crossLink.label}
               <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
@@ -63,7 +63,12 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
         {env.NEXT_PUBLIC_USERJOT_URL && (
           <DropdownMenuItem
             render={
-              <Link href={env.NEXT_PUBLIC_USERJOT_URL} target="_blank" rel="noopener noreferrer" />
+              <Link
+                href={env.NEXT_PUBLIC_USERJOT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer"
+              />
             }
           >
             <RiMessage2Line />
