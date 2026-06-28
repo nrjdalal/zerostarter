@@ -5,6 +5,7 @@ This file provides guidance to AI coding agents when working with code in this r
 ## Instructions
 
 - ALWAYS: Use `@/` for imports, if applicable.
+- ALWAYS: Follow `DESIGN.md` (repo root) for UI, styling, and design decisions; the `design` skill surfaces it. Update `DESIGN.md` in the same change when a convention changes.
 - ALWAYS: Keep documentation in sync with every change. Whenever code, structure, conventions, or tooling change, update the matching docs in the same change (e.g. `web/next/content/docs/`, `README.md`, the `llms.txt`/`llms-full.txt` context routes, skill docs under `.agents/skills/` and `.claude/skills/`, and these agent guides `AGENTS.md`/`CLAUDE.md`). Docs must never drift.
 - NEVER: Include "Co-authored-by" in commit messages.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.

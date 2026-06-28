@@ -12,6 +12,7 @@ import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Hire",
@@ -148,16 +149,16 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <main className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
+    <main className="bg-background text-foreground min-h-dvh space-y-16 py-24 text-lg">
       {/* hook */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
-        <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
+        <h1 className={cn(caveat.className, "text-3xl font-semibold tracking-wide")}>nrjdalal</h1>
 
         <div className="space-y-4">
           <p>
             AI-native product engineer building SaaS products, developer tools, and agent
             infrastructure.{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               I learn by shipping.
             </span>
           </p>
@@ -178,7 +179,7 @@ export default function Page() {
           <p>
             Before that I helped take SaaS and AI products from 0 to 1, shipped scraping- and
             automation-heavy SaaS, and built open-source tools now used by projects including{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               TanStack, SST, Electric SQL, and Storybook
             </span>
             . I care about clean systems, fast builds, strong types, useful docs, and software that
@@ -230,7 +231,7 @@ export default function Page() {
       </div>
 
       {/* proof */}
-      <div className="container mx-auto max-w-3xl px-5">
+      <div className="container mx-auto max-w-3xl px-4 md:px-6">
         <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3">
           {proof.map((stat) => (
             <div key={stat.value} className="space-y-1">
@@ -242,7 +243,7 @@ export default function Page() {
       </div>
 
       {/* work */}
-      <div className="container mx-auto grid max-w-3xl gap-8 px-5 sm:grid-cols-2">
+      <div className="container mx-auto grid max-w-3xl gap-8 px-4 sm:grid-cols-2 md:px-6">
         {sections.map((section) => (
           <div key={section.title} className="space-y-8">
             <h2 className={headingClass}>{section.title}</h2>
@@ -273,7 +274,7 @@ export default function Page() {
       </div>
 
       {/* writing */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>writing</h2>
         <div className="space-y-2">
           <Link href="/blog/a-biography-written-in-code" className={linkClass}>
@@ -288,7 +289,7 @@ export default function Page() {
       </div>
 
       {/* hire me */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>hire me</h2>
         <div className="space-y-4">
           <p>
@@ -301,7 +302,7 @@ export default function Page() {
           </p>
           <p className="text-muted-foreground">{roles.join(" · ")}</p>
           <p>
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               The speed of a builder, the taste of someone who maintains tools for other developers,
               and the judgment that comes from shipping enough software to know where the sharp
               edges are.
@@ -311,12 +312,12 @@ export default function Page() {
       </div>
 
       {/* hobbies */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>hobbies</h2>
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               This year, I want to travel more and explore new places
             </span>
             .
@@ -328,7 +329,7 @@ export default function Page() {
       </div>
 
       {/* connect */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>connect</h2>
         <p>
           Want to chat? Leave a message on{" "}

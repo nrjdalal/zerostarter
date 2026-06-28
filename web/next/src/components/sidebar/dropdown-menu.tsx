@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 
@@ -52,7 +53,7 @@ export function SidebarDropdownMenu({
         render={
           <SidebarMenuButton
             size="lg"
-            className="data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground cursor-pointer border"
+            className="data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground border"
           />
         }
       >
@@ -65,21 +66,25 @@ export function SidebarDropdownMenu({
         <RiExpandUpDownLine className="ml-auto size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className={cn("w-(--anchor-width) min-w-56 rounded-lg", isMobile ? "mb-1" : "ml-3")}
+        className={cn(
+          "w-(--anchor-width) min-w-56 rounded-lg",
+          isMobile ? (mobileSide === "top" ? "mb-1" : "mt-1") : "ml-3",
+        )}
         side={isMobile ? mobileSide : "right"}
         align={align}
         sideOffset={4}
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              {header.leading}
-              <SidebarIdentity
-                primary={header.primary}
-                secondary={header.secondary}
-                secondaryClassName={header.secondaryClassName}
-              />
-            </div>
+            <Item size="xs" className="gap-2 px-1 py-1.5">
+              <ItemMedia>{header.leading}</ItemMedia>
+              <ItemContent className="gap-0">
+                <ItemTitle className="truncate">{header.primary}</ItemTitle>
+                <ItemDescription className={cn("truncate", header.secondaryClassName)}>
+                  {header.secondary}
+                </ItemDescription>
+              </ItemContent>
+            </Item>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

@@ -50,7 +50,7 @@ export async function SidebarShell({
                 </Badge>
               )}
             </Link>{" "}
-            <SidebarTrigger variant="secondary" className="bg-sidebar cursor-pointer border" />
+            <SidebarTrigger variant="secondary" className="bg-sidebar border" />
           </div>
           {header}
         </SidebarHeader>

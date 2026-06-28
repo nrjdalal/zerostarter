@@ -85,9 +85,7 @@ export function Access() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="w-24 cursor-pointer" variant="outline" />}>
-        Login
-      </DialogTrigger>
+      <DialogTrigger render={<Button className="w-24" variant="outline" />}>Login</DialogTrigger>
       <DialogContent className="max-w-md" initialFocus={false}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
@@ -140,7 +138,7 @@ export function Access() {
                 form="email"
                 type="submit"
                 variant="secondary"
-                className="w-full cursor-pointer"
+                className="w-full"
                 disabled={loader === "email"}
               >
                 {loader === "email" ? <Spinner /> : null}
@@ -159,7 +157,7 @@ export function Access() {
             <div className="grid gap-4">
               {isDev && (
                 <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
-                  <Button type="submit" variant="outline" className="w-full cursor-pointer">
+                  <Button type="submit" variant="outline" className="w-full">
                     Login (agents)
                   </Button>
                 </form>
@@ -168,7 +166,7 @@ export function Access() {
                 <Button
                   variant="outline"
                   type="button"
-                  className="w-full cursor-pointer"
+                  className="w-full"
                   onClick={async () => {
                     setLoader("github")
                     const res = await authClient.signIn.social({
@@ -190,7 +188,7 @@ export function Access() {
                 <Button
                   variant="outline"
                   type="button"
-                  className="w-full cursor-pointer"
+                  className="w-full"
                   onClick={async () => {
                     setLoader("google")
                     const res = await authClient.signIn.social({

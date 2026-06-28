@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react"
 
 import { Kbd } from "@/components/ui/kbd"
 import { SidebarInput, useSidebar } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 
 function isMacPlatform(): boolean {
   return typeof window !== "undefined" && window.navigator.userAgent.includes("Mac")
@@ -81,7 +82,7 @@ export function SidebarDocsSearch() {
         placeholder="Search"
         onClick={handleClick}
         readOnly
-        className={`cursor-pointer pl-8 ${isMobile ? "pr-3" : "pr-20"}`}
+        className={cn("cursor-default pl-8", isMobile ? "pr-3" : "pr-20")}
       />
       {!isMobile && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">

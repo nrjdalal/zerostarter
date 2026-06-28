@@ -76,7 +76,6 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          className="cursor-pointer"
           disabled={signingOut}
           onClick={async () => {
             if (signingOut) return

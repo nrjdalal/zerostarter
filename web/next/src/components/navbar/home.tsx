@@ -135,7 +135,7 @@ export function Navbar() {
           {session?.user ? (
             <Button
               role="link"
-              className="w-24 cursor-pointer"
+              className="w-24"
               variant="outline"
               onClick={() => setToDashboard(true)}
               render={<Link href="/dashboard" />}
@@ -155,7 +155,7 @@ export function Navbar() {
             <SheetTrigger
               render={
                 <Button
-                  className="-mr-2.5 size-8 cursor-pointer lg:hidden [&_svg]:size-4!"
+                  className="-mr-2.5 size-8 lg:hidden [&_svg]:size-4!"
                   aria-label="Open menu"
                   size="sm"
                   variant="outline"
