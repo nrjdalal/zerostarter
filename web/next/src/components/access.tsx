@@ -213,17 +213,16 @@ export function Access() {
               </div>
             </div>
           )}
-          {isError ? (
-            <p className="text-muted-foreground text-center text-sm">
-              Could not load sign-in options. Refresh to try again.
-            </p>
-          ) : (
-            hasNoProviders && (
+          {hasNoProviders &&
+            (isError ? (
+              <p className="text-muted-foreground text-center text-sm">
+                Could not load sign-in options. Refresh to try again.
+              </p>
+            ) : (
               <p className="text-muted-foreground text-center text-sm">
                 No sign-in options are configured yet.
               </p>
-            )
-          )}
+            ))}
         </div>
       </DialogContent>
     </Dialog>
