@@ -230,13 +230,11 @@ bun dev`
         <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
           <div className="mx-auto flex min-h-[700px] max-w-3xl flex-col justify-center text-center">
             <Badge variant="secondary" className="mx-auto mb-6">
-              <span>
-                The{" "}
-                <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
-                  scalable and production-ready
-                </span>{" "}
-                SaaS starter kit
-              </span>
+              The{" "}
+              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
+                scalable and production-ready
+              </span>{" "}
+              SaaS starter kit
             </Badge>
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
               Go from 0 to production in{" "}
