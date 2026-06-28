@@ -10,8 +10,8 @@ export default function GlobalError(props: {
 }) {
   return (
     <html lang="en">
-      <body>
-        <RouteError {...props} className="min-h-svh" />
+      <body className="flex min-h-svh flex-col">
+        <RouteError {...props} className="flex-1" />
       </body>
     </html>
   )
