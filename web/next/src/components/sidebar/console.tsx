@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import type { NavGroup } from "@/lib/docs/types"
+import { isActive } from "@/lib/utils"
 
 const mainItems = [
   { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
@@ -34,7 +35,7 @@ export function SidebarConsoleHeader() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={pathname === "/console" || pathname === "/console/"}
+              isActive={isActive(pathname, "/console")}
               tooltip="Dashboard"
               className="data-active:font-normal"
               render={<Link href="/console" onClick={close} />}
@@ -71,14 +72,12 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
       <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {mainItems.map((item) => {
-          const isActive = item.exact
-            ? pathname === item.url || pathname === item.url + "/"
-            : pathname === item.url || pathname?.startsWith(item.url + "/")
+          const active = isActive(pathname, item.url, { exact: item.exact })
 
           return (
             <SidebarMenuItem key={item.url}>
               <SidebarMenuButton
-                isActive={isActive}
+                isActive={active}
                 tooltip={item.title}
                 className="data-active:font-normal"
                 render={<Link href={item.url} onClick={close} />}

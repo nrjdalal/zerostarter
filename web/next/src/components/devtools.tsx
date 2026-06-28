@@ -45,10 +45,13 @@ export function DevTools() {
         </>
       )}
 
-      <RiCodeLine
-        className="size-7.5 cursor-pointer p-1.5"
+      <button
+        type="button"
+        aria-label="Toggle devtools"
         onClick={() => setExpandDevtools(!expandDevtools)}
-      />
+      >
+        <RiCodeLine className="size-8 p-1.5" />
+      </button>
     </div>
   )
 }

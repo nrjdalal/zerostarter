@@ -21,7 +21,7 @@ export function SidebarDashboardUserActions({
         <SidebarMenuButton render={<Link href="/docs" />}>
           <RiBookLine />
           <span>Documentation</span>
-          <span className="text-muted-foreground ml-auto text-[0.6rem]">v{config.app.version}</span>
+          <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
       <SidebarUserMenu user={user} area={canAccessConsole ? "dashboard" : undefined} />

@@ -219,7 +219,7 @@ bun dev`
   })
 
   return (
-    <div className="flex flex-col select-none">
+    <main className="flex flex-col select-none">
       {/* Hero Section */}
       <section
         aria-label="Hero"
@@ -796,6 +796,6 @@ bun dev`
           </div>
         </div>
       </section>
-    </div>
+    </main>
   )
 }

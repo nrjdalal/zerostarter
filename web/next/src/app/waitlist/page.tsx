@@ -1,7 +1,6 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiLoaderLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
@@ -12,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
@@ -26,6 +26,7 @@ function WaitlistCount() {
     queryKey: ["waitlist-count"],
     queryFn: async () => {
       const { data, error } = await unwrap(apiClient.waitlist.$get())
+      // swallowing the error is deliberate: the count is non-critical chrome, so a failure just hides it
       if (error) return null
       return data
     },
@@ -157,11 +158,7 @@ export default function WaitlistPage() {
               className="h-12 w-full px-6 text-base sm:w-auto"
               disabled={joinWaitlist.isPending}
             >
-              {joinWaitlist.isPending ? (
-                <RiLoaderLine className="animate-spin" />
-              ) : (
-                "Join the waitlist"
-              )}
+              {joinWaitlist.isPending ? <Spinner /> : "Join the waitlist"}
             </Button>
           </form>
         )}
