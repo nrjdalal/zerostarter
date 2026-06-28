@@ -138,7 +138,6 @@ export function SidebarDashboardOrgSwitcher() {
           .map((org) => (
             <DropdownMenuItem
               key={org.id}
-              className="cursor-pointer"
               disabled={isOrgTransitioning}
               onClick={() => handleSetActive(org.id)}
             >
@@ -146,11 +145,7 @@ export function SidebarDashboardOrgSwitcher() {
               {org.name}
             </DropdownMenuItem>
           ))}
-        <DropdownMenuItem
-          className="cursor-pointer"
-          disabled={isOrgTransitioning}
-          onClick={() => setCreateDialogOpen(true)}
-        >
+        <DropdownMenuItem disabled={isOrgTransitioning} onClick={() => setCreateDialogOpen(true)}>
           <RiAddLine />
           Create organization
         </DropdownMenuItem>
@@ -205,7 +200,7 @@ export function SidebarDashboardOrgSwitcher() {
             <Button
               type="submit"
               variant="secondary"
-              className="w-full cursor-pointer"
+              className="w-full"
               disabled={form.state.isSubmitting}
             >
               {form.state.isSubmitting ? <Spinner /> : null}
