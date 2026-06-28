@@ -31,6 +31,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Exactly one `<h1>` per page (the page title). Sections use `<h2>` and below; never skip levels.
 - Use the existing type scale and tokens; do not introduce font sizes outside the scale.
+- Marketing-page headings (home, hire, resume) are `font-bold`, unified across all three. Sub-headings within a section stay lighter (e.g. a `font-semibold` `h3`) to preserve hierarchy; non-heading display text (a stat value) is not a heading and follows its own weight.
 
 ## Color and theming
 
