@@ -81,7 +81,7 @@ export function SidebarDocsSearch() {
         placeholder="Search"
         onClick={handleClick}
         readOnly
-        className={`cursor-pointer pl-8 ${isMobile ? "pr-3" : "pr-20"}`}
+        className={`cursor-default pl-8 ${isMobile ? "pr-3" : "pr-20"}`}
       />
       {!isMobile && (
         <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">

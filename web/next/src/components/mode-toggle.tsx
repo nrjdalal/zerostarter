@@ -25,7 +25,7 @@ export function ModeToggle() {
 
   return (
     <Button
-      className="size-8 cursor-pointer [&_svg]:size-4!"
+      className="size-8 [&_svg]:size-4!"
       onClick={smartToggle}
       aria-label="Switch between system/light/dark version"
       size="sm"
