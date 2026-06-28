@@ -148,9 +148,9 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <main className="bg-background text-foreground min-h-screen space-y-16 py-36 text-lg">
+    <main className="bg-background text-foreground min-h-dvh space-y-16 py-24 text-lg">
       {/* hook */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
 
         <div className="space-y-4">
@@ -230,7 +230,7 @@ export default function Page() {
       </div>
 
       {/* proof */}
-      <div className="container mx-auto max-w-3xl px-5">
+      <div className="container mx-auto max-w-3xl px-4 md:px-6">
         <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3">
           {proof.map((stat) => (
             <div key={stat.value} className="space-y-1">
@@ -242,7 +242,7 @@ export default function Page() {
       </div>
 
       {/* work */}
-      <div className="container mx-auto grid max-w-3xl gap-8 px-5 sm:grid-cols-2">
+      <div className="container mx-auto grid max-w-3xl gap-8 px-4 sm:grid-cols-2 md:px-6">
         {sections.map((section) => (
           <div key={section.title} className="space-y-8">
             <h2 className={headingClass}>{section.title}</h2>
@@ -273,7 +273,7 @@ export default function Page() {
       </div>
 
       {/* writing */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>writing</h2>
         <div className="space-y-2">
           <Link href="/blog/a-biography-written-in-code" className={linkClass}>
@@ -288,7 +288,7 @@ export default function Page() {
       </div>
 
       {/* hire me */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>hire me</h2>
         <div className="space-y-4">
           <p>
@@ -311,7 +311,7 @@ export default function Page() {
       </div>
 
       {/* hobbies */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>hobbies</h2>
         <div className="space-y-4">
           <p>
@@ -328,7 +328,7 @@ export default function Page() {
       </div>
 
       {/* connect */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-5">
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>connect</h2>
         <p>
           Want to chat? Leave a message on{" "}

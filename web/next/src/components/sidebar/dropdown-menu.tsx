@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 
@@ -72,14 +73,15 @@ export function SidebarDropdownMenu({
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              {header.leading}
-              <SidebarIdentity
-                primary={header.primary}
-                secondary={header.secondary}
-                secondaryClassName={header.secondaryClassName}
-              />
-            </div>
+            <Item size="xs" className="gap-2 px-1 py-1.5">
+              <ItemMedia>{header.leading}</ItemMedia>
+              <ItemContent className="gap-0">
+                <ItemTitle className="truncate">{header.primary}</ItemTitle>
+                <ItemDescription className={cn("truncate", header.secondaryClassName)}>
+                  {header.secondary}
+                </ItemDescription>
+              </ItemContent>
+            </Item>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

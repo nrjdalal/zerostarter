@@ -20,6 +20,7 @@
 - Stay on the Tailwind scale. No off-ladder one-offs (`gap-7.5`, `size-4.5`, `w-45`, `mb-18`, `text-[0.6rem]`); snap to the nearest step.
 - `gap-2` is the workhorse for tight clusters.
 - Dashboard pages use the `DashboardShell` wrapper: `max-w-4xl` default, padding `p-4 sm:p-6`. Do not hand-roll `p-*` or `max-w-*` on dashboard pages.
+- Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter (hire and resume are aligned to home).
 
 ## Typography and headings
 
@@ -30,17 +31,19 @@
 
 - Use semantic tokens only: `text-muted-foreground`, `bg-card`, `border-border`, `bg-sidebar`, and friends. No hardcoded hex, rgb, or hsl in classNames or inline styles. The one exception is Satori-rendered OG images, which have no theme context.
 - Dark mode is `next-themes` (`attribute="class"`); pair every `dark:` with a token.
-- Success styling currently uses raw `green-*` (no `--success` token yet; see Open decisions).
+- Success uses the `--success` token (green-600 in light, green-500 in dark, mirroring `--destructive`): `text-success`, `bg-success/10`, `border-success/20`. Foreground-less, like `--destructive`.
 
 ## Layout and landmarks
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so do NOT add one to the root layout or you nest landmarks.
 - Collapsible app shells go through `SidebarShell`.
+- Full-height app surfaces use `min-h-dvh` (the body and the marketing pages); the shadcn sidebar keeps its `svh`.
 
 ## Components
 
 - **Loading:** `<Spinner />`, bare, at its default `size-4`. Never hand-roll `RiLoaderLine`.
 - **Empty states:** the `Empty` primitive (`EmptyHeader` / `EmptyMedia` / `EmptyTitle` / ...). Do not hand-roll empty messages.
+- **Badges and pills:** use `<Badge>` (with a variant, plus className for semantic color like `text-success`) over a hand-rolled rounded-full span. Identity rows (avatar + name + email) use `Item` / `ItemMedia` / `ItemContent`. Exception: the sidebar trigger identity stays hand-rolled inside `SidebarMenuButton` (the chevron is a sibling there).
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (do not stack a second `space-y-*`). Do not hand-roll labels or error markup.
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog uses `max-w-md`.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
@@ -48,10 +51,4 @@
 
 ## Open decisions
 
-Not yet decided; propose before committing, then move into the section above once chosen:
-
-- The two marketing scales (hire and resume use `py-36` + `space-y-16`; home uses `py-24`): align them or keep them distinct?
-- Viewport idiom: `min-h-screen` vs `svh` vs `dvh`; standardize on one?
-- Add a `--success` token (mirroring `--destructive`) and switch the green success literals to it.
-- Adopt `Empty` / `Item` / `Badge` for the hand-rolled pills and identity rows (api-status, home hero, sidebar identity).
-- A shared container-gutter token vs per-surface padding.
+None open. Resolved decisions are folded into the sections above; add new ones here (propose before committing, then move up once chosen).
