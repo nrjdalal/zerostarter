@@ -12,6 +12,7 @@ import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Hire",
@@ -151,13 +152,13 @@ export default function Page() {
     <main className="bg-background text-foreground min-h-dvh space-y-16 py-24 text-lg">
       {/* hook */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
-        <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>nrjdalal</h1>
+        <h1 className={cn(caveat.className, "text-3xl font-semibold tracking-wide")}>nrjdalal</h1>
 
         <div className="space-y-4">
           <p>
             AI-native product engineer building SaaS products, developer tools, and agent
             infrastructure.{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               I learn by shipping.
             </span>
           </p>
@@ -178,7 +179,7 @@ export default function Page() {
           <p>
             Before that I helped take SaaS and AI products from 0 to 1, shipped scraping- and
             automation-heavy SaaS, and built open-source tools now used by projects including{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               TanStack, SST, Electric SQL, and Storybook
             </span>
             . I care about clean systems, fast builds, strong types, useful docs, and software that
@@ -301,7 +302,7 @@ export default function Page() {
           </p>
           <p className="text-muted-foreground">{roles.join(" · ")}</p>
           <p>
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               The speed of a builder, the taste of someone who maintains tools for other developers,
               and the judgment that comes from shipping enough software to know where the sharp
               edges are.
@@ -316,7 +317,7 @@ export default function Page() {
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
-            <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
               This year, I want to travel more and explore new places
             </span>
             .

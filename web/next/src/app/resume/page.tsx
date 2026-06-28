@@ -5,6 +5,7 @@ import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",
@@ -170,14 +171,14 @@ export default function Page() {
     <main className="bg-background text-foreground min-h-dvh space-y-16 py-24 text-base">
       {/* header */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
-        <h1 className={`${caveat.className} text-3xl font-semibold tracking-wide`}>résumé</h1>
+        <h1 className={cn(caveat.className, "text-3xl font-semibold tracking-wide")}>résumé</h1>
         <p className="text-lg">
           AI-native Product Engineer with 5+ years shipping production SaaS, developer tools,
           full-stack TypeScript systems, and AI agent infrastructure. Currently building AI-powered
           product surfaces and agent tooling at LightWork AI. Author of 250+ public repositories and
           open-source tools with 1,045+ GitHub stars, used by projects including TanStack, SST,
           Electric SQL, and Storybook.{" "}
-          <span className={`${newsreader.className} font-medium tracking-wide italic`}>
+          <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
         </p>
