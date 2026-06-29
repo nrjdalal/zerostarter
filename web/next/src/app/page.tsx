@@ -224,11 +224,11 @@ bun dev`
       {/* Hero Section */}
       <section
         aria-label="Hero"
-        className="from-background via-background to-muted/20 relative flex min-h-dvh flex-col overflow-hidden border-b bg-linear-to-b"
+        className="from-background via-background to-muted/20 relative flex min-h-svh flex-col overflow-hidden border-b bg-linear-to-b"
       >
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
         <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
-          <div className="mx-auto flex min-h-[700px] max-w-3xl flex-col justify-center text-center">
+          <div className="mx-auto flex min-h-160 max-w-3xl flex-col justify-center text-center">
             <Badge variant="secondary" className="mx-auto mb-6">
               The{" "}
               <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
@@ -335,7 +335,7 @@ bun dev`
                 Zero speed
               </span>
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Everything you need to launch your SaaS in no time. Get all the core functionalities
               and integrations out of the box, so you can focus on the business.
             </p>
@@ -530,7 +530,7 @@ bun dev`
         <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Why ZeroStarter?</h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Architecture & Best Practices as a Service, ZeroStarter isn't just a starter template,
               it's a complete blueprint for building production-ready SaaS applications.
             </p>
@@ -623,7 +623,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Type-Safe API Calls
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Full type inference from backend to frontend. No more manual type definitions. See the
               magic happen.
             </p>
@@ -649,7 +649,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Get Started in Minutes
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Clone, install, and start building. It's that simple.
             </p>
           </div>
@@ -685,7 +685,7 @@ bun dev`
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
               Have another question? Check out our documentation or reach out.
             </p>
           </div>
@@ -754,7 +754,7 @@ bun dev`
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to Build Your SaaS?
           </h2>
-          <p className="text-muted-foreground mb-8 text-lg">
+          <p className="text-muted-foreground mb-8 sm:text-lg">
             Start building your next project with {site.name} today. Skip the complex setups and
             start building features on day one.
           </p>

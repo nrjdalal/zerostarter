@@ -31,6 +31,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Exactly one `<h1>` per page (the page title). Sections use `<h2>` and below; never skip levels.
 - Use the existing type scale and tokens; do not introduce font sizes outside the scale.
+- Marketing-page headings (home, hire, resume) are `font-bold`, unified across all three. Sub-headings within a section stay lighter (e.g. a `font-semibold` `h3`) to preserve hierarchy; non-heading display text (a stat value) is not a heading and follows its own weight.
 
 ## Color and theming
 
@@ -42,7 +43,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so do NOT add one to the root layout or you nest landmarks.
 - Collapsible app shells go through `SidebarShell`.
-- Full-height app surfaces use `min-h-dvh` (the body and the marketing pages); the shadcn sidebar keeps its `svh`.
+- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
 
 ## Components
 

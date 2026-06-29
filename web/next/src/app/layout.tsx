@@ -63,7 +63,7 @@ export default function RootLayout({
         lang="en"
         suppressHydrationWarning
       >
-        <body className="min-h-dvh">
+        <body className="min-h-svh">
           <InnerProvider>
             <Navbar />
             {children}
