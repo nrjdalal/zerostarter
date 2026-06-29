@@ -1,3 +1,19 @@
+## v0.0.68
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.67...v0.0.68)
+
+### 🚀 Enhancements
+
+- **web:** Add DashboardShell + DashboardHeader page wrappers ([#589](https://github.com/nrjdalal/zerostarter/pull/589))
+
+### 🩹 Fixes
+
+- **web:** Log the swallowed active-org restore error (a11y L3; L4 verified) ([#587](https://github.com/nrjdalal/zerostarter/pull/587))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.67
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.66...v0.0.67)
