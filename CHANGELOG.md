@@ -1,3 +1,15 @@
+## v0.0.69
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.68...v0.0.69)
+
+### 🚀 Enhancements
+
+- **web:** Wire the console landing with DashboardShell + DashboardHeader ([#590](https://github.com/nrjdalal/zerostarter/pull/590))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.68
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.67...v0.0.68)

@@ -184,8 +184,8 @@ export default function Page() {
         </p>
         <p className="text-muted-foreground text-sm">
           New Delhi, India ·{" "}
-          <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
-            nrjdalal.dev@gmail.com
+          <a href="mailto:admin@nrjdalal.com" className={linkClass}>
+            admin@nrjdalal.com
           </a>{" "}
           ·{" "}
           <a
