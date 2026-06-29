@@ -21,11 +21,16 @@ export default async function Layout({ children }: { children: React.ReactNode }
       const url = `${config.api.internalUrl || config.api.url}/api/auth/organization/set-active`
       const reqHeaders = Object.fromEntries((await headers()).entries())
       try {
-        await fetch(url, {
+        const response = await fetch(url, {
           method: "POST",
           headers: { ...reqHeaders, "content-type": "application/json" },
           body: JSON.stringify({ organizationId: lastOrgId }),
         })
+        if (!response.ok) {
+          console.error(
+            `failed to restore active organization: ${response.status} ${response.statusText}`,
+          )
+        }
       } catch (error) {
         console.error("failed to restore active organization", error)
       }
