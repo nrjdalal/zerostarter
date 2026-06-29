@@ -43,7 +43,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so do NOT add one to the root layout or you nest landmarks.
 - Collapsible app shells go through `SidebarShell`.
-- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
+- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
 
 ## Components
 
