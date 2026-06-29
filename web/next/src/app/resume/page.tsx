@@ -163,7 +163,7 @@ const skills: { group: string; items: string }[] = [
   },
 ]
 
-const sectionHeading = `${caveat.className} text-muted-foreground text-3xl font-semibold tracking-wide`
+const sectionHeading = `${caveat.className} text-muted-foreground text-3xl font-bold tracking-wide`
 const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
@@ -171,7 +171,7 @@ export default function Page() {
     <main className="bg-background text-foreground min-h-svh space-y-16 py-24 text-base">
       {/* header */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
-        <h1 className={cn(caveat.className, "text-3xl font-semibold tracking-wide")}>résumé</h1>
+        <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>résumé</h1>
         <p className="text-lg">
           AI-native Product Engineer with 5+ years shipping production SaaS, developer tools,
           full-stack TypeScript systems, and AI agent infrastructure. Currently building AI-powered
