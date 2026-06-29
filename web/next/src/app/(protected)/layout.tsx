@@ -26,7 +26,9 @@ export default async function Layout({ children }: { children: React.ReactNode }
           headers: { ...reqHeaders, "content-type": "application/json" },
           body: JSON.stringify({ organizationId: lastOrgId }),
         })
-      } catch {}
+      } catch (error) {
+        console.error("failed to restore active organization", error)
+      }
     }
   }
 
