@@ -1,8 +1,8 @@
 # `zerostarter` CLI: Design (2026-06-21)
 
-> **Status: superseded / aspirational planning.** The shipped CLI took a deliberately simpler path than this plan: whole-directory removals + bundled template stubs + literal-string edits. There is **no `doctor` command, no ts-morph AST edits, and no token sweep**. For the actual shipped behavior see `packages/cli/src/convert.ts` and the `2026-06-21-init-template-residue.md` + `2026-06-21-scaffold-dangling-refs.md` audits. This document is kept for the original design rationale.
+> **Status: superseded / aspirational planning.** The shipped CLI took a deliberately simpler path than this plan: whole-directory removals + bundled template stubs + literal-string edits. There is **no `doctor` command, no ts-morph AST edits, and no token sweep**. For the actual shipped behavior see `packages/cli/src/convert.ts`. This document is kept for the original design rationale.
 
-A thorough plan for `zerostarter`, a CLI that turns a fresh zerostarter scaffold into a clean product (`init`) and re-baselines existing forks on upstream (`sync`). It automates the strip/swap/replace work catalogued in `.github/audit/2026-06-20-custom-content-inventory.md`, verified file-by-file in the swap manifest below.
+A thorough plan for `zerostarter`, a CLI that turns a fresh zerostarter scaffold into a clean product (`init`) and re-baselines existing forks on upstream (`sync`). It automates the strip/swap/replace work, verified file-by-file in the swap manifest below.
 
 Grounded in two studies: the verified swap manifest (exact files/lines), and the conventions of the author's own published CLI, `inscope` (`github.com/nrjdalal/inscope`), which is the build model.
 
