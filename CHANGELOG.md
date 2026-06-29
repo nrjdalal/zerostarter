@@ -1,3 +1,16 @@
+## v0.0.70
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.69...v0.0.70)
+
+### 🏡 Chore
+
+- Delete completed audit docs ([#592](https://github.com/nrjdalal/zerostarter/pull/592))
+- Consolidate contact email to admin@nrjdalal.com ([#576](https://github.com/nrjdalal/zerostarter/pull/576))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.69
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.68...v0.0.69)
