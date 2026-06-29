@@ -1,3 +1,20 @@
+## v0.0.67
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.66...v0.0.67)
+
+### 🚀 Enhancements
+
+- **web:** Route boundaries + standardize viewport idiom (svh top-level, flex-1 nested) ([#583](https://github.com/nrjdalal/zerostarter/pull/583))
+
+### 💅 Refactors
+
+- **web:** Group route boundary helpers into components/route/ ([#585](https://github.com/nrjdalal/zerostarter/pull/585))
+- **web:** Marketing polish (responsive hero + body copy, unified heading weight) ([#586](https://github.com/nrjdalal/zerostarter/pull/586))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.66
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.65...v0.0.66)

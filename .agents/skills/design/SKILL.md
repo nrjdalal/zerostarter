@@ -24,7 +24,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Stay on the Tailwind scale. No off-ladder one-offs (`gap-7.5`, `size-4.5`, `w-45`, `mb-18`, `text-[0.6rem]`); snap to the nearest step.
 - `gap-2` is the workhorse for tight clusters.
-- Dashboard and console pages use the collapsible `SidebarShell`. Their page content targets `max-w-4xl` with `p-4 sm:p-6` padding; the `DashboardShell` wrapper that encapsulates this is not in this codebase yet (it lands in a separate PR), so apply those values directly until it does.
+- Dashboard and console pages use the collapsible `SidebarShell` and wrap their content in `DashboardShell` (`components/dashboard/shell.tsx`): it owns `mx-auto` + width + `p-4 sm:p-6` via a `size` variant (`sm`/`md`/`lg`/`full`, default `md` = `max-w-4xl`). The title/description/actions row is `DashboardHeader`. Don't hand-roll `mx-auto`/`max-w-*`/`p-*` or the header layout.
 - Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter (hire and resume are aligned to home).
 
 ## Typography and headings
@@ -43,7 +43,7 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so do NOT add one to the root layout or you nest landmarks.
 - Collapsible app shells go through `SidebarShell`.
-- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
+- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
 
 ## Components
 
