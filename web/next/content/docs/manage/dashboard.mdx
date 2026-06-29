@@ -8,6 +8,8 @@ description: Protected dashboard with authentication, organization management, a
 
 The dashboard is a protected area at `/dashboard` that requires authentication. It includes organization switching, user management, and a collapsible sidebar. The layout is defined in `web/next/src/app/(protected)/layout.tsx`.
 
+Page content is wrapped in the `DashboardShell` + `DashboardHeader` components (see [Page content](#page-content)). The privileged `/console` area shares the same `SidebarShell` and the same wrappers.
+
 ## Authentication Guard
 
 The protected layout checks for a valid session server-side:
@@ -45,9 +47,34 @@ Located at `web/next/src/components/sidebar/dashboard/org-switcher.tsx`:
 Located at `web/next/src/components/sidebar/dashboard/user-actions.tsx`:
 
 - Links to documentation, with a version badge
+- Surfaces a "Dashboard" cross-link to `/console` when the user is an admin (`canAccessConsole`)
 - Renders the shared `SidebarUserMenu`
 
 The user avatar, name, and email, the optional feedback link (shown when `NEXT_PUBLIC_USERJOT_URL` is set), and the sign-out action all live in the shared `SidebarUserMenu` component at `web/next/src/components/sidebar/user-menu.tsx`. Sign-out redirects to the home page.
+
+## Page content
+
+Protected pages wrap their content in two components so pages never hand-roll centering, width, padding, or the header layout:
+
+- **`DashboardShell`** (`web/next/src/components/dashboard/shell.tsx`): the content container. Owns `mx-auto`, width, and `p-4 sm:p-6` padding via a `size` variant — `sm` (`max-w-2xl`), `md` (`max-w-4xl`, the default), `lg` (`max-w-6xl`), `full` (`max-w-none`).
+- **`DashboardHeader`** (`web/next/src/components/dashboard/header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions` (a right-aligned node, e.g. a button), and renders the page's single `<h1>`.
+
+Both `/dashboard` and `/console` currently render a minimal header (a "Welcome back." greeting) — they are the starting points you extend:
+
+```tsx
+import { DashboardHeader } from "@/components/dashboard/header"
+import { DashboardShell } from "@/components/dashboard/shell"
+
+export default function Page() {
+  return (
+    <DashboardShell>
+      <DashboardHeader title="Dashboard" description="Welcome back." />
+    </DashboardShell>
+  )
+}
+```
+
+Add your content as children of `DashboardShell`, below the header.
 
 ## Adding Dashboard Pages
 
@@ -57,31 +84,37 @@ The user avatar, name, and email, the optional feedback link (shown when `NEXT_P
 web/next/src/app/(protected)/
 ├── layout.tsx          ← Auth guard + sidebar
 ├── dashboard/
-│   └── page.tsx        ← Main dashboard (currently empty)
+│   └── page.tsx        ← Dashboard home (DashboardShell + DashboardHeader)
 └── settings/           ← illustrative example, not in the repo
     └── page.tsx        ← New page example
 ```
 
 2. The page automatically inherits the authenticated layout with sidebar.
 
-3. Access session data in your page:
+3. Wrap content in the shell + header, reading session data server-side as needed:
 
-```ts
+```tsx
+import { DashboardHeader } from "@/components/dashboard/header"
+import { DashboardShell } from "@/components/dashboard/shell"
 import { auth } from "@/lib/auth"
 
 export default async function SettingsPage() {
   const session = await auth.api.getSession()
-  return <div>Welcome, {session?.user.name}</div>
+  return (
+    <DashboardShell>
+      <DashboardHeader title="Settings" description={`Signed in as ${session?.user.name}`} />
+    </DashboardShell>
+  )
 }
 ```
 
 ## Sidebar Configuration
 
-The sidebar chrome is not built inline in the layout. It lives in the shared `SidebarShell` component at `web/next/src/components/sidebar/shell.tsx`, which is reused by both the dashboard and console layouts. The dashboard layout passes in `header` and `footer`; `SidebarShell` owns the provider, header brand, content, footer, and rail. (The optional `badge` prop is used by the console layout, not the dashboard.)
+The sidebar chrome is not built inline in the layout. It lives in the shared `SidebarShell` component at `web/next/src/components/sidebar/shell.tsx`, which is reused by both the dashboard and console layouts. The dashboard layout passes in `header` and `footer`; `SidebarShell` owns the provider, header brand, content, footer, and rail. The optional `badge` and `homeHref` props are set by the console layout (`badge` for the "Console" tag, `homeHref="/console"` to point the brand link at the console home); both default to dashboard values (no badge, `homeHref="/"`).
 
 The shell uses the shadcn/ui `Sidebar` component with `collapsible="icon"` mode. It consists of:
 
-- **Header**: brand (`site.name`, optionally with the `badge`), the sidebar trigger, and the caller's `header` node (for the dashboard, the org switcher)
+- **Header**: brand (`site.name`, linking to `homeHref`, optionally with the `badge`), the sidebar trigger, and the caller's `header` node (for the dashboard, the org switcher)
 - **Content**: the caller's `nav` node (empty for the dashboard; add navigation items here)
 - **Footer**: the caller's `footer` node (for the dashboard, the user actions)
 

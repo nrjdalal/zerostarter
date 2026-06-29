@@ -38,7 +38,7 @@ Only the per-page `.md`/`.txt` aliases under `/docs/*` and `/blog/*` are rewritt
 Two route handlers back these endpoints, and both are `force-static` with `revalidate = 60`:
 
 - `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts` serves `/llms.txt` and the `/llms.txt/docs` and `/llms.txt/blog` index views, plus every per-page alias rewritten from `/docs/*` and `/blog/*`. It uses `docsSource` and `blogSource` from Fumadocs, sorts docs by `meta.json` order, and lists only published blog posts via `getPublishedBlogPosts()`. Console docs are deliberately excluded (privacy boundary).
-- `web/next/src/app/(llms.txt)/llms-full.txt/route.ts` serves `/llms-full.txt`: every docs and blog page concatenated into one file, prefixed with `site.llmsFullPreamble` from `packages/config/src/site.ts`.
+- `web/next/src/app/(llms.txt)/llms-full.txt/route.ts` serves `/llms-full.txt`: a `# {site.name}` title and `> {site.description}` blockquote, then `site.llmsFullPreamble` (from `packages/config/src/site.ts`), then every docs and blog page concatenated with `---` separators.
 
 Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`, which:
 

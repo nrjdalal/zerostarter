@@ -44,6 +44,7 @@ Theme colors are defined in `web/next/src/app/globals.css` using OKLch color spa
   --primary: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --border: oklch(0.922 0 0);
+  --success: oklch(0.627 0.194 149.214);
   /* ... */
 }
 
@@ -51,11 +52,12 @@ Theme colors are defined in `web/next/src/app/globals.css` using OKLch color spa
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
+  --success: oklch(0.723 0.219 149.579);
   /* ... */
 }
 ```
 
-These variables are consumed by Tailwind utility classes like `bg-background`, `text-foreground`, `border-border`, etc.
+These variables are consumed by Tailwind utility classes like `bg-background`, `text-foreground`, `border-border`, etc. The `--success` token (green, mirroring `--destructive`) backs `text-success`, `bg-success/10`, and `border-success/20`.
 
 ## Tailwind Configuration
 

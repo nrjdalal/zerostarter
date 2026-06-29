@@ -31,7 +31,7 @@ All API responses use a standardized JSON envelope:
 }
 ```
 
-Routes never build this envelope by hand. They `throw`, `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one, and the central `onError` handler in `api/hono/src/lib/error.ts` is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `onError` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
+Routes never build this envelope by hand. They `throw`, `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one, and the central `errorHandler` in `api/hono/src/lib/error.ts` (registered via `app.onError`) is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `errorHandler` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
 
 ### Consuming responses on the client
 
@@ -82,7 +82,7 @@ When a Zod validation fails, the response includes the full issues array:
 }
 ```
 
-Route-level validators (e.g. `sValidator` on the waitlist `POST`) `throw new ApiError(400, "VALIDATION_ERROR", message, { issues })` on failure, so `onError` shapes the 400 in one place. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
+Route-level validators (e.g. `sValidator` on the waitlist `POST`) `throw new ApiError(400, "VALIDATION_ERROR", message, { issues })` on failure, so `errorHandler` shapes the 400 in one place. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
 
 A body that is present but unparseable (malformed JSON, malformed form-data) is a client error, not a server error: Hono throws an `HTTPException`, and `errorHandler` returns it with the thrown status (`400 BAD_REQUEST`) instead of masking it as a `500`.
 
@@ -168,6 +168,7 @@ Applied to protected routes (e.g., `/api/v1/*`):
 /api/docs               → Scalar API documentation UI
 /api/auth/*             → Better Auth handlers (session, OAuth, etc.)
 /api/auth/get-session   → Session endpoint hit by the Next server-side auth.api.getSession helper
+/api/auth/providers     → Enabled OAuth providers (configured-provider list the sign-in UI reads)
 /api/agents/*           → Agent sign-in (local only, trusted Origin)
 /api/v1/*               → Protected routes (requires auth middleware)
   /api/v1/session       → Current session data
@@ -212,7 +213,7 @@ export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddlew
 
 The `new Hono<{ Variables: Session }>()` generic (with `import type { Session } from "@packages/auth"`) is what makes `c.get("user")` and `c.get("session")` typed, matching the real `v1Router`. The `authMiddleware` populates those context variables.
 
-To emit an error from a handler, `throw new ApiError(status, code, message)` (a domain code) or `throw new HTTPException(status, { message })` (a standard one); `onError` builds the envelope, so never construct it inline.
+To emit an error from a handler, `throw new ApiError(status, code, message)` (a domain code) or `throw new HTTPException(status, { message })` (a standard one); `errorHandler` builds the envelope, so never construct it inline.
 
 2. Register in `api/hono/src/index.ts` if it's a new router. The app sets `.basePath("/api")`, so the route path is relative to `/api`:
 
@@ -243,7 +244,7 @@ describeRoute({
 
 ### Documenting error responses
 
-A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500, the only statuses reachable on any matched route, via the global rate limiter and `onError`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
+A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500, the only statuses reachable on any matched route, via the global rate limiter and `errorHandler`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
 
 - `authErrorResponses` (401), spread into routes behind `authMiddleware` (e.g. `/api/v1/*`).
 - `validationErrorResponses` (400), spread into routes with a request validator (e.g. the waitlist `POST`).
