@@ -228,7 +228,7 @@ bun dev`
       >
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
         <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
-          <div className="mx-auto flex max-w-3xl flex-col justify-center text-center">
+          <div className="mx-auto flex min-h-160 max-w-3xl flex-col justify-center text-center">
             <Badge variant="secondary" className="mx-auto mb-6">
               The{" "}
               <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
