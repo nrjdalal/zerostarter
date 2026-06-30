@@ -1,3 +1,19 @@
+## v0.0.71
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.70...v0.0.71)
+
+### 🩹 Fixes
+
+- **cli:** Sync convert strip-list with the current scaffold ([#596](https://github.com/nrjdalal/zerostarter/pull/596))
+
+### 📖 Documentation
+
+- Sync docs with current code (dashboard wrappers, structure, theming) ([#595](https://github.com/nrjdalal/zerostarter/pull/595))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.70
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.69...v0.0.70)
