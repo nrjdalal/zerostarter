@@ -1,3 +1,15 @@
+## v0.0.72
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.71...v0.0.72)
+
+### 🩹 Fixes
+
+- **access:** Spinner while providers load, surface error state ([#598](https://github.com/nrjdalal/zerostarter/pull/598))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.71
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.70...v0.0.71)
