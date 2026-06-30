@@ -18,7 +18,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "api.zerostarter.dev" }],
+      "has": [{ "type": "host", "value": "api.poc.zerostarter.dev" }],
       "destination": { "service": "api" }
     },
     { "source": "/api/(.*)", "destination": { "service": "api" } },
