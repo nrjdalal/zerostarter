@@ -22,7 +22,6 @@
       "has": [{ "type": "host", "value": "api.poc.zerostarter.dev" }],
       "destination": { "service": "api" }
     },
-    { "source": "/api/(.*)", "destination": { "service": "api" } },
     { "source": "/(.*)", "destination": { "service": "web" } }
   ]
 }
