@@ -37,7 +37,7 @@ export function Access() {
   const isDev = process.env.NODE_ENV === "development"
 
   // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
-  const { data, isError } = useQuery({
+  const { data, isError, isPending } = useQuery({
     queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
@@ -212,7 +212,11 @@ export function Access() {
             </div>
           )}
           {hasNoProviders &&
-            (isError ? (
+            (isPending ? (
+              <div className="text-muted-foreground flex justify-center">
+                <Spinner className="size-5" />
+              </div>
+            ) : isError ? (
               <p className="text-muted-foreground text-center text-sm">
                 Could not load sign-in options. Refresh to try again.
               </p>
