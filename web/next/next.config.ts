@@ -32,7 +32,7 @@ const libcExcludes = {
 }
 
 const nextConfig: NextConfig = {
-  // POC TEST: force default output (no standalone) to probe Services image optimizer
+  output: "standalone",
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
     outputFileTracingIncludes: {
