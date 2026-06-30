@@ -22,6 +22,6 @@
       "has": [{ "type": "host", "value": "api.poc.zerostarter.dev" }],
       "destination": { "service": "api" }
     },
-    { "source": "/((?!_next/image|_vercel/image).*)", "destination": { "service": "web" } }
+    { "source": "/(.*)", "destination": { "service": "web" } }
   ]
 }
