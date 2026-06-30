@@ -12,8 +12,8 @@
       "root": "api/hono/",
       "framework": "hono",
       "installCommand": "cd ../.. && bun install --ignore-scripts",
-      "buildCommand": "cd ../.. && turbo build:vercel --filter=@api/hono",
-      "outputDirectory": "vercel-bundle"
+      "buildCommand": "cd ../.. && turbo build --filter=@api/hono",
+      "outputDirectory": "bundle"
     }
   },
   "rewrites": [
