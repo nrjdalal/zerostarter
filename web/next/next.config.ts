@@ -32,7 +32,7 @@ const libcExcludes = {
 }
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: process.env.VERCEL ? undefined : "standalone",
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
     outputFileTracingIncludes: {
