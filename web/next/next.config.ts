@@ -32,7 +32,7 @@ const libcExcludes = {
 }
 
 const nextConfig: NextConfig = {
-  output: process.env.VERCEL ? undefined : "standalone",
+  // POC TEST: force default output (no standalone) to probe Services image optimizer
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
     outputFileTracingIncludes: {
