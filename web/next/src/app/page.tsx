@@ -114,6 +114,13 @@ export const techStack: Tech[] = [
     },
   },
   {
+    name: "PostHog",
+    icon: {
+      light: "/landing/posthog.svg",
+      dark: "/landing/posthog.svg",
+    },
+  },
+  {
     name: "React",
     icon: {
       light: "/landing/react-light.svg",
@@ -128,7 +135,7 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "Tanstack Query",
+    name: "TanStack Query",
     icon: {
       light: "/landing/tanstack.svg",
       dark: "/landing/tanstack.svg",
