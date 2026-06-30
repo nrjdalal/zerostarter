@@ -135,7 +135,7 @@ export const techStack: Tech[] = [
     },
   },
   {
-    name: "Tanstack Query",
+    name: "TanStack Query",
     icon: {
       light: "/landing/tanstack.svg",
       dark: "/landing/tanstack.svg",
