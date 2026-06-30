@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "web": {
+      "root": "web/next/",
+      "framework": "nextjs",
+      "installCommand": "cd ../.. && bun install --ignore-scripts",
+      "buildCommand": "cd ../.. && turbo build --filter=@web/next"
+    },
+    "api": {
+      "root": "api/hono/",
+      "framework": "hono",
+      "installCommand": "cd ../.. && bun install --ignore-scripts",
+      "buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono",
+      "outputDirectory": "vercel-bundle"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "api.zerostarter.dev" }],
+      "destination": { "service": "api" }
+    },
+    { "source": "/api/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
+}
