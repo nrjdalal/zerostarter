@@ -2,8 +2,8 @@
 export const site = {
   name: "ZeroStarter",
   description:
-    "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
-  tagline: "The SaaS Starter",
+    "The production-grade SaaS starter for AI and humans: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.",
+  tagline: "The production-grade SaaS starter for AI and humans",
   social: {
     github: "https://github.com/nrjdalal/zerostarter",
     x: "https://x.com/nrjdalal",
