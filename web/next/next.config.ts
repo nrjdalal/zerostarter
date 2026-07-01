@@ -40,20 +40,6 @@ const nextConfig: NextConfig = {
     },
   }),
   reactCompiler: true,
-  redirects: async () => {
-    return [
-      { source: "/docs/manage/blog", destination: "/docs/manage/content", permanent: true },
-      {
-        source: "/docs/manage/documentation",
-        destination: "/docs/manage/content",
-        permanent: true,
-      },
-      { source: "/docs/manage/feedback", destination: "/docs/manage/analytics", permanent: true },
-      { source: "/docs/manage/og-images", destination: "/docs/manage/seo", permanent: true },
-      { source: "/docs/manage/robots", destination: "/docs/manage/seo", permanent: true },
-      { source: "/docs/manage/sitemap", destination: "/docs/manage/seo", permanent: true },
-    ]
-  },
   rewrites: async () => {
     return [
       {
