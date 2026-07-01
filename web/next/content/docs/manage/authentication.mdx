@@ -27,6 +27,15 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 </Callout>
 
+## Callback URLs
+
+Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on. The API runs on port 4000 locally, so the callback path is `/api/auth/callback/<provider>` on your API origin:
+
+- **Local**: `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`
+- **Production**: the same `/api/auth/callback/<provider>` path on your deployed API origin, e.g. `https://api.example.com/api/auth/callback/github`
+
+This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".
+
 ## The admin role and /console
 
 `/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else keeps the default `user` role and gets a `notFound()`. There is no env allow-list: the role _is_ the source of truth. The same plugin adds ban columns (`banned`, `banReason`, `banExpires`) to `user` and lets an admin impersonate another user, recording who did it in `session.impersonatedBy`.

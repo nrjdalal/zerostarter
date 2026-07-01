@@ -44,6 +44,12 @@ The changelog, version bump, tag, and GitHub release are automated: you don't ru
 
 - `bun run shadcn:update`: update every shadcn/ui component, then `bun i`.
 
+<Callout type="warn">
+
+`bun run shadcn:update` overwrites everything under `web/next/src/components/ui/`, so hand-edits to those files are lost. Put durable customizations in `.github/scripts/shadcn-customize.ts`, which re-applies them after each sync; the `shadcn-sync` skill covers the workflow.
+
+</Callout>
+
 ## Console
 
 - `bun run console:roles <grant|revoke|list> [email]`: set a user's role to gate `/console` (the Better Auth `admin` plugin). `grant` makes them a console admin, `revoke` returns them to `user`, `list` shows the current admins.

@@ -6,6 +6,12 @@ description: Go from one command to a running, signed-in app, and where to go ne
 
 Two commands take you from nothing to a running, signed-in app.
 
+<Callout type="info" title="Prerequisites">
+
+Bun >= 1.3.14 must be installed (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
+
+</Callout>
+
 ```bash
 bunx zerostarter init
 bun run dev
