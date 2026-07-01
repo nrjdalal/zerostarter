@@ -19,7 +19,7 @@ the dir already holds a ZeroStarter clone it is used in place; otherwise the
 latest ZeroStarter is fetched into it first.
 
 Options:
-  -y, --yes      Skip prompts; fail instead of prompting when input is needed
+  -y, --yes      Skip prompts, taking defaults (provisions Postgres when Docker is running)
       --db       Provision a local Postgres (pglaunch) and migrate; needs Docker
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
@@ -122,6 +122,9 @@ export const init = async (argv: string[]) => {
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
+  } else {
+    // Non-interactive (--yes / non-TTY): take the prompt's default — provision when Docker is up.
+    wantDb = dockerUp
   }
   if (wantDb && dockerUp) {
     try {
