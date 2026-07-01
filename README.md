@@ -87,26 +87,20 @@ const { data, error } = await unwrap(apiClient.health.$get())
 ## 🚀 Quick Start
 
 <p align="center">
-  <img src=".github/assets/cli.gif" alt="zerostarter init scaffolds a rebranded product from ZeroStarter" width="900" />
+  <img src=".github/assets/cli.gif" alt="bunx zerostarter init scaffolds a rebranded product from ZeroStarter" width="900" />
 </p>
 
 ```bash
 # In a new, empty directory (its name becomes your project name):
-# scaffold a fresh product from ZeroStarter (fetches, rebrands, installs)
-npx zerostarter@latest init
-
-# Configure environment (see .env.example for what's required)
-cp .env.example .env
-
-# Set up the database
-bun run db:generate
-bun run db:migrate
+# scaffold a fresh product — fetches, rebrands, installs, provisions a local
+# Postgres (Docker), migrates, and writes .env with a generated auth secret
+bunx zerostarter init
 
 # Start the dev servers (web on :3000, api on :4000)
-bun dev
+bun run dev
 ```
 
-You will need a PostgreSQL database and GitHub plus Google OAuth credentials. PostHog analytics and user feedback are optional.
+That is the whole setup. When Docker is running, `init` provisions a local Postgres and migrates for you; otherwise set `POSTGRES_URL` in `.env` (a hosted database like Neon works) and run `bun run db:migrate`. GitHub/Google OAuth, PostHog analytics, and user feedback are all optional — add them to `.env` anytime.
 
 📖 **[Complete setup guide →](https://zerostarter.dev/docs/getting-started/setup)**
 

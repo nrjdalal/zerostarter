@@ -6,7 +6,7 @@ import { exists, read, write } from "@/io"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
-// Capture a command's stdout (throws on non-zero); used to read pglaunch's printed URL.
+// Capture a command's output (throws on non-zero); keeps its progress out of the CLI's own output.
 const capture = (cmd: string, args: string[], cwd: string): string =>
   execFileSync(cmd, args, {
     cwd,
@@ -14,11 +14,6 @@ const capture = (cmd: string, args: string[], cwd: string): string =>
     maxBuffer: 1 << 26,
     stdio: ["ignore", "pipe", "pipe"],
   })
-
-// Run a command with inherited stdio so the user sees its progress (throws on non-zero).
-const runVisible = (cmd: string, args: string[], cwd: string): void => {
-  execFileSync(cmd, args, { cwd, stdio: "inherit" })
-}
 
 // True when a Docker daemon is reachable (pglaunch needs it to start a Postgres container).
 export const dockerRunning = (): boolean => {
@@ -89,5 +84,5 @@ const launchPostgres = (dir: string): string => {
 export const provisionDatabase = (dir: string): void => {
   const envPath = ensureEnv(dir)
   setEnvVar(envPath, "POSTGRES_URL", launchPostgres(dir))
-  runVisible("bun", ["run", "db:migrate"], dir)
+  capture("bun", ["run", "db:migrate"], dir)
 }

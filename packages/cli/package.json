@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Go from zero to a production-ready SaaS, rebranded and ready to ship.",
   "keywords": [
     "cli",

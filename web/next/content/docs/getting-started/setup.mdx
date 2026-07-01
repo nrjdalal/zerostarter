@@ -20,87 +20,80 @@ Bun v1.3.14 or later (matching the repo's `packageManager` pin). Docker is requi
 
 ### Setup
 
-1. Scaffold your product. In a new, empty directory (its name becomes your project name), run:
+Scaffold your product. In a new, empty directory (its name becomes your project name), run:
 
-   ```bash
-   npx zerostarter@latest init
-   ```
+```bash
+bunx zerostarter init
+```
 
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
+This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. It then asks whether to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations, defaulting to yes when Docker is running. Everything else has a working default, so a fresh scaffold runs as-is; add GitHub/Google OAuth credentials to `.env` later if you want social login. Pass `--db` to provision the database without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
 
-   <Callout type="info">
+<Callout type="info">
 
-   You only need `git push origin canary`. Pushing `canary` first makes it your default branch; on your next push a pre-push hook seeds `main` (the `canary` to `main` release flow needs `main` on the remote) and prints a link to enable read-write Actions permissions. See [Release Management](/docs/manage/release) for the full flow.
+You only need `git push origin canary`. Pushing `canary` first makes it your default branch; on your next push a pre-push hook seeds `main` (the `canary` to `main` release flow needs `main` on the remote) and prints a link to enable read-write Actions permissions. See [Release Management](/docs/manage/release) for the full flow.
 
-   </Callout>
+</Callout>
 
-2. Set up environment variables:
+### Environment Variables
 
-   `init` already creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. Open it and fill in your remaining values (OAuth credentials, and `POSTGRES_URL` if you did not let init provision one). Only if you are converting an existing checkout in place, or `.env` is missing, create it manually first (this leaves `BETTER_AUTH_SECRET` empty, so generate one):
+`init` already creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. Open it and fill in your remaining values (OAuth credentials, and `POSTGRES_URL` if you did not let init provision one). Only if you are converting an existing checkout in place, or `.env` is missing, create it manually first (this leaves `BETTER_AUTH_SECRET` empty, so generate one):
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+cp .env.example .env
+```
 
-   The `.env` file contains the following variables:
+The `.env` file contains the following variables:
 
-   ```
-   NODE_ENV=local
+```
+NODE_ENV=local
 
-   # -------------------- Server variables --------------------
+# -------------------- Server variables --------------------
 
-   HONO_APP_URL=http://localhost:4000
-   HONO_TRUSTED_ORIGINS=http://localhost:3000
-   HONO_RATE_LIMIT=60 # allow 60 req/min (default) and twice that for authenticated users
-   HONO_RATE_LIMIT_WINDOW_MS=60000 # 1 minute (default)
+HONO_APP_URL=http://localhost:4000
+HONO_TRUSTED_ORIGINS=http://localhost:3000
+HONO_RATE_LIMIT=60 # allow 60 req/min (default) and twice that for authenticated users
+HONO_RATE_LIMIT_WINDOW_MS=60000 # 1 minute (default)
 
-   # Generate using `openssl rand -base64 32`
-   BETTER_AUTH_SECRET=
+# Generate using `openssl rand -base64 32`
+BETTER_AUTH_SECRET=
 
-   # Optional GitHub OAuth — generate at `https://github.com/settings/developers`; leave blank to hide the GitHub sign-in button
-   GITHUB_CLIENT_ID=
-   GITHUB_CLIENT_SECRET=
+# Optional: GitHub OAuth (`https://github.com/settings/developers`). Leave blank to hide the button.
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 
-   # Optional Google OAuth — generate at `https://console.cloud.google.com/apis/credentials`; leave blank to hide the Google sign-in button
-   GOOGLE_CLIENT_ID=
-   GOOGLE_CLIENT_SECRET=
+# Optional: Google OAuth (`https://console.cloud.google.com/apis/credentials`). Leave blank to hide the button.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 
-   # Generate using `bunx pglaunch -k`
-   POSTGRES_URL=
+# Generate using `bunx pglaunch -k`
+POSTGRES_URL=
 
-   # -------------------- Client variables --------------------
+# -------------------- Client variables --------------------
 
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:4000
 
-   # Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
-   NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-   NEXT_PUBLIC_POSTHOG_KEY=
+# Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
+NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+NEXT_PUBLIC_POSTHOG_KEY=
 
-   # Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
-   NEXT_PUBLIC_USERJOT_URL=
-   ```
+# Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
+NEXT_PUBLIC_USERJOT_URL=
+```
 
-   <Callout type="info">
+<Callout type="info">
 
-   Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
+Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
 
-   </Callout>
+</Callout>
 
 ### Database Setup
 
-1. Ensure your PostgreSQL server is running.
-2. Run the generation:
+`init` provisions a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and applies migrations for you when Docker is running. You only need this section if you skipped that or set your own `POSTGRES_URL` (for example a hosted database like [Neon](https://neon.tech)) — apply the shipped migrations once:
 
-   ```bash
-   bun run db:generate
-   ```
-
-3. Run the migration:
-
-   ```bash
-   bun run db:migrate
-   ```
+```bash
+bun run db:migrate
+```
 
 ### Authentication Setup
 
@@ -125,7 +118,7 @@ ZeroStarter comes with some default authentication plugins using [Better Auth](h
 ### Running the Application
 
 ```bash
-bun dev
+bun run dev
 ```
 
 ### Running the Application with Docker Compose
