@@ -86,6 +86,7 @@ export const init = async (argv: string[]) => {
     }
   }
 
+  console.log()
   if (!isZerostarter(target)) {
     console.log("Fetching the latest ZeroStarter ...")
     fetchZerostarter(target)
