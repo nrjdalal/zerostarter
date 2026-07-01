@@ -10,7 +10,7 @@ import { exists } from "@/io"
 import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
-  $ zerostarter init [dir] [options]
+  $ bunx zerostarter init [dir] [options]
 
 Scaffold ZeroStarter into dir (default .) as a fresh product. The author's
 content, public assets, and agent skills are left out for you to supply; the
@@ -55,7 +55,7 @@ export const init = async (argv: string[]) => {
   if (!convertInPlace && !isEmptyDir(firstTarget)) {
     if (!interactive) {
       throw new Error(
-        "Target directory is not empty. Pass an empty target dir, for example: zerostarter init my-product",
+        "Target directory is not empty. Pass an empty target dir, for example: bunx zerostarter init my-product",
       )
     }
     const answer = await promptText("Target directory is not empty. New project directory")
@@ -68,7 +68,7 @@ export const init = async (argv: string[]) => {
   const brand = { name }
 
   if (values["dry-run"]) {
-    console.log("zerostarter init (dry run)")
+    console.log("bunx zerostarter init (dry run)")
     console.log(`  target: ${target}`)
     console.log(`  name:   ${name}`)
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)

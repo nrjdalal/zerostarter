@@ -87,7 +87,7 @@ const { data, error } = await unwrap(apiClient.health.$get())
 ## 🚀 Quick Start
 
 <p align="center">
-  <img src=".github/assets/cli.gif" alt="zerostarter init scaffolds a rebranded product from ZeroStarter" width="900" />
+  <img src=".github/assets/cli.gif" alt="bunx zerostarter init scaffolds a rebranded product from ZeroStarter" width="900" />
 </p>
 
 ```bash

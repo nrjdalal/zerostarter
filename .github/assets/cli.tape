@@ -1,5 +1,5 @@
 # zerostarter init: scaffold a fresh, rebranded product from the starter (needs Docker running for the DB step).
-# Render from the repo root: bun run --cwd packages/cli build && vhs .github/assets/cli.tape && gifsicle -O3 --lossy=30 .github/assets/cli.gif -o .github/assets/cli.gif
+# Render from the repo root: bun run --cwd packages/cli build && vhs .github/assets/cli.tape && gifsicle --batch -O3 --lossy=30 .github/assets/cli.gif
 Output .github/assets/cli.gif
 
 Require node
