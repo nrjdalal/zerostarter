@@ -94,7 +94,7 @@ const { data, error } = await unwrap(apiClient.health.$get())
 # In a new, empty directory (its name becomes your project name):
 # scaffold a fresh product — fetches, rebrands, installs, provisions a local
 # Postgres (Docker), migrates, and writes .env with a generated auth secret
-zerostarter init
+bunx zerostarter init
 
 # Start the dev servers (web on :3000, api on :4000)
 bun run dev

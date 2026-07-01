@@ -172,11 +172,11 @@ export const init = async (argv: string[]) => {
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
   if (dbReady) {
     console.log(
-      "\nEverything works out of the box — try it now; add OAuth or other credentials to .env whenever you like.",
+      "\nEverything works out of the box. Try it now; add OAuth or other credentials to .env whenever you like.",
     )
   } else {
     console.log(
-      "\nIt needs a Postgres database to run — a hosted one like Neon works, or a local Docker one. OAuth and other credentials are optional.",
+      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one. OAuth and other credentials are optional.",
     )
   }
 }

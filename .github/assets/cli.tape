@@ -20,7 +20,7 @@ Type "clear" Enter
 Show
 
 Sleep 800ms
-Type "zerostarter init" Sleep 300ms Enter
+Type "bunx zerostarter init" Sleep 300ms Enter
 Sleep 16s
 Enter
 Sleep 13s

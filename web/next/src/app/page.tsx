@@ -191,9 +191,9 @@ export default async function Home() {
 // Fully typed { data, error }, TypeScript knows exactly what you're getting!
 const { data, error } = await unwrap(apiClient.health.$get())`
 
-  const bashCode = `# Scaffold a fresh product in one command — fetches, rebrands,
-# installs, provisions a local Postgres, and migrates:
-zerostarter init
+  const bashCode = `# Scaffold a fresh product in one command (fetches, rebrands,
+# installs, provisions a local Postgres, and migrates):
+bunx zerostarter init
 
 # Start the dev servers (web on :3000, api on :4000):
 bun run dev`
