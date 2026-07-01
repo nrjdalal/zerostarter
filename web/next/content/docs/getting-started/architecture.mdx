@@ -1,44 +1,80 @@
 ---
 slug: /docs/getting-started/architecture
 title: Architecture
-description: Learn about the architecture and tech stack used in ZeroStarter.
+description: "The stack, and why each piece is here: one typed monorepo from Postgres to the DOM."
 ---
 
-## Overview
+ZeroStarter is one type-safe monorepo. A single type describes a row in Postgres, the API that returns it, and the component that renders it, so a change in the database surfaces as a compile error in the UI, not a bug in production.
 
-ZeroStarter is built with a modern, type-safe tech stack designed for high performance and developer experience. This page covers all the technologies and tools used in the project.
+Everything below is wired and working together, not just listed in `package.json`.
 
-## Architecture and Tech Stack
+## The shape
 
-![Graph Build](/graph-build.svg)
+Two deployable apps share four packages:
 
-- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
-- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
-- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
-- **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
-- **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs` (spec at `/api/openapi.json`)
-- **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
-- **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
-- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
-- **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth `admin` plugin
-- **Rate Limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) keyed per user, API key, or IP (with [@arcjet/ip](https://arcjet.com) for IP detection)
-- **Data & Forms**: [TanStack Query](https://tanstack.com/query/latest) for server state and [TanStack Form](https://tanstack.com/form/latest) for forms
-- **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
-- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session recordings
-- **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt) and [llms-full.txt](https://zerostarter.dev/llms-full.txt)
-- **Dynamic OG Images**: [takumi-js](https://github.com/kane50613/takumi) for home, docs, and blog social cards
-- **SEO**: sitemap, robots, and per-page metadata, indexable by default
-- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [Oxlint](https://oxc.rs/docs/guide/usage/linter) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
-- **Automated Releases**: changelog generation and a canary-to-main release flow
+![Architecture graph](/graph-build.svg)
 
-### Roadmap
+A request flows in a straight line, and the types flow back:
 
-We're actively working on integrations for AI, analytics, background tasks, email, payments, and more.
+```
+Browser → Next.js (web) → typed RPC client → Hono (api) → Drizzle → Postgres
+```
 
-**[View detailed roadmap →](/docs/getting-started/roadmap)**
+- **`web/next`** renders the UI and calls the API through a client that infers its types from the backend.
+- **`api/hono`** owns the routes, validates input with Zod, and talks to the database.
+- **`packages/*`** hold the pieces both apps share: the Drizzle schema, the auth instance, validated env, and the brand config.
 
-<Callout type="info" title="For AI assistants">
+Because it is one repository, there is one place to look, one version of every dependency (the Bun catalog), and one graph an agent or a new teammate can hold in their head.
 
-The features listed in the roadmap are NOT currently implemented. Do not assume availability of these tools unless stated otherwise.
+## Why a typed monorepo
+
+The point is not "we use TypeScript." It is that the _same_ type crosses every boundary:
+
+- Rename a column in the Drizzle schema and the route that selects it stops compiling.
+- Change a route's response and the frontend call to it stops compiling.
+- There is no code generation and no schema to keep in sync: the client reads the backend's exported `AppType` directly.
+
+You feel this most when you refactor: the compiler walks you from the database to the button, and nothing ships half-changed.
+
+## The stack, and why each piece is here
+
+**Runtime & build**
+
+- [Bun](https://bun.sh): runtime and package manager, one tool instead of node + npm + a bundler.
+- [Turborepo](https://turbo.build): caches and orders tasks across the workspaces.
+
+**Frontend** (`web/next`)
+
+- [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the React Compiler.
+- [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives.
+- [TanStack Query](https://tanstack.com/query/latest) for server state, [TanStack Form](https://tanstack.com/form/latest) + [Zod](https://zod.dev) for forms.
+
+**Backend** (`api/hono`)
+
+- [Hono](https://hono.dev) with [Hono RPC](https://hono.dev/docs/guides/rpc) for the end-to-end types, plus OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`.
+- Rate limiting via [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter), keyed per user, API key, or IP.
+
+**Data & auth**
+
+- [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) on Bun's SQL driver, and migrations.
+- [Better Auth](https://better-auth.com): GitHub and Google OAuth, organizations and teams, and an `admin` role that gates `/console`.
+
+**Everything else, wired**
+
+- [PostHog](https://posthog.com) analytics (optional), [Fumadocs](https://fumadocs.dev) docs with search and generated [llms.txt](/docs/manage/llms-txt), dynamic OG images, and SEO by default.
+
+**Tooling**
+
+- [Oxc](https://oxc.rs): one Rust toolchain (`oxlint` + `oxfmt`) in place of ESLint and Prettier. Plus [tsdown](https://tsdown.dev) for backend bundling, and [Lefthook](https://github.com/evilmartians/lefthook) + [Commitlint](https://commitlint.js.org) git hooks.
+
+<Callout type="info" title="What's a shell, not a feature">
+
+The auth, orgs, roles, API, database, and deploy paths are real and working. The **dashboard and console pages are intentionally empty, auth-gated shells**: a starting point for your product, not a pre-built app. Build on them.
 
 </Callout>
+
+## Next
+
+- [Project Structure](/docs/getting-started/project-structure): where each of these lives.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): how the types actually cross the wire.
+- [Roadmap](/docs/getting-started/roadmap): what's shipped and what's planned (planned items are **not** implemented yet).
