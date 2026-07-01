@@ -26,7 +26,7 @@ Bun v1.3.14 or later (matching the repo's `packageManager` pin). Docker is requi
    npx zerostarter@latest init
    ```
 
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
+   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. It then asks whether to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations — defaulting to yes when Docker is running. Everything else has a working default, so a fresh scaffold runs as-is; add GitHub/Google OAuth credentials to `.env` later if you want social login. Pass `--db` to provision the database without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
 
    <Callout type="info">
 

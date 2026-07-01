@@ -118,25 +118,26 @@ export const init = async (argv: string[]) => {
   if (dbConfigured) {
     if (values.db) console.log(yellow("  --db ignored: POSTGRES_URL is already set in .env."))
   } else if (values.db) {
-    wantDb = dockerUp
-    if (!dockerUp) console.log(yellow("  --db ignored: Docker is not running."))
-  } else if (interactive && dockerUp) {
-    wantDb = await promptConfirm(
-      "Docker detected. Provision a local database and run migrations now?",
-      true,
-    )
+    wantDb = true
+  } else if (interactive) {
+    // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
+    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   }
-  if (wantDb) {
+  if (wantDb && dockerUp) {
     try {
       console.log("Provisioning a local database with pglaunch and migrating ...")
       provisionDatabase(target)
       dbReady = true
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      console.log(
-        yellow(`  Skipped database setup (${msg}); set it up later with pglaunch + db:migrate.`),
-      )
+      console.log(yellow(`  Database setup failed (${msg}); set POSTGRES_URL in .env yourself.`))
     }
+  } else if (wantDb) {
+    console.log(
+      yellow(
+        "  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
+      ),
+    )
   }
 
   const tips: [string, string][] = [
@@ -148,10 +149,8 @@ export const init = async (argv: string[]) => {
   console.log(`\n${green("✓")} ${name} is ready.\n`)
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!dbReady) {
-    console.log(`  ${orange("bunx pglaunch -k")}  # start Postgres, set POSTGRES_URL in .env`)
-    console.log(`  ${orange("bun run db:migrate")}`)
-  }
+  if (!dbReady)
+    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
   console.log(`  ${orange("bun run dev")}`)
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
@@ -160,4 +159,7 @@ export const init = async (argv: string[]) => {
   )
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
+  console.log(
+    "\nSocial login is optional — add GitHub/Google OAuth credentials to .env anytime (see /docs/manage/authentication).",
+  )
 }
