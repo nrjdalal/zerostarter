@@ -108,7 +108,6 @@ export const init = async (argv: string[]) => {
 
   gitCommitAll(target, `ci(init): re-baseline as ${name}`)
 
-  console.log("Setting up .env (copied from .env.example, with a generated BETTER_AUTH_SECRET) ...")
   seedEnv(target)
 
   let dbReady = false
