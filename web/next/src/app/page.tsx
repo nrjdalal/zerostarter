@@ -30,6 +30,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
@@ -63,13 +64,14 @@ export const techStack: Tech[] = [
     icon: { light: "/landing/shadcn-ui-light.svg", dark: "/landing/shadcn-ui-dark.svg" },
   },
   {
-    name: "TanStack Query",
-    icon: { light: "/landing/tanstack.svg", dark: "/landing/tanstack.svg" },
-  },
-  {
     name: "Tailwind CSS",
     icon: { light: "/landing/tailwindcss.svg", dark: "/landing/tailwindcss.svg" },
   },
+  {
+    name: "TanStack Query",
+    icon: { light: "/landing/tanstack.svg", dark: "/landing/tanstack.svg" },
+  },
+  { name: "tsdown", icon: { light: "/landing/tsdown.svg", dark: "/landing/tsdown.svg" } },
   {
     name: "Turborepo",
     icon: { light: "/landing/turborepo-light.svg", dark: "/landing/turborepo-dark.svg" },
@@ -83,7 +85,6 @@ export const techStack: Tech[] = [
     icon: { light: "/landing/vercel-light.svg", dark: "/landing/vercel-dark.svg" },
   },
   { name: "Zod", icon: { light: "/landing/zod.svg", dark: "/landing/zod.svg" } },
-  { name: "tsdown", icon: { light: "/landing/tsdown.svg", dark: "/landing/tsdown.svg" } },
 ]
 
 const leanClaims = [
@@ -173,12 +174,9 @@ const features = [
     icon: RiRocketLine,
     title: "Two apps, one deploy",
     description:
-      "web and api ship as two apps on one database. Vercel or Docker Compose, migrations run on deploy.",
+      "web and api ship as two apps on one database, on Vercel or Docker Compose (Vercel migrates on deploy).",
   },
 ]
-
-const codeBlockClass =
-  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm! [&_pre]:leading-relaxed!"
 
 function CodeWindow({ label, html }: { label: string; html: string }) {
   return (
@@ -192,7 +190,10 @@ function CodeWindow({ label, html }: { label: string; html: string }) {
         <span className="text-muted-foreground ml-1.5 font-mono text-xs">{label}</span>
       </div>
       <div
-        className={`overflow-x-auto p-5 ${codeBlockClass}`}
+        className={cn(
+          "overflow-x-auto p-5",
+          "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm! [&_pre]:leading-relaxed!",
+        )}
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ colorScheme: "light dark" }}
       />
@@ -215,8 +216,8 @@ const { data, error } = await unwrap(
 bunx zerostarter init
 bun run dev
 
-agent-browser open localhost:3000
-agent-browser snapshot         # read the UI
+agent-browser open http://localhost:3000
+agent-browser snapshot     # read the UI
 agent-browser click "@e5"      # act on a ref`
 
   const deployCode = `# two Vercel projects, one database
@@ -240,7 +241,7 @@ docker compose up --build`
   ])
 
   return (
-    <main className="flex flex-col select-none">
+    <main className="flex flex-col">
       {/* Hero */}
       <section
         aria-label="Hero"
@@ -385,7 +386,7 @@ docker compose up --build`
               Legible enough that agents build here
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              A small, typed codebase is one an AI agent can actually reason about, so ZeroStarter
+              A small, typed codebase is one an AI agent can actually reason about, so {site.name}{" "}
               leans in. Point Claude Code or Cursor at it and it ships a real feature, typed, so a
               wrong call fails at compile time.
             </p>
@@ -488,8 +489,8 @@ docker compose up --build`
                 How is it different from other starters?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Most starters hand you a pile of features and a codebase you'll never fully read.
-                ZeroStarter optimizes for the opposite: a small, legible, end-to-end-typed base with
+                Most starters hand you a pile of features and a codebase you'll never fully read.{" "}
+                {site.name} optimizes for the opposite: a small, legible, end-to-end-typed base with
                 zero root dependencies and a single toolchain, so you and your agents start from
                 something you actually understand.
               </AccordionContent>
