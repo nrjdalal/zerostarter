@@ -151,8 +151,10 @@ export const init = async (argv: string[]) => {
   console.log(`\n${green("✓")} ${name} is ready.\n`)
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!dbReady)
+  if (!dbReady) {
     console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
+    console.log(`  ${orange("bun run db:migrate")}`)
+  }
   console.log(`  ${orange("bun run dev")}`)
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
