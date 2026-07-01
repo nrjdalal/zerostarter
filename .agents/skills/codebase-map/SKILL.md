@@ -14,6 +14,7 @@ packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
+packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 ```
 
 Read `AGENTS.md` first (the rules), and `curl localhost:3000/llms-full.txt` for the whole codebase as one context file.
@@ -30,7 +31,7 @@ Read `AGENTS.md` first (the rules), and `curl localhost:3000/llms-full.txt` for 
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
-| Gate by role | web: `web/next/src/lib/auth/console.ts`; API: `api/hono/src/middlewares/auth.ts` | - |
+| Gate by role | `web/next/src/lib/auth/console.ts` gates the web admin console; the API's `middlewares/auth.ts` checks the session only (401), not role | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 
