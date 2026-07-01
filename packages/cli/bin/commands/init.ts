@@ -162,6 +162,6 @@ export const init = async (argv: string[]) => {
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
   console.log(
-    "\nSocial login is optional — add GitHub/Google OAuth credentials to .env anytime (see /docs/manage/authentication).",
+    "\nEverything works out of the box — try it now; add OAuth or other credentials to .env whenever you like.",
   )
 }
