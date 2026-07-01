@@ -5,7 +5,7 @@ description: Add or swap web fonts by fetching latin variable woff2 files from f
 
 # Fonts
 
-Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used here: they cannot provide metric-adjusted fallback faces (the CLS mechanism, a compiler feature) and add four dependencies for what six vendored files do. The fontsource+turbopack preload approach (upstream ZeroStarter#383) was re-tested 2026-06-06 on Next 16.2.6: prod builds are fixed (preload hashes match the CSS references), but DEV is still broken, the woff2 asset rule rewrites the fontsource CSS urls to unservable node_modules paths and every font 404s locally. Dev breakage alone rules it out, on top of fallback metrics being compiler-only.
+Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used here: they cannot provide metric-adjusted fallback faces (the CLS mechanism, a compiler feature) and add four dependencies for what six vendored files do. The fontsource+turbopack preload approach (upstream ZeroStarter#383) was re-tested 2026-06-06 on Next 16.2.6: prod builds are fixed (preload hashes match the CSS references), but DEV is still broken. The woff2 asset rule rewrites the fontsource CSS urls to unservable node_modules paths and every font 404s locally. Dev breakage alone rules it out, on top of fallback metrics being compiler-only.
 
 ## Layout
 
