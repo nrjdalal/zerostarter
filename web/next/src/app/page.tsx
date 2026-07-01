@@ -178,7 +178,7 @@ const features = [
 ]
 
 const codeBlockClass =
-  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-[13px]! [&_pre]:leading-relaxed!"
+  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm! [&_pre]:leading-relaxed!"
 
 function CodeWindow({ label, html }: { label: string; html: string }) {
   return (
@@ -211,12 +211,13 @@ const { data, error } = await unwrap(
   apiClient.health.$get(),
 )`
 
-  const agentCode = `# scaffold, run, then let an agent sign in
-bunx zerostarter init && bun run dev
+  const agentCode = `# scaffold, start the stack, sign an agent in
+bunx zerostarter init
+bun run dev
 
 agent-browser open localhost:3000
-agent-browser click "Login (agents)"
-agent-browser snapshot   # read the UI, then act`
+agent-browser snapshot         # read the UI
+agent-browser click "@e5"      # act on a ref`
 
   const deployCode = `# two Vercel projects, one database
 vercel --prod
@@ -331,7 +332,7 @@ docker compose up --build`
       </section>
 
       {/* Type safety: text + code, two columns */}
-      <section aria-label="Type safety" className="border-b py-24 sm:py-32">
+      <section aria-label="Type safety" className="border-b py-24">
         <div className="container mx-auto grid max-w-6xl items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
           <div>
             <p className="text-muted-foreground mb-3 font-mono text-sm">Type safety</p>
@@ -353,7 +354,7 @@ docker compose up --build`
       </section>
 
       {/* Lean codebase: centered, with claim strip */}
-      <section aria-label="A codebase you can read" className="bg-muted/30 border-b py-24 sm:py-32">
+      <section aria-label="A codebase you can read" className="bg-muted/30 border-b py-24">
         <div className="container mx-auto max-w-3xl px-4 text-center md:px-6">
           <p className="text-muted-foreground mb-3 font-mono text-sm">Minimal by design</p>
           <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
@@ -376,7 +377,7 @@ docker compose up --build`
       </section>
 
       {/* Agents: code + text, two columns */}
-      <section aria-label="Built for agents" className="border-b py-24 sm:py-32">
+      <section aria-label="Built for agents" className="border-b py-24">
         <div className="container mx-auto grid max-w-6xl items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
           <div className="lg:order-2">
             <p className="text-muted-foreground mb-3 font-mono text-sm">Agent-ready</p>
@@ -408,7 +409,7 @@ docker compose up --build`
       </section>
 
       {/* Features grid */}
-      <section aria-label="What's wired" className="bg-muted/30 border-b py-24 sm:py-32">
+      <section aria-label="What's wired" className="bg-muted/30 border-b py-24">
         <div className="container mx-auto max-w-6xl px-4 md:px-6">
           <div className="max-w-2xl">
             <p className="text-muted-foreground mb-3 font-mono text-sm">Batteries included</p>
@@ -439,7 +440,7 @@ docker compose up --build`
       </section>
 
       {/* Deploy */}
-      <section aria-label="Deploy" className="border-b py-24 sm:py-32">
+      <section aria-label="Deploy" className="border-b py-24">
         <div className="container mx-auto grid max-w-6xl items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
           <div>
             <p className="text-muted-foreground mb-3 font-mono text-sm">Ship it</p>
@@ -465,7 +466,7 @@ docker compose up --build`
       </section>
 
       {/* FAQ */}
-      <section aria-label="FAQ" className="bg-muted/30 border-b py-24 sm:py-32">
+      <section aria-label="FAQ" className="bg-muted/30 border-b py-24">
         <div className="container mx-auto max-w-3xl px-4 md:px-6">
           <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-balance sm:text-4xl">
             Questions
@@ -529,7 +530,7 @@ docker compose up --build`
       </section>
 
       {/* CTA */}
-      <section aria-label="Call to action" className="py-24 sm:py-32">
+      <section aria-label="Call to action" className="py-24">
         <div className="container mx-auto max-w-5xl px-4 md:px-6">
           <div className="bg-muted/30 relative overflow-hidden rounded-2xl border px-6 py-16 text-center sm:py-20">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] mask-[radial-gradient(ellipse_60%_80%_at_50%_0%,black,transparent)] bg-size-[36px_36px] opacity-40" />
