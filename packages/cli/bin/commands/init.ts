@@ -161,7 +161,11 @@ export const init = async (argv: string[]) => {
   )
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
-  console.log(
-    "\nEverything works out of the box — try it now; add OAuth or other credentials to .env whenever you like.",
-  )
+  if (dbReady) {
+    console.log(
+      "\nEverything works out of the box — try it now; add OAuth or other credentials to .env whenever you like.",
+    )
+  } else {
+    console.log("\nOAuth and other credentials are optional — add them to .env whenever you like.")
+  }
 }
