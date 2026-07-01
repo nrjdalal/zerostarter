@@ -191,22 +191,12 @@ export default async function Home() {
 // Fully typed { data, error }, TypeScript knows exactly what you're getting!
 const { data, error } = await unwrap(apiClient.health.$get())`
 
-  const bashCode = `# Clone the template
-bunx gitpick ${site.social.github}/tree/main
-cd zerostarter
+  const bashCode = `# Scaffold a fresh product in one command — fetches, rebrands,
+# installs, provisions a local Postgres, and migrates:
+zerostarter init
 
-# Install dependencies
-bun install
-
-# Set up environment variables (see docs)
-cp .env.example .env
-
-# Set up database
-bun run db:generate
-bun run db:migrate
-
-# Start development
-bun dev`
+# Start the dev servers (web on :3000, api on :4000):
+bun run dev`
 
   const typescriptHtml = await codeToHtml(typescriptCode, {
     lang: "typescript",
@@ -657,7 +647,7 @@ bun dev`
               Get Started in Minutes
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Clone, install, and start building. It's that simple.
+              One command scaffolds, configures, and sets up your database. Then start building.
             </p>
           </div>
         </div>

@@ -23,7 +23,7 @@ Bun v1.3.14 or later (matching the repo's `packageManager` pin). Docker is requi
 1. Scaffold your product. In a new, empty directory (its name becomes your project name), run:
 
    ```bash
-   npx zerostarter@latest init
+   zerostarter init
    ```
 
    This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. It then asks whether to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations — defaulting to yes when Docker is running. Everything else has a working default, so a fresh scaffold runs as-is; add GitHub/Google OAuth credentials to `.env` later if you want social login. Pass `--db` to provision the database without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
@@ -89,18 +89,11 @@ Bun v1.3.14 or later (matching the repo's `packageManager` pin). Docker is requi
 
 ### Database Setup
 
-1. Ensure your PostgreSQL server is running.
-2. Run the generation:
+`init` provisions a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and applies migrations for you when Docker is running. You only need this section if you skipped that or set your own `POSTGRES_URL` (for example a hosted database like [Neon](https://neon.tech)) — apply the shipped migrations once:
 
-   ```bash
-   bun run db:generate
-   ```
-
-3. Run the migration:
-
-   ```bash
-   bun run db:migrate
-   ```
+```bash
+bun run db:migrate
+```
 
 ### Authentication Setup
 
@@ -125,7 +118,7 @@ ZeroStarter comes with some default authentication plugins using [Better Auth](h
 ### Running the Application
 
 ```bash
-bun dev
+bun run dev
 ```
 
 ### Running the Application with Docker Compose
