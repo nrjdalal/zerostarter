@@ -22,12 +22,12 @@ agent-browser open http://localhost:3000/<route>
 agent-browser snapshot   # read the page, then act on it
 ```
 
-Anything behind auth: sign in first with the dev-only Login (agents) button or the local sign-in (see `working-with-agents`). For an end-to-end change, or whenever asked, exercise the whole flow: navigate, act, and verify the result end to end, not just the one screen you touched.
+Anything behind auth: sign in first with the dev-only Login (agents) button or the local sign-in (see the `dev` skill). For an end-to-end change, or whenever asked, exercise the whole flow: navigate, act, and verify the result end to end, not just the one screen you touched.
 
 ### 3. Check it holds up
 
 - **Visual change:** capture the state before and after at the same viewport.
-- **Responsive:** check mobile, tablet, and desktop with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= window.innerWidth'`.
+- **Responsive:** check mobile, tablet, and desktop with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
 - **Theme:** check light and dark when the change touches either.
 
 ### 4. Attach evidence to the PR

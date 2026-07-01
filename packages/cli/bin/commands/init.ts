@@ -13,7 +13,7 @@ const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
 
 Scaffold ZeroStarter into dir (default .) as a fresh product. The author's
-content, public assets, and agent skills are left out for you to supply; the
+content and public assets are left out for you to supply; the
 dir name becomes the project name and site.ts + package.json are rebranded. If
 the dir already holds a ZeroStarter clone it is used in place; otherwise the
 latest ZeroStarter is fetched into it first.

@@ -26,12 +26,12 @@ Read `AGENTS.md` first (the rules), and `curl localhost:3000/llms-full.txt` for 
 | Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts` | `db-migration` skill |
 | Add/change a page | `web/next/src/app/`, groups: `(protected)` dashboard, `(console)` admin, `(content)` docs+blog | - |
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
-| Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | `/docs/getting-started/type-safe-api` |
+| Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
-| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | `/docs/manage/environment` |
-| Configure auth (providers, plugins) | `packages/auth/src/index.ts` | `/docs/manage/authentication` |
+| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | - |
+| Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
 | Gate by role | web: `web/next/src/lib/auth/console.ts`; API: `api/hono/src/middlewares/auth.ts` | - |
-| Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | `/docs/manage/api-conventions` |
+| Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 
 ## Trace a feature across the stack
