@@ -132,8 +132,14 @@ export const init = async (argv: string[]) => {
       provisionDatabase(target)
       dbReady = true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.log(yellow(`  Database setup failed (${msg}); set POSTGRES_URL in .env yourself.`))
+      const stderr = (err as { stderr?: unknown }).stderr
+      const detail = stderr
+        ? String(stderr).trim()
+        : err instanceof Error
+          ? err.message
+          : String(err)
+      console.log(yellow("  Database setup failed; set POSTGRES_URL in .env yourself."))
+      if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
     console.log(
