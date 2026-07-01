@@ -166,6 +166,8 @@ export const init = async (argv: string[]) => {
       "\nEverything works out of the box — try it now; add OAuth or other credentials to .env whenever you like.",
     )
   } else {
-    console.log("\nOAuth and other credentials are optional — add them to .env whenever you like.")
+    console.log(
+      "\nIt needs a Postgres database to run — a hosted one like Neon works, or a local Docker one. OAuth and other credentials are optional.",
+    )
   }
 }
