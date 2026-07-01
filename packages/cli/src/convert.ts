@@ -22,15 +22,10 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Directories a fork supplies itself: the author's content, assets, and agent skills
-// (skills live in .agents/skills, symlinked from .claude/skills and .github/skills).
-const IGNORED_DIRS = [
-  "web/next/content",
-  "web/next/public",
-  ".agents/skills",
-  ".claude/skills",
-  ".github/skills",
-]
+// Directories a fork supplies itself: the author's content and public assets.
+// Agent skills (.agents/skills, symlinked from .claude/skills and .github/skills) are KEPT,
+// so a scaffolded project ships with the same agent playbook.
+const IGNORED_DIRS = ["web/next/content", "web/next/public"]
 
 // Author pages, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
 const REMOVE_PATHS = [
@@ -47,7 +42,6 @@ const REMOVE_PATHS = [
   "LICENSE.md",
   "CHANGELOG.md",
   "bun.lock",
-  "skills-lock.json",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
