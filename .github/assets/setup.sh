@@ -14,6 +14,14 @@ git config --global user.name "Your Name"
 
 zerostarter() { node "$ZS_BIN" "$@"; }
 
+# Shadow `docker` with a non-zero stub so init's Docker detection is off during the
+# recording (skips the local-database prompt); keeps the demo the same whether or not
+# the recorder has Docker running, and never touches the real docker on PATH elsewhere.
+mkdir -p "$SB/bin"
+printf '#!/bin/sh\nexit 1\n' > "$SB/bin/docker"
+chmod +x "$SB/bin/docker"
+export PATH="$SB/bin:$PATH"
+
 cd "$SB/acme"
 autoload -Uz add-zsh-hook
 # %1~ shows just the project dir (acme); reset color before each command's output
