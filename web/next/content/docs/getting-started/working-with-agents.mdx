@@ -24,16 +24,18 @@ This is about AI agents that _build on_ the codebase: coding assistants. ZeroSta
 The full cycle an agent runs, start to finish:
 
 ```bash
-# 1: scaffold a product and start the stack
-bunx zerostarter init && bun run dev
+# 1: scaffold a product, then start the stack
+bunx zerostarter init
+bun run dev
 
-# 2: sign in locally (drives the real UI, or one curl, see below)
+# 2: sign in locally (drive the real UI, or the curl below)
 agent-browser open http://localhost:3000
-agent-browser click "Login (agents)"
+agent-browser snapshot                  # get refs for the page
+agent-browser click "@e5"               # the "Login (agents)" button ref
 
-# 3: build a feature by following a skill (api-endpoint, db-migration, …)
+# 3: build a feature by following a skill (api-endpoint, db-migration)
 # 4: verify it in the running app, behind auth
-agent-browser snapshot     # read the page, then act
+agent-browser snapshot                  # read the page, then act
 ```
 
 Scaffold, run, sign in, build, verify. Each step below is one of those pieces.

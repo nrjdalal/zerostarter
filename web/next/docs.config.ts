@@ -17,7 +17,6 @@ const docsConfig = {
         "/docs/getting-started/setup": {
           title: "Quickstart",
           description: "Go from one command to a running, signed-in app, and where to go next.",
-          label: "Quickstart",
         },
       },
       {
@@ -61,7 +60,6 @@ const docsConfig = {
           title: "Auth & Organizations",
           description:
             "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
-          label: "Auth & Organizations",
         },
       },
       {
@@ -131,7 +129,6 @@ const docsConfig = {
           title: "Analytics & Feedback",
           description:
             "Optional PostHog analytics and a feedback link: wire them in when you need them.",
-          label: "Analytics & Feedback",
         },
       },
     ],
@@ -158,7 +155,6 @@ const docsConfig = {
           title: "Code Quality",
           description:
             "Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.",
-          label: "Code Quality",
         },
       },
       {
@@ -166,7 +162,6 @@ const docsConfig = {
           title: "Releases",
           description:
             "The automated canary-to-main flow that versions the repo and drafts the changelog.",
-          label: "Releases",
         },
       },
       {
@@ -178,7 +173,7 @@ const docsConfig = {
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: "What ZeroStarter ships today, and where it's headed.",
+          description: `What ${site.name} ships today, and where it's headed.`,
         },
       },
     ],

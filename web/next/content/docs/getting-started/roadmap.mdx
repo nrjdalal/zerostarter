@@ -14,7 +14,7 @@ Available out of the box in a fresh scaffold:
 - **[Admin roles + gated `/console`](/docs/getting-started/scripts#console)**: `role === "admin"` gates the route server-side; manage it with `bun run console:roles`. The pages inside are an empty shell to build on.
 - **Rate limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com), per-user when authenticated and per-IP otherwise, tuned via `HONO_RATE_LIMIT`.
 - **[Scalar API docs](/docs/getting-started/type-safe-api)**: an interactive reference at `/api/docs`, generated from the OpenAPI spec at `/api/openapi.json`.
-- **[Dynamic OG images](/docs/manage/og-images)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.
+- **[Dynamic OG images](/docs/manage/seo)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.
 - **[llms.txt + llms-full.txt](/docs/manage/llms-txt)**: auto-generated AI context routes: the index and the full corpus.
 - **[SEO routes](/docs/manage/seo)**: `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.
 - **[PostHog analytics](/docs/manage/analytics)**: product analytics, feature flags, and session replay. Optional; on only when `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` are set.
