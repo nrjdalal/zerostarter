@@ -41,6 +41,10 @@ bun run db:migrate
 
 </Callout>
 
+ZeroStarter comes with Better Auth, optional GitHub/Google OAuth, and passkey sign-in. You can extend the auth package as needed.
+
+Passkeys work on `localhost` without extra configuration. `BETTER_AUTH_RP_ID` defaults to the `HONO_APP_URL` host and must match, or be a parent domain of, every trusted origin. For deployments where the app and API live on split subdomains, set `BETTER_AUTH_RP_ID` to the shared parent domain used for WebAuthn credentials.
+
 ## `bun run dev`
 
 Turborepo starts both apps together:

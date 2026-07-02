@@ -25,7 +25,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
-- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
+- **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, passkeys, organizations, and teams
 - **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
 - **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count; the default home for a fresh fork
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
@@ -47,7 +47,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 ├── web/
 │   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
 └── packages/
-    ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
+    ├── auth/      # Better Auth instance (OAuth, passkeys, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client
     ├── env/       # Type-safe environment variables (t3-oss/env + Zod)
     └── config/    # Shared config: TS/tsdown bases and the `site` brand identity
@@ -123,7 +123,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 ## 📚 Documentation
 
 - **[Getting Started](https://zerostarter.dev/docs)**: introduction, architecture, and project structure
-- **[Authentication & Organizations](https://zerostarter.dev/docs/manage/authentication)**: OAuth, orgs, teams, and roles
+- **[Authentication & Organizations](https://zerostarter.dev/docs/manage/authentication)**: OAuth, passkeys, orgs, teams, and roles
 - **[Type-Safe API](https://zerostarter.dev/docs/getting-started/type-safe-api)**: the Hono RPC client
 - **[Database](https://zerostarter.dev/docs/manage/database)**: schema and migrations
 - **[Environment Variables](https://zerostarter.dev/docs/manage/environment)**: configuration

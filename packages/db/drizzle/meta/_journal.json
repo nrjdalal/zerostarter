@@ -15,6 +15,13 @@
       "when": 1782038910452,
       "tag": "0001_waitlist",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782569899122,
+      "tag": "0002_passkey",
+      "breakpoints": true
     }
   ]
 }

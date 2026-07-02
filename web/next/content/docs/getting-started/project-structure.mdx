@@ -45,7 +45,7 @@ Standard App Router, grouped by concern: `(content)/` for docs and blog, `(prote
 
 ## The packages
 
-- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, passkeys, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
 - **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.

@@ -4,10 +4,12 @@ import { env } from "@packages/env/web-next"
 import {
   RiArrowRightSLine,
   RiDashboardLine,
+  RiKey2Line,
   RiLogoutBoxLine,
   RiMessage2Line,
   RiTerminalBoxLine,
 } from "@remixicon/react"
+import { useQuery } from "@tanstack/react-query"
 import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -18,6 +20,7 @@ import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { SidebarMenuItem } from "@/components/ui/sidebar"
+import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 
 function getInitials(name: string) {
@@ -30,6 +33,16 @@ function getInitials(name: string) {
 export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard" | "console" }) {
   const router = useRouter()
   const [signingOut, setSigningOut] = useState(false)
+  const { data } = useQuery({
+    queryKey: ["auth-providers"],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data, error } = await unwrap(apiClient.auth.providers.$get())
+      if (error) throw new Error(error.message)
+      return data
+    },
+  })
+  const passkeyEnabled = data?.providers.includes("passkey") ?? false
 
   // The user menu is shared, so the cross-link points at the other workspace: dashboard -> console, console -> dashboard.
   const crossLink =
@@ -59,6 +72,14 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
+        )}
+        {passkeyEnabled && (
+          <DropdownMenuItem
+            render={<Link href="/dashboard/settings/passkeys" className="cursor-pointer" />}
+          >
+            <RiKey2Line />
+            Passkeys
+          </DropdownMenuItem>
         )}
         {env.NEXT_PUBLIC_USERJOT_URL && (
           <DropdownMenuItem

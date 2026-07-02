@@ -4,7 +4,7 @@ title: Auth & Organizations
 description: Better Auth with OAuth, organizations, teams, and the role gate behind /console.
 ---
 
-[Better Auth](https://better-auth.com) owns the whole auth surface (sign-in methods, sessions, organizations, and roles) as one config in `packages/auth/src/index.ts`, backed by the same Drizzle schema as the rest of your data. It runs in-process against your own Postgres, so no user records leave your database and there is no separate auth service to keep in sync.
+ZeroStarter uses [Better Auth](https://better-auth.com) for authentication, configured in the `@packages/auth` package. It supports multiple sign-in methods, passkeys, multi-tenant organizations with teams, and session management with cross-subdomain cookie support. The Better Auth OpenAPI plugin is also enabled, exposing an auth API reference at `/api/auth/reference`.
 
 ## Sign-in methods
 
@@ -17,13 +17,21 @@ The sign-in dialog renders itself from whatever is configured. It fetches `GET /
 
 `packages/auth/src/index.ts` builds `socialProviders` conditionally from those vars and exports the resulting `enabledSocialProviders`. Adding a brand-new provider is a small code change: register it conditionally there, then add a button in `web/next/src/components/access.tsx`.
 
+### Passkeys
+
+Passkey sign-in is enabled with the Better Auth passkey plugin in `packages/auth/src/index.ts` and the `passkeyClient()` plugin in `web/next/src/lib/auth/client.ts`. The public `GET /api/auth/providers` route advertises `passkey`, so the sign-in dialog renders a passkey button and enables conditional WebAuthn autofill on the email field (`autocomplete="username webauthn"`) when the browser supports it.
+
+Signed-in users can manage passkeys at `/dashboard/settings/passkeys`, linked from the dashboard user menu. The page supports listing passkeys, adding a new passkey, renaming a passkey, and deleting one. Passkey records are stored in the `passkey` table and cascade when their owning user is deleted.
+
+`rpID` defaults to the `HONO_APP_URL` host and must match, or be a parent domain of, every configured trusted origin. For local development this resolves to `localhost` and needs no extra config. For split subdomains, set `BETTER_AUTH_RP_ID` to the shared parent domain you want WebAuthn credentials scoped to.
+
 **Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To enable it, add `magicLink({ sendMagicLink })` to the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
 
 **Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, gated to the `local` environment and a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
 <Callout type="warn" title="Configure at least one method before shipping">
 
-A deployed fork with no OAuth providers and no magic link shows "No sign-in options are configured yet." in the sign-in dialog; the agent sign-in is hidden in production. Wire up a provider or magic link before exposing a login surface.
+A deployed fork with no OAuth providers, magic link, or passkeys renders a "No sign-in options are configured yet." message in the sign-in dialog (the local-only agent sign-in is hidden in production). Configure at least one provider, or wire up magic link, before shipping a login surface.
 
 </Callout>
 

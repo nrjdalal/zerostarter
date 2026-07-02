@@ -16,7 +16,7 @@ Drizzle is not a query builder wrapped around SQL strings. Because the schema is
 
 Two files under `packages/db/src/schema/`, both re-exported from `index.ts`:
 
-- **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds.
+- **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, `passkey`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds.
 - **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page.
 
 Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column.

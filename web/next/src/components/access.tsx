@@ -1,7 +1,7 @@
 "use client"
 
 import { site } from "@packages/config/site"
-import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
+import { RiGithubFill, RiGoogleFill, RiKey2Line, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -30,7 +31,7 @@ const formSchema = z.object({
 
 export function Access() {
   const pathname = usePathname()
-  const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
+  const [loader, setLoader] = useState<"email" | "github" | "google" | "passkey" | null>(null)
   const [open, setOpen] = useState(false)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
@@ -49,13 +50,50 @@ export function Access() {
   const githubEnabled = data?.providers.includes("github") ?? false
   const googleEnabled = data?.providers.includes("google") ?? false
   const magicLinkEnabled = data?.providers.includes("magic-link") ?? false
-  const hasAlternatives = isDev || githubEnabled || googleEnabled
+  const passkeyEnabled = data?.providers.includes("passkey") ?? false
+  const hasAlternatives = isDev || githubEnabled || googleEnabled || passkeyEnabled
   const hasNoProviders = !magicLinkEnabled && !hasAlternatives
+  const [passkeyWasLast, setPasskeyWasLast] = useState(false)
+
+  useEffect(() => {
+    setPasskeyWasLast(authClient.isLastUsedLoginMethod("passkey"))
+  }, [])
 
   useEffect(() => {
     setLoader(null)
     setOpen(false)
   }, [pathname])
+
+  useEffect(() => {
+    if (!open || !passkeyEnabled || !magicLinkEnabled || typeof window === "undefined") return
+    if (
+      typeof PublicKeyCredential === "undefined" ||
+      typeof PublicKeyCredential.isConditionalMediationAvailable !== "function"
+    ) {
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      let available = false
+      try {
+        available = await PublicKeyCredential.isConditionalMediationAvailable()
+      } catch {
+        return
+      }
+      if (cancelled || !available) return
+      void authClient.signIn.passkey({
+        autoFill: true,
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = `${config.app.url}/dashboard`
+          },
+        },
+      })
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [magicLinkEnabled, open, passkeyEnabled])
 
   const form = useForm({
     defaultValues: {
@@ -120,6 +158,7 @@ export function Access() {
                           id={field.name}
                           type="email"
                           name={field.name}
+                          autoComplete="username webauthn"
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}
@@ -161,6 +200,36 @@ export function Access() {
                     Login (agents)
                   </Button>
                 </form>
+              )}
+              {passkeyEnabled && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full"
+                  onClick={async () => {
+                    setLoader("passkey")
+                    const res = await authClient.signIn.passkey({
+                      fetchOptions: {
+                        onSuccess: () => {
+                          window.location.href = `${config.app.url}/dashboard`
+                        },
+                      },
+                    })
+                    if (res?.error) {
+                      toast.error(res.error.message)
+                      setLoader(null)
+                    }
+                  }}
+                  disabled={loader === "passkey"}
+                >
+                  {loader === "passkey" ? <Spinner /> : <RiKey2Line className="size-5" />}
+                  Sign in with a passkey
+                  {passkeyWasLast && (
+                    <Badge variant="secondary" className="ml-auto">
+                      Last used
+                    </Badge>
+                  )}
+                </Button>
               )}
               {githubEnabled && (
                 <Button
