@@ -348,7 +348,7 @@ docker compose up --build`
           </div>
           <div className="grid gap-3.5 sm:grid-cols-2">
             {/* Agents, full-width row */}
-            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-muted/40 relative grid items-stretch gap-14 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiRobot2Line
                 aria-hidden
                 className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
