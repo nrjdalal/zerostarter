@@ -198,9 +198,7 @@ bun run dev   # web :3000 · api :4000`
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
 // fully typed { data, error }
-const { data, error } = await unwrap(
-  apiClient.health.$get(),
-)`
+const { data, error } = await unwrap(apiClient.health.$get())`
 
   const agentCode = `# sign an agent in, drive the app
 agent-browser open http://localhost:3000
