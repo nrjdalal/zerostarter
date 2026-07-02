@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process"
-import { readFileSync, rmSync, writeFileSync } from "node:fs"
+import { readFileSync, writeFileSync } from "node:fs"
 
 import { Node, Project, SyntaxKind } from "ts-morph"
 
@@ -30,13 +30,6 @@ const RESTORE = [
 ]
 execFileSync("git", ["checkout", "HEAD", "--", ...RESTORE], { stdio: "inherit" })
 log(`restored from HEAD: ${RESTORE.join(", ")}`)
-
-// `add -a` force-bumps react-day-picker to v10 in node_modules; the restored lock pins ^9, so drop
-// the v10 tree and let the wrapper's `bun i` reinstall v9 (a plain install won't downgrade it).
-for (const dir of ["node_modules/react-day-picker", "web/next/node_modules/react-day-picker"]) {
-  rmSync(dir, { recursive: true, force: true })
-}
-log("dropped react-day-picker node_modules (restored lock pins ^9)")
 
 const project = new Project({
   skipAddingFilesFromTsConfig: true,

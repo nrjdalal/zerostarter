@@ -1,129 +1,60 @@
 ---
 slug: /docs/getting-started/project-structure
 title: Project Structure
-description: Understand the monorepo structure and organization of ZeroStarter.
+description: "How the monorepo fits together: two apps, four packages, one import graph."
 ---
 
-## Overview
+The whole repo is one mental model: two deployable apps, four shared packages, and a single import graph that ties them together.
 
-ZeroStarter uses a monorepo architecture to organize code into logical packages. This structure enables code sharing, type safety, and efficient development workflows.
+- **`web/next`**: the Next.js frontend (App Router, React 19).
+- **`api/hono`**: the Hono backend that owns every route and talks to the database.
+- **`packages/*`**, the code both apps share: the auth instance, the Drizzle schema, validated env, and the brand config.
 
-## Project Structure
-
-This project is a monorepo organized as follows:
+Three import aliases wire it together: `@api/hono` gives the frontend its API types, `@packages/*` pulls in a shared package, and `@/` is the local-to-this-app alias. Imports only point _down_ that list: apps depend on packages, never the reverse.
 
 ```
 .
-├── api/
-│   └── hono/            # Backend API server (Hono)
-├── web/
-│   └── next/            # Frontend application (Next.js)
-│       └── content/     # Documentation and blog content (MDX)
-└── packages/
-    ├── auth/            # Shared authentication logic (Better Auth)
-    ├── db/              # Database schema and Drizzle configuration
-    ├── env/             # Type-safe environment variables
-    └── config/          # Shared config: TS base, tsdown factory, and src/site.ts (brand identity)
+├─ api/hono/      # backend (Hono): routes, middleware, error envelope
+├─ web/next/      # frontend (Next.js): app router, components, content/
+└─ packages/
+   ├─ auth/       # Better Auth instance + session types
+   ├─ db/         # Drizzle schema + migrations
+   ├─ env/        # type-safe, validated environment variables
+   └─ config/     # TS base, tsdown factory, and site.ts (the brand)
 ```
 
-## Directory Details
+## `api/hono`
 
-### `api/hono/`
+The entry point is `src/index.ts`, which exports the `AppType` the frontend infers from. Routes live in `src/routers/` (auth, the local-only `agents` sign-in, protected `v1`, public `waitlist`), middleware in `src/middlewares/` (auth, rate limiting), and `src/lib/error.ts` holds the `onError` switchboard that shapes every failure into the `{ error: { code, message } }` envelope.
 
-The backend API server built with [Hono](https://hono.dev).
+## `web/next`
 
-- **`src/index.ts`**: Main application entry point, exports `AppType` for type-safe RPC
-- **`src/routers/`**: API route handlers
-  - `index.ts`: Barrel re-exporting every router
-  - `auth.ts`: Authentication routes (Better Auth handler)
-  - `agents.ts`: Local-only agent sign-in (`/api/agents/sign-in-as`)
-  - `v1.ts`: Protected API routes requiring authentication
-  - `waitlist.ts`: Public waitlist signup + approximate count (`/api/waitlist`)
-- **`src/middlewares/`**: Custom middlewares
-  - `auth.ts`: Authentication middleware for protected routes
-  - `rate-limiter.ts`: Rate limiting middleware
-- **`src/lib/error.ts`**: Centralized `errorHandler` (the `app.onError` switchboard) that shapes every thrown `ApiError` / `HTTPException` / `ZodError` into a consistent `{ error: { code, message } }` envelope; routes `throw new ApiError(...)` for domain codes from the shared `ErrorCode` union
+Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the admin console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
 
-### `web/next/`
+<Callout type="info" title="Two shells to build on">
 
-The frontend application built with [Next.js 16](https://nextjs.org).
+`(protected)/` (dashboard) and `(console)/` (admin) are auth-gated but intentionally empty. They are where your product goes, not finished features.
 
-- **`src/app/`**: Next.js App Router pages and layouts
-  - `(content)/`: Documentation and blog pages
-  - `(protected)/`: Authenticated user pages (dashboard)
-  - `(console)/`: Access-gated privileged admin console at `/console` (docs live under `/console/docs`)
-  - `(llms.txt)/`: Auto-generated AI documentation endpoints
-  - `waitlist/`: Public waitlist landing. The upstream home (`page.tsx`) is a full marketing page; in a fresh fork the CLI replaces it with a redirect here until you build your product. Remove it by deleting `app/waitlist/`, `routers/waitlist.ts`, and `schema/waitlist.ts`
-  - `hire/`, `resume/`: Author/demo marketing pages — the CLI strips these at init, so a fork starts without them
-  - `og/`: Dynamic Open Graph image routes
-  - `robots.ts`: `robots.txt` generation
-  - `sitemap.ts`: Sitemap generation
-- **`src/components/`**: React components
-  - `blog/`: Blog post components
-  - `dashboard/`: Page-layout wrappers (`DashboardShell`, `DashboardHeader`) for protected pages
-  - `navbar/`: Home/marketing navbar
-  - `route/`: Route-boundary components (`RouteError`, `RouteLoading`) used by `error.tsx`/`loading.tsx`
-  - `sidebar/`: Navigation sidebar components
-  - `ui/`: Shadcn UI components
-- **`src/lib/`**: Shared utilities
-  - `api/client.ts`: Type-safe API client using Hono RPC
-  - `auth/`: Authentication client and utilities (including `console.ts`, the `/console` access gate)
-  - `config.ts`: Application configuration
-  - Content and SEO helpers: `blog.ts`, `blog-policy.ts`, `llms.ts`, `og-image.tsx`, `fumadocs.tsx`, `source.ts`, `sort-by-meta.ts`, and the `docs/` helpers
-  - `fonts.ts`: Font loading; `utils.ts`: the `cn` class-name helper
-- **`src/hooks/`**: React hooks (`use-mobile.ts`)
-- **`content/`**: MDX content
-  - `docs/`: Documentation pages
-  - `blog/`: Blog posts
+</Callout>
 
-### `packages/auth/`
+<Callout type="info" title="Author-only routes">
 
-Shared authentication logic using [Better Auth](https://better-auth.com).
+`/hire` and `/resume` under `src/app/` are the author's own pages. They stay in the canonical repo but `zerostarter init` strips them automatically. A direct clone that skips init can delete `web/next/src/app/hire` and `web/next/src/app/resume` and remove the "Hire" link in `web/next/src/components/navbar/home.tsx`.
 
-- **`src/index.ts`**: Auth configuration with database adapter and social providers
-- **`src/lib/utils.ts`**: Cookie domain and prefix helpers (`getCookieDomain`, `getCookiePrefix`) for cross-subdomain and environment-specific cookies
-- Supports optional GitHub and Google OAuth (each enabled only when its credentials are set; the UI shows only configured providers via `GET /api/auth/providers`)
-- Organization and teams plugin for multi-tenant support, the Better Auth OpenAPI plugin, and the `admin` plugin (gates the entire `/console` area by `role === "admin"`)
-- Exports session types for type safety
+</Callout>
 
-### `packages/db/`
+## The packages
 
-Database schema and configuration using [Drizzle ORM](https://orm.drizzle.team).
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
+- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
+- **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
+- **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
 
-- **`src/schema/`**: Database table definitions
-  - `auth.ts`: User, session, account, verification, organization, member, team, teamMember, and invitation tables
-  - `waitlist.ts`: Public waitlist signup table
-- **`drizzle/`**: Generated migrations
-- **`drizzle.config.ts`**: Drizzle Kit configuration
+## Bun catalog
 
-### `packages/env/`
+The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
 
-Type-safe environment variables using [@t3-oss/env-core](https://env.t3.gg).
+## Next
 
-- **`src/index.ts`**: Barrel exporting shared helpers and version info (`getSafeEnv`, plus `VERSION`, `GIT_SHA`, `BUILD_VERSION`, `getBuildVersion`, the `NODE_ENV` enum, and the env checkers `isLocal`/`isDevelopment`/`isTest`/`isStaging`/`isProduction`). `BUILD_VERSION` and `getBuildVersion` are the ones actually consumed (for example in `web/next/src/lib/config.ts`).
-- **`src/api-hono.ts`**: API server environment variables
-- **`src/auth.ts`**: Authentication environment variables
-- **`src/db.ts`**: Database environment variables
-- **`src/web-next.ts`**: Frontend environment variables (client and server)
-- **`src/lib/`**: `constants.ts` (the `NODE_ENV` enum, `VERSION`/`GIT_SHA`/`BUILD_VERSION`, `getBuildVersion`, and the env checkers `isLocal`/`isDevelopment`/`isTest`/`isStaging`/`isProduction`) and `utils.ts` (dotenv loader, redaction)
-
-### `packages/config/`
-
-Shared config for the workspace:
-
-- **`tsconfig.json`**: The TypeScript base, extended by every package.
-- **`tsdown.ts`**: The `tsdown` factory (`definePackageConfig`) that the backend packages' `tsdown.config.ts` files call. It lives at the package root (exported as `@packages/config/tsdown`), not under `src/`.
-- **`src/site.ts`**: The brand/site identity (name, description, social links, injectable content), exported as `@packages/config/site`. This is the single source a fork edits to rebrand, consumed by both `api/hono` and `web/next`.
-
-## Key Files
-
-| File           | Purpose                                                        |
-| -------------- | -------------------------------------------------------------- |
-| `package.json` | Root package with workspace configuration and scripts          |
-| `turbo.json`   | Turborepo build configuration and global environment variables |
-| `lefthook.yml` | Git hooks configuration for linting and formatting             |
-| `.env`         | Environment variables (create from `.env.example`)             |
-
-### Bun catalog convention
-
-The root `package.json` defines a `catalog:` block listing a single version for each shared dependency. Every workspace then references those deps with `catalog:` instead of a literal version, so the whole monorepo stays on one version per package. The `.github/scripts/deps-manager.ts` script normalizes and sorts these entries; it runs on `postinstall` and via lint-staged whenever a `package.json` is staged.
+- [Architecture](/docs/getting-started/architecture): why the graph is shaped this way.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): how `AppType` crosses from api to web.

@@ -1,52 +1,29 @@
 ---
 slug: /docs
 title: Introduction
-description: A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.
+description: "Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read."
 ---
 
-> ZeroStarter is built for production use. We're actively adding new features and integrations day-by-day.
+ZeroStarter is a minimal, strictly-typed SaaS monorepo (Bun, Turborepo, and a single type that runs from Postgres to the DOM) built so a human and an AI agent can both read it end to end.
 
-## Quick Links
+It ships the load-bearing parts of a SaaS (auth, a typed API, a database with migrations, docs, and deploy) already wired together, so your first day goes to your product instead of plumbing.
 
-### Getting Started
+Both audiences are first-class. The codebase is small and strict on purpose, and it hands an AI agent the same footing it hands you: executable [skills](/docs/resources/ai-skills), a typed API that rejects wrong calls, a one-request local sign-in, and generated [llms.txt](/docs/manage/llms-txt) context. Point Claude Code, Cursor, or your own agent at it and it can build a real feature.
 
-- [Architecture](/docs/getting-started/architecture) - Learn about the tech stack
-- [Project Structure](/docs/getting-started/project-structure) - Understand the monorepo organization
-- [Type-Safe API Client](/docs/getting-started/type-safe-api) - End-to-end type safety with Hono RPC
-- [Setup](/docs/getting-started/setup) - Get started with setup
-- [Scripts](/docs/getting-started/scripts) - Available commands
-- [Roadmap](/docs/getting-started/roadmap) - Planned features and integrations
+## What's inside
 
-### Manage
+- **Auth & organizations**: Better Auth with optional GitHub and Google OAuth (each button appears only when its credentials are set), organizations and teams, and an `admin` role that gates the console.
+- **A typed API**: Hono with end-to-end RPC. The frontend infers its types from the backend, so a wrong call fails at compile time, not in production.
+- **Database & migrations**: PostgreSQL and Drizzle on Bun's SQL driver, schema-first, with generated migrations you apply in one command.
+- **Docs**: Fumadocs with search and an auto-generated `llms.txt`, the site you're reading now.
+- **Deploy**: Docker and Vercel configs that ship the same code you develop against.
 
-- [Authentication](/docs/manage/authentication) - Auth, OAuth, organizations, and teams
-- [Dashboard](/docs/manage/dashboard) - Protected dashboard with organization management
-- [Database](/docs/manage/database) - PostgreSQL schema, Drizzle ORM, and migrations
-- [API Conventions](/docs/manage/api-conventions) - Response format, error handling, and middleware
-- [Analytics](/docs/manage/analytics) - Configure PostHog analytics and tracking
-- [Code Quality](/docs/manage/code-quality) - Git hooks, linting, and formatting
-- [Blog](/docs/manage/blog) - Manage blog content and articles
-- [Documentation](/docs/manage/documentation) - Manage documentation content and search
-- [Feedback](/docs/manage/feedback) - Configure user feedback collection
-- [Environment](/docs/manage/environment) - Manage environment variables
-- [Release](/docs/manage/release) - Manage releases and changelog
-- [Theming](/docs/manage/theming) - Dark mode, CSS variables, and styling
-- [OG Images](/docs/manage/og-images) - Dynamic Open Graph image generation
-- [llms.txt](/docs/manage/llms-txt) - Auto-generated documentation for LLMs
-- [robots.txt](/docs/manage/robots) - Search engine crawler instructions
-- [Sitemap](/docs/manage/sitemap) - Auto-generated sitemap for search engines
+All of that is real and working. The **dashboard and console are auth-gated shells**: a signed-in starting point, not a pre-built app. You build your product on them.
 
-### Deployment
+## Start here
 
-- [Docker](/docs/deployment/docker) - Deploy with Docker and Docker Compose
-- [Vercel](/docs/deployment/vercel) - Deploy to Vercel
-
-### Resources
-
-- [AI Skills](/docs/resources/ai-skills) - Pre-defined skills for AI assistants
-- [IDE Setup](/docs/resources/ide-setup) - Recommended IDE configuration
-- [Infisical](/docs/resources/infisical) - Secrets management
-
-### Contributing
-
-- [Contributing](/docs/contributing) - Contribute to the project
+1. [Quickstart](/docs/getting-started/setup): two commands to a running, signed-in app.
+2. [Architecture](/docs/getting-started/architecture): the stack, and why each piece is here.
+3. [Project Structure](/docs/getting-started/project-structure): two apps, four packages, one import graph.
+4. [The Type-Safe API](/docs/getting-started/type-safe-api): how one type crosses every boundary.
+5. [Working with Agents](/docs/getting-started/working-with-agents): the loop an AI agent uses to build here.

@@ -1,119 +1,60 @@
 ---
 slug: /docs/resources/ai-skills
 title: AI Skills
-description: Pre-defined skills for AI assistants and LLM agents to help with common tasks.
+description: The bundled SKILL.md recipes that teach an agent this repo's conventions and traps.
 ---
 
-## Overview
+A skill is a `SKILL.md` file: a trigger plus a literal procedure. Not a vague "you are a helpful assistant" prompt: the exact steps for one real task in _this_ repo, with its conventions baked in and its known traps called out. The `api-endpoint` skill, for instance, hands over the Hono router template, the validation envelope, where to mount the route, the restart step, and the `curl` that proves it works.
 
-ZeroStarter ships a set of structured skills for AI assistants and LLM agents. Each skill is a directory containing a `SKILL.md`: Markdown with frontmatter metadata, so it is both human-readable and machine-parseable. These skills help AI tools perform common repo tasks correctly and consistently.
+Every skill lives in `.agents/skills/<name>/SKILL.md`. That is the one source. `.claude/skills` is a symlink to it, so Claude Code, Cursor, and Codex all read the same files. Edit a skill once and every agent tool sees the change. There is no second copy to keep in sync.
 
-The same 12 skills live in **both** `.agents/skills/` and `.claude/skills/`. Both directories exist and contain the full set (they are mirrored copies). `.claude/skills/` is the conventional Claude Code location; `.agents/skills/` is the tool-agnostic location referenced from `AGENTS.md`.
+## How an agent picks one
 
-## Available Skills
+Each `SKILL.md` opens with frontmatter, a `name` and a `description` that states _when_ to use it:
 
-| Skill                        | What it does                                                                                                                                                                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `agent-browser`              | Browser automation CLI for AI agents: navigate pages, fill forms, click, screenshot, scrape data, test web apps, and automate Electron apps.                                                                                       |
-| `api-endpoint`               | Add a typed Hono API endpoint following repo conventions: router, OpenAPI docs, validation envelope, RPC client wiring. Use when adding or modifying API routes in `api/hono`.                                                     |
-| `audit`                      | Run the dependency security audit and maintain `AUDIT.md`. Use when auditing dependencies, when the pre-push audit hook fails on canary, or when `bun audit` reports vulnerabilities.                                              |
-| `db-migration`               | Create and apply database schema changes with Drizzle. Use when adding or modifying tables, columns, or indexes in `@packages/db`, or when asked for a migration.                                                                  |
-| `design`                     | Follow and maintain the app UI conventions via this skill. Use for UI, styling, or component work, design tokens, layout, or any design-system decision.                                                                           |
-| `dev`                        | Start, restart, and verify the ZeroStarter dev stack (Next.js on 3000, Hono API on 4000). Use when running the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.                     |
-| `docker-test`                | Build and smoke-test the Docker images with docker compose. Use when touching Dockerfiles, the bundle build, compose config, or anything that changes how containers are packaged.                                                 |
-| `fonts`                      | Add or swap web fonts by fetching latin variable woff2 files from fontsource and localizing them through `next/font/local`. Use when changing brand fonts, adding a font role, or debugging font loading, preload, or CLS.         |
-| `gh-commit`                  | Create atomic commits with conventional commit format. Use when asked to commit, save changes, or create a commit.                                                                                                                 |
-| `github-pull-request-review` | Turn-based PR review with hard role separation, runnable as an async two-session loop or a single-session transcript. The reviewer posts a formal review, the author addresses each finding, alternating until both are satisfied. |
-| `ignore-sync`                | Keep `.dockerignore` in sync with `.gitignore`. Use whenever an entry is added to or removed from `.gitignore`, or when auditing why the Docker build context is bloated.                                                          |
-| `shadcn-sync`                | Run and reconcile the shadcn component sync (`bun run shadcn:update`). Use when refreshing shadcn components, or when a sync regresses a local customization or breaks the build.                                                  |
-
-Of these, only `agent-browser` is externally vendored: it is sourced from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) and tracked in the root `skills-lock.json` (with its `source`, `sourceType`, `skillPath`, and `computedHash`) so it can be re-synced and integrity-checked. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. The other 11 skills are repo-authored.
-
-**Install agent-browser**: `npm i -g agent-browser && agent-browser install`
-
-## Skill Structure
-
-Skills sit in a flat layout: each is a directory directly under `.agents/skills/` (and mirrored under `.claude/skills/`), with no category nesting.
-
-```
-.agents/skills/
-├── agent-browser/
-│   └── SKILL.md
-├── api-endpoint/
-│   └── SKILL.md
-├── audit/
-│   └── SKILL.md
-├── db-migration/
-│   └── SKILL.md
-├── design/
-│   └── SKILL.md
-├── dev/
-│   └── SKILL.md
-├── docker-test/
-│   └── SKILL.md
-├── fonts/
-│   └── SKILL.md
-├── gh-commit/
-│   └── SKILL.md
-├── github-pull-request-review/
-│   └── SKILL.md
-├── ignore-sync/
-│   └── SKILL.md
-└── shadcn-sync/
-    └── SKILL.md
+```yaml
+name: api-endpoint
+description: Add a typed Hono API endpoint following repo conventions... Use when adding or modifying API routes in api/hono.
 ```
 
-### SKILL.md Format
+An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so all fourteen skills cost almost nothing in context until one is needed; the full procedure loads only on a match.
 
-````markdown
----
-name: skill-name
-description: Brief description of what the skill does and when to use it.
----
+When you don't know where to start, the `codebase-map` skill orients first; it maps where each kind of change lives and how types ripple across the stack. It is the one skill worth reading before you have a specific task.
 
-# Skill Title
+## The catalog
 
-Description of the skill.
+Fourteen skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
 
-## Workflow
+| Stage    | Skill                        | What it does                                                                                                                  |
+| -------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Navigate | `codebase-map`               | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory. |
+| Build    | `api-endpoint`               | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.     |
+| Build    | `db-migration`               | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                     |
+| Build    | `dev`                        | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                      |
+| Build    | `design`                     | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                   |
+| Operate  | `agent-browser`              | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
+| Operate  | `docker-test`                | Build and smoke-test the Docker images with `docker compose`.                                                                 |
+| Operate  | `audit`                      | Run the dependency security audit and maintain `AUDIT.md`; unblocks the pre-push audit hook.                                  |
+| Operate  | `ui-verify`                  | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                             |
+| Maintain | `shadcn-sync`                | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                              |
+| Maintain | `fonts`                      | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                        |
+| Maintain | `ignore-sync`                | Keep `.dockerignore` in step with `.gitignore`.                                                                               |
+| Ship     | `gh-commit`                  | Atomic commits in conventional-commit format.                                                                                 |
+| Ship     | `github-pull-request-review` | Turn-based PR review with hard reviewer/author role separation.                                                               |
 
-### 1. First Step
+Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. The other thirteen are written for this repo.
 
-```bash
-command to run
-```
+## Writing your own
 
-- Notes about this step
-- Important considerations
-
-### 2. Second Step
-
-...
-````
-
-## Creating Custom Skills
-
-To create a new skill:
-
-1. Create a directory: `.agents/skills/<skill-name>/`
-2. Add a `SKILL.md` file with:
-   - Frontmatter with `name` and `description`
-   - Clear workflow steps
-   - Code examples with commands
-   - Notes and edge cases
-3. Mirror it into `.claude/skills/<skill-name>/` so Claude Code picks it up too.
-
-**Example Custom Skill**:
+Make a directory under `.agents/skills/<name>/`, add a `SKILL.md`, and the symlink carries it to every tool:
 
 ````markdown
 ---
 name: deploy-preview
-description: Deploys a preview build to the staging environment. Use when the user asks to ship a preview.
+description: Ship a preview build to staging. Use when asked to deploy a preview.
 ---
 
 # Deploy Preview
-
-Builds and pushes a preview deployment.
 
 ## Workflow
 
@@ -122,43 +63,11 @@ Builds and pushes a preview deployment.
 ```bash
 bun run build
 ```
-
-### 2. Deploy
-
-```bash
-bun run deploy:preview
-```
 ````
 
-## Integration with AI Tools
+Keep it one task, one procedure. Write the real commands and the real traps. A skill earns its place by encoding what an agent would otherwise get wrong. When a convention changes, update its skill in the same commit; `AGENTS.md` makes that rule load-bearing.
 
-### Claude Code
+## Next
 
-Skills in `.claude/skills/` are picked up automatically. The mirrored copies in `.agents/skills/` keep the set available to other tools.
-
-### Cursor
-
-Skills are available to Cursor's AI assistant when referenced from `AGENTS.md`:
-
-```markdown
-## Skills
-
-This project includes custom skills to assist with common tasks. Skills are located in `.agents/skills` and `.claude/skills`.
-```
-
-### GitHub Copilot
-
-Copilot can reference skills when you mention them in comments or prompts.
-
-### Custom AI Assistants
-
-The structured format makes skills easy to parse programmatically for custom AI integrations.
-
-## Best Practices
-
-- **Keep skills focused**: One task per skill
-- **Include examples**: Show expected inputs and outputs
-- **Document edge cases**: Handle errors and special situations
-- **Use standard commands**: Prefer project scripts over raw commands
-- **Keep both copies in sync**: Mirror changes across `.agents/skills` and `.claude/skills`
-- **Version control**: Skills evolve with the project
+- [Working with Agents](/docs/getting-started/working-with-agents): the loop these skills plug into.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): the types the build skills lean on.

@@ -1,65 +1,59 @@
 ---
 slug: /docs/manage/dashboard
 title: Dashboard
-description: Protected dashboard with authentication, organization management, and sidebar navigation.
+description: "The protected app shell: sidebar, org switcher, and the layout wrappers to build on."
 ---
 
-## Overview
+<Callout type="warn" title="This is a shell, not a product">
 
-The dashboard is a protected area at `/dashboard` that requires authentication. It includes organization switching, user management, and a collapsible sidebar. The layout is defined in `web/next/src/app/(protected)/layout.tsx`.
+The `/dashboard` page renders a single "Welcome back." header and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
 
-Page content is wrapped in the `DashboardShell` + `DashboardHeader` components (see [Page content](#page-content)). The privileged `/console` area shares the same `SidebarShell` and the same wrappers.
+</Callout>
 
-## Authentication Guard
+`/dashboard` is a route group at `web/next/src/app/(protected)/`. Its `layout.tsx` does two things: it guards the group behind a session, and wraps every page in the shared sidebar. The privileged `/console` area reuses the exact same chrome.
 
-The protected layout checks for a valid session server-side:
+## The guard
+
+The layout checks the session server-side and bounces anyone without one:
 
 ```ts
 const session = await auth.api.getSession()
 if (!session?.user) redirect("/")
 ```
 
-Unauthenticated users are redirected to the home page. The `auth.api.getSession()` helper in `web/next/src/lib/auth/index.ts` makes a server-side call to the API using the request cookies.
+`auth.api.getSession()` (in `web/next/src/lib/auth/index.ts`) calls the API with the request cookies. The redirect happens on the server, so an unauthenticated request never renders the protected page; there is no client-side flash.
 
-## Organization Persistence
+## The sidebar
 
-When a user logs in, the dashboard restores their last active organization:
+The chrome is not inlined in the layout. It lives in `SidebarShell` (`web/next/src/components/sidebar/shell.tsx`), a shadcn/ui `Sidebar` in `collapsible="icon"` mode, shared by both the dashboard and console layouts. The layout fills three slots:
 
-1. On load, checks for `last-active-org_{userId}` cookie
-2. If found, calls `POST /api/auth/organization/set-active` to restore the org
-3. The org switcher component saves the cookie when the user switches organizations
+- **Header**: the brand (`site.name`, linking to `homeHref`), the collapse trigger, and a caller node: for the dashboard, the org switcher.
+- **Content**: a caller `nav` node. Empty for the dashboard; add your navigation items here.
+- **Footer**: a caller node: for the dashboard, the user actions.
 
-This ensures users return to the same organization context across sessions.
+The console layout is the same shell with two props flipped: a `badge` ("Console") and `homeHref="/console"`; both default to dashboard values. A `SidebarRail` handles drag-to-resize, and open/closed state persists in a `sidebar_state` cookie.
 
-## Sidebar Components
+### Org switcher and active-org persistence
 
-### Organization Switcher
+The org switcher (`web/next/src/components/sidebar/dashboard/org-switcher.tsx`) lists the user's organizations, switches between them, and offers a Create Organization dialog (the slug is auto-generated from the name). The active org survives reloads:
 
-Located at `web/next/src/components/sidebar/dashboard/org-switcher.tsx`:
+1. On switch, the component writes a `last-active-org_{userId}` cookie.
+2. On load, the dashboard reads that cookie and calls `POST /api/auth/organization/set-active` to restore it.
 
-- Lists all organizations the user belongs to
-- Allows switching between organizations
-- Create Organization dialog with a name field (the slug is auto-generated from the name)
-- Saves last active org in a cookie for persistence
+So a user returns to the same org context every session.
 
-### User Actions
+### User actions
 
-Located at `web/next/src/components/sidebar/dashboard/user-actions.tsx`:
-
-- Links to documentation, with a version badge
-- Surfaces a "Dashboard" cross-link to `/console` when the user is an admin (`canAccessConsole`)
-- Renders the shared `SidebarUserMenu`
-
-The user avatar, name, and email, the optional feedback link (shown when `NEXT_PUBLIC_USERJOT_URL` is set), and the sign-out action all live in the shared `SidebarUserMenu` component at `web/next/src/components/sidebar/user-menu.tsx`. Sign-out redirects to the home page.
+The footer (`web/next/src/components/sidebar/dashboard/user-actions.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/sidebar/user-menu.tsx`): avatar, name, email, an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
 
 ## Page content
 
-Protected pages wrap their content in two components so pages never hand-roll centering, width, padding, or the header layout:
+Pages never hand-roll centering, width, or padding. They wrap content in two components:
 
-- **`DashboardShell`** (`web/next/src/components/dashboard/shell.tsx`): the content container. Owns `mx-auto`, width, and `p-4 sm:p-6` padding via a `size` variant — `sm` (`max-w-2xl`), `md` (`max-w-4xl`, the default), `lg` (`max-w-6xl`), `full` (`max-w-none`).
-- **`DashboardHeader`** (`web/next/src/components/dashboard/header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions` (a right-aligned node, e.g. a button), and renders the page's single `<h1>`.
+- **`DashboardShell`** (`web/next/src/components/dashboard/shell.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
+- **`DashboardHeader`** (`web/next/src/components/dashboard/header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
 
-Both `/dashboard` and `/console` currently render a minimal header (a "Welcome back." greeting) — they are the starting points you extend:
+A new protected page is just a file under `(protected)/` (it inherits the guard and sidebar automatically) with its content wrapped in the shell:
 
 ```tsx
 import { DashboardHeader } from "@/components/dashboard/header"
@@ -69,55 +63,13 @@ export default function Page() {
   return (
     <DashboardShell>
       <DashboardHeader title="Dashboard" description="Welcome back." />
+      {/* your content here */}
     </DashboardShell>
   )
 }
 ```
 
-Add your content as children of `DashboardShell`, below the header.
+## Next
 
-## Adding Dashboard Pages
-
-1. Create a new page under `web/next/src/app/(protected)/`:
-
-```
-web/next/src/app/(protected)/
-├── layout.tsx          ← Auth guard + sidebar
-├── dashboard/
-│   └── page.tsx        ← Dashboard home (DashboardShell + DashboardHeader)
-└── settings/           ← illustrative example, not in the repo
-    └── page.tsx        ← New page example
-```
-
-2. The page automatically inherits the authenticated layout with sidebar.
-
-3. Wrap content in the shell + header, reading session data server-side as needed:
-
-```tsx
-import { DashboardHeader } from "@/components/dashboard/header"
-import { DashboardShell } from "@/components/dashboard/shell"
-import { auth } from "@/lib/auth"
-
-export default async function SettingsPage() {
-  const session = await auth.api.getSession()
-  return (
-    <DashboardShell>
-      <DashboardHeader title="Settings" description={`Signed in as ${session?.user.name}`} />
-    </DashboardShell>
-  )
-}
-```
-
-## Sidebar Configuration
-
-The sidebar chrome is not built inline in the layout. It lives in the shared `SidebarShell` component at `web/next/src/components/sidebar/shell.tsx`, which is reused by both the dashboard and console layouts. The dashboard layout passes in `header` and `footer`; `SidebarShell` owns the provider, header brand, content, footer, and rail. The optional `badge` and `homeHref` props are set by the console layout (`badge` for the "Console" tag, `homeHref="/console"` to point the brand link at the console home); both default to dashboard values (no badge, `homeHref="/"`).
-
-The shell uses the shadcn/ui `Sidebar` component with `collapsible="icon"` mode. It consists of:
-
-- **Header**: brand (`site.name`, linking to `homeHref`, optionally with the `badge`), the sidebar trigger, and the caller's `header` node (for the dashboard, the org switcher)
-- **Content**: the caller's `nav` node (empty for the dashboard; add navigation items here)
-- **Footer**: the caller's `footer` node (for the dashboard, the user actions)
-
-A `SidebarRail` sits alongside the sidebar for drag-to-resize/toggle, and a floating trigger (`SidebarFloatingTrigger`) is rendered in the main content area.
-
-The sidebar state (open/closed) is persisted in a `sidebar_state` cookie.
+- [Authentication](/docs/manage/authentication): the sessions, orgs, and roles behind the guard.
+- [Theming](/docs/manage/theming): restyle the shell with design tokens.

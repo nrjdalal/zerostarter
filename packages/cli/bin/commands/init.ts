@@ -13,7 +13,7 @@ const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
 
 Scaffold ZeroStarter into dir (default .) as a fresh product. The author's
-content, public assets, and agent skills are left out for you to supply; the
+content and public assets are left out for you to supply; the
 dir name becomes the project name and site.ts + package.json are rebranded. If
 the dir already holds a ZeroStarter clone it is used in place; otherwise the
 latest ZeroStarter is fetched into it first.
@@ -55,10 +55,10 @@ export const init = async (argv: string[]) => {
   if (!convertInPlace && !isEmptyDir(firstTarget)) {
     if (!interactive) {
       throw new Error(
-        "Target directory is not empty. Pass an empty target dir, for example: bunx zerostarter init my-product",
+        "Directory is not empty. Run it in an empty directory, or pass a project name: bunx zerostarter init <name>",
       )
     }
-    const answer = await promptText("Target directory is not empty. New project directory")
+    const answer = await promptText("Directory isn't empty. Project name")
     if (!answer) throw new Error("No directory name provided.")
     dir = answer
   }
@@ -123,7 +123,7 @@ export const init = async (argv: string[]) => {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
-    // Non-interactive (--yes / non-TTY): take the prompt's default — provision when Docker is up.
+    // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
     wantDb = dockerUp
   }
   if (wantDb && dockerUp) {

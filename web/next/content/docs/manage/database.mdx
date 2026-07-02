@@ -1,152 +1,50 @@
 ---
 slug: /docs/manage/database
 title: Database
-description: PostgreSQL database schema, Drizzle ORM configuration, and migration workflows.
+description: "PostgreSQL with Drizzle: the schema, and the generate-then-migrate loop."
 ---
 
-## Overview
+Your database schema is TypeScript. The tables in `packages/db/src/schema/` are the single source of truth: Drizzle Kit generates the SQL migration from them, and Drizzle types every query against them, so a renamed column is a compile error in the API, not a `null` in production.
 
-ZeroStarter uses [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) for type-safe database operations. The database package lives at `packages/db/` and provides a shared database client and schema used by the auth and API packages.
+You never write DDL by hand or edit the database directly. You edit the schema, generate the SQL, review it, and apply it.
 
-## Connection
+## Why Drizzle
 
-The database client is initialized in `packages/db/src/index.ts` using Bun's native SQL driver:
+Drizzle is not a query builder wrapped around SQL strings. Because the schema is plain TypeScript, the `db` client in `packages/db/src/index.ts` is fully typed from it, every `select` and `insert` returns typed rows, and Drizzle Kit writes each migration by diffing your schema against the last snapshot, so you review real SQL instead of trusting an ORM to guess.
 
-```ts
-import { env } from "@packages/env/db"
-import { SQL } from "bun"
-import { drizzle } from "drizzle-orm/bun-sql"
+## The schema
 
-import * as schema from "@/schema"
+Two files under `packages/db/src/schema/`, both re-exported from `index.ts`:
 
-let db
+- **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds.
+- **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page.
 
-if (env.NODE_ENV === "production") {
-  const client = new SQL(env.POSTGRES_URL, {
-    connectionTimeout: 10,
-    idleTimeout: 30,
-    maxLifetime: 0,
-    tls: { rejectUnauthorized: true },
-  })
-  db = drizzle({ client, schema })
-} else {
-  // reuse one client across hot reloads
-  if (!global.db) {
-    const client = new SQL(env.POSTGRES_URL, {
-      connectionTimeout: 10,
-      idleTimeout: 30,
-      maxLifetime: 0,
-    })
-    global.db = drizzle({ client, schema })
-  }
-  db = global.db
-}
+Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column.
 
-export { db }
-```
-
-The connection string is passed positionally to `new SQL(...)`, and the branch is keyed on `env.NODE_ENV === "production"` (TLS is only set in the production branch).
-
-### Connection Pooling
-
-- **Production**: a single client created at module load, with TLS and certificate verification
-- **Non-production**: singleton via `globalThis.db` to reuse connections across hot reloads
-- **Docker**: when `INTERNAL_API_URL` is set, `localhost` in `POSTGRES_URL` is replaced with `host.docker.internal` (in `packages/env/src/db.ts`)
-
-## Schema
-
-The auth and organization schema is defined in `packages/db/src/schema/auth.ts` (9 tables); the public waitlist uses a standalone `waitlist` table in `packages/db/src/schema/waitlist.ts`.
-
-### Core Auth Tables
-
-| Table          | Purpose                   | Key Columns                                                                                                                       |
-| -------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `user`         | Application users         | `id`, `name`, `email` (unique), `emailVerified`, `image`, `role` (console access), `banned`/`banReason`/`banExpires`              |
-| `session`      | Login sessions            | `id`, `token` (unique), `expiresAt`, `userId`, `ipAddress`, `userAgent`, `activeOrganizationId`, `activeTeamId`, `impersonatedBy` |
-| `account`      | OAuth provider links      | `id`, `accountId`, `providerId`, `userId`, OAuth tokens                                                                           |
-| `verification` | Email verification tokens | `id`, `identifier`, `value`, `expiresAt`                                                                                          |
-
-The `role`/`banned`/`banReason`/`banExpires` columns on `user` and `impersonatedBy` on `session` are provided by the Better Auth Admin plugin and are part of the baseline schema.
-
-### Organization & Team Tables
-
-| Table          | Purpose              | Key Columns                                                                           |
-| -------------- | -------------------- | ------------------------------------------------------------------------------------- |
-| `organization` | Workspaces           | `id`, `name`, `slug` (unique), `logo`, `metadata`                                     |
-| `member`       | User↔Org membership  | `id`, `organizationId`, `userId`, `role` (default: "member")                          |
-| `team`         | Sub-groups in orgs   | `id`, `name`, `organizationId`                                                        |
-| `teamMember`   | User↔Team membership | `id`, `teamId`, `userId`                                                              |
-| `invitation`   | Pending invites      | `id`, `organizationId`, `email`, `role`, `teamId`, `status`, `expiresAt`, `inviterId` |
-
-Tables include appropriate indexes on foreign key columns.
-
-<Callout type="warn">
-
-Foreign keys cascade on delete, so deleting an organization cascades to its members, teams, and invitations.
-
-</Callout>
-
-### Waitlist
-
-| Table      | Purpose                | Key Columns                         |
-| ---------- | ---------------------- | ----------------------------------- |
-| `waitlist` | Public signup captures | `id`, `email` (unique), `createdAt` |
-
-The `waitlist` table is standalone (no foreign keys). The public `/waitlist` page and the `POST /api/waitlist` route write to it.
-
-### Relations
-
-Drizzle relations are defined for type-safe query joins:
-
-- `user` → many sessions, accounts, team memberships, org memberships, invitations
-- `organization` → many teams, members, invitations
-- `team` → one organization, many team members
-- `session` → one user
-
-## Migrations
-
-Migrations are generated and managed with Drizzle Kit.
-
-### Creating a Migration
-
-1. Modify the schema in `packages/db/src/schema/`
-2. Generate a migration:
+## The generate → migrate loop
 
 ```bash
+# 1. edit the schema in packages/db/src/schema/
+# 2. generate a SQL migration from the diff
 bun run db:generate
-```
-
-3. Review the generated SQL in `packages/db/drizzle/`
-4. Apply the migration:
-
-```bash
+# 3. review the SQL in packages/db/drizzle/, then apply it
 bun run db:migrate
 ```
 
-### Viewing Data
+`db:generate` diffs your schema against the snapshot in `packages/db/drizzle/meta/` and writes a numbered `.sql` file plus a fresh snapshot; it never touches the database. `db:migrate` runs the pending files against `POSTGRES_URL`. You review the SQL in between because it is the exact DDL that will run against your data.
 
-Open Drizzle Studio to browse and edit data:
-
-```bash
-bun run db:studio
-```
-
-### Existing Migrations
-
-| Migration               | Description                                                                                                                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0000_zero_starter.sql` | Baseline schema: all auth, organization, and team tables (user, session, account, verification, organization, member, team, teamMember, invitation), including Better Auth Admin plugin fields |
-| `0001_waitlist.sql`     | Adds the `waitlist` table (public signup): `id`, `email` (unique), `created_at`                                                                                                                |
-
-## Adding New Tables
-
-1. Create or edit a schema file in `packages/db/src/schema/`:
+Adding a table is the same loop. Create the file, export it, generate, migrate:
 
 ```ts
+// packages/db/src/schema/project.ts
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
+import { organization } from "@/schema/auth"
+
 export const project = pgTable("project", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   organizationId: text("organization_id")
     .notNull()
@@ -155,32 +53,28 @@ export const project = pgTable("project", {
 })
 ```
 
-2. Export from `packages/db/src/schema/index.ts`
-3. Run `bun run db:generate` then `bun run db:migrate`
+Add `export * from "@/schema/project"` to `packages/db/src/schema/index.ts`, then run the two commands. The [`db-migration`](/docs/resources/ai-skills) skill hands an agent this exact procedure, including the trap below.
 
-## Configuration
+<Callout type="warn" title="The running stack won't see a new table until you rebuild">
 
-Drizzle Kit configuration in `packages/db/drizzle.config.ts`:
+The API imports `@packages/db`'s built output, and `bun --hot` does not reliably pick up new files. After generating and migrating, rebuild the package (`bunx turbo run build --filter=@packages/db`) and restart `bun run dev`. Never edit an applied migration; generate a new one instead.
 
-```ts
-export default defineConfig({
-  dialect: "postgresql",
-  dbCredentials: { url: env.POSTGRES_URL },
-  schema: "src/schema",
-  out: "drizzle",
-})
-```
+</Callout>
 
-## PostgreSQL Providers
+## In production
 
-For production, use a managed PostgreSQL service:
+The schema, the SQL, and the snapshot travel together in the same commit as the change that needs them. On Vercel, the API build applies pending migrations automatically on production and canary deploys (`.github/scripts/migrate-on-deploy.ts`); PR previews are skipped. Point `POSTGRES_URL` at any managed Postgres: Neon, Supabase, Railway. For a throwaway local database, `bunx pglaunch -k` creates one instantly.
 
-- [Neon](https://neon.tech): Serverless Postgres
-- [Supabase](https://supabase.com): Postgres with real-time
-- [Railway](https://railway.app): Managed databases
-
-For local development, you can create a database instantly with:
+## Browsing data
 
 ```bash
-bunx pglaunch -k
+bun run db:studio
 ```
+
+Drizzle Studio opens a browser UI to read and edit rows directly.
+
+## Next
+
+- [Auth & Organizations](/docs/manage/authentication): what the tables in `auth.ts` actually do.
+- [Environment Variables](/docs/manage/environment): where `POSTGRES_URL` comes from.
+- [AI Skills](/docs/resources/ai-skills): the `db-migration` skill and the rest of the catalog.

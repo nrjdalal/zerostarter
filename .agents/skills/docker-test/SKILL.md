@@ -23,7 +23,7 @@ docker compose down
 ## .env requirements
 
 - Builds consume `.env` as a BuildKit secret (compose wires `secrets: dotenv` from `./.env`; plain builds pass `--secret id=dotenv,src=.env`). The file mounts only during the build RUN and never lands in a layer; env validation runs in full during the build. Missing `.env` fails fast and clearly (compose: secret file not found; docker build: secret not provided).
-- Real images get the real `.env`. Simulation/smoke builds on a clean checkout get a dummy: `.env.example` with the empty required values filled -
+- Real images get the real `.env`. Simulation/smoke builds on a clean checkout get a dummy, `.env.example` with the empty required values filled in:
 
   ```bash
   sed -e 's|^BETTER_AUTH_SECRET=$|BETTER_AUTH_SECRET=dummy|' \

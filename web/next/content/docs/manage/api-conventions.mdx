@@ -1,259 +1,105 @@
 ---
 slug: /docs/manage/api-conventions
 title: API Conventions
-description: Standardized API response format, error handling, and middleware patterns.
+description: The { data } / { error } envelope, error codes, and middleware every route shares.
 ---
 
-## Overview
+Every response the API sends is one of two shapes, so the client never has to guess. A success carries a `data` field; a failure carries an `error` with a stable `code` and a human `message`. One envelope means one way to read a response, one closed set of codes to `switch` on, and one place, not every handler, that decides what a failure looks like.
 
-The Hono API server follows consistent conventions for responses, errors, middleware, and route organization. Understanding these patterns is essential for extending the API.
+## The envelope
 
-## Response Format
-
-All API responses use a standardized JSON envelope:
-
-### Success
+Success:
 
 ```json
-{
-  "data": { ... }
-}
+{ "data": { ... } }
 ```
 
-### Error
+Failure:
 
 ```json
-{
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable message"
-  }
-}
+{ "error": { "code": "ERROR_CODE", "message": "Human-readable message" } }
 ```
 
-Routes never build this envelope by hand. They `throw`, `new ApiError(status, code, message, extra?)` for a domain code, or a Hono `HTTPException(status, { message })` for a standard one, and the central `errorHandler` in `api/hono/src/lib/error.ts` (registered via `app.onError`) is the single place that turns any thrown error into the envelope (via the internal `jsonError` builder). `errorHandler` dispatches in order: `ApiError` (its own code) → `ZodError` (400) → `HTTPException` (status-mapped code) → `500`. Middleware and `notFound` may still call `jsonError` directly.
+Handlers return the success side directly with `return c.json({ data })`. They never build the error side by hand. Instead they **throw**, and one handler shapes every failure.
 
-### Consuming responses on the client
+## Errors are thrown, shaped in one place
 
-On the frontend, wrap any RPC call in `unwrap` (from `@/lib/api/client`) to get a `{ data, error }` result, exactly one is non-null, and it never throws:
+A route signals failure by throwing:
+
+- `throw new ApiError(status, code, message, extra?)`: a domain code from `api/hono/src/lib/error.ts`.
+- `throw new HTTPException(status, { message })`: a standard Hono error.
+
+The central `errorHandler` (registered via `app.onError` in `api/hono/src/index.ts`) catches every thrown error and turns it into the `{ error }` envelope. It dispatches in order: `ApiError` (uses its own code) → `ZodError` (400 `VALIDATION_ERROR`) → `HTTPException` (status mapped to a code) → anything else (500 `INTERNAL_SERVER_ERROR`). Because the shaping lives in one function, a new route can't accidentally invent a new error shape.
+
+<Callout type="warn" title="Detailed messages are local-only">
+
+A 500's real message is surfaced only when `NODE_ENV === "local"`. Every other environment returns a generic `"Internal Server Error"` so internals never leak. Thrown `ApiError` / `HTTPException` messages are developer-authored and always shown.
+
+</Callout>
+
+### Error codes
+
+The codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`: the single source of truth, re-exported to the web client so both ends share one closed set. Adding a code means extending that union, which keeps the throw site, the client type, and this table in sync.
+
+| Code                    | Status   | When                                                         |
+| ----------------------- | -------- | ------------------------------------------------------------ |
+| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`agents.ts`)                     |
+| `BAD_REQUEST`           | 400      | Malformed JSON / form-data body (Hono `HTTPException`)       |
+| `ERROR`                 | (varies) | `HTTPException` whose status isn't mapped to a code          |
+| `FORBIDDEN`             | 403      | Insufficient permissions (e.g. `/headers` outside local/dev) |
+| `INTERNAL_SERVER_ERROR` | 500      | Unhandled server error                                       |
+| `NOT_FOUND`             | 404      | Route does not exist                                         |
+| `TOO_MANY_REQUESTS`     | 429      | Rate limit exceeded                                          |
+| `UNAUTHORIZED`          | 401      | Missing or invalid session                                   |
+| `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                 |
+
+### Validation errors
+
+A request validator throws too. The waitlist `POST` (`api/hono/src/routers/waitlist.ts`) shows the pattern. Its `sValidator` hook throws on failure so `errorHandler` shapes the 400 in one place:
 
 ```ts
-import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.waitlist.$get())
-if (error) {
-  // error: { code, message }
-} else {
-  // data
-}
+sValidator("json", joinSchema, (result) => {
+  if (!result.success) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Invalid email address", { issues: result.error })
+  }
+})
 ```
 
-With TanStack Query, `throw` on the error arm, in a `queryFn` (so the query reports `isError`), or in a `useMutation` `mutationFn` and toast it in `onError`.
-
-`error.code` is typed as the `ErrorCode` union (re-exported from `@api/hono`) plus the two transport codes `unwrap` itself produces (`NETWORK_ERROR`, `UNKNOWN_ERROR`), so it is a closed union on the client, with autocomplete and exhaustive `switch`.
-
-### Error Codes
-
-| Code                    | Status   | When                                                          |
-| ----------------------- | -------- | ------------------------------------------------------------- |
-| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`api/hono/src/routers/agents.ts`) |
-| `BAD_REQUEST`           | 400      | Malformed JSON/form-data body (Hono `HTTPException`)          |
-| `ERROR`                 | (varies) | `HTTPException` with a status not mapped to a specific code   |
-| `FORBIDDEN`             | 403      | Insufficient permissions (e.g., `/headers` in production)     |
-| `INTERNAL_SERVER_ERROR` | 500      | Unhandled server error                                        |
-| `NOT_FOUND`             | 404      | Route does not exist                                          |
-| `TOO_MANY_REQUESTS`     | 429      | Rate limit exceeded                                           |
-| `UNAUTHORIZED`          | 401      | Missing or invalid session                                    |
-| `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                  |
-
-These codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`, the single source of truth, re-exported to the web client. A router emits a domain code by throwing `new ApiError(status, code, message, extra?)` (e.g. `agents.ts` throws `ApiError(500, "AGENT_LOGIN_FAILED", …)`). Adding a code means extending the `ErrorCode` union, so the throw site, the client type, and this table stay in sync.
-
-### Validation Errors
-
-When a Zod validation fails, the response includes the full issues array:
+The `extra` payload (here `issues`) rides through `ApiError` into the envelope, so a 400 carries the failing fields, and `unwrap` preserves them on the client:
 
 ```json
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Invalid request payload",
-    "issues": [{ "path": ["name"], "message": "Required" }]
+    "message": "Invalid email address",
+    "issues": [{ "path": ["email"], "message": "Invalid email address" }]
   }
 }
 ```
 
-Route-level validators (e.g. `sValidator` on the waitlist `POST`) `throw new ApiError(400, "VALIDATION_ERROR", message, { issues })` on failure, so `errorHandler` shapes the 400 in one place. Note that Hono's validator only parses the body when its content-type matches (JSON validators ignore a non-JSON body and validate `{}`), so a wrong content-type surfaces as a normal field-level issue.
+### On the client
 
-A body that is present but unparseable (malformed JSON, malformed form-data) is a client error, not a server error: Hono throws an `HTTPException`, and `errorHandler` returns it with the thrown status (`400 BAD_REQUEST`) instead of masking it as a `500`.
+Wrap any call in `unwrap` to get `{ data, error }`. `error.code` is this same `ErrorCode` union plus the transport codes `unwrap` adds (`NETWORK_ERROR`, `UNKNOWN_ERROR`), so it stays a closed set with autocomplete. See [The Type-Safe API](/docs/getting-started/type-safe-api).
 
-### Environment-Aware Errors
+## Middleware
 
-<Callout type="warn">
+Every request passes the global middleware in order (from `api/hono/src/index.ts`): **CORS** (trusted origins from `HONO_TRUSTED_ORIGINS`, credentials on) → **logger** → **rate limiter**. Protected routes add auth on top.
 
-Detailed error messages surface only when `NODE_ENV === "local"`. Every other environment returns a generic message to avoid leaking internals.
+### Rate limiting
 
-</Callout>
+The limiter keys each request by the first available of: user id (if authenticated) → API key (a hash of the `Authorization` header) → IP (via [Arcjet](https://arcjet.com)) → a random UUID fallback. Limits come from `HONO_RATE_LIMIT` / `HONO_RATE_LIMIT_WINDOW_MS` (default 60 requests / 60s); authenticated users get 2× the limit, installed by the auth middleware. Exceeding it returns `429 TOO_MANY_REQUESTS`.
 
-- **Local only**: Error messages include the actual error details for debugging. Detailed messages are shown only when `isLocal(env.NODE_ENV)`, i.e. `NODE_ENV === "local"` (`api/hono/src/lib/error.ts`).
-- **All other environments**: Generic `"Internal Server Error"` message to avoid leaking internals. `development`, `test`, `staging`, and `production` all get the generic message.
+<Callout type="warn" title="The API-key tier is unwired">
 
-## Middleware Stack
-
-Every request passes through these global middlewares in order:
-
-1. **CORS**: Allows configured trusted origins with credentials
-2. **Logger**: Logs request/response to console
-3. **Rate Limiter**: Enforces per-key rate limits
-
-### CORS Configuration
-
-Configured in `api/hono/src/index.ts`:
-
-- **Origins**: From `HONO_TRUSTED_ORIGINS` (comma-separated URLs)
-- **Methods**: GET, OPTIONS, POST, PUT
-- **Headers**: content-type, authorization
-- **Exposed Headers**: content-length
-- **Credentials**: Enabled (for cookies)
-- **Max Age**: 600 seconds
-
-### Rate Limiting
-
-The key generator resolves keys in this priority order:
-
-1. **User ID**: If authenticated (highest priority)
-2. **API Key**: Hash of `Authorization` header
-3. **IP Address**: Detected via [Arcjet IP](https://arcjet.com)
-4. **Random UUID**: Fallback if IP detection fails
-
-<Callout type="warn">
-
-The API-key rate-limit tier is currently unwired and falls back to per-IP. No limiter passes an API key, so that tier stays dead until you wire `getApiKey` into a limiter.
+No limiter passes `getApiKey`, so the API-key branch never fires; requests fall back to the user-id or IP tier. Wire `getApiKey` into a limiter to activate it.
 
 </Callout>
 
-In the current wiring, only the user-ID tier (via the authenticated limiter) and the IP tier (via the global limiter) are active.
+### Auth
 
-| Context         | Limit        | Window | Environment Variable                            |
-| --------------- | ------------ | ------ | ----------------------------------------------- |
-| Unauthenticated | 60 req       | 60s    | `HONO_RATE_LIMIT` / `HONO_RATE_LIMIT_WINDOW_MS` |
-| Authenticated   | 120 req (2x) | 60s    | Same variables, doubled automatically           |
+`authMiddleware` (on `/api/v1/*`) reads the session from request headers via Better Auth, returns `401 UNAUTHORIZED` when there is none, and otherwise sets `session` and `user` on the context (typed by the `{ Variables: Session }` generic) for downstream handlers. It also swaps in the 2× per-user rate limiter.
 
-When a rate limit is exceeded, the API returns:
+## Next
 
-```json
-{
-  "error": {
-    "code": "TOO_MANY_REQUESTS",
-    "message": "Too Many Requests"
-  }
-}
-```
-
-### Auth Middleware
-
-Applied to protected routes (e.g., `/api/v1/*`):
-
-1. Extracts session from request headers via Better Auth
-2. Returns `401 UNAUTHORIZED` if no valid session
-3. Sets `session` and `user` context variables for downstream handlers
-4. Creates a user-specific rate limiter with 2x the global limit
-
-## Route Organization
-
-```
-/                       → Version and environment info
-/headers                → Request headers (local/dev only)
-/api/health             → Health check with OpenAPI docs
-/api/openapi.json       → OpenAPI specification
-/api/docs               → Scalar API documentation UI
-/api/auth/*             → Better Auth handlers (session, OAuth, etc.)
-/api/auth/get-session   → Session endpoint hit by the Next server-side auth.api.getSession helper
-/api/auth/providers     → Enabled OAuth providers (configured-provider list the sign-in UI reads)
-/api/agents/*           → Agent sign-in (local only, trusted Origin)
-/api/v1/*               → Protected routes (requires auth middleware)
-  /api/v1/session       → Current session data
-  /api/v1/user          → Current user data
-```
-
-### Adding a New Route
-
-1. Create or edit a router in `api/hono/src/routers/`:
-
-```ts
-import type { Session } from "@packages/auth"
-import { Hono } from "hono"
-import { describeRoute, resolver } from "hono-openapi"
-import { z } from "zod"
-import { authErrorResponses } from "@/lib/error"
-import { authMiddleware } from "@/middlewares"
-
-export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddleware).get(
-  "/items",
-  describeRoute({
-    tags: ["Items"],
-    description: "List items",
-    responses: {
-      200: {
-        description: "OK",
-        content: {
-          "application/json": {
-            schema: resolver(z.object({ data: z.array(z.object({ id: z.string() })) })),
-          },
-        },
-      },
-      ...authErrorResponses,
-    },
-  }),
-  (c) => {
-    const user = c.get("user")
-    return c.json({ data: [] })
-  },
-)
-```
-
-The `new Hono<{ Variables: Session }>()` generic (with `import type { Session } from "@packages/auth"`) is what makes `c.get("user")` and `c.get("session")` typed, matching the real `v1Router`. The `authMiddleware` populates those context variables.
-
-To emit an error from a handler, `throw new ApiError(status, code, message)` (a domain code) or `throw new HTTPException(status, { message })` (a standard one); `errorHandler` builds the envelope, so never construct it inline.
-
-2. Register in `api/hono/src/index.ts` if it's a new router. The app sets `.basePath("/api")`, so the route path is relative to `/api`:
-
-```ts
-const routes = app.basePath("/api").route("/v1", v1Router) // served at /api/v1
-```
-
-3. The route is automatically available in the frontend via `apiClient.v1.items.$get()`
-
-## OpenAPI Documentation
-
-Routes decorated with `describeRoute` appear in the Scalar API docs at `/api/docs`. You can add code samples:
-
-```ts
-describeRoute({
-  tags: ["v1"],
-  description: "Get session",
-  ...({
-    "x-codeSamples": [{
-      lang: "typescript",
-      label: "hono/client",
-      source: `const { data, error } = await unwrap(apiClient.v1.session.$get())`,
-    }],
-  } as object),
-  responses: { ... },
-})
-```
-
-### Documenting error responses
-
-A route should only advertise the error statuses it can actually return, so the docs stay honest. The `defaultOptions` in `index.ts` apply `globalErrorResponses` (429, 500, the only statuses reachable on any matched route, via the global rate limiter and `errorHandler`) to every GET/POST. A route then adds the rest in its own `responses` (which merge over the defaults), using the helpers in `api/hono/src/lib/error.ts`:
-
-- `authErrorResponses` (401), spread into routes behind `authMiddleware` (e.g. `/api/v1/*`).
-- `validationErrorResponses` (400), spread into routes with a request validator (e.g. the waitlist `POST`).
-
-```ts
-responses: {
-  200: { description: "OK", content: { ... } },
-  ...authErrorResponses,
-}
-```
-
-So `/api/health` documents only 200/429/500, `/api/v1/*` adds 401, and validated routes add 400, each error status shows its own code/message example.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): how these responses reach a fully-typed client.
+- [Authentication](/docs/manage/authentication): the sessions the auth middleware checks.

@@ -1,18 +1,14 @@
 ---
 slug: /docs/resources/ide-setup
 title: IDE Setup
-description: Recommended IDE configuration for ZeroStarter.
+description: VS Code and Cursor settings for the Oxc toolchain.
 ---
 
-## Overview
+ZeroStarter ships `.vscode/` config so your editor lints and formats with the same [Oxc](https://oxc.rs) toolchain the CLI and git hooks use: one Rust tool in place of ESLint and Prettier, fast enough to run on every save.
 
-ZeroStarter includes VS Code configuration for a consistent development experience.
+## VS Code
 
-## Visual Studio Code
-
-### Recommended Extensions
-
-Defined in `.vscode/extensions.json`:
+Open the repo and VS Code recommends one extension, from `.vscode/extensions.json`:
 
 ```json
 {
@@ -20,11 +16,7 @@ Defined in `.vscode/extensions.json`:
 }
 ```
 
-The [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) provides fast linting (Oxlint) and formatting (Oxfmt).
-
-### Editor Settings
-
-Defined in `.vscode/settings.json`:
+Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints (Oxlint) and formats (Oxfmt) inline. `.vscode/settings.json` makes it the default formatter and runs it on save:
 
 ```json
 {
@@ -33,14 +25,18 @@ Defined in `.vscode/settings.json`:
 }
 ```
 
-## Linting & Formatting
+The extension reads the project's root config, so the editor and the CLI can never disagree:
 
-The Oxc extension reads the project's root config files, so editor and CLI behavior match:
+- `.oxlintrc.jsonc`: lint rules.
+- `.oxfmtrc.jsonc`: formatting: no semicolons, sorted imports, Tailwind class sorting. It ignores `.agents/**`, so the AI skill docs are left untouched.
 
-- `.oxlintrc.jsonc`: Oxlint rules
-- `.oxfmtrc.jsonc`: Oxfmt formatting (no semicolons, sorted imports, Tailwind class sorting); it ignores `.agents/**` and `.claude/**`, so the AI skill docs are left untouched.
+## Cursor
 
-You can also run them from the terminal without VS Code:
+[Cursor](https://cursor.sh) reads the same `.vscode/` config, so the extension and format-on-save work with no extra setup.
+
+## From the terminal
+
+No editor integration required. The same checks run from the shell, and again on commit:
 
 ```bash
 bun run format        # format the tree with Oxfmt
@@ -48,13 +44,7 @@ bun run format:check  # check formatting without writing
 bun run lint          # lint the tree with Oxlint
 ```
 
-See [Code Quality](/docs/manage/code-quality) for how these run automatically on commit.
+## Next
 
-## Cursor
-
-[Cursor](https://cursor.sh) uses the same VS Code configuration automatically.
-
-Additionally, ZeroStarter includes:
-
-- **AGENTS.md**: AI assistant instructions at repository root
-- **.agents/skills/**: Structured skills for AI-assisted tasks (see [AI Skills](/docs/resources/ai-skills))
+- [Code Quality](/docs/manage/code-quality): how lint and format run automatically on every commit.
+- [Working with Agents](/docs/getting-started/working-with-agents): the AGENTS.md and skills Cursor and Claude Code read.
