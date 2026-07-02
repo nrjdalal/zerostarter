@@ -27,7 +27,7 @@ const slugify = (value: string): string =>
 // so a scaffolded project ships with the same agent playbook.
 const IGNORED_DIRS = ["web/next/content", "web/next/public"]
 
-// Author pages, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
+// Author pages, marketing-only components, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
 const REMOVE_PATHS = [
   "packages/cli",
   ".github/workflows/cli-release.yml",
@@ -44,6 +44,7 @@ const REMOVE_PATHS = [
   "bun.lock",
   "web/next/src/app/hire",
   "web/next/src/app/resume",
+  "web/next/src/components/marketing",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
   "web/next/src/fonts/newsreader-latin-wght-normal.woff2",
   "web/next/src/fonts/newsreader-latin-wght-italic.woff2",
