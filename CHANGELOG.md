@@ -1,3 +1,15 @@
+## v0.0.75
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.74...v0.0.75)
+
+### 🚀 Enhancements
+
+- **web:** Refine the landing hero badge and CTA copy ([cb2d11a](https://github.com/nrjdalal/zerostarter/commit/cb2d11a))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.74
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.73...v0.0.74)
