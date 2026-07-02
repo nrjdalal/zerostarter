@@ -1,3 +1,21 @@
+## v0.0.74
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.73...v0.0.74)
+
+### 🚀 Enhancements
+
+- **cli:** Make init's DB provisioning interactive, refresh the demo ([#603](https://github.com/nrjdalal/zerostarter/pull/603))
+- Rebrand to production-ready SaaS infrastructure with world-class human and agent DX ([#606](https://github.com/nrjdalal/zerostarter/pull/606))
+
+### 🏡 Chore
+
+- **lint:** Trim inert ignore patterns from oxlint and oxfmt configs ([#604](https://github.com/nrjdalal/zerostarter/pull/604))
+- Drop superseded init-cli design audit doc ([#602](https://github.com/nrjdalal/zerostarter/pull/602))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.73
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.72...v0.0.73)
