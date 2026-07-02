@@ -2,8 +2,8 @@
 export const site = {
   name: "ZeroStarter",
   description:
-    "The production-grade SaaS starter for AI and humans: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.",
-  tagline: "The production-grade SaaS starter for AI and humans",
+    "Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.",
+  tagline: "Production-ready SaaS infrastructure with world-class human and agent DX",
   social: {
     github: "https://github.com/nrjdalal/zerostarter",
     x: "https://x.com/nrjdalal",

@@ -1,6 +1,6 @@
 # ZeroStarter
 
-> The production-grade SaaS starter for AI and humans: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.
+> Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.
 
 - **📚 Documentation**: [zerostarter.dev/docs](https://zerostarter.dev/docs)
 - **🤖 AI / LLMs**: [zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)

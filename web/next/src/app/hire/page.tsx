@@ -77,7 +77,7 @@ const sections: {
       {
         href: config.app.url,
         title: "ZeroStarter",
-        description: "The production-grade SaaS starter for AI and humans.",
+        description: "Production-ready SaaS infrastructure with world-class human and agent DX.",
         external: false,
       },
     ],
