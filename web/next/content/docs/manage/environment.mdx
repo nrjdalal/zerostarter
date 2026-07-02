@@ -2,151 +2,65 @@
 slug: /docs/manage/environment
 label: Environment
 title: Environment Variables
-description: Configure type-safe environment variables for your application.
+description: One validated .env, read per-consumer so client code can never touch server secrets.
 ---
 
-## Overview
+There is one `.env` at the repo root, and no package reads `process.env` directly. Each consumer imports a validated, typed slice of the environment from `@packages/env/<name>`, so there is one place to set a variable, every variable is checked at boot instead of surfacing as `undefined` mid-request, and server secrets are structurally unable to reach the browser.
 
-This project uses a centralized, type-safe environment variable system. There's **one `.env` file to rule them all** at the project root, but each package only gets what it asks for through validation.
+## One file, read per consumer
 
-### Environment Stages
-
-The project supports five environment stages in order: **local → development → test → staging → production**
-
-- **`local`**: Your local development machine.
-- **`development`**: Development server/environment.
-- **`test`**: Testing environment.
-- **`staging`**: Pre-production environment. Production-like settings.
-- **`production`**: Production environment.
-
-The `NODE_ENV` environment variable is centralized in `@packages/env` and validated across all packages.
-
-## How It Works
-
-### Single Source of Truth
-
-All environment variables are stored in a single `.env` file at the project root. The `@packages/env` package automatically loads this file using `dotenv` configured in `packages/env/src/lib/utils.ts`. If a `NODE_ENV` value is set and matches a known stage, a stage-specific `.env.<NODE_ENV>` file (e.g. `.env.production`) is then layered on top with `override: true`.
-
-### Package-Specific Validation
-
-Each package defines only the environment variables it needs:
-
-- **`api-hono`**: `HONO_APP_URL`, `HONO_PORT`, `HONO_RATE_LIMIT`, `HONO_RATE_LIMIT_WINDOW_MS`, `HONO_TRUSTED_ORIGINS`
-- **`auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, plus the optional OAuth pairs `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (a provider registers only when both halves of its pair are set)
-- **`db`**: `POSTGRES_URL`. When `INTERNAL_API_URL` is set, the `db` package rewrites `localhost` in `POSTGRES_URL` to `host.docker.internal` so containers can reach a database on the host.
-- **`web-next`**:
-  - **Server**: `INTERNAL_API_URL` (server-side only, for internal service-to-service calls)
-  - **Client (required)**: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, and `NEXT_PUBLIC_NODE_ENV`. `NEXT_PUBLIC_NODE_ENV` is not a value you set: it is derived at runtime from `process.env.NODE_ENV`, mirroring the stage enum to the browser.
-  - **Client (optional)**: `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_USERJOT_URL` (all exposed to browser)
-
-<Callout type="warn">
-
-Server variables cannot be used on the client. Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. This prevents sensitive data like secrets and API keys from being exposed in client-side code.
-
-</Callout>
-
-### Implementation
-
-Each package uses `@t3-oss/env-core` with Zod schemas for type-safe validation:
+`@packages/env` loads the root `.env` once (via `dotenv`, in `packages/env/src/lib/utils.ts`). Each app then imports only the slice it declared:
 
 ```ts
-// packages/env/src/api-hono.ts
-
-import { createEnv } from "@t3-oss/env-core"
-import { z } from "zod"
-import "@/lib/utils" // Loads root .env
-import { NODE_ENV } from "@/lib/constants"
-
-export const env = createEnv({
-  server: {
-    NODE_ENV, // Centralized enum: local, development, test, staging, production
-    HONO_APP_URL: z.url(),
-    HONO_PORT: z.coerce.number().default(4000),
-    HONO_RATE_LIMIT: z.coerce.number().default(60),
-    HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
-    HONO_TRUSTED_ORIGINS: z
-      .string()
-      .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
-      .pipe(z.array(z.url())),
-  },
-  runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
-    HONO_APP_URL: process.env.HONO_APP_URL,
-    HONO_PORT: process.env.HONO_PORT,
-    HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,
-    HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,
-    HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
-  },
-  emptyStringAsUndefined: true,
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
-})
-```
-
-Setting `SKIP_ENV_VALIDATION=true` bypasses validation entirely, which is how CI and Docker builds run before real secrets are present. In `web-next`, when `SKIP_ENV_VALIDATION` is `"true"` and `NEXT_PUBLIC_APP_URL` or `NEXT_PUBLIC_API_URL` is unset, each is substituted with `https://polyfill.url` so the build can proceed. `emptyStringAsUndefined` treats empty strings as missing so optional vars fall back to their defaults.
-
-### Usage in Packages
-
-Import the specific env for your package:
-
-```ts
-// api/hono/src/index.ts
+// in api/hono, never process.env
 import { env } from "@packages/env/api-hono"
-// web/next/src/lib/config.ts
-import { env } from "@packages/env/web-next"
+
+env.HONO_PORT // number, validated, defaults to 4000
 ```
 
-### Shared Helpers
+The four slices, each a Zod schema that validates only what that consumer needs:
 
-The package root (`@packages/env`) also re-exports a few stage-aware helpers, separate from the per-package validated `env` objects:
+- **`@packages/env/api-hono`**: `HONO_APP_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`
+- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, and the optional OAuth pairs
+- **`@packages/env/db`**: `POSTGRES_URL`
+- **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `NEXT_PUBLIC_*` vars
 
-```ts
-import {
-  isLocal,
-  isDevelopment,
-  isTest,
-  isStaging,
-  isProduction,
-  getSafeEnv,
-  VERSION,
-  GIT_SHA,
-  BUILD_VERSION,
-  getBuildVersion,
-} from "@packages/env"
-```
+A variable that is missing or malformed at startup fails validation with a message naming it, so a bad deploy dies at boot rather than halfway through a request.
 
-- **Stage checkers** (`isLocal`, `isDevelopment`, `isTest`, `isStaging`, `isProduction`): each takes a `NODE_ENV` string and returns whether it matches that stage, e.g. `isProduction(env.NEXT_PUBLIC_NODE_ENV)`.
-- **`getSafeEnv(env, appName?)`**: returns a copy of the given env object with sensitive keys (anything whose name contains `key`, `secret`, `token`, `password`, `postgres_url`, `db_url`, or `database_url`) replaced by a redacted placeholder. It only logs the result when `NODE_ENV` is `local`, so it is safe to call when wiring up diagnostics.
-- **Build version helpers** (`VERSION`, `GIT_SHA`, `BUILD_VERSION`, `getBuildVersion()`): the version and commit metadata injected at build time. `getBuildVersion()` prefers the platform's deploy-time SHA (`VERCEL_GIT_COMMIT_SHA`) when present, falling back to the baked `BUILD_VERSION`.
+## Server and client
 
-## Creating and Managing
+`web-next` is the only slice split into `server` and `client`, and the split is the security boundary: only variables prefixed `NEXT_PUBLIC_` are in the client schema, and only those are bundled into browser code. `INTERNAL_API_URL` stays server-side; `POSTGRES_URL` and `BETTER_AUTH_SECRET` are not in this slice at all.
 
-1. **Create `.env` file**: Copy `.env.example` to `.env` at the project root
-2. **Add variables**: Fill in all required variables (see `.env.example` for reference)
-3. **Add new variables**:
-   - Add to `.env` file
-   - Define in the appropriate package's env file (`packages/env/src/*.ts`)
-   - Add to `server` or `client` schema with Zod validation
-   - Map it in the same file's `runtimeEnv` object (e.g. `MY_VAR: process.env.MY_VAR`).
-   - Add to `turbo.json`: Include the variable in the `globalEnv` array so Turbo's cache invalidates correctly when it changes
-4. **Validation**: Each package validates only its declared variables at runtime
+<Callout type="info" title="Why secrets can't leak">
 
-<Callout type="warn">
-
-The `runtimeEnv` mapping is mandatory. A variable declared in the schema but missing from `runtimeEnv` is silently `undefined` at runtime.
+The prefix is the rule the bundler enforces. A server secret has no `NEXT_PUBLIC_` name, so it is never part of the client schema, so it can never be inlined into a page. Exposing a value to the browser means renaming it, a deliberate act, not an accident.
 
 </Callout>
 
-**`globalEnv` exception**: `NEXT_PUBLIC_NODE_ENV` is not a real variable you set and is not added to `turbo.json`'s `globalEnv`. Its `runtimeEnv` mapping derives it from `process.env.NODE_ENV` (which is already in `globalEnv`), so listing it separately would be redundant.
+## Stages
 
-## Features
+`NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`.
 
-- Type-safe with TypeScript inference
-- Runtime validation with clear error messages
-- Selective access per package
-- Server/client separation (only `NEXT_PUBLIC_*` exposed to browser)
-- Centralized `NODE_ENV` enum supporting: local, development, test, staging, production
-- Environment-specific logging (only logs in `local` environment)
+To branch on the stage, `@packages/env` also exports checkers (`isLocal`, `isProduction`, and one per stage) so code reads `isProduction(env.NEXT_PUBLIC_NODE_ENV)` instead of comparing raw strings.
 
-## Required Variables
+## Adding a variable
 
-See the root `.env.example` for all required environment variables. Each package validates only its subset, so you can have all variables in one place without exposing unnecessary ones to each package.
+1. Add it to the root `.env`.
+2. Declare it in the right slice under `packages/env/src/*.ts`, in the `server` or `client` schema with a Zod type, and map it in that file's `runtimeEnv` object.
+3. Add it to `globalEnv` in `turbo.json` so Turbo's cache invalidates when it changes.
+
+<Callout type="warn" title="runtimeEnv is mandatory">
+
+A variable declared in the schema but missing from the `runtimeEnv` map is silently `undefined` at runtime. Always add both.
+
+</Callout>
+
+## Skipping validation
+
+`SKIP_ENV_VALIDATION=true` bypasses every check. This is how CI and Docker images build before real secrets exist (in `web-next`, missing public URLs fall back to `https://polyfill.url` so the build completes). Never set it for a running app: it turns off the guarantee that every variable is present and typed.
+
+## Next
+
+- [Database](/docs/manage/database): where `POSTGRES_URL` is consumed.
+- [Auth & Organizations](/docs/manage/authentication): the OAuth pairs and `BETTER_AUTH_SECRET`.
+- [Setup](/docs/getting-started/setup): creating your first `.env`.

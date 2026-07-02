@@ -2,806 +2,597 @@ import { site } from "@packages/config/site"
 import {
   RiArrowRightLine,
   RiBookOpenLine,
-  RiCheckboxCircleLine,
-  RiCodeLine,
   RiDatabase2Line,
-  RiGitBranchLine,
+  RiGitForkLine,
   RiGithubFill,
   RiGlobalLine,
   RiGroupLine,
   RiHeartFill,
   RiLockLine,
+  RiRobot2Line,
   RiRocketLine,
-  RiSearchLine,
-  RiShieldLine,
-  RiSparklingLine,
-  RiFlashlightLine,
   RiShieldKeyholeLine,
   RiSpeedLine,
+  RiStackLine,
 } from "@remixicon/react"
 import Image from "next/image"
 import Link from "next/link"
+import type { ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/api-status"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
-type Tech = {
-  name: string
-  icon: {
-    light: string
-    dark: string
-  }
-}
+type Tech = { name: string; icon: { light: string; dark: string } }
 
 export const techStack: Tech[] = [
   {
     name: "Base UI",
-    icon: {
-      light: "/landing/base-ui-light.svg",
-      dark: "/landing/base-ui-dark.svg",
-    },
+    icon: { light: "/landing/base-ui-light.svg", dark: "/landing/base-ui-dark.svg" },
   },
   {
     name: "Better Auth",
-    icon: {
-      light: "/landing/better-auth-light.svg",
-      dark: "/landing/better-auth-dark.svg",
-    },
+    icon: { light: "/landing/better-auth-light.svg", dark: "/landing/better-auth-dark.svg" },
   },
-  {
-    name: "Bun",
-    icon: {
-      light: "/landing/bun.svg",
-      dark: "/landing/bun.svg",
-    },
-  },
-  {
-    name: "Docker",
-    icon: {
-      light: "/landing/docker.svg",
-      dark: "/landing/docker.svg",
-    },
-  },
+  { name: "Bun", icon: { light: "/landing/bun.svg", dark: "/landing/bun.svg" } },
+  { name: "Docker", icon: { light: "/landing/docker.svg", dark: "/landing/docker.svg" } },
   {
     name: "Drizzle ORM",
-    icon: {
-      light: "/landing/drizzle-orm-light.svg",
-      dark: "/landing/drizzle-orm-dark.svg",
-    },
+    icon: { light: "/landing/drizzle-orm-light.svg", dark: "/landing/drizzle-orm-dark.svg" },
   },
-  {
-    name: "Fumadocs",
-    icon: {
-      light: "/landing/fumadocs.png",
-      dark: "/landing/fumadocs.png",
-    },
-  },
-  {
-    name: "Hono",
-    icon: {
-      light: "/landing/hono.svg",
-      dark: "/landing/hono.svg",
-    },
-  },
-  {
-    name: "Next.js",
-    icon: {
-      light: "/landing/nextjs.svg",
-      dark: "/landing/nextjs.svg",
-    },
-  },
-  {
-    name: "Oxc",
-    icon: {
-      light: "/landing/oxc.svg",
-      dark: "/landing/oxc.svg",
-    },
-  },
+  { name: "Fumadocs", icon: { light: "/landing/fumadocs.png", dark: "/landing/fumadocs.png" } },
+  { name: "Hono", icon: { light: "/landing/hono.svg", dark: "/landing/hono.svg" } },
+  { name: "Next.js", icon: { light: "/landing/nextjs.svg", dark: "/landing/nextjs.svg" } },
+  { name: "Oxc", icon: { light: "/landing/oxc.svg", dark: "/landing/oxc.svg" } },
   {
     name: "PostgreSQL",
-    icon: {
-      light: "/landing/postgresql.svg",
-      dark: "/landing/postgresql.svg",
-    },
+    icon: { light: "/landing/postgresql.svg", dark: "/landing/postgresql.svg" },
   },
-  {
-    name: "PostHog",
-    icon: {
-      light: "/landing/posthog.svg",
-      dark: "/landing/posthog.svg",
-    },
-  },
-  {
-    name: "React",
-    icon: {
-      light: "/landing/react-light.svg",
-      dark: "/landing/react-dark.svg",
-    },
-  },
+  { name: "PostHog", icon: { light: "/landing/posthog.svg", dark: "/landing/posthog.svg" } },
+  { name: "React", icon: { light: "/landing/react-light.svg", dark: "/landing/react-dark.svg" } },
   {
     name: "shadcn/ui",
-    icon: {
-      light: "/landing/shadcn-ui-light.svg",
-      dark: "/landing/shadcn-ui-dark.svg",
-    },
-  },
-  {
-    name: "TanStack Query",
-    icon: {
-      light: "/landing/tanstack.svg",
-      dark: "/landing/tanstack.svg",
-    },
+    icon: { light: "/landing/shadcn-ui-light.svg", dark: "/landing/shadcn-ui-dark.svg" },
   },
   {
     name: "Tailwind CSS",
-    icon: {
-      light: "/landing/tailwindcss.svg",
-      dark: "/landing/tailwindcss.svg",
-    },
+    icon: { light: "/landing/tailwindcss.svg", dark: "/landing/tailwindcss.svg" },
   },
   {
-    name: "tsdown",
-    icon: {
-      light: "/landing/tsdown.svg",
-      dark: "/landing/tsdown.svg",
-    },
+    name: "TanStack Query",
+    icon: { light: "/landing/tanstack.svg", dark: "/landing/tanstack.svg" },
   },
+  { name: "tsdown", icon: { light: "/landing/tsdown.svg", dark: "/landing/tsdown.svg" } },
   {
     name: "Turborepo",
-    icon: {
-      light: "/landing/turborepo-light.svg",
-      dark: "/landing/turborepo-dark.svg",
-    },
+    icon: { light: "/landing/turborepo-light.svg", dark: "/landing/turborepo-dark.svg" },
   },
   {
     name: "TypeScript",
-    icon: {
-      light: "/landing/typescript.svg",
-      dark: "/landing/typescript.svg",
-    },
+    icon: { light: "/landing/typescript.svg", dark: "/landing/typescript.svg" },
   },
   {
     name: "Vercel",
-    icon: {
-      light: "/landing/vercel-light.svg",
-      dark: "/landing/vercel-dark.svg",
-    },
+    icon: { light: "/landing/vercel-light.svg", dark: "/landing/vercel-dark.svg" },
+  },
+  { name: "Zod", icon: { light: "/landing/zod.svg", dark: "/landing/zod.svg" } },
+]
+
+const featureCards = [
+  {
+    icon: RiLockLine,
+    title: "Auth & organizations",
+    description:
+      "GitHub and Google OAuth, secure sessions, organizations, teams, and admin roles wired through Better Auth.",
   },
   {
-    name: "Zod",
-    icon: {
-      light: "/landing/zod.svg",
-      dark: "/landing/zod.svg",
-    },
+    icon: RiDatabase2Line,
+    title: "Database & migrations",
+    description:
+      "PostgreSQL and Drizzle on Bun's SQL driver, with migrations generated locally and applied automatically on Vercel deploys.",
+  },
+  {
+    icon: RiShieldKeyholeLine,
+    title: "Role-gated console",
+    description:
+      "A protected /console area powered by the Better Auth admin plugin. Access control is handled; the product surface is yours.",
+  },
+  {
+    icon: RiSpeedLine,
+    title: "Rate-limited API",
+    description:
+      "Production-ready limits by IP, user, or API key, with Arcjet IP detection and environment-driven defaults.",
+  },
+  {
+    icon: RiGroupLine,
+    title: "Multi-tenant, day one",
+    description:
+      "Organizations, teams, roles, invitations, and active-org switching are built into the dashboard from the first run.",
+  },
+  {
+    icon: RiGlobalLine,
+    title: "Dynamic OG & SEO",
+    description:
+      "takumi social cards, sitemap, robots, and metadata are already wired, so every page ships indexable by default.",
   },
 ]
 
+const whyPoints = [
+  {
+    icon: RiStackLine,
+    title: "Minimal footprint, maximum leverage",
+    description:
+      "No spare layers, no framework soup, no speculative complexity. Every package earns its place; every boundary has a job.",
+  },
+  {
+    icon: RiRocketLine,
+    title: "Automation from PR to release",
+    description:
+      "Checks, changelogs, versioning, and releases run through repeatable workflows, so shipping does not depend on memory.",
+  },
+  {
+    icon: RiGitForkLine,
+    title: "Centralized where it matters",
+    description:
+      "Brand, env, auth, schema, and build config live in one place each. Change it once and the whole system stays aligned.",
+  },
+  {
+    icon: RiBookOpenLine,
+    title: "Docs as part of the product",
+    description:
+      "Structured docs, generated API reference, and llms.txt ship with the code, so onboarding works for humans and agents alike.",
+  },
+]
+
+const shikiReset =
+  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
+
+function CodeWindow({ label, html }: { label: string; html: string }) {
+  return (
+    <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left shadow-sm">
+      <div className="bg-muted/40 flex items-center gap-2 border-b px-4 py-2.5">
+        <span className="flex gap-1.5" aria-hidden>
+          <span className="bg-muted-foreground/25 size-3 rounded-full" />
+          <span className="bg-muted-foreground/25 size-3 rounded-full" />
+          <span className="bg-muted-foreground/25 size-3 rounded-full" />
+        </span>
+        <span className="text-muted-foreground ml-1.5 font-mono text-xs">{label}</span>
+      </div>
+      <div
+        className={cn("overflow-x-auto p-5", shikiReset, "[&_pre]:leading-relaxed!")}
+        dangerouslySetInnerHTML={{ __html: html }}
+        style={{ colorScheme: "light dark" }}
+      />
+    </div>
+  )
+}
+
+function CodeCard({ html }: { html: string }) {
+  return (
+    <div
+      className={cn(
+        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border p-4",
+        shikiReset,
+        "[&_pre]:leading-loose!",
+      )}
+      dangerouslySetInnerHTML={{ __html: html }}
+      style={{ colorScheme: "light dark" }}
+    />
+  )
+}
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return (
+    <span className="bg-muted/50 text-muted-foreground mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm">
+      <span className="bg-success size-1.5 rounded-full" aria-hidden />
+      {children}
+    </span>
+  )
+}
+
 export default async function Home() {
+  const initCode = `bunx zerostarter init
+bun run dev   # web :3000 · api :4000`
+
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
-// Fully typed { data, error }, TypeScript knows exactly what you're getting!
-const { data, error } = await unwrap(apiClient.health.$get())`
+// fully typed { data, error }
+const { data, error } = await unwrap(
+  apiClient.health.$get(),
+)`
 
-  const bashCode = `# Clone the template
-bunx gitpick ${site.social.github}/tree/main
-cd zerostarter
+  const agentCode = `# sign an agent in, drive the app
+agent-browser open http://localhost:3000
+agent-browser snapshot   # read the UI
+agent-browser click "@e5"   # act`
 
-# Install dependencies
-bun install
+  const deployCode = `# two Vercel projects, one database
+vercel --prod
 
-# Set up environment variables (see docs)
-cp .env.example .env
+# or the whole stack, anywhere
+docker compose up --build`
 
-# Set up database
-bun run db:generate
-bun run db:migrate
+  const highlight = (code: string, lang: "typescript" | "bash") =>
+    codeToHtml(code, {
+      lang,
+      themes: { light: "github-light", dark: "github-dark" },
+      defaultColor: false,
+    })
 
-# Start development
-bun dev`
-
-  const typescriptHtml = await codeToHtml(typescriptCode, {
-    lang: "typescript",
-    themes: {
-      light: "github-light",
-      dark: "github-dark",
-    },
-    defaultColor: false,
-  })
-
-  const bashHtml = await codeToHtml(bashCode, {
-    lang: "bash",
-    themes: {
-      light: "github-light",
-      dark: "github-dark",
-    },
-    defaultColor: false,
-  })
+  const [initHtml, typescriptHtml, agentHtml, deployHtml] = await Promise.all([
+    highlight(initCode, "bash"),
+    highlight(typescriptCode, "typescript"),
+    highlight(agentCode, "bash"),
+    highlight(deployCode, "bash"),
+  ])
 
   return (
-    <main className="flex flex-col select-none">
-      {/* Hero Section */}
-      <section
-        aria-label="Hero"
-        className="from-background via-background to-muted/20 relative flex min-h-svh flex-col overflow-hidden border-b bg-linear-to-b"
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,white_70%,transparent_110%)] bg-size-[20px_20px]" />
-        <div className="relative z-10 container mx-auto flex min-h-0 max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:py-16 md:px-6">
-          <div className="mx-auto flex min-h-160 max-w-3xl flex-col justify-center text-center">
-            <Badge variant="secondary" className="mx-auto mb-6">
-              The{" "}
-              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text font-semibold text-transparent">
-                scalable and production-ready
-              </span>{" "}
-              SaaS starter kit
-            </Badge>
-            <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Go from 0 to production in{" "}
-              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
-                15 minutes
-              </span>
+    <main className="flex flex-col">
+      {/* Hero */}
+      <section aria-label="Hero" className="flex min-h-svh flex-col">
+        <div className="flex flex-1 flex-col justify-center px-4 py-24 text-center md:px-6">
+          <div>
+            <Link
+              href="/docs"
+              className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors"
+            >
+              <span className="bg-success size-1.5 rounded-full" aria-hidden />
+              Open source, MIT licensed, production-ready by default
+              <RiArrowRightLine className="size-3.5" />
+            </Link>
+            <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
+              {/* non-breaking hyphens so "world-class" never splits across lines */}
+              {site.tagline.replaceAll("-", "‑")}
             </h1>
-            <p className="text-muted-foreground mb-8 text-lg sm:text-xl lg:text-2xl">
-              {site.description} Deploy with one click and start building features on day one.
+            <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
+              {site.name} gives you the architecture, practices, automation, and documentation
+              behind a clean SaaS codebase, so humans and agents can ship faster without creating
+              chaos.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 role="link"
                 size="lg"
-                className="group h-12 px-8 text-base"
+                className="h-11 px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
-                Get ZeroStarter
+                Start with {site.name}
               </Button>
               <Button
                 role="link"
                 size="lg"
                 variant="outline"
-                className="group h-12 px-8 text-base"
+                className="group h-11 px-6"
                 render={<Link href="/docs" />}
               >
-                Documentation
-                <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-1" />
+                Read the docs
+                <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
-            <p className="text-muted-foreground mt-6 text-sm">
-              ⭐ Star us on GitHub • Open source & MIT licensed
-            </p>
-            <div className="mt-4 flex justify-center">
+            <div className="mt-10 flex justify-center">
               <ApiStatus />
+            </div>
+            <div className="mx-auto mt-6 max-w-2xl">
+              <CodeWindow label="Quick Start" html={initHtml} />
             </div>
           </div>
         </div>
 
-        {/* Tech Stack Badges */}
-        <div className="bg-muted/30 relative overflow-hidden border-t py-8">
-          <div className="animate-marquee flex w-max gap-12 px-6">
+        {/* Tech stack, pinned to the bottom of the hero */}
+        <div className="bg-muted/30 relative overflow-hidden py-6">
+          <div className="animate-marquee flex w-max gap-10 px-6">
             {[...techStack, ...techStack].map((tech, index) => (
               <div
                 key={`${tech.name}-${index}`}
-                className="text-muted-foreground hover:text-foreground flex items-center gap-2 whitespace-nowrap transition-colors"
+                className="text-muted-foreground flex items-center gap-2 whitespace-nowrap"
               >
-                <span className="relative h-5 w-5 shrink-0">
+                <span className="relative size-4 shrink-0">
                   <Image
                     src={tech.icon.light}
                     alt={tech.name}
                     fill
-                    sizes="1.25rem"
+                    sizes="1rem"
                     className="block dark:hidden"
                   />
                   <Image
                     src={tech.icon.dark}
                     alt={tech.name}
                     fill
-                    sizes="1.25rem"
+                    sizes="1rem"
                     className="hidden dark:block"
                   />
                 </span>
-
                 <span className="text-sm font-medium">{tech.name}</span>
               </div>
             ))}
           </div>
+          <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
+          <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
           <style
             dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes marquee {
-                  from {
-                    transform: translate3d(0, 0, 0);
-                  }
-                  to {
-                    transform: translate3d(-50%, 0, 0);
-                  }
-                }
-                .animate-marquee {
-                  animation: marquee 45s linear infinite;
-                  will-change: transform;
-                }
-              `,
+              __html: `@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}.animate-marquee{animation:marquee 50s linear infinite;will-change:transform}`,
             }}
           />
         </div>
       </section>
 
-      {/* Features Section */}
-      <section aria-label="Features" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-4 md:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Game-changing features to launch at{" "}
-              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
-                Zero speed
-              </span>
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Everything you need to launch your SaaS in no time. Get all the core functionalities
-              and integrations out of the box, so you can focus on the business.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiCodeLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Type-Safe API Client</CardTitle>
-                <CardDescription>
-                  End-to-end type safety with Hono RPC. Your frontend knows exactly what your
-                  backend returns. Catch errors at compile time.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiLockLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Authentication</CardTitle>
-                <CardDescription>
-                  Better Auth with GitHub & Google OAuth, organizations, teams, and role-based
-                  access. Add providers in minutes.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiGroupLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Organizations & Teams</CardTitle>
-                <CardDescription>
-                  Multi-tenant out of the box with Better Auth: organizations, teams, member roles,
-                  and invitations, plus an org switcher in the dashboard.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiShieldKeyholeLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Admin Console & Roles</CardTitle>
-                <CardDescription>
-                  Role-based admin area at /console, gated by user role via the Better Auth admin
-                  plugin. Ships with internal docs and runbooks.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiDatabase2Line className="text-primary size-6" />
-                </div>
-                <CardTitle>Database & ORM</CardTitle>
-                <CardDescription>
-                  PostgreSQL with Drizzle ORM. Migrations and type-safe queries out of the box.
-                  Production-ready schema.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiSpeedLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Rate-Limited API</CardTitle>
-                <CardDescription>
-                  Built-in API rate limiting per IP, user, or API key, with sensible defaults and
-                  full configuration via environment variables.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Modern UI Components</CardTitle>
-                <CardDescription>
-                  Shadcn UI components with Tailwind CSS. Beautiful, accessible, and customizable.
-                  Ready to use or customize.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiSparklingLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Monorepo Architecture</CardTitle>
-                <CardDescription>
-                  Shared packages for auth, database, and env. Scale your codebase efficiently with
-                  clean separation of concerns.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiFlashlightLine className="text-primary size-6" />
-                </div>
-                <CardTitle>High Performance</CardTitle>
-                <CardDescription>
-                  Built on Bun runtime and Turborepo for lightning-fast development and builds.
-                  Optimized for production.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiShieldLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Type-Safe Environment</CardTitle>
-                <CardDescription>
-                  Centralized environment variables with validation. One env file, selective access
-                  per package. Never miss a variable.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiSearchLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Full-Text Search</CardTitle>
-                <CardDescription>
-                  Built-in search for docs and blog powered by Fumadocs. Fast and accurate content
-                  discovery.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiGlobalLine className="text-primary size-6" />
-                </div>
-                <CardTitle>SEO & Marketing</CardTitle>
-                <CardDescription>
-                  Meta tags, social media images, sitemaps, robots.txt, and more. SEO optimized out
-                  of the box.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiBookOpenLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Documentation & llms.txt</CardTitle>
-                <CardDescription>
-                  Fumadocs with auto-generated llms.txt endpoint. Full-text search and structured
-                  content for AI assistants.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiRocketLine className="text-primary size-6" />
-                </div>
-                <CardTitle>One-Click Deployment</CardTitle>
-                <CardDescription>
-                  Docker and Vercel configurations included. Deploy to production in minutes, not
-                  days. Pre-configured CI/CD.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="hover:border-primary/50 border-2 transition-colors">
-              <CardHeader>
-                <div className="bg-primary/10 mb-2 flex size-12 items-center justify-center rounded-lg">
-                  <RiGitBranchLine className="text-primary size-6" />
-                </div>
-                <CardTitle>Automated Releases</CardTitle>
-                <CardDescription>
-                  Automated changelog generation and release workflow. Draft PRs for canary to main
-                  and changelog updates.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
+      {/* Type safety */}
+      <section aria-label="Type safety" className="px-4 py-24 text-center md:px-6">
+        <Eyebrow>Type safety</Eyebrow>
+        <h2 className="mx-auto text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+          One contract from database to UI
+        </h2>
+        <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg text-balance">
+          Hono RPC exposes your API as a single{" "}
+          <code className="text-foreground font-mono">AppType</code>, so the client infers every
+          request and response automatically. Rename a route and the frontend stops compiling. No
+          codegen. No duplicated types. No drift.
+        </p>
+        <div className="mx-auto mt-9 max-w-2xl">
+          <CodeWindow label="web/next/src/lib/api/client.ts" html={typescriptHtml} />
         </div>
       </section>
 
-      {/* Why ZeroStarter Section */}
-      <section aria-label="Why ZeroStarter" className="bg-muted/30 border-b py-24">
-        <div className="container mx-auto max-w-6xl px-4 md:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Why ZeroStarter?</h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Architecture & Best Practices as a Service, ZeroStarter isn't just a starter template,
-              it's a complete blueprint for building production-ready SaaS applications.
+      {/* Features bento */}
+      <section aria-label="What's wired" className="px-4 py-24 md:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <Eyebrow>Infrastructure included</Eyebrow>
+            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+              Wired together, not just installed
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg text-balance">
+              The boring, critical pieces every serious SaaS needs are already connected and working
+              on first run. The dashboard and console ship as auth-gated shells, ready for your
+              product logic.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">Modular Architecture</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Clean, plug-and-play packages that work independently or together. Swap
-                    components, extend functionality, or customize without breaking the system.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">End-to-End Type Safety</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Hono RPC ensures type safety from database to frontend. Catch errors at compile
-                    time, ship with confidence.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">Production-Ready Performance</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Optimized with Bun runtime and Turborepo for blazing-fast development and
-                    builds. Built for scale.
-                  </p>
+          <div className="grid gap-3.5 sm:grid-cols-2">
+            {/* Agents, full-width row */}
+            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <RiRobot2Line
+                aria-hidden
+                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+              />
+              <div className="relative">
+                <RiRobot2Line className="text-muted-foreground size-5" />
+                <h3 className="mt-3.5 text-lg font-semibold">Human-readable. Agent-ready.</h3>
+                <p className="text-muted-foreground mt-1.5 text-base">
+                  SKILL.md playbooks, AGENTS.md, and generated llms.txt give Claude Code, Cursor,
+                  and Copilot the repo-specific context they need. A dev-only login and
+                  agent-browser let agents operate the real app behind auth. No mocks.
+                </p>
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  {["SKILL.md", "llms.txt", "AGENTS.md"].map((chip) => (
+                    <span
+                      key={chip}
+                      className="text-muted-foreground bg-background rounded border px-2 py-1 font-mono text-xs"
+                    >
+                      {chip}
+                    </span>
+                  ))}
                 </div>
               </div>
+              <CodeCard html={agentHtml} />
             </div>
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">Beautiful UI Out of the Box</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Shadcn UI components with Tailwind CSS, ready to customize or use as-is. Modern
-                    design system included.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">Enterprise-Grade Auth</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Better Auth with GitHub & Google OAuth, organizations, teams, and role-based
-                    access. Fully configured and ready to extend.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <RiCheckboxCircleLine className="text-primary size-5" />
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">Comprehensive Documentation</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Every pattern, practice, and decision documented with Fumadocs and AI-optimized
-                    llms.txt. Learn as you build.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Code Example Section */}
-      <section aria-label="Code example" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-4 md:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Type-Safe API Calls
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Full type inference from backend to frontend. No more manual type definitions. See the
-              magic happen.
-            </p>
-          </div>
-        </div>
-        <div className="w-full px-4 md:px-6">
-          <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
-            <div
-              className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
-              dangerouslySetInnerHTML={{ __html: typescriptHtml }}
-              style={{
-                colorScheme: "light dark",
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Getting Started Section */}
-      <section aria-label="Getting started" className="border-b py-24">
-        <div className="container mx-auto max-w-6xl px-4 md:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Get Started in Minutes
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Clone, install, and start building. It's that simple.
-            </p>
-          </div>
-        </div>
-        <div className="w-full px-4 md:px-6">
-          <div className="bg-muted/25 mx-auto w-full max-w-3xl overflow-x-auto rounded-lg border-2 p-5 text-sm">
-            <div
-              className="[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
-              dangerouslySetInnerHTML={{ __html: bashHtml }}
-              style={{
-                colorScheme: "light dark",
-              }}
-            />
-          </div>
-        </div>
-        <div className="container mx-auto mt-8 max-w-6xl px-4 text-center md:px-6">
-          <Button
-            role="link"
-            size="lg"
-            className="group h-12 px-8 text-base"
-            render={<Link href="/docs" />}
-          >
-            Documentation
-            <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-1" />
-          </Button>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section aria-label="FAQ" className="bg-muted/30 border-b py-24">
-        <div className="container mx-auto max-w-4xl px-4 md:px-6">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-2xl sm:text-lg">
-              Have another question? Check out our documentation or reach out.
-            </p>
-          </div>
-          <Accordion className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-left hover:no-underline">
-                What is ZeroStarter?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                ZeroStarter is a modern, type-safe, and high-performance SaaS starter template built
-                with a monorepo architecture. It provides everything you need to launch a
-                production-ready SaaS application, including authentication, database setup,
-                type-safe API client, and beautiful UI components.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger className="text-left hover:no-underline">
-                How is it different from other starter kits?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                ZeroStarter focuses on end-to-end type safety, modular architecture, and
-                production-ready patterns. It uses Hono RPC for type-safe APIs, Bun for performance,
-                and includes comprehensive documentation with AI-optimized llms.txt. Everything is
-                designed to scale and maintain.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger className="text-left hover:no-underline">
-                Is it production-ready?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                Yes! All implemented features are stable and production-ready. We're actively adding
-                new features and integrations day-by-day. The codebase follows best practices and is
-                battle-tested.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-4">
-              <AccordionTrigger className="text-left hover:no-underline">
-                Can I use it for commercial projects?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                Absolutely! ZeroStarter is MIT licensed, which means you can use it for any purpose,
-                including commercial projects. Build unlimited projects with it.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-5">
-              <AccordionTrigger className="text-left hover:no-underline">
-                What technologies does it use?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                ZeroStarter uses Next.js 16, Hono, Bun, Turborepo, Drizzle ORM, Better Auth, Shadcn
-                UI, TanStack Query, Zod, Fumadocs, and more. All carefully selected for modern SaaS
-                development.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
-
-      {/* Footer CTA */}
-      <section
-        aria-label="Call to action"
-        className="from-background to-muted/20 bg-linear-to-b py-24"
-      >
-        <div className="container mx-auto max-w-4xl px-4 text-center md:px-6">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to Build Your SaaS?
-          </h2>
-          <p className="text-muted-foreground mb-8 sm:text-lg">
-            Start building your next project with {site.name} today. Skip the complex setups and
-            start building features on day one.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              role="link"
-              size="lg"
-              className="group h-12 px-8 text-base"
-              render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
-            >
-              <RiGithubFill className="size-5" />
-              Get ZeroStarter
-            </Button>
-            <Button
-              role="link"
-              size="lg"
-              variant="outline"
-              className="group h-12 px-8 text-base"
-              render={<Link href="/docs" />}
-            >
-              Documentation
-              <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </div>
-          <div className="text-muted-foreground mt-8 flex items-center justify-center gap-2 text-sm">
-            <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" />
-            <span>
-              Made with love by{" "}
-              <a
-                href={site.social.x}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground font-medium transition-colors"
+            {featureCards.slice(0, 2).map((feature) => (
+              <div
+                key={feature.title}
+                className="bg-muted/40 relative overflow-hidden rounded-lg border p-6"
               >
-                @nrjdalal
-              </a>
-            </span>
+                <feature.icon
+                  aria-hidden
+                  className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                />
+                <div className="relative">
+                  <feature.icon className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Deploy, full-width row */}
+            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <RiRocketLine
+                aria-hidden
+                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+              />
+              <div className="relative">
+                <RiRocketLine className="text-muted-foreground size-5" />
+                <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
+                <p className="text-muted-foreground mt-1.5 text-base">
+                  Web and API deploy as two apps sharing one PostgreSQL database, with production
+                  and Docker configs included from the first commit. On Vercel, the API runs
+                  migrations during deploy.
+                </p>
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  {(
+                    [
+                      {
+                        name: "Vercel",
+                        icon: {
+                          light: "/landing/vercel-light.svg",
+                          dark: "/landing/vercel-dark.svg",
+                        },
+                      },
+                      {
+                        name: "Docker",
+                        icon: { light: "/landing/docker.svg", dark: "/landing/docker.svg" },
+                      },
+                      {
+                        name: "PostgreSQL",
+                        icon: { light: "/landing/postgresql.svg", dark: "/landing/postgresql.svg" },
+                      },
+                    ] satisfies Tech[]
+                  ).map((tech) => (
+                    <span
+                      key={tech.name}
+                      className="text-muted-foreground bg-background inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs"
+                    >
+                      <span className="relative size-3 shrink-0">
+                        <Image
+                          src={tech.icon.light}
+                          alt=""
+                          fill
+                          sizes="0.75rem"
+                          className="block dark:hidden"
+                        />
+                        <Image
+                          src={tech.icon.dark}
+                          alt=""
+                          fill
+                          sizes="0.75rem"
+                          className="hidden dark:block"
+                        />
+                      </span>
+                      {tech.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <CodeCard html={deployHtml} />
+            </div>
+
+            {featureCards.slice(2).map((feature) => (
+              <div
+                key={feature.title}
+                className="bg-muted/40 relative overflow-hidden rounded-lg border p-6"
+              >
+                <feature.icon
+                  aria-hidden
+                  className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                />
+                <div className="relative">
+                  <feature.icon className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Docs, full-width row */}
+            <div className="bg-muted/40 relative grid items-center gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <RiBookOpenLine
+                aria-hidden
+                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+              />
+              <div className="relative">
+                <RiBookOpenLine className="text-muted-foreground size-5" />
+                <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
+                <p className="text-muted-foreground mt-1.5 text-base">
+                  Fumadocs, full-text search, MDX content, and generated llms.txt make the project
+                  readable for developers, contributors, and coding agents.
+                </p>
+              </div>
+              <div className="relative flex flex-col gap-2 font-mono text-sm">
+                {[
+                  { route: "/docs", note: "full-text search" },
+                  { route: "/blog", note: "MDX" },
+                  { route: "/llms-full.txt", note: "generated" },
+                ].map((row) => (
+                  <a
+                    key={row.route}
+                    href={row.route}
+                    className="bg-background hover:bg-muted/50 flex justify-between rounded-md border px-3.5 py-2.5 transition-colors"
+                  >
+                    {row.route}
+                    <span className="text-muted-foreground">{row.note}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Why ZeroStarter */}
+      <section aria-label={`Why ${site.name}`} className="px-4 py-24 md:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <Eyebrow>Why {site.name}</Eyebrow>
+            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+              Not another starter. A better default.
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg text-balance">
+              Most starters give you folders and dependencies. {site.name} gives you the operating
+              practices behind a production-grade codebase: shaped architecture, clear boundaries,
+              centralized decisions, and workflows that keep the system clean as it grows. You do
+              not just clone code; you inherit a way of building.
+            </p>
+          </div>
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
+            {whyPoints.map((point) => (
+              <div key={point.title} className="flex gap-4">
+                <point.icon aria-hidden className="text-muted-foreground mt-0.5 size-6 shrink-0" />
+                <div>
+                  <h3 className="text-lg font-semibold">{point.title}</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">{point.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section aria-label="Call to action" className="px-4 py-24 md:px-6">
+        <div className="bg-muted/40 mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
+          <div className="mx-auto max-w-xl">
+            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+              Start at zero. Ship like you have done this before.
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg text-balance">
+              {site.name} is the foundation for building real SaaS products with speed, clarity, and
+              discipline: production-ready infrastructure, clean architecture, automated workflows,
+              and documentation both humans and agents can trust. It does not choose your payments
+              or email vendor; the parts that make your product yours stay yours.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button
+                role="link"
+                size="lg"
+                className="h-11 px-6"
+                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+              >
+                <RiGithubFill className="size-5" />
+                Start with {site.name}
+              </Button>
+              <Button
+                role="link"
+                size="lg"
+                variant="outline"
+                className="group h-11 px-6"
+                render={<Link href="/docs" />}
+              >
+                Read the docs
+                <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </Button>
+            </div>
+            <p className="text-muted-foreground mt-6 text-sm">
+              MIT licensed. Use it freely, including for commercial products.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="border-t">
+        <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">
+          <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" />
+          Made by{" "}
+          <a
+            href={site.social.x}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground font-medium transition-colors"
+          >
+            @nrjdalal
+          </a>
+        </p>
+      </div>
     </main>
   )
 }

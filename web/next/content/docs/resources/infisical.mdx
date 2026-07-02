@@ -1,82 +1,42 @@
 ---
 slug: /docs/resources/infisical
 title: Infisical
-description: Secrets Management on Autopilot.
+description: "Optional secrets management: pull your .env from a shared vault."
 ---
 
-## Overview
+[Infisical](https://infisical.com) is an optional way to manage the root `.env`. Instead of each teammate hand-editing secrets and passing them around, a shared vault holds them and everyone pulls the same `.env` with one command.
 
-All-in-one platform to securely manage application configuration and secrets across your team and infrastructure. Used by Fortune 500 enterprises, international governments, and fastest-growing startups. Save time and boost security.
+You don't need it. Copy `.env.example` to `.env`, fill in the values, and the stack runs: the `@packages/env/*` modules validate whatever's there, no matter where it came from. Infisical only changes the _source_ of those values: one shared source of truth instead of a file copied through chat.
 
-## How ZeroStarter uses Infisical
+<Callout type="info" title="Optional">
 
-The repo ships a committed `.infisical.json` at the root that records the `workspaceId` linking this checkout to an Infisical project. With it in place, `infisical export` can write the root `.env` (or stage-specific `.env.<stage>`) files that the `@packages/env/*` modules then validate at runtime. Infisical is the source of secrets; the `.env` files are the local artifact those secrets land in.
+Nothing in ZeroStarter requires Infisical. A hand-managed `.env` works identically. Reach for a vault when a team is sharing and rotating secrets and wants one place to do it.
+
+</Callout>
+
+## How the repo wires it
+
+A committed `.infisical.json` at the root records the `workspaceId` that links this checkout to an Infisical project. With it in place, `infisical export` writes the root `.env` (or a stage-specific `.env.<stage>`) that `@packages/env/*` reads and validates at runtime. Infisical is the source of secrets; the `.env` file is the local artifact they land in.
 
 ```sh
 infisical export --env=dev --output-file=./.env
 ```
 
-This is optional: if you populate the `.env` files another way, ZeroStarter runs the same. The sections below cover installing and using the CLI.
+`--env` is one of `dev`, `staging`, or `prod`.
 
-## Self-Hosting
+## Set it up
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/infisical-resend?referralCode=nrjdalal&utm_medium=integration&utm_source=template&utm_campaign=generic)
-
-## CLI Reference
-
-### Installation
+Install the CLI, log in, and link this checkout to your project:
 
 ```sh
 bun add -g @infisical/cli
+infisical login          # opens the browser; add --plain --silent for CI
+infisical init           # writes .infisical.json with your workspaceId
 ```
 
-### Login
+Then re-run `infisical export` whenever secrets change. See the [Infisical CLI reference](https://infisical.com/docs/cli/overview) for machine identities, self-hosting, and the full flag list.
 
-Login into Infisical from the CLI
+## Next
 
-- Interactive
-
-```sh
-infisical login
-```
-
-- Non-interactive
-  - `--plain`: When used with direct user login or machine identity authentication, outputs only the JWT access token without any additional formatting. This is useful for scripting and CI/CD pipelines where you need to capture the token.
-  - `--silent`: Use it alongside the `--plain` flag to disable all messages in the console except from the access token.
-
-```sh
-infisical login \
-  --domain "<YOUR_DOMAIN>" \
-  --email "<YOUR_EMAIL>" \
-  --password "<YOUR_PASSWORD>" \
-  --organization-id "<YOUR_ORGANIZATION_ID>" \
-  --plain \
-  --silent
-```
-
-### Init
-
-Switch between Infisical projects within CLI
-
-```sh
-infisical init
-```
-
-Link a local project to your Infisical project. Once connected, you can then access the secrets locally from the connected Infisical project.
-
-> This command creates a `.infisical.json` file containing your `workspaceId`.
-
-### Export
-
-Export Infisical secrets from CLI into different file formats
-
-```sh
-infisical export --env=dev --output-file=./.env.development
-```
-
-- `--env`: The environment to export secrets for, defaults to `dev`. Can be one of: `dev`, `staging`, `prod`.
-- `--projectId`: By default the project (the `workspaceId`) is retrieved from the `.infisical.json` located at the root of your local project. This flag allows you to override this behavior by explicitly defining the project to fetch your secrets from.
-
-### Read more
-
-- [Infisical CLI Reference](https://infisical.com/docs/cli/overview)
+- [Environment Variables](/docs/manage/environment): the .env this fills, and how @packages/env validates it per-consumer.
+- [Quickstart](/docs/getting-started/setup): where the .env first comes into play.

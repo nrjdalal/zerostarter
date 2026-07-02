@@ -1,53 +1,64 @@
 ---
 slug: /docs/getting-started/scripts
 title: Scripts
-description: Available scripts for development, maintenance, and production.
+description: Every bun script, grouped by when you'd reach for it.
 ---
 
-## Overview
+Every script lives in the root `package.json`; run any of them with `bun run <name>`. They're grouped below by when you actually reach for one.
 
-ZeroStarter provides a comprehensive set of scripts for development, maintenance, and production workflows. These scripts are defined in the root `package.json` and can be run using `bun run <script-name>`.
+## Dev loop
 
-## Scripts
-
-### Development
-
-- `bun run dev`: Start the development servers.
-
-### Maintenance
-
-- `bun run clean`: Remove build artifacts and caches (`.next`, `.turbo`, `dist`, etc.) plus all `node_modules` and generated typedefs.
+- `bun run dev`: start both apps in Turbo's TUI: web on `:3000`, api on `:4000`.
+- `bun run clean`: remove build artifacts and caches (`.next`, `.turbo`, `dist`), every `node_modules`, and generated typedefs.
+- `bun run devtools`: open Turborepo DevTools.
 
 <Callout type="warn">
 
-`bun run clean` deletes `node_modules` and the generated typedefs, so you must re-run `bun install` afterward.
+`bun run clean` deletes every `node_modules` and the generated typedefs, so re-run `bun install` afterward.
 
 </Callout>
-- `bun run lint`: Lint the entire monorepo with Oxlint in a single pass. Oxlint is also run on staged files at commit time via lint-staged.
-- `bun run format`: Format the codebase using Oxfmt.
-- `bun run format:check`: Check formatting without making changes.
-- `bun run check-types`: Check the types of the codebase (runs the Turbo `check-types` pipeline, then `check-types:scripts`).
-- `bun run check-types:scripts`: Type-check the repo scripts with `tsgo -p .github/scripts/tsconfig.json`.
 
-### Production
+## Database
 
-- `bun run build`: Build the applications. Runs `turbo run build --summarize` and then `bun .github/scripts/build-sizes.ts`, which reports each workspace's build size after every build. The `web/next` build itself runs `compress-images.ts` first (Sharp and SVGO optimization of `web/next/public`), then the docs generator (`--strict`), then `fumadocs-mdx`, then `next build`.
-- `build:vercel`: There is no root `bun run build:vercel` script; it is a Turbo task run via `turbo run build:vercel` during Vercel deployments. In the `api/hono` workspace this first runs `tsdown` (producing `dist/`), then `bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --external hono` to produce the deployed `vercel-bundle/`.
-- `bun run start`: Start the production servers.
+Each of these builds `@packages/env` first, then runs Drizzle Kit against `packages/db`.
 
-### Database
+- `bun run db:generate`: generate a migration from schema changes.
+- `bun run db:migrate`: apply pending migrations.
+- `bun run db:studio`: open Drizzle Studio to browse and edit data.
 
-- `bun run db:generate`: Generate Drizzle migrations.
-- `bun run db:migrate`: Run Drizzle migrations.
-- `bun run db:studio`: Open Drizzle Studio to view/edit data.
+## Quality
 
-### Console
+- `bun run lint`: Oxlint over the whole tree (also what CI runs).
+- `bun run format`: Oxfmt, writing fixes.
+- `bun run format:check`: Oxfmt, report only.
+- `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
 
-- `bun run console:roles`: Manage admin console access by setting a user's `role` (Better Auth `admin` plugin). Runs `bun .github/scripts/console-roles.ts <grant|revoke|list> [email]`: `grant <email>` sets `role = admin` (console access), `revoke <email>` sets `role = user`, and `list` shows the current console admins.
+## Release / production
 
-### Utilities
+- `bun run build`: build every app with Turbo, then print each workspace's size. This is the same build the pre-commit hook runs.
+- `bun run start`: serve the production build.
 
-- `bun run shadcn:update`: Update all shadcn/ui components (runs the update script, then `bun i`).
-- `bun run devtools`: Open Turborepo DevTools.
-- `bun run prepare`: Install git hooks via Lefthook.
-- `bun run postinstall`: Normalize and sort the `catalog:` dependency entries via `bun .github/scripts/deps-manager.ts` (runs automatically after `bun install`).
+The changelog, version bump, tag, and GitHub release are automated: you don't run them by hand. See [Releases](/docs/manage/release).
+
+## shadcn
+
+- `bun run shadcn:update`: update every shadcn/ui component, then `bun i`.
+
+<Callout type="warn">
+
+`bun run shadcn:update` overwrites everything under `web/next/src/components/ui/`, so hand-edits to those files are lost. Put durable customizations in `.github/scripts/shadcn-customize.ts`, which re-applies them after each sync; the `shadcn-sync` skill covers the workflow.
+
+</Callout>
+
+## Console
+
+- `bun run console:roles <grant|revoke|list> [email]`: set a user's role to gate `/console` (the Better Auth `admin` plugin). `grant` makes them a console admin, `revoke` returns them to `user`, `list` shows the current admins.
+
+## Runs automatically
+
+- `prepare` installs the Lefthook git hooks; `postinstall` normalizes the `catalog:` dependency entries. Both run for you after `bun install`.
+
+## Next
+
+- [Code Quality](/docs/manage/code-quality): what `lint`, `format`, and `build` enforce on every commit.
+- [Architecture](/docs/getting-started/architecture): the two apps and four packages these scripts drive.

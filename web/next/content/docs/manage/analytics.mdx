@@ -1,177 +1,64 @@
 ---
 slug: /docs/manage/analytics
-label: PostHog
-title: Analytics
-description: Configure PostHog analytics for product insights and user behavior tracking.
+title: Analytics & Feedback
+description: "Optional PostHog analytics and a feedback link: wire them in when you need them."
 ---
 
-## Overview
+Both of these are **optional**, and both stay off until you set an environment variable. Out of the box nothing tracks your users and no feedback link renders; you opt in when you need them.
 
-ZeroStarter includes built-in integration with [PostHog](https://posthog.com) for comprehensive product analytics, feature flags, session recordings, and user behavior tracking. When configured, PostHog automatically tracks page views and user interactions.
+## PostHog analytics
 
-## Features
+[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates) and handed to React through `PostHogProvider` in `web/next/src/app/providers.tsx`. Both no-op until the key is present.
 
-- **Product Analytics**: Track user behavior and product usage
-- **Session Recordings**: Replay user sessions for debugging and insights
-- **Feature Flags**: Roll out features gradually with confidence
-- **A/B Testing**: Run experiments to optimize your product
-- **Funnels & Paths**: Understand user journeys and conversion flows
-
-## Setup
-
-### 1. Create a PostHog Account
-
-1. Sign up at [PostHog](https://posthog.com) (cloud) or self-host
-2. Create a new project
-3. Copy your **Project API Key** from Project Settings
-
-### 2. Configure Environment Variables
-
-Add your PostHog credentials to your `.env` file:
+Turn it on with two env vars (the key enables it, the host picks your region):
 
 ```
-# Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
 NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
 NEXT_PUBLIC_POSTHOG_KEY=
 ```
 
-<Callout type="info">
+Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU, or your self-hosted URL. Both are declared optional in `packages/env/src/web-next.ts`, so an empty key simply means PostHog never initializes, which is also how you disable it.
 
-Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU Cloud, or your self-hosted URL.
+<Callout type="info" title="Wired, but not called for you">
+
+The starter sets up initialization and the provider, but it does **not** call `capture`, `identify`, or read a feature flag anywhere. Pageviews and session replay begin once the key is set; everything below is yours to add where it makes sense.
 
 </Callout>
 
-### 3. Environment Configuration
-
-The PostHog variables are configured in `packages/env/src/web-next.ts`:
+Capture events and identify users from the shared client:
 
 ```ts
-client: {
-  NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
-}
-```
-
-## Implementation
-
-PostHog is initialized in `web/next/instrumentation-client.ts`, following Next.js's client instrumentation convention (this file runs once, early, on the client before the app hydrates):
-
-```ts
-import { env } from "@packages/env/web-next"
 import posthog from "posthog-js"
 
-if (typeof window !== "undefined" && env.NEXT_PUBLIC_POSTHOG_KEY) {
-  posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
-    defaults: "2025-11-30",
-  })
-}
+posthog.capture("signup_clicked", { plan: "pro" })
+posthog.identify(user.id, { email: user.email, name: user.name })
 ```
 
-The shared `posthog` client is then handed to React through `PostHogProvider` in `web/next/src/app/providers.tsx`. That file exports an `OuterProvider` (PostHog wrapping TanStack Query, with the dev tools rendered outside production) and an `InnerProvider` (next-themes plus the Sonner `Toaster`):
+Inside components, reach the same client and read flags through the React hooks:
 
 ```tsx
-"use client"
-
-import { isProduction } from "@packages/env"
-import { env } from "@packages/env/web-next"
-import { PostHogProvider } from "@posthog/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import posthog from "posthog-js"
-import { useState } from "react"
-
-import { DevTools } from "@/components/devtools"
-
-export function OuterProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient())
-
-  return (
-    <PostHogProvider client={posthog}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        {!isProduction(env.NEXT_PUBLIC_NODE_ENV) && <DevTools />}
-      </QueryClientProvider>
-    </PostHogProvider>
-  )
-}
-```
-
-## Usage
-
-The snippets below are generic PostHog SDK guidance for instrumenting your own product.
-
-<Callout type="info">
-
-The starter wires up PostHog initialization and the React provider for you, but it does not call `capture`, `identify`, or read feature flags anywhere by default. Add those where they make sense in your code.
-
-</Callout>
-
-### Track Custom Events
-
-```ts
-import posthog from "posthog-js"
-
-// Track a custom event
-posthog.capture("button_clicked", {
-  button_name: "signup",
-  page: "landing",
-})
-```
-
-### Identify Users
-
-```ts
-import posthog from "posthog-js"
-
-// Identify a user after authentication
-posthog.identify(user.id, {
-  email: user.email,
-  name: user.name,
-})
-```
-
-### Feature Flags
-
-```ts
-import posthog from "posthog-js"
-
-// Check if a feature flag is enabled
-if (posthog.isFeatureEnabled("new-dashboard")) {
-  // Show new dashboard
-}
-```
-
-### React Hooks
-
-```ts
 import { usePostHog, useFeatureFlagEnabled } from "@posthog/react"
 
-function Component() {
+function Dashboard() {
   const posthog = usePostHog()
-  const showNewFeature = useFeatureFlagEnabled("new-feature")
-
-  const handleClick = () => {
-    posthog?.capture("feature_used")
-  }
-
-  return showNewFeature ? <NewFeature onClick={handleClick} /> : <OldFeature />
+  const showNew = useFeatureFlagEnabled("new-dashboard")
+  return showNew ? <New onClick={() => posthog?.capture("used_new")} /> : <Old />
 }
 ```
 
-## Disabling Analytics
+PostHog is privacy-configurable: the host picks EU or US data residency, session recordings can be masked or turned off, and its built-in opt-out honors users who decline tracking.
 
-To disable PostHog analytics, simply remove or leave empty the `NEXT_PUBLIC_POSTHOG_KEY` environment variable. PostHog will not initialize if the key is not provided.
+## User feedback
 
-## Privacy Considerations
+The feedback link is simpler still (one env var, no SDK):
 
-- PostHog supports privacy-first analytics with configurable data retention
-- Session recordings can be disabled or configured to mask sensitive data
-- GDPR-compliant with data residency options (EU/US)
-- Users can opt-out using PostHog's built-in opt-out mechanisms
+```
+NEXT_PUBLIC_USERJOT_URL=
+```
 
-## Resources
+The name points at [UserJot](https://userjot.com), but the value is just a URL: set it to any feedback destination you like. When it is set, a link appears in two places: the **docs sidebar footer** (next to the `v{version}` label) and the **dashboard user menu**, directly above "Log out". Both open the URL in a new tab. Leave the variable empty and neither renders; the footer still shows the version.
 
-- [PostHog Documentation](https://posthog.com/docs)
-- [PostHog React SDK](https://posthog.com/docs/libraries/react)
-- [Feature Flags Guide](https://posthog.com/docs/feature-flags)
-- [Session Recordings](https://posthog.com/docs/session-replay)
+## Next
+
+- [Environment Variables](/docs/manage/environment): how these optional keys are declared and validated.
+- [Dashboard](/docs/manage/dashboard): the app shell where the feedback link and user menu live.

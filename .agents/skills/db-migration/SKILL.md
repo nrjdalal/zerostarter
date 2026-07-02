@@ -37,7 +37,7 @@ Local / ad-hoc only. On Vercel the **API build auto-applies pending migrations**
 bunx turbo run build --filter=@packages/db
 ```
 
-The API consumes `@packages/db`'s built dist. If the dev server is running and the API imports the new table, **restart dev entirely**, `bun --hot` does not pick up new files/exports reliably (see the `dev` skill).
+The API consumes `@packages/db`'s built dist. If the dev server is running and the API imports the new table, **restart dev entirely**: `bun --hot` does not pick up new files/exports reliably (see the `dev` skill).
 
 ### 5. Inspect data
 

@@ -7,7 +7,7 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 
 `bun run shadcn:update` regenerates the whole shadcn layer from the registry, then re-applies every local override programmatically. It is **self-reconciling**: run it on a clean tree and you get a clean tree back. The only diff you should ever see afterwards is a genuine upstream change to a component, which is yours to review.
 
-`bun run shadcn:update` runs `bash .github/scripts/shadcn-update.sh && bun i`. The script refuses to run on a dirty blast radius, then: wipe `web/next/src/components/ui` + `components.json` → `shadcn init` → `shadcn add -a` → `shadcn-customize.ts` → `oxfmt`. The trailing `bun i` (the wrapper, not the script) reinstalls the dropped `react-day-picker` at the pinned v9 and reconciles the lockfile.
+`bun run shadcn:update` runs `bash .github/scripts/shadcn-update.sh && bun i`. The script refuses to run on a dirty blast radius, then: wipe `web/next/src/components/ui` + `components.json` → `shadcn init` → `shadcn add -a` → `shadcn-customize.ts` → `oxfmt`. The trailing `bun i` (the wrapper, not the script) reconciles the lockfile after the HEAD restore.
 
 ## Procedure
 
@@ -24,8 +24,6 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 - `web/next/src/app/layout.tsx`, `init` injects `next/font/google`; we self-host via `next/font/local` (see the `fonts` skill).
 - `web/next/src/lib/utils.ts`, `init` drops the repo helpers (`slugify`, `generateId`).
 
-It then drops `react-day-picker` from `node_modules` so `bun i` reinstalls the catalog-pinned v9 (a plain install won't downgrade it).
-
 **Patch in place**, registry components we extend, edited structurally with ts-morph (located by AST shape, so whitespace and attribute/param reordering can't break them) plus one guarded string swap for CSS. Each is idempotent and throws if its target is missing, so an upstream shape change fails the sync loudly:
 
 - `button.tsx`, Base UI render wiring (`render`, `nativeButton={!render}`, `render={render}`)
@@ -33,7 +31,7 @@ It then drops `react-day-picker` from `node_modules` so `bun i` reinstalls the c
 - `sidebar.tsx`, optional `children` label on `SidebarTrigger`
 - `globals.css`, `--font-sans` points at the brand DM Sans variable
 
-`calendar.tsx` is **not** touched: it carries no local override and tracks the registry as-is (we pin `react-day-picker` to `^9`; the registry component is v9-compatible).
+`calendar.tsx` is **not** touched: it carries no local override and tracks the registry as-is (we pin `react-day-picker` to `^10`; the registry component is v10-compatible).
 
 ## Notes
 

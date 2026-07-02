@@ -1,27 +1,46 @@
 ---
 slug: /docs/manage/code-quality
-label: Git Hooks & Linting
 title: Code Quality
-description: Git hooks, linting, formatting, and commit conventions.
+description: Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.
 ---
 
-## Overview
+One Rust toolchain formats and lints the whole monorepo, and [Lefthook](https://github.com/evilmartians/lefthook) runs it (plus a build and a commit-message check) at the moments a mistake would otherwise slip through. You rarely invoke any of it by hand.
 
-ZeroStarter enforces code quality through automated tools that run on every commit. This ensures consistent code style, catches errors early, and maintains a clean commit history.
+## Oxc, not ESLint + Prettier
 
-## Tools
+[Oxc](https://oxc.rs) replaces both ESLint and Prettier with two commands: `oxlint` for linting and `oxfmt` for formatting. They're written in Rust, so they finish in a fraction of the time, fast enough to run on every commit without you noticing. That speed is the whole reason to switch.
 
-| Tool                                                      | Purpose                           |
-| --------------------------------------------------------- | --------------------------------- |
-| [Lefthook](https://github.com/evilmartians/lefthook)      | Git hooks manager                 |
-| [lint-staged](https://github.com/lint-staged/lint-staged) | Run linters on staged files       |
-| [Oxlint](https://oxc.rs/docs/guide/usage/linter)          | Fast JavaScript/TypeScript linter |
-| [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)        | Fast code formatter               |
-| [Commitlint](https://commitlint.js.org)                   | Commit message linter             |
+The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schema, every rule at its default:
 
-## Git Hooks
+```jsonc
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+}
+```
 
-Git hooks are configured in `lefthook.yml`:
+`.oxfmtrc.jsonc` turns off semicolons, sorts imports, sorts Tailwind classes, and skips the AI skill directory:
+
+```jsonc
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "experimentalSortImports": {},
+  "experimentalTailwindcss": {},
+  "ignorePatterns": [".agents/**"],
+}
+```
+
+Run either across the tree yourself:
+
+```bash
+bun run lint          # oxlint over everything (this is what CI runs)
+bun run format        # oxfmt, writing fixes
+bun run format:check  # oxfmt, report only
+```
+
+## The git hooks
+
+`lefthook.yml` wires three hooks:
 
 ```yaml
 pre-commit:
@@ -49,233 +68,43 @@ pre-push:
       run: bun .github/scripts/ensure-remote-main.ts {1}
 ```
 
-### Pre-commit Hook
+**pre-commit**: [lint-staged](https://github.com/lint-staged/lint-staged) formats then lints only your staged files (`oxfmt`, then `oxlint`); `stage_fixed: true` re-stages anything the formatter rewrote, so the fix rides along in the same commit. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
-Runs before each commit in sequence (piped):
+**commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 
-1. **lint-staged**: Format and lint only staged files. The command runs with `stage_fixed: true`, so any files the formatter rewrites are re-staged automatically and the fixes are included in the same commit.
-2. **Build**: Verify the project builds successfully
+**pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-main.ts` seeds the `main` branch that drives the release PR (see [Releases](/docs/manage/release)).
 
-### Pre-push Hook
+<Callout type="warn" title="The local build sees your real .env">
 
-Runs before `git push`. The **security audit** (`bun audit --audit-level high`) runs here, scoped to `canary` (`only: ref: canary`), so it checks for vulnerable dependencies before the branch leaves your machine without blocking offline commits. It also runs `ensure-main` (`.github/scripts/ensure-remote-main.ts`), on GitHub remotes only. Your first `git push origin canary` creates `canary`, which GitHub makes the default branch; on your next push the hook seeds `main` (a separate ref, so it never collides with the `canary` push) so `auto-canary-into-main` opens the release PR. It needs no `gh` or repo-admin (the default branch falls out of push order); the only manual step it prints is enabling read-write Actions permissions. A local per-remote `git config zerostarter.mainSeeded.<remote>` marker makes it a no-op once done.
+Unlike CI (which sets `SKIP_ENV_VALIDATION=true`), the pre-commit build validates your actual `.env`. A missing or invalid required variable fails the commit locally even though the same build passes in CI.
 
-### Audit overrides (AUDIT.md)
+</Callout>
 
-`bun audit --audit-level high` is the gate that decides whether a vulnerable dependency blocks a push. When an advisory can only be resolved with a dependency `overrides` entry in `package.json` (for example a transitive package that has no patched release yet), that override must be recorded in `AUDIT.md` at the repo root.
+## Commit messages
 
-`AUDIT.md` is the canonical record of every active override. Each entry documents the advisory, why an override is needed, the residual risk, and the exit criteria for removing it. The file is intentionally kept even when there are no active overrides, so do not delete it.
-
-### Commit-msg Hook
-
-Validates commit messages follow conventional commit format.
-
-## Lint-Staged Configuration
-
-The `.lintstagedrc.json` defines what runs on staged files:
-
-```json
-{
-  "*": ["oxfmt --no-error-on-unmatched-pattern", "oxlint --no-error-on-unmatched-pattern"],
-  "package.json": ["bun .github/scripts/deps-manager.ts"]
-}
-```
-
-- **All files**: Format with Oxfmt, then lint with Oxlint
-- **package.json**: Run dependency manager script (ensures consistent dependency versions)
-
-## Formatting with Oxfmt
-
-Oxfmt configuration in `.oxfmtrc.jsonc`:
-
-```jsonc
-{
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "semi": false,
-  "experimentalSortImports": {},
-  "experimentalTailwindcss": {},
-  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/**"],
-}
-```
-
-| Setting                   | Value                                       | Description                                      |
-| ------------------------- | ------------------------------------------- | ------------------------------------------------ |
-| `semi`                    | `false`                                     | No semicolons (like Prettier with `semi: false`) |
-| `experimentalSortImports` | `{}`                                        | Auto-sort imports                                |
-| `experimentalTailwindcss` | `{}`                                        | Sort Tailwind CSS classes                        |
-| `ignorePatterns`          | `["**/*.lock", ".agents/**", ".claude/**"]` | Skip lock files and AI skill directories         |
-
-### Manual Formatting
-
-```bash
-# Format all files
-bun run format
-
-# Check formatting without changes
-bun run format:check
-```
-
-## Linting with Oxlint
-
-Oxlint runs automatically via lint-staged on staged files at commit time. To lint the entire monorepo in a single pass, run `bun run lint` (this is also what CI runs):
-
-```bash
-# Lint the entire tree
-bun run lint
-```
-
-Oxlint is significantly faster than ESLint while catching common issues.
-
-Oxlint configuration in `.oxlintrc.jsonc`:
-
-```jsonc
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/**"],
-}
-```
-
-| Setting          | Value                                       | Description                              |
-| ---------------- | ------------------------------------------- | ---------------------------------------- |
-| `ignorePatterns` | `["**/*.lock", ".agents/**", ".claude/**"]` | Skip lock files and AI skill directories |
-
-## Commit Message Convention
-
-Commits must follow [Conventional Commits](https://www.conventionalcommits.org):
-
-```
-<type>(<scope>): <subject>
-
-<body>
-```
-
-### Types
-
-Commitlint extends `@commitlint/config-conventional`, which accepts these 11 Conventional Commits types:
-
-| Type       | Description                                             |
-| ---------- | ------------------------------------------------------- |
-| `feat`     | New feature                                             |
-| `fix`      | Bug fix                                                 |
-| `docs`     | Documentation only                                      |
-| `style`    | Code style (formatting, semicolons)                     |
-| `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `perf`     | Performance improvement                                 |
-| `test`     | Adding or updating tests                                |
-| `chore`    | Maintenance (dependencies, build scripts)               |
-| `ci`       | CI/CD changes                                           |
-| `build`    | Build system or external dependency changes             |
-| `revert`   | Reverting a previous commit                             |
-
-### Examples
+Messages follow [Conventional Commits](https://www.conventionalcommits.org): `<type>(<scope>): <subject>`. Common types are `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `perf`, and `style`; `build` and `revert` are also accepted.
 
 ```bash
 feat(auth): add Google OAuth provider
 fix(api): handle null user in session middleware
-docs(readme): update installation instructions
-chore(deps): bump dependencies to latest versions
-refactor(web): extract form validation into hook
+docs(readme): update setup steps
 ```
 
-### Breaking Changes
+Two repo rules the hook and skills enforce:
 
-Append `!` after type for breaking changes:
+- **Never add a `Co-authored-by` trailer.**
+- **`ci` is reserved** for pipeline-generated commits (the changelog bot) and is filtered out of the changelog; use `fix(ci)` or `docs(ci)` for real CI work.
 
-```bash
-feat!: remove deprecated API endpoints
-```
+## Common fixes
 
-## Running Checks Manually
+- **A commit failed on formatting or lint**: run `bun run format` (and `bun run lint`), `git add` the result, and commit again.
+- **Commitlint rejected the message**: rewrite it as `type: subject`; `add user page` becomes `feat: add user page`.
+- **Hooks aren't running**: reinstall them with `bun run prepare`.
+- **You need to bypass in an emergency**: `git commit --no-verify`, or `LEFTHOOK=0 git commit …` to drop every hook, or `LEFTHOOK_EXCLUDE=build git commit …` to drop just the build. CI re-checks all of it anyway.
 
-```bash
-# What CI runs (auto-check-build.yml). CI exports NODE_ENV=production and
-# SKIP_ENV_VALIDATION=true so the build runs before real secrets are present.
-NODE_ENV=production SKIP_ENV_VALIDATION=true bun audit --audit-level high
-NODE_ENV=production SKIP_ENV_VALIDATION=true bun run lint
-NODE_ENV=production SKIP_ENV_VALIDATION=true bun run build
+Dependency advisories that can only be resolved with a `package.json` override are recorded in `AUDIT.md` at the repo root; the `audit` skill walks you through it.
 
-# Type checking (run locally; not part of the CI build workflow)
-bun run check-types
+## Next
 
-# Format all files
-bun run format
-```
-
-<Callout type="warn">
-
-Unlike CI, the local pre-commit `build` step runs without `SKIP_ENV_VALIDATION`, so it validates your real `.env`. A missing or invalid required variable will fail the commit locally even though the same build passes in CI.
-
-</Callout>
-
-## CI/CD Integration
-
-GitHub Actions runs these checks on every PR:
-
-```yaml
-# .github/workflows/auto-check-build.yml
-- name: Audit, Lint, and Build
-  run: |
-    bun audit --audit-level high
-    bun run lint
-    bun run build
-  env:
-    NODE_ENV: production
-    SKIP_ENV_VALIDATION: true
-```
-
-## Skipping Hooks
-
-In rare cases, you can skip hooks:
-
-```bash
-# Skip all hooks (use sparingly!)
-git commit --no-verify -m "emergency fix"
-
-# Skip all Lefthook hooks (LEFTHOOK=0 disables every hook, not just one)
-LEFTHOOK=0 git commit -m "message"
-
-# Skip a single command, e.g. just the build step
-LEFTHOOK_EXCLUDE=build git commit -m "message"
-```
-
-<Callout type="warn">
-
-Only skip hooks for emergencies. CI will still catch issues.
-
-</Callout>
-
-## Troubleshooting
-
-### Hooks Not Running
-
-```bash
-# Reinstall hooks
-bunx lefthook install
-```
-
-### Format Conflicts
-
-If formatting creates unexpected changes:
-
-```bash
-# Format entire codebase
-bun run format
-
-# Stage formatted files
-git add .
-```
-
-### Commitlint Failing
-
-Check your message follows the format:
-
-```bash
-# Good
-git commit -m "feat: add user profile page"
-
-# Bad (missing type)
-git commit -m "add user profile page"
-
-# Bad (wrong type)
-git commit -m "added: user profile page"
-```
+- [Releases](/docs/manage/release): how those conventional commits become a changelog and a tagged release.
+- [Scripts](/docs/getting-started/scripts): `lint`, `format`, `build`, and the rest, in one place.

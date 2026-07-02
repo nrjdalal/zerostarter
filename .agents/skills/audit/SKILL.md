@@ -5,7 +5,7 @@ description: Run the dependency security audit and maintain AUDIT.md. Use when t
 
 # Dependency Audit
 
-`bun audit --audit-level high` runs in the pre-push hook on canary (`lefthook.yml`). `AUDIT.md` at the repo root is the canonical record of overrides/exceptions, it intentionally exists even when empty of them. Never delete it.
+`bun audit --audit-level high` runs in the pre-push hook on canary (`lefthook.yml`). `AUDIT.md` at the repo root is the canonical record of overrides/exceptions. It intentionally exists even when it lists none. Never delete it.
 
 ## Workflow
 

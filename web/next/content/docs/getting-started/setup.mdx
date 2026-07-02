@@ -1,141 +1,61 @@
 ---
 slug: /docs/getting-started/setup
-title: Setup
-description: Step-by-step guide to install and set up ZeroStarter.
+title: Quickstart
+description: Go from one command to a running, signed-in app, and where to go next.
 ---
 
-## Overview
+Two commands take you from nothing to a running, signed-in app.
 
-This guide will walk you through installing and setting up ZeroStarter on your local machine. You'll learn how to clone the repository, install dependencies, configure environment variables, set up the database, and configure authentication.
+<Callout type="info" title="Prerequisites">
 
-## Getting Started
-
-### Prerequisites
-
-<Callout type="warn">
-
-Bun v1.3.14 or later (matching the repo's `packageManager` pin). Docker is required for the `--db` database provisioning. A reachable PostgreSQL instance is required to run the app.
+Bun >= 1.3.14 must be installed (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
 
 </Callout>
 
-### Setup
-
-1. Scaffold your product. In a new, empty directory (its name becomes your project name), run:
-
-   ```bash
-   npx zerostarter@latest init
-   ```
-
-   This fetches the latest ZeroStarter, removes the sample content, rebrands it to your project, installs dependencies, and creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. When Docker is running it also offers to provision a local Postgres (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and run migrations; pass `--db` to do that without prompting. A fresh fork starts on `canary` with `main` seeded from the initial commit (canary is one commit ahead).
-
-   <Callout type="info">
-
-   You only need `git push origin canary`. Pushing `canary` first makes it your default branch; on your next push a pre-push hook seeds `main` (the `canary` to `main` release flow needs `main` on the remote) and prints a link to enable read-write Actions permissions. See [Release Management](/docs/manage/release) for the full flow.
-
-   </Callout>
-
-2. Set up environment variables:
-
-   `init` already creates `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET`. Open it and fill in your remaining values (OAuth credentials, and `POSTGRES_URL` if you did not let init provision one). Only if you are converting an existing checkout in place, or `.env` is missing, create it manually first (this leaves `BETTER_AUTH_SECRET` empty, so generate one):
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   The `.env` file contains the following variables:
-
-   ```
-   NODE_ENV=local
-
-   # -------------------- Server variables --------------------
-
-   HONO_APP_URL=http://localhost:4000
-   HONO_TRUSTED_ORIGINS=http://localhost:3000
-   HONO_RATE_LIMIT=60 # allow 60 req/min (default) and twice that for authenticated users
-   HONO_RATE_LIMIT_WINDOW_MS=60000 # 1 minute (default)
-
-   # Generate using `openssl rand -base64 32`
-   BETTER_AUTH_SECRET=
-
-   # Optional GitHub OAuth — generate at `https://github.com/settings/developers`; leave blank to hide the GitHub sign-in button
-   GITHUB_CLIENT_ID=
-   GITHUB_CLIENT_SECRET=
-
-   # Optional Google OAuth — generate at `https://console.cloud.google.com/apis/credentials`; leave blank to hide the Google sign-in button
-   GOOGLE_CLIENT_ID=
-   GOOGLE_CLIENT_SECRET=
-
-   # Generate using `bunx pglaunch -k`
-   POSTGRES_URL=
-
-   # -------------------- Client variables --------------------
-
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:4000
-
-   # Optional: PostHog Analytics (https://zerostarter.dev/docs/manage/analytics)
-   NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-   NEXT_PUBLIC_POSTHOG_KEY=
-
-   # Optional: User feedback (https://zerostarter.dev/docs/manage/feedback)
-   NEXT_PUBLIC_USERJOT_URL=
-   ```
-
-   <Callout type="info">
-
-   Deployments (Docker, Vercel) may also set `INTERNAL_API_URL` (an optional server-only URL the Next.js app uses to reach the API directly, preferred over `NEXT_PUBLIC_API_URL` when present) and `HONO_PORT` (the port the Hono server listens on, default `4000`).
-
-   </Callout>
-
-### Database Setup
-
-1. Ensure your PostgreSQL server is running.
-2. Run the generation:
-
-   ```bash
-   bun run db:generate
-   ```
-
-3. Run the migration:
-
-   ```bash
-   bun run db:migrate
-   ```
-
-### Authentication Setup
-
-ZeroStarter comes with some default authentication plugins using [Better Auth](https://better-auth.com), you can extend as needed.
-
-#### GitHub
-
-1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers).
-2. Set the **Homepage URL** to `http://localhost:3000`.
-3. Set the **Authorization callback URL** to `http://localhost:4000/api/auth/callback/github`.
-4. Copy the **Client ID** and **Client Secret** into your `.env` file.
-
-#### Google
-
-1. Create a Google OAuth App in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
-2. Configure the OAuth consent screen (External).
-3. Create an **OAuth Client ID** (Application type: Web).
-4. Set the **Authorized JavaScript origins** to `http://localhost:3000`.
-5. Set the **Authorized redirect URI** to `http://localhost:4000/api/auth/callback/google`.
-6. Copy the **Client ID** and **Client Secret** into your `.env` file.
-
-### Running the Application
-
 ```bash
-bun dev
+bunx zerostarter init
+bun run dev
 ```
 
-### Running the Application with Docker Compose
+The rest of this page is what those commands do, and the one thing to check if the database step gets skipped.
+
+## `zerostarter init`
+
+`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder; if the folder already has files, it asks for a project name and scaffolds into that new directory instead. In one run it:
+
+- fetches the latest ZeroStarter and strips the sample content,
+- rebrands the copy to your project name,
+- installs dependencies with Bun,
+- provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)) and applies the migrations,
+- writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET`.
+
+Everything else has a working default, so the scaffold runs as-is. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
+
+<Callout type="info" title="If Docker isn't running">
+
+`init` skips the database and leaves `POSTGRES_URL` empty. Point it at any Postgres (a hosted one like [Neon](https://neon.tech) works) by setting `POSTGRES_URL` in `.env`, then apply the migrations once:
 
 ```bash
-docker compose up
+bun run db:migrate
 ```
 
-### Accessing the Application
+</Callout>
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend: [http://localhost:4000](http://localhost:4000)
-- API Docs: [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
+## `bun run dev`
+
+Turborepo starts both apps together:
+
+- **web** (Next.js) on [http://localhost:3000](http://localhost:3000)
+- **api** (Hono) on [http://localhost:4000](http://localhost:4000), with an interactive API reference at [/api/docs](http://localhost:4000/api/docs)
+
+## Sign in
+
+A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. To get past auth immediately, use the dev-only **Login (agents)** button (or one `curl`). It mints a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+
+When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
+
+## Next
+
+- [Working with Agents](/docs/getting-started/working-with-agents): sign in locally and build your first feature.
+- [Architecture](/docs/getting-started/architecture): what you just started, and why each piece is there.
+- [Authentication](/docs/manage/authentication): add OAuth, organizations, and teams.

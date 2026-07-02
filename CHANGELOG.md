@@ -1,3 +1,15 @@
+## v0.0.73
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.72...v0.0.73)
+
+### 🚀 Enhancements
+
+- **web:** Add PostHog to the tech banner, refresh the Oxc logo ([#600](https://github.com/nrjdalal/zerostarter/pull/600))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.72
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.71...v0.0.72)

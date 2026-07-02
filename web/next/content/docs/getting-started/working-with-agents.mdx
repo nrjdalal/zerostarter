@@ -1,0 +1,90 @@
+---
+slug: /docs/getting-started/working-with-agents
+title: Working with Agents
+description: "The loop an AI agent uses here: skills, a local login, agent-browser, and llms.txt."
+---
+
+An AI coding agent that opens most repositories has to guess: where routes live, what the response shape is, how to run the thing, how to log in and test. ZeroStarter hands it a playbook instead. Point Claude Code, Cursor, or your own agent at the repo and it can build a real feature (and check that it works) without you narrating every step.
+
+Four things make that possible, and none of them are magic:
+
+- **Skills**: step-by-step recipes for this repo's real tasks.
+- **A local sign-in**: one request to an authenticated session, no OAuth.
+- **agent-browser**: the agent drives the running app like a user.
+- **llms.txt**: the whole codebase as context, generated.
+
+<Callout type="info" title="Scope">
+
+This is about AI agents that _build on_ the codebase: coding assistants. ZeroStarter does not (yet) ship primitives for end-user agents that operate your product in production; that is your app to design.
+
+</Callout>
+
+## The loop
+
+The full cycle an agent runs, start to finish:
+
+```bash
+# 1: scaffold a product, then start the stack
+bunx zerostarter init
+bun run dev
+
+# 2: sign in locally (drive the real UI, or the curl below)
+agent-browser open http://localhost:3000
+agent-browser snapshot                  # get refs for the page
+agent-browser click "@e5"               # the "Login (agents)" button ref
+
+# 3: build a feature by following a skill (api-endpoint, db-migration)
+# 4: verify it in the running app, behind auth
+agent-browser snapshot                  # read the page, then act
+```
+
+Scaffold, run, sign in, build, verify. Each step below is one of those pieces.
+
+## Skills
+
+Skills live in `.agents/skills/` (and `.claude/skills/` is a symlink to it, so Claude Code, Cursor, and Codex read the _same_ files). Each is a `SKILL.md` with a trigger and a literal procedure: not a vague prompt, but this repo's exact conventions and its known traps.
+
+For example, the `api-endpoint` skill hands the agent the Hono router template, the mandatory validation hook, where to wire the route, the restart step, and the `curl` to test it. The `dev` skill documents the one trap that stalls agents most (`bun --hot` won't pick up newly-created files) and the exact restart that fixes it.
+
+See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write your own.
+
+## Local sign-in
+
+Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request:
+
+```bash
+curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
+  http://localhost:4000/api/agents/sign-in-as
+curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated
+```
+
+It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing.
+
+<Callout type="warn" title="Local only, by construction">
+
+The route is gated to a local `NODE_ENV` and requires a trusted `Origin`. It returns `404` anywhere else, so it can never mint a session in production.
+
+</Callout>
+
+## agent-browser
+
+The bundled `agent-browser` skill is a fast, CDP-based browser CLI. An agent uses it to drive the _actual_ running app (navigate, click, type, screenshot, read the accessibility tree) instead of mocking the UI. Combined with the local sign-in, it can operate the product end-to-end and confirm its own work.
+
+```bash
+agent-browser open http://localhost:3000/dashboard
+agent-browser snapshot        # structured page state with element refs
+agent-browser click "@e12"    # act on a referenced element
+```
+
+## llms.txt
+
+`/llms.txt` and `/llms-full.txt` are generated from the docs on every build. `llms-full.txt` opens with a preamble that hands an agent the monorepo layout, the workspace import map, the stack, and the conventions: enough to write correct code without crawling the tree. See [llms.txt](/docs/manage/llms-txt).
+
+## Docs that can't drift
+
+`AGENTS.md` (symlinked to `CLAUDE.md`) makes one rule load-bearing: **documentation is updated in the same change as the code.** When a convention moves, its skill and doc move with it. Paired with the symlinked skill directory, what an agent reads is always what the code actually does: the single biggest cause of agent mistakes, designed out.
+
+## Next
+
+- [AI Skills](/docs/resources/ai-skills): the full skill catalog, and writing your own.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): the types an agent leans on to build safely.

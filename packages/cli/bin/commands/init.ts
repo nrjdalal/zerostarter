@@ -10,16 +10,16 @@ import { exists } from "@/io"
 import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
-  $ zerostarter init [dir] [options]
+  $ bunx zerostarter init [dir] [options]
 
 Scaffold ZeroStarter into dir (default .) as a fresh product. The author's
-content, public assets, and agent skills are left out for you to supply; the
+content and public assets are left out for you to supply; the
 dir name becomes the project name and site.ts + package.json are rebranded. If
 the dir already holds a ZeroStarter clone it is used in place; otherwise the
 latest ZeroStarter is fetched into it first.
 
 Options:
-  -y, --yes      Skip prompts; fail instead of prompting when input is needed
+  -y, --yes      Skip prompts, taking defaults (provisions Postgres when Docker is running)
       --db       Provision a local Postgres (pglaunch) and migrate; needs Docker
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
@@ -55,10 +55,10 @@ export const init = async (argv: string[]) => {
   if (!convertInPlace && !isEmptyDir(firstTarget)) {
     if (!interactive) {
       throw new Error(
-        "Target directory is not empty. Pass an empty target dir, for example: zerostarter init my-product",
+        "Directory is not empty. Run it in an empty directory, or pass a project name: bunx zerostarter init <name>",
       )
     }
-    const answer = await promptText("Target directory is not empty. New project directory")
+    const answer = await promptText("Directory isn't empty. Project name")
     if (!answer) throw new Error("No directory name provided.")
     dir = answer
   }
@@ -68,7 +68,7 @@ export const init = async (argv: string[]) => {
   const brand = { name }
 
   if (values["dry-run"]) {
-    console.log("zerostarter init (dry run)")
+    console.log("bunx zerostarter init (dry run)")
     console.log(`  target: ${target}`)
     console.log(`  name:   ${name}`)
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
@@ -86,6 +86,7 @@ export const init = async (argv: string[]) => {
     }
   }
 
+  console.log()
   if (!isZerostarter(target)) {
     console.log("Fetching the latest ZeroStarter ...")
     fetchZerostarter(target)
@@ -108,7 +109,6 @@ export const init = async (argv: string[]) => {
 
   gitCommitAll(target, `ci(init): re-baseline as ${name}`)
 
-  console.log("Setting up .env (copied from .env.example, with a generated BETTER_AUTH_SECRET) ...")
   seedEnv(target)
 
   let dbReady = false
@@ -118,25 +118,35 @@ export const init = async (argv: string[]) => {
   if (dbConfigured) {
     if (values.db) console.log(yellow("  --db ignored: POSTGRES_URL is already set in .env."))
   } else if (values.db) {
+    wantDb = true
+  } else if (interactive) {
+    // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
+    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
+  } else {
+    // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
     wantDb = dockerUp
-    if (!dockerUp) console.log(yellow("  --db ignored: Docker is not running."))
-  } else if (interactive && dockerUp) {
-    wantDb = await promptConfirm(
-      "Docker detected. Provision a local database and run migrations now?",
-      true,
-    )
   }
-  if (wantDb) {
+  if (wantDb && dockerUp) {
     try {
       console.log("Provisioning a local database with pglaunch and migrating ...")
       provisionDatabase(target)
       dbReady = true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.log(
-        yellow(`  Skipped database setup (${msg}); set it up later with pglaunch + db:migrate.`),
-      )
+      const stderr = (err as { stderr?: unknown }).stderr
+      const detail = stderr
+        ? String(stderr).trim()
+        : err instanceof Error
+          ? err.message
+          : String(err)
+      console.log(yellow("  Database setup failed; set POSTGRES_URL in .env yourself."))
+      if (detail) console.log(yellow(`  ${detail}`))
     }
+  } else if (wantDb) {
+    console.log(
+      yellow(
+        "  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
+      ),
+    )
   }
 
   const tips: [string, string][] = [
@@ -149,7 +159,7 @@ export const init = async (argv: string[]) => {
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
   if (!dbReady) {
-    console.log(`  ${orange("bunx pglaunch -k")}  # start Postgres, set POSTGRES_URL in .env`)
+    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
     console.log(`  ${orange("bun run db:migrate")}`)
   }
   console.log(`  ${orange("bun run dev")}`)
@@ -160,4 +170,13 @@ export const init = async (argv: string[]) => {
   )
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
+  if (dbReady) {
+    console.log(
+      "\nEverything works out of the box. Try it now; add OAuth or other credentials to .env whenever you like.",
+    )
+  } else {
+    console.log(
+      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one. OAuth and other credentials are optional.",
+    )
+  }
 }

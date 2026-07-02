@@ -3,5 +3,5 @@
   "semi": false,
   "experimentalSortImports": {},
   "experimentalTailwindcss": {},
-  "ignorePatterns": ["**/*.lock", ".agents/**", ".claude/**"],
+  "ignorePatterns": [".agents/**"],
 }

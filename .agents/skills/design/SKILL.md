@@ -5,7 +5,7 @@ description: Follow and maintain the app's UI design conventions. Use when doing
 
 # Design Conventions
 
-The canonical, prescriptive record of this app's UI conventions: what to do. The descriptive evidence (a full CSS/UI audit of the app) lives in `.github/audit/`. When a UI or styling change establishes or alters a convention, update this file in the same change so it never drifts. For a genuinely new design-token choice, propose it first; the design language is owned by the maintainer.
+The canonical, prescriptive record of this app's UI conventions: what to do. When a UI or styling change establishes or alters a convention, update this file in the same change so it never drifts. For a genuinely new design-token choice, propose it first; the design language is owned by the maintainer.
 
 ## Principles
 
@@ -25,13 +25,13 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 - Stay on the Tailwind scale. No off-ladder one-offs (`gap-7.5`, `size-4.5`, `w-45`, `mb-18`, `text-[0.6rem]`); snap to the nearest step.
 - `gap-2` is the workhorse for tight clusters.
 - Dashboard and console pages use the collapsible `SidebarShell` and wrap their content in `DashboardShell` (`components/dashboard/shell.tsx`): it owns `mx-auto` + width + `p-4 sm:p-6` via a `size` variant (`sm`/`md`/`lg`/`full`, default `md` = `max-w-4xl`). The title/description/actions row is `DashboardHeader`. Don't hand-roll `mx-auto`/`max-w-*`/`p-*` or the header layout.
-- Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter (hire and resume are aligned to home).
+- Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter.
 
 ## Typography and headings
 
 - Exactly one `<h1>` per page (the page title). Sections use `<h2>` and below; never skip levels.
 - Use the existing type scale and tokens; do not introduce font sizes outside the scale.
-- Marketing-page headings (home, hire, resume) are `font-bold`, unified across all three. Sub-headings within a section stay lighter (e.g. a `font-semibold` `h3`) to preserve hierarchy; non-heading display text (a stat value) is not a heading and follows its own weight.
+- Marketing-page headings are `font-bold`. Sub-headings within a section stay lighter (e.g. a `font-semibold` `h3`) to preserve hierarchy; non-heading display text (a stat value) is not a heading and follows its own weight.
 
 ## Color and theming
 
@@ -43,13 +43,13 @@ The canonical, prescriptive record of this app's UI conventions: what to do. The
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so do NOT add one to the root layout or you nest landmarks.
 - Collapsible app shells go through `SidebarShell`.
-- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1` — the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
+- Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. Surfaces nested inside the shell's content pane (route `error`/`loading`, dashboard/console content) fill it with `flex-1`: the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so don't re-assert `min-h-svh` inside an already-full-height parent.
 
 ## Components
 
 - **Loading:** `<Spinner />`, bare, at its default `size-4`. Never hand-roll `RiLoaderLine`.
 - **Empty states:** the `Empty` primitive (`EmptyHeader` / `EmptyMedia` / `EmptyTitle` / ...). Do not hand-roll empty messages.
-- **Badges and pills:** use `<Badge>` (with a variant, plus className for semantic color like `text-success`) over a hand-rolled rounded-full span. Identity rows (avatar + name + email) use `Item` / `ItemMedia` / `ItemContent`. Exception: the sidebar trigger identity stays hand-rolled inside `SidebarMenuButton` (the chevron is a sibling there).
+- **Badges and pills:** use `<Badge>` (with a variant, plus className for semantic color like `text-success`) over a hand-rolled rounded-full span. Identity rows (avatar + name + email) use `Item` / `ItemMedia` / `ItemContent`. Exception: the sidebar trigger identity stays hand-rolled inside `SidebarMenuButton` (the chevron is a sibling there). The marketing landing (`web/next/src/app/page.tsx`) also hand-rolls a larger `Eyebrow` pill for section eyebrows and the hero badge, since `<Badge>` is sized for compact UI (`h-5`, `text-xs`).
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (do not stack a second `space-y-*`). Do not hand-roll labels or error markup.
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog uses `max-w-md`.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.

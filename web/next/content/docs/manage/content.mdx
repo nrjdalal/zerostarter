@@ -1,0 +1,72 @@
+---
+slug: /docs/manage/content
+label: Content (Blog & Docs)
+title: Content
+description: Author docs and blog posts in MDX, with full-text search and draft/publish built in.
+---
+
+Everything you publish is MDX, and it lives in one place: `web/next/content/`. Under it, `docs/` and `blog/` are two [Fumadocs](https://fumadocs.dev) collections that split on a single axis: **who owns each page's metadata.**
+
+- **Docs** declare their structure and metadata _centrally_, in `web/next/docs.config.ts`. You write only the body.
+- **Blog** posts carry their own metadata in frontmatter, and the listing builds itself from the posts.
+
+## Docs: the config is the source of truth
+
+`web/next/docs.config.ts` is the single source for docs structure and metadata. Each collection maps to ordered sidebar groups, and every entry is keyed by the page's URL:
+
+```ts
+Manage: [
+  {
+    "/docs/manage/content": { title: "Content", label: "Content (Blog & Docs)", description: "…" },
+  },
+]
+```
+
+`title` and `description` are the page metadata; `label` overrides the sidebar text when it should differ from the title. A generator (`.github/scripts/docs.ts`) runs inside the `web/next` build and dev and, from that config:
+
+- writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
+- generates `content/docs/meta.json`: the reading order and prev/next;
+- scaffolds a stub MDX in dev for any page declared in the config but missing on disk;
+- fails a `--strict` build if the config and the files on disk have drifted.
+
+So adding a page is three steps: add the entry to `docs.config.ts`, run the dev server (or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone; it is regenerated on every build.
+
+<Callout type="warn" title="Don't edit meta.json">
+
+`content/docs/meta.json` is generated and git-ignored. The generator overwrites it, so hand edits are lost.
+
+</Callout>
+
+## Blog: one file per post
+
+A blog post is a single MDX file in `web/next/content/blog/`, and it owns its metadata in frontmatter. There is no list and no `meta.json` to maintain by hand; the `/blog` listing derives itself from the posts, newest first.
+
+Two timestamps decide visibility: `createdAt` is bookkeeping; `publishedAt` is consent to publish. **A post is public only when it is not a draft and `publishedAt` is set and not in the future.**
+
+```yaml
+---
+title: "My Post Title"
+description: "A short summary of the post."
+createdAt: 2026-06-11
+publishedAt: 2026-06-11
+---
+```
+
+Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. Timestamps are either `YYYY-MM-DD` (the start of that UTC day) or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for a post that should go live at an exact time. Scheduled posts need no rebuild: every public blog surface re-evaluates publishing on render, so a post appears within about 60 seconds of its `publishedAt` as ISR regenerates. Post images are committed under `web/next/public/blog/<slug>/images/` and referenced by absolute path.
+
+Each post page renders its own publish and update dates and emits article Open Graph metadata from that same frontmatter. Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post file and prints what it wrote, so validation always has one. Review and commit that line.
+
+The publishing rule lives in one place (`web/next/src/lib/blog-policy.ts`) and the listing, sitemap, `llms.txt`, and OG routes all read it, so they can never disagree about what is public.
+
+## Search
+
+Full-text search is powered by [Orama](https://orama.com) through Fumadocs, built by the route handler at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page to open it. Only the `docs` collection is indexed; the blog and the private console docs are not.
+
+## The private console docs
+
+`web/next/source.config.ts` defines a third collection, `consoleDocs` (`content/console/docs/`), served only under the auth-gated `/console` area. Its source is deliberately never referenced by a public route, so it is excluded from search, the sitemap, and `llms.txt` by construction: a home for internal docs that ship with the repo but stay behind the console.
+
+## Next
+
+- [SEO & Metadata](/docs/manage/seo): the OG images, sitemap, and robots that cover everything you publish.
+- [llms.txt](/docs/manage/llms-txt): how the docs collection becomes agent-readable context.

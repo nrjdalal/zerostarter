@@ -1,139 +1,85 @@
 ---
 slug: /docs/manage/theming
 title: Theming
-description: Dark mode, CSS variables, and styling with Tailwind CSS v4.
+description: "Dark mode, OKLCH design tokens, and Tailwind v4: restyle without fighting the system."
 ---
 
-## Overview
+You restyle ZeroStarter by editing tokens, not components. Colors, fonts, and radii are CSS custom properties in `web/next/src/app/globals.css`; Tailwind v4's `@theme` binds them to utility classes; every component references the utility, never a raw color. Change a token once and it flows to every surface, in both light and dark mode.
 
-ZeroStarter uses [Tailwind CSS v4](https://tailwindcss.com) with CSS custom properties for theming, [next-themes](https://github.com/pacocoursey/next-themes) for dark/light mode switching, and the [Fumadocs UI](https://fumadocs.dev) theme for documentation pages.
+## Dark mode
 
-## Dark Mode
-
-Dark mode is handled by `next-themes` with system preference detection:
+[next-themes](https://github.com/pacocoursey/next-themes) toggles a `.dark` class on `<html>` and follows the OS by default:
 
 ```tsx
 // web/next/src/app/providers.tsx
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-
-export function InnerProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      {children}
-      <Toaster richColors />
-    </NextThemesProvider>
-  )
-}
+<NextThemesProvider
+  attribute="class"
+  defaultTheme="system"
+  enableSystem
+  disableTransitionOnChange
+>
 ```
 
-The `ModeToggle` component at `web/next/src/components/mode-toggle.tsx` is a smart toggle: from `system` it switches to the opposite of the OS preference, it flips between `light` and `dark` while they diverge from the OS preference, and it returns to `system` once the explicit theme matches the OS preference again.
+The `ModeToggle` (`web/next/src/components/mode-toggle.tsx`) is a smart three-state toggle: from `system` it jumps to the opposite of the OS preference, flips between `light` and `dark` while they diverge, and snaps back to `system` once the explicit choice matches the OS again.
 
-## CSS Variables
+## Design tokens
 
-Theme colors are defined in `web/next/src/app/globals.css` using OKLch color space:
+Colors live in `:root` and `.dark` blocks as [OKLCH](https://oklch.com) values:
 
 ```css
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
   --border: oklch(0.922 0 0);
   --success: oklch(0.627 0.194 149.214);
-  /* ... */
 }
 
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
-  --success: oklch(0.723 0.219 149.579);
-  /* ... */
 }
 ```
 
-These variables are consumed by Tailwind utility classes like `bg-background`, `text-foreground`, `border-border`, etc. The `--success` token (green, mirroring `--destructive`) backs `text-success`, `bg-success/10`, and `border-success/20`.
+OKLCH is perceptually uniform. Its first channel is lightness, so a dark variant is often the same hue with the L flipped, and edits stay balanced instead of shifting hue unexpectedly.
 
-## Tailwind Configuration
+## Wiring tokens to Tailwind
 
-Tailwind v4 is configured via PostCSS in `web/next/postcss.config.mjs`:
-
-```js
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-}
-
-export default config
-```
-
-`web/next/src/app/globals.css` imports Tailwind, animations, and the Fumadocs UI and shadcn presets:
+Two declarations in `globals.css` connect the custom properties to Tailwind v4. A custom variant teaches Tailwind that `.dark` triggers `dark:` utilities, and an `@theme inline` block maps `--color-*` utilities onto the tokens:
 
 ```css
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "fumadocs-ui/css/neutral.css";
-@import "fumadocs-ui/css/preset.css";
-@import "shadcn/tailwind.css";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-sans);
+}
 ```
 
-A `@custom-variant dark (&:is(.dark *))` declaration teaches Tailwind to treat the `.dark` class (toggled by `next-themes`) as the trigger for `dark:` utilities. It then wires the design tokens to Tailwind v4 via an `@theme inline` block that maps `--color-*` utilities to the `--*` custom properties (background, foreground, primary, card, popover, chart, sidebar, radius, fonts, and so on).
+That mapping is what makes `bg-background`, `text-foreground`, `border-border`, and `text-success` (plus `bg-success/10`, `border-success/20`) resolve to the tokens above.
+
+## Use semantic tokens, not raw colors
+
+Style with the semantic utility (`bg-card`, `text-muted-foreground`, `border-border`), never a literal like `bg-white` or `bg-[#111]`. Semantic tokens are the whole point: they carry the light/dark pair and let a rebrand happen in one file. A raw color hard-codes one theme and breaks the other.
 
 ## Fonts
 
-Fonts are loaded with `next/font/local` from `.woff2` files in `web/next/src/fonts/`, defined in `web/next/src/lib/fonts.ts` (not via `@fontsource`). Four variable fonts are included:
+Fonts are self-hosted, not fetched at runtime. `.woff2` files in `web/next/src/fonts/` are localized through `next/font/local` in `web/next/src/lib/fonts.ts`, each exposing a CSS variable:
 
-- **DM Sans**: Primary UI font (body text, headings)
-- **JetBrains Mono**: Monospace font (code blocks)
-- **Caveat**: Handwriting accent font
-- **Newsreader**: Serif accent font
+- **DM Sans** → `--font-sans`: body and headings.
+- **JetBrains Mono** → `--font-mono`: code.
+- **Caveat**, **Newsreader** → `--font-caveat`, `--font-newsreader`: accents you apply via the variable directly (not wired to a utility).
 
-Each exposes a CSS variable (e.g. `--font-dm-sans`). Only DM Sans and JetBrains Mono are wired into Tailwind's font utilities by the `@theme inline` block, which maps `--font-sans: var(--font-dm-sans)`, `--font-mono: var(--font-jetbrains-mono)`, and `--font-heading: var(--font-sans)` (so headings track the sans family unless you repoint it). Caveat and Newsreader are exposed as CSS variables (`--font-caveat`, `--font-newsreader`) only, so use them via those variables directly.
+Headings track `--font-sans` unless you repoint `--font-heading`. To add or swap a font, follow the [`fonts` skill](/docs/resources/ai-skills): it fetches the variable woff2 and wires the preload so you don't ship layout shift.
 
-## Component Styling
+## Next
 
-Components use the shadcn/ui `base-nova` preset with [Base UI](https://base-ui.com) primitives. The configuration is in `web/next/components.json`:
-
-```json
-{
-  "style": "base-nova",
-  "iconLibrary": "remixicon",
-  "tailwind": {
-    "baseColor": "neutral",
-    "cssVariables": true
-  }
-}
-```
-
-### Utility Functions
-
-```ts
-import { cn } from "@/lib/utils"
-
-// Merge Tailwind classes with conflict resolution
-<div className={cn("text-sm", isActive && "font-bold")} />
-```
-
-## Customizing the Theme
-
-1. Edit CSS variables in `web/next/src/app/globals.css` for global color changes
-2. Use Tailwind utility classes that reference the CSS variables
-3. Update `components.json` and run `bun run shadcn:update` to regenerate components with a different preset
-
-### Customizations and the shadcn sync
-
-<Callout type="warn">
-
-`bun run shadcn:update` wipes `web/next/src/components/ui/` and silently loses any hand-edits there. Put overrides in `shadcn-customize.ts` instead.
-
-</Callout>
-
-The re-scaffold also drops registry-controlled lines in `globals.css`, not just files in `ui/`. Every override is instead re-applied afterward by `.github/scripts/shadcn-customize.ts`, which the sync runs at the end: it restores files the project owns outright, patches the registry components it extends (button, spinner, sidebar) by shape rather than text, and re-applies the `--font-sans: var(--font-dm-sans), sans-serif` line in `globals.css` via its `patchGlobals` step.
-
-Each patch is idempotent and throws if its target is missing, so a registry shape change fails the sync loudly rather than silently dropping an override.
+- [AI Skills](/docs/resources/ai-skills): the `fonts` and `design` skills for font and UI work.
+- [Dashboard](/docs/manage/dashboard): the shell these tokens style.

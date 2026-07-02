@@ -2,8 +2,8 @@
 export const site = {
   name: "ZeroStarter",
   description:
-    "A modern, type-safe, and high-performance SaaS starter template built with a monorepo architecture.",
-  tagline: "The SaaS Starter",
+    "Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.",
+  tagline: "Production-ready SaaS infrastructure with world-class human and agent DX",
   social: {
     github: "https://github.com/nrjdalal/zerostarter",
     x: "https://x.com/nrjdalal",
@@ -50,7 +50,7 @@ A Bun + Turborepo monorepo with two deployable apps and four shared packages:
 
 Major versions are listed where they matter; see the root \`package.json\` catalog for exact pins.
 - **Runtime & tooling:** Bun (runtime + package manager), Turborepo, tsdown (bundler for backend packages), Oxlint + Oxfmt (lint/format), TypeScript, Lefthook + Commitlint (git hooks).
-- **Frontend (\`web/next\`):** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, shadcn/ui on Base UI primitives, TanStack Query (data) with TanStack Form / React Hook Form (forms), Remixicon, Fumadocs (docs), takumi-js (dynamic OG images), PostHog (analytics).
+- **Frontend (\`web/next\`):** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, shadcn/ui on Base UI primitives, TanStack Query (data) with TanStack Form (forms), Remixicon, Fumadocs (docs), takumi-js (dynamic OG images), PostHog (analytics).
 - **Backend (\`api/hono\`):** Hono with end-to-end type-safe RPC, Zod + @hono/standard-validator, hono-rate-limiter with Arcjet IP detection, OpenAPI + Scalar reference.
 - **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (role-based access; \`role === "admin"\` gates \`/console\`) plugins.
 
