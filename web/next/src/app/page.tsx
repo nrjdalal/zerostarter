@@ -348,12 +348,12 @@ docker compose up --build`
           </div>
           <div className="grid gap-3.5 sm:grid-cols-2">
             {/* Agents, full-width row */}
-            <div className="bg-muted/40 relative grid items-stretch gap-14 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-muted/40 relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiRobot2Line
                 aria-hidden
                 className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiRobot2Line className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Human-readable. Agent-ready.</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
@@ -393,12 +393,12 @@ docker compose up --build`
             ))}
 
             {/* Deploy, full-width row */}
-            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-muted/40 relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiRocketLine
                 aria-hidden
                 className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiRocketLine className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
@@ -472,12 +472,12 @@ docker compose up --build`
             ))}
 
             {/* Docs, full-width row */}
-            <div className="bg-muted/40 relative grid items-center gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-muted/40 relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiBookOpenLine
                 aria-hidden
                 className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiBookOpenLine className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
