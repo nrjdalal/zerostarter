@@ -181,7 +181,7 @@ export function Access() {
                   disabled={loader === "github"}
                 >
                   {loader === "github" ? <Spinner /> : <RiGithubFill className="size-5" />}
-                  Continue with Github
+                  Continue with GitHub
                 </Button>
               )}
               {googleEnabled && (
