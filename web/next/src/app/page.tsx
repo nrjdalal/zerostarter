@@ -235,10 +235,10 @@ docker compose up --build`
           <div>
             <Link
               href="/docs"
-              className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors"
+              className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
             >
               <span className="bg-success size-1.5 rounded-full" aria-hidden />
-              Open source, MIT licensed, production-ready by default
+              OSS Starter for Enterprise
               <RiArrowRightLine className="size-3.5" />
             </Link>
             <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
@@ -573,7 +573,7 @@ docker compose up --build`
               </Button>
             </div>
             <p className="text-muted-foreground mt-6 text-sm">
-              MIT licensed. Use it freely, including for commercial products.
+              Open source. Use it freely, including for commercial products.
             </p>
           </div>
         </div>
