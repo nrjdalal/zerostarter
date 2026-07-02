@@ -246,28 +246,27 @@ docker compose up --build`
               {site.tagline.replaceAll("-", "‑")}
             </h1>
             <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
-              {site.name} gives you the architecture, practices, automation, and documentation
-              behind a clean SaaS codebase, so humans and agents can ship faster without creating
-              chaos.
+              Modern, type-safe/RPC starter monorepo with foundations for building scalable SaaS
+              products with clean architecture, automation, and great developer experience.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 role="link"
                 size="lg"
+                variant="outline"
                 className="h-11 px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
-                Start with {site.name}
+                Github
               </Button>
               <Button
                 role="link"
                 size="lg"
-                variant="outline"
                 className="group h-11 px-6"
                 render={<Link href="/docs" />}
               >
-                Read the docs
+                Get Started
                 <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
@@ -555,20 +554,20 @@ docker compose up --build`
               <Button
                 role="link"
                 size="lg"
+                variant="outline"
                 className="h-11 px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
-                Start with {site.name}
+                Github
               </Button>
               <Button
                 role="link"
                 size="lg"
-                variant="outline"
                 className="group h-11 px-6"
                 render={<Link href="/docs" />}
               >
-                Read the docs
+                Get Started
                 <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>

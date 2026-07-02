@@ -1,6 +1,6 @@
 # ZeroStarter
 
-> Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.
+> Modern, type-safe/RPC starter monorepo with foundations for building scalable SaaS products with clean architecture, automation, and great developer experience.
 
 - **📚 Documentation**: [zerostarter.dev/docs](https://zerostarter.dev/docs)
 - **🤖 AI / LLMs**: [zerostarter.dev/llms.txt](https://zerostarter.dev/llms.txt)

@@ -2,7 +2,7 @@
 export const site = {
   name: "ZeroStarter",
   description:
-    "Production-ready SaaS infrastructure with world-class human and agent DX: a strictly-typed Bun + Turborepo monorepo, wired end to end and small enough to read.",
+    "Modern, type-safe/RPC starter monorepo with foundations for building scalable SaaS products with clean architecture, automation, and great developer experience.",
   tagline: "Production-ready SaaS infrastructure with world-class human and agent DX",
   social: {
     github: "https://github.com/nrjdalal/zerostarter",
