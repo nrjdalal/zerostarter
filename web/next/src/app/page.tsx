@@ -160,7 +160,7 @@ function CodeWindow({ label, html }: { label: string; html: string }) {
         <span className="text-muted-foreground ml-1.5 font-mono text-xs">{label}</span>
       </div>
       <div
-        className={cn("overflow-x-auto p-5", shikiReset, "[&_pre]:leading-relaxed!")}
+        className={cn("overflow-x-auto py-5", shikiReset, "[&_pre]:leading-relaxed!")}
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ colorScheme: "light dark" }}
       />
@@ -172,7 +172,7 @@ function CodeCard({ html }: { html: string }) {
   return (
     <div
       className={cn(
-        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border p-4",
+        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border py-5",
         shikiReset,
         "[&_pre]:leading-loose!",
       )}
@@ -252,7 +252,7 @@ docker compose up --build`
                 role="link"
                 size="lg"
                 variant="outline"
-                className="h-11 px-6"
+                className="h-11 px-4 md:px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
@@ -261,7 +261,7 @@ docker compose up --build`
               <Button
                 role="link"
                 size="lg"
-                className="group h-11 px-6"
+                className="group h-11 px-4 md:px-6"
                 render={<Link href="/docs" />}
               >
                 Get Started
@@ -553,7 +553,7 @@ docker compose up --build`
                 role="link"
                 size="lg"
                 variant="outline"
-                className="h-11 px-6"
+                className="h-11 px-4 md:px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
@@ -562,7 +562,7 @@ docker compose up --build`
               <Button
                 role="link"
                 size="lg"
-                className="group h-11 px-6"
+                className="group h-11 px-4 md:px-6"
                 render={<Link href="/docs" />}
               >
                 Get Started
