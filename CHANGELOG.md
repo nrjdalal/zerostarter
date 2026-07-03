@@ -1,3 +1,15 @@
+## v0.0.79
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.78...v0.0.79)
+
+### 🩹 Fixes
+
+- **cli:** Preserve the fork's DB migrations and schema on sync ([#616](https://github.com/nrjdalal/zerostarter/pull/616))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.78
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.77...v0.0.78)
