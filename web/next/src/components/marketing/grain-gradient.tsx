@@ -209,6 +209,7 @@ export function GrainGradient({ className }: { className?: string }) {
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.clearColor(0, 0, 0, 0)
 
     // Hide instantly (transition off + reflow) so the reveal later eases in cleanly from 0.
     canvas.style.transitionProperty = "none"
@@ -256,16 +257,18 @@ export function GrainGradient({ className }: { className?: string }) {
       return new Float32Array(flat)
     }
 
-    // Fade in immediately over the settled page. The ease starts near 0, so the grain is
-    // imperceptible in the first moments and gently deepens in, never a sudden pop.
+    // Colors only. Opacity is handled in draw() so the canvas is revealed strictly after a
+    // grain frame has been drawn and composited, never before; a freshly created WebGL buffer
+    // can otherwise composite one uninitialized (white) frame the instant it becomes visible.
     let appliedTheme = ""
-    const applyTheme = () => {
+    let shown = false
+    const applyColors = () => {
       const theme = themeRef.current === "light" ? "light" : "dark"
       if (theme === appliedTheme) return
       appliedTheme = theme
       // Re-read tokens per theme in case the ramp is ever themed; today it is shared.
       gl.uniform4fv(uColors, readStops())
-      canvas.style.opacity = String(OPACITY[theme])
+      if (shown) canvas.style.opacity = String(OPACITY[theme])
     }
 
     let dpr = 1
@@ -286,10 +289,18 @@ export function GrainGradient({ className }: { className?: string }) {
     }
     resize()
 
+    let drawn = 0
     const draw = (timeMs: number) => {
-      applyTheme()
+      applyColors()
       gl.uniform1f(uTime, timeMs / 1000)
+      gl.clear(gl.COLOR_BUFFER_BIT)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
+      // Reveal only once a grain frame has been composited (>= 2 draws), so the canvas never
+      // becomes visible on an undrawn buffer.
+      if (!shown && ++drawn >= 2) {
+        shown = true
+        canvas.style.opacity = String(OPACITY[themeRef.current === "light" ? "light" : "dark"])
+      }
     }
 
     const ro = new ResizeObserver(() => {
@@ -319,8 +330,11 @@ export function GrainGradient({ className }: { className?: string }) {
     document.addEventListener("visibilitychange", onVisibility)
 
     paintRef.current = () => draw(lastTime)
-    if (reduceMotion) draw(0)
-    else start()
+    // Two draws so the >= 2 reveal fires; with motion-safe off it simply appears (no fade).
+    if (reduceMotion) {
+      draw(0)
+      draw(0)
+    } else start()
 
     return () => {
       stop()
