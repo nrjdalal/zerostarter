@@ -1,3 +1,15 @@
+## v0.0.87
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.86...v0.0.87)
+
+### 🩹 Fixes
+
+- **cli:** Cross-platform init hardening (Bun preflight + CRLF font strip) ([#634](https://github.com/nrjdalal/zerostarter/pull/634))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.86
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.85...v0.0.86)
