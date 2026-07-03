@@ -1,3 +1,15 @@
+## v0.0.80
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.79...v0.0.80)
+
+### 🎨 Styles
+
+- Alphabetize the PRESERVE_ON_SYNC directive paths ([#618](https://github.com/nrjdalal/zerostarter/pull/618))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.79
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.78...v0.0.79)

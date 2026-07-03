@@ -28,11 +28,13 @@ export const fetchGitpickignore = async (ref = "main"): Promise<string> => {
 export const gitIsClean = (dir: string): boolean =>
   run("git", ["status", "--porcelain"], dir).trim() === ""
 
-// Restore the committed version of paths in `dir` (binary-safe); skips paths the fork does not track.
+// Restore each path in `dir` to its committed state (binary-safe) and remove any untracked files under it; skips a path the fork does not track.
 export const gitRestore = (dir: string, paths: string[]): void => {
   for (const path of paths) {
     try {
       run("git", ["checkout", "--", path], dir)
+      // drop overlay-added files the fork does not track (e.g. a starter migration under a preserved dir)
+      run("git", ["clean", "-fd", "--", path], dir)
     } catch {
       // not tracked in the fork; keep the overlaid version
     }
