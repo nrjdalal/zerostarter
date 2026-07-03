@@ -4,7 +4,15 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { gitBranch, gitCommitAll, gitInit, gitIsClean, gitResetHard, gitRestore } from "@/git"
+import {
+  gitBranch,
+  gitCommitAll,
+  gitInit,
+  gitIsClean,
+  gitResetHard,
+  gitRestore,
+  requireBun,
+} from "@/git"
 
 let dir: string
 const git = (...args: string[]) => execFileSync("git", args, { cwd: dir, encoding: "utf8" })
@@ -73,6 +81,19 @@ test("gitRestore drops overlay-added untracked files under a preserved dir", () 
   gitRestore(dir, ["db"])
   expect(readFileSync(join(dir, "db/0000.sql"), "utf8")).toBe("base")
   expect(existsSync(join(dir, "db/0001_orphan.sql"))).toBe(false)
+})
+
+test("requireBun passes when the bun probe succeeds (incl. the real bun on PATH)", () => {
+  expect(() => requireBun(() => {})).not.toThrow()
+  expect(() => requireBun()).not.toThrow()
+})
+
+test("requireBun rethrows a Bun install hint when the probe fails (ENOENT)", () => {
+  expect(() =>
+    requireBun(() => {
+      throw Object.assign(new Error("spawnSync bun ENOENT"), { code: "ENOENT" })
+    }),
+  ).toThrow(/Bun.*bun\.sh/s)
 })
 
 test("gitResetHard restores tracked files, removes untracked, keeps gitignored", () => {
