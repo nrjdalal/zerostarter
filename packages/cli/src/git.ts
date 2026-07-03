@@ -8,6 +8,17 @@ export const fetchZerostarter = (dir: string, ref = "main"): void => {
   run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
+// Overlay the latest zerostarter onto an existing fork, overwriting starter files. Files the
+// fork added are untouched, and paths in the starter's .gitpickignore (content, public/marketing,
+// site.ts, ...) are never fetched, so the fork's product and branding survive.
+export const overlayZerostarter = (dir: string, ref = "main"): void => {
+  run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
+}
+
+// True when `dir`'s git working tree has no uncommitted changes.
+export const gitIsClean = (dir: string): boolean =>
+  run("git", ["status", "--porcelain"], dir).trim() === ""
+
 // Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.
 export const bunInstall = (dir: string): void => {
   run("bun", ["install"], dir)
