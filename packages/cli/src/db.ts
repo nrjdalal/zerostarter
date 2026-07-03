@@ -72,16 +72,20 @@ export const hasPostgresUrl = (dir: string): boolean => {
   return exists(envPath) && getEnvVar(envPath, "POSTGRES_URL") !== ""
 }
 
-// A launched (or reused) local Postgres: the connection URL and its Docker container name.
-type Launch = { url: string; container: string }
+// A launched (or reused) local Postgres: the connection URL, its Docker container name, and whether pglaunch reused an already-running container (reused) rather than starting a new one.
+type Launch = { url: string; container: string; reused: boolean }
 
-// Pull the connection URL and container name out of pglaunch's output. pglaunch prints both whether it just started a container (`... name "<name> :<port>" started ...`) or, on a name collision, reports an already-running one (`... similar name "<name>" running ...`); the URL line is ANSI-colored. Returns null when no URL is present.
+// Pull the connection URL and container name out of pglaunch's output. pglaunch prints both whether it just started a container (`... name "<name> :<port>" started ...`) or, on a name collision, reports an already-running one (`... similar name "<name>" running ...`); the URL line is ANSI-colored. reused is true unless we saw an explicit "started" line, so an ambiguous output is treated as a reuse and never abandoned. Returns null when no URL is present.
 export const parseLaunch = (out: string): Launch | null => {
   const url = out.match(/postgres(?:ql)?:\/\/[\w.:@\-/%?=&]+/)
   if (!url) return null
   const started = out.match(/name "([^" ]+) :\d+" started/)
   const similar = out.match(/similar name "([^"]+)"/)
-  return { url: url[0], container: started ? started[1] : similar ? similar[1] : "" }
+  return {
+    url: url[0],
+    container: started ? started[1] : similar ? similar[1] : "",
+    reused: !started,
+  }
 }
 
 // Run pglaunch (-k keeps the container) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
@@ -117,7 +121,7 @@ const waitForPostgres = (container: string): void => {
   }
 }
 
-// Provision a local database, point .env at it, and apply the shipped migrations (a fresh fork ships its migration files, so db:generate is not needed). Reuses an already-running local Postgres when one exists, and only starts a fresh container if the reused database rejects the migrations.
+// Provision a local database, point .env at it, and apply the shipped migrations (a fresh fork ships its migration files, so db:generate is not needed). Reuses an already-running local Postgres when one exists.
 export const provisionDatabase = (dir: string): void => {
   const envPath = ensureEnv(dir)
   const migrate = (l: Launch): void => {
@@ -127,12 +131,20 @@ export const provisionDatabase = (dir: string): void => {
   }
 
   const launched = runPglaunch(dir, false)
+
+  // Reused an already-running database: migrate in place and let any failure surface, rather than abandoning a database that may hold data for a fresh, empty one.
+  if (launched && launched.reused) {
+    migrate(launched)
+    return
+  }
+
+  // A container we just created: if it rejects the migrations, replace it with a clean one (nothing to lose since it is empty).
   if (launched) {
     try {
       migrate(launched)
       return
     } catch {
-      // The reused database rejected the migrations; start a clean container below.
+      // Fall through to a fresh container below.
     }
   }
 
