@@ -1,3 +1,15 @@
+## v0.0.78
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.77...v0.0.78)
+
+### 🩹 Fixes
+
+- **cli:** Normalize path separators in findPackageJsons test for Windows ([#614](https://github.com/nrjdalal/zerostarter/pull/614))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.77
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.76...v0.0.77)
