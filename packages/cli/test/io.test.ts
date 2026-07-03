@@ -96,8 +96,7 @@ describe("emptyDir", () => {
 
   test("wipes a nested .git (embedded repo) but keeps the top-level .git", () => {
     execFileSync("git", ["init", "-q"], { cwd: dir })
-    // A leftover embedded repo, e.g. a gitignored test fixture; its nested .git
-    // must be wiped so a later `git add -A` does not choke on it.
+    // A leftover embedded repo (a gitignored test fixture) whose nested .git must be wiped so a later `git add -A` does not choke on it.
     write(join(dir, ".test-artifacts/cli/61/.git/HEAD"), "ref: refs/heads/main\n")
     write(join(dir, "app.ts"), "code")
 

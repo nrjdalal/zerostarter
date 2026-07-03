@@ -1,3 +1,15 @@
+## v0.0.84
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.83...v0.0.84)
+
+### 🩹 Fixes
+
+- **cli:** Reinit no longer chokes on an embedded git repo in the tree ([#627](https://github.com/nrjdalal/zerostarter/pull/627))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.83
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.82...v0.0.83)
