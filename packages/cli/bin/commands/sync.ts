@@ -1,12 +1,15 @@
 import { join, resolve } from "node:path"
 
-import { bunInstall, gitIsClean, overlayZerostarter } from "@/git"
+import { bunInstall, gitIsClean, gitRestore, overlayZerostarter } from "@/git"
 import { exists, readJson, remove, writeJson } from "@/io"
 
 import { orange, yellow } from "./_prompt"
 
 // package.json fields the starter carries that a fork does not inherit (mirrors convert.ts rebrand).
 const AUTHOR_FIELDS = ["homepage", "bugs", "license", "author", "repository", "funding"]
+
+// Files init seeds as a default but sync must not overwrite (a fork's own favicon/branding).
+const PRESERVE_ON_SYNC = ["web/next/src/app/favicon.ico", "web/next/src/app/icon.svg"]
 
 interface Pkg {
   name?: string
@@ -18,7 +21,7 @@ interface Pkg {
 
 // Re-baseline an existing fork on the latest ZeroStarter: a gitpick overlay updates the starter
 // files while the starter's .gitpickignore keeps the fork's content, public/marketing, and site.ts.
-// Files the fork added are untouched; the fork's package.json identity is restored afterward.
+// Files the fork added are untouched; the fork's package.json identity and favicon/icon are kept.
 export const sync = async (argv: string[]) => {
   const target = resolve(argv[0] ?? ".")
 
@@ -54,6 +57,9 @@ export const sync = async (argv: string[]) => {
     next.devDependencies = { ...forkPkg.devDependencies, ...next.devDependencies }
     writeJson(pkgPath, next)
   }
+
+  // Keep the fork's own favicon/icon: init seeds these, but a re-baseline must not clobber them.
+  gitRestore(target, PRESERVE_ON_SYNC)
 
   console.log("Installing dependencies ...")
   bunInstall(target)

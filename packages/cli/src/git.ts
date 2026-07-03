@@ -19,6 +19,19 @@ export const overlayZerostarter = (dir: string, ref = "main"): void => {
 export const gitIsClean = (dir: string): boolean =>
   run("git", ["status", "--porcelain"], dir).trim() === ""
 
+// Restore the committed version of specific paths in `dir` (keeps fork-owned assets, e.g. a
+// custom favicon, after an overlay overwrote them). Binary-safe; skips a path the fork does not
+// track, so a fresh fork keeps the overlaid default instead.
+export const gitRestore = (dir: string, paths: string[]): void => {
+  for (const path of paths) {
+    try {
+      run("git", ["checkout", "--", path], dir)
+    } catch {
+      // not tracked in the fork; keep the overlaid version
+    }
+  }
+}
+
 // Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.
 export const bunInstall = (dir: string): void => {
   run("bun", ["install"], dir)
