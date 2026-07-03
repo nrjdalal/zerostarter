@@ -43,7 +43,7 @@ bun run db:migrate
 
 ## `zerostarter reinit`
 
-`bunx zerostarter reinit` re-scaffolds an **existing git repo** as a fresh ZeroStarter: it deletes every file (keeping `.git` and `.env`, so your history, remote, and local secrets survive), fetches the latest ZeroStarter, rebrands to the directory name, and commits on the current branch. Use it to point an existing repo at ZeroStarter without losing its git history. It refuses a dirty tree, since only committed files are recoverable after the wipe.
+`bunx zerostarter reinit` re-scaffolds an **existing git repo** as a fresh ZeroStarter: it deletes every file (keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive), fetches the latest ZeroStarter, rebrands to the directory name, and commits on the current branch. Use it to point an existing repo at ZeroStarter without losing its git history. It refuses a dirty tree, and rolls back to your last commit if any step fails.
 
 ## `zerostarter sync`
 

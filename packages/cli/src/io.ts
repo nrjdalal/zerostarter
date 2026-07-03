@@ -14,10 +14,11 @@ export const remove = (path: string): void => {
   rmSync(path, { force: true, recursive: true })
 }
 
-// Remove every entry in `dir` except the keep list (default .git, .env), preserving git history and secrets.
-export const emptyDir = (dir: string, keep: string[] = [".git", ".env"]): void => {
+// Remove every entry in `dir` except .git and any .env* file, preserving git history and local secrets.
+export const emptyDir = (dir: string): void => {
   for (const entry of readdirSync(dir)) {
-    if (!keep.includes(entry)) rmSync(join(dir, entry), { force: true, recursive: true })
+    if (entry === ".git" || entry.startsWith(".env")) continue
+    rmSync(join(dir, entry), { force: true, recursive: true })
   }
 }
 
