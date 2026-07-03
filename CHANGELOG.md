@@ -1,3 +1,15 @@
+## v0.0.85
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.84...v0.0.85)
+
+### 🏡 Chore
+
+- **cli:** Collapse a two-line test comment to one line ([#629](https://github.com/nrjdalal/zerostarter/pull/629))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.84
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.83...v0.0.84)
