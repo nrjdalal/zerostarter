@@ -1,3 +1,15 @@
+## v0.0.83
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.82...v0.0.83)
+
+### 🩹 Fixes
+
+- **cli:** Reuse a running local Postgres on init and wait for readiness ([#625](https://github.com/nrjdalal/zerostarter/pull/625))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.82
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.81...v0.0.82)
