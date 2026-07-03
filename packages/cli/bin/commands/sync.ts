@@ -7,6 +7,7 @@ import {
   fetchGitpickignore,
   gitRestore,
   overlayZerostarter,
+  requireBun,
   requireCleanRepo,
   withRollback,
 } from "@/git"
@@ -38,6 +39,8 @@ export const sync = async (argv: string[]) => {
     console.log(helpMessage)
     return
   }
+
+  requireBun()
 
   const target = resolve(positionals[0] ?? ".")
 

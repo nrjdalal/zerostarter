@@ -3,7 +3,14 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
-import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
+import {
+  bunInstall,
+  gitCommitAll,
+  overlayZerostarter,
+  requireBun,
+  requireCleanRepo,
+  withRollback,
+} from "@/git"
 import { emptyDir } from "@/io"
 
 import { green, isInteractive, orange, promptConfirm, yellow } from "./_prompt"
@@ -34,6 +41,8 @@ export const reinit = async (argv: string[]) => {
     console.log(helpMessage)
     return
   }
+
+  requireBun()
 
   const target = resolve(positionals[0] ?? ".")
   const name = basename(target)

@@ -8,7 +8,7 @@ Two commands take you from nothing to a running, signed-in app.
 
 <Callout type="info" title="Prerequisites">
 
-Bun >= 1.3.14 must be installed (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
+Bun >= 1.3.14 must be installed (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Run the CLI with `bunx`, not `npx`: it shells out to `bun` and `bunx` to fetch, install, and migrate, and it exits early with an install hint if Bun is missing. Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
 
 </Callout>
 

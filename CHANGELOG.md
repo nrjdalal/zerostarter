@@ -1,3 +1,15 @@
+## v0.0.86
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.85...v0.0.86)
+
+### 🏡 Chore
+
+- Rename ensure-remote-main to ensure-remote-branches ([#631](https://github.com/nrjdalal/zerostarter/pull/631))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.85
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.84...v0.0.85)
