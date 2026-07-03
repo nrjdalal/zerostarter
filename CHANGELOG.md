@@ -1,3 +1,19 @@
+## v0.0.82
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.81...v0.0.82)
+
+### 🚀 Enhancements
+
+- **marketing:** Animated background gradient backdrop for the landing hero ([#621](https://github.com/nrjdalal/zerostarter/pull/621))
+
+### 🏡 Chore
+
+- **cli:** Bump to 0.0.15 ([#623](https://github.com/nrjdalal/zerostarter/pull/623))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.81
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.80...v0.0.81)
