@@ -17,16 +17,20 @@ export const remove = (path: string): void => {
 // Build output and vendored deps: wiped or skipped wholesale by emptyDir/findPackageJsons.
 const HEAVY_DIRS = new Set(["node_modules", ".next", ".turbo", "dist"])
 
-// Remove everything except .git and .env* files (any depth) outside the heavy build dirs, which are wiped wholesale.
-export const emptyDir = (dir: string): void => {
+// Remove everything except the repo's top-level .git and .env* files (any depth) outside the heavy build dirs, which are wiped wholesale. Only the top-level .git is kept: a nested .git is an embedded git repo (e.g. a gitignored test fixture) and is wiped like any other directory, so a later `git add -A` does not choke on it.
+export const emptyDir = (dir: string, isRoot = true): void => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === ".git") continue
     const path = join(dir, entry.name)
+    if (entry.name === ".git") {
+      if (isRoot) continue
+      rmSync(path, { force: true, recursive: true })
+      continue
+    }
     if (entry.isDirectory()) {
       if (HEAVY_DIRS.has(entry.name)) {
         rmSync(path, { force: true, recursive: true })
       } else {
-        emptyDir(path)
+        emptyDir(path, false)
         if (readdirSync(path).length === 0) rmSync(path, { force: true, recursive: true })
       }
     } else if (!entry.name.startsWith(".env")) {

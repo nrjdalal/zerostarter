@@ -68,7 +68,7 @@ describe("removeMatch", () => {
 })
 
 describe("emptyDir", () => {
-  test("keeps .git and .env* at any depth, wipes everything else", () => {
+  test("keeps the top-level .git and .env* at any depth, wipes everything else", () => {
     execFileSync("git", ["init", "-q"], { cwd: dir })
     writeFileSync(join(dir, ".env"), "ROOT=1")
     writeFileSync(join(dir, ".env.production.local"), "PROD=1")
@@ -92,6 +92,20 @@ describe("emptyDir", () => {
     write(join(dir, "src/a.ts"), "x")
     emptyDir(dir)
     expect(exists(join(dir, "src"))).toBe(false)
+  })
+
+  test("wipes a nested .git (embedded repo) but keeps the top-level .git", () => {
+    execFileSync("git", ["init", "-q"], { cwd: dir })
+    // A leftover embedded repo, e.g. a gitignored test fixture; its nested .git
+    // must be wiped so a later `git add -A` does not choke on it.
+    write(join(dir, ".test-artifacts/cli/61/.git/HEAD"), "ref: refs/heads/main\n")
+    write(join(dir, "app.ts"), "code")
+
+    emptyDir(dir)
+
+    expect(exists(join(dir, ".git"))).toBe(true)
+    expect(exists(join(dir, ".test-artifacts"))).toBe(false)
+    expect(exists(join(dir, "app.ts"))).toBe(false)
   })
 })
 
