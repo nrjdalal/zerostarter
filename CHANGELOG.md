@@ -1,3 +1,15 @@
+## v0.0.76
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.75...v0.0.76)
+
+### 🚀 Enhancements
+
+- **web:** Polish the landing and fix OG card duplication ([#609](https://github.com/nrjdalal/zerostarter/pull/609))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.75
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.74...v0.0.75)

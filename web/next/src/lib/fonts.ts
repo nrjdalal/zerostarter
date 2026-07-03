@@ -16,15 +16,15 @@ export const jetbrainsMono = localFont({
 })
 
 export const caveat = localFont({
-  src: "../fonts/caveat-latin-wght-normal.woff2",
+  src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
   variable: "--font-caveat",
   weight: "400 700",
 })
 
 export const newsreader = localFont({
   src: [
-    { path: "../fonts/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/newsreader-latin-wght-italic.woff2", style: "italic" },
+    { path: "../fonts/marketing/newsreader-latin-wght-normal.woff2", style: "normal" },
+    { path: "../fonts/marketing/newsreader-latin-wght-italic.woff2", style: "italic" },
   ],
   variable: "--font-newsreader",
   weight: "200 800",

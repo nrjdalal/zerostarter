@@ -2,6 +2,7 @@
 import pkg from "../package.json" with { type: "json" }
 import { hyperlink, red } from "./commands/_prompt"
 import { init } from "./commands/init"
+import { reinit } from "./commands/reinit"
 import { sync } from "./commands/sync"
 
 const { author, name, version } = pkg
@@ -17,6 +18,7 @@ Usage:
 Commands:
   init [dir]     Scaffold ZeroStarter into dir (default .) as a fresh product.
                  The dir name becomes the project name.
+  reinit [dir]   Re-scaffold an existing git repo as a fresh ZeroStarter (keeps .git and .env)
   sync           Re-baseline an existing fork on ZeroStarter's latest scaffold
 
 Options:
@@ -35,6 +37,8 @@ const main = async () => {
     switch (cmd) {
       case "init":
         return await init(rest)
+      case "reinit":
+        return await reinit(rest)
       case "sync":
         return await sync(rest)
       case undefined:

@@ -83,4 +83,4 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))   // fully typed
 ```
 
-Client components needing live data use TanStack Query (see `api-status.tsx`).
+Client components needing live data use TanStack Query (see `components/marketing/api-status.tsx`).
