@@ -20,7 +20,7 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
-import { ApiStatus } from "@/components/api-status"
+import { ApiStatus } from "@/components/marketing/api-status"
 import { LandingBackground } from "@/components/marketing/landing-background"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
