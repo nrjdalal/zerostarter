@@ -123,7 +123,9 @@ void main() {
     cos(w.x * 2.6 - t * 1.4) + 0.4 * cos(w.x * 4.8 + t * 1.0)
   );
   w += 0.10 * vec2(snoise(w * 1.4 + t * 0.4), snoise(w * 1.4 - t * 0.35));
-  vec2 s = w * 0.84;
+  // Smaller scale enlarges the glows so their peaks sit off-screen and only the soft falloff
+  // bleeds in from the edges, reading like light spilling in from off-board.
+  vec2 s = w * 0.5;
   vec2 outer = vec2(0.5);
   vec2 bl = smoothstep(vec2(0.0), outer, s + vec2(0.1 + 0.1 * sin(3.0 * t), 0.2 - 0.1 * sin(5.25 * t)));
   vec2 tr = smoothstep(vec2(0.0), outer, 1.0 - s);
