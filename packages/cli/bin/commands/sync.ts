@@ -1,7 +1,14 @@
 import { join, resolve } from "node:path"
 
 import { fixDangling } from "@/convert"
-import { bunInstall, fetchGitpickignore, gitIsClean, gitRestore, overlayZerostarter } from "@/git"
+import {
+  bunInstall,
+  fetchGitpickignore,
+  gitIsClean,
+  gitResetHard,
+  gitRestore,
+  overlayZerostarter,
+} from "@/git"
 import { exists, readJson, remove, writeJson } from "@/io"
 
 import { orange, yellow } from "./_prompt"
@@ -65,38 +72,48 @@ export const sync = async (argv: string[]) => {
   console.log(
     "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
   )
-  overlayZerostarter(target)
 
-  // The overlay re-added files that mix shared and author-only code (fonts.ts, navbar/home.tsx).
-  // Reconcile them exactly as init does, or the fork references the excluded fonts / hire route.
-  fixDangling(target)
+  // The overlay plus its reconciliation mutate the working tree in several steps. Run them as one
+  // unit: if any step throws (e.g. fixDangling hitting starter drift), roll back to the pre-sync
+  // commit instead of leaving a half-synced fork. Safe because sync required a clean tree above.
+  try {
+    overlayZerostarter(target)
 
-  // gitpick never copies the ignore file, but drop any that slipped through.
-  remove(join(target, ".gitpickignore"))
+    // The overlay re-added files that mix shared and author-only code (fonts.ts, navbar/home.tsx).
+    // Reconcile them exactly as init does, or the fork references the excluded fonts / hire route.
+    fixDangling(target)
 
-  // The overlay replaced package.json with the starter's. The fork owns its package.json (name,
-  // identity, workspaces, overrides, ...), so keep all of it and pull in only the starter's latest
-  // dependency versions plus any new scripts.
-  if (forkPkg && exists(pkgPath)) {
-    const starterPkg = readJson<Pkg>(pkgPath)
-    const next: Pkg = { ...forkPkg }
-    // Starter wins on shared keys (latest versions/pins); the fork's extras are kept.
-    const deps = merge(forkPkg.dependencies, starterPkg.dependencies)
-    const devDeps = merge(forkPkg.devDependencies, starterPkg.devDependencies)
-    const overrides = merge(forkPkg.overrides, starterPkg.overrides)
-    const catalog = merge(forkPkg.catalog, starterPkg.catalog)
-    // Scripts: the fork's custom or modified scripts win; new starter scripts are added.
-    const scripts = merge(starterPkg.scripts, forkPkg.scripts)
-    if (deps) next.dependencies = deps
-    if (devDeps) next.devDependencies = devDeps
-    if (overrides) next.overrides = overrides
-    if (catalog) next.catalog = catalog
-    if (scripts) next.scripts = scripts
-    writeJson(pkgPath, next)
+    // gitpick never copies the ignore file, but drop any that slipped through.
+    remove(join(target, ".gitpickignore"))
+
+    // The overlay replaced package.json with the starter's. The fork owns its package.json (name,
+    // identity, workspaces, overrides, ...), so keep all of it and pull in only the starter's latest
+    // dependency versions plus any new scripts.
+    if (forkPkg && exists(pkgPath)) {
+      const starterPkg = readJson<Pkg>(pkgPath)
+      const next: Pkg = { ...forkPkg }
+      // Starter wins on shared keys (latest versions/pins); the fork's extras are kept.
+      const deps = merge(forkPkg.dependencies, starterPkg.dependencies)
+      const devDeps = merge(forkPkg.devDependencies, starterPkg.devDependencies)
+      const overrides = merge(forkPkg.overrides, starterPkg.overrides)
+      const catalog = merge(forkPkg.catalog, starterPkg.catalog)
+      // Scripts: the fork's custom or modified scripts win; new starter scripts are added.
+      const scripts = merge(starterPkg.scripts, forkPkg.scripts)
+      if (deps) next.dependencies = deps
+      if (devDeps) next.devDependencies = devDeps
+      if (overrides) next.overrides = overrides
+      if (catalog) next.catalog = catalog
+      if (scripts) next.scripts = scripts
+      writeJson(pkgPath, next)
+    }
+
+    // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
+    gitRestore(target, preserve)
+  } catch (err) {
+    gitResetHard(target)
+    console.log(yellow("Sync failed; rolled the working tree back to your last commit."))
+    throw err
   }
-
-  // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
-  gitRestore(target, preserve)
 
   console.log("Installing dependencies ...")
   bunInstall(target)

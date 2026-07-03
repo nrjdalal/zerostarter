@@ -41,6 +41,13 @@ export const gitRestore = (dir: string, paths: string[]): void => {
   }
 }
 
+// Discard all working-tree changes and untracked files in `dir`, returning it to its last commit.
+// Used to roll a partial sync back to the pre-sync state (safe: sync requires a clean tree first).
+export const gitResetHard = (dir: string): void => {
+  run("git", ["reset", "--hard", "HEAD"], dir)
+  run("git", ["clean", "-fd"], dir)
+}
+
 // Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.
 export const bunInstall = (dir: string): void => {
   run("bun", ["install"], dir)
