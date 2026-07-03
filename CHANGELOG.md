@@ -1,3 +1,15 @@
+## v0.0.81
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.80...v0.0.81)
+
+### 🩹 Fixes
+
+- **cli:** Close sync/init preserve-and-leak gaps ([#620](https://github.com/nrjdalal/zerostarter/pull/620))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.80
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.79...v0.0.80)
