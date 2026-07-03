@@ -82,7 +82,7 @@ const printPermsInstructions = (remote: string): void => {
   console.error("  4. Click Save")
 }
 
-const ensureRemoteMain = (remote: string): void => {
+const ensureRemoteBranches = (remote: string): void => {
   if (done(remote)) return
   if (!hasLocalBranch("main")) return
   if (!repoSlug(remoteUrl(remote))) return // not a GitHub remote: the release flow does not apply, so do not interfere
@@ -123,4 +123,4 @@ const ensureRemoteMain = (remote: string): void => {
   markDone(remote)
 }
 
-if (import.meta.main) ensureRemoteMain(process.argv[2] || "origin")
+if (import.meta.main) ensureRemoteBranches(process.argv[2] || "origin")

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { markerKey, repoSlug, settingsUrl } from "../../../.github/scripts/ensure-remote-main"
+import { markerKey, repoSlug, settingsUrl } from "../../../.github/scripts/ensure-remote-branches"
 
 test("settingsUrl builds the Actions settings URL from an SSH remote", () => {
   expect(settingsUrl("git@github.com:acme/widgets.git")).toBe(
