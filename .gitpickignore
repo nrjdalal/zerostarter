@@ -13,7 +13,7 @@ web/next/content/
 web/next/src/app/(marketing)/
 web/next/src/components/marketing/
 web/next/src/fonts/marketing/
-web/next/public/marketing/
+web/next/public/
 
 # custom files
 .github/workflows/cli-release.yml

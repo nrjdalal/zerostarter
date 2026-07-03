@@ -82,7 +82,11 @@ export const reinit = async (argv: string[]) => {
     gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
   } catch (err) {
     gitResetHard(target)
-    console.log(yellow("reinit failed; rolled the repo back to your last commit."))
+    console.log(
+      yellow(
+        "reinit failed; restored your committed files (deleted gitignored files, except .env*, are gone).",
+      ),
+    )
     throw err
   }
 

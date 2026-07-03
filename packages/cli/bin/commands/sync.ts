@@ -57,7 +57,14 @@ const merge = (first: unknown, second: unknown): Record<string, unknown> | undef
   return Object.keys(both).length > 0 ? both : undefined
 }
 
-// Starter-base merge: the starter's latest tooling/deps win, the fork keeps its extra keys/deps and scripts, and the root keeps its identity. A dep the starter dropped is not auto-removed.
+// Union two possible string arrays (starter entries first); undefined if neither is an array.
+const unionArrays = (fork: unknown, starter: unknown): string[] | undefined => {
+  const f = Array.isArray(fork) ? (fork as string[]) : []
+  const s = Array.isArray(starter) ? (starter as string[]) : []
+  return f.length || s.length ? [...new Set([...s, ...f])] : undefined
+}
+
+// Starter-base merge: shared fields take the starter's latest (deps, scripts, overrides, packageManager, commitlint) so a re-baseline updates tooling; workspaces union so a fork's area is never dropped; the fork keeps its extra keys/deps and (root) identity. Dropped deps aren't auto-removed; review the diff.
 const mergePkg = (fork: Pkg, starter: Pkg, isRoot: boolean): Pkg => {
   const next: Pkg = { ...starter }
   // Keep the fork's own top-level keys the starter does not define (browserslist, engines, ...).
@@ -65,13 +72,15 @@ const mergePkg = (fork: Pkg, starter: Pkg, isRoot: boolean): Pkg => {
   const deps = merge(fork.dependencies, starter.dependencies)
   const devDeps = merge(fork.devDependencies, starter.devDependencies)
   const catalog = merge(fork.catalog, starter.catalog)
-  const scripts = merge(starter.scripts, fork.scripts)
+  const scripts = merge(fork.scripts, starter.scripts)
   const overrides = merge(fork.overrides, starter.overrides)
+  const workspaces = unionArrays(fork.workspaces, starter.workspaces)
   if (deps) next.dependencies = deps
   if (devDeps) next.devDependencies = devDeps
   if (catalog) next.catalog = catalog
   if (scripts) next.scripts = scripts
   if (overrides) next.overrides = overrides
+  if (workspaces) next.workspaces = workspaces
   if (isRoot) {
     for (const field of IDENTITY_FIELDS) {
       if (field in fork) next[field] = fork[field]
