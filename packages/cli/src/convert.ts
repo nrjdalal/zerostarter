@@ -46,14 +46,14 @@ const REMOVE_PATHS = [
   "web/next/src/app/resume",
   "web/next/src/components/marketing",
   "web/next/src/fonts/caveat-latin-wght-normal.woff2",
-  "web/next/src/fonts/newsreader-latin-wght-normal.woff2",
-  "web/next/src/fonts/newsreader-latin-wght-italic.woff2",
+  "web/next/s../fonts/marketing/newsreader-latin-wght-normal.woff2",
+  "web/next/s../fonts/marketing/newsreader-latin-wght-italic.woff2",
 ]
 
 // The two font exports whose woff2 files are removed above (only the deleted routes used them).
 const CAVEAT_EXPORT = `
 export const caveat = localFont({
-  src: "../fonts/caveat-latin-wght-normal.woff2",
+  src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
   variable: "--font-caveat",
   weight: "400 700",
 })
@@ -61,8 +61,8 @@ export const caveat = localFont({
 const NEWSREADER_EXPORT = `
 export const newsreader = localFont({
   src: [
-    { path: "../fonts/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/newsreader-latin-wght-italic.woff2", style: "italic" },
+    { path: "../fonts/marketing/newsreader-latin-wght-normal.woff2", style: "normal" },
+    { path: "../fonts/marketing/newsreader-latin-wght-italic.woff2", style: "italic" },
   ],
   variable: "--font-newsreader",
   weight: "200 800",

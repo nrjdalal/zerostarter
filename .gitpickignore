@@ -8,12 +8,9 @@ web/next/content
 web/next/public
 web/next/src/components/marketing
 
-# Author-only pages and their fonts
-web/next/src/app/hire
-web/next/src/app/resume
-web/next/src/fonts/caveat-latin-wght-normal.woff2
-web/next/src/fonts/newsreader-latin-wght-normal.woff2
-web/next/src/fonts/newsreader-latin-wght-italic.woff2
+# Author-only pages (route group) and their fonts
+web/next/src/app/(marketing)
+web/next/src/fonts/marketing
 
 # Brand source: init writes a fresh site.ts; sync preserves the fork's
 packages/config/src/site.ts

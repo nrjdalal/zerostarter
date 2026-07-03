@@ -7,7 +7,7 @@ publishedAt: 2026-06-11
 
 Run two Claude Code sessions at once, one in a work project and one in a personal one, and let both reach for the GitHub API. The work session points `gh` at your work account. A moment later the personal session points it at yours, so the work session's next call goes out as the wrong user. It switches back, which breaks the personal session, which switches back again. They never settle, because both fall back to `gh`'s single active account for github.com, and that account is shared global state.
 
-![Two Claude Code sessions both switching gh's single active account, so the work session's next call goes out as the wrong user](/blog/mcp-per-workspace/images/gh-account-clash.svg)
+![Two Claude Code sessions both switching gh's single active account, so the work session's next call goes out as the wrong user](/marketing/blog/mcp-per-workspace/images/gh-account-clash.svg)
 
 You can't fix this with discipline; there's no "remember to switch back" when two sessions are switching at the same time. And it isn't only `gh`: the same shared-state bug stamps commits with the wrong email and leaves your assistant's Linear pointed at last week's workspace. The fix is to stop sharing a mutable "current account" at all, and let identity follow _where you are_.
 
@@ -15,7 +15,7 @@ You can't fix this with discipline; there's no "remember to switch back" when tw
 
 Your directory already knows which org you're working for, so scope everything to it. Each shell reads its own location and resolves its own identity, with nothing global to toggle. Two terminals in two trees run at once because they share no mutable state to fight over.
 
-![Each directory resolves to its own identity: ~/acme to the acme GitHub account, its MCP servers, and the work git email; ~/nrjdalal to the nrjdalal account, its own servers, and the personal email; with nothing shared between them](/blog/mcp-per-workspace/images/scope-by-path.svg)
+![Each directory resolves to its own identity: ~/acme to the acme GitHub account, its MCP servers, and the work git email; ~/nrjdalal to the nrjdalal account, its own servers, and the personal email; with nothing shared between them](/marketing/blog/mcp-per-workspace/images/scope-by-path.svg)
 
 That's three small pieces: the MCP servers a workspace can see, the tokens it authenticates with, and the email on its commits. The examples use a work account (`acme`) and a personal one (`nrjdalal`), on macOS and zsh with Claude Code.
 
@@ -124,7 +124,7 @@ Source it from `~/.zshrc`, log both accounts into `gh` once (`gh auth login`), a
 security add-generic-password -U -a "$USER" -s SLACK_MCP_XOXP_TOKEN_ACME -w 'xoxp-...'
 ```
 
-![Flowchart: on cd, if the directory is under ~/acme resolve the acme tokens, else if under ~/nrjdalal resolve the nrjdalal tokens, otherwise leave all tokens unset](/blog/mcp-per-workspace/images/chpwd-flow.svg)
+![Flowchart: on cd, if the directory is under ~/acme resolve the acme tokens, else if under ~/nrjdalal resolve the nrjdalal tokens, otherwise leave all tokens unset](/marketing/blog/mcp-per-workspace/images/chpwd-flow.svg)
 
 A few details earn the design its keep:
 
