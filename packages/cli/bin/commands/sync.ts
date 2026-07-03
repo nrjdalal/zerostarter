@@ -8,8 +8,8 @@ import { orange, yellow } from "./_prompt"
 // package.json fields the starter carries that a fork does not inherit (mirrors convert.ts rebrand).
 const AUTHOR_FIELDS = ["homepage", "bugs", "license", "author", "repository", "funding"]
 
-// Files init seeds as a default but sync must not overwrite (a fork's own favicon/branding).
-const PRESERVE_ON_SYNC = ["web/next/src/app/favicon.ico", "web/next/src/app/icon.svg"]
+// Files init seeds as a default but sync must not overwrite (a fork's own favicon, audit record).
+const PRESERVE_ON_SYNC = ["AUDIT.md", "web/next/src/app/favicon.ico", "web/next/src/app/icon.svg"]
 
 interface Pkg {
   name?: string
