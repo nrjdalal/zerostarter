@@ -24,7 +24,9 @@ afterEach(() => {
   rmSync(dir, { force: true, recursive: true })
 })
 
-const rel = (paths: string[]) => paths.map((p) => p.slice(dir.length + 1)).sort()
+// Normalize to forward slashes so the assertion holds on Windows (findPackageJsons returns native paths).
+const rel = (paths: string[]) =>
+  paths.map((p) => p.slice(dir.length + 1).replaceAll("\\", "/")).sort()
 
 describe("file helpers", () => {
   test("write creates parent dirs; read/exists round-trip", () => {

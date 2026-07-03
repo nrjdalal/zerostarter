@@ -1,3 +1,15 @@
+## v0.0.77
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.76...v0.0.77)
+
+### 🚀 Enhancements
+
+- **cli:** Single-source fork excludes via .gitpickignore + implement sync ([#612](https://github.com/nrjdalal/zerostarter/pull/612))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.76
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.75...v0.0.76)
