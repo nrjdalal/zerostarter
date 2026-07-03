@@ -7,15 +7,18 @@ const run = (cmd: string, args: string[], cwd?: string): string =>
   execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
 
 // Probe whether the `bun` runtime is on PATH (the default `requireBun` check; injectable so tests can force either branch).
-const bunOnPath = (): void => execFileSync("bun", ["--version"], { stdio: "ignore" })
+const bunOnPath = (): void => {
+  execFileSync("bun", ["--version"], { stdio: "ignore" })
+}
 
 // Verify Bun is available before a command shells out to it. init/reinit/sync run bunx (gitpick), bun install, and bun run db:migrate, so on a machine without Bun the first spawn dies with a cryptic `spawnSync bunx ENOENT`; preflight this to fail fast with install guidance instead. `bunx` is a symlink to `bun`, so checking `bun` covers both.
 export const requireBun = (probe: () => void = bunOnPath): void => {
   try {
     probe()
-  } catch {
+  } catch (err) {
     throw new Error(
       "ZeroStarter needs Bun, but `bun` isn't on your PATH. Install it from https://bun.sh, then re-run with `bunx zerostarter ...` (not `npx`). The CLI shells out to bun and bunx to fetch, install, and migrate.",
+      { cause: err },
     )
   }
 }

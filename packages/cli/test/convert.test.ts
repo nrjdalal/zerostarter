@@ -69,6 +69,16 @@ describe("fixDangling", () => {
     expect(nav()).not.toContain("/hire")
   })
 
+  test("strips CRLF-terminated exports and /hire (Windows/WSL checkout)", () => {
+    const crlf = (s: string) => s.replace(/\n/g, "\r\n")
+    setup(crlf(FONTS), crlf(NAV))
+    expect(() => fixDangling(dir)).not.toThrow()
+    expect(fonts()).not.toContain("caveat")
+    expect(fonts()).not.toContain("newsreader")
+    expect(fonts()).not.toContain("fonts/marketing/")
+    expect(nav()).not.toContain("/hire")
+  })
+
   test("throws on structural drift (a font export renamed)", () => {
     setup(FONTS.replace("const caveat", "const caveatFont"), NAV)
     expect(() => fixDangling(dir)).toThrow(/fonts\.ts/)

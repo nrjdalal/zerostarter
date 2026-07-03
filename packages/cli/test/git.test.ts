@@ -93,7 +93,7 @@ test("requireBun rethrows a Bun install hint when the probe fails (ENOENT)", () 
     requireBun(() => {
       throw Object.assign(new Error("spawnSync bun ENOENT"), { code: "ENOENT" })
     }),
-  ).toThrow(/Bun.*bun\.sh/s)
+  ).toThrow(/Bun.*bun\.sh/)
 })
 
 test("gitResetHard restores tracked files, removes untracked, keeps gitignored", () => {
