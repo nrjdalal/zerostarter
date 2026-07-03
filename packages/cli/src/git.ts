@@ -8,12 +8,12 @@ const run = (cmd: string, args: string[], cwd?: string): string =>
 
 // Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history).
 export const fetchZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@latest", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
+  run("bunx", ["gitpick@6.0.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
 // Overlay the latest zerostarter onto a fork (gitpick -o); .gitpickignore paths and fork-added files are kept.
 export const overlayZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@latest", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
+  run("bunx", ["gitpick@6.0.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
 }
 
 // Read the starter's .gitpickignore from GitHub (gitpick never copies it into a fork).
