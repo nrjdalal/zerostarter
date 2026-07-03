@@ -22,10 +22,18 @@ const INTENSITY = 0.35
 const GRAIN = 0.12
 // Container opacity per theme, the last subtlety knob.
 const OPACITY = { dark: 0.72, light: 0.5 }
-// The single animation frame to bake (t = 0.1 * (FRAME_TIME + 7)); chosen for a balanced layout.
-const FRAME_TIME = 9
+// The baked frame's time is randomized per load (in the effect) so the composition differs each
+// visit; it only picks where in the shader's drift the frozen frame sits.
+const TIME_RANGE = 40
 // Cap the rendered long side so the baked image stays a reasonable size.
 const MAX_SIDE = 2560
+
+// A slow CSS drift on the baked image so it feels alive without a live canvas. The image is
+// oversized and clipped, so the pan/scale never exposes an edge. Held still under reduced motion.
+const DRIFT_CSS =
+  ".grain-drift{transform:scale(1.06)}" +
+  "@media(prefers-reduced-motion:no-preference){.grain-drift{animation:grainDrift 42s ease-in-out infinite}}" +
+  "@keyframes grainDrift{0%{transform:translate3d(-2%,-1%,0) scale(1.06)}50%{transform:translate3d(2%,1.5%,0) scale(1.1)}100%{transform:translate3d(-2%,-1%,0) scale(1.06)}}"
 
 const VERT = `#version 300 es
 in vec2 a_pos;
@@ -184,7 +192,12 @@ const compile = (gl: WebGL2RenderingContext, type: number, src: string): WebGLSh
 }
 
 // Bake one grain frame off-DOM and return an object URL for it (or null on failure).
-function renderGrain(width: number, height: number, dpr: number): Promise<string | null> {
+function renderGrain(
+  width: number,
+  height: number,
+  dpr: number,
+  time: number,
+): Promise<string | null> {
   const canvas = document.createElement("canvas")
   canvas.width = width
   canvas.height = height
@@ -218,7 +231,7 @@ function renderGrain(width: number, height: number, dpr: number): Promise<string
   gl.uniform1f(u("u_softness"), SOFTNESS)
   gl.uniform1f(u("u_intensity"), INTENSITY)
   gl.uniform1f(u("u_noise"), GRAIN)
-  gl.uniform1f(u("u_time"), FRAME_TIME)
+  gl.uniform1f(u("u_time"), time)
 
   // Resolve the oklch --chart-* tokens to sRGB via a 1x1 2D canvas, so the grain matches them exactly.
   const swatch = document.createElement("canvas")
@@ -264,17 +277,20 @@ export function GrainGradient({ className }: { className?: string }) {
   const { resolvedTheme } = useTheme()
   const [url, setUrl] = useState<string | null>(null)
   const urlRef = useRef<string | null>(null)
+  // Random frame time, picked once per mount so each load bakes a different composition.
+  const timeRef = useRef<number>(-1)
 
   useEffect(() => {
     let cancelled = false
     let timer = 0
+    if (timeRef.current < 0) timeRef.current = Math.random() * TIME_RANGE
 
     const bake = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const scale = Math.min(1, MAX_SIDE / (Math.max(window.innerWidth, window.innerHeight) * dpr))
       const w = Math.max(1, Math.round(window.innerWidth * dpr * scale))
       const h = Math.max(1, Math.round(window.innerHeight * dpr * scale))
-      renderGrain(w, h, dpr * scale).then((next) => {
+      renderGrain(w, h, dpr * scale, timeRef.current).then((next) => {
         if (cancelled || !next) {
           if (next) URL.revokeObjectURL(next)
           return
@@ -305,18 +321,22 @@ export function GrainGradient({ className }: { className?: string }) {
   const theme = resolvedTheme === "light" ? "light" : "dark"
 
   return (
-    <div
-      aria-hidden
-      className={cn(
-        "pointer-events-none fixed inset-0 bg-cover bg-center",
-        "motion-safe:transition-opacity motion-safe:duration-1000 motion-safe:ease-in-out",
-        className,
-      )}
-      style={{
-        zIndex: -1,
-        backgroundImage: url ? `url(${url})` : undefined,
-        opacity: url ? OPACITY[theme] : 0,
-      }}
-    />
+    <>
+      <style>{DRIFT_CSS}</style>
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none fixed inset-0 overflow-hidden",
+          "motion-safe:transition-opacity motion-safe:duration-1000 motion-safe:ease-in-out",
+          className,
+        )}
+        style={{ zIndex: -1, opacity: url ? OPACITY[theme] : 0 }}
+      >
+        <div
+          className="grain-drift absolute -inset-[10%] bg-cover bg-center"
+          style={{ backgroundImage: url ? `url(${url})` : undefined }}
+        />
+      </div>
+    </>
   )
 }
