@@ -64,15 +64,15 @@ pre-push:
       run: bun audit --audit-level high
       only:
         - ref: canary
-    ensure-main:
-      run: bun .github/scripts/ensure-remote-main.ts {1}
+    ensure-branches:
+      run: bun .github/scripts/ensure-remote-branches.ts {1}
 ```
 
 **pre-commit**: [lint-staged](https://github.com/lint-staged/lint-staged) formats then lints only your staged files (`oxfmt`, then `oxlint`); `stage_fixed: true` re-stages anything the formatter rewrote, so the fix rides along in the same commit. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
 **commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 
-**pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-main.ts` seeds the `main` branch that drives the release PR (see [Releases](/docs/manage/release)).
+**pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-branches.ts` seeds the `main` branch that drives the release PR (see [Releases](/docs/manage/release)).
 
 <Callout type="warn" title="The local build sees your real .env">
 
