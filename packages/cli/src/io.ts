@@ -54,12 +54,11 @@ export const writeJson = (path: string, value: unknown): void => {
   write(path, `${JSON.stringify(value, null, 2)}\n`)
 }
 
-// Apply literal substring replacements to a file in place. Returns true if anything changed.
-export const replaceInFile = (path: string, pairs: Array<[string, string]>): boolean => {
+// Remove the first match of `pattern` from a file in place. Returns true if anything was removed.
+export const removeMatch = (path: string, pattern: RegExp): boolean => {
   if (!existsSync(path)) return false
   const before = read(path)
-  let after = before
-  for (const [from, to] of pairs) after = after.split(from).join(to)
+  const after = before.replace(pattern, "")
   if (after === before) return false
   writeFileSync(path, after)
   return true

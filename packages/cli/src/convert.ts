@@ -1,6 +1,6 @@
 import { join } from "node:path"
 
-import { exists, read, readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -34,24 +34,10 @@ const removeForkExcludes = (root: string): void => {
   remove(ignore)
 }
 
-// The two font exports whose woff2 files are removed above (only the deleted routes used them).
-const CAVEAT_EXPORT = `
-export const caveat = localFont({
-  src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
-  variable: "--font-caveat",
-  weight: "400 700",
-})
-`
-const NEWSREADER_EXPORT = `
-export const newsreader = localFont({
-  src: [
-    { path: "../fonts/marketing/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/marketing/newsreader-latin-wght-italic.woff2", style: "italic" },
-  ],
-  variable: "--font-newsreader",
-  weight: "200 800",
-})
-`
+// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork.
+const CAVEAT_EXPORT = /\nexport const caveat = localFont\(\{[\s\S]*?\n\}\)\n/
+const NEWSREADER_EXPORT = /\nexport const newsreader = localFont\(\{[\s\S]*?\n\}\)\n/
+const HIRE_NAV = /[ \t]*\{[^}\n]*href:[ \t]*["']\/hire["'][^}\n]*\},?[ \t]*\n/
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string, brand: Brand): void => {
@@ -75,21 +61,18 @@ const scaffoldContent = (root: string, brand: Brand): void => {
 
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
 export const fixDangling = (root: string): void => {
-  const navOk = replaceInFile(p(root, "web/next/src/components/navbar/home.tsx"), [
-    ['    { href: "/hire", label: "Hire" },\n', ""],
-  ])
-  const caveatOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [[CAVEAT_EXPORT, ""]])
-  const newsreaderOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [
-    [NEWSREADER_EXPORT, ""],
-  ])
+  const fonts = p(root, "web/next/src/lib/fonts.ts")
+  const caveatOk = removeMatch(fonts, CAVEAT_EXPORT)
+  const newsreaderOk = removeMatch(fonts, NEWSREADER_EXPORT)
+  const navOk = removeMatch(p(root, "web/next/src/components/navbar/home.tsx"), HIRE_NAV)
   if (!caveatOk || !newsreaderOk) {
     throw new Error(
-      "fonts.ts: caveat/newsreader exports not found, but their woff2 files were removed (template drift). Update packages/cli/src/convert.ts.",
+      "fonts.ts: caveat/newsreader export not found (starter drift). Update packages/cli/src/convert.ts.",
     )
   }
   if (!navOk) {
     throw new Error(
-      "navbar/home.tsx: /hire entry not found (template drift). Update packages/cli/src/convert.ts.",
+      "navbar/home.tsx: /hire entry not found (starter drift). Update packages/cli/src/convert.ts.",
     )
   }
 }
