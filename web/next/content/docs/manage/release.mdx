@@ -22,7 +22,7 @@ Under **Settings → Actions → General → Workflow permissions** (the pre-pus
 2. Check **Allow GitHub Actions to create and approve pull requests** so the release PR can open.
 3. Click **Save**.
 
-![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/docs/release/workflow-permissions.png)
+![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/marketing/docs/release/workflow-permissions.png)
 
 On a brand-new empty repo, push `canary` first (`git push origin canary`) so GitHub makes it the default branch. The pre-push hook (`.github/scripts/ensure-remote-main.ts`) then seeds `main` on your next push (a separate ref, so it never collides) and the release PR opens on its own. No `gh` and no repo-admin required.
 

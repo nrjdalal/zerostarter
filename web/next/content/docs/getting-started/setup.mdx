@@ -41,6 +41,14 @@ bun run db:migrate
 
 </Callout>
 
+## `zerostarter reinit`
+
+`bunx zerostarter reinit` re-scaffolds an **existing git repo** as a fresh ZeroStarter: it deletes every file (keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive), fetches the latest ZeroStarter, rebrands to the directory name, and commits on the current branch. Use it to point an existing repo at ZeroStarter without losing its git history. It refuses a dirty tree, and rolls back to your last commit if any step fails.
+
+## `zerostarter sync`
+
+`bunx zerostarter sync` re-baselines an **existing fork** on ZeroStarter's latest scaffold. A gitpick overlay updates the starter files while your content, `public/marketing`, branding (`site.ts`), `package.json` identity, and favicon are preserved and the files you added are untouched. It requires a clean tree and lands as a reviewable diff you commit yourself (no auto-commit); if the overlay or reconciliation fails it rolls the tree back to your last commit, while a later dependency-install failure leaves the synced files in place for you to re-run `bun install`.
+
 ## `bun run dev`
 
 Turborepo starts both apps together:

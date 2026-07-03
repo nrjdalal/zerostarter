@@ -1,6 +1,7 @@
 import { join } from "node:path"
 
-import { readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
+import { AUTHOR_FIELDS } from "@/pkg"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -9,6 +10,7 @@ import {
   docsConfigTemplate,
   docsIndexTemplate,
   homeTemplate,
+  readmeTemplate,
   sampleBlogPostTemplate,
   siteTemplate,
 } from "@/templates"
@@ -22,55 +24,30 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Directories a fork supplies itself: the author's content and public assets.
-// Agent skills (.agents/skills, symlinked from .claude/skills and .github/skills) are KEPT,
-// so a scaffolded project ships with the same agent playbook.
-const IGNORED_DIRS = ["web/next/content", "web/next/public"]
+// Remove the fork excludes listed in .gitpickignore, then drop the ignore file (a no-op for gitpick fetches).
+const removeForkExcludes = (root: string): void => {
+  const ignore = p(root, ".gitpickignore")
+  if (!exists(ignore)) return
+  for (const line of read(ignore).split("\n")) {
+    const path = line.trim()
+    if (!path || path.startsWith("#")) continue
+    if (/[*?![\]]/.test(path)) {
+      throw new Error(
+        `.gitpickignore entry "${path}" is not a literal path; the in-place converter only supports literal paths (a glob or negation would diverge from gitpick's fetch).`,
+      )
+    }
+    remove(p(root, path))
+  }
+  remove(ignore)
+}
 
-// Author pages, marketing-only components, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
-const REMOVE_PATHS = [
-  "packages/cli",
-  ".github/workflows/cli-release.yml",
-  ".github/audit",
-  ".infisical.json",
-  ".coderabbit.yaml",
-  ".github/assets/graph-build.svg",
-  ".github/assets/cli.tape",
-  ".github/assets/setup.sh",
-  ".github/assets/cli.gif",
-  ".github/FUNDING.yml",
-  "LICENSE.md",
-  "CHANGELOG.md",
-  "bun.lock",
-  "web/next/src/app/hire",
-  "web/next/src/app/resume",
-  "web/next/src/components/marketing",
-  "web/next/src/fonts/caveat-latin-wght-normal.woff2",
-  "web/next/src/fonts/newsreader-latin-wght-normal.woff2",
-  "web/next/src/fonts/newsreader-latin-wght-italic.woff2",
-]
-
-// The two font exports whose woff2 files are removed above (only the deleted routes used them).
-const CAVEAT_EXPORT = `
-export const caveat = localFont({
-  src: "../fonts/caveat-latin-wght-normal.woff2",
-  variable: "--font-caveat",
-  weight: "400 700",
-})
-`
-const NEWSREADER_EXPORT = `
-export const newsreader = localFont({
-  src: [
-    { path: "../fonts/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/newsreader-latin-wght-italic.woff2", style: "italic" },
-  ],
-  variable: "--font-newsreader",
-  weight: "200 800",
-})
-`
+// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork.
+const CAVEAT_EXPORT = /\nexport const caveat = localFont\(\{[\s\S]*?\n\}\)\n/
+const NEWSREADER_EXPORT = /\nexport const newsreader = localFont\(\{[\s\S]*?\n\}\)\n/
+const HIRE_NAV = /[ \t]*\{[^}\n]*href:[ \t]*["']\/hire["'][^}\n]*\},?[ \t]*\n/
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
-const scaffoldContent = (root: string): void => {
+const scaffoldContent = (root: string, brand: Brand): void => {
   // Stamp the earlier of the local and UTC date: its UTC midnight is always <= now (never hidden), and it matches the author's own calendar day when their timezone is behind UTC.
   const now = new Date()
   const utc = now.toISOString().slice(0, 10)
@@ -86,25 +63,25 @@ const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/public/.gitkeep"), "")
   write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
   write(p(root, "AGENTS.md"), agentsTemplate())
+  write(p(root, "README.md"), readmeTemplate(brand))
 }
 
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
-const fixDangling = (root: string): void => {
-  const navOk = replaceInFile(p(root, "web/next/src/components/navbar/home.tsx"), [
-    ['    { href: "/hire", label: "Hire" },\n', ""],
-  ])
-  const caveatOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [[CAVEAT_EXPORT, ""]])
-  const newsreaderOk = replaceInFile(p(root, "web/next/src/lib/fonts.ts"), [
-    [NEWSREADER_EXPORT, ""],
-  ])
-  if (!caveatOk || !newsreaderOk) {
+export const fixDangling = (root: string): void => {
+  const fontsPath = p(root, "web/next/src/lib/fonts.ts")
+  const navPath = p(root, "web/next/src/components/navbar/home.tsx")
+  removeMatch(fontsPath, CAVEAT_EXPORT)
+  removeMatch(fontsPath, NEWSREADER_EXPORT)
+  removeMatch(navPath, HIRE_NAV)
+  // A gone marker is fine (the starter dropped it, so sync over an evolving main is a no-op); one that survived the strip means the regex drifted and must be fixed, else the fork ships refs to the excluded fonts/route.
+  if (exists(fontsPath) && read(fontsPath).includes("fonts/marketing/")) {
     throw new Error(
-      "fonts.ts: caveat/newsreader exports not found, but their woff2 files were removed (template drift). Update packages/cli/src/convert.ts.",
+      "fonts.ts still references fonts/marketing/ after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
-  if (!navOk) {
+  if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {
     throw new Error(
-      "navbar/home.tsx: /hire entry not found (template drift). Update packages/cli/src/convert.ts.",
+      "navbar/home.tsx still has the /hire entry after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
 }
@@ -116,18 +93,13 @@ const rebrand = (root: string, b: Brand): void => {
   const pkg = readJson<Record<string, unknown>>(path)
   pkg.name = slugify(b.name)
   pkg.version = "0.0.0"
-  delete pkg.homepage
-  delete pkg.bugs
-  delete pkg.license
-  delete pkg.author
-  delete pkg.repository
-  delete pkg.funding
+  for (const field of AUTHOR_FIELDS) delete pkg[field]
   writeJson(path, pkg)
 }
 
 export const convertRepo = (root: string, brand: Brand): void => {
-  for (const dir of [...IGNORED_DIRS, ...REMOVE_PATHS]) remove(p(root, dir))
-  scaffoldContent(root)
+  removeForkExcludes(root)
+  scaffoldContent(root, brand)
   fixDangling(root)
   rebrand(root, brand)
 }

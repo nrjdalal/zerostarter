@@ -1,5 +1,97 @@
-export const sync = async (_argv: string[]) => {
-  console.log("zerostarter sync is not implemented yet.")
-  console.log("Planned: a gitpick overlay of the latest zerostarter onto an existing fork, then a")
-  console.log("prune of starter-only artifacts while preserving the fork's product and branding.")
+import { join, resolve } from "node:path"
+import { parseArgs } from "node:util"
+
+import { fixDangling } from "@/convert"
+import {
+  bunInstall,
+  fetchGitpickignore,
+  gitRestore,
+  overlayZerostarter,
+  requireCleanRepo,
+  withRollback,
+} from "@/git"
+import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
+import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
+
+import { orange, yellow } from "./_prompt"
+
+const helpMessage = `Usage:
+  $ bunx zerostarter sync [dir] [options]
+
+Re-baseline an existing fork (default .) on the latest ZeroStarter: a gitpick overlay
+updates the starter files while your content, public/marketing, branding, package.json
+identity, and favicon are preserved. Requires a clean tree; lands as a reviewable diff
+you commit yourself.
+
+Options:
+  -h, --help     Display help`
+
+// Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
+export const sync = async (argv: string[]) => {
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    args: argv,
+    options: { help: { short: "h", type: "boolean" } },
+  })
+
+  if (values.help) {
+    console.log(helpMessage)
+    return
+  }
+
+  const target = resolve(positionals[0] ?? ".")
+
+  requireCleanRepo(
+    target,
+    `No git repository in ${target}. Run sync inside an existing fork.`,
+    "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
+  )
+
+  const rootPkg = join(target, "package.json")
+  // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).
+  const forkPkgs = new Map(findPackageJsons(target).map((p) => [p, readJson<Pkg>(p)]))
+
+  // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
+  const preserve = parsePreserve(await fetchGitpickignore())
+  if (preserve.length === 0) {
+    console.log(
+      yellow("Warning: no PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten."),
+    )
+  }
+
+  console.log()
+  console.log(
+    "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
+  )
+
+  // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
+  await withRollback(
+    target,
+    yellow("Sync failed; rolled the working tree back to your last commit."),
+    () => {
+      overlayZerostarter(target)
+      // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar).
+      fixDangling(target)
+      // gitpick never copies the ignore file, but drop any that slipped through.
+      remove(join(target, ".gitpickignore"))
+      // Re-merge every fork manifest: starter's latest + the fork's extra deps, and the root's identity.
+      for (const [path, forkPkg] of forkPkgs) {
+        if (!exists(path)) continue
+        writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
+      }
+      // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
+      gitRestore(target, preserve)
+    },
+  )
+
+  console.log("Installing dependencies ...")
+  bunInstall(target)
+
+  console.log()
+  console.log(orange("Synced to the latest ZeroStarter."))
+  console.log(
+    "Starter files were updated (edits to them were overwritten); files you added and your",
+  )
+  console.log("content, public/marketing, and branding were preserved.")
+  console.log(yellow(`Review the diff and commit: git -C ${target} status`))
 }

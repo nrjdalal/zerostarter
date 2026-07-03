@@ -92,8 +92,7 @@ export const init = async (argv: string[]) => {
     fetchZerostarter(target)
   }
 
-  // Story mode: commit the pristine starter first (fresh repos only), so the
-  // conversion lands as its own reviewable "re-baseline" diff on top.
+  // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
   if (!exists(join(target, ".git"))) {
     gitInit(target)
     gitCommitAll(target, "ci(init): scaffold from zerostarter")
