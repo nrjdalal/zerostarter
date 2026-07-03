@@ -21,7 +21,7 @@ import type { ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/marketing/api-status"
-import { GrainGradient } from "@/components/marketing/grain-gradient"
+import { BackgroundGradient } from "@/components/marketing/background-gradient"
 import { LandingBackground } from "@/components/marketing/landing-background"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -232,7 +232,7 @@ docker compose up --build`
 
   return (
     <main className="relative isolate flex flex-col">
-      <GrainGradient />
+      <BackgroundGradient />
       <LandingBackground />
       {/* Hero */}
       <section aria-label="Hero" className="flex min-h-svh flex-col">

@@ -252,7 +252,7 @@ function readStops(): Float32Array {
   return new Float32Array(flat)
 }
 
-export function GrainGradient({ className }: { className?: string }) {
+export function BackgroundGradient({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { resolvedTheme } = useTheme()
   const themeRef = useRef(resolvedTheme)
