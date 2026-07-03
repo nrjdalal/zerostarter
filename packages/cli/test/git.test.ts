@@ -63,6 +63,18 @@ test("gitRestore restores a committed path and skips an untracked one", () => {
   expect(readFileSync(join(dir, "keep.txt"), "utf8")).toBe("orig")
 })
 
+test("gitRestore drops overlay-added untracked files under a preserved dir", () => {
+  mkdirSync(join(dir, "db"))
+  writeFileSync(join(dir, "db/0000.sql"), "base")
+  gitCommitAll(dir, "init")
+  // simulate the overlay: overwrite the tracked migration and add a starter one the fork never had
+  writeFileSync(join(dir, "db/0000.sql"), "overlaid")
+  writeFileSync(join(dir, "db/0001_orphan.sql"), "starter")
+  gitRestore(dir, ["db"])
+  expect(readFileSync(join(dir, "db/0000.sql"), "utf8")).toBe("base")
+  expect(existsSync(join(dir, "db/0001_orphan.sql"))).toBe(false)
+})
+
 test("gitResetHard restores tracked files, removes untracked, keeps gitignored", () => {
   writeFileSync(join(dir, ".gitignore"), "ignored/\n")
   writeFileSync(join(dir, "src.txt"), "orig")
