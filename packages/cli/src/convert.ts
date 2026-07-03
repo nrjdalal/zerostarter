@@ -1,6 +1,6 @@
 import { join } from "node:path"
 
-import { readJson, remove, replaceInFile, write, writeJson } from "@/io"
+import { exists, read, readJson, remove, replaceInFile, write, writeJson } from "@/io"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -22,33 +22,19 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Directories a fork supplies itself: the author's content and public assets.
-// Agent skills (.agents/skills, symlinked from .claude/skills and .github/skills) are KEPT,
-// so a scaffolded project ships with the same agent playbook.
-const IGNORED_DIRS = ["web/next/content", "web/next/public"]
-
-// Author pages, marketing-only components, dev-meta, starter tooling, and resume-only fonts a fork does not ship.
-const REMOVE_PATHS = [
-  "packages/cli",
-  ".github/workflows/cli-release.yml",
-  ".github/audit",
-  ".infisical.json",
-  ".coderabbit.yaml",
-  ".github/assets/graph-build.svg",
-  ".github/assets/cli.tape",
-  ".github/assets/setup.sh",
-  ".github/assets/cli.gif",
-  ".github/FUNDING.yml",
-  "LICENSE.md",
-  "CHANGELOG.md",
-  "bun.lock",
-  "web/next/src/app/hire",
-  "web/next/src/app/resume",
-  "web/next/src/components/marketing",
-  "web/next/src/fonts/caveat-latin-wght-normal.woff2",
-  "web/next/s../fonts/marketing/newsreader-latin-wght-normal.woff2",
-  "web/next/s../fonts/marketing/newsreader-latin-wght-italic.woff2",
-]
+// Everything a fork excludes lives in one source: the repo-root .gitpickignore.
+// gitpick (>=5.5.0) skips those paths on fetch and never copies the ignore file, so a
+// gitpick-fetched fork already lacks them. This mirrors that for an in-place conversion of a
+// full clone (where nothing was excluded), then removes the ignore file so the fork never ships it.
+const removeForkExcludes = (root: string): void => {
+  const ignore = p(root, ".gitpickignore")
+  if (!exists(ignore)) return
+  for (const line of read(ignore).split("\n")) {
+    const path = line.trim()
+    if (path && !path.startsWith("#")) remove(p(root, path))
+  }
+  remove(ignore)
+}
 
 // The two font exports whose woff2 files are removed above (only the deleted routes used them).
 const CAVEAT_EXPORT = `
@@ -126,7 +112,7 @@ const rebrand = (root: string, b: Brand): void => {
 }
 
 export const convertRepo = (root: string, brand: Brand): void => {
-  for (const dir of [...IGNORED_DIRS, ...REMOVE_PATHS]) remove(p(root, dir))
+  removeForkExcludes(root)
   scaffoldContent(root)
   fixDangling(root)
   rebrand(root, brand)
