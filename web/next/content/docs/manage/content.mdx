@@ -52,7 +52,7 @@ publishedAt: 2026-06-11
 ---
 ```
 
-Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. Timestamps are either `YYYY-MM-DD` (the start of that UTC day) or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for a post that should go live at an exact time. Scheduled posts need no rebuild: every public blog surface re-evaluates publishing on render, so a post appears within about 60 seconds of its `publishedAt` as ISR regenerates. Post images are committed under `web/next/public/blog/<slug>/images/` and referenced by absolute path.
+Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. Timestamps are either `YYYY-MM-DD` (the start of that UTC day) or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for a post that should go live at an exact time. Scheduled posts need no rebuild: every public blog surface re-evaluates publishing on render, so a post appears within about 60 seconds of its `publishedAt` as ISR regenerates. Post images are committed under `web/next/public/marketing/blog/<slug>/images/` and referenced by absolute path.
 
 Each post page renders its own publish and update dates and emits article Open Graph metadata from that same frontmatter. Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post file and prints what it wrote, so validation always has one. Review and commit that line.
 
