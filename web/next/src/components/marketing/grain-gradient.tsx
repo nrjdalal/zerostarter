@@ -188,7 +188,13 @@ export function GrainGradient({ className }: { className?: string }) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: false })
+    // preserveDrawingBuffer keeps a single retained surface: without it, ANGLE (macOS/Metal)
+    // can present an uninitialized (white) image on the first swap, independent of CSS opacity.
+    const gl = canvas.getContext("webgl2", {
+      alpha: true,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
+    })
     if (!gl) return
 
     const vert = compile(gl, gl.VERTEX_SHADER, VERT)
@@ -210,6 +216,8 @@ export function GrainGradient({ className }: { className?: string }) {
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     gl.clearColor(0, 0, 0, 0)
+    // Clear the retained surface to transparent right away, before it can ever be presented.
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
     // Hide instantly (transition off + reflow) so the reveal later eases in cleanly from 0.
     canvas.style.transitionProperty = "none"
