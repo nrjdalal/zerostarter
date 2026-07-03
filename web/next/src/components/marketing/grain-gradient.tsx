@@ -191,6 +191,11 @@ function setupGrainGL(off: HTMLCanvasElement) {
     return null
   }
   const program = gl.createProgram()
+  if (!program) {
+    gl.deleteShader(vert)
+    gl.deleteShader(frag)
+    return null
+  }
   gl.attachShader(program, vert)
   gl.attachShader(program, frag)
   gl.bindAttribLocation(program, 0, "a_pos")
@@ -363,6 +368,9 @@ export function GrainGradient({ className }: { className?: string }) {
       gl.deleteProgram(program)
       gl.deleteShader(vert)
       gl.deleteShader(frag)
+      // Free the context so repeated client-side navigations do not exhaust the browser's pool.
+      const lose = gl.getExtension("WEBGL_lose_context")
+      if (lose) lose.loseContext()
     }
   }, [])
 
