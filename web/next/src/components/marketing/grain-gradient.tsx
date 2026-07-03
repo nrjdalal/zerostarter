@@ -5,16 +5,9 @@ import { useEffect, useRef } from "react"
 
 import { cn } from "@/lib/utils"
 
-// A subtle grain gradient for the landing backdrop. The grain math (simplex + value-noise FBM)
-// and color mixing are ported from paper.design's grain-gradient shader, with its noise texture
-// swapped for a procedural hash so nothing is fetched and there is no runtime dependency.
-//
-// It renders a single frame off-DOM (a canvas never mounted to the page) into an image, then
-// fades that image in. Keeping no live <canvas> on the page avoids a macOS/Metal WebGL first
-// swap that flashes white, independent of CSS opacity. Trade-off: the slow drift is dropped.
+// A subtle, animated grain gradient for the landing backdrop, ported from paper.design's grain-gradient shader (simplex + value-noise FBM) with its noise texture swapped for a procedural hash, so nothing is fetched and no runtime dependency is added.
 
-// Color stops read live from the app's --chart-* accent ramp (the oklch tokens in
-// globals.css), resolved to sRGB by the browser so the grain matches them exactly.
+// Color stops read live from the app's --chart-* oklch tokens (globals.css), resolved to sRGB by the browser so the grain matches them exactly.
 const STOP_TOKENS = ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5"]
 const STOP_ALPHA = 0.5
 const SOFTNESS = 0.9
@@ -22,8 +15,7 @@ const INTENSITY = 0.35
 const GRAIN = 0.12
 // Container opacity per theme, the last subtlety knob.
 const OPACITY = { dark: 0.72, light: 0.5 }
-// The grain animates live in an off-DOM WebGL context and is copied each frame into a visible 2D
-// canvas, so the page never composites a WebGL surface (that is what flashed white on first swap).
+// The grain animates live in an off-DOM WebGL context and each frame is copied into a visible 2D canvas, so the page never composites a WebGL surface (which flashed white on its first swap).
 const FPS = 30
 
 const VERT = `#version 300 es
@@ -100,6 +92,7 @@ vec4 fbmR(vec2 n0, vec2 n1, vec2 n2, vec2 n3) {
     total.x += valueNoiseR(n0) * amp;
     total.y += valueNoiseR(n1) * amp;
     total.z += valueNoiseR(n2) * amp;
+    // n3 accumulates into .z too, matching paper.design's original; .w stays unused by design.
     total.z += valueNoiseR(n3) * amp;
     n0 *= 1.99;
     n1 *= 1.99;
@@ -122,8 +115,7 @@ void main() {
     cos(w.x * 2.6 - t * 1.4) + 0.4 * cos(w.x * 4.8 + t * 1.0)
   );
   w += 0.10 * vec2(snoise(w * 1.4 + t * 0.4), snoise(w * 1.4 - t * 0.35));
-  // Smaller scale enlarges the glows so their peaks sit off-screen and only the soft falloff
-  // bleeds in from the edges, reading like light spilling in from off-board.
+  // Smaller scale enlarges the glows so their peaks sit off-screen and only the soft falloff bleeds in from the edges, like light spilling in from off-board.
   vec2 s = w * 0.5;
   vec2 outer = vec2(0.5);
   vec2 bl = smoothstep(vec2(0.0), outer, s + vec2(0.1 + 0.1 * sin(3.0 * t), 0.2 - 0.1 * sin(5.25 * t)));
@@ -193,13 +185,22 @@ function setupGrainGL(off: HTMLCanvasElement) {
 
   const vert = compile(gl, gl.VERTEX_SHADER, VERT)
   const frag = compile(gl, gl.FRAGMENT_SHADER, FRAG)
-  if (!vert || !frag) return null
+  if (!vert || !frag) {
+    if (vert) gl.deleteShader(vert)
+    if (frag) gl.deleteShader(frag)
+    return null
+  }
   const program = gl.createProgram()
   gl.attachShader(program, vert)
   gl.attachShader(program, frag)
   gl.bindAttribLocation(program, 0, "a_pos")
   gl.linkProgram(program)
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    gl.deleteProgram(program)
+    gl.deleteShader(vert)
+    gl.deleteShader(frag)
+    return null
+  }
   gl.useProgram(program)
 
   const buffer = gl.createBuffer()
