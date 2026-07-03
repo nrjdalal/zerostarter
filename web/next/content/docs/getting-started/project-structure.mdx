@@ -37,9 +37,9 @@ Standard App Router, grouped by concern: `(content)/` for docs and blog, `(prote
 
 </Callout>
 
-<Callout type="info" title="Author-only routes">
+<Callout type="info" title="Marketing routes">
 
-`/hire` and `/resume` under `src/app/` are the author's own pages. They stay in the canonical repo but `zerostarter init` strips them automatically. A direct clone that skips init can delete `web/next/src/app/hire` and `web/next/src/app/resume` and remove the "Hire" link in `web/next/src/components/navbar/home.tsx`.
+The `(marketing)/` route group under `src/app/` holds the marketing surfaces: the landing page (`/`) plus the author's own `/hire` and `/resume`. They stay in the canonical repo but `zerostarter init` strips the whole group and writes a fresh `app/page.tsx` in its place. A direct clone that skips init can delete `web/next/src/app/(marketing)`, add its own `app/page.tsx`, and remove the "Hire" link in `web/next/src/components/navbar/home.tsx`.
 
 </Callout>
 
