@@ -1,4 +1,5 @@
 import { join, resolve } from "node:path"
+import { parseArgs } from "node:util"
 
 import { fixDangling } from "@/convert"
 import {
@@ -80,9 +81,31 @@ const mergePkg = (fork: Pkg, starter: Pkg, isRoot: boolean): Pkg => {
   return next
 }
 
+const helpMessage = `Usage:
+  $ bunx zerostarter sync [dir] [options]
+
+Re-baseline an existing fork (default .) on the latest ZeroStarter: a gitpick overlay
+updates the starter files while your content, public/marketing, branding, package.json
+identity, and favicon are preserved. Requires a clean tree; lands as a reviewable diff
+you commit yourself.
+
+Options:
+  -h, --help     Display help`
+
 // Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
 export const sync = async (argv: string[]) => {
-  const target = resolve(argv[0] ?? ".")
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    args: argv,
+    options: { help: { short: "h", type: "boolean" } },
+  })
+
+  if (values.help) {
+    console.log(helpMessage)
+    return
+  }
+
+  const target = resolve(positionals[0] ?? ".")
 
   if (!exists(join(target, ".git"))) {
     throw new Error(`No git repository in ${target}. Run sync inside an existing fork.`)
