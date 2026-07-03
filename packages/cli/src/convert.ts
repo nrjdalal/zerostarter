@@ -23,10 +23,7 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Everything a fork excludes lives in one source: the repo-root .gitpickignore.
-// gitpick (>=5.5.0) skips those paths on fetch and never copies the ignore file, so a
-// gitpick-fetched fork already lacks them. This mirrors that for an in-place conversion of a
-// full clone (where nothing was excluded), then removes the ignore file so the fork never ships it.
+// Remove the fork excludes listed in .gitpickignore, then drop the ignore file (a no-op for gitpick fetches).
 const removeForkExcludes = (root: string): void => {
   const ignore = p(root, ".gitpickignore")
   if (!exists(ignore)) return

@@ -5,18 +5,15 @@ const run = (cmd: string, args: string[], cwd?: string): string =>
 
 // Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history).
 export const fetchZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
+  run("bunx", ["gitpick@latest", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
-// Overlay the latest zerostarter onto an existing fork, overwriting starter files. Files the
-// fork added are untouched, and paths in the starter's .gitpickignore (content, public/marketing,
-// site.ts, ...) are never fetched, so the fork's product and branding survive.
+// Overlay the latest zerostarter onto a fork (gitpick -o); .gitpickignore paths and fork-added files are kept.
 export const overlayZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
+  run("bunx", ["gitpick@latest", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
 }
 
-// Read the starter's .gitpickignore from GitHub. gitpick never copies it into a fork (it excludes
-// itself), so sync fetches it directly to read the PRESERVE_ON_SYNC directive.
+// Read the starter's .gitpickignore from GitHub (gitpick never copies it into a fork).
 export const fetchGitpickignore = async (ref = "main"): Promise<string> => {
   const url = `https://raw.githubusercontent.com/nrjdalal/zerostarter/${ref}/.gitpickignore`
   const res = await fetch(url)
@@ -28,9 +25,7 @@ export const fetchGitpickignore = async (ref = "main"): Promise<string> => {
 export const gitIsClean = (dir: string): boolean =>
   run("git", ["status", "--porcelain"], dir).trim() === ""
 
-// Restore the committed version of specific paths in `dir` (keeps fork-owned assets, e.g. a
-// custom favicon, after an overlay overwrote them). Binary-safe; skips a path the fork does not
-// track, so a fresh fork keeps the overlaid default instead.
+// Restore the committed version of paths in `dir` (binary-safe); skips paths the fork does not track.
 export const gitRestore = (dir: string, paths: string[]): void => {
   for (const path of paths) {
     try {
@@ -42,7 +37,6 @@ export const gitRestore = (dir: string, paths: string[]): void => {
 }
 
 // Discard all working-tree changes and untracked files in `dir`, returning it to its last commit.
-// Used to roll a partial sync back to the pre-sync state (safe: sync requires a clean tree first).
 export const gitResetHard = (dir: string): void => {
   run("git", ["reset", "--hard", "HEAD"], dir)
   run("git", ["clean", "-fd"], dir)
@@ -63,8 +57,7 @@ export const gitBranch = (dir: string, name: string): void => {
   run("git", ["branch", name], dir)
 }
 
-// Stage everything and commit, bypassing the fork's hooks (bun install may have installed
-// lefthook in the scaffold). No-op if there is nothing to commit (e.g. a re-run).
+// Stage everything and commit, bypassing hooks; no-op if there is nothing to commit.
 export const gitCommitAll = (dir: string, message: string): void => {
   run("git", ["add", "-A"], dir)
   try {

@@ -24,8 +24,7 @@ interface Pkg {
   [key: string]: unknown
 }
 
-// The paths sync restores after the overlay are declared once in the starter's .gitpickignore as
-// `# PRESERVE_ON_SYNC - <comma-separated>` (files init seeds but a fork keeps: favicon, audit record).
+// Parse the "# PRESERVE_ON_SYNC - <paths>" directive from the starter's .gitpickignore.
 const parsePreserve = (gitpickignore: string): string[] => {
   const marker = "# PRESERVE_ON_SYNC"
   const line = gitpickignore.split("\n").find((l) => l.trim().startsWith(marker))
@@ -39,16 +38,13 @@ const parsePreserve = (gitpickignore: string): string[] => {
     .filter(Boolean)
 }
 
-// Merge two package.json object fields. Later wins on shared keys; returns undefined when neither
-// side has anything, so an absent field is never written back as an empty `{}`.
+// Merge two package.json object fields (later wins shared keys); undefined when both empty.
 const merge = (first: unknown, second: unknown): Record<string, unknown> | undefined => {
   const both = { ...(first as Record<string, unknown>), ...(second as Record<string, unknown>) }
   return Object.keys(both).length > 0 ? both : undefined
 }
 
-// Re-baseline an existing fork on the latest ZeroStarter: a gitpick overlay updates the starter
-// files while the starter's .gitpickignore keeps the fork's content, public/marketing, and site.ts.
-// fixDangling reconciles files that mix shared and author-only code; the fork owns its package.json.
+// Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
 export const sync = async (argv: string[]) => {
   const target = resolve(argv[0] ?? ".")
 
@@ -64,8 +60,7 @@ export const sync = async (argv: string[]) => {
   const pkgPath = join(target, "package.json")
   const forkPkg = exists(pkgPath) ? readJson<Pkg>(pkgPath) : null
 
-  // Read the preserve directive up front from the starter's .gitpickignore (gitpick never copies it
-  // into a fork). Fail here, before the overlay, so a fetch error never leaves the fork half-synced.
+  // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
   const preserve = parsePreserve(await fetchGitpickignore())
 
   console.log()
@@ -73,22 +68,17 @@ export const sync = async (argv: string[]) => {
     "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
   )
 
-  // The overlay plus its reconciliation mutate the working tree in several steps. Run them as one
-  // unit: if any step throws (e.g. fixDangling hitting starter drift), roll back to the pre-sync
-  // commit instead of leaving a half-synced fork. Safe because sync required a clean tree above.
+  // Run overlay + reconcile atomically; roll back to the pre-sync commit on any failure (tree was clean).
   try {
     overlayZerostarter(target)
 
-    // The overlay re-added files that mix shared and author-only code (fonts.ts, navbar/home.tsx).
-    // Reconcile them exactly as init does, or the fork references the excluded fonts / hire route.
+    // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar), as init does.
     fixDangling(target)
 
     // gitpick never copies the ignore file, but drop any that slipped through.
     remove(join(target, ".gitpickignore"))
 
-    // The overlay replaced package.json with the starter's. The fork owns its package.json (name,
-    // identity, workspaces, overrides, ...), so keep all of it and pull in only the starter's latest
-    // dependency versions plus any new scripts.
+    // The fork owns its package.json; keep it all, pulling in only the starter's latest deps + new scripts.
     if (forkPkg && exists(pkgPath)) {
       const starterPkg = readJson<Pkg>(pkgPath)
       const next: Pkg = { ...forkPkg }
