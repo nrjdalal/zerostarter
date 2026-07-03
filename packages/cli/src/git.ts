@@ -15,6 +15,15 @@ export const overlayZerostarter = (dir: string, ref = "main"): void => {
   run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
 }
 
+// Read the starter's .gitpickignore from GitHub. gitpick never copies it into a fork (it excludes
+// itself), so sync fetches it directly to read the PRESERVE_ON_SYNC directive.
+export const fetchGitpickignore = async (ref = "main"): Promise<string> => {
+  const url = `https://raw.githubusercontent.com/nrjdalal/zerostarter/${ref}/.gitpickignore`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Could not fetch .gitpickignore from ${ref} (HTTP ${res.status}).`)
+  return res.text()
+}
+
 // True when `dir`'s git working tree has no uncommitted changes.
 export const gitIsClean = (dir: string): boolean =>
   run("git", ["status", "--porcelain"], dir).trim() === ""

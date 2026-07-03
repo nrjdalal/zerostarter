@@ -1,6 +1,6 @@
 import { join, resolve } from "node:path"
 
-import { bunInstall, gitIsClean, gitRestore, overlayZerostarter } from "@/git"
+import { bunInstall, fetchGitpickignore, gitIsClean, gitRestore, overlayZerostarter } from "@/git"
 import { exists, readJson, remove, writeJson } from "@/io"
 
 import { orange, yellow } from "./_prompt"
@@ -8,8 +8,20 @@ import { orange, yellow } from "./_prompt"
 // package.json fields the starter carries that a fork does not inherit (mirrors convert.ts rebrand).
 const AUTHOR_FIELDS = ["homepage", "bugs", "license", "author", "repository", "funding"]
 
-// Files init seeds as a default but sync must not overwrite (a fork's own favicon, audit record).
-const PRESERVE_ON_SYNC = ["AUDIT.md", "web/next/src/app/favicon.ico", "web/next/src/app/icon.svg"]
+// The paths sync restores after the overlay are declared once in the starter's .gitpickignore as
+// `# PRESERVE_ON_SYNC - <comma-separated>` (files init seeds but a fork keeps: favicon, audit record).
+const parsePreserve = (gitpickignore: string): string[] => {
+  const marker = "# PRESERVE_ON_SYNC"
+  const line = gitpickignore.split("\n").find((l) => l.trim().startsWith(marker))
+  if (!line) return []
+  return line
+    .trim()
+    .slice(marker.length)
+    .replace(/^\s*-\s*/, "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
 
 interface Pkg {
   name?: string
@@ -37,6 +49,17 @@ export const sync = async (argv: string[]) => {
   const pkgPath = join(target, "package.json")
   const forkPkg = exists(pkgPath) ? readJson<Pkg>(pkgPath) : null
 
+  // Read the preserve directive from the starter's .gitpickignore (gitpick never copies it into a
+  // fork). Best-effort: an unreachable or older starter just skips the extra preservation.
+  let preserve: string[] = []
+  try {
+    preserve = parsePreserve(await fetchGitpickignore())
+  } catch {
+    console.log(
+      yellow("Could not read the starter's .gitpickignore; skipping favicon/audit preservation."),
+    )
+  }
+
   console.log()
   console.log(
     "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
@@ -58,8 +81,8 @@ export const sync = async (argv: string[]) => {
     writeJson(pkgPath, next)
   }
 
-  // Keep the fork's own favicon/icon: init seeds these, but a re-baseline must not clobber them.
-  gitRestore(target, PRESERVE_ON_SYNC)
+  // Keep the fork-owned paths the .gitpickignore directive names (init seeds them, sync keeps them).
+  gitRestore(target, preserve)
 
   console.log("Installing dependencies ...")
   bunInstall(target)
