@@ -14,12 +14,37 @@ export const remove = (path: string): void => {
   rmSync(path, { force: true, recursive: true })
 }
 
-// Remove every entry in `dir` except .git and any .env* file, preserving git history and local secrets.
+// Build output and vendored deps: wiped or skipped wholesale by emptyDir/findPackageJsons.
+const HEAVY_DIRS = new Set(["node_modules", ".next", ".turbo", "dist"])
+
+// Remove everything in `dir` except .git and any .env* file at any depth (preserves history + secrets).
 export const emptyDir = (dir: string): void => {
-  for (const entry of readdirSync(dir)) {
-    if (entry === ".git" || entry.startsWith(".env")) continue
-    rmSync(join(dir, entry), { force: true, recursive: true })
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === ".git") continue
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (HEAVY_DIRS.has(entry.name)) {
+        rmSync(path, { force: true, recursive: true })
+      } else {
+        emptyDir(path)
+        if (readdirSync(path).length === 0) rmSync(path, { force: true, recursive: true })
+      }
+    } else if (!entry.name.startsWith(".env")) {
+      rmSync(path, { force: true })
+    }
   }
+}
+
+// List every package.json under `dir`, skipping .git and heavy build/vendor dirs.
+export const findPackageJsons = (dir: string): string[] => {
+  const out: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === ".git" || HEAVY_DIRS.has(entry.name)) continue
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) out.push(...findPackageJsons(path))
+    else if (entry.name === "package.json") out.push(path)
+  }
+  return out
 }
 
 export const readJson = <T = Record<string, unknown>>(path: string): T =>

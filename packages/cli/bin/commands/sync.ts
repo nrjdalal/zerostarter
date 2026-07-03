@@ -9,7 +9,7 @@ import {
   gitRestore,
   overlayZerostarter,
 } from "@/git"
-import { exists, readJson, remove, writeJson } from "@/io"
+import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 
 import { orange, yellow } from "./_prompt"
 
@@ -23,6 +23,19 @@ interface Pkg {
   catalog?: Record<string, unknown>
   [key: string]: unknown
 }
+
+// package.json identity fields the fork owns on its root manifest (mirrors convert.ts rebrand).
+const IDENTITY_FIELDS = [
+  "name",
+  "version",
+  "description",
+  "homepage",
+  "bugs",
+  "license",
+  "author",
+  "repository",
+  "funding",
+]
 
 // Parse the "# PRESERVE_ON_SYNC - <paths>" directive from the starter's .gitpickignore.
 const parsePreserve = (gitpickignore: string): string[] => {
@@ -44,6 +57,28 @@ const merge = (first: unknown, second: unknown): Record<string, unknown> | undef
   return Object.keys(both).length > 0 ? both : undefined
 }
 
+// Starter-base merge: take the starter's latest tooling/dep versions, keep the fork's extra deps plus its scripts/overrides, and on the root its identity. A dep the starter dropped is not auto-removed.
+const mergePkg = (fork: Pkg, starter: Pkg, isRoot: boolean): Pkg => {
+  const next: Pkg = { ...starter }
+  const deps = merge(fork.dependencies, starter.dependencies)
+  const devDeps = merge(fork.devDependencies, starter.devDependencies)
+  const catalog = merge(fork.catalog, starter.catalog)
+  const scripts = merge(starter.scripts, fork.scripts)
+  const overrides = merge(starter.overrides, fork.overrides)
+  if (deps) next.dependencies = deps
+  if (devDeps) next.devDependencies = devDeps
+  if (catalog) next.catalog = catalog
+  if (scripts) next.scripts = scripts
+  if (overrides) next.overrides = overrides
+  if (isRoot) {
+    for (const field of IDENTITY_FIELDS) {
+      if (field in fork) next[field] = fork[field]
+      else delete next[field]
+    }
+  }
+  return next
+}
+
 // Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
 export const sync = async (argv: string[]) => {
   const target = resolve(argv[0] ?? ".")
@@ -57,8 +92,9 @@ export const sync = async (argv: string[]) => {
     )
   }
 
-  const pkgPath = join(target, "package.json")
-  const forkPkg = exists(pkgPath) ? readJson<Pkg>(pkgPath) : null
+  const rootPkg = join(target, "package.json")
+  // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).
+  const forkPkgs = new Map(findPackageJsons(target).map((p) => [p, readJson<Pkg>(p)]))
 
   // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
   const preserve = parsePreserve(await fetchGitpickignore())
@@ -78,23 +114,10 @@ export const sync = async (argv: string[]) => {
     // gitpick never copies the ignore file, but drop any that slipped through.
     remove(join(target, ".gitpickignore"))
 
-    // The fork owns its package.json; keep it all, pulling in only the starter's latest deps + new scripts.
-    if (forkPkg && exists(pkgPath)) {
-      const starterPkg = readJson<Pkg>(pkgPath)
-      const next: Pkg = { ...forkPkg }
-      // Starter wins on shared keys (latest versions/pins); the fork's extras are kept.
-      const deps = merge(forkPkg.dependencies, starterPkg.dependencies)
-      const devDeps = merge(forkPkg.devDependencies, starterPkg.devDependencies)
-      const overrides = merge(forkPkg.overrides, starterPkg.overrides)
-      const catalog = merge(forkPkg.catalog, starterPkg.catalog)
-      // Scripts: the fork's custom or modified scripts win; new starter scripts are added.
-      const scripts = merge(starterPkg.scripts, forkPkg.scripts)
-      if (deps) next.dependencies = deps
-      if (devDeps) next.devDependencies = devDeps
-      if (overrides) next.overrides = overrides
-      if (catalog) next.catalog = catalog
-      if (scripts) next.scripts = scripts
-      writeJson(pkgPath, next)
+    // Re-merge every fork manifest: starter's latest + the fork's extra deps, and the root's identity.
+    for (const [path, forkPkg] of forkPkgs) {
+      if (!exists(path)) continue
+      writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
     }
 
     // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
