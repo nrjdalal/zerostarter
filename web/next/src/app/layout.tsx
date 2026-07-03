@@ -51,9 +51,6 @@ export const metadata: Metadata = {
   },
 }
 
-// Resolve and apply the theme (class + color-scheme) in <head> before the body paints, mirroring next-themes so a dark-OS visitor never flashes the light background; next-themes' own script runs later, in the body.
-const THEME_INIT = `try{var t=localStorage.getItem("theme");var d=t==="dark"||((t==="system"||!t)&&matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.remove("light","dark");e.classList.add(d?"dark":"light");e.style.colorScheme=d?"dark":"light"}catch(e){}`
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -66,9 +63,6 @@ export default function RootLayout({
         lang="en"
         suppressHydrationWarning
       >
-        <head>
-          <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
-        </head>
         <body className="min-h-svh">
           <InnerProvider>
             <Navbar />
