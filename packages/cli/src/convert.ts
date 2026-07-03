@@ -9,6 +9,7 @@ import {
   docsConfigTemplate,
   docsIndexTemplate,
   homeTemplate,
+  readmeTemplate,
   sampleBlogPostTemplate,
   siteTemplate,
 } from "@/templates"
@@ -56,7 +57,7 @@ export const newsreader = localFont({
 `
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
-const scaffoldContent = (root: string): void => {
+const scaffoldContent = (root: string, brand: Brand): void => {
   // Stamp the earlier of the local and UTC date: its UTC midnight is always <= now (never hidden), and it matches the author's own calendar day when their timezone is behind UTC.
   const now = new Date()
   const utc = now.toISOString().slice(0, 10)
@@ -72,6 +73,7 @@ const scaffoldContent = (root: string): void => {
   write(p(root, "web/next/public/.gitkeep"), "")
   write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
   write(p(root, "AGENTS.md"), agentsTemplate())
+  write(p(root, "README.md"), readmeTemplate(brand))
 }
 
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
@@ -113,7 +115,7 @@ const rebrand = (root: string, b: Brand): void => {
 
 export const convertRepo = (root: string, brand: Brand): void => {
   removeForkExcludes(root)
-  scaffoldContent(root)
+  scaffoldContent(root, brand)
   fixDangling(root)
   rebrand(root, brand)
 }

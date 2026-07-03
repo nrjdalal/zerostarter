@@ -55,6 +55,23 @@ Guidance for AI coding agents working in this repository.
 Custom skills live in \`.agents/skills\` (symlinked to \`.claude/skills\`). Start with the \`codebase-map\` skill to orient, then load the task skill that fits (\`api-endpoint\`, \`db-migration\`, \`dev\`, \`design\`, and more).
 `
 
+// README.md: a minimal readme for the fork; the author replaces it with their product's.
+export const readmeTemplate = ({ name }: Brand): string => {
+  const display = name.charAt(0).toUpperCase() + name.slice(1)
+  return `# ${display}
+
+Built on top of [ZeroStarter](https://zerostarter.dev).
+
+## Development
+
+\`\`\`bash
+bun run dev
+\`\`\`
+
+Web runs on http://localhost:3000 and the API on http://localhost:4000.
+`
+}
+
 // web/next/content/docs/index.mdx: docs anchor. The description must match docs.config.ts.
 export const docsIndexTemplate = (): string => `---
 slug: /docs

@@ -2,7 +2,9 @@
 # Only affects gitpick fetches; a plain `git clone` of this repo still gets everything.
 
 # custom directories
+.github/assets/
 .github/audit/
+.github/rulesets/
 packages/cli/
 web/next/content/
 web/next/src/app/(marketing)/
@@ -12,14 +14,12 @@ web/next/public/marketing/
 
 # custom files
 .github/workflows/cli-release.yml
-.github/assets/graph-build.svg
-.github/assets/cli.tape
-.github/assets/setup.sh
-.github/assets/cli.gif
 .github/FUNDING.yml
 .infisical.json
 .coderabbit.yaml
+AGENTS.md
 bun.lock
 CHANGELOG.md
 LICENSE.md
 packages/config/src/site.ts
+README.md
