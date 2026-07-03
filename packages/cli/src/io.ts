@@ -17,7 +17,7 @@ export const remove = (path: string): void => {
 // Build output and vendored deps: wiped or skipped wholesale by emptyDir/findPackageJsons.
 const HEAVY_DIRS = new Set(["node_modules", ".next", ".turbo", "dist"])
 
-// Remove everything in `dir` except .git and any .env* file at any depth (preserves history + secrets).
+// Remove everything except .git and .env* files (any depth) outside the heavy build dirs, which are wiped wholesale.
 export const emptyDir = (dir: string): void => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === ".git") continue

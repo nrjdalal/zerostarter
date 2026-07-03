@@ -28,7 +28,6 @@ interface Pkg {
 const IDENTITY_FIELDS = [
   "name",
   "version",
-  "description",
   "homepage",
   "bugs",
   "license",
@@ -57,14 +56,16 @@ const merge = (first: unknown, second: unknown): Record<string, unknown> | undef
   return Object.keys(both).length > 0 ? both : undefined
 }
 
-// Starter-base merge: take the starter's latest tooling/dep versions, keep the fork's extra deps plus its scripts/overrides, and on the root its identity. A dep the starter dropped is not auto-removed.
+// Starter-base merge: the starter's latest tooling/deps win, the fork keeps its extra keys/deps and scripts, and the root keeps its identity. A dep the starter dropped is not auto-removed.
 const mergePkg = (fork: Pkg, starter: Pkg, isRoot: boolean): Pkg => {
   const next: Pkg = { ...starter }
+  // Keep the fork's own top-level keys the starter does not define (browserslist, engines, ...).
+  for (const key of Object.keys(fork)) if (!(key in starter)) next[key] = fork[key]
   const deps = merge(fork.dependencies, starter.dependencies)
   const devDeps = merge(fork.devDependencies, starter.devDependencies)
   const catalog = merge(fork.catalog, starter.catalog)
   const scripts = merge(starter.scripts, fork.scripts)
-  const overrides = merge(starter.overrides, fork.overrides)
+  const overrides = merge(fork.overrides, starter.overrides)
   if (deps) next.dependencies = deps
   if (devDeps) next.devDependencies = devDeps
   if (catalog) next.catalog = catalog
