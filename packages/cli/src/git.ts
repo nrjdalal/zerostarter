@@ -5,7 +5,7 @@ const run = (cmd: string, args: string[], cwd?: string): string =>
 
 // Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history).
 export const fetchZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@5.4.1", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
+  run("bunx", ["gitpick@5.5.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
 // Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.

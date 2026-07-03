@@ -1,0 +1,34 @@
+# Paths a scaffolded or synced ZeroStarter fork does not take from the starter.
+# gitpick (>=5.5.0) reads this at the picked root and skips matching paths on fetch,
+# so `bunx zerostarter init` / `sync` no longer strip these after the fact.
+# Only affects gitpick fetches; a plain `git clone` of this repo still gets everything.
+
+# Author content + assets (a fork supplies its own)
+web/next/content
+web/next/public
+web/next/src/components/marketing
+
+# Author-only pages and their fonts
+web/next/src/app/hire
+web/next/src/app/resume
+web/next/src/fonts/caveat-latin-wght-normal.woff2
+web/next/src/fonts/newsreader-latin-wght-normal.woff2
+web/next/src/fonts/newsreader-latin-wght-italic.woff2
+
+# Brand source: init writes a fresh site.ts; sync preserves the fork's
+packages/config/src/site.ts
+
+# Starter tooling + dev-meta a fork does not ship
+packages/cli
+.github/workflows/cli-release.yml
+.github/audit
+.github/assets/graph-build.svg
+.github/assets/cli.tape
+.github/assets/setup.sh
+.github/assets/cli.gif
+.github/FUNDING.yml
+.infisical.json
+.coderabbit.yaml
+LICENSE.md
+CHANGELOG.md
+bun.lock

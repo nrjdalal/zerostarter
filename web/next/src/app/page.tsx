@@ -30,54 +30,57 @@ type Tech = { name: string; icon: { light: string; dark: string } }
 export const techStack: Tech[] = [
   {
     name: "Base UI",
-    icon: { light: "/landing/base-ui-light.svg", dark: "/landing/base-ui-dark.svg" },
+    icon: { light: "/marketing/base-ui-light.svg", dark: "/marketing/base-ui-dark.svg" },
   },
   {
     name: "Better Auth",
-    icon: { light: "/landing/better-auth-light.svg", dark: "/landing/better-auth-dark.svg" },
+    icon: { light: "/marketing/better-auth-light.svg", dark: "/marketing/better-auth-dark.svg" },
   },
-  { name: "Bun", icon: { light: "/landing/bun.svg", dark: "/landing/bun.svg" } },
-  { name: "Docker", icon: { light: "/landing/docker.svg", dark: "/landing/docker.svg" } },
+  { name: "Bun", icon: { light: "/marketing/bun.svg", dark: "/marketing/bun.svg" } },
+  { name: "Docker", icon: { light: "/marketing/docker.svg", dark: "/marketing/docker.svg" } },
   {
     name: "Drizzle ORM",
-    icon: { light: "/landing/drizzle-orm-light.svg", dark: "/landing/drizzle-orm-dark.svg" },
+    icon: { light: "/marketing/drizzle-orm-light.svg", dark: "/marketing/drizzle-orm-dark.svg" },
   },
-  { name: "Fumadocs", icon: { light: "/landing/fumadocs.png", dark: "/landing/fumadocs.png" } },
-  { name: "Hono", icon: { light: "/landing/hono.svg", dark: "/landing/hono.svg" } },
-  { name: "Next.js", icon: { light: "/landing/nextjs.svg", dark: "/landing/nextjs.svg" } },
-  { name: "Oxc", icon: { light: "/landing/oxc.svg", dark: "/landing/oxc.svg" } },
+  { name: "Fumadocs", icon: { light: "/marketing/fumadocs.png", dark: "/marketing/fumadocs.png" } },
+  { name: "Hono", icon: { light: "/marketing/hono.svg", dark: "/marketing/hono.svg" } },
+  { name: "Next.js", icon: { light: "/marketing/nextjs.svg", dark: "/marketing/nextjs.svg" } },
+  { name: "Oxc", icon: { light: "/marketing/oxc.svg", dark: "/marketing/oxc.svg" } },
   {
     name: "PostgreSQL",
-    icon: { light: "/landing/postgresql.svg", dark: "/landing/postgresql.svg" },
+    icon: { light: "/marketing/postgresql.svg", dark: "/marketing/postgresql.svg" },
   },
-  { name: "PostHog", icon: { light: "/landing/posthog.svg", dark: "/landing/posthog.svg" } },
-  { name: "React", icon: { light: "/landing/react-light.svg", dark: "/landing/react-dark.svg" } },
+  { name: "PostHog", icon: { light: "/marketing/posthog.svg", dark: "/marketing/posthog.svg" } },
+  {
+    name: "React",
+    icon: { light: "/marketing/react-light.svg", dark: "/marketing/react-dark.svg" },
+  },
   {
     name: "shadcn/ui",
-    icon: { light: "/landing/shadcn-ui-light.svg", dark: "/landing/shadcn-ui-dark.svg" },
+    icon: { light: "/marketing/shadcn-ui-light.svg", dark: "/marketing/shadcn-ui-dark.svg" },
   },
   {
     name: "Tailwind CSS",
-    icon: { light: "/landing/tailwindcss.svg", dark: "/landing/tailwindcss.svg" },
+    icon: { light: "/marketing/tailwindcss.svg", dark: "/marketing/tailwindcss.svg" },
   },
   {
     name: "TanStack Query",
-    icon: { light: "/landing/tanstack.svg", dark: "/landing/tanstack.svg" },
+    icon: { light: "/marketing/tanstack.svg", dark: "/marketing/tanstack.svg" },
   },
-  { name: "tsdown", icon: { light: "/landing/tsdown.svg", dark: "/landing/tsdown.svg" } },
+  { name: "tsdown", icon: { light: "/marketing/tsdown.svg", dark: "/marketing/tsdown.svg" } },
   {
     name: "Turborepo",
-    icon: { light: "/landing/turborepo-light.svg", dark: "/landing/turborepo-dark.svg" },
+    icon: { light: "/marketing/turborepo-light.svg", dark: "/marketing/turborepo-dark.svg" },
   },
   {
     name: "TypeScript",
-    icon: { light: "/landing/typescript.svg", dark: "/landing/typescript.svg" },
+    icon: { light: "/marketing/typescript.svg", dark: "/marketing/typescript.svg" },
   },
   {
     name: "Vercel",
-    icon: { light: "/landing/vercel-light.svg", dark: "/landing/vercel-dark.svg" },
+    icon: { light: "/marketing/vercel-light.svg", dark: "/marketing/vercel-dark.svg" },
   },
-  { name: "Zod", icon: { light: "/landing/zod.svg", dark: "/landing/zod.svg" } },
+  { name: "Zod", icon: { light: "/marketing/zod.svg", dark: "/marketing/zod.svg" } },
 ]
 
 const featureCards = [
@@ -413,17 +416,20 @@ docker compose up --build`
                       {
                         name: "Vercel",
                         icon: {
-                          light: "/landing/vercel-light.svg",
-                          dark: "/landing/vercel-dark.svg",
+                          light: "/marketing/vercel-light.svg",
+                          dark: "/marketing/vercel-dark.svg",
                         },
                       },
                       {
                         name: "Docker",
-                        icon: { light: "/landing/docker.svg", dark: "/landing/docker.svg" },
+                        icon: { light: "/marketing/docker.svg", dark: "/marketing/docker.svg" },
                       },
                       {
                         name: "PostgreSQL",
-                        icon: { light: "/landing/postgresql.svg", dark: "/landing/postgresql.svg" },
+                        icon: {
+                          light: "/marketing/postgresql.svg",
+                          dark: "/marketing/postgresql.svg",
+                        },
                       },
                     ] satisfies Tech[]
                   ).map((tech) => (
