@@ -41,10 +41,10 @@ const removeForkExcludes = (root: string): void => {
   remove(ignore)
 }
 
-// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork.
-const CAVEAT_EXPORT = /\nexport const caveat = localFont\(\{[\s\S]*?\n\}\)\n/
-const NEWSREADER_EXPORT = /\nexport const newsreader = localFont\(\{[\s\S]*?\n\}\)\n/
-const HIRE_NAV = /[ \t]*\{[^}\n]*href:[ \t]*["']\/hire["'][^}\n]*\},?[ \t]*\n/
+// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork. Newlines are \r?\n: a Windows/WSL checkout (gitpick under core.autocrlf) yields CRLF, and a \n-only anchor would miss the closing `})`, leaving the marketing fonts in place and tripping the drift guard below.
+const CAVEAT_EXPORT = /\r?\nexport const caveat = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
+const NEWSREADER_EXPORT = /\r?\nexport const newsreader = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
+const HIRE_NAV = /[ \t]*\{[^}\r\n]*href:[ \t]*["']\/hire["'][^}\r\n]*\},?[ \t]*\r?\n/
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
 const scaffoldContent = (root: string, brand: Brand): void => {

@@ -4,7 +4,7 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
-import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
+import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit, requireBun } from "@/git"
 import { exists } from "@/io"
 
 import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
@@ -45,6 +45,9 @@ export const init = async (argv: string[]) => {
     console.log(helpMessage)
     return
   }
+
+  // Fail fast if Bun is missing, before any prompt; --dry-run only prints the plan, so let it run without Bun.
+  if (!values["dry-run"]) requireBun()
 
   const interactive = isInteractive() && !values.yes
 
