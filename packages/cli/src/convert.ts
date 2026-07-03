@@ -77,7 +77,7 @@ const scaffoldContent = (root: string, brand: Brand): void => {
 }
 
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
-const fixDangling = (root: string): void => {
+export const fixDangling = (root: string): void => {
   const navOk = replaceInFile(p(root, "web/next/src/components/navbar/home.tsx"), [
     ['    { href: "/hire", label: "Hire" },\n', ""],
   ])
