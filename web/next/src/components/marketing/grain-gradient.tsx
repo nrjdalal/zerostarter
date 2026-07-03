@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -22,18 +22,9 @@ const INTENSITY = 0.35
 const GRAIN = 0.12
 // Container opacity per theme, the last subtlety knob.
 const OPACITY = { dark: 0.72, light: 0.5 }
-// The baked frame's time is randomized per load (in the effect) so the composition differs each
-// visit; it only picks where in the shader's drift the frozen frame sits.
-const TIME_RANGE = 40
-// Cap the rendered long side so the baked image stays a reasonable size.
-const MAX_SIDE = 2560
-
-// A slow CSS drift on the baked image so it feels alive without a live canvas. The image is
-// oversized and clipped, so the pan/scale never exposes an edge. Held still under reduced motion.
-const DRIFT_CSS =
-  ".grain-drift{transform:scale(1.06)}" +
-  "@media(prefers-reduced-motion:no-preference){.grain-drift{animation:grainDrift 42s ease-in-out infinite}}" +
-  "@keyframes grainDrift{0%{transform:translate3d(-2%,-1%,0) scale(1.06)}50%{transform:translate3d(2%,1.5%,0) scale(1.1)}100%{transform:translate3d(-2%,-1%,0) scale(1.06)}}"
+// The grain animates live in an off-DOM WebGL context and is copied each frame into a visible 2D
+// canvas, so the page never composites a WebGL surface (that is what flashed white on first swap).
+const FPS = 30
 
 const VERT = `#version 300 es
 in vec2 a_pos;
@@ -120,7 +111,7 @@ vec4 fbmR(vec2 n0, vec2 n1, vec2 n2, vec2 n3) {
 }
 
 void main() {
-  float t = 0.1 * (u_time + 7.0);
+  float t = 0.05 * (u_time + 7.0);
   vec2 shape_uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
   vec2 grain_uv = gl_FragCoord.xy / u_pixelRatio;
 
@@ -191,28 +182,24 @@ const compile = (gl: WebGL2RenderingContext, type: number, src: string): WebGLSh
   return shader
 }
 
-// Bake one grain frame off-DOM and return an object URL for it (or null on failure).
-function renderGrain(
-  width: number,
-  height: number,
-  dpr: number,
-  time: number,
-): Promise<string | null> {
-  const canvas = document.createElement("canvas")
-  canvas.width = width
-  canvas.height = height
-  const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: false })
-  if (!gl) return Promise.resolve(null)
+// Compile the shader on an off-DOM WebGL context and set the static uniforms.
+function setupGrainGL(off: HTMLCanvasElement) {
+  const gl = off.getContext("webgl2", {
+    alpha: true,
+    premultipliedAlpha: false,
+    preserveDrawingBuffer: true,
+  })
+  if (!gl) return null
 
   const vert = compile(gl, gl.VERTEX_SHADER, VERT)
   const frag = compile(gl, gl.FRAGMENT_SHADER, FRAG)
-  if (!vert || !frag) return Promise.resolve(null)
+  if (!vert || !frag) return null
   const program = gl.createProgram()
   gl.attachShader(program, vert)
   gl.attachShader(program, frag)
   gl.bindAttribLocation(program, 0, "a_pos")
   gl.linkProgram(program)
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return Promise.resolve(null)
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null
   gl.useProgram(program)
 
   const buffer = gl.createBuffer()
@@ -222,18 +209,19 @@ function renderGrain(
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  gl.clearColor(0, 0, 0, 0)
 
   const u = (name: string) => gl.getUniformLocation(program, name)
-  gl.uniform2f(u("u_resolution"), width, height)
-  gl.uniform1f(u("u_pixelRatio"), dpr)
   gl.uniform4f(u("u_colorBack"), 0, 0, 0, 0)
   gl.uniform1f(u("u_colorsCount"), STOP_TOKENS.length)
   gl.uniform1f(u("u_softness"), SOFTNESS)
   gl.uniform1f(u("u_intensity"), INTENSITY)
   gl.uniform1f(u("u_noise"), GRAIN)
-  gl.uniform1f(u("u_time"), time)
+  return { gl, program, buffer, vert, frag, u }
+}
 
-  // Resolve the oklch --chart-* tokens to sRGB via a 1x1 2D canvas, so the grain matches them exactly.
+// Resolve the oklch --chart-* tokens to sRGB via a 1x1 2D canvas, so the grain matches them exactly.
+function readStops(): Float32Array {
   const swatch = document.createElement("canvas")
   swatch.width = 1
   swatch.height = 1
@@ -241,9 +229,9 @@ function renderGrain(
   const styles = getComputedStyle(document.documentElement)
   const flat: number[] = []
   for (const token of STOP_TOKENS) {
-    let r = 0,
-      g = 0,
-      b = 0
+    let r = 0
+    let g = 0
+    let b = 0
     if (swatchCtx) {
       swatchCtx.fillStyle = "#000"
       swatchCtx.fillStyle = styles.getPropertyValue(token).trim()
@@ -255,88 +243,142 @@ function renderGrain(
     }
     flat.push(r, g, b, STOP_ALPHA)
   }
-  gl.uniform4fv(u("u_colors"), new Float32Array(flat))
+  return new Float32Array(flat)
+}
 
-  gl.viewport(0, 0, width, height)
-  gl.clearColor(0, 0, 0, 0)
-  gl.clear(gl.COLOR_BUFFER_BIT)
-  gl.drawArrays(gl.TRIANGLES, 0, 3)
+export function GrainGradient({ className }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { resolvedTheme } = useTheme()
+  const themeRef = useRef(resolvedTheme)
+  themeRef.current = resolvedTheme
+  const paintRef = useRef<() => void>(() => {})
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
+  useEffect(() => {
+    const visible = canvasRef.current
+    if (!visible) return
+    const ctx = visible.getContext("2d")
+    if (!ctx) return
+    const off = document.createElement("canvas")
+    const setup = setupGrainGL(off)
+    if (!setup) return
+    const { gl, program, buffer, vert, frag, u } = setup
+    const uTime = u("u_time")
+    const uResolution = u("u_resolution")
+    const uPixelRatio = u("u_pixelRatio")
+    const uColors = u("u_colors")
+    // Random time offset so each load starts the drift at a different point.
+    const offset = Math.random() * 40
+
+    let appliedTheme = ""
+    const applyColors = () => {
+      const theme = themeRef.current === "light" ? "light" : "dark"
+      if (theme === appliedTheme) return
+      appliedTheme = theme
+      gl.uniform4fv(uColors, readStops())
+      if (shown) visible.style.opacity = String(OPACITY[theme])
+    }
+
+    let dpr = 1
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const w = Math.max(1, Math.round(visible.clientWidth * dpr))
+      const h = Math.max(1, Math.round(visible.clientHeight * dpr))
+      if (off.width !== w || off.height !== h) {
+        off.width = w
+        off.height = h
+        visible.width = w
+        visible.height = h
+      }
+      gl.viewport(0, 0, w, h)
+      gl.uniform2f(uResolution, w, h)
+      gl.uniform1f(uPixelRatio, dpr)
+    }
+    resize()
+
+    // Hide instantly (transition off + reflow) so the reveal later eases in cleanly from 0.
+    visible.style.transitionProperty = "none"
+    visible.style.opacity = "0"
+    void visible.offsetWidth
+    visible.style.transitionProperty = ""
+
+    let shown = false
+    let drawn = 0
+    const draw = (timeMs: number) => {
+      applyColors()
+      gl.uniform1f(uTime, timeMs / 1000 + offset)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.drawArrays(gl.TRIANGLES, 0, 3)
+      ctx.clearRect(0, 0, visible.width, visible.height)
+      ctx.drawImage(off, 0, 0)
+      // Reveal only once a grain frame has been copied to the visible canvas.
+      if (!shown && ++drawn >= 2) {
+        shown = true
+        visible.style.opacity = String(OPACITY[themeRef.current === "light" ? "light" : "dark"])
+      }
+    }
+
+    const ro = new ResizeObserver(() => {
+      resize()
+      if (raf === 0) draw(lastTime)
+    })
+    ro.observe(visible)
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const frameGap = 1000 / FPS
+    let raf = 0
+    let lastTime = 0
+    let lastDraw = 0
+    const loop = (timeMs: number) => {
+      lastTime = timeMs
+      if (timeMs - lastDraw >= frameGap) {
+        lastDraw = timeMs
+        draw(timeMs)
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    const start = () => {
+      if (raf !== 0 || reduceMotion || document.hidden) return
+      raf = requestAnimationFrame(loop)
+    }
+    const stop = () => {
+      cancelAnimationFrame(raf)
+      raf = 0
+    }
+    const onVisibility = () => (document.hidden ? stop() : start())
+    document.addEventListener("visibilitychange", onVisibility)
+
+    paintRef.current = () => draw(lastTime)
+    if (reduceMotion) {
+      draw(0)
+      draw(0)
+    } else start()
+
+    return () => {
+      stop()
+      paintRef.current = () => {}
+      ro.disconnect()
+      document.removeEventListener("visibilitychange", onVisibility)
       gl.deleteBuffer(buffer)
       gl.deleteProgram(program)
       gl.deleteShader(vert)
       gl.deleteShader(frag)
-      resolve(blob ? URL.createObjectURL(blob) : null)
-    }, "image/png")
-  })
-}
-
-export function GrainGradient({ className }: { className?: string }) {
-  const { resolvedTheme } = useTheme()
-  const [url, setUrl] = useState<string | null>(null)
-  const urlRef = useRef<string | null>(null)
-  // Random frame time, picked once per mount so each load bakes a different composition.
-  const timeRef = useRef<number>(-1)
-
-  useEffect(() => {
-    let cancelled = false
-    let timer = 0
-    if (timeRef.current < 0) timeRef.current = Math.random() * TIME_RANGE
-
-    const bake = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      const scale = Math.min(1, MAX_SIDE / (Math.max(window.innerWidth, window.innerHeight) * dpr))
-      const w = Math.max(1, Math.round(window.innerWidth * dpr * scale))
-      const h = Math.max(1, Math.round(window.innerHeight * dpr * scale))
-      renderGrain(w, h, dpr * scale, timeRef.current).then((next) => {
-        if (cancelled || !next) {
-          if (next) URL.revokeObjectURL(next)
-          return
-        }
-        if (urlRef.current) URL.revokeObjectURL(urlRef.current)
-        urlRef.current = next
-        setUrl(next)
-      })
-    }
-
-    bake()
-    // Re-bake at the new aspect after a resize settles, so the corner glows stay in place.
-    const onResize = () => {
-      window.clearTimeout(timer)
-      timer = window.setTimeout(bake, 250)
-    }
-    window.addEventListener("resize", onResize)
-
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer)
-      window.removeEventListener("resize", onResize)
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current)
-      urlRef.current = null
     }
   }, [])
 
-  const theme = resolvedTheme === "light" ? "light" : "dark"
+  useEffect(() => {
+    paintRef.current()
+  }, [resolvedTheme])
 
   return (
-    <>
-      <style>{DRIFT_CSS}</style>
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none fixed inset-0 overflow-hidden",
-          "motion-safe:transition-opacity motion-safe:duration-1000 motion-safe:ease-in-out",
-          className,
-        )}
-        style={{ zIndex: -1, opacity: url ? OPACITY[theme] : 0 }}
-      >
-        <div
-          className="grain-drift absolute -inset-[10%] bg-cover bg-center"
-          style={{ backgroundImage: url ? `url(${url})` : undefined }}
-        />
-      </div>
-    </>
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className={cn(
+        "pointer-events-none fixed inset-0 h-full w-full",
+        "motion-safe:transition-opacity motion-safe:duration-1000 motion-safe:ease-in-out",
+        className,
+      )}
+      style={{ zIndex: -1 }}
+    />
   )
 }
