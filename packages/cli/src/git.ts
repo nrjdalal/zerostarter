@@ -1,4 +1,7 @@
 import { execFileSync } from "node:child_process"
+import { join } from "node:path"
+
+import { exists } from "@/io"
 
 const run = (cmd: string, args: string[], cwd?: string): string =>
   execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
@@ -40,6 +43,27 @@ export const gitRestore = (dir: string, paths: string[]): void => {
 export const gitResetHard = (dir: string): void => {
   run("git", ["reset", "--hard", "HEAD"], dir)
   run("git", ["clean", "-fd"], dir)
+}
+
+// Guard a destructive command: throw if `dir` is not a git repo, or if its tree has uncommitted changes.
+export const requireCleanRepo = (dir: string, notGitMsg: string, dirtyMsg: string): void => {
+  if (!exists(join(dir, ".git"))) throw new Error(notGitMsg)
+  if (!gitIsClean(dir)) throw new Error(dirtyMsg)
+}
+
+// Run `fn`; on any failure roll `dir` back to its pre-run commit, print `onFail`, and rethrow.
+export const withRollback = async (
+  dir: string,
+  onFail: string,
+  fn: () => Promise<void> | void,
+): Promise<void> => {
+  try {
+    await fn()
+  } catch (err) {
+    gitResetHard(dir)
+    console.log(onFail)
+    throw err
+  }
 }
 
 // Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.

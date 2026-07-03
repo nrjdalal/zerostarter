@@ -5,10 +5,10 @@ import { fixDangling } from "@/convert"
 import {
   bunInstall,
   fetchGitpickignore,
-  gitIsClean,
-  gitResetHard,
   gitRestore,
   overlayZerostarter,
+  requireCleanRepo,
+  withRollback,
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
@@ -41,14 +41,11 @@ export const sync = async (argv: string[]) => {
 
   const target = resolve(positionals[0] ?? ".")
 
-  if (!exists(join(target, ".git"))) {
-    throw new Error(`No git repository in ${target}. Run sync inside an existing fork.`)
-  }
-  if (!gitIsClean(target)) {
-    throw new Error(
-      "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
-    )
-  }
+  requireCleanRepo(
+    target,
+    `No git repository in ${target}. Run sync inside an existing fork.`,
+    "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
+  )
 
   const rootPkg = join(target, "package.json")
   // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).
@@ -56,35 +53,36 @@ export const sync = async (argv: string[]) => {
 
   // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
   const preserve = parsePreserve(await fetchGitpickignore())
+  if (preserve.length === 0) {
+    console.log(
+      yellow("Warning: no PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten."),
+    )
+  }
 
   console.log()
   console.log(
     "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
   )
 
-  // Run overlay + reconcile atomically; roll back to the pre-sync commit on any failure (tree was clean).
-  try {
-    overlayZerostarter(target)
-
-    // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar), as init does.
-    fixDangling(target)
-
-    // gitpick never copies the ignore file, but drop any that slipped through.
-    remove(join(target, ".gitpickignore"))
-
-    // Re-merge every fork manifest: starter's latest + the fork's extra deps, and the root's identity.
-    for (const [path, forkPkg] of forkPkgs) {
-      if (!exists(path)) continue
-      writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
-    }
-
-    // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
-    gitRestore(target, preserve)
-  } catch (err) {
-    gitResetHard(target)
-    console.log(yellow("Sync failed; rolled the working tree back to your last commit."))
-    throw err
-  }
+  // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
+  await withRollback(
+    target,
+    yellow("Sync failed; rolled the working tree back to your last commit."),
+    () => {
+      overlayZerostarter(target)
+      // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar).
+      fixDangling(target)
+      // gitpick never copies the ignore file, but drop any that slipped through.
+      remove(join(target, ".gitpickignore"))
+      // Re-merge every fork manifest: starter's latest + the fork's extra deps, and the root's identity.
+      for (const [path, forkPkg] of forkPkgs) {
+        if (!exists(path)) continue
+        writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
+      }
+      // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
+      gitRestore(target, preserve)
+    },
+  )
 
   console.log("Installing dependencies ...")
   bunInstall(target)

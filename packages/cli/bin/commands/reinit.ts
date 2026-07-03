@@ -1,10 +1,10 @@
-import { basename, join, resolve } from "node:path"
+import { basename, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
-import { bunInstall, gitCommitAll, gitIsClean, gitResetHard, overlayZerostarter } from "@/git"
-import { emptyDir, exists } from "@/io"
+import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
+import { emptyDir } from "@/io"
 
 import { green, isInteractive, orange, promptConfirm, yellow } from "./_prompt"
 
@@ -39,17 +39,12 @@ export const reinit = async (argv: string[]) => {
   const name = basename(target)
   const interactive = isInteractive() && !values.yes
 
-  if (!exists(join(target, ".git"))) {
-    throw new Error(
-      `No git repository in ${target}. reinit re-scaffolds an existing repo; use init for a new project.`,
-    )
-  }
   // Only committed files are recoverable from .git after the wipe, so refuse a dirty tree.
-  if (!gitIsClean(target)) {
-    throw new Error(
-      "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
-    )
-  }
+  requireCleanRepo(
+    target,
+    `No git repository in ${target}. reinit re-scaffolds an existing repo; use init for a new project.`,
+    "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
+  )
 
   if (interactive) {
     const ok = await promptConfirm(
@@ -65,30 +60,24 @@ export const reinit = async (argv: string[]) => {
   console.log()
   console.log("Removing all files (keeping .git and your .env* files) ...")
 
-  // Wipe + re-fetch + rebrand atomically; roll back to the pre-reinit commit on any failure (commit runs last).
-  try {
-    emptyDir(target)
-
-    console.log("Fetching the latest ZeroStarter ...")
-    overlayZerostarter(target)
-
-    console.log("Rebranding ...")
-    convertRepo(target, { name })
-
-    console.log("Installing dependencies ...")
-    bunInstall(target)
-
-    seedEnv(target)
-    gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
-  } catch (err) {
-    gitResetHard(target)
-    console.log(
-      yellow(
-        "reinit failed; restored your committed files (deleted gitignored files, except .env*, are gone).",
-      ),
-    )
-    throw err
-  }
+  // Wipe + re-fetch + rebrand atomically; withRollback resets to the pre-reinit commit on any failure.
+  await withRollback(
+    target,
+    yellow(
+      "reinit failed; restored your committed files (deleted gitignored files, except .env*, are gone).",
+    ),
+    () => {
+      emptyDir(target)
+      console.log("Fetching the latest ZeroStarter ...")
+      overlayZerostarter(target)
+      console.log("Rebranding ...")
+      convertRepo(target, { name })
+      console.log("Installing dependencies ...")
+      bunInstall(target)
+      seedEnv(target)
+      gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
+    },
+  )
 
   console.log(
     `\n${green("✓")} ${name} re-scaffolded; .git history, remote, and .env* files are intact.`,

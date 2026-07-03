@@ -1,6 +1,7 @@
 import { join } from "node:path"
 
 import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
+import { AUTHOR_FIELDS } from "@/pkg"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -29,7 +30,13 @@ const removeForkExcludes = (root: string): void => {
   if (!exists(ignore)) return
   for (const line of read(ignore).split("\n")) {
     const path = line.trim()
-    if (path && !path.startsWith("#")) remove(p(root, path))
+    if (!path || path.startsWith("#")) continue
+    if (/[*?![\]]/.test(path)) {
+      throw new Error(
+        `.gitpickignore entry "${path}" is not a literal path; the in-place converter only supports literal paths (a glob or negation would diverge from gitpick's fetch).`,
+      )
+    }
+    remove(p(root, path))
   }
   remove(ignore)
 }
@@ -61,18 +68,20 @@ const scaffoldContent = (root: string, brand: Brand): void => {
 
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
 export const fixDangling = (root: string): void => {
-  const fonts = p(root, "web/next/src/lib/fonts.ts")
-  const caveatOk = removeMatch(fonts, CAVEAT_EXPORT)
-  const newsreaderOk = removeMatch(fonts, NEWSREADER_EXPORT)
-  const navOk = removeMatch(p(root, "web/next/src/components/navbar/home.tsx"), HIRE_NAV)
-  if (!caveatOk || !newsreaderOk) {
+  const fontsPath = p(root, "web/next/src/lib/fonts.ts")
+  const navPath = p(root, "web/next/src/components/navbar/home.tsx")
+  removeMatch(fontsPath, CAVEAT_EXPORT)
+  removeMatch(fontsPath, NEWSREADER_EXPORT)
+  removeMatch(navPath, HIRE_NAV)
+  // A gone marker is fine (the starter dropped it, so sync over an evolving main is a no-op); one that survived the strip means the regex drifted and must be fixed, else the fork ships refs to the excluded fonts/route.
+  if (exists(fontsPath) && read(fontsPath).includes("fonts/marketing/")) {
     throw new Error(
-      "fonts.ts: caveat/newsreader export not found (starter drift). Update packages/cli/src/convert.ts.",
+      "fonts.ts still references fonts/marketing/ after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
-  if (!navOk) {
+  if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {
     throw new Error(
-      "navbar/home.tsx: /hire entry not found (starter drift). Update packages/cli/src/convert.ts.",
+      "navbar/home.tsx still has the /hire entry after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
 }
@@ -84,12 +93,7 @@ const rebrand = (root: string, b: Brand): void => {
   const pkg = readJson<Record<string, unknown>>(path)
   pkg.name = slugify(b.name)
   pkg.version = "0.0.0"
-  delete pkg.homepage
-  delete pkg.bugs
-  delete pkg.license
-  delete pkg.author
-  delete pkg.repository
-  delete pkg.funding
+  for (const field of AUTHOR_FIELDS) delete pkg[field]
   writeJson(path, pkg)
 }
 

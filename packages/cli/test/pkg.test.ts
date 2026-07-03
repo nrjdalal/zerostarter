@@ -142,6 +142,32 @@ describe("mergePkg", () => {
     expect(out.description).toBe("latest")
   })
 
+  test("merges optionalDependencies (the takumi natives case): fork extras survive", () => {
+    const out = ws(
+      { optionalDependencies: { "@takumi-rs/core-linux": "1.0.0", "fork-opt": "2.0.0" } },
+      {
+        optionalDependencies: {
+          "@takumi-rs/core-linux": "1.1.0",
+          "@takumi-rs/core-darwin": "1.1.0",
+        },
+      },
+    )
+    expect(out.optionalDependencies).toEqual({
+      "@takumi-rs/core-linux": "1.1.0",
+      "@takumi-rs/core-darwin": "1.1.0",
+      "fork-opt": "2.0.0",
+    })
+  })
+
+  test("merges peerDependencies and resolutions too", () => {
+    const out = ws(
+      { peerDependencies: { react: "18" }, resolutions: { "fork-res": "1" } },
+      { peerDependencies: { next: "15" } },
+    )
+    expect(out.peerDependencies).toEqual({ react: "18", next: "15" })
+    expect(out.resolutions).toEqual({ "fork-res": "1" })
+  })
+
   test("does not write empty dependency objects when neither side has any", () => {
     const out = ws({ name: "web" }, { name: "web" })
     expect("dependencies" in out).toBe(false)

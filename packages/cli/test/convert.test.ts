@@ -74,9 +74,14 @@ describe("fixDangling", () => {
     expect(() => fixDangling(dir)).toThrow(/fonts\.ts/)
   })
 
-  test("throws when the /hire entry is gone", () => {
-    setup(FONTS, `export const links = []\n`)
-    expect(() => fixDangling(dir)).toThrow(/hire/)
+  test("no-ops when the starter already dropped the author fonts and /hire (evolution)", () => {
+    setup(
+      `import localFont from "next/font/local"\n\nexport const dmSans = localFont({ src: "x" })\n`,
+      `export const links = [\n    { href: "/dashboard", label: "Dash" },\n]\n`,
+    )
+    expect(() => fixDangling(dir)).not.toThrow()
+    expect(fonts()).toContain("dmSans")
+    expect(nav()).toContain("/dashboard")
   })
 })
 
