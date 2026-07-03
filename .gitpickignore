@@ -1,8 +1,9 @@
 # directories/files that a scaffolded or synced ZeroStarter fork does not take from the starter.
 # only affects gitpick fetches; a plain `git clone` of this repo still gets everything.
 
-# sync restores these fork-owned paths after the overlay (init seeds them, a re-baseline keeps them):
-# PRESERVE_ON_SYNC - AUDIT.md, web/next/src/app/favicon.ico, web/next/src/app/icon.svg
+# sync restores these fork-owned paths after the overlay (init seeds them, a re-baseline keeps them).
+# packages/db/drizzle + src/schema are the fork's own applied DB state; overlaying the starter's would corrupt its migration history.
+# PRESERVE_ON_SYNC - AUDIT.md, web/next/src/app/favicon.ico, web/next/src/app/icon.svg, packages/db/drizzle/, packages/db/src/schema/
 
 # custom directories
 .github/assets/
