@@ -21,6 +21,7 @@ import type { ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/api-status"
+import { LandingBackground } from "@/components/marketing/landing-background"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -150,8 +151,8 @@ const shikiReset =
 
 function CodeWindow({ label, html }: { label: string; html: string }) {
   return (
-    <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left shadow-sm">
-      <div className="bg-muted/40 flex items-center gap-2 border-b px-4 py-2.5">
+    <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left">
+      <div className="bg-card flex items-center gap-2 border-b px-4 py-2.5">
         <span className="flex gap-1.5" aria-hidden>
           <span className="bg-muted-foreground/25 size-3 rounded-full" />
           <span className="bg-muted-foreground/25 size-3 rounded-full" />
@@ -160,7 +161,7 @@ function CodeWindow({ label, html }: { label: string; html: string }) {
         <span className="text-muted-foreground ml-1.5 font-mono text-xs">{label}</span>
       </div>
       <div
-        className={cn("overflow-x-auto p-5", shikiReset, "[&_pre]:leading-relaxed!")}
+        className={cn("overflow-x-auto py-5", shikiReset, "[&_pre]:leading-relaxed!")}
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ colorScheme: "light dark" }}
       />
@@ -172,7 +173,7 @@ function CodeCard({ html }: { html: string }) {
   return (
     <div
       className={cn(
-        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border p-4",
+        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border py-5",
         shikiReset,
         "[&_pre]:leading-loose!",
       )}
@@ -198,9 +199,7 @@ bun run dev   # web :3000 · api :4000`
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
 // fully typed { data, error }
-const { data, error } = await unwrap(
-  apiClient.health.$get(),
-)`
+const { data, error } = await unwrap(apiClient.health.$get())`
 
   const agentCode = `# sign an agent in, drive the app
 agent-browser open http://localhost:3000
@@ -228,7 +227,8 @@ docker compose up --build`
   ])
 
   return (
-    <main className="flex flex-col">
+    <main className="relative isolate flex flex-col">
+      <LandingBackground />
       {/* Hero */}
       <section aria-label="Hero" className="flex min-h-svh flex-col">
         <div className="flex flex-1 flex-col justify-center px-4 py-24 text-center md:px-6">
@@ -246,28 +246,26 @@ docker compose up --build`
               {site.tagline.replaceAll("-", "‑")}
             </h1>
             <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
-              {site.name} gives you the architecture, practices, automation, and documentation
-              behind a clean SaaS codebase, so humans and agents can ship faster without creating
-              chaos.
+              {site.description}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
                 role="link"
                 size="lg"
-                className="h-11 px-6"
+                variant="secondary"
+                className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
-                Start with {site.name}
+                GitHub
               </Button>
               <Button
                 role="link"
                 size="lg"
-                variant="outline"
-                className="group h-11 px-6"
+                className="group h-11 px-4 md:px-6"
                 render={<Link href="/docs" />}
               >
-                Read the docs
+                Get Started
                 <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
@@ -275,13 +273,13 @@ docker compose up --build`
               <ApiStatus />
             </div>
             <div className="mx-auto mt-6 max-w-2xl">
-              <CodeWindow label="Quick Start" html={initHtml} />
+              <CodeWindow label="Quickstart" html={initHtml} />
             </div>
           </div>
         </div>
 
         {/* Tech stack, pinned to the bottom of the hero */}
-        <div className="bg-muted/30 relative overflow-hidden py-6">
+        <div className="bg-sidebar relative overflow-hidden border-y py-6">
           <div className="animate-marquee flex w-max gap-10 px-6">
             {[...techStack, ...techStack].map((tech, index) => (
               <div
@@ -308,8 +306,8 @@ docker compose up --build`
               </div>
             ))}
           </div>
-          <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
-          <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
+          <div className="from-sidebar pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
+          <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
           <style
             dangerouslySetInnerHTML={{
               __html: `@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}.animate-marquee{animation:marquee 50s linear infinite;will-change:transform}`,
@@ -351,12 +349,12 @@ docker compose up --build`
           </div>
           <div className="grid gap-3.5 sm:grid-cols-2">
             {/* Agents, full-width row */}
-            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiRobot2Line
                 aria-hidden
-                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiRobot2Line className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Human-readable. Agent-ready.</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
@@ -381,11 +379,11 @@ docker compose up --build`
             {featureCards.slice(0, 2).map((feature) => (
               <div
                 key={feature.title}
-                className="bg-muted/40 relative overflow-hidden rounded-lg border p-6"
+                className="bg-card relative overflow-hidden rounded-lg border p-6"
               >
                 <feature.icon
                   aria-hidden
-                  className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                  className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
                 />
                 <div className="relative">
                   <feature.icon className="text-muted-foreground size-5" />
@@ -396,12 +394,12 @@ docker compose up --build`
             ))}
 
             {/* Deploy, full-width row */}
-            <div className="bg-muted/40 relative grid items-stretch gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiRocketLine
                 aria-hidden
-                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiRocketLine className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
@@ -460,11 +458,11 @@ docker compose up --build`
             {featureCards.slice(2).map((feature) => (
               <div
                 key={feature.title}
-                className="bg-muted/40 relative overflow-hidden rounded-lg border p-6"
+                className="bg-card relative overflow-hidden rounded-lg border p-6"
               >
                 <feature.icon
                   aria-hidden
-                  className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                  className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
                 />
                 <div className="relative">
                   <feature.icon className="text-muted-foreground size-5" />
@@ -475,12 +473,12 @@ docker compose up --build`
             ))}
 
             {/* Docs, full-width row */}
-            <div className="bg-muted/40 relative grid items-center gap-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+            <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiBookOpenLine
                 aria-hidden
-                className="text-foreground/[0.02] pointer-events-none absolute -bottom-8 left-5 size-32"
+                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
               />
-              <div className="relative">
+              <div className="relative sm:-mr-4">
                 <RiBookOpenLine className="text-muted-foreground size-5" />
                 <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
@@ -490,9 +488,9 @@ docker compose up --build`
               </div>
               <div className="relative flex flex-col gap-2 font-mono text-sm">
                 {[
-                  { route: "/docs", note: "full-text search" },
-                  { route: "/blog", note: "MDX" },
-                  { route: "/llms-full.txt", note: "generated" },
+                  { route: "/docs.md", note: "docs/<path>.md" },
+                  { route: "/blog.md", note: "blog/<path>.md" },
+                  { route: "/llms.txt", note: "llms-full.txt" },
                 ].map((row) => (
                   <a
                     key={row.route}
@@ -540,7 +538,7 @@ docker compose up --build`
 
       {/* CTA */}
       <section aria-label="Call to action" className="px-4 py-24 md:px-6">
-        <div className="bg-muted/40 mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
+        <div className="bg-card mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
           <div className="mx-auto max-w-xl">
             <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
               Start at zero. Ship like you have done this before.
@@ -555,20 +553,20 @@ docker compose up --build`
               <Button
                 role="link"
                 size="lg"
-                className="h-11 px-6"
+                variant="secondary"
+                className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
                 render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
               >
                 <RiGithubFill className="size-5" />
-                Start with {site.name}
+                GitHub
               </Button>
               <Button
                 role="link"
                 size="lg"
-                variant="outline"
-                className="group h-11 px-6"
+                className="group h-11 px-4 md:px-6"
                 render={<Link href="/docs" />}
               >
-                Read the docs
+                Get Started
                 <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
@@ -579,7 +577,7 @@ docker compose up --build`
         </div>
       </section>
 
-      <div className="border-t">
+      <div className="bg-sidebar border-t">
         <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">
           <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" />
           Made by{" "}

@@ -9,7 +9,7 @@ export function GET(req: Request) {
 
   return renderOgImage({
     sectionName: searchParams.get("section")?.slice(0, 100) || undefined,
-    title: searchParams.get("title")?.slice(0, 100) || site.name,
+    title: searchParams.get("title")?.slice(0, 100) || site.tagline,
     description: searchParams.get("description")?.slice(0, 200) || site.description,
   })
 }

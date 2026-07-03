@@ -1,51 +1,12 @@
 import { site } from "@packages/config/site"
 
-import { renderOgElement } from "@/lib/og-image"
+import { renderOgImage } from "@/lib/og-image"
 
 export const dynamic = "force-static"
 
-export async function GET() {
-  return renderOgElement(
-    <div
-      style={{
-        fontSize: 64,
-        background: "linear-gradient(135deg, #000 0%, #1a1a1a 100%)",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "white",
-        fontFamily: "system-ui",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          fontSize: 96,
-          fontWeight: "bold",
-          marginBottom: 20,
-          background: "linear-gradient(90deg, #fff 0%, #a0a0a0 100%)",
-          backgroundClip: "text",
-          color: "transparent",
-        }}
-      >
-        {site.name}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          fontSize: 32,
-          color: "#a0a0a0",
-          textAlign: "center",
-          maxWidth: 800,
-          paddingLeft: 40,
-          paddingRight: 40,
-        }}
-      >
-        {site.description}
-      </div>
-    </div>,
-  )
+export function GET() {
+  return renderOgImage({
+    title: site.tagline,
+    description: site.description,
+  })
 }
