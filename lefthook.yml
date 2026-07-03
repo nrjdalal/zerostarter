@@ -19,5 +19,5 @@ pre-push:
       run: bun audit --audit-level high
       only:
         - ref: canary
-    ensure-main:
-      run: bun .github/scripts/ensure-remote-main.ts {1}
+    ensure-branches:
+      run: bun .github/scripts/ensure-remote-branches.ts {1}
