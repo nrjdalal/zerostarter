@@ -5,8 +5,17 @@ import { exists, readJson, remove, writeJson } from "@/io"
 
 import { orange, yellow } from "./_prompt"
 
-// package.json fields the starter carries that a fork does not inherit (mirrors convert.ts rebrand).
-const AUTHOR_FIELDS = ["homepage", "bugs", "license", "author", "repository", "funding"]
+// package.json identity fields a fork owns: sync restores the fork's value (the overlay brought the
+// starter's) or drops the starter's if the fork set none. Mirrors convert.ts rebrand's deletions.
+const IDENTITY_FIELDS = [
+  "description",
+  "homepage",
+  "bugs",
+  "license",
+  "author",
+  "repository",
+  "funding",
+]
 
 // The paths sync restores after the overlay are declared once in the starter's .gitpickignore as
 // `# PRESERVE_ON_SYNC - <comma-separated>` (files init seeds but a fork keeps: favicon, audit record).
@@ -26,6 +35,7 @@ const parsePreserve = (gitpickignore: string): string[] => {
 interface Pkg {
   name?: string
   version?: string
+  scripts?: Record<string, string>
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   [key: string]: unknown
@@ -69,15 +79,19 @@ export const sync = async (argv: string[]) => {
   // gitpick never copies the ignore file, but drop any that slipped through.
   remove(join(target, ".gitpickignore"))
 
-  // The overlay replaced package.json with the starter's; restore the fork's identity and keep its
-  // extra dependencies while taking the starter's latest versions for the ones they share.
+  // The overlay replaced package.json with the starter's. Restore the fork's identity and custom
+  // scripts, and keep its extra dependencies while taking the starter's latest shared versions.
   if (forkPkg && exists(pkgPath)) {
     const next = readJson<Pkg>(pkgPath)
     next.name = forkPkg.name
     next.version = forkPkg.version
-    for (const field of AUTHOR_FIELDS) delete next[field]
+    for (const field of IDENTITY_FIELDS) {
+      if (field in forkPkg) next[field] = forkPkg[field]
+      else delete next[field]
+    }
     next.dependencies = { ...forkPkg.dependencies, ...next.dependencies }
     next.devDependencies = { ...forkPkg.devDependencies, ...next.devDependencies }
+    next.scripts = { ...forkPkg.scripts, ...next.scripts }
     writeJson(pkgPath, next)
   }
 
