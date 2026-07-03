@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { dirname } from "node:path"
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
 
 export const exists = (path: string): boolean => existsSync(path)
 
@@ -12,6 +12,13 @@ export const write = (path: string, content: string): void => {
 
 export const remove = (path: string): void => {
   rmSync(path, { force: true, recursive: true })
+}
+
+// Remove every entry in `dir` except the keep list (default .git, .env), preserving git history and secrets.
+export const emptyDir = (dir: string, keep: string[] = [".git", ".env"]): void => {
+  for (const entry of readdirSync(dir)) {
+    if (!keep.includes(entry)) rmSync(join(dir, entry), { force: true, recursive: true })
+  }
 }
 
 export const readJson = <T = Record<string, unknown>>(path: string): T =>
