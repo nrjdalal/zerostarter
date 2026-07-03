@@ -47,7 +47,7 @@ bun run db:migrate
 
 ## `zerostarter sync`
 
-`bunx zerostarter sync` re-baselines an **existing fork** on ZeroStarter's latest scaffold. A gitpick overlay updates the starter files while your content, `public/marketing`, branding (`site.ts`), `package.json` identity, and favicon are preserved and the files you added are untouched. It requires a clean tree and lands as a reviewable diff you commit yourself (no auto-commit); on any failure it rolls the tree back to your last commit.
+`bunx zerostarter sync` re-baselines an **existing fork** on ZeroStarter's latest scaffold. A gitpick overlay updates the starter files while your content, `public/marketing`, branding (`site.ts`), `package.json` identity, and favicon are preserved and the files you added are untouched. It requires a clean tree and lands as a reviewable diff you commit yourself (no auto-commit); if the overlay or reconciliation fails it rolls the tree back to your last commit, while a later dependency-install failure leaves the synced files in place for you to re-run `bun install`.
 
 ## `bun run dev`
 
