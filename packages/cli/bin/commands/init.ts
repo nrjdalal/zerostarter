@@ -90,9 +90,9 @@ export const init = async (argv: string[]) => {
   // A non-empty, non-clone target is scaffolded into a subdirectory of itself (after the name prompt), so bun installs one level deeper.
   const intoSubdir = !convertInPlace && !isEmptyDir(firstTarget)
 
-  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail. Check the directory bun installs under: the target itself when scaffolding into a subdir of it, else its parent.
+  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail. Check the directory bun installs under: the name-prompt path scaffolds into a subdir of the cwd (the entered name resolves against cwd, not the positional), so check cwd there; otherwise the target's parent.
   if (!convertInPlace && !values["dry-run"]) {
-    const root = insideExistingProject(intoSubdir ? firstTarget : dirname(firstTarget))
+    const root = insideExistingProject(intoSubdir ? process.cwd() : dirname(firstTarget))
     if (root) {
       throw new Error(
         `Cannot scaffold inside an existing project (a workspace was found at ${root}). Run it in a fresh directory outside that project.`,
