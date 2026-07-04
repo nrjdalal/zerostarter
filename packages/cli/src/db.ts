@@ -1,29 +1,13 @@
-import { execFileSync } from "node:child_process"
 import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 
 import { exists, read, write } from "@/io"
+import { ok, run, runLive } from "@/spawn"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
-// Capture a command's output (throws on non-zero); keeps its progress out of the CLI's own output.
-const capture = (cmd: string, args: string[], cwd: string): string =>
-  execFileSync(cmd, args, {
-    cwd,
-    encoding: "utf8",
-    maxBuffer: 1 << 26,
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-
 // True when a Docker daemon is reachable (pglaunch needs it to start a Postgres container).
-export const dockerRunning = (): boolean => {
-  try {
-    execFileSync("docker", ["info"], { stdio: "ignore" })
-    return true
-  } catch {
-    return false
-  }
-}
+export const dockerRunning = (): boolean => ok("docker", ["info"])
 
 // Ensure .env exists as a 1-to-1 copy of .env.example; returns its path.
 const ensureEnv = (dir: string): string => {
@@ -72,28 +56,24 @@ export const hasPostgresUrl = (dir: string): boolean => {
   return exists(envPath) && getEnvVar(envPath, "POSTGRES_URL") !== ""
 }
 
-// A launched (or reused) local Postgres: the connection URL, its Docker container name, and whether pglaunch reused an already-running container (reused) rather than starting a new one.
-type Launch = { url: string; container: string; reused: boolean }
+// A launched (or reused) local Postgres: its connection URL and Docker container name.
+type Launch = { url: string; container: string }
 
-// Pull the connection URL and container name out of pglaunch's output. pglaunch prints both whether it just started a container (`... name "<name> :<port>" started ...`) or, on a name collision, reports an already-running one (`... similar name "<name>" running ...`); the URL line is ANSI-colored. reused is true unless we saw an explicit "started" line, so an ambiguous output is treated as a reuse and never abandoned. Returns null when no URL is present.
+// Pull the connection URL and container name out of pglaunch's output. pglaunch prints both whether it just started a container (`... name "<name> :<port>" started ...`) or, on a name collision, reports an already-running one (`... similar name "<name>" running ...`); the URL line may be ANSI-colored. Returns null when no URL is present.
 export const parseLaunch = (out: string): Launch | null => {
   const url = out.match(/postgres(?:ql)?:\/\/[\w.:@\-/%?=&]+/)
   if (!url) return null
   const started = out.match(/name "([^" ]+) :\d+" started/)
   const similar = out.match(/similar name "([^"]+)"/)
-  return {
-    url: url[0],
-    container: started ? started[1] : similar ? similar[1] : "",
-    reused: !started,
-  }
+  return { url: url[0], container: started ? started[1] : similar ? similar[1] : "" }
 }
 
-// Run pglaunch (-k keeps the container) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
+// Run pglaunch (-k keeps the container, --bun runs it under the Bun runtime) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
 const runPglaunch = (dir: string, confirm: boolean): Launch | null => {
-  const args = confirm ? [PGLAUNCH, "-k", "-c"] : [PGLAUNCH, "-k"]
+  const args = confirm ? ["--bun", PGLAUNCH, "-k", "-c"] : ["--bun", PGLAUNCH, "-k"]
   let out: string
   try {
-    out = capture("bunx", args, dir)
+    out = run("bunx", args, dir)
   } catch (err) {
     const e = err as { stdout?: string; stderr?: string }
     out = [e.stdout, e.stderr].filter(Boolean).join("\n")
@@ -110,45 +90,17 @@ const sleep = (ms: number): void => {
 const waitForPostgres = (container: string): void => {
   if (!container) return
   for (let i = 0; i < 30; i++) {
-    try {
-      execFileSync("docker", ["exec", container, "pg_isready", "-U", "postgres"], {
-        stdio: "ignore",
-      })
-      return
-    } catch {
-      sleep(1000)
-    }
+    if (ok("docker", ["exec", container, "pg_isready", "-U", "postgres"])) return
+    sleep(1000)
   }
 }
 
-// Provision a local database, point .env at it, and apply the shipped migrations (a fresh fork ships its migration files, so db:generate is not needed). Reuses an already-running local Postgres when one exists.
+// Provision a local Postgres (reusing an already-running one), point .env at it, wait for it to accept connections, and apply the migrations with live progress. Needs the project's dependencies (drizzle-kit), so the caller runs bun install first.
 export const provisionDatabase = (dir: string): void => {
   const envPath = ensureEnv(dir)
-  const migrate = (l: Launch): void => {
-    setEnvVar(envPath, "POSTGRES_URL", l.url)
-    waitForPostgres(l.container)
-    capture("bun", ["run", "db:migrate"], dir)
-  }
-
-  const launched = runPglaunch(dir, false)
-
-  // Reused an already-running database: migrate in place and let any failure surface, rather than abandoning a database that may hold data for a fresh, empty one.
-  if (launched && launched.reused) {
-    migrate(launched)
-    return
-  }
-
-  // A container we just created: if it rejects the migrations, replace it with a clean one (nothing to lose since it is empty).
-  if (launched) {
-    try {
-      migrate(launched)
-      return
-    } catch {
-      // Fall through to a fresh container below.
-    }
-  }
-
-  const fresh = runPglaunch(dir, true)
-  if (!fresh) throw new Error("pglaunch did not print a connection URL")
-  migrate(fresh)
+  const launched = runPglaunch(dir, false) || runPglaunch(dir, true)
+  if (!launched) throw new Error("pglaunch did not print a connection URL")
+  setEnvVar(envPath, "POSTGRES_URL", launched.url)
+  waitForPostgres(launched.container)
+  runLive("bun", ["run", "db:migrate"], dir)
 }

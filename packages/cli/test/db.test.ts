@@ -50,18 +50,17 @@ test("hasPostgresUrl reflects whether POSTGRES_URL is set", () => {
   expect(hasPostgresUrl(dir)).toBe(true)
 })
 
-test("parseLaunch reads a freshly started container and marks it not reused", () => {
+test("parseLaunch reads the URL and container from a freshly started container", () => {
   const out =
     '- A container with name "my-app-a1B2 :5433" started successfully.\n\n' +
     "  POSTGRES_URL=postgres://postgres:postgres@localhost:5433/postgres"
   expect(parseLaunch(out)).toEqual({
     url: "postgres://postgres:postgres@localhost:5433/postgres",
     container: "my-app-a1B2",
-    reused: false,
   })
 })
 
-test("parseLaunch reuses the container pglaunch reports on a name collision", () => {
+test("parseLaunch reads the reused URL and container pglaunch prints on a name collision", () => {
   // pglaunch exits non-zero but prints the already-running container's URL (ANSI-wrapped).
   const out =
     '- A container by similar name "my-app-pDtx" running at port 4611.\n\n' +
@@ -70,15 +69,6 @@ test("parseLaunch reuses the container pglaunch reports on a name collision", ()
   expect(parseLaunch(out)).toEqual({
     url: "postgres://postgres:postgres@localhost:4611/postgres",
     container: "my-app-pDtx",
-    reused: true,
-  })
-})
-
-test("parseLaunch treats a URL with no start line as a reuse (never abandoned)", () => {
-  expect(parseLaunch("POSTGRES_URL=postgres://postgres:postgres@localhost:7000/postgres")).toEqual({
-    url: "postgres://postgres:postgres@localhost:7000/postgres",
-    container: "",
-    reused: true,
   })
 })
 

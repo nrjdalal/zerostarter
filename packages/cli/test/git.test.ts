@@ -5,13 +5,13 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import {
+  bunAvailable,
   gitBranch,
   gitCommitAll,
   gitInit,
   gitIsClean,
   gitResetHard,
   gitRestore,
-  requireBun,
 } from "@/git"
 
 let dir: string
@@ -83,17 +83,22 @@ test("gitRestore drops overlay-added untracked files under a preserved dir", () 
   expect(existsSync(join(dir, "db/0001_orphan.sql"))).toBe(false)
 })
 
-test("requireBun passes when the bun probe succeeds (incl. the real bun on PATH)", () => {
-  expect(() => requireBun(() => {})).not.toThrow()
-  expect(() => requireBun()).not.toThrow()
+const fail = () => {
+  throw Object.assign(new Error("spawnSync bun ENOENT"), { code: "ENOENT" })
+}
+
+test("bunAvailable is true when the probe succeeds, false when it fails", () => {
+  // no runtime signal, no bun user-agent → only the probe decides
+  expect(bunAvailable(() => {}, false, "")).toBe(true)
+  expect(bunAvailable(fail, false, "")).toBe(false)
 })
 
-test("requireBun rethrows a Bun install hint when the probe fails (ENOENT)", () => {
-  expect(() =>
-    requireBun(() => {
-      throw Object.assign(new Error("spawnSync bun ENOENT"), { code: "ENOENT" })
-    }),
-  ).toThrow(/Bun.*bun\.sh/)
+test("bunAvailable trusts the Bun runtime and the bunx user-agent without probing", () => {
+  // a failing probe must not matter once a trustworthy signal is present
+  expect(bunAvailable(fail, true, "")).toBe(true)
+  expect(bunAvailable(fail, false, "bun/1.3.14 npm/? node/v24")).toBe(true)
+  // a non-bun user-agent does not count
+  expect(bunAvailable(fail, false, "npm/10.8.0 node/v22")).toBe(false)
 })
 
 test("gitResetHard restores tracked files, removes untracked, keeps gitignored", () => {

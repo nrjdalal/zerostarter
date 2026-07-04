@@ -8,7 +8,7 @@ Two commands take you from nothing to a running, signed-in app.
 
 <Callout type="info" title="Prerequisites">
 
-Bun >= 1.3.14 must be installed (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Run the CLI with `bunx`, not `npx`: it shells out to `bun` and `bunx` to fetch, install, and migrate, and it exits early with an install hint if Bun is missing. Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
+Bun is required (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Run the CLI with `bunx`, not `npx`: it shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress. If Bun is missing it shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you. Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
 
 </Callout>
 
@@ -25,7 +25,7 @@ The rest of this page is what those commands do, and the one thing to check if t
 
 - fetches the latest ZeroStarter and strips the sample content,
 - rebrands the copy to your project name,
-- installs dependencies with Bun,
+- installs dependencies with Bun (progress streams live),
 - provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
 - writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET`.
 
