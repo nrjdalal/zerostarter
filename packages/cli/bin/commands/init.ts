@@ -93,15 +93,15 @@ export const init = async (argv: string[]) => {
   console.log()
   if (!isZerostarter(target)) {
     console.log("Fetching the latest ZeroStarter ...")
-    fetchZerostarter(target)
+    await fetchZerostarter(target)
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
   if (!exists(join(target, ".git"))) {
-    gitInit(target)
-    gitCommitAll(target, "ci(init): scaffold from zerostarter")
+    await gitInit(target)
+    await gitCommitAll(target, "ci(init): scaffold from zerostarter")
     // Seed `main` locally at the scaffold commit so canary leads it; the pre-push hook publishes main on the second push (canary is pushed first, so GitHub makes it the default branch).
-    gitBranch(target, "main")
+    await gitBranch(target, "main")
   }
 
   console.log("Removing starter content and rebranding ...")
@@ -109,14 +109,14 @@ export const init = async (argv: string[]) => {
 
   console.log("Installing dependencies ...")
   console.log()
-  bunInstall(target)
+  await bunInstall(target)
 
-  gitCommitAll(target, `ci(init): re-baseline as ${name}`)
+  await gitCommitAll(target, `ci(init): re-baseline as ${name}`)
 
   seedEnv(target)
 
   let dbReady = false
-  const dockerUp = dockerRunning()
+  const dockerUp = await dockerRunning()
   const dbConfigured = hasPostgresUrl(target)
   let wantDb = false
   if (dbConfigured) {
@@ -125,6 +125,7 @@ export const init = async (argv: string[]) => {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
+    console.log()
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
@@ -134,7 +135,7 @@ export const init = async (argv: string[]) => {
     try {
       console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
       console.log()
-      provisionDatabase(target)
+      await provisionDatabase(target)
       console.log()
       dbReady = true
     } catch (err) {

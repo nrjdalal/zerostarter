@@ -44,7 +44,7 @@ export const sync = async (argv: string[]) => {
 
   const target = resolve(positionals[0] ?? ".")
 
-  requireCleanRepo(
+  await requireCleanRepo(
     target,
     `No git repository in ${target}. Run sync inside an existing fork.`,
     "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
@@ -71,8 +71,8 @@ export const sync = async (argv: string[]) => {
   await withRollback(
     target,
     yellow("Sync failed; rolled the working tree back to your last commit."),
-    () => {
-      overlayZerostarter(target)
+    async () => {
+      await overlayZerostarter(target)
       // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar).
       fixDangling(target)
       // gitpick never copies the ignore file, but drop any that slipped through.
@@ -83,13 +83,13 @@ export const sync = async (argv: string[]) => {
         writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
       }
       // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
-      gitRestore(target, preserve)
+      await gitRestore(target, preserve)
     },
   )
 
   console.log("Installing dependencies ...")
   console.log()
-  bunInstall(target)
+  await bunInstall(target)
 
   console.log()
   console.log(orange("Synced to the latest ZeroStarter."))
