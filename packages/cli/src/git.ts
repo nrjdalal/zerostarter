@@ -7,10 +7,11 @@ import { ok, run, runTail } from "@/spawn"
 export const bunInstall = async (dir: string): Promise<void> => {
   await runTail("bun", ["install"], {
     cwd: dir,
+    label: "Installing dependencies",
     summarize: (out) =>
       (out.match(/[\d,]+ packages installed[^\n]*/g) ?? out.match(/Checked [^\n]*install[^\n]*/g))
         ?.at(-1)
-        ?.trim() ?? "Dependencies installed.",
+        ?.trim() ?? "Dependencies installed",
   })
 }
 

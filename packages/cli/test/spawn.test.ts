@@ -38,7 +38,11 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
         "-e",
         "for (let i = 0; i < 8; i++) console.log('pkg ' + i); console.log('42 packages installed')",
       ],
-      { lines: 5, summarize: (out) => out.match(/[\d,]+ packages installed[^\n]*/)?.[0] ?? "" },
+      {
+        lines: 5,
+        label: "Installing",
+        summarize: (out) => out.match(/[\d,]+ packages installed[^\n]*/)?.[0] ?? "",
+      },
     )
   } finally {
     stdout.write = origWrite

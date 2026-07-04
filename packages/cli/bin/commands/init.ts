@@ -8,7 +8,19 @@ import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "
 import { exists } from "@/io"
 
 import { ensureBun } from "./_bun"
-import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
+import {
+  cyan,
+  green,
+  intro,
+  isInteractive,
+  logStep,
+  logWarn,
+  orange,
+  outro,
+  promptConfirm,
+  promptText,
+  yellow,
+} from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
@@ -79,21 +91,22 @@ export const init = async (argv: string[]) => {
     return
   }
 
+  intro(cyan("zerostarter"))
+
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
       yellow(`Convert ${target} in place? This rewrites files and commits.`),
       false,
     )
     if (!ok) {
-      console.log("Aborted.")
+      outro("Aborted")
       return
     }
   }
 
-  console.log()
   if (!isZerostarter(target)) {
-    console.log("Fetching the latest ZeroStarter ...")
     await fetchZerostarter(target)
+    logStep("Fetched the latest ZeroStarter")
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
@@ -104,10 +117,9 @@ export const init = async (argv: string[]) => {
     await gitBranch(target, "main")
   }
 
-  console.log("Removing starter content and rebranding ...")
   convertRepo(target, brand)
+  logStep(`Rebranded to ${name}`)
 
-  console.log("Installing dependencies ...")
   await bunInstall(target)
 
   await gitCommitAll(target, `ci(init): re-baseline as ${name}`)
@@ -119,12 +131,11 @@ export const init = async (argv: string[]) => {
   const dbConfigured = hasPostgresUrl(target)
   let wantDb = false
   if (dbConfigured) {
-    if (values.db) console.log(yellow("  --db ignored: POSTGRES_URL is already set in .env."))
+    if (values.db) logWarn("--db ignored: POSTGRES_URL is already set in .env.")
   } else if (values.db) {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
-    console.log()
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
@@ -142,19 +153,17 @@ export const init = async (argv: string[]) => {
           ? err.message
           : String(err)
       if (hasPostgresUrl(target)) {
-        console.log(
-          yellow("\n  Postgres is provisioned, but the migration failed; run bun run db:migrate."),
+        logWarn(
+          "Postgres is provisioned, but the migration failed; run bun run db:migrate.",
+          detail ? [detail] : [],
         )
       } else {
-        console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
+        logWarn("Database setup failed; set POSTGRES_URL in .env yourself.", detail ? [detail] : [])
       }
-      if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
-    console.log(
-      yellow(
-        "\n  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
-      ),
+    logWarn(
+      "Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
     )
   }
 
@@ -164,7 +173,8 @@ export const init = async (argv: string[]) => {
     ["web/next/public", "your logo and assets"],
   ]
 
-  console.log(`\n${green("✓")} ${name} is ready.\n`)
+  outro(green(`${name} is ready`))
+  console.log()
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
   if (!hasPostgresUrl(target)) {

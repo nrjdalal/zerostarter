@@ -104,6 +104,7 @@ export const provisionDatabase = async (dir: string): Promise<void> => {
   const count = migrationCount(dir)
   await runTail("bun", ["run", "db:migrate"], {
     cwd: dir,
+    label: "Provisioning a local Postgres",
     summarize: (out, ms) =>
       out.includes("migrations applied successfully")
         ? `${count} migration${count === 1 ? "" : "s"} applied ${formatDuration(ms)}`
