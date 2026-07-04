@@ -53,6 +53,11 @@ export const logStep = (message: string, detail: string[] = []): void => {
   for (const line of detail) process.stdout.write(`${gray(S.bar)}  ${line}\n`)
 }
 
+// A success line (green ◇ and green message) for a completed milestone.
+export const logSuccess = (message: string): void => {
+  process.stdout.write(`${gray(S.bar)}\n${green(S.submit)}  ${green(message)}\n`)
+}
+
 // An informational line (cyan ◆) in the flow.
 export const logInfo = (message: string): void => {
   process.stdout.write(`${gray(S.bar)}\n${cyan(S.active)}  ${message}\n`)

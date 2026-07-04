@@ -11,11 +11,11 @@ import { ensureBun } from "./_bun"
 import {
   cancel,
   cyan,
-  green,
   hyperlink,
   intro,
   isInteractive,
   logStep,
+  logSuccess,
   logWarn,
   note,
   orange,
@@ -174,7 +174,7 @@ export const init = async (argv: string[]) => {
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
-  logStep(green(`${name} is ready`))
+  logSuccess(`${name} is ready`)
   note(steps.join("\n"), "Next steps")
   note(
     [
