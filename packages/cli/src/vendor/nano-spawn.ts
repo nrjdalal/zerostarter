@@ -61,6 +61,7 @@ export const nanoSpawn = async (
   args: string[],
   options: SpawnOptions,
 ): Promise<SpawnResult> => {
+  const command = [file, ...args].join(" ")
   let [f, a, opts] = await applyForceShell(file, args, options)
   // nano-spawn concatenateShell: join into one string under a shell so Node does not warn (Node 24+).
   if (opts.shell && a.length > 0) {
@@ -82,7 +83,7 @@ export const nanoSpawn = async (
     // A readable stream that emits `error` with no listener crashes the process; ignore the benign close/pipe codes (as upstream nano-spawn does) and surface the rest as a rejection.
     const onStreamError = (err: NodeJS.ErrnoException): void => {
       if (err.code !== "ERR_STREAM_PREMATURE_CLOSE" && err.code !== "EPIPE") {
-        fail(`Command failed: ${file}`, undefined, err)
+        fail(`Command failed: ${command}`, undefined, err)
       }
     }
     if (child.stdout) {
@@ -95,11 +96,11 @@ export const nanoSpawn = async (
       child.stderr.on("data", (chunk) => (stderr += chunk))
       child.stderr.on("error", onStreamError)
     }
-    child.on("error", (err) => fail(`Command failed: ${file}`, undefined, err))
+    child.on("error", (err) => fail(`Command failed: ${command}`, undefined, err))
     child.on("close", (code, signal) => {
-      if (signal) return fail(`Command was terminated with ${signal}: ${file}`)
+      if (signal) return fail(`Command was terminated with ${signal}: ${command}`)
       if (code !== 0)
-        return fail(`Command failed with exit code ${code}: ${file}`, code ?? undefined)
+        return fail(`Command failed with exit code ${code}: ${command}`, code ?? undefined)
       resolvePromise({ stdout, stderr })
     })
   })

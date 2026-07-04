@@ -20,6 +20,8 @@ test("nanoSpawn rejects with stdout/stderr and exitCode on a non-zero exit", asy
     const e = err as SubprocessError
     expect(e.exitCode).toBe(3)
     expect(e.stderr).toContain("boom")
+    // the message carries the full command line, not just the binary
+    expect(e.message).toContain("node -e")
   }
 })
 
