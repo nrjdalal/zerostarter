@@ -50,7 +50,7 @@ export const sync = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
   )
 
-  intro(cyan("zerostarter"))
+  intro(cyan("ZeroStarter"))
 
   const rootPkg = join(target, "package.json")
   // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).

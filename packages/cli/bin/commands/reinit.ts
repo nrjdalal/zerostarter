@@ -9,7 +9,6 @@ import { emptyDir } from "@/io"
 import { ensureBun } from "./_bun"
 import {
   cyan,
-  green,
   intro,
   isInteractive,
   logStep,
@@ -59,7 +58,7 @@ export const reinit = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
   )
 
-  intro(cyan("zerostarter"))
+  intro(cyan("ZeroStarter"))
 
   if (interactive) {
     const ok = await promptConfirm(
@@ -90,7 +89,7 @@ export const reinit = async (argv: string[]) => {
     },
   )
 
-  outro(green(`${name} re-scaffolded; .git history, remote, and .env* files are intact`))
+  outro(cyan(`${name} re-scaffolded; .git history, remote, and .env* files are intact`))
   console.log()
   console.log("Next steps:")
   if (!hasPostgresUrl(target)) {

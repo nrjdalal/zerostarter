@@ -12,7 +12,7 @@ export const hyperlink = (url: string, text = url): string =>
 
 // clack support functions: a connected gutter where each turn is `│` then a symbol line.
 export const intro = (title: string): void => {
-  process.stdout.write(`${gray(S.barStart)}  ${title}\n`)
+  process.stdout.write(`\n${gray(S.barStart)}  ${title}\n`)
 }
 
 export const outro = (message: string): void => {
@@ -21,7 +21,7 @@ export const outro = (message: string): void => {
 
 // A completed step (green ◇), preceded by a gutter connector; `detail` lines sit under the bar.
 export const logStep = (message: string, detail: string[] = []): void => {
-  process.stdout.write(`${gray(S.bar)}\n${green(S.submit)}  ${message}\n`)
+  process.stdout.write(`${gray(S.bar)}\n${cyan(S.submit)}  ${message}\n`)
   for (const line of detail) process.stdout.write(`${gray(S.bar)}  ${line}\n`)
 }
 
@@ -36,9 +36,10 @@ export const logWarn = (message: string, detail: string[] = []): void => {
   for (const line of detail) process.stdout.write(`${gray(S.bar)}  ${yellow(line)}\n`)
 }
 
+// The selected option gets a green ● bullet with a bright label; the other is dimmed.
 const renderOptions = (value: boolean): string => {
-  const yes = value ? cyan(`${S.radioOn} Yes`) : dim(`${S.radioOff} Yes`)
-  const no = value ? dim(`${S.radioOff} No`) : cyan(`${S.radioOn} No`)
+  const yes = value ? `${green(S.radioOn)} Yes` : dim(`${S.radioOff} Yes`)
+  const no = value ? dim(`${S.radioOff} No`) : `${green(S.radioOn)} No`
   return `${gray(S.bar)}  ${yes} ${dim("/")} ${no}`
 }
 
@@ -46,9 +47,7 @@ const renderOptions = (value: boolean): string => {
 export const promptConfirm = async (question: string, def = true): Promise<boolean> => {
   const out = process.stdout
   if (!isInteractive()) {
-    out.write(
-      `${gray(S.bar)}\n${green(S.submit)}  ${question}\n${gray(S.bar)}  ${def ? "Yes" : "No"}\n`,
-    )
+    out.write(`${gray(S.bar)}\n${cyan(S.submit)}  ${question} ${dim(def ? "Yes" : "No")}\n`)
     return def
   }
   return new Promise<boolean>((resolve) => {
@@ -68,8 +67,7 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
       cleanup()
       out.write(`\r\x1b[K`)
       out.write(`\x1b[1A\r\x1b[K`)
-      out.write(`${green(S.submit)}  ${question}\n`)
-      out.write(`\x1b[K${gray(S.bar)}  ${value ? "Yes" : "No"}\n`)
+      out.write(`${cyan(S.submit)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
       resolve(value)
     }
     function onData(key: string): void {

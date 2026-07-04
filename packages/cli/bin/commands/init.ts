@@ -10,7 +10,6 @@ import { exists } from "@/io"
 import { ensureBun } from "./_bun"
 import {
   cyan,
-  green,
   intro,
   isInteractive,
   logStep,
@@ -91,7 +90,7 @@ export const init = async (argv: string[]) => {
     return
   }
 
-  intro(cyan("zerostarter"))
+  intro(cyan("ZeroStarter"))
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
@@ -170,10 +169,9 @@ export const init = async (argv: string[]) => {
   const tips: [string, string][] = [
     ["packages/config/src/site.ts", "your brand: name, tagline, links"],
     ["web/next/content", "your docs and blog"],
-    ["web/next/public", "your logo and assets"],
   ]
 
-  outro(green(`${name} is ready`))
+  outro(cyan(`${name} is ready`))
   console.log()
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
@@ -184,16 +182,9 @@ export const init = async (argv: string[]) => {
   console.log(`  ${orange("bun run dev")}`)
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
-  console.log(
-    "canary becomes the default branch; your next push seeds main and opens the release PR.",
-  )
   console.log("\nMake it yours:")
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
-  if (dbReady) {
-    console.log(
-      "\nEverything works out of the box: dependencies are installed and the local Postgres is migrated. Add OAuth or other credentials to .env whenever you like.",
-    )
-  } else {
+  if (!dbReady) {
     console.log(
       "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",
     )

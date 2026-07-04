@@ -1,4 +1,4 @@
-import { cyan, dim, gray, green, S } from "@/style"
+import { cyan, dim, gray, S } from "@/style"
 import { nanoSpawn } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
@@ -100,5 +100,5 @@ export const runTail = async (
   setWrap(true)
   // collapse: rewrite the active `◆ label` line above as a completed `◇ summary`
   const summary = opts.summarize(output, Date.now() - start).trim()
-  out.write(`${ESC}[1A\r${ESC}[K${green(S.submit)}  ${summary || opts.label}\n`)
+  out.write(`${ESC}[1A\r${ESC}[K${cyan(S.submit)}  ${summary || opts.label}\n`)
 }
