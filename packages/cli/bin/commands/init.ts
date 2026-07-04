@@ -21,7 +21,6 @@ import {
   outro,
   promptConfirm,
   promptText,
-  yellow,
 } from "./_prompt"
 
 const helpMessage = `Usage:
@@ -97,7 +96,7 @@ export const init = async (argv: string[]) => {
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
-      yellow(`Convert ${target} in place? This rewrites files and commits.`),
+      `Convert ${name} in place? This rewrites files and commits.`,
       false,
     )
     if (!ok) {
