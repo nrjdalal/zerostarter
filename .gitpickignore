@@ -4,7 +4,8 @@
 # sync restores these fork-owned paths after the overlay (init seeds them, a re-baseline keeps them).
 # packages/db/drizzle + src/schema are the fork's own applied DB state; overlaying the starter's would corrupt its migration history.
 # docs.config.ts describes the fork's own content/docs (also preserved); overlaying the starter's lists docs the fork lacks and fails the strict docs build.
-# PRESERVE_ON_SYNC - packages/db/drizzle/, packages/db/src/schema/, web/next/docs.config.ts, web/next/src/app/favicon.ico
+# bun.lock ships to the fork so a fresh init installs from locked versions (no slow cold resolve of the whole graph); sync keeps the fork's own lockfile.
+# PRESERVE_ON_SYNC - bun.lock, packages/db/drizzle/, packages/db/src/schema/, web/next/docs.config.ts, web/next/src/app/favicon.ico
 
 # custom directories
 .github/assets/
@@ -24,7 +25,6 @@ web/next/public/
 .coderabbit.yaml
 AGENTS.md
 AUDIT.md
-bun.lock
 CHANGELOG.md
 LICENSE.md
 packages/config/src/site.ts
