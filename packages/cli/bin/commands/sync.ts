@@ -14,7 +14,7 @@ import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
 
 import { ensureBun } from "./_bun"
-import { orange, yellow } from "./_prompt"
+import { intro, link, logStep, logWarn, note, orange, outro, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter sync [dir] [options]
@@ -50,6 +50,8 @@ export const sync = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
   )
 
+  intro(link("https://zerostarter.dev"))
+
   const rootPkg = join(target, "package.json")
   // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).
   const forkPkgs = new Map(findPackageJsons(target).map((p) => [p, readJson<Pkg>(p)]))
@@ -57,15 +59,8 @@ export const sync = async (argv: string[]) => {
   // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
   const preserve = parsePreserve(await fetchGitpickignore())
   if (preserve.length === 0) {
-    console.log(
-      yellow("Warning: no PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten."),
-    )
+    logWarn("No PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten.")
   }
-
-  console.log()
-  console.log(
-    "Overlaying the latest ZeroStarter (content, public/marketing, and site.ts preserved) ...",
-  )
 
   // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
   await withRollback(
@@ -87,15 +82,16 @@ export const sync = async (argv: string[]) => {
     },
   )
 
-  console.log("Installing dependencies ...")
-  console.log()
+  logStep("Overlaid the latest ZeroStarter (content, public/marketing, and branding preserved)")
+
   await bunInstall(target)
 
-  console.log()
-  console.log(orange("Synced to the latest ZeroStarter."))
-  console.log(
-    "Starter files were updated (edits to them were overwritten); files you added and your",
+  note(
+    [
+      "Starter files were updated (edits overwritten); your content, public/marketing, and branding were preserved.",
+      yellow(`Review the diff and commit: git -C ${target} status`),
+    ].join("\n"),
+    "Review the changes",
   )
-  console.log("content, public/marketing, and branding were preserved.")
-  console.log(yellow(`Review the diff and commit: git -C ${target} status`))
+  outro(orange("Synced to the latest ZeroStarter"))
 }

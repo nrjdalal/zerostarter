@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import pkg from "../package.json" with { type: "json" }
-import { hyperlink, red } from "./commands/_prompt"
+import { hyperlink, PAD, red } from "./commands/_prompt"
 import { init } from "./commands/init"
 import { reinit } from "./commands/reinit"
 import { sync } from "./commands/sync"
@@ -56,7 +56,7 @@ const main = async () => {
         process.exit(1)
     }
   } catch (err) {
-    console.error(red(err instanceof Error ? err.message : String(err)))
+    console.error(`\n${PAD}${red(err instanceof Error ? err.message : String(err))}`)
     process.exit(1)
   }
 }

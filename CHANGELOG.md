@@ -1,3 +1,15 @@
+## v0.0.89
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.88...v0.0.89)
+
+### 💅 Refactors
+
+- **cli:** Async spawn layer, vendoring nano-spawn (no dep / no catalog leak) ([#639](https://github.com/nrjdalal/zerostarter/pull/639))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.88
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.87...v0.0.88)
