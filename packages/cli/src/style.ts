@@ -17,8 +17,14 @@ export const dim = paint("2", "22")
 export const red = paint("31", "39", process.stderr)
 export const orange = paint("38;5;208", "39")
 
-// Spinner pulse: alternate the filled active glyph (◆) and the hollow submit glyph (◇) while work runs.
-export const PULSE = ["◆", "◇"] as const
+// Spinner pulse: blink from the hollow glyph (◇) to the filled one (◆) while work runs, so a step starts unfilled and fills in as it settles to the completed ◆.
+export const PULSE = ["◇", "◆"] as const
+
+// The active (in-progress) line for a pulse frame: only the glyph blinks, hollow (◇) → filled (◆), always cyan (never dimmed). The label stays constant (never dimmed, never blinks).
+export const pulseLabel = (frame: number, label: string): string => {
+  const i = ((frame % PULSE.length) + PULSE.length) % PULSE.length
+  return `${cyan(PULSE[i])}  ${label}`
+}
 
 // clack flow glyphs: the gutter (┌ │ └), a submitted step (◇), the active step (◆), radio bullets, and the note box border.
 export const S = {

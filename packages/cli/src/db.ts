@@ -1,9 +1,8 @@
 import { randomBytes } from "node:crypto"
-import { readdirSync } from "node:fs"
 import { join } from "node:path"
 
 import { exists, read, write } from "@/io"
-import { formatDuration, ok, run, runTail } from "@/spawn"
+import { ok, run, runTail } from "@/spawn"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
@@ -106,22 +105,9 @@ export const provisionDatabase = async (dir: string): Promise<void> => {
     throw new Error(result.out.trim() || "pglaunch did not print a connection URL")
   setEnvVar(envPath, "POSTGRES_URL", result.launch.url)
   await waitForPostgres(result.launch.container)
-  const count = migrationCount(dir)
   await runTail("bun", ["run", "db:migrate"], {
     cwd: dir,
     label: "Provisioning the database",
-    summarize: (out, ms) =>
-      out.includes("migrations applied successfully")
-        ? `${count} migration${count === 1 ? "" : "s"} applied ${formatDuration(ms)}`
-        : `Database migrated ${formatDuration(ms)}`,
+    done: "Provisioned a local Postgres database",
   })
-}
-
-// Number of drizzle migration files the fork ships; on a fresh database db:migrate applies them all.
-const migrationCount = (dir: string): number => {
-  try {
-    return readdirSync(join(dir, "packages/db/drizzle")).filter((f) => f.endsWith(".sql")).length
-  } catch {
-    return 0
-  }
 }

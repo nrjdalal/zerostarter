@@ -3,15 +3,12 @@ import { join } from "node:path"
 import { exists } from "@/io"
 import { ok, run, runTail } from "@/spawn"
 
-// Install dependencies in `dir`, showing a rolling window of bun's output that collapses to its summary line ("N packages installed [time]"). Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
+// Install dependencies in `dir`, showing a rolling window of bun's output that collapses to a done step, keeping the tail (which carries bun's "N packages installed [time]" summary line). Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
 export const bunInstall = async (dir: string): Promise<void> => {
   await runTail("bun", ["install"], {
     cwd: dir,
     label: "Installing dependencies",
-    summarize: (out) =>
-      (out.match(/[\d,]+ packages installed[^\n]*/g) ?? out.match(/Checked [^\n]*install[^\n]*/g))
-        ?.at(-1)
-        ?.trim() ?? "Dependencies installed",
+    done: "Installed dependencies",
   })
 }
 

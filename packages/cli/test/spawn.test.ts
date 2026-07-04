@@ -69,7 +69,7 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
       {
         lines: 5,
         label: "Installing",
-        summarize: (out) => out.match(/[\d,]+ packages installed[^\n]*/)?.[0] ?? "",
+        done: "Installed dependencies",
       },
     )
   } finally {
@@ -82,11 +82,11 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
   expect(all).toContain("[?7l") // auto-wrap disabled so a wide/long line can't wrap and grow the window
   expect(all).toContain("[?7h") // and re-enabled afterwards
   expect(all).toContain("pkg 0") // intermediate lines were rendered
-  expect(all).toContain("42 packages installed") // and the summary printed at the end
-  // The tail of the output stays visible under the completed step: pkg 7 is redrawn after the summary line, not erased.
-  const afterSummary = all.slice(all.lastIndexOf("[0J") + 3)
-  expect(afterSummary).toContain("42 packages installed")
-  expect(afterSummary).toContain("pkg 7")
+  // On completion it collapses to the done label and keeps the tail (last `lines` output lines) beneath.
+  const finalFrame = all.slice(all.lastIndexOf("[0J") + 3)
+  expect(finalFrame).toContain("Installed dependencies") // the done label header
+  expect(finalFrame).toContain("pkg 7") // tail retained, not erased
+  expect(finalFrame).toContain("42 packages installed") // and the last output line lands in the tail
 })
 
 // Run a failing node script that writes $ZS_TEST_STDERR to stderr, and return the rejection. The marker is passed via env (not the -e source) so it appears only in the child's captured stderr, never echoed in the SubprocessError's command message.
@@ -126,7 +126,7 @@ test("printError does not repeat output runTail already dumped", async () => {
         await runTail(
           "node",
           ["-e", "process.stderr.write(process.env.ZS_TEST_STDERR + '\\n'); process.exit(1)"],
-          { label: "Working", summarize: () => "done" },
+          { label: "Working", done: "done" },
         )
       } catch (err) {
         caught = err
