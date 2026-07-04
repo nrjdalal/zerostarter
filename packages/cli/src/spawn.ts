@@ -22,3 +22,58 @@ export const ok = async (cmd: string, args: string[]): Promise<boolean> => {
     return false
   }
 }
+
+const ESC = "\x1b"
+// Strip all CSI escape sequences (color, cursor moves, line erases) so a streamed line renders as plain text in the window without glitching the cursor math.
+const csi = new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g")
+const stripAnsi = (s: string): string => s.replace(csi, "")
+
+// Run a command showing only a rolling window of its last `lines` output lines (dimmed, in place) on a TTY, then erase the window and print summarize(fullOutput) as a single line. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it streams in full so logs are complete.
+export const runTail = async (
+  cmd: string,
+  args: string[],
+  opts: { cwd?: string; lines?: number; summarize: (output: string) => string },
+): Promise<void> => {
+  if (!process.stdout.isTTY) {
+    await runLive(cmd, args, opts.cwd)
+    return
+  }
+  const max = opts.lines ?? 5
+  const window: string[] = []
+  let rendered = 0
+  let pending = ""
+  let output = ""
+  const width = (): number => (process.stdout.columns || 80) - 1
+  const erase = (): void => {
+    if (rendered > 0) {
+      process.stdout.write(`${ESC}[${rendered}A${ESC}[0J`)
+      rendered = 0
+    }
+  }
+  const draw = (): void => {
+    erase()
+    const shown = window.slice(-max)
+    for (const line of shown) process.stdout.write(`${ESC}[2m${line.slice(0, width())}${ESC}[0m\n`)
+    rendered = shown.length
+  }
+  const onData = (chunk: string): void => {
+    output += chunk
+    pending += chunk
+    const parts = pending.split("\n")
+    pending = parts.pop() ?? ""
+    for (const raw of parts) {
+      window.push(stripAnsi(raw).replace(/\r/g, "").trimEnd())
+      draw()
+    }
+  }
+  try {
+    await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
+  } catch (err) {
+    erase()
+    process.stdout.write(output)
+    throw err
+  }
+  erase()
+  const summary = opts.summarize(output).trim()
+  if (summary) console.log(summary)
+}

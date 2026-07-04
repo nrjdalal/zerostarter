@@ -108,7 +108,6 @@ export const init = async (argv: string[]) => {
   convertRepo(target, brand)
 
   console.log("Installing dependencies ...")
-  console.log()
   await bunInstall(target)
 
   await gitCommitAll(target, `ci(init): re-baseline as ${name}`)
@@ -134,9 +133,7 @@ export const init = async (argv: string[]) => {
   if (wantDb && dockerUp) {
     try {
       console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
-      console.log()
       await provisionDatabase(target)
-      console.log()
       dbReady = true
     } catch (err) {
       const stderr = (err as { stderr?: unknown }).stderr

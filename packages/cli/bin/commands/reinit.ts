@@ -76,7 +76,6 @@ export const reinit = async (argv: string[]) => {
       console.log("Rebranding ...")
       convertRepo(target, { name })
       console.log("Installing dependencies ...")
-      console.log()
       await bunInstall(target)
       seedEnv(target)
       await gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)

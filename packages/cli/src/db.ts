@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 
 import { exists, read, write } from "@/io"
-import { ok, run, runLive } from "@/spawn"
+import { ok, run, runTail } from "@/spawn"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
@@ -100,5 +100,11 @@ export const provisionDatabase = async (dir: string): Promise<void> => {
   if (!launched) throw new Error("pglaunch did not print a connection URL")
   setEnvVar(envPath, "POSTGRES_URL", launched.url)
   await waitForPostgres(launched.container)
-  await runLive("bun", ["run", "db:migrate"], dir)
+  await runTail("bun", ["run", "db:migrate"], {
+    cwd: dir,
+    summarize: (out) =>
+      out.includes("migrations applied successfully")
+        ? "Local Postgres migrated."
+        : "Migration complete.",
+  })
 }

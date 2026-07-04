@@ -62,6 +62,7 @@ export const nanoSpawn = async (
   file: string,
   args: string[],
   options: SpawnOptions,
+  onData?: (chunk: string) => void,
 ): Promise<SpawnResult> => {
   const command = [file, ...args].join(" ")
   let [f, a, opts] = await applyForceShell(file, args, options)
@@ -90,12 +91,18 @@ export const nanoSpawn = async (
     }
     if (child.stdout) {
       child.stdout.setEncoding("utf8")
-      child.stdout.on("data", (chunk) => (stdout += chunk))
+      child.stdout.on("data", (chunk) => {
+        stdout += chunk
+        onData?.(chunk)
+      })
       child.stdout.on("error", onStreamError)
     }
     if (child.stderr) {
       child.stderr.setEncoding("utf8")
-      child.stderr.on("data", (chunk) => (stderr += chunk))
+      child.stderr.on("data", (chunk) => {
+        stderr += chunk
+        onData?.(chunk)
+      })
       child.stderr.on("error", onStreamError)
     }
     child.on("error", (err) => fail(`Command failed: ${command}`, undefined, err))
