@@ -11,7 +11,6 @@ import { ensureBun } from "./_bun"
 import {
   cancel,
   cyan,
-  hyperlink,
   intro,
   isInteractive,
   logStep,
@@ -19,6 +18,7 @@ import {
   logWarn,
   note,
   orange,
+  outro,
   promptConfirm,
   promptText,
   yellow,
@@ -93,7 +93,7 @@ export const init = async (argv: string[]) => {
     return
   }
 
-  intro(cyan(hyperlink("https://zerostarter.dev")))
+  intro(cyan("https://zerostarter.dev"))
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
@@ -182,10 +182,6 @@ export const init = async (argv: string[]) => {
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
-  note(steps.join("\n"), "Next steps", true)
-  if (!dbReady) {
-    console.log(
-      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",
-    )
-  }
+  note(steps.join("\n"), "Next steps")
+  outro(`Learn more ${cyan("https://zerostarter.dev/docs")}`)
 }

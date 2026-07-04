@@ -11,7 +11,6 @@ import {
   cancel,
   cyan,
   green,
-  hyperlink,
   intro,
   isInteractive,
   logStep,
@@ -61,7 +60,7 @@ export const reinit = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
   )
 
-  intro(cyan(hyperlink("https://zerostarter.dev")))
+  intro(cyan("https://zerostarter.dev"))
 
   if (interactive) {
     const ok = await promptConfirm(
