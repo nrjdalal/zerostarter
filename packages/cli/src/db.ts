@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 
 import { exists, read, write } from "@/io"
-import { ok, run, runTail } from "@/spawn"
+import { formatDuration, ok, run, runTail } from "@/spawn"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
@@ -102,9 +102,9 @@ export const provisionDatabase = async (dir: string): Promise<void> => {
   await waitForPostgres(launched.container)
   await runTail("bun", ["run", "db:migrate"], {
     cwd: dir,
-    summarize: (out) =>
+    summarize: (out, ms) =>
       out.includes("migrations applied successfully")
-        ? "Local Postgres migrated."
-        : "Migration complete.",
+        ? `Migrations applied successfully ${formatDuration(ms)}`
+        : `Database migrated ${formatDuration(ms)}`,
   })
 }

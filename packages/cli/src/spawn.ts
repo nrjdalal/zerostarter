@@ -28,17 +28,22 @@ const ESC = "\x1b"
 const csi = new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g")
 const stripAnsi = (s: string): string => s.replace(csi, "")
 
-// Run a command showing only a rolling window of its last `lines` output lines (dimmed, in place) on a TTY, then erase the window and print summarize(fullOutput) as a single line. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it streams in full so logs are complete.
+// Format an elapsed duration like bun's install summary: [2.77s] for >= 1s, [978.00ms] otherwise.
+export const formatDuration = (ms: number): string =>
+  ms >= 1000 ? `[${(ms / 1000).toFixed(2)}s]` : `[${ms.toFixed(2)}ms]`
+
+// Run a command showing only a rolling window of its last `lines` output lines (dimmed, in place) on a TTY, then erase the window and print a blank line + summarize(output, durationMs) so the summary sits framed where the window was. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it streams in full so logs are complete.
 export const runTail = async (
   cmd: string,
   args: string[],
-  opts: { cwd?: string; lines?: number; summarize: (output: string) => string },
+  opts: { cwd?: string; lines?: number; summarize: (output: string, durationMs: number) => string },
 ): Promise<void> => {
+  const start = Date.now()
   if (!process.stdout.isTTY) {
     await runLive(cmd, args, opts.cwd)
     return
   }
-  const max = opts.lines ?? 5
+  const max = opts.lines ?? 3
   const window: string[] = []
   let rendered = 0
   let pending = ""
@@ -74,6 +79,9 @@ export const runTail = async (
     throw err
   }
   erase()
-  const summary = opts.summarize(output).trim()
-  if (summary) console.log(summary)
+  const summary = opts.summarize(output, Date.now() - start).trim()
+  if (summary) {
+    console.log()
+    console.log(summary)
+  }
 }
