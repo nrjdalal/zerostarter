@@ -1,3 +1,15 @@
+## v0.0.88
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.87...v0.0.88)
+
+### 🚀 Enhancements
+
+- **cli:** Fix bun detection, offer to install bun, stream install/migrate progress ([#637](https://github.com/nrjdalal/zerostarter/pull/637))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.87
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.86...v0.0.87)
