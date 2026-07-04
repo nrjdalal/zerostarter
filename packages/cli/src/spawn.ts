@@ -1,5 +1,5 @@
-import { cyan, dim, gray, PAD as P, PULSE, S } from "@/style"
-import { nanoSpawn } from "@/vendor/nano-spawn"
+import { cyan, dim, gray, PAD as P, PULSE, red, S } from "@/style"
+import { nanoSpawn, SubprocessError } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
 
@@ -32,6 +32,23 @@ const stripAnsi = (s: string): string => s.replace(csi, "")
 // Format an elapsed duration like bun's install summary: [2.77s] for >= 1s, [978.00ms] otherwise.
 export const formatDuration = (ms: number): string =>
   ms >= 1000 ? `[${(ms / 1000).toFixed(2)}s]` : `[${ms.toFixed(2)}ms]`
+
+// Errors whose captured output runTail already streamed to the terminal in full, so printError shows the message alone rather than repeating the tail.
+const dumped = new WeakSet<object>()
+
+// Top-level error renderer: the message in red, plus the tail of a failed subprocess's captured output. A SubprocessError's real cause (a gitpick/git/docker failure) lives on its stdout/stderr, which the bare message omits; runTail-dumped errors skip the tail since their full output already printed.
+export const printError = (err: unknown): void => {
+  process.stderr.write(`\n${P}${red(err instanceof Error ? err.message : String(err))}\n`)
+  if (!(err instanceof SubprocessError) || dumped.has(err)) return
+  const output = (err.stderr || err.stdout || "").trim()
+  if (!output) return
+  const lines = stripAnsi(output)
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .filter(Boolean)
+    .slice(-12)
+  for (const line of lines) process.stderr.write(`${P}${dim(line)}\n`)
+}
 
 // Run a command as a clack-style step: a `label` that pulses between the filled ◆ and hollow ◇ while it runs, with a dimmed rolling window of its last `lines` output lines beneath it, collapsing on success to a completed `◆ summarize(output, durationMs)`. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.
 export const runTail = async (
@@ -118,6 +135,8 @@ export const runTail = async (
     erase()
     setWrap(true)
     out.write(output)
+    // Full output already streamed here; mark it so the top-level printError doesn't repeat the tail.
+    if (err && typeof err === "object") dumped.add(err)
     throw err
   }
   stop()
@@ -125,4 +144,12 @@ export const runTail = async (
   setWrap(true)
   const summary = opts.summarize(output, Date.now() - start).trim()
   out.write(`${P}${cyan(S.active)}  ${summary || label}\n`)
+  // Keep the tail of the output visible under the completed step as a trace, rather than erasing it.
+  const tail = window.slice(-max)
+  if (tail.length) {
+    out.write(`${P}${gray(S.bar)}\n`)
+    for (const line of tail) {
+      out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
+    }
+  }
 }

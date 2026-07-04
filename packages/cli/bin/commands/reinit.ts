@@ -1,11 +1,11 @@
 import { basename, resolve } from "node:path"
-import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
 import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
 import { emptyDir } from "@/io"
 
+import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
 import {
   cancel,
@@ -34,7 +34,7 @@ Options:
   -h, --help     Display help`
 
 export const reinit = async (argv: string[]) => {
-  const { positionals, values } = parseArgs({
+  const { positionals, values } = parseArgsOrExit(helpMessage, {
     allowPositionals: true,
     args: argv,
     options: {
