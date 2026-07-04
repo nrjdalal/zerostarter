@@ -76,7 +76,7 @@ export const init = async (argv: string[]) => {
         "Directory is not empty. Run it in an empty directory, or pass a project name: bunx zerostarter init <name>",
       )
     }
-    const answer = await promptText("Directory isn't empty. Project name")
+    const answer = await promptText("What should we name your project?")
     if (!answer) throw new Error("No directory name provided.")
     dir = answer
   }

@@ -86,8 +86,12 @@ export const runTail = async (
       draw()
     }
   }
-  // gutter connector + optional active step, then the live window renders below it
-  out.write(showLabel ? `${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n` : `${gray(S.bar)}\n`)
+  // gutter connector + optional active step + a blank gutter line, so the window sits below one gutter line whether or not there's a label
+  out.write(
+    showLabel
+      ? `${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n${gray(S.bar)}\n`
+      : `${gray(S.bar)}\n`,
+  )
   setWrap(false)
   try {
     await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
@@ -100,8 +104,9 @@ export const runTail = async (
   erase()
   setWrap(true)
   const summary = opts.summarize(output, Date.now() - start).trim()
-  // collapse: rewrite the active label line, or (no label) print the completed step below the gutter
+  // collapse: clear the blank gutter line and rewrite the active label as a completed step, or (no label) print the completed step below the gutter
   if (showLabel) {
+    out.write(`${ESC}[1A\r${ESC}[K`)
     out.write(`${ESC}[1A\r${ESC}[K${cyan(S.submit)}  ${summary || opts.label}\n`)
   } else {
     out.write(`${cyan(S.submit)}  ${summary}\n`)
