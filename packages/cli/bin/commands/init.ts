@@ -179,7 +179,8 @@ export const init = async (argv: string[]) => {
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
-  note(steps.join("\n"), green(`${name} is ready`))
+  logStep(green(`${name} is ready`))
+  note(steps.join("\n"), "Next steps")
 
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
