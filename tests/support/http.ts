@@ -56,6 +56,17 @@ export async function eventually(fn: () => Promise<void> | void, timeoutMs = 30_
   }
 }
 
+// Fetches a route that is expected to succeed, retrying while the dev server compiles it cold. On a fresh stack the first hit to a slow route (Satori OG images especially, but any page's first render) can take seconds and would otherwise race the per-test timeout.
+export async function fetchOk(url: string, init?: RequestInit): Promise<Response> {
+  let out: Response | undefined
+  await eventually(async () => {
+    const res = await fetch(url, init)
+    expect(res.ok, `${url} -> ${res.status}`).toBe(true)
+    out = res
+  })
+  return out as Response
+}
+
 // Waits for both servers so specs never race a cold stack.
 export async function waitForStack() {
   await eventually(async () => {

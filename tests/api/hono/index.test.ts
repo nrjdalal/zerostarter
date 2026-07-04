@@ -59,7 +59,8 @@ describe("rate limiter", () => {
     expect(Number(res.headers.get("ratelimit-remaining"))).toBeLessThan(RATE_LIMIT.anon)
   })
 
-  test("rate limiting keys on client IP, so local requests never share a bucket", async () => {
+  test("each direct localhost request gets a fresh bucket (no client IP, UUID fallback)", async () => {
+    // findIp is empty for a direct localhost fetch, so the limiter key falls back to a per-request randomUUIDv7 (api/hono/src/middlewares/rate-limiter.ts). Every request therefore reports a full budget minus one, rather than a shared, decrementing count. The invariant to preserve is the fallback, not IP identity.
     const first = await fetch(`${API_URL}/api/health`)
     const second = await fetch(`${API_URL}/api/health`)
     expect(first.headers.get("ratelimit-remaining")).toBe(String(RATE_LIMIT.anon - 1))

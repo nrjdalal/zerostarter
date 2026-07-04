@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser, SEARCH_HOTKEY } from "@/browser"
+import { fetchOk } from "@/http"
 import { DOCS_PAGES } from "@/surface"
 import { WEB_URL } from "@/urls"
 
@@ -17,9 +18,7 @@ function htmlEscape(text: string): string {
 describe("docs pages (all of them)", () => {
   for (const [path, title] of Object.entries(DOCS_PAGES)) {
     test(`GET ${path} renders "${title}"`, async () => {
-      const res = await fetch(`${WEB_URL}${path}`)
-      expect(res.status).toBe(200)
-      const html = await res.text()
+      const html = await (await fetchOk(`${WEB_URL}${path}`)).text()
       expect(titleOf(html)).toBe(htmlEscape(`${title} | ZeroStarter`))
       expect(html).toContain(htmlEscape(title))
     })
@@ -85,7 +84,12 @@ describe("docs search dialog", () => {
     browser.press(SEARCH_HOTKEY)
     browser.waitDialogOpen()
     browser.fillPlaceholder("Search", "architecture")
-    browser.run(["wait", "--fn", "document.querySelectorAll('[role=dialog] button').length > 2"])
+    // Results stream in async; wait for the specific result to land, not just for any buttons to appear (a generic count can fire a tick before the target row renders).
+    browser.run([
+      "wait",
+      "--fn",
+      "Array.from(document.querySelectorAll('[role=dialog] button')).some((b) => b.textContent.includes('Architecture'))",
+    ])
 
     const snap = browser.snapshot({ interactive: false })
     expect(snap).toContain('dialog "Search"')

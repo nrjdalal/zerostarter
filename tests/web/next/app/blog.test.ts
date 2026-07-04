@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser } from "@/browser"
+import { fetchOk } from "@/http"
 import { BLOG_POSTS } from "@/surface"
 import { WEB_URL } from "@/urls"
 
@@ -16,9 +17,7 @@ function htmlEscape(text: string): string {
 
 describe("blog pages", () => {
   test("GET /blog renders the index listing every post", async () => {
-    const res = await fetch(`${WEB_URL}/blog`)
-    expect(res.status).toBe(200)
-    const html = await res.text()
+    const html = await (await fetchOk(`${WEB_URL}/blog`)).text()
     expect(titleOf(html)).toBe("Blog | ZeroStarter")
     for (const title of Object.values(BLOG_POSTS)) {
       expect(html).toContain(htmlEscape(title).slice(0, 40))
@@ -27,9 +26,8 @@ describe("blog pages", () => {
 
   for (const [path, title] of Object.entries(BLOG_POSTS)) {
     test(`GET ${path} renders the post`, async () => {
-      const res = await fetch(`${WEB_URL}${path}`)
-      expect(res.status).toBe(200)
-      expect(titleOf(await res.text())).toBe(htmlEscape(`${title} | ZeroStarter`))
+      const html = await (await fetchOk(`${WEB_URL}${path}`)).text()
+      expect(titleOf(html)).toBe(htmlEscape(`${title} | ZeroStarter`))
     })
   }
 
