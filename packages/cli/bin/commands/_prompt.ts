@@ -1,6 +1,6 @@
 import { createInterface } from "node:readline/promises"
 
-import { cyan, dim, gray, green, PAD as P, red, S, yellow } from "@/style"
+import { cyan, dim, gray, green, PAD as P, PULSE, red, S, yellow } from "@/style"
 
 export { cyan, dim, gray, green, orange, PAD, red, yellow } from "@/style"
 
@@ -13,18 +13,18 @@ export const hyperlink = (url: string, text = url): string =>
 // A clickable, cyan URL: OSC 8 wraps the colored text (link outermost) and the URL is the visible text, so terminals that auto-detect bare URLs also linkify it.
 export const link = (url: string): string => hyperlink(url, cyan(url))
 
-// clack support functions: a connected gutter (indented by PAD) where each turn is `│` then a symbol line.
+// clack support functions: an indented gutter (PAD) capped by ┌ / └, with steps stacked tightly (no blank │ connector between them).
 export const intro = (title: string): void => {
   process.stdout.write(`\n${P}${gray(S.barStart)}  ${title}\n`)
 }
 
 export const outro = (message: string): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${gray(S.barEnd)}  ${message}\n`)
+  process.stdout.write(`${P}${gray(S.barEnd)}  ${message}\n`)
 }
 
 // Close the flow as cancelled (red end); used on Ctrl-C or a declined prompt.
 export const cancel = (message = "Cancelled"): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${gray(S.barEnd)}  ${red(message)}\n`)
+  process.stdout.write(`${P}${gray(S.barEnd)}  ${red(message)}\n`)
 }
 
 const ESC = "\x1b"
@@ -45,34 +45,33 @@ export const note = (message: string, title = "", last = false): void => {
     .join("\n")
   const bottomLeft = last ? S.cornerBL : S.connectL
   process.stdout.write(
-    `${P}${gray(S.bar)}\n${P}${cyan(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${P}${gray(bottomLeft + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
+    `${P}${cyan(S.active)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${P}${gray(bottomLeft + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
   )
 }
 
-// A completed step (cyan ◇), preceded by a gutter connector; `detail` lines sit under the bar.
+// A completed step (cyan ◆); `detail` lines sit under it.
 export const logStep = (message: string, detail: string[] = []): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${cyan(S.submit)}  ${message}\n`)
+  process.stdout.write(`${P}${cyan(S.active)}  ${message}\n`)
   for (const line of detail) process.stdout.write(`${P}${gray(S.bar)}  ${line}\n`)
 }
 
-// A success line (green ◇ and green message) for a completed milestone.
+// A success line (green ◆ and green message) for a completed milestone.
 export const logSuccess = (message: string): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${green(S.submit)}  ${green(message)}\n`)
+  process.stdout.write(`${P}${green(S.active)}  ${green(message)}\n`)
 }
 
 // An informational line (cyan ◆) in the flow.
 export const logInfo = (message: string): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${message}\n`)
+  process.stdout.write(`${P}${cyan(S.active)}  ${message}\n`)
 }
 
 // A warning (yellow ▲) with optional detail lines.
 export const logWarn = (message: string, detail: string[] = []): void => {
-  process.stdout.write(`${P}${gray(S.bar)}\n${P}${yellow(S.warn)}  ${yellow(message)}\n`)
+  process.stdout.write(`${P}${yellow(S.warn)}  ${yellow(message)}\n`)
   for (const line of detail) process.stdout.write(`${P}${gray(S.bar)}  ${yellow(line)}\n`)
 }
 
-// A clack spinner: an animated frame + message while `fn` runs, collapsing to a completed step (◇). Used for work that has no streamable output (fetch, rebrand). Off a TTY it just prints the completed step.
-const FRAMES = ["◒", "◐", "◓", "◑"]
+// A spinner that pulses between the filled ◆ and hollow ◇ while `fn` runs, collapsing to a completed step (◆). Used for work with no streamable output (fetch, rebrand). Off a TTY it just prints the completed step.
 export const withSpinner = async <T>(
   active: string,
   done: string,
@@ -82,19 +81,17 @@ export const withSpinner = async <T>(
   let timer: ReturnType<typeof setInterval> | null = null
   if (out.isTTY) {
     let i = 0
-    out.write(`${P}${gray(S.bar)}\n${P}${cyan(FRAMES[0])}  ${active}`)
+    out.write(`${P}${cyan(PULSE[0])}  ${active}`)
     timer = setInterval(() => {
-      i = (i + 1) % FRAMES.length
-      out.write(`\r${P}${cyan(FRAMES[i])}  ${active}`)
-    }, 80)
+      i = (i + 1) % PULSE.length
+      out.write(`\r${P}${cyan(PULSE[i])}  ${active}`)
+    }, 400)
   }
   try {
     const result = await fn()
     if (timer) clearInterval(timer)
     out.write(
-      out.isTTY
-        ? `\r\x1b[K${P}${cyan(S.submit)}  ${done}\n`
-        : `${P}${gray(S.bar)}\n${P}${cyan(S.submit)}  ${done}\n`,
+      out.isTTY ? `\r\x1b[K${P}${cyan(S.active)}  ${done}\n` : `${P}${cyan(S.active)}  ${done}\n`,
     )
     return result
   } catch (err) {
@@ -111,11 +108,11 @@ const renderOptions = (value: boolean): string => {
   return `${P}${gray(S.bar)}  ${yes} ${dim("/")} ${no}`
 }
 
-// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n, collapsing to `◇ message Yes`. Falls back to the default without prompting when not interactive.
+// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n, collapsing to `◆ message Yes`. Falls back to the default without prompting when not interactive.
 export const promptConfirm = async (question: string, def = true): Promise<boolean> => {
   const out = process.stdout
   if (!isInteractive()) {
-    out.write(`${P}${gray(S.bar)}\n${P}${cyan(S.submit)}  ${question} ${dim(def ? "Yes" : "No")}\n`)
+    out.write(`${P}${cyan(S.active)}  ${question} ${dim(def ? "Yes" : "No")}\n`)
     return def
   }
   return new Promise<boolean>((resolve) => {
@@ -123,7 +120,7 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     const stdin = process.stdin
     // rows the "◆  <question>" line occupies once it wraps at the terminal width (PAD + ◆ + two spaces = 5), so the collapse clears all of them, not just one
     const qRows = Math.max(1, Math.ceil((5 + noteVisibleLen(question)) / (out.columns || 80)))
-    out.write(`${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${question}\n`)
+    out.write(`${P}${cyan(S.active)}  ${question}\n`)
     out.write(renderOptions(value))
     stdin.setRawMode(true)
     stdin.resume()
@@ -140,14 +137,14 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     const submit = (): void => {
       cleanup()
       clearPrompt()
-      out.write(`${P}${cyan(S.submit)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
+      out.write(`${P}${cyan(S.active)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
       resolve(value)
     }
     function onData(key: string): void {
       if (key === "\x03") {
         cleanup()
         clearPrompt()
-        out.write(`${P}${dim(S.submit)}  ${dim(question)}\n`)
+        out.write(`${P}${dim(S.active)}  ${dim(question)}\n`)
         cancel()
         process.exit(130)
       } else if (key === "\r" || key === "\n") {
@@ -176,9 +173,7 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
 
 // A single-line text prompt in the gutter; the entered value stays under the bar.
 export const promptText = async (question: string, def = ""): Promise<string> => {
-  process.stdout.write(
-    `${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${question}${def ? ` ${dim(`(${def})`)}` : ""}\n`,
-  )
+  process.stdout.write(`${P}${cyan(S.active)}  ${question}${def ? ` ${dim(`(${def})`)}` : ""}\n`)
   const rl = createInterface({ input: process.stdin, output: process.stdout })
   try {
     const answer = (await rl.question(`${P}${gray(S.bar)}  `)).trim()
