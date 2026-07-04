@@ -87,13 +87,9 @@ export const runTail = async (
     let n = 0
     out.write(`${P}${pulseLabel(frame, label)}\n`)
     n++
-    if (window.length) {
-      out.write(`${P}${gray(S.bar)}\n`)
+    for (const line of window.slice(-max)) {
+      out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
       n++
-      for (const line of window.slice(-max)) {
-        out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
-        n++
-      }
     }
     rendered = n
   }
