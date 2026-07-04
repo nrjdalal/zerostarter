@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Starts the dev stack (web :3000 + api :4000) when it is not already running, then waits for both.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../.."
 
 if ! curl -sf --max-time 2 http://localhost:4000/api/health > /dev/null 2>&1; then
   echo "dev stack not running, starting it..."

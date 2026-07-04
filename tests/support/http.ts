@@ -38,7 +38,7 @@ export async function expectErrorEnvelope(
   return body
 }
 
-export function uniqueEmail(prefix = "golden"): string {
+export function uniqueEmail(prefix = "probe"): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`
 }
 

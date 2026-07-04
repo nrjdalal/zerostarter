@@ -1,0 +1,56 @@
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+
+import { Browser } from "@/browser"
+import { BLOG_POSTS } from "@/surface"
+import { WEB_URL } from "@/urls"
+
+// Covers web/next/src/app/(content)/blog: the index lists every published post, each post renders, and the index links navigate.
+
+function titleOf(html: string): string {
+  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
+}
+
+function htmlEscape(text: string): string {
+  return text.replace(/&/g, "&amp;")
+}
+
+describe("blog pages", () => {
+  test("GET /blog renders the index listing every post", async () => {
+    const res = await fetch(`${WEB_URL}/blog`)
+    expect(res.status).toBe(200)
+    const html = await res.text()
+    expect(titleOf(html)).toBe("Blog | ZeroStarter")
+    for (const title of Object.values(BLOG_POSTS)) {
+      expect(html).toContain(htmlEscape(title).slice(0, 40))
+    }
+  })
+
+  for (const [path, title] of Object.entries(BLOG_POSTS)) {
+    test(`GET ${path} renders the post`, async () => {
+      const res = await fetch(`${WEB_URL}${path}`)
+      expect(res.status).toBe(200)
+      expect(titleOf(await res.text())).toBe(htmlEscape(`${title} | ZeroStarter`))
+    })
+  }
+
+  test("GET /blog/definitely-not is 404", async () => {
+    expect((await fetch(`${WEB_URL}/blog/definitely-not`)).status).toBe(404)
+  })
+})
+
+describe("blog navigation", () => {
+  let browser: Browser
+
+  beforeAll(() => {
+    browser = new Browser("zs-blog")
+  })
+  afterAll(() => browser.close())
+
+  test("the index links to each post", () => {
+    browser.open("/blog")
+    browser.clickLink("How to Do Web Development in 2026")
+    browser.waitPath("/blog/web-development-2026")
+    expect(new URL(browser.url()).pathname).toBe("/blog/web-development-2026")
+    expect(browser.hasText("How to Do Web Development in 2026")).toBe(true)
+  })
+})

@@ -121,8 +121,8 @@
         "typescript": "catalog:",
       },
     },
-    "tests/golden": {
-      "name": "@tests/golden",
+    "tests": {
+      "name": "@tests/app",
       "version": "0.0.0",
       "devDependencies": {
         "@packages/config": "workspace:*",
@@ -937,7 +937,7 @@
 
     "@tanstack/store": ["@tanstack/store@0.11.0", "", {}, "sha512-WlzzCt3xi0G6pCAJu1U+2jiECwabETDpQDi3hfkFZvJii9AuZqEKbOiVarX1/bWhTNjU486yQtJCCasi/0q+Cw=="],
 
-    "@tests/golden": ["@tests/golden@workspace:tests/golden"],
+    "@tests/app": ["@tests/app@workspace:tests"],
 
     "@ts-morph/common": ["@ts-morph/common@0.29.0", "", { "dependencies": { "minimatch": "^10.0.1", "path-browserify": "^1.0.1", "tinyglobby": "^0.2.14" } }, "sha512-35oUmphHbJvQ/+UTwFNme/t2p3FoKiGJ5auTjjpNTop2dyREspirjMy82PLSC1pnDJ8ah1GU98hwpVt64YXQsg=="],
 

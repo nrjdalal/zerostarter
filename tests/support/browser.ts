@@ -11,7 +11,7 @@ export const AGENT_STATE = path.join(AUTH_DIR, "agent-state.json")
 
 const BIN =
   Bun.which("agent-browser") ??
-  fileURLToPath(new URL("../../../node_modules/.bin/agent-browser", import.meta.url))
+  fileURLToPath(new URL("../../node_modules/.bin/agent-browser", import.meta.url))
 
 // The platform decides which modifier opens the search dialog (the app dispatches Meta on mac, Control elsewhere).
 export const SEARCH_HOTKEY = process.platform === "darwin" ? "Meta+k" : "Control+k"
@@ -170,7 +170,7 @@ export async function ensureAgentState(): Promise<string> {
   if (stateSaved) return AGENT_STATE
   fs.mkdirSync(AUTH_DIR, { recursive: true })
   await agentCookie()
-  const setup = new Browser("golden-state-setup")
+  const setup = new Browser("zs-state-setup")
   try {
     setup.open("/")
     setup.clickRole("button", "Login")

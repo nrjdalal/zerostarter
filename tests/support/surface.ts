@@ -1,5 +1,5 @@
-// The pinned surface of the app: every route, endpoint, and identity fact the golden suite locks.
-// If a change breaks one of these on purpose (page added/removed, copy changed), update the fixture in the same change; that is the point of a golden suite.
+// The pinned surface of the app: every route, endpoint, and identity fact the suite locks.
+// If a change breaks one of these on purpose (page added/removed, copy changed), update the fixture in the same change; that is the point of a characterization suite.
 
 export const SITE = {
   name: "ZeroStarter",

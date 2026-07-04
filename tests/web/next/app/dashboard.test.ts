@@ -2,18 +2,33 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser, ensureAgentState } from "@/browser"
 import { agentCookie, uniqueEmail } from "@/http"
-import { API_URL, TRUSTED_ORIGIN } from "@/urls"
+import { API_URL, TRUSTED_ORIGIN, WEB_URL } from "@/urls"
 
-let browser: Browser
+// Covers web/next/src/app/(protected)/dashboard: the auth redirect gate and the dashboard organization switcher.
 
-beforeAll(async () => {
-  const state = await ensureAgentState()
-  browser = new Browser("golden-organizations", state)
+describe("dashboard auth gating", () => {
+  test("anonymous /dashboard redirects to the landing page", async () => {
+    const res = await fetch(`${WEB_URL}/dashboard`, { redirect: "manual" })
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toMatch(/^(\/|http:\/\/localhost:3000\/)$/)
+  })
+
+  test("authenticated /dashboard renders", async () => {
+    const res = await fetch(`${WEB_URL}/dashboard`, { headers: { cookie: await agentCookie() } })
+    expect(res.status).toBe(200)
+    expect(await res.text()).toContain("Dashboard")
+  })
 })
-afterAll(() => browser.close())
 
-// The dashboard org switcher: create an organization, see it become active, then delete it via the auth API so runs stay clean.
+// The org switcher: create an organization, see it become active, then delete it via the auth API so runs stay clean.
 describe("dashboard organization switcher", () => {
+  let browser: Browser
+
+  beforeAll(async () => {
+    browser = new Browser("zs-dashboard", await ensureAgentState())
+  })
+  afterAll(() => browser.close())
+
   test("creates an organization and makes it the active one", async () => {
     const orgName = `Golden Org ${uniqueEmail().split("@")[0].slice(-6)}`
 
@@ -33,7 +48,6 @@ describe("dashboard organization switcher", () => {
     browser.waitText("Organization created!")
     expect(browser.hasText(orgName)).toBe(true)
 
-    // Verify + clean up through the API (Better Auth needs a trusted Origin on credentialed POSTs).
     const cookie = await agentCookie()
     const orgs = await (
       await fetch(`${API_URL}/api/auth/organization/list`, { headers: { cookie } })

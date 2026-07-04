@@ -3,7 +3,7 @@
   "compilerOptions": {
     "types": ["node", "bun"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./support/*"]
     }
   },
   "include": ["**/*.ts"],

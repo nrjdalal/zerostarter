@@ -15,7 +15,7 @@
   "workspaces": [
     "api/*",
     "packages/*",
-    "tests/*",
+    "tests",
     "web/*"
   ],
   "scripts": {
@@ -36,7 +36,7 @@
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test:golden": "bun --cwd tests/golden test"
+    "test": "bun --cwd tests test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",

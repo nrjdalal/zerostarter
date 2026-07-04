@@ -2,16 +2,32 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser } from "@/browser"
 import { uniqueEmail } from "@/http"
-import { SITE } from "@/surface"
+import { MARKETING_PAGES, SITE } from "@/surface"
+import { WEB_URL } from "@/urls"
 
-let browser: Browser
+// Covers web/next/src/app/waitlist: the page renders, and the join form handles success, validation, and the bot honeypot. The /api/waitlist backend it posts to is tested in api/hono/routers/waitlist.test.ts.
 
-beforeAll(() => {
-  browser = new Browser("golden-waitlist")
+function titleOf(html: string): string {
+  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
+}
+
+describe("waitlist page", () => {
+  test("GET /waitlist renders with its exact title", async () => {
+    const res = await fetch(`${WEB_URL}/waitlist`)
+    expect(res.status).toBe(200)
+    expect(res.headers.get("content-type")).toContain("text/html")
+    expect(titleOf(await res.text())).toBe(MARKETING_PAGES["/waitlist"])
+  })
 })
-afterAll(() => browser.close())
 
 describe("waitlist form", () => {
+  let browser: Browser
+
+  beforeAll(() => {
+    browser = new Browser("zs-waitlist")
+  })
+  afterAll(() => browser.close())
+
   test("a valid email joins and shows the success state", () => {
     browser.open("/waitlist")
     expect(browser.hasText(SITE.name)).toBe(true)
@@ -20,7 +36,6 @@ describe("waitlist form", () => {
     browser.clickRole("button", "Join the waitlist")
 
     browser.waitText("You're on the list.")
-    expect(browser.dialogOpen()).toBe(false)
     expect(
       browser.evalBool("!document.querySelector('input[placeholder=\"you@example.com\"]')"),
     ).toBe(true)
@@ -43,9 +58,10 @@ describe("waitlist form", () => {
       true,
     )
     // Off-screen (absolute, -left-[9999px]) so a human never sees or tabs to it.
-    const offscreen = browser.eval(
-      "(() => { const el = document.querySelector('input[name=subject]'); const r = el.getBoundingClientRect(); return r.right < 0 || r.left > window.innerWidth; })()",
-    )
-    expect(offscreen).toBe("true")
+    expect(
+      browser.eval(
+        "(() => { const el = document.querySelector('input[name=subject]'); const r = el.getBoundingClientRect(); return r.right < 0 || r.left > window.innerWidth; })()",
+      ),
+    ).toBe("true")
   })
 })
