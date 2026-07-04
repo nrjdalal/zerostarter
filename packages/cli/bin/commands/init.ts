@@ -138,7 +138,7 @@ export const init = async (argv: string[]) => {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
-    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp, true)
+    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
     wantDb = dockerUp
@@ -171,10 +171,10 @@ export const init = async (argv: string[]) => {
 
   note(
     [
-      `Edit ${orange("packages/config/src/site.ts")} to manage branding`,
-      `Edit ${orange("web/next/content")} to manage blog and docs`,
+      `${orange("packages/config/src/site.ts")} and ${orange("web/next/content")}`,
+      "to manage branding and blogs & docs respectively",
     ].join("\n"),
-    "Make it yours",
+    "Edit and make it yours",
   )
   logSuccess(`${name} is ready`)
   const steps: string[] = []
@@ -182,7 +182,7 @@ export const init = async (argv: string[]) => {
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
-  note(steps.join("\n"), "Next steps")
+  note(steps.join("\n"), "Next steps", true)
   if (!dbReady) {
     console.log(
       "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",

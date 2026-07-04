@@ -40,14 +40,15 @@ export const runTail = async (
   opts: {
     cwd?: string
     lines?: number
-    label: string
+    label?: string
     summarize: (output: string, durationMs: number) => string
   },
 ): Promise<void> => {
   const start = Date.now()
   const out = process.stdout
+  const showLabel = Boolean(opts.label)
   if (!out.isTTY) {
-    out.write(`${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n`)
+    if (showLabel) out.write(`${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n`)
     await runLive(cmd, args, opts.cwd)
     return
   }
@@ -85,8 +86,8 @@ export const runTail = async (
       draw()
     }
   }
-  // gutter connector + active step, then the live window renders below it
-  out.write(`${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n`)
+  // gutter connector + optional active step, then the live window renders below it
+  out.write(showLabel ? `${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n` : `${gray(S.bar)}\n`)
   setWrap(false)
   try {
     await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
@@ -98,7 +99,11 @@ export const runTail = async (
   }
   erase()
   setWrap(true)
-  // collapse: rewrite the active `◆ label` line above as a completed `◇ summary`
   const summary = opts.summarize(output, Date.now() - start).trim()
-  out.write(`${ESC}[1A\r${ESC}[K${cyan(S.submit)}  ${summary || opts.label}\n`)
+  // collapse: rewrite the active label line, or (no label) print the completed step below the gutter
+  if (showLabel) {
+    out.write(`${ESC}[1A\r${ESC}[K${cyan(S.submit)}  ${summary || opts.label}\n`)
+  } else {
+    out.write(`${cyan(S.submit)}  ${summary}\n`)
+  }
 }

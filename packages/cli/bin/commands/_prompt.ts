@@ -30,8 +30,8 @@ const noteVisibleLen = (s: string): number =>
     .replace(new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g"), "")
     .replace(new RegExp(`${ESC}\\]8;;.*?\\x07`, "g"), "").length
 
-// clack note: a box hanging off the gutter with a titled top border and the message lines inside.
-export const note = (message: string, title = ""): void => {
+// clack note: a box hanging off the gutter with a titled top border and the message lines inside. When `last`, the gutter closes with a rounded corner (╰) instead of the ├ tee that continues it.
+export const note = (message: string, title = "", last = false): void => {
   const lines = `\n${message}\n`.split("\n")
   const titleLen = noteVisibleLen(title)
   const len =
@@ -42,8 +42,9 @@ export const note = (message: string, title = ""): void => {
   const body = lines
     .map((ln) => `${gray(S.bar)}  ${ln}${" ".repeat(len - noteVisibleLen(ln))}${gray(S.bar)}`)
     .join("\n")
+  const bottomLeft = last ? S.cornerBL : S.connectL
   process.stdout.write(
-    `${gray(S.bar)}\n${cyan(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${gray(S.connectL + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
+    `${gray(S.bar)}\n${cyan(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${gray(bottomLeft + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
   )
 }
 

@@ -29,5 +29,6 @@ export const S = {
   barH: "─",
   cornerTR: "╮",
   connectL: "├",
+  cornerBL: "╰",
   cornerBR: "╯",
 } as const
