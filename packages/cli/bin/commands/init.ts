@@ -1,5 +1,5 @@
-import { existsSync, readdirSync } from "node:fs"
-import { basename, join, resolve } from "node:path"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
+import { basename, dirname, join, parse, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
@@ -8,7 +8,20 @@ import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "
 import { exists } from "@/io"
 
 import { ensureBun } from "./_bun"
-import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
+import {
+  cancel,
+  intro,
+  isInteractive,
+  link,
+  logSuccess,
+  logWarn,
+  note,
+  orange,
+  outro,
+  promptConfirm,
+  promptText,
+  withSpinner,
+} from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
@@ -29,6 +42,25 @@ const isEmptyDir = (dir: string): boolean =>
   !existsSync(dir) || readdirSync(dir).filter((f) => f !== ".git").length === 0
 
 const isZerostarter = (dir: string): boolean => exists(join(dir, "packages/config/src/site.ts"))
+
+// `dir` or the nearest ancestor that is a bun workspace root (a lockfile, or a package.json with `workspaces`), or null. Pass the directory bun install would run under; if any level up is a workspace root, bun climbs into it and fails to resolve the new project's own workspace deps.
+const insideExistingProject = (dir: string): string | null => {
+  let cur = dir
+  const { root } = parse(cur)
+  while (true) {
+    if (existsSync(join(cur, "bun.lock")) || existsSync(join(cur, "bun.lockb"))) return cur
+    const pkg = join(cur, "package.json")
+    if (existsSync(pkg)) {
+      try {
+        if (JSON.parse(readFileSync(pkg, "utf8")).workspaces) return cur
+      } catch {
+        // unreadable manifest; keep walking up
+      }
+    }
+    if (cur === root) return null
+    cur = dirname(cur)
+  }
+}
 
 export const init = async (argv: string[]) => {
   const { positionals, values } = parseArgs({
@@ -55,14 +87,29 @@ export const init = async (argv: string[]) => {
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
   const convertInPlace = isZerostarter(firstTarget)
+  // A non-empty, non-clone target is scaffolded into a subdirectory of itself (after the name prompt), so bun installs one level deeper.
+  const intoSubdir = !convertInPlace && !isEmptyDir(firstTarget)
 
-  if (!convertInPlace && !isEmptyDir(firstTarget)) {
+  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail. Check the directory bun installs under: the name-prompt path scaffolds into a subdir of the cwd (the entered name resolves against cwd, not the positional), so check cwd there; otherwise the target's parent.
+  if (!convertInPlace && !values["dry-run"]) {
+    const root = insideExistingProject(intoSubdir ? process.cwd() : dirname(firstTarget))
+    if (root) {
+      throw new Error(
+        `Cannot scaffold inside an existing project (a workspace was found at ${root}). Run it in a fresh directory outside that project.`,
+      )
+    }
+  }
+
+  // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
+  if (!values["dry-run"]) intro(link("https://zerostarter.dev"))
+
+  if (intoSubdir) {
     if (!interactive) {
       throw new Error(
         "Directory is not empty. Run it in an empty directory, or pass a project name: bunx zerostarter init <name>",
       )
     }
-    const answer = await promptText("Directory isn't empty. Project name")
+    const answer = await promptText("What should we name your project?")
     if (!answer) throw new Error("No directory name provided.")
     dir = answer
   }
@@ -81,19 +128,19 @@ export const init = async (argv: string[]) => {
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
-      yellow(`Convert ${target} in place? This rewrites files and commits.`),
+      `Convert ${name} in place? This rewrites files and commits.`,
       false,
     )
     if (!ok) {
-      console.log("Aborted.")
+      cancel("Aborted")
       return
     }
   }
 
-  console.log()
   if (!isZerostarter(target)) {
-    console.log("Fetching the latest ZeroStarter ...")
-    await fetchZerostarter(target)
+    await withSpinner("Fetching the latest ZeroStarter", "Fetched the latest ZeroStarter", () =>
+      fetchZerostarter(target),
+    )
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
@@ -104,11 +151,10 @@ export const init = async (argv: string[]) => {
     await gitBranch(target, "main")
   }
 
-  console.log("Removing starter content and rebranding ...")
-  convertRepo(target, brand)
+  await withSpinner(`Rebranding to ${name}`, `Rebranded to ${name}`, () =>
+    convertRepo(target, brand),
+  )
 
-  console.log("Installing dependencies ...")
-  console.log()
   await bunInstall(target)
 
   await gitCommitAll(target, `ci(init): re-baseline as ${name}`)
@@ -120,12 +166,11 @@ export const init = async (argv: string[]) => {
   const dbConfigured = hasPostgresUrl(target)
   let wantDb = false
   if (dbConfigured) {
-    if (values.db) console.log(yellow("  --db ignored: POSTGRES_URL is already set in .env."))
+    if (values.db) logWarn("--db ignored: POSTGRES_URL is already set in .env.")
   } else if (values.db) {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
-    console.log()
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
@@ -133,63 +178,45 @@ export const init = async (argv: string[]) => {
   }
   if (wantDb && dockerUp) {
     try {
-      console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
-      console.log()
       await provisionDatabase(target)
-      console.log()
       dbReady = true
     } catch (err) {
-      const stderr = (err as { stderr?: unknown }).stderr
-      const detail = stderr
-        ? String(stderr).trim()
-        : err instanceof Error
-          ? err.message
-          : String(err)
       if (hasPostgresUrl(target)) {
-        console.log(
-          yellow("\n  Postgres is provisioned, but the migration failed; run bun run db:migrate."),
-        )
+        // migrate failed after provisioning; runTail already printed the failing command's output
+        logWarn("Postgres is provisioned, but the migration failed; run bun run db:migrate.")
       } else {
-        console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
+        // pglaunch failed before migrate, so nothing was tailed; surface its output as the cause
+        const detail = err instanceof Error ? err.message.trim() : String(err)
+        logWarn(
+          "Database setup failed; set POSTGRES_URL in .env yourself.",
+          detail
+            ? detail
+                .split("\n")
+                .filter((l) => l.trim())
+                .slice(-5)
+            : [],
+        )
       }
-      if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
-    console.log(
-      yellow(
-        "\n  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
-      ),
+    logWarn(
+      "Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
     )
   }
 
-  const tips: [string, string][] = [
-    ["packages/config/src/site.ts", "your brand: name, tagline, links"],
-    ["web/next/content", "your docs and blog"],
-    ["web/next/public", "your logo and assets"],
-  ]
-
-  console.log(`\n${green("✓")} ${name} is ready.\n`)
-  console.log("Next steps:")
-  if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!hasPostgresUrl(target)) {
-    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-  }
-  if (!dbReady) console.log(`  ${orange("bun run db:migrate")}`)
-  console.log(`  ${orange("bun run dev")}`)
-  console.log("\nPush to an empty GitHub repo when ready:")
-  console.log(`  ${orange("git push origin canary")}`)
-  console.log(
-    "canary becomes the default branch; your next push seeds main and opens the release PR.",
+  note(
+    [
+      `${orange("packages/config/src/site.ts")} and ${orange("web/next/content")}`,
+      "to manage branding and blogs & docs respectively",
+    ].join("\n"),
+    "Edit and make it yours",
   )
-  console.log("\nMake it yours:")
-  for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
-  if (dbReady) {
-    console.log(
-      "\nEverything works out of the box: dependencies are installed and the local Postgres is migrated. Add OAuth or other credentials to .env whenever you like.",
-    )
-  } else {
-    console.log(
-      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",
-    )
-  }
+  logSuccess(`${name} is ready`)
+  const steps: string[] = []
+  if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
+  if (!hasPostgresUrl(target)) steps.push("set POSTGRES_URL in .env")
+  if (!dbReady) steps.push(orange("bun run db:migrate"))
+  steps.push(orange("bun run dev"))
+  note(steps.join("\n"), "Next steps")
+  outro(`Learn more ${link("https://zerostarter.dev/docs")}`)
 }

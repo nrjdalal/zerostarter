@@ -7,7 +7,19 @@ import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRol
 import { emptyDir } from "@/io"
 
 import { ensureBun } from "./_bun"
-import { green, isInteractive, orange, promptConfirm, yellow } from "./_prompt"
+import {
+  cancel,
+  green,
+  intro,
+  isInteractive,
+  link,
+  logStep,
+  note,
+  orange,
+  outro,
+  promptConfirm,
+  yellow,
+} from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter reinit [dir] [options]
@@ -49,19 +61,18 @@ export const reinit = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
   )
 
+  intro(link("https://zerostarter.dev"))
+
   if (interactive) {
     const ok = await promptConfirm(
-      yellow(`Delete every file in ${target} (keeping .git and .env*) and re-scaffold as ${name}?`),
+      `Delete every file in ${name} (keeping .git and .env*) and re-scaffold?`,
       false,
     )
     if (!ok) {
-      console.log("Aborted.")
+      cancel("Aborted")
       return
     }
   }
-
-  console.log()
-  console.log("Removing all files (keeping .git and your .env* files) ...")
 
   // Wipe + re-fetch + rebrand atomically; withRollback resets to the pre-reinit commit on any failure.
   await withRollback(
@@ -71,26 +82,21 @@ export const reinit = async (argv: string[]) => {
     ),
     async () => {
       emptyDir(target)
-      console.log("Fetching the latest ZeroStarter ...")
       await overlayZerostarter(target)
-      console.log("Rebranding ...")
+      logStep("Fetched the latest ZeroStarter (kept .git and .env*)")
       convertRepo(target, { name })
-      console.log("Installing dependencies ...")
-      console.log()
+      logStep(`Rebranded to ${name}`)
       await bunInstall(target)
       seedEnv(target)
       await gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
     },
   )
 
-  console.log(
-    `\n${green("✓")} ${name} re-scaffolded; .git history, remote, and .env* files are intact.`,
-  )
-  console.log("Next steps:")
-  if (!hasPostgresUrl(target)) {
-    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-  }
-  console.log(`  ${orange("bun run db:migrate")}`)
-  console.log(`  ${orange("bun run dev")}`)
-  console.log(`  ${orange("git push")}  # to your existing remote`)
+  const steps: string[] = []
+  if (!hasPostgresUrl(target)) steps.push("set POSTGRES_URL in .env")
+  steps.push(orange("bun run db:migrate"))
+  steps.push(orange("bun run dev"))
+  steps.push(orange("git push"))
+  note(steps.join("\n"), "Next steps")
+  outro(green(`${name} re-scaffolded; .git history, remote, and .env* files are intact`))
 }

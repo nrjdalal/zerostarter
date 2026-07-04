@@ -1,11 +1,18 @@
 import { join } from "node:path"
 
 import { exists } from "@/io"
-import { ok, run, runLive } from "@/spawn"
+import { ok, run, runTail } from "@/spawn"
 
-// Install dependencies in `dir` with live progress. Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
+// Install dependencies in `dir`, showing a rolling window of bun's output that collapses to its summary line ("N packages installed [time]"). Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
 export const bunInstall = async (dir: string): Promise<void> => {
-  await runLive("bun", ["install"], dir)
+  await runTail("bun", ["install"], {
+    cwd: dir,
+    label: "Installing dependencies",
+    summarize: (out) =>
+      (out.match(/[\d,]+ packages installed[^\n]*/g) ?? out.match(/Checked [^\n]*install[^\n]*/g))
+        ?.at(-1)
+        ?.trim() ?? "Dependencies installed",
+  })
 }
 
 // Last-resort probe that bun is on PATH (injectable so tests can force either branch); rejects when bun is absent.
