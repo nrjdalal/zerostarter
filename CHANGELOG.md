@@ -1,3 +1,15 @@
+## v0.0.91
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.90...v0.0.91)
+
+### 🚀 Enhancements
+
+- **cli:** Tight steps, pulsing active glyph, filled done step ([#643](https://github.com/nrjdalal/zerostarter/pull/643))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.90
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.89...v0.0.90)
