@@ -1,5 +1,5 @@
-import { existsSync, readdirSync } from "node:fs"
-import { basename, join, resolve } from "node:path"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
+import { basename, dirname, join, parse, resolve } from "node:path"
 import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
@@ -43,6 +43,25 @@ const isEmptyDir = (dir: string): boolean =>
 
 const isZerostarter = (dir: string): boolean => exists(join(dir, "packages/config/src/site.ts"))
 
+// The nearest ancestor that is a bun workspace root (a lockfile, or a package.json with `workspaces`), or null. Scaffolding inside one makes `bun install` climb into it and fail to resolve the new project's own workspace deps.
+const insideExistingProject = (target: string): string | null => {
+  let cur = dirname(target)
+  const { root } = parse(cur)
+  while (true) {
+    if (existsSync(join(cur, "bun.lock")) || existsSync(join(cur, "bun.lockb"))) return cur
+    const pkg = join(cur, "package.json")
+    if (existsSync(pkg)) {
+      try {
+        if (JSON.parse(readFileSync(pkg, "utf8")).workspaces) return cur
+      } catch {
+        // unreadable manifest; keep walking up
+      }
+    }
+    if (cur === root) return null
+    cur = dirname(cur)
+  }
+}
+
 export const init = async (argv: string[]) => {
   const { positionals, values } = parseArgs({
     allowPositionals: true,
@@ -65,12 +84,22 @@ export const init = async (argv: string[]) => {
 
   const interactive = isInteractive() && !values.yes
 
-  // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
-  if (!values["dry-run"]) intro(cyan("https://zerostarter.dev"))
-
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
   const convertInPlace = isZerostarter(firstTarget)
+
+  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail.
+  if (!convertInPlace && !values["dry-run"]) {
+    const root = insideExistingProject(firstTarget)
+    if (root) {
+      throw new Error(
+        `Cannot scaffold inside an existing project (a workspace was found at ${root}). Run it in a fresh directory outside that project.`,
+      )
+    }
+  }
+
+  // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
+  if (!values["dry-run"]) intro(cyan("https://zerostarter.dev"))
 
   if (!convertInPlace && !isEmptyDir(firstTarget)) {
     if (!interactive) {
