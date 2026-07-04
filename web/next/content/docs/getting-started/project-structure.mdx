@@ -16,11 +16,12 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
 .
 ├─ api/hono/      # backend (Hono): routes, middleware, error envelope
 ├─ web/next/      # frontend (Next.js): app router, components, content/
-└─ packages/
-   ├─ auth/       # Better Auth instance + session types
-   ├─ db/         # Drizzle schema + migrations
-   ├─ env/        # type-safe, validated environment variables
-   └─ config/     # TS base, tsdown factory, and site.ts (the brand)
+├─ packages/
+│  ├─ auth/       # Better Auth instance + session types
+│  ├─ db/         # Drizzle schema + migrations
+│  ├─ env/        # type-safe, validated environment variables
+│  └─ config/     # TS base, tsdown factory, and site.ts (the brand)
+└─ tests/golden/  # black-box golden suite: every endpoint, route, interaction
 ```
 
 ## `api/hono`

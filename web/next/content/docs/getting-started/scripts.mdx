@@ -32,6 +32,7 @@ Each of these builds `@packages/env` first, then runs Drizzle Kit against `packa
 - `bun run format`: Oxfmt, writing fixes.
 - `bun run format:check`: Oxfmt, report only.
 - `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
+- `bun run test:golden`: run the golden suite in `tests/golden` (every endpoint, route, and interaction, black-box over HTTP + Chromium); starts the dev stack if it is not already running.
 
 ## Release / production
 

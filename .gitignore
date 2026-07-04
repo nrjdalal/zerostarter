@@ -59,3 +59,8 @@ web/next/content/docs/meta.json
 
 # git overrides
 !.env.example
+
+# golden test suite (tests/golden)
+.auth/
+playwright-report/
+test-results/

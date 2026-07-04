@@ -1,0 +1,20 @@
+{
+  "name": "@tests/golden",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "report": "playwright show-report",
+    "test": "playwright test",
+    "test:api": "playwright test --project=setup --project=api",
+    "test:e2e": "playwright test --project=setup --project=e2e",
+    "test:web": "playwright test --project=setup --project=web"
+  },
+  "devDependencies": {
+    "@packages/config": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

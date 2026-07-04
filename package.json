@@ -15,6 +15,7 @@
   "workspaces": [
     "api/*",
     "packages/*",
+    "tests/*",
     "web/*"
   ],
   "scripts": {
@@ -34,7 +35,8 @@
     "lint": "oxlint",
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
-    "start": "turbo run start"
+    "start": "turbo run start",
+    "test:golden": "bun --cwd tests/golden test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
@@ -71,6 +73,7 @@
     "@commitlint/config-conventional": "^21.2.0",
     "@hono/standard-validator": "^0.2.3",
     "@octokit/rest": "^22.0.1",
+    "@playwright/test": "^1.61.1",
     "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.11.8",
