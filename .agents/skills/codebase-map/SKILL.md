@@ -15,7 +15,7 @@ packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
-tests/golden/     # black-box golden suite (Playwright): every endpoint, route, interaction
+tests/golden/     # black-box golden suite (bun test + agent-browser): every endpoint, route, interaction
 ```
 
 Read `AGENTS.md` first (the rules), and `curl localhost:3000/llms-full.txt` for the whole codebase as one context file.

@@ -5,15 +5,13 @@
   "type": "module",
   "scripts": {
     "check-types": "tsc --noEmit",
-    "report": "playwright show-report",
-    "test": "playwright test",
-    "test:api": "playwright test --project=setup --project=api",
-    "test:e2e": "playwright test --project=setup --project=e2e",
-    "test:web": "playwright test --project=setup --project=web"
+    "test": "bun test --timeout 60000",
+    "test:api": "bun test --timeout 60000 specs/api",
+    "test:web": "bun test --timeout 60000 specs/web",
+    "test:e2e": "bun test --timeout 60000 specs/e2e"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
-    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }
