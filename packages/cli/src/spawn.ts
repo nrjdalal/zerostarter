@@ -93,14 +93,22 @@ export const runTail = async (
       : `${gray(S.bar)}\n`,
   )
   setWrap(false)
+  // Ctrl-C terminates via signal, not a throw, so neither restore path below runs; re-enable auto-wrap here or the shell is left with it off.
+  const onSigint = (): void => {
+    setWrap(true)
+    process.exit(130)
+  }
+  process.once("SIGINT", onSigint)
   try {
     await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
   } catch (err) {
+    process.removeListener("SIGINT", onSigint)
     erase()
     setWrap(true)
     out.write(output)
     throw err
   }
+  process.removeListener("SIGINT", onSigint)
   erase()
   setWrap(true)
   const summary = opts.summarize(output, Date.now() - start).trim()

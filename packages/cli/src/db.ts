@@ -70,7 +70,10 @@ export const parseLaunch = (out: string): Launch | null => {
 }
 
 // Run pglaunch (-k keeps the container, --bun runs it under the Bun runtime) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
-const runPglaunch = async (dir: string, confirm: boolean): Promise<Launch | null> => {
+const runPglaunch = async (
+  dir: string,
+  confirm: boolean,
+): Promise<{ launch: Launch | null; out: string }> => {
   const args = confirm ? ["--bun", PGLAUNCH, "-k", "-c"] : ["--bun", PGLAUNCH, "-k"]
   let out: string
   try {
@@ -79,7 +82,7 @@ const runPglaunch = async (dir: string, confirm: boolean): Promise<Launch | null
     const e = err as { stdout?: string; stderr?: string }
     out = [e.stdout, e.stderr].filter(Boolean).join("\n")
   }
-  return parseLaunch(out)
+  return { launch: parseLaunch(out), out }
 }
 
 // Resolve after `ms` milliseconds.
@@ -97,10 +100,12 @@ const waitForPostgres = async (container: string): Promise<void> => {
 // Provision a local Postgres (reusing an already-running one), point .env at it, wait for it to accept connections, and apply the migrations with live progress. Needs the project's dependencies (drizzle-kit), so the caller runs bun install first.
 export const provisionDatabase = async (dir: string): Promise<void> => {
   const envPath = ensureEnv(dir)
-  const launched = (await runPglaunch(dir, false)) || (await runPglaunch(dir, true))
-  if (!launched) throw new Error("pglaunch did not print a connection URL")
-  setEnvVar(envPath, "POSTGRES_URL", launched.url)
-  await waitForPostgres(launched.container)
+  const first = await runPglaunch(dir, false)
+  const result = first.launch ? first : await runPglaunch(dir, true)
+  if (!result.launch)
+    throw new Error(result.out.trim() || "pglaunch did not print a connection URL")
+  setEnvVar(envPath, "POSTGRES_URL", result.launch.url)
+  await waitForPostgres(result.launch.container)
   const count = migrationCount(dir)
   await runTail("bun", ["run", "db:migrate"], {
     cwd: dir,
