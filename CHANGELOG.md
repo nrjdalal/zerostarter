@@ -1,3 +1,15 @@
+## v0.0.92
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.91...v0.0.92)
+
+### 🚀 Enhancements
+
+- **cli:** Error legibility, friendly flags, and flow polish ([#645](https://github.com/nrjdalal/zerostarter/pull/645))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.91
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.90...v0.0.91)
