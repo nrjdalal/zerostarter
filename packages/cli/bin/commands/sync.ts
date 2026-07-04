@@ -1,5 +1,4 @@
 import { join, resolve } from "node:path"
-import { parseArgs } from "node:util"
 
 import { fixDangling } from "@/convert"
 import {
@@ -13,6 +12,7 @@ import {
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
 
+import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
 import { intro, link, logStep, logWarn, note, orange, outro, yellow } from "./_prompt"
 
@@ -29,7 +29,7 @@ Options:
 
 // Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
 export const sync = async (argv: string[]) => {
-  const { positionals, values } = parseArgs({
+  const { positionals, values } = parseArgsOrExit(helpMessage, {
     allowPositionals: true,
     args: argv,
     options: { help: { short: "h", type: "boolean" } },

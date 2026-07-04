@@ -1,6 +1,34 @@
 import { expect, test } from "bun:test"
 
-import { ok, run, runTail } from "@/spawn"
+import { ok, printError, run, runTail } from "@/spawn"
+
+// Capture everything written to a stream while `fn` runs, restoring it (and TTY shape) afterward.
+const captureStream = async (
+  stream: NodeJS.WriteStream,
+  fn: () => void | Promise<void>,
+  tty?: { columns: number },
+): Promise<string> => {
+  const writes: string[] = []
+  const origWrite = stream.write.bind(stream)
+  const origIsTTY = stream.isTTY
+  const origCols = stream.columns
+  stream.write = (chunk: unknown): boolean => {
+    writes.push(String(chunk))
+    return true
+  }
+  if (tty) {
+    Object.defineProperty(stream, "isTTY", { configurable: true, value: true })
+    Object.defineProperty(stream, "columns", { configurable: true, value: tty.columns })
+  }
+  try {
+    await fn()
+  } finally {
+    stream.write = origWrite
+    Object.defineProperty(stream, "isTTY", { configurable: true, value: origIsTTY })
+    Object.defineProperty(stream, "columns", { configurable: true, value: origCols })
+  }
+  return writes.join("")
+}
 
 test("ok is true for a command that exits 0, false for a missing binary", async () => {
   expect(await ok("node", ["--version"])).toBe(true)
@@ -41,7 +69,7 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
       {
         lines: 5,
         label: "Installing",
-        summarize: (out) => out.match(/[\d,]+ packages installed[^\n]*/)?.[0] ?? "",
+        done: "Installed dependencies",
       },
     )
   } finally {
@@ -53,6 +81,88 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
   expect(all).toMatch(/\[\d+A/) // cursor-up: the window was redrawn in place
   expect(all).toContain("[?7l") // auto-wrap disabled so a wide/long line can't wrap and grow the window
   expect(all).toContain("[?7h") // and re-enabled afterwards
-  expect(all).toContain("pkg 0") // intermediate lines were rendered (then erased)
-  expect(all).toContain("42 packages installed") // and the summary printed at the end
+  expect(all).toContain("pkg 0") // intermediate lines were rendered
+  // On completion it collapses to the done label and keeps the tail (last `lines` output lines) beneath.
+  const finalFrame = all.slice(all.lastIndexOf("[0J") + 3)
+  expect(finalFrame).toContain("Installed dependencies") // the done label header
+  expect(finalFrame).toContain("pkg 7") // tail retained, not erased
+  expect(finalFrame).toContain("42 packages installed") // and the last output line lands in the tail
+})
+
+// Run a failing node script that writes $ZS_TEST_STDERR to stderr, and return the rejection. The marker is passed via env (not the -e source) so it appears only in the child's captured stderr, never echoed in the SubprocessError's command message.
+const failWithStderr = async (marker: string): Promise<unknown> => {
+  process.env.ZS_TEST_STDERR = marker
+  try {
+    await run("node", [
+      "-e",
+      "process.stderr.write(process.env.ZS_TEST_STDERR + '\\n'); process.exit(1)",
+    ])
+  } catch (err) {
+    return err
+  } finally {
+    delete process.env.ZS_TEST_STDERR
+  }
+  throw new Error("expected the subprocess to reject")
+}
+
+test("printError shows the message, plus a failed subprocess's captured stderr the bare message omits", async () => {
+  const caught = await failWithStderr("fatal: repository not found")
+  const out = await captureStream(process.stderr, () => {
+    printError(new Error("plain boom"))
+    printError(caught)
+  })
+  expect(out).toContain("plain boom")
+  expect(out).toContain("Command failed with exit code 1") // the subprocess message
+  expect(out).toContain("fatal: repository not found") // and the real cause, recovered from its stderr
+})
+
+test("printError does not repeat output runTail already dumped", async () => {
+  process.env.ZS_TEST_STDERR = "kaboom-tail-marker"
+  let caught: unknown
+  await captureStream(
+    process.stdout,
+    async () => {
+      try {
+        await runTail(
+          "node",
+          ["-e", "process.stderr.write(process.env.ZS_TEST_STDERR + '\\n'); process.exit(1)"],
+          { label: "Working", done: "done" },
+        )
+      } catch (err) {
+        caught = err
+      }
+    },
+    { columns: 80 },
+  )
+  delete process.env.ZS_TEST_STDERR
+  const out = await captureStream(process.stderr, () => printError(caught))
+  expect(out).toContain("Command failed") // the message still prints
+  expect(out).not.toContain("kaboom-tail-marker") // but the tail is not repeated (runTail already showed it)
+})
+
+test("printError's tail is guarded on stderr's TTY state, not stdout's", async () => {
+  const caught = await failWithStderr("guarded-tail-marker")
+  const so = process.stdout
+  const se = process.stderr
+  const soTTY = so.isTTY
+  const seTTY = se.isTTY
+  const writes: string[] = []
+  const origWrite = se.write.bind(se)
+  se.write = (chunk: unknown): boolean => {
+    writes.push(String(chunk))
+    return true
+  }
+  // stdout a TTY, stderr piped: the stderr-bound dimErr must emit no codes (a stdout-bound dim would).
+  Object.defineProperty(so, "isTTY", { configurable: true, value: true })
+  Object.defineProperty(se, "isTTY", { configurable: true, value: false })
+  try {
+    printError(caught)
+  } finally {
+    se.write = origWrite
+    Object.defineProperty(so, "isTTY", { configurable: true, value: soTTY })
+    Object.defineProperty(se, "isTTY", { configurable: true, value: seTTY })
+  }
+  const out = writes.join("")
+  expect(out).toContain("guarded-tail-marker") // the tail still prints
+  expect(out).not.toContain("\x1b[2m") // but with no dim escape, since stderr isn't a TTY
 })

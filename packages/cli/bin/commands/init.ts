@@ -1,12 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, dirname, join, parse, resolve } from "node:path"
-import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
 import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
+import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
 import {
   cancel,
@@ -63,7 +63,7 @@ const insideExistingProject = (dir: string): string | null => {
 }
 
 export const init = async (argv: string[]) => {
-  const { positionals, values } = parseArgs({
+  const { positionals, values } = parseArgsOrExit(helpMessage, {
     allowPositionals: true,
     args: argv,
     options: {
@@ -171,7 +171,7 @@ export const init = async (argv: string[]) => {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
-    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
+    wantDb = await promptConfirm("Provision a local Postgres database?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
     wantDb = dockerUp
