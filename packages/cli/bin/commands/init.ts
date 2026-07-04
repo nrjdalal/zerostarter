@@ -147,20 +147,12 @@ export const init = async (argv: string[]) => {
     try {
       await provisionDatabase(target)
       dbReady = true
-    } catch (err) {
-      const stderr = (err as { stderr?: unknown }).stderr
-      const detail = stderr
-        ? String(stderr).trim()
-        : err instanceof Error
-          ? err.message
-          : String(err)
+    } catch {
+      // runTail already printed the failing command's output, so don't repeat it here.
       if (hasPostgresUrl(target)) {
-        logWarn(
-          "Postgres is provisioned, but the migration failed; run bun run db:migrate.",
-          detail ? [detail] : [],
-        )
+        logWarn("Postgres is provisioned, but the migration failed; run bun run db:migrate.")
       } else {
-        logWarn("Database setup failed; set POSTGRES_URL in .env yourself.", detail ? [detail] : [])
+        logWarn("Database setup failed; set POSTGRES_URL in .env yourself.")
       }
     }
   } else if (wantDb) {
