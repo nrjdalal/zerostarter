@@ -2,7 +2,7 @@ import { createInterface } from "node:readline/promises"
 
 import { cyan, dim, gray, green, PAD as P, red, S, yellow } from "@/style"
 
-export { cyan, dim, gray, green, orange, red, yellow } from "@/style"
+export { cyan, dim, gray, green, orange, PAD, red, yellow } from "@/style"
 
 export const isInteractive = (): boolean => Boolean(process.stdin.isTTY && process.stdout.isTTY)
 

@@ -21,7 +21,7 @@ The rest of this page is what those commands do, and the one thing to check if t
 
 ## `zerostarter init`
 
-`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder; if the folder already has files, it asks for a project name and scaffolds into that new directory instead. In one run it:
+`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder of its own; if the folder already has files, it asks for a project name and scaffolds into that new directory instead, and it stops early if you run it inside an existing workspace or monorepo, where a parent lockfile would break the dependency install. In one run it:
 
 - fetches the latest ZeroStarter and strips the sample content,
 - rebrands the copy to your project name,
