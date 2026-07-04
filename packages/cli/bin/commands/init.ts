@@ -176,13 +176,13 @@ export const init = async (argv: string[]) => {
     ].join("\n"),
     "Make it yours",
   )
+  logSuccess(`${name} is ready`)
   const steps: string[] = []
   if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
   note(steps.join("\n"), "Next steps")
-  logSuccess(`${name} is ready`)
   if (!dbReady) {
     console.log(
       "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",
