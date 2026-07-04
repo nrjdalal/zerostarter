@@ -3,17 +3,16 @@ import { parseArgs } from "node:util"
 
 import { fixDangling } from "@/convert"
 import {
-  bunInstall,
   fetchGitpickignore,
   gitRestore,
   overlayZerostarter,
-  requireBun,
   requireCleanRepo,
   withRollback,
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
 
+import { ensureBun } from "./_bun"
 import { orange, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
@@ -40,7 +39,7 @@ export const sync = async (argv: string[]) => {
     return
   }
 
-  requireBun()
+  await ensureBun()
 
   const target = resolve(positionals[0] ?? ".")
 
@@ -87,14 +86,12 @@ export const sync = async (argv: string[]) => {
     },
   )
 
-  console.log("Installing dependencies ...")
-  bunInstall(target)
-
   console.log()
   console.log(orange("Synced to the latest ZeroStarter."))
   console.log(
     "Starter files were updated (edits to them were overwritten); files you added and your",
   )
   console.log("content, public/marketing, and branding were preserved.")
+  console.log(`  ${orange("bun install")}  # update dependencies`)
   console.log(yellow(`Review the diff and commit: git -C ${target} status`))
 }

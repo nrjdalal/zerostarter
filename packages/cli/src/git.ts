@@ -6,31 +6,46 @@ import { exists } from "@/io"
 const run = (cmd: string, args: string[], cwd?: string): string =>
   execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
 
-// Probe whether the `bun` runtime is on PATH (the default `requireBun` check; injectable so tests can force either branch).
+// Last-resort probe that bun is on PATH (injectable so tests can force either branch).
 const bunOnPath = (): void => {
   execFileSync("bun", ["--version"], { stdio: "ignore" })
 }
 
-// Verify Bun is available before a command shells out to it. init/reinit/sync run bunx (gitpick), bun install, and bun run db:migrate, so on a machine without Bun the first spawn dies with a cryptic `spawnSync bunx ENOENT`; preflight this to fail fast with install guidance instead. `bunx` is a symlink to `bun`, so checking `bun` covers both.
-export const requireBun = (probe: () => void = bunOnPath): void => {
+// Whether bun is usable. Trusts two signals before spawning, because a bare `bun --version` can misfire even when bun is present (notably on Windows): running under the Bun runtime (bunx --bun / bun run) and being invoked via bunx (npm_config_user_agent starts with "bun/") both guarantee bun. Only when neither holds do we fall back to the spawn probe. All three inputs default to the live process and are injectable for tests.
+export const bunAvailable = (
+  probe: () => void = bunOnPath,
+  bunRuntime: boolean = Boolean(process.versions.bun),
+  userAgent: string = process.env.npm_config_user_agent || "",
+): boolean => {
+  if (bunRuntime) return true
+  if (userAgent.startsWith("bun/")) return true
   try {
     probe()
-  } catch (err) {
-    throw new Error(
-      "ZeroStarter needs Bun, but `bun` isn't on your PATH. Install it from https://bun.sh, then re-run with `bunx zerostarter ...` (not `npx`). The CLI shells out to bun and bunx to fetch, install, and migrate.",
-      { cause: err },
-    )
+    return true
+  } catch {
+    return false
   }
 }
 
-// Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history).
+// Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history). --bun runs gitpick under the Bun runtime, not Node.
 export const fetchZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@6.0.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
+  run("bunx", [
+    "--bun",
+    "gitpick@6.0.0",
+    `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
+    dir,
+  ])
 }
 
 // Overlay the latest zerostarter onto a fork (gitpick -o); .gitpickignore paths and fork-added files are kept.
 export const overlayZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", ["gitpick@6.0.0", `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir, "-o"])
+  run("bunx", [
+    "--bun",
+    "gitpick@6.0.0",
+    `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
+    dir,
+    "-o",
+  ])
 }
 
 // Read the starter's .gitpickignore from GitHub (gitpick never copies it into a fork).
@@ -83,11 +98,6 @@ export const withRollback = async (
     console.log(onFail)
     throw err
   }
-}
-
-// Install dependencies in `dir`, regenerating a clean lockfile for the converted package set.
-export const bunInstall = (dir: string): void => {
-  run("bun", ["install"], dir)
 }
 
 // Start a fresh git repo in `dir` on the `canary` working branch (no commit yet).

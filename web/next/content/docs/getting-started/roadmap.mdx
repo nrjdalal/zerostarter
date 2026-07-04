@@ -19,7 +19,7 @@ Available out of the box in a fresh scaffold:
 - **[SEO routes](/docs/manage/seo)**: `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.
 - **[PostHog analytics](/docs/manage/analytics)**: product analytics, feature flags, and session replay. Optional; on only when `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` are set.
 - **[Public waitlist](/docs/manage/database)**: a `/waitlist` page backed by `POST /api/waitlist` and the `waitlist` table; a fresh fork's home redirects here until you build your product.
-- **[The `zerostarter` CLI](/docs/getting-started/setup)**: `bunx zerostarter init` scaffolds a rebranded fork, strips the sample content, installs dependencies, and provisions a local Postgres.
+- **[The `zerostarter` CLI](/docs/getting-started/setup)**: `bunx zerostarter init` scaffolds a rebranded fork, strips the sample content, and provisions a local Postgres (you finish with `bun install && bun run db:migrate`).
 
 ## Planned
 
