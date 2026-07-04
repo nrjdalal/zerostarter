@@ -107,7 +107,7 @@ export const provisionDatabase = async (dir: string): Promise<void> => {
   await waitForPostgres(result.launch.container)
   await runTail("bun", ["run", "db:migrate"], {
     cwd: dir,
-    label: "Provisioning the database",
+    label: "Provisioning a local Postgres database",
     done: "Provisioned a local Postgres database",
   })
 }
