@@ -10,11 +10,14 @@ test("detectRunner maps npm_config_user_agent to the invoking runner", () => {
   expect(detectRunner("")).toBe("unknown")
 })
 
-test("bunInstallCommand matches the runner, defaulting to npm", () => {
-  expect(bunInstallCommand("npx")).toEqual({ cmd: "npm", args: ["install", "-g", "bun"] })
-  expect(bunInstallCommand("pnpm dlx")).toEqual({ cmd: "pnpm", args: ["add", "-g", "bun"] })
-  expect(bunInstallCommand("yarn dlx")).toEqual({ cmd: "yarn", args: ["global", "add", "bun"] })
-  expect(bunInstallCommand("unknown")).toEqual({ cmd: "npm", args: ["install", "-g", "bun"] })
+test("bunInstallCommand uses the official bun installer per OS", () => {
+  const unix = { cmd: "bash", args: ["-c", "curl -fsSL https://bun.sh/install | bash"] }
+  expect(bunInstallCommand("darwin")).toEqual(unix)
+  expect(bunInstallCommand("linux")).toEqual(unix)
+  expect(bunInstallCommand("win32")).toEqual({
+    cmd: "powershell",
+    args: ["-Command", "irm bun.sh/install.ps1 | iex"],
+  })
 })
 
 test("zerostarterCommand reconstructs the command the user ran", () => {

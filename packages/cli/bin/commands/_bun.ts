@@ -1,7 +1,6 @@
-import { execFileSync } from "node:child_process"
-
 import { bunAvailable } from "@/git"
 import { bunInstallCommand, detectRunner, zerostarterCommand } from "@/runner"
+import { runLive } from "@/spawn"
 
 import { isInteractive, orange, promptConfirm, red } from "./_prompt"
 
@@ -19,12 +18,16 @@ export const ensureBun = async (yes = false): Promise<void> => {
   const install =
     yes || !isInteractive() || (await promptConfirm("Or install bun now and continue?", true))
   if (install) {
-    const { cmd, args } = bunInstallCommand(runner)
-    console.error(`Installing bun with \`${cmd} ${args.join(" ")}\` ...`)
+    const { cmd, args } = bunInstallCommand()
+    console.error("Installing bun from https://bun.sh/install ...")
     try {
-      execFileSync(cmd, args, { stdio: "inherit" })
+      runLive(cmd, args)
       if (bunAvailable()) return
-      console.error(red("\nbun was installed but isn't on this shell's PATH yet. Re-run:"))
+      console.error(
+        red(
+          "\nbun is installed but isn't on this shell's PATH yet. Open a new terminal and re-run:",
+        ),
+      )
       console.error(orange(`  ${rerun}`))
     } catch {
       console.error(red("\nCould not install bun. Install it from https://bun.sh, then re-run:"))

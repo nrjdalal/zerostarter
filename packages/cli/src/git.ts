@@ -1,24 +1,16 @@
-import { execFileSync } from "node:child_process"
 import { join } from "node:path"
 
 import { exists } from "@/io"
-
-const run = (cmd: string, args: string[], cwd?: string): string =>
-  execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
-
-// Run a command with inherited stdio so its own progress shows live (bun install / migrations), instead of a silent-looking CLI while a slow step runs.
-const runLive = (cmd: string, args: string[], cwd?: string): void => {
-  execFileSync(cmd, args, { cwd, stdio: "inherit" })
-}
+import { ok, run, runLive } from "@/spawn"
 
 // Install dependencies in `dir` with live progress. Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
 export const bunInstall = (dir: string): void => {
   runLive("bun", ["install"], dir)
 }
 
-// Last-resort probe that bun is on PATH (injectable so tests can force either branch).
+// Last-resort probe that bun is on PATH (injectable so tests can force either branch); throws when bun is absent.
 const bunOnPath = (): void => {
-  execFileSync("bun", ["--version"], { stdio: "ignore" })
+  if (!ok("bun", ["--version"])) throw new Error("bun is not on PATH")
 }
 
 // Whether bun is usable. Trusts two signals before spawning, because a bare `bun --version` can misfire even when bun is present (notably on Windows): running under the Bun runtime (bunx --bun / bun run) and being invoked via bunx (npm_config_user_agent starts with "bun/") both guarantee bun. Only when neither holds do we fall back to the spawn probe. All three inputs default to the live process and are injectable for tests.

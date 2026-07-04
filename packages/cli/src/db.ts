@@ -1,29 +1,13 @@
-import { execFileSync } from "node:child_process"
 import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 
 import { exists, read, write } from "@/io"
+import { ok, run, runLive } from "@/spawn"
 
 const PGLAUNCH = "pglaunch@5.5.7"
 
-// Capture a command's output (throws on non-zero); keeps its progress out of the CLI's own output.
-const capture = (cmd: string, args: string[], cwd: string): string =>
-  execFileSync(cmd, args, {
-    cwd,
-    encoding: "utf8",
-    maxBuffer: 1 << 26,
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-
 // True when a Docker daemon is reachable (pglaunch needs it to start a Postgres container).
-export const dockerRunning = (): boolean => {
-  try {
-    execFileSync("docker", ["info"], { stdio: "ignore" })
-    return true
-  } catch {
-    return false
-  }
-}
+export const dockerRunning = (): boolean => ok("docker", ["info"])
 
 // Ensure .env exists as a 1-to-1 copy of .env.example; returns its path.
 const ensureEnv = (dir: string): string => {
@@ -89,7 +73,7 @@ const runPglaunch = (dir: string, confirm: boolean): Launch | null => {
   const args = confirm ? ["--bun", PGLAUNCH, "-k", "-c"] : ["--bun", PGLAUNCH, "-k"]
   let out: string
   try {
-    out = capture("bunx", args, dir)
+    out = run("bunx", args, dir)
   } catch (err) {
     const e = err as { stdout?: string; stderr?: string }
     out = [e.stdout, e.stderr].filter(Boolean).join("\n")
@@ -106,14 +90,8 @@ const sleep = (ms: number): void => {
 const waitForPostgres = (container: string): void => {
   if (!container) return
   for (let i = 0; i < 30; i++) {
-    try {
-      execFileSync("docker", ["exec", container, "pg_isready", "-U", "postgres"], {
-        stdio: "ignore",
-      })
-      return
-    } catch {
-      sleep(1000)
-    }
+    if (ok("docker", ["exec", container, "pg_isready", "-U", "postgres"])) return
+    sleep(1000)
   }
 }
 
@@ -124,5 +102,5 @@ export const provisionDatabase = (dir: string): void => {
   if (!launched) throw new Error("pglaunch did not print a connection URL")
   setEnvVar(envPath, "POSTGRES_URL", launched.url)
   waitForPostgres(launched.container)
-  execFileSync("bun", ["run", "db:migrate"], { cwd: dir, stdio: "inherit" })
+  runLive("bun", ["run", "db:migrate"], dir)
 }

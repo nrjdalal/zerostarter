@@ -38,7 +38,9 @@
   "devDependencies": {
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/cross-spawn": "catalog:",
     "@types/node": "catalog:",
+    "cross-spawn": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

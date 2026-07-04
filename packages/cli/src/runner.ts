@@ -9,13 +9,14 @@ export const detectRunner = (ua = process.env.npm_config_user_agent || ""): Runn
   return "unknown"
 }
 
-// The command that installs bun globally with the same package manager the user invoked us with; falls back to npm, which is present whenever node is.
+// The official bun installer for the current OS (https://bun.sh/docs/installation): curl | bash on macOS/Linux, PowerShell on Windows. Unlike `npm i -g bun`, this yields a native bun/bunx (a real .exe on Windows, not a fragile .cmd shim), which is what the CLI then spawns.
 export const bunInstallCommand = (
-  runner: Runner = detectRunner(),
+  platform: NodeJS.Platform = process.platform,
 ): { cmd: string; args: string[] } => {
-  if (runner === "pnpm dlx") return { cmd: "pnpm", args: ["add", "-g", "bun"] }
-  if (runner === "yarn dlx") return { cmd: "yarn", args: ["global", "add", "bun"] }
-  return { cmd: "npm", args: ["install", "-g", "bun"] }
+  if (platform === "win32") {
+    return { cmd: "powershell", args: ["-Command", "irm bun.sh/install.ps1 | iex"] }
+  }
+  return { cmd: "bash", args: ["-c", "curl -fsSL https://bun.sh/install | bash"] }
 }
 
 // Reconstruct the zerostarter command the user ran (e.g. "zerostarter init -y"), for the "re-run under bun" hint.
