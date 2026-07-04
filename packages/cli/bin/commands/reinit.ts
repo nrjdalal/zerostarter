@@ -3,16 +3,10 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
-import {
-  bunInstall,
-  gitCommitAll,
-  overlayZerostarter,
-  requireBun,
-  requireCleanRepo,
-  withRollback,
-} from "@/git"
+import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
 import { emptyDir } from "@/io"
 
+import { ensureBun } from "./_bun"
 import { green, isInteractive, orange, promptConfirm, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
@@ -42,7 +36,7 @@ export const reinit = async (argv: string[]) => {
     return
   }
 
-  requireBun()
+  await ensureBun(Boolean(values.yes))
 
   const target = resolve(positionals[0] ?? ".")
   const name = basename(target)
@@ -82,6 +76,7 @@ export const reinit = async (argv: string[]) => {
       console.log("Rebranding ...")
       convertRepo(target, { name })
       console.log("Installing dependencies ...")
+      console.log()
       bunInstall(target)
       seedEnv(target)
       gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
@@ -94,8 +89,8 @@ export const reinit = async (argv: string[]) => {
   console.log("Next steps:")
   if (!hasPostgresUrl(target)) {
     console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-    console.log(`  ${orange("bun run db:migrate")}`)
   }
+  console.log(`  ${orange("bun run db:migrate")}`)
   console.log(`  ${orange("bun run dev")}`)
   console.log(`  ${orange("git push")}  # to your existing remote`)
 }

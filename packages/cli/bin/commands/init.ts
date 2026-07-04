@@ -4,9 +4,10 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
-import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit, requireBun } from "@/git"
+import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
 
+import { ensureBun } from "./_bun"
 import { green, isInteractive, orange, promptConfirm, promptText, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
@@ -46,8 +47,8 @@ export const init = async (argv: string[]) => {
     return
   }
 
-  // Fail fast if Bun is missing, before any prompt; --dry-run only prints the plan, so let it run without Bun.
-  if (!values["dry-run"]) requireBun()
+  // Fail fast if Bun is missing (offer to install it), before any prompt; --dry-run only prints the plan, so let it run without Bun.
+  if (!values["dry-run"]) await ensureBun(Boolean(values.yes))
 
   const interactive = isInteractive() && !values.yes
 
@@ -107,6 +108,7 @@ export const init = async (argv: string[]) => {
   convertRepo(target, brand)
 
   console.log("Installing dependencies ...")
+  console.log()
   bunInstall(target)
 
   gitCommitAll(target, `ci(init): re-baseline as ${name}`)
@@ -130,8 +132,10 @@ export const init = async (argv: string[]) => {
   }
   if (wantDb && dockerUp) {
     try {
-      console.log("Provisioning a local database with pglaunch and migrating ...")
+      console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
+      console.log()
       provisionDatabase(target)
+      console.log()
       dbReady = true
     } catch (err) {
       const stderr = (err as { stderr?: unknown }).stderr
@@ -140,13 +144,19 @@ export const init = async (argv: string[]) => {
         : err instanceof Error
           ? err.message
           : String(err)
-      console.log(yellow("  Database setup failed; set POSTGRES_URL in .env yourself."))
+      if (hasPostgresUrl(target)) {
+        console.log(
+          yellow("\n  Postgres is provisioned, but the migration failed; run bun run db:migrate."),
+        )
+      } else {
+        console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
+      }
       if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
     console.log(
       yellow(
-        "  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
+        "\n  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
       ),
     )
   }
@@ -160,10 +170,10 @@ export const init = async (argv: string[]) => {
   console.log(`\n${green("✓")} ${name} is ready.\n`)
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!dbReady) {
+  if (!hasPostgresUrl(target)) {
     console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-    console.log(`  ${orange("bun run db:migrate")}`)
   }
+  if (!dbReady) console.log(`  ${orange("bun run db:migrate")}`)
   console.log(`  ${orange("bun run dev")}`)
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
@@ -174,11 +184,11 @@ export const init = async (argv: string[]) => {
   for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
   if (dbReady) {
     console.log(
-      "\nEverything works out of the box. Try it now; add OAuth or other credentials to .env whenever you like.",
+      "\nEverything works out of the box: dependencies are installed and the local Postgres is migrated. Add OAuth or other credentials to .env whenever you like.",
     )
   } else {
     console.log(
-      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one. OAuth and other credentials are optional.",
+      "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",
     )
   }
 }
