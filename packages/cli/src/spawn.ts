@@ -1,4 +1,4 @@
-import { cyan, dim, gray, PAD as P, pulseLabel, red, S } from "@/style"
+import { cyan, dim, dimErr, gray, PAD as P, pulseLabel, red, S } from "@/style"
 import { nanoSpawn, SubprocessError } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
@@ -43,7 +43,7 @@ export const printError = (err: unknown): void => {
     .map((l) => l.trimEnd())
     .filter(Boolean)
     .slice(-12)
-  for (const line of lines) process.stderr.write(`${P}${dim(line)}\n`)
+  for (const line of lines) process.stderr.write(`${P}${dimErr(line)}\n`)
 }
 
 // Run a command as a clack-style step: a `label` that pulses between the filled ◆ and hollow ◇ while it runs, with a dimmed rolling window of its last `lines` output lines beneath it. On success it collapses to a completed `◆ done` (a past-tense done label, defaulting to `label`) and keeps the tail of the output beneath as a trace. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.

@@ -139,3 +139,30 @@ test("printError does not repeat output runTail already dumped", async () => {
   expect(out).toContain("Command failed") // the message still prints
   expect(out).not.toContain("kaboom-tail-marker") // but the tail is not repeated (runTail already showed it)
 })
+
+test("printError's tail is guarded on stderr's TTY state, not stdout's", async () => {
+  const caught = await failWithStderr("guarded-tail-marker")
+  const so = process.stdout
+  const se = process.stderr
+  const soTTY = so.isTTY
+  const seTTY = se.isTTY
+  const writes: string[] = []
+  const origWrite = se.write.bind(se)
+  se.write = (chunk: unknown): boolean => {
+    writes.push(String(chunk))
+    return true
+  }
+  // stdout a TTY, stderr piped: the stderr-bound dimErr must emit no codes (a stdout-bound dim would).
+  Object.defineProperty(so, "isTTY", { configurable: true, value: true })
+  Object.defineProperty(se, "isTTY", { configurable: true, value: false })
+  try {
+    printError(caught)
+  } finally {
+    se.write = origWrite
+    Object.defineProperty(so, "isTTY", { configurable: true, value: soTTY })
+    Object.defineProperty(se, "isTTY", { configurable: true, value: seTTY })
+  }
+  const out = writes.join("")
+  expect(out).toContain("guarded-tail-marker") // the tail still prints
+  expect(out).not.toContain("\x1b[2m") // but with no dim escape, since stderr isn't a TTY
+})
