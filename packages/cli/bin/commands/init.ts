@@ -138,7 +138,7 @@ export const init = async (argv: string[]) => {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
-    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
+    wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp, true)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
     wantDb = dockerUp
@@ -169,13 +169,6 @@ export const init = async (argv: string[]) => {
     )
   }
 
-  const steps: string[] = []
-  if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
-  if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
-  if (!dbReady) steps.push(orange("bun run db:migrate"))
-  steps.push(orange("bun run dev"))
-  logSuccess(`${name} is ready`)
-  note(steps.join("\n"), "Next steps")
   note(
     [
       `Edit ${orange("packages/config/src/site.ts")} to manage branding`,
@@ -183,6 +176,13 @@ export const init = async (argv: string[]) => {
     ].join("\n"),
     "Make it yours",
   )
+  const steps: string[] = []
+  if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
+  if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
+  if (!dbReady) steps.push(orange("bun run db:migrate"))
+  steps.push(orange("bun run dev"))
+  note(steps.join("\n"), "Next steps")
+  logSuccess(`${name} is ready`)
   if (!dbReady) {
     console.log(
       "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",

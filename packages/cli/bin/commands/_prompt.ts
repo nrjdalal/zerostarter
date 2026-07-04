@@ -76,11 +76,16 @@ const renderOptions = (value: boolean): string => {
   return `${gray(S.bar)}  ${yes} ${dim("/")} ${no}`
 }
 
-// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n, collapsing to `◇ message` + `│ Yes`. Falls back to the default without prompting when not interactive.
-export const promptConfirm = async (question: string, def = true): Promise<boolean> => {
+// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n. Normally collapses to `◇ message Yes`; when `erase` is set it removes itself entirely on submit so the step that follows (e.g. the provisioning tail) takes its place. Falls back to the default without prompting when not interactive.
+export const promptConfirm = async (
+  question: string,
+  def = true,
+  erase = false,
+): Promise<boolean> => {
   const out = process.stdout
   if (!isInteractive()) {
-    out.write(`${gray(S.bar)}\n${cyan(S.submit)}  ${question} ${dim(def ? "Yes" : "No")}\n`)
+    if (!erase)
+      out.write(`${gray(S.bar)}\n${cyan(S.submit)}  ${question} ${dim(def ? "Yes" : "No")}\n`)
     return def
   }
   return new Promise<boolean>((resolve) => {
@@ -98,9 +103,13 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     }
     const submit = (): void => {
       cleanup()
-      out.write(`\r\x1b[K`)
-      out.write(`\x1b[1A\r\x1b[K`)
-      out.write(`${cyan(S.submit)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
+      out.write(`\r\x1b[K\x1b[1A\r\x1b[K`)
+      if (erase) {
+        // drop the gutter connector too, leaving the cursor where the prompt began so the next step reuses it
+        out.write(`\x1b[1A\r\x1b[K`)
+      } else {
+        out.write(`${cyan(S.submit)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
+      }
       resolve(value)
     }
     function onData(key: string): void {
