@@ -4,25 +4,25 @@ import { exists } from "@/io"
 import { ok, run, runLive } from "@/spawn"
 
 // Install dependencies in `dir` with live progress. Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
-export const bunInstall = (dir: string): void => {
-  runLive("bun", ["install"], dir)
+export const bunInstall = async (dir: string): Promise<void> => {
+  await runLive("bun", ["install"], dir)
 }
 
-// Last-resort probe that bun is on PATH (injectable so tests can force either branch); throws when bun is absent.
-const bunOnPath = (): void => {
-  if (!ok("bun", ["--version"])) throw new Error("bun is not on PATH")
+// Last-resort probe that bun is on PATH (injectable so tests can force either branch); rejects when bun is absent.
+const bunOnPath = async (): Promise<void> => {
+  if (!(await ok("bun", ["--version"]))) throw new Error("bun is not on PATH")
 }
 
 // Whether bun is usable. Trusts two signals before spawning, because a bare `bun --version` can misfire even when bun is present (notably on Windows): running under the Bun runtime (bunx --bun / bun run) and being invoked via bunx (npm_config_user_agent starts with "bun/") both guarantee bun. Only when neither holds do we fall back to the spawn probe. All three inputs default to the live process and are injectable for tests.
-export const bunAvailable = (
-  probe: () => void = bunOnPath,
+export const bunAvailable = async (
+  probe: () => void | Promise<void> = bunOnPath,
   bunRuntime: boolean = Boolean(process.versions.bun),
   userAgent: string = process.env.npm_config_user_agent || "",
-): boolean => {
+): Promise<boolean> => {
   if (bunRuntime) return true
   if (userAgent.startsWith("bun/")) return true
   try {
-    probe()
+    await probe()
     return true
   } catch {
     return false
@@ -30,8 +30,8 @@ export const bunAvailable = (
 }
 
 // Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history). --bun runs gitpick under the Bun runtime, not Node.
-export const fetchZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", [
+export const fetchZerostarter = async (dir: string, ref = "main"): Promise<void> => {
+  await run("bunx", [
     "--bun",
     "gitpick@6.0.0",
     `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
@@ -40,8 +40,8 @@ export const fetchZerostarter = (dir: string, ref = "main"): void => {
 }
 
 // Overlay the latest zerostarter onto a fork (gitpick -o); .gitpickignore paths and fork-added files are kept.
-export const overlayZerostarter = (dir: string, ref = "main"): void => {
-  run("bunx", [
+export const overlayZerostarter = async (dir: string, ref = "main"): Promise<void> => {
+  await run("bunx", [
     "--bun",
     "gitpick@6.0.0",
     `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
@@ -59,16 +59,16 @@ export const fetchGitpickignore = async (ref = "main"): Promise<string> => {
 }
 
 // True when `dir`'s git working tree has no uncommitted changes.
-export const gitIsClean = (dir: string): boolean =>
-  run("git", ["status", "--porcelain"], dir).trim() === ""
+export const gitIsClean = async (dir: string): Promise<boolean> =>
+  (await run("git", ["status", "--porcelain"], dir)).trim() === ""
 
 // Restore each path in `dir` to its committed state (binary-safe) and remove any untracked files under it; skips a path the fork does not track.
-export const gitRestore = (dir: string, paths: string[]): void => {
+export const gitRestore = async (dir: string, paths: string[]): Promise<void> => {
   for (const path of paths) {
     try {
-      run("git", ["checkout", "--", path], dir)
+      await run("git", ["checkout", "--", path], dir)
       // drop overlay-added files the fork does not track (e.g. a starter migration under a preserved dir)
-      run("git", ["clean", "-fd", "--", path], dir)
+      await run("git", ["clean", "-fd", "--", path], dir)
     } catch {
       // not tracked in the fork; keep the overlaid version
     }
@@ -76,15 +76,19 @@ export const gitRestore = (dir: string, paths: string[]): void => {
 }
 
 // Discard all working-tree changes and untracked files in `dir`, returning it to its last commit.
-export const gitResetHard = (dir: string): void => {
-  run("git", ["reset", "--hard", "HEAD"], dir)
-  run("git", ["clean", "-fd"], dir)
+export const gitResetHard = async (dir: string): Promise<void> => {
+  await run("git", ["reset", "--hard", "HEAD"], dir)
+  await run("git", ["clean", "-fd"], dir)
 }
 
 // Guard a destructive command: throw if `dir` is not a git repo, or if its tree has uncommitted changes.
-export const requireCleanRepo = (dir: string, notGitMsg: string, dirtyMsg: string): void => {
+export const requireCleanRepo = async (
+  dir: string,
+  notGitMsg: string,
+  dirtyMsg: string,
+): Promise<void> => {
   if (!exists(join(dir, ".git"))) throw new Error(notGitMsg)
-  if (!gitIsClean(dir)) throw new Error(dirtyMsg)
+  if (!(await gitIsClean(dir))) throw new Error(dirtyMsg)
 }
 
 // Run `fn`; on any failure roll `dir` back to its pre-run commit, print `onFail`, and rethrow.
@@ -96,27 +100,27 @@ export const withRollback = async (
   try {
     await fn()
   } catch (err) {
-    gitResetHard(dir)
+    await gitResetHard(dir)
     console.log(onFail)
     throw err
   }
 }
 
 // Start a fresh git repo in `dir` on the `canary` working branch (no commit yet).
-export const gitInit = (dir: string): void => {
-  run("git", ["init", "-q", "-b", "canary"], dir)
+export const gitInit = async (dir: string): Promise<void> => {
+  await run("git", ["init", "-q", "-b", "canary"], dir)
 }
 
 // Create a branch at the current HEAD without checking it out (used to seed `main` from the scaffold commit).
-export const gitBranch = (dir: string, name: string): void => {
-  run("git", ["branch", name], dir)
+export const gitBranch = async (dir: string, name: string): Promise<void> => {
+  await run("git", ["branch", name], dir)
 }
 
 // Stage everything and commit, bypassing hooks; no-op if there is nothing to commit.
-export const gitCommitAll = (dir: string, message: string): void => {
-  run("git", ["add", "-A"], dir)
+export const gitCommitAll = async (dir: string, message: string): Promise<void> => {
+  await run("git", ["add", "-A"], dir)
   try {
-    run("git", ["commit", "--no-verify", "-q", "-m", message], dir)
+    await run("git", ["commit", "--no-verify", "-q", "-m", message], dir)
   } catch {
     // nothing to commit
   }

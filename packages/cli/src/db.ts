@@ -7,7 +7,7 @@ import { ok, run, runLive } from "@/spawn"
 const PGLAUNCH = "pglaunch@5.5.7"
 
 // True when a Docker daemon is reachable (pglaunch needs it to start a Postgres container).
-export const dockerRunning = (): boolean => ok("docker", ["info"])
+export const dockerRunning = async (): Promise<boolean> => ok("docker", ["info"])
 
 // Ensure .env exists as a 1-to-1 copy of .env.example; returns its path.
 const ensureEnv = (dir: string): string => {
@@ -69,11 +69,11 @@ export const parseLaunch = (out: string): Launch | null => {
 }
 
 // Run pglaunch (-k keeps the container, --bun runs it under the Bun runtime) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
-const runPglaunch = (dir: string, confirm: boolean): Launch | null => {
+const runPglaunch = async (dir: string, confirm: boolean): Promise<Launch | null> => {
   const args = confirm ? ["--bun", PGLAUNCH, "-k", "-c"] : ["--bun", PGLAUNCH, "-k"]
   let out: string
   try {
-    out = run("bunx", args, dir)
+    out = await run("bunx", args, dir)
   } catch (err) {
     const e = err as { stdout?: string; stderr?: string }
     out = [e.stdout, e.stderr].filter(Boolean).join("\n")
@@ -81,26 +81,24 @@ const runPglaunch = (dir: string, confirm: boolean): Launch | null => {
   return parseLaunch(out)
 }
 
-// Block for `ms` milliseconds (provisionDatabase runs synchronously, so this can't be an async delay).
-const sleep = (ms: number): void => {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
-}
+// Resolve after `ms` milliseconds.
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Wait until the container's Postgres accepts connections. pglaunch returns as soon as `docker run` starts, but the server needs a moment to finish booting, so migrating immediately races and fails. pglaunch containers are postgres:alpine, which ships pg_isready. Best-effort: returns once ready or after the attempts are exhausted.
-const waitForPostgres = (container: string): void => {
+const waitForPostgres = async (container: string): Promise<void> => {
   if (!container) return
   for (let i = 0; i < 30; i++) {
-    if (ok("docker", ["exec", container, "pg_isready", "-U", "postgres"])) return
-    sleep(1000)
+    if (await ok("docker", ["exec", container, "pg_isready", "-U", "postgres"])) return
+    await sleep(1000)
   }
 }
 
 // Provision a local Postgres (reusing an already-running one), point .env at it, wait for it to accept connections, and apply the migrations with live progress. Needs the project's dependencies (drizzle-kit), so the caller runs bun install first.
-export const provisionDatabase = (dir: string): void => {
+export const provisionDatabase = async (dir: string): Promise<void> => {
   const envPath = ensureEnv(dir)
-  const launched = runPglaunch(dir, false) || runPglaunch(dir, true)
+  const launched = (await runPglaunch(dir, false)) || (await runPglaunch(dir, true))
   if (!launched) throw new Error("pglaunch did not print a connection URL")
   setEnvVar(envPath, "POSTGRES_URL", launched.url)
-  waitForPostgres(launched.container)
-  runLive("bun", ["run", "db:migrate"], dir)
+  await waitForPostgres(launched.container)
+  await runLive("bun", ["run", "db:migrate"], dir)
 }

@@ -43,7 +43,7 @@ export const reinit = async (argv: string[]) => {
   const interactive = isInteractive() && !values.yes
 
   // Only committed files are recoverable from .git after the wipe, so refuse a dirty tree.
-  requireCleanRepo(
+  await requireCleanRepo(
     target,
     `No git repository in ${target}. reinit re-scaffolds an existing repo; use init for a new project.`,
     "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
@@ -69,17 +69,17 @@ export const reinit = async (argv: string[]) => {
     yellow(
       "reinit failed; restored your committed files (deleted gitignored files, except .env*, are gone).",
     ),
-    () => {
+    async () => {
       emptyDir(target)
       console.log("Fetching the latest ZeroStarter ...")
-      overlayZerostarter(target)
+      await overlayZerostarter(target)
       console.log("Rebranding ...")
       convertRepo(target, { name })
       console.log("Installing dependencies ...")
       console.log()
-      bunInstall(target)
+      await bunInstall(target)
       seedEnv(target)
-      gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
+      await gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
     },
   )
 

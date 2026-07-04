@@ -27,9 +27,9 @@ afterEach(() => {
   rmSync(dir, { force: true, recursive: true })
 })
 
-test("gitInit starts a repo on the canary branch", () => {
+test("gitInit starts a repo on the canary branch", async () => {
   const fresh = mkdtempSync(join(tmpdir(), "zs-git2-"))
-  gitInit(fresh)
+  await gitInit(fresh)
   expect(
     execFileSync("git", ["symbolic-ref", "--short", "HEAD"], {
       cwd: fresh,
@@ -39,78 +39,78 @@ test("gitInit starts a repo on the canary branch", () => {
   rmSync(fresh, { force: true, recursive: true })
 })
 
-test("gitIsClean reflects the working tree, including untracked files", () => {
+test("gitIsClean reflects the working tree, including untracked files", async () => {
   writeFileSync(join(dir, "a.txt"), "1")
-  gitCommitAll(dir, "init")
-  expect(gitIsClean(dir)).toBe(true)
+  await gitCommitAll(dir, "init")
+  expect(await gitIsClean(dir)).toBe(true)
   writeFileSync(join(dir, "b.txt"), "2")
-  expect(gitIsClean(dir)).toBe(false)
+  expect(await gitIsClean(dir)).toBe(false)
 })
 
-test("gitCommitAll stages everything and no-ops on a clean tree", () => {
+test("gitCommitAll stages everything and no-ops on a clean tree", async () => {
   writeFileSync(join(dir, "a.txt"), "1")
-  gitCommitAll(dir, "one")
+  await gitCommitAll(dir, "one")
   expect(git("log", "--oneline").trim().split("\n")).toHaveLength(1)
-  expect(() => gitCommitAll(dir, "empty")).not.toThrow()
+  await gitCommitAll(dir, "empty")
   expect(git("log", "--oneline").trim().split("\n")).toHaveLength(1)
 })
 
-test("gitBranch creates a branch at HEAD without checking it out", () => {
+test("gitBranch creates a branch at HEAD without checking it out", async () => {
   writeFileSync(join(dir, "a.txt"), "1")
-  gitCommitAll(dir, "init")
-  gitBranch(dir, "main")
+  await gitCommitAll(dir, "init")
+  await gitBranch(dir, "main")
   expect(git("branch", "--list", "main").trim()).toContain("main")
   expect(git("symbolic-ref", "--short", "HEAD").trim()).not.toBe("main")
 })
 
-test("gitRestore restores a committed path and skips an untracked one", () => {
+test("gitRestore restores a committed path and skips an untracked one", async () => {
   writeFileSync(join(dir, "keep.txt"), "orig")
-  gitCommitAll(dir, "init")
+  await gitCommitAll(dir, "init")
   writeFileSync(join(dir, "keep.txt"), "changed")
-  expect(() => gitRestore(dir, ["keep.txt", "never-tracked.txt"])).not.toThrow()
+  await gitRestore(dir, ["keep.txt", "never-tracked.txt"])
   expect(readFileSync(join(dir, "keep.txt"), "utf8")).toBe("orig")
 })
 
-test("gitRestore drops overlay-added untracked files under a preserved dir", () => {
+test("gitRestore drops overlay-added untracked files under a preserved dir", async () => {
   mkdirSync(join(dir, "db"))
   writeFileSync(join(dir, "db/0000.sql"), "base")
-  gitCommitAll(dir, "init")
+  await gitCommitAll(dir, "init")
   // simulate the overlay: overwrite the tracked migration and add a starter one the fork never had
   writeFileSync(join(dir, "db/0000.sql"), "overlaid")
   writeFileSync(join(dir, "db/0001_orphan.sql"), "starter")
-  gitRestore(dir, ["db"])
+  await gitRestore(dir, ["db"])
   expect(readFileSync(join(dir, "db/0000.sql"), "utf8")).toBe("base")
   expect(existsSync(join(dir, "db/0001_orphan.sql"))).toBe(false)
 })
 
 const fail = () => {
-  throw Object.assign(new Error("spawnSync bun ENOENT"), { code: "ENOENT" })
+  throw Object.assign(new Error("bun --version ENOENT"), { code: "ENOENT" })
 }
 
-test("bunAvailable is true when the probe succeeds, false when it fails", () => {
+test("bunAvailable is true when the probe succeeds, false when it fails", async () => {
   // no runtime signal, no bun user-agent → only the probe decides
-  expect(bunAvailable(() => {}, false, "")).toBe(true)
-  expect(bunAvailable(fail, false, "")).toBe(false)
+  expect(await bunAvailable(() => {}, false, "")).toBe(true)
+  expect(await bunAvailable(fail, false, "")).toBe(false)
 })
 
-test("bunAvailable trusts the Bun runtime and the bunx user-agent without probing", () => {
+test("bunAvailable trusts the Bun runtime and the bunx user-agent without probing", async () => {
   // a failing probe must not matter once a trustworthy signal is present
-  expect(bunAvailable(fail, true, "")).toBe(true)
-  expect(bunAvailable(fail, false, "bun/1.3.14 npm/? node/v24")).toBe(true)
+  expect(await bunAvailable(fail, true, "")).toBe(true)
+  expect(await bunAvailable(fail, false, "bun/1.3.14 npm/? node/v24")).toBe(true)
   // a non-bun user-agent does not count
-  expect(bunAvailable(fail, false, "npm/10.8.0 node/v22")).toBe(false)
+  expect(await bunAvailable(fail, false, "npm/10.8.0 node/v22")).toBe(false)
 })
 
-test("gitResetHard restores tracked files, removes untracked, keeps gitignored", () => {
+test("gitResetHard restores tracked files, removes untracked, keeps gitignored", async () => {
   writeFileSync(join(dir, ".gitignore"), "ignored/\n")
   writeFileSync(join(dir, "src.txt"), "orig")
-  gitCommitAll(dir, "init")
+  await gitCommitAll(dir, "init")
   writeFileSync(join(dir, "src.txt"), "changed")
   writeFileSync(join(dir, "new.txt"), "untracked")
   mkdirSync(join(dir, "ignored"))
   writeFileSync(join(dir, "ignored/x"), "keep")
 
-  gitResetHard(dir)
+  await gitResetHard(dir)
 
   expect(readFileSync(join(dir, "src.txt"), "utf8")).toBe("orig")
   expect(existsSync(join(dir, "new.txt"))).toBe(false)
