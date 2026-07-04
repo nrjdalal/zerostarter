@@ -9,10 +9,10 @@ import { emptyDir } from "@/io"
 import { ensureBun } from "./_bun"
 import {
   cancel,
-  cyan,
   green,
   intro,
   isInteractive,
+  link,
   logStep,
   note,
   orange,
@@ -61,7 +61,7 @@ export const reinit = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first; reinit deletes every tracked file.",
   )
 
-  intro(cyan("https://zerostarter.dev"))
+  intro(link("https://zerostarter.dev"))
 
   if (interactive) {
     const ok = await promptConfirm(

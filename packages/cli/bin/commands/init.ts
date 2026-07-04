@@ -10,9 +10,9 @@ import { exists } from "@/io"
 import { ensureBun } from "./_bun"
 import {
   cancel,
-  cyan,
   intro,
   isInteractive,
+  link,
   logStep,
   logSuccess,
   logWarn,
@@ -101,7 +101,7 @@ export const init = async (argv: string[]) => {
   }
 
   // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
-  if (!values["dry-run"]) intro(cyan("https://zerostarter.dev"))
+  if (!values["dry-run"]) intro(link("https://zerostarter.dev"))
 
   if (intoSubdir) {
     if (!interactive) {
@@ -216,5 +216,5 @@ export const init = async (argv: string[]) => {
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
   note(steps.join("\n"), "Next steps")
-  outro(`Learn more ${cyan("https://zerostarter.dev/docs")}`)
+  outro(`Learn more ${link("https://zerostarter.dev/docs")}`)
 }

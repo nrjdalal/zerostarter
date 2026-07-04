@@ -14,7 +14,7 @@ import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
 
 import { ensureBun } from "./_bun"
-import { cyan, intro, logStep, logWarn, note, orange, outro, yellow } from "./_prompt"
+import { intro, link, logStep, logWarn, note, orange, outro, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter sync [dir] [options]
@@ -50,7 +50,7 @@ export const sync = async (argv: string[]) => {
     "Working tree has uncommitted changes. Commit or stash them first so the sync lands as a reviewable diff.",
   )
 
-  intro(cyan("https://zerostarter.dev"))
+  intro(link("https://zerostarter.dev"))
 
   const rootPkg = join(target, "package.json")
   // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).

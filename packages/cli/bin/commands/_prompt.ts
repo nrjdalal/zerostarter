@@ -10,6 +10,9 @@ export const isInteractive = (): boolean => Boolean(process.stdin.isTTY && proce
 export const hyperlink = (url: string, text = url): string =>
   process.stdout.isTTY ? `\x1b]8;;${url}\x07${text}\x1b]8;;\x07` : url
 
+// A clickable, cyan URL: OSC 8 wraps the colored text (link outermost) and the URL is the visible text, so terminals that auto-detect bare URLs also linkify it.
+export const link = (url: string): string => hyperlink(url, cyan(url))
+
 // clack support functions: a connected gutter where each turn is `│` then a symbol line.
 export const intro = (title: string): void => {
   process.stdout.write(`\n${gray(S.barStart)}  ${title}\n`)
