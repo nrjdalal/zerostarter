@@ -34,12 +34,17 @@ describe("console search gating (/api/console/search)", () => {
     expect(await res.text()).toBe("")
   })
 
-  test("admin console search returns results", async () => {
-    const res = await fetch(`${WEB_URL}/api/console/search?query=console`, {
+  test("admin console search returns results from the console docs index", async () => {
+    const res = await fetch(`${WEB_URL}/api/console/search?query=docs`, {
       headers: { cookie: await agentCookie() },
     })
     expect(res.status).toBe(200)
-    expect(Array.isArray(await res.json())).toBe(true)
+    const results = await res.json()
+    expect(Array.isArray(results)).toBe(true)
+    expect(results.length, "console docs index should match 'docs'").toBeGreaterThan(0)
+    for (const item of results) {
+      expect(item.url).toMatch(/^\/console\//)
+    }
   })
 })
 

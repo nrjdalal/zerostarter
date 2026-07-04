@@ -10,7 +10,7 @@ describe("dashboard auth gating", () => {
   test("anonymous /dashboard redirects to the landing page", async () => {
     const res = await fetch(`${WEB_URL}/dashboard`, { redirect: "manual" })
     expect(res.status).toBe(307)
-    // The redirect target is the landing page, emitted either relative or absolute; derive from WEB_URL so a GOLDEN_WEB_URL override still passes.
+    // The redirect target is the landing page, emitted either relative or absolute; derive from WEB_URL so a TESTS_WEB_URL override still passes.
     const location = res.headers.get("location")
     expect(location === "/" || location === `${WEB_URL}/`).toBe(true)
   })

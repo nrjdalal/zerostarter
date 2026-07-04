@@ -1,19 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser, SEARCH_HOTKEY } from "@/browser"
+import { htmlEscape, titleOf } from "@/html"
 import { fetchOk } from "@/http"
 import { DOCS_PAGES } from "@/surface"
 import { WEB_URL } from "@/urls"
 
 // Covers web/next/src/app/(content)/docs and its search backend web/next/src/app/api/search: every docs page renders with its title, the /api/search route, and the search dialog + sidebar navigation.
-
-function titleOf(html: string): string {
-  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
-}
-
-function htmlEscape(text: string): string {
-  return text.replace(/&/g, "&amp;")
-}
 
 describe("docs pages (all of them)", () => {
   for (const [path, title] of Object.entries(DOCS_PAGES)) {

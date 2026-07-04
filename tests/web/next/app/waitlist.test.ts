@@ -1,15 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser } from "@/browser"
+import { titleOf } from "@/html"
 import { uniqueEmail } from "@/http"
 import { MARKETING_PAGES, SITE } from "@/surface"
 import { WEB_URL } from "@/urls"
 
 // Covers web/next/src/app/waitlist: the page renders, and the join form handles success, validation, and the bot honeypot. The /api/waitlist backend it posts to is tested in api/hono/routers/waitlist.test.ts.
-
-function titleOf(html: string): string {
-  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
-}
 
 describe("waitlist page", () => {
   test("GET /waitlist renders with its exact title", async () => {

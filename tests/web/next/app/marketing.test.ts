@@ -1,14 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test"
 
 import { Browser } from "@/browser"
+import { titleOf } from "@/html"
 import { MARKETING_PAGES, SITE } from "@/surface"
 import { WEB_URL } from "@/urls"
 
 // Covers web/next/src/app/(marketing): the landing/hire/resume pages, their social metadata, and the landing-page interactions (nav, API status, theme toggle, and the agent login flow driven from the navbar). The standalone /waitlist page is tested in waitlist.test.ts.
-
-function titleOf(html: string): string {
-  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
-}
 
 const MARKETING_ROUTES = ["/", "/hire", "/resume"] as const
 
@@ -86,16 +83,19 @@ describe("landing page interactions", () => {
     browser.open("/")
     const before = browser.htmlClass()
     browser.clickRole("button", "Switch between system/light/dark version")
+    browser.waitHtmlClassChanges(before)
     const after = browser.htmlClass()
     expect(after).not.toBe(before)
 
     const themed = after.includes("dark") ? "dark" : "light"
     browser.run(["reload"])
     browser.run(["wait", "--load", "networkidle"])
-    expect(browser.htmlClass()).toContain(themed)
+    const persisted = browser.htmlClass()
+    expect(persisted).toContain(themed)
 
     browser.clickRole("button", "Switch between system/light/dark version")
-    expect(browser.htmlClass()).not.toBe(after)
+    browser.waitHtmlClassChanges(persisted)
+    expect(browser.htmlClass()).not.toBe(persisted)
   })
 })
 
@@ -139,6 +139,8 @@ describe("agent login flow", () => {
   test("a signed-in user sees Dashboard instead of Login on the landing page", () => {
     login()
     browser.open("/")
+    // The navbar swaps Login->Dashboard on a client-side session fetch (authClient.useSession) that can resolve after networkidle; wait for the authenticated control before asserting.
+    browser.waitSelector('a[href="/dashboard"]')
     expect(browser.refFor('link "Dashboard"', { interactive: true, urls: true })).not.toBeNull()
     expect(browser.hasControl("Login")).toBe(false)
   })

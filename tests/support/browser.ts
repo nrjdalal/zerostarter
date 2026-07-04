@@ -161,6 +161,16 @@ export class Browser {
   htmlClass(): string {
     return JSON.parse(this.eval("document.documentElement.className")) as string
   }
+
+  // Waits until the <html> class differs from `from`. Theme toggles apply via an async React re-render, so reading the class right after the click can race it.
+  waitHtmlClassChanges(from: string) {
+    this.run(["wait", "--fn", `document.documentElement.className !== ${JSON.stringify(from)}`])
+  }
+
+  // Waits for a DOM element matching the CSS selector (for state that appears after a client-side fetch, past networkidle).
+  waitSelector(selector: string) {
+    this.run(["wait", "--fn", `!!document.querySelector(${JSON.stringify(selector)})`])
+  }
 }
 
 let stateSaved = false

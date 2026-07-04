@@ -1,26 +1,19 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { Browser } from "@/browser"
+import { htmlEscape, titleOf } from "@/html"
 import { fetchOk } from "@/http"
 import { BLOG_POSTS } from "@/surface"
 import { WEB_URL } from "@/urls"
 
 // Covers web/next/src/app/(content)/blog: the index lists every published post, each post renders, and the index links navigate.
 
-function titleOf(html: string): string {
-  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? ""
-}
-
-function htmlEscape(text: string): string {
-  return text.replace(/&/g, "&amp;")
-}
-
 describe("blog pages", () => {
   test("GET /blog renders the index listing every post", async () => {
     const html = await (await fetchOk(`${WEB_URL}/blog`)).text()
     expect(titleOf(html)).toBe("Blog | ZeroStarter")
     for (const title of Object.values(BLOG_POSTS)) {
-      expect(html).toContain(htmlEscape(title).slice(0, 40))
+      expect(html, `blog index should list the full title: ${title}`).toContain(htmlEscape(title))
     }
   })
 

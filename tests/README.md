@@ -49,7 +49,7 @@ bun run test:web             # web/ only (fetch + agent-browser)
 
 Use `bun run test`, not a bare `bun test`: the 60s per-test timeout lives in the `test` script (browser flows and cold-route retries exceed Bun's 5s default), and a bare `bun test` invokes the runner directly, skipping the script and its flag.
 
-Requirements: `agent-browser` on PATH with a browser installed (`npm i -g agent-browser && agent-browser install`); the dev stack's Postgres reachable via `.env` `POSTGRES_URL`; web on `:3000` and api on `:4000` (override with `GOLDEN_WEB_URL` / `GOLDEN_API_URL`). A preload (`support/preload.ts`) waits for both servers before any spec runs; the agent session is signed in once and shared (an HTTP cookie for fetch specs, a saved browser state for admin e2e specs).
+Requirements: `agent-browser` on PATH with a browser installed (`npm i -g agent-browser && agent-browser install`); the dev stack's Postgres reachable via `.env` `POSTGRES_URL`; web on `:3000` and api on `:4000` (override with `TESTS_WEB_URL` / `TESTS_API_URL`). A preload (`support/preload.ts`) waits for both servers before any spec runs; the agent session is signed in once and shared (an HTTP cookie for fetch specs, a saved browser state for admin e2e specs).
 
 Do not run `bun run build` (or commit, whose pre-commit hook builds) while the suite is running: the build writes into the same `.next` the dev server serves from and causes transient failures until the dev server resettles. The suite also writes a few throwaway `@example.com` rows to the local waitlist table; organizations it creates are deleted at the end of the test.
 
