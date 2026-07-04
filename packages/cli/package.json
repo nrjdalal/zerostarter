@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Go from zero to a production-ready SaaS, rebranded and ready to ship.",
   "keywords": [
     "cli",
@@ -38,9 +38,7 @@
   "devDependencies": {
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
-    "@types/cross-spawn": "catalog:",
     "@types/node": "catalog:",
-    "cross-spawn": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

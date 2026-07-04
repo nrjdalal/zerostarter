@@ -125,6 +125,7 @@ export const init = async (argv: string[]) => {
     wantDb = true
   } else if (interactive) {
     // Always ask; default to yes when Docker is up (we can provision now), no when it isn't.
+    console.log()
     wantDb = await promptConfirm("Provision a local Postgres database now?", dockerUp)
   } else {
     // Non-interactive (--yes / non-TTY): take the prompt's default, provision when Docker is up.
