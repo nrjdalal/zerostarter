@@ -36,7 +36,7 @@
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test": "bun --cwd tests test"
+    "test": "bun run --cwd tests test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",

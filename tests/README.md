@@ -42,10 +42,12 @@ First make sure the dev stack is up (`bun run dev` at the repo root, or `bash te
 
 ```bash
 bun run test                 # from the repo root (whole suite)
-bun test                     # from tests/ (whole suite)
+bun run test                 # from tests/ (whole suite)
 bun run test:api             # api/ only (fetch)
 bun run test:web             # web/ only (fetch + agent-browser)
 ```
+
+Use `bun run test`, not a bare `bun test`: the 60s per-test timeout lives in the `test` script (browser flows and cold-route retries exceed Bun's 5s default), and a bare `bun test` invokes the runner directly, skipping the script and its flag.
 
 Requirements: `agent-browser` on PATH with a browser installed (`npm i -g agent-browser && agent-browser install`); the dev stack's Postgres reachable via `.env` `POSTGRES_URL`; web on `:3000` and api on `:4000` (override with `GOLDEN_WEB_URL` / `GOLDEN_API_URL`). A preload (`support/preload.ts`) waits for both servers before any spec runs; the agent session is signed in once and shared (an HTTP cookie for fetch specs, a saved browser state for admin e2e specs).
 

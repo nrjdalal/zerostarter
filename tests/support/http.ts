@@ -1,6 +1,6 @@
 import { expect } from "bun:test"
 
-import { API_URL, TRUSTED_ORIGIN } from "@/urls"
+import { API_URL, TRUSTED_ORIGIN, WEB_URL } from "@/urls"
 
 // Signs in as the local agent over HTTP and returns the session Cookie header value.
 export async function signInAsAgent(): Promise<string> {
@@ -74,7 +74,7 @@ export async function waitForStack() {
     expect(health.ok).toBe(true)
   }, 120_000)
   await eventually(async () => {
-    const home = await fetch(process.env.GOLDEN_WEB_URL || "http://localhost:3000")
+    const home = await fetch(WEB_URL)
     expect(home.ok).toBe(true)
   }, 120_000)
 }
