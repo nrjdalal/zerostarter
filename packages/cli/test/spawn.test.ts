@@ -47,6 +47,8 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
   }
   const all = writes.join("")
   expect(all).toMatch(/\[\d+A/) // cursor-up: the window was redrawn in place
+  expect(all).toContain("[?7l") // auto-wrap disabled so a wide/long line can't wrap and grow the window
+  expect(all).toContain("[?7h") // and re-enabled afterwards
   expect(all).toContain("pkg 0") // intermediate lines were rendered (then erased)
   expect(all).toContain("42 packages installed") // and the summary printed at the end
 })

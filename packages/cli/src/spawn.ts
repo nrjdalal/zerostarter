@@ -49,6 +49,10 @@ export const runTail = async (
   let pending = ""
   let output = ""
   const width = (): number => (process.stdout.columns || 80) - 1
+  // Toggle the terminal's auto-wrap. It stays off while the window renders: a wide char (emoji, spinner) or long line would otherwise wrap to a second row, making the cursor-up count short so the window grows past `max` lines.
+  const setWrap = (on: boolean): void => {
+    process.stdout.write(on ? `${ESC}[?7h` : `${ESC}[?7l`)
+  }
   const erase = (): void => {
     if (rendered > 0) {
       process.stdout.write(`${ESC}[${rendered}A${ESC}[0J`)
@@ -67,18 +71,21 @@ export const runTail = async (
     const parts = pending.split("\n")
     pending = parts.pop() ?? ""
     for (const raw of parts) {
-      window.push(stripAnsi(raw).replace(/\r/g, "").trimEnd())
+      window.push(stripAnsi(raw).replace(/\r/g, "").replace(/\t/g, " ").trimEnd())
       draw()
     }
   }
+  setWrap(false)
   try {
     await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
   } catch (err) {
     erase()
+    setWrap(true)
     process.stdout.write(output)
     throw err
   }
   erase()
+  setWrap(true)
   const summary = opts.summarize(output, Date.now() - start).trim()
   if (summary) {
     console.log()

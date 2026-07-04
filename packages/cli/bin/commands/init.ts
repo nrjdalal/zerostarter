@@ -132,7 +132,6 @@ export const init = async (argv: string[]) => {
   }
   if (wantDb && dockerUp) {
     try {
-      console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
       await provisionDatabase(target)
       dbReady = true
     } catch (err) {
