@@ -17,6 +17,9 @@ export const dim = paint("2", "22")
 export const red = paint("31", "39", process.stderr)
 export const orange = paint("38;5;208", "39")
 
+// Spinner pulse: alternate the filled active glyph (◆) and the hollow submit glyph (◇) while work runs.
+export const PULSE = ["◆", "◇"] as const
+
 // clack flow glyphs: the gutter (┌ │ └), a submitted step (◇), the active step (◆), radio bullets, and the note box border.
 export const S = {
   barStart: "┌",

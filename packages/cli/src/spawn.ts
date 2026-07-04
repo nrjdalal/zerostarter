@@ -1,4 +1,4 @@
-import { cyan, dim, gray, PAD as P, S } from "@/style"
+import { cyan, dim, gray, PAD as P, PULSE, S } from "@/style"
 import { nanoSpawn } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
@@ -33,7 +33,7 @@ const stripAnsi = (s: string): string => s.replace(csi, "")
 export const formatDuration = (ms: number): string =>
   ms >= 1000 ? `[${(ms / 1000).toFixed(2)}s]` : `[${ms.toFixed(2)}ms]`
 
-// Run a command as a clack-style step: an active `◆ label` in the gutter with a dimmed rolling window of its last `lines` output lines beneath it, collapsing on success to a green `◇ summarize(output, durationMs)`. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.
+// Run a command as a clack-style step: a `label` that pulses between the filled ◆ and hollow ◇ while it runs, with a dimmed rolling window of its last `lines` output lines beneath it, collapsing on success to a completed `◆ summarize(output, durationMs)`. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.
 export const runTail = async (
   cmd: string,
   args: string[],
@@ -46,19 +46,20 @@ export const runTail = async (
 ): Promise<void> => {
   const start = Date.now()
   const out = process.stdout
-  const showLabel = Boolean(opts.label)
+  const label = opts.label ?? ""
   if (!out.isTTY) {
-    if (showLabel) out.write(`${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${opts.label}\n`)
+    if (label) out.write(`${P}${cyan(S.active)}  ${label}\n`)
     await runLive(cmd, args, opts.cwd)
     return
   }
   const max = opts.lines ?? 3
   const window: string[] = []
+  let frame = 0
   let rendered = 0
   let pending = ""
   let output = ""
   const width = (): number => (out.columns || 80) - 1
-  // Toggle the terminal's auto-wrap. It stays off while the window renders: a wide char (emoji, spinner) or long line would otherwise wrap to a second row, making the cursor-up count short so the window grows past `max` lines.
+  // Toggle the terminal's auto-wrap. It stays off while the block renders: a wide char or long line would otherwise wrap to a second row, making the cursor-up count short so the window grows past `max` lines.
   const setWrap = (on: boolean): void => {
     out.write(on ? `${ESC}[?7h` : `${ESC}[?7l`)
   }
@@ -68,13 +69,21 @@ export const runTail = async (
       rendered = 0
     }
   }
-  const draw = (): void => {
+  // Redraw the whole active block (pulsing label + rolling window) from its top; called on each new output line and on every pulse tick.
+  const render = (): void => {
     erase()
-    const shown = window.slice(-max)
-    for (const line of shown) {
-      out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
+    let n = 0
+    out.write(`${P}${cyan(PULSE[frame])}  ${label}\n`)
+    n++
+    if (window.length) {
+      out.write(`${P}${gray(S.bar)}\n`)
+      n++
+      for (const line of window.slice(-max)) {
+        out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
+        n++
+      }
     }
-    rendered = shown.length
+    rendered = n
   }
   const onData = (chunk: string): void => {
     output += chunk
@@ -83,15 +92,10 @@ export const runTail = async (
     pending = parts.pop() ?? ""
     for (const raw of parts) {
       window.push(stripAnsi(raw).replace(/\r/g, "").replace(/\t/g, " ").trimEnd())
-      draw()
+      render()
     }
   }
-  // gutter connector + optional active step + a blank gutter line, so the window sits below one gutter line whether or not there's a label
-  out.write(
-    showLabel
-      ? `${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${opts.label}\n${P}${gray(S.bar)}\n`
-      : `${P}${gray(S.bar)}\n`,
-  )
+  render()
   setWrap(false)
   // Ctrl-C terminates via signal, not a throw, so neither restore path below runs; re-enable auto-wrap here or the shell is left with it off.
   const onSigint = (): void => {
@@ -99,24 +103,26 @@ export const runTail = async (
     process.exit(130)
   }
   process.once("SIGINT", onSigint)
+  const pulse = setInterval(() => {
+    frame = (frame + 1) % PULSE.length
+    render()
+  }, 400)
+  const stop = (): void => {
+    clearInterval(pulse)
+    process.removeListener("SIGINT", onSigint)
+  }
   try {
     await nanoSpawn(cmd, args, { cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] }, onData)
   } catch (err) {
-    process.removeListener("SIGINT", onSigint)
+    stop()
     erase()
     setWrap(true)
     out.write(output)
     throw err
   }
-  process.removeListener("SIGINT", onSigint)
+  stop()
   erase()
   setWrap(true)
   const summary = opts.summarize(output, Date.now() - start).trim()
-  // collapse: clear the blank gutter line and rewrite the active label as a completed step, or (no label) print the completed step below the gutter
-  if (showLabel) {
-    out.write(`${ESC}[1A\r${ESC}[K`)
-    out.write(`${ESC}[1A\r${ESC}[K${P}${cyan(S.submit)}  ${summary || opts.label}\n`)
-  } else {
-    out.write(`${P}${cyan(S.submit)}  ${summary}\n`)
-  }
+  out.write(`${P}${cyan(S.active)}  ${summary || label}\n`)
 }
