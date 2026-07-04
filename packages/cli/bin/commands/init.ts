@@ -13,7 +13,6 @@ import {
   intro,
   isInteractive,
   link,
-  logStep,
   logSuccess,
   logWarn,
   note,
@@ -21,6 +20,7 @@ import {
   outro,
   promptConfirm,
   promptText,
+  withSpinner,
 } from "./_prompt"
 
 const helpMessage = `Usage:
@@ -138,8 +138,9 @@ export const init = async (argv: string[]) => {
   }
 
   if (!isZerostarter(target)) {
-    await fetchZerostarter(target)
-    logStep("Fetched the latest ZeroStarter")
+    await withSpinner("Fetching the latest ZeroStarter", "Fetched the latest ZeroStarter", () =>
+      fetchZerostarter(target),
+    )
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
@@ -150,8 +151,9 @@ export const init = async (argv: string[]) => {
     await gitBranch(target, "main")
   }
 
-  convertRepo(target, brand)
-  logStep(`Rebranded to ${name}`)
+  await withSpinner(`Rebranding to ${name}`, `Rebranded to ${name}`, () =>
+    convertRepo(target, brand),
+  )
 
   await bunInstall(target)
 

@@ -1,4 +1,4 @@
-import { cyan, dim, gray, S } from "@/style"
+import { cyan, dim, gray, PAD as P, S } from "@/style"
 import { nanoSpawn } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
@@ -48,7 +48,7 @@ export const runTail = async (
   const out = process.stdout
   const showLabel = Boolean(opts.label)
   if (!out.isTTY) {
-    if (showLabel) out.write(`${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n`)
+    if (showLabel) out.write(`${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${opts.label}\n`)
     await runLive(cmd, args, opts.cwd)
     return
   }
@@ -72,7 +72,7 @@ export const runTail = async (
     erase()
     const shown = window.slice(-max)
     for (const line of shown) {
-      out.write(`${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 3)))}\n`)
+      out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
     }
     rendered = shown.length
   }
@@ -89,8 +89,8 @@ export const runTail = async (
   // gutter connector + optional active step + a blank gutter line, so the window sits below one gutter line whether or not there's a label
   out.write(
     showLabel
-      ? `${gray(S.bar)}\n${cyan(S.active)}  ${opts.label}\n${gray(S.bar)}\n`
-      : `${gray(S.bar)}\n`,
+      ? `${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${opts.label}\n${P}${gray(S.bar)}\n`
+      : `${P}${gray(S.bar)}\n`,
   )
   setWrap(false)
   // Ctrl-C terminates via signal, not a throw, so neither restore path below runs; re-enable auto-wrap here or the shell is left with it off.
@@ -115,8 +115,8 @@ export const runTail = async (
   // collapse: clear the blank gutter line and rewrite the active label as a completed step, or (no label) print the completed step below the gutter
   if (showLabel) {
     out.write(`${ESC}[1A\r${ESC}[K`)
-    out.write(`${ESC}[1A\r${ESC}[K${cyan(S.submit)}  ${summary || opts.label}\n`)
+    out.write(`${ESC}[1A\r${ESC}[K${P}${cyan(S.submit)}  ${summary || opts.label}\n`)
   } else {
-    out.write(`${cyan(S.submit)}  ${summary}\n`)
+    out.write(`${P}${cyan(S.submit)}  ${summary}\n`)
   }
 }

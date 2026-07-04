@@ -1,5 +1,8 @@
 // TTY-aware SGR coloring (a no-op when the stream is piped, so logs stay free of escape codes) plus the clack-style flow glyphs. Shared by the spawn layer (the rolling window) and the command/prompt layer so both draw the same gutter.
 
+// Left margin on every gutter line.
+export const PAD = "  "
+
 const paint =
   (open: string, close: string, stream: { isTTY?: boolean } = process.stdout) =>
   (s: string): string =>
