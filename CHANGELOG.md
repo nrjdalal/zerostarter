@@ -1,3 +1,15 @@
+## v0.0.90
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.89...v0.0.90)
+
+### 🚀 Enhancements
+
+- **cli:** Developer experience overhaul (clack UI, async spawn, workspace guard) ([#641](https://github.com/nrjdalal/zerostarter/pull/641))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.89
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.88...v0.0.89)
