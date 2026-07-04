@@ -91,3 +91,6 @@ Do not run `bun run build` (or commit, whose pre-commit hook builds) while the s
 - A real 429: rate limiting keys on client IP, which is absent for localhost traffic, so every local request gets its own bucket (that fallback is itself locked in `api/hono/index.test.ts`).
 - Third-party redirect targets (GitHub/Google OAuth consent, PostHog, UserJot): only the handoff URL the app produces is asserted.
 - Production-only behavior (`/headers` 403, hidden landing navbar, agents router absence): the suite runs against the local dev stack.
+- Error and loading boundaries (`error.tsx`, `global-error.tsx`, `loading.tsx` under the route groups): rendered only when a page throws or suspends, which a black-box request can't force without a fault-injection hook. Their happy paths are covered by the page tests.
+- The rich body of `/hire` and `/resume`: only the `<title>` is pinned. These are hand-authored marketing pages whose copy changes often; locking every line would make the suite noisy rather than protective.
+- Test data is not isolated: runs append throwaway `@example.com` waitlist rows and may leave an organization behind if a run is killed between create and delete. The suite stays correct regardless (each run signs in fresh, so no leftover org is active), but the local DB accumulates rows over time.

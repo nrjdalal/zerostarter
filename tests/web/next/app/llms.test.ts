@@ -55,10 +55,12 @@ describe("per-page markdown routes", () => {
     expect(await res.text()).toContain("Quickstart")
   })
 
-  test("blog posts are served as markdown via .md", async () => {
-    const res = await fetch(`${WEB_URL}/blog/web-development-2026.md`)
-    expect(res.status).toBe(200)
-    expect(await res.text()).toContain("How to Do Web Development in 2026")
+  test("blog posts are served as markdown via .md and .txt", async () => {
+    for (const ext of [".md", ".txt"]) {
+      const res = await fetch(`${WEB_URL}/blog/web-development-2026${ext}`)
+      expect(res.status, `blog${ext}`).toBe(200)
+      expect(await res.text()).toContain("How to Do Web Development in 2026")
+    }
   })
 
   test("every docs page is fetchable as .md", async () => {

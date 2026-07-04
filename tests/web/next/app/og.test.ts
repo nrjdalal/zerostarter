@@ -29,7 +29,8 @@ describe("dynamic OG images", () => {
     )
   })
 
-  test("GET /og/blog renders per-post cards", async () => {
+  test("GET /og/blog renders the blog default and per-post cards", async () => {
+    await expectPng(await fetch(`${WEB_URL}/og/blog`), "/og/blog")
     await expectPng(
       await fetch(`${WEB_URL}/og/blog/web-development-2026`),
       "/og/blog/web-development-2026",
