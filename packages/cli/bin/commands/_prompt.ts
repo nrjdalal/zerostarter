@@ -92,6 +92,8 @@ export const promptConfirm = async (
   return new Promise<boolean>((resolve) => {
     let value = def
     const stdin = process.stdin
+    // rows the "◆  <question>" line occupies once it wraps at the terminal width, so the collapse clears all of them, not just one
+    const qRows = Math.max(1, Math.ceil((3 + noteVisibleLen(question)) / (out.columns || 80)))
     out.write(`${gray(S.bar)}\n${cyan(S.active)}  ${question}\n`)
     out.write(renderOptions(value))
     stdin.setRawMode(true)
@@ -102,9 +104,13 @@ export const promptConfirm = async (
       stdin.pause()
       stdin.removeListener("data", onData)
     }
+    // clear the options line, then the (possibly wrapped) question line and everything below
+    const clearPrompt = (): void => {
+      out.write(`\r\x1b[K\x1b[${qRows}A\r\x1b[0J`)
+    }
     const submit = (): void => {
       cleanup()
-      out.write(`\r\x1b[K\x1b[1A\r\x1b[K`)
+      clearPrompt()
       if (erase) {
         // drop the gutter connector too, leaving the cursor where the prompt began so the next step reuses it
         out.write(`\x1b[1A\r\x1b[K`)
@@ -116,7 +122,8 @@ export const promptConfirm = async (
     function onData(key: string): void {
       if (key === "\x03") {
         cleanup()
-        out.write(`\r\x1b[K\x1b[1A\r\x1b[K${dim(S.submit)}  ${dim(question)}\n`)
+        clearPrompt()
+        out.write(`${dim(S.submit)}  ${dim(question)}\n`)
         cancel()
         process.exit(130)
       } else if (key === "\r" || key === "\n") {

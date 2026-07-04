@@ -64,7 +64,7 @@ export const reinit = async (argv: string[]) => {
 
   if (interactive) {
     const ok = await promptConfirm(
-      `Delete every file in ${target} (keeping .git and .env*) and re-scaffold as ${name}?`,
+      `Delete every file in ${name} (keeping .git and .env*) and re-scaffold?`,
       false,
     )
     if (!ok) {

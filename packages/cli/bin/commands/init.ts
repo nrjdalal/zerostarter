@@ -65,6 +65,9 @@ export const init = async (argv: string[]) => {
 
   const interactive = isInteractive() && !values.yes
 
+  // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
+  if (!values["dry-run"]) intro(cyan("https://zerostarter.dev"))
+
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
   const convertInPlace = isZerostarter(firstTarget)
@@ -91,8 +94,6 @@ export const init = async (argv: string[]) => {
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
     return
   }
-
-  intro(cyan("https://zerostarter.dev"))
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
@@ -178,7 +179,7 @@ export const init = async (argv: string[]) => {
   logSuccess(`${name} is ready`)
   const steps: string[] = []
   if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
-  if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
+  if (!hasPostgresUrl(target)) steps.push("set POSTGRES_URL in .env")
   if (!dbReady) steps.push(orange("bun run db:migrate"))
   steps.push(orange("bun run dev"))
   note(steps.join("\n"), "Next steps")
