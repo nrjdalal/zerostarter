@@ -9,13 +9,16 @@ import { exists } from "@/io"
 
 import { ensureBun } from "./_bun"
 import {
+  cancel,
   cyan,
+  green,
+  hyperlink,
   intro,
   isInteractive,
   logStep,
   logWarn,
+  note,
   orange,
-  outro,
   promptConfirm,
   promptText,
   yellow,
@@ -90,7 +93,7 @@ export const init = async (argv: string[]) => {
     return
   }
 
-  intro(cyan("ZeroStarter"))
+  intro(cyan(hyperlink("https://zerostarter.dev")))
 
   if (convertInPlace && interactive) {
     const ok = await promptConfirm(
@@ -98,7 +101,7 @@ export const init = async (argv: string[]) => {
       false,
     )
     if (!ok) {
-      outro("Aborted")
+      cancel("Aborted")
       return
     }
   }
@@ -171,15 +174,13 @@ export const init = async (argv: string[]) => {
     ["web/next/content", "your docs and blog"],
   ]
 
-  outro(cyan(`${name} is ready`))
-  console.log()
-  console.log("Next steps:")
-  if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!hasPostgresUrl(target)) {
-    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-  }
-  if (!dbReady) console.log(`  ${orange("bun run db:migrate")}`)
-  console.log(`  ${orange("bun run dev")}`)
+  const steps: string[] = []
+  if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
+  if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
+  if (!dbReady) steps.push(orange("bun run db:migrate"))
+  steps.push(orange("bun run dev"))
+  note(steps.join("\n"), green(`${name} is ready`))
+
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
   console.log("\nMake it yours:")

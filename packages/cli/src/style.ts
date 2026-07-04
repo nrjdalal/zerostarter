@@ -15,7 +15,7 @@ export const dim = paint("2")
 // red is the only color written to stderr (console.error), so guard it on stderr.
 export const red = paint("38;2;248;81;73", process.stderr)
 
-// clack flow glyphs: the gutter (┌ │ └), a submitted step (◇), the active step (◆), and radio bullets.
+// clack flow glyphs: the gutter (┌ │ └), a submitted step (◇), the active step (◆), radio bullets, and the note box border.
 export const S = {
   barStart: "┌",
   bar: "│",
@@ -26,4 +26,8 @@ export const S = {
   radioOff: "○",
   warn: "▲",
   error: "■",
+  barH: "─",
+  cornerTR: "╮",
+  connectL: "├",
+  cornerBR: "╯",
 } as const

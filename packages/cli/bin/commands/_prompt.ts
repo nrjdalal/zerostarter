@@ -1,6 +1,6 @@
 import { createInterface } from "node:readline/promises"
 
-import { cyan, dim, gray, green, S, yellow } from "@/style"
+import { cyan, dim, gray, green, red, S, yellow } from "@/style"
 
 export { cyan, dim, gray, green, orange, red, yellow } from "@/style"
 
@@ -17,6 +17,34 @@ export const intro = (title: string): void => {
 
 export const outro = (message: string): void => {
   process.stdout.write(`${gray(S.bar)}\n${gray(S.barEnd)}  ${message}\n`)
+}
+
+// Close the flow as cancelled (red end); used on Ctrl-C or a declined prompt.
+export const cancel = (message = "Cancelled"): void => {
+  process.stdout.write(`${gray(S.bar)}\n${gray(S.barEnd)}  ${red(message)}\n`)
+}
+
+const ESC = "\x1b"
+const noteVisibleLen = (s: string): number =>
+  s
+    .replace(new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g"), "")
+    .replace(new RegExp(`${ESC}\\]8;;.*?\\x07`, "g"), "").length
+
+// clack note: a box hanging off the gutter with a titled top border and the message lines inside.
+export const note = (message: string, title = ""): void => {
+  const lines = `\n${message}\n`.split("\n")
+  const titleLen = noteVisibleLen(title)
+  const len =
+    Math.max(
+      lines.reduce((m, ln) => Math.max(m, noteVisibleLen(ln)), titleLen),
+      titleLen,
+    ) + 2
+  const body = lines
+    .map((ln) => `${gray(S.bar)}  ${ln}${" ".repeat(len - noteVisibleLen(ln))}${gray(S.bar)}`)
+    .join("\n")
+  process.stdout.write(
+    `${gray(S.bar)}\n${green(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${gray(S.connectL + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
+  )
 }
 
 // A completed step (green ◇), preceded by a gutter connector; `detail` lines sit under the bar.
@@ -73,8 +101,9 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     function onData(key: string): void {
       if (key === "\x03") {
         cleanup()
-        out.write("\n")
-        process.exit(1)
+        out.write(`\r\x1b[K\x1b[1A\r\x1b[K${dim(S.submit)}  ${dim(question)}\n`)
+        cancel()
+        process.exit(130)
       } else if (key === "\r" || key === "\n") {
         submit()
       } else if (key === "y" || key === "Y") {
