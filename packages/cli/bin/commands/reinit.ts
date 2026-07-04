@@ -3,7 +3,7 @@ import { parseArgs } from "node:util"
 
 import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
-import { gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
+import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
 import { emptyDir } from "@/io"
 
 import { ensureBun } from "./_bun"
@@ -75,6 +75,8 @@ export const reinit = async (argv: string[]) => {
       overlayZerostarter(target)
       console.log("Rebranding ...")
       convertRepo(target, { name })
+      console.log("Installing dependencies ...")
+      bunInstall(target)
       seedEnv(target)
       gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
     },
@@ -87,7 +89,6 @@ export const reinit = async (argv: string[]) => {
   if (!hasPostgresUrl(target)) {
     console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
   }
-  console.log(`  ${orange("bun install")}`)
   console.log(`  ${orange("bun run db:migrate")}`)
   console.log(`  ${orange("bun run dev")}`)
   console.log(`  ${orange("git push")}  # to your existing remote`)

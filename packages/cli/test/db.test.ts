@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { hasPostgresUrl, parsePglaunchUrl, seedEnv } from "@/db"
+import { hasPostgresUrl, parseLaunch, seedEnv } from "@/db"
 
 let dir: string
 
@@ -50,22 +50,28 @@ test("hasPostgresUrl reflects whether POSTGRES_URL is set", () => {
   expect(hasPostgresUrl(dir)).toBe(true)
 })
 
-test("parsePglaunchUrl reads the URL from a freshly started container", () => {
+test("parseLaunch reads the URL and container from a freshly started container", () => {
   const out =
     '- A container with name "my-app-a1B2 :5433" started successfully.\n\n' +
     "  POSTGRES_URL=postgres://postgres:postgres@localhost:5433/postgres"
-  expect(parsePglaunchUrl(out)).toBe("postgres://postgres:postgres@localhost:5433/postgres")
+  expect(parseLaunch(out)).toEqual({
+    url: "postgres://postgres:postgres@localhost:5433/postgres",
+    container: "my-app-a1B2",
+  })
 })
 
-test("parsePglaunchUrl reads the reused URL pglaunch prints on a name collision", () => {
+test("parseLaunch reads the reused URL and container pglaunch prints on a name collision", () => {
   // pglaunch exits non-zero but prints the already-running container's URL (ANSI-wrapped).
   const out =
     '- A container by similar name "my-app-pDtx" running at port 4611.\n\n' +
     "  \x1b[31mPOSTGRES_URL=postgres://postgres:postgres@localhost:4611/postgres\x1b[39m\n" +
     "  Error:\n  - Specify a different name with the `-n` flag, e.g. -n my-project."
-  expect(parsePglaunchUrl(out)).toBe("postgres://postgres:postgres@localhost:4611/postgres")
+  expect(parseLaunch(out)).toEqual({
+    url: "postgres://postgres:postgres@localhost:4611/postgres",
+    container: "my-app-pDtx",
+  })
 })
 
-test("parsePglaunchUrl returns null when no URL is present", () => {
-  expect(parsePglaunchUrl("- Docker is installed but not running.")).toBeNull()
+test("parseLaunch returns null when no URL is present", () => {
+  expect(parseLaunch("- Docker is installed but not running.")).toBeNull()
 })

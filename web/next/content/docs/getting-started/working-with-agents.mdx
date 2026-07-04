@@ -24,10 +24,8 @@ This is about AI agents that _build on_ the codebase: coding assistants. ZeroSta
 The full cycle an agent runs, start to finish:
 
 ```bash
-# 1: scaffold a product, then install, migrate, and start the stack
+# 1: scaffold a product, then start the stack
 bunx zerostarter init
-bun install
-bun run db:migrate
 bun run dev
 
 # 2: sign in locally (drive the real UI, or the curl below)

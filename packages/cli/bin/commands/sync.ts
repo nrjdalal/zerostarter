@@ -3,6 +3,7 @@ import { parseArgs } from "node:util"
 
 import { fixDangling } from "@/convert"
 import {
+  bunInstall,
   fetchGitpickignore,
   gitRestore,
   overlayZerostarter,
@@ -86,12 +87,14 @@ export const sync = async (argv: string[]) => {
     },
   )
 
+  console.log("Installing dependencies ...")
+  bunInstall(target)
+
   console.log()
   console.log(orange("Synced to the latest ZeroStarter."))
   console.log(
     "Starter files were updated (edits to them were overwritten); files you added and your",
   )
   console.log("content, public/marketing, and branding were preserved.")
-  console.log(`  ${orange("bun install")}  # update dependencies`)
   console.log(yellow(`Review the diff and commit: git -C ${target} status`))
 }

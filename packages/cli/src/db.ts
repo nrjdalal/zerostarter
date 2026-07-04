@@ -72,14 +72,20 @@ export const hasPostgresUrl = (dir: string): boolean => {
   return exists(envPath) && getEnvVar(envPath, "POSTGRES_URL") !== ""
 }
 
-// Pull the first Postgres connection URL out of pglaunch's output. pglaunch prints one whether it just started a container or, on a name collision, reports an already-running one; the URL line may be ANSI-colored. Returns null when no URL is present.
-export const parsePglaunchUrl = (out: string): string | null => {
-  const match = out.match(/postgres(?:ql)?:\/\/[\w.:@\-/%?=&]+/)
-  return match ? match[0] : null
+// A launched (or reused) local Postgres: its connection URL and Docker container name.
+type Launch = { url: string; container: string }
+
+// Pull the connection URL and container name out of pglaunch's output. pglaunch prints both whether it just started a container (`... name "<name> :<port>" started ...`) or, on a name collision, reports an already-running one (`... similar name "<name>" running ...`); the URL line may be ANSI-colored. Returns null when no URL is present.
+export const parseLaunch = (out: string): Launch | null => {
+  const url = out.match(/postgres(?:ql)?:\/\/[\w.:@\-/%?=&]+/)
+  if (!url) return null
+  const started = out.match(/name "([^" ]+) :\d+" started/)
+  const similar = out.match(/similar name "([^"]+)"/)
+  return { url: url[0], container: started ? started[1] : similar ? similar[1] : "" }
 }
 
-// Run pglaunch (-k keeps the container, --bun runs it under the Bun runtime) and return the connection URL it prints, or null when it prints none. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
-const runPglaunch = (dir: string, confirm: boolean): string | null => {
+// Run pglaunch (-k keeps the container, --bun runs it under the Bun runtime) and return what it launched, or null when it prints no URL. On a name collision pglaunch exits non-zero but still prints the already-running container's URL, so we reuse that instead of failing. Passing confirm adds -c to force a brand-new container even when a similar-named one is already running.
+const runPglaunch = (dir: string, confirm: boolean): Launch | null => {
   const args = confirm ? ["--bun", PGLAUNCH, "-k", "-c"] : ["--bun", PGLAUNCH, "-k"]
   let out: string
   try {
@@ -88,13 +94,35 @@ const runPglaunch = (dir: string, confirm: boolean): string | null => {
     const e = err as { stdout?: string; stderr?: string }
     out = [e.stdout, e.stderr].filter(Boolean).join("\n")
   }
-  return parsePglaunchUrl(out)
+  return parseLaunch(out)
 }
 
-// Provision a local Postgres and point .env at it, reusing an already-running one when it exists. Migrations are deferred: the user runs `bun install && bun run db:migrate`, so this never needs the project's dependencies.
+// Block for `ms` milliseconds (provisionDatabase runs synchronously, so this can't be an async delay).
+const sleep = (ms: number): void => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
+// Wait until the container's Postgres accepts connections. pglaunch returns as soon as `docker run` starts, but the server needs a moment to finish booting, so migrating immediately races and fails. pglaunch containers are postgres:alpine, which ships pg_isready. Best-effort: returns once ready or after the attempts are exhausted.
+const waitForPostgres = (container: string): void => {
+  if (!container) return
+  for (let i = 0; i < 30; i++) {
+    try {
+      execFileSync("docker", ["exec", container, "pg_isready", "-U", "postgres"], {
+        stdio: "ignore",
+      })
+      return
+    } catch {
+      sleep(1000)
+    }
+  }
+}
+
+// Provision a local Postgres (reusing an already-running one), point .env at it, wait for it to accept connections, and apply the migrations with live progress. Needs the project's dependencies (drizzle-kit), so the caller runs bun install first.
 export const provisionDatabase = (dir: string): void => {
   const envPath = ensureEnv(dir)
-  const url = runPglaunch(dir, false) || runPglaunch(dir, true)
-  if (!url) throw new Error("pglaunch did not print a connection URL")
-  setEnvVar(envPath, "POSTGRES_URL", url)
+  const launched = runPglaunch(dir, false) || runPglaunch(dir, true)
+  if (!launched) throw new Error("pglaunch did not print a connection URL")
+  setEnvVar(envPath, "POSTGRES_URL", launched.url)
+  waitForPostgres(launched.container)
+  execFileSync("bun", ["run", "db:migrate"], { cwd: dir, stdio: "inherit" })
 }

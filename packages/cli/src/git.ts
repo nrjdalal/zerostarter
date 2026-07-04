@@ -6,6 +6,16 @@ import { exists } from "@/io"
 const run = (cmd: string, args: string[], cwd?: string): string =>
   execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
 
+// Run a command with inherited stdio so its own progress shows live (bun install / migrations), instead of a silent-looking CLI while a slow step runs.
+const runLive = (cmd: string, args: string[], cwd?: string): void => {
+  execFileSync(cmd, args, { cwd, stdio: "inherit" })
+}
+
+// Install dependencies in `dir` with live progress. Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
+export const bunInstall = (dir: string): void => {
+  runLive("bun", ["install"], dir)
+}
+
 // Last-resort probe that bun is on PATH (injectable so tests can force either branch).
 const bunOnPath = (): void => {
   execFileSync("bun", ["--version"], { stdio: "ignore" })
