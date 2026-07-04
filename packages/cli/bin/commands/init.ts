@@ -108,6 +108,7 @@ export const init = async (argv: string[]) => {
   convertRepo(target, brand)
 
   console.log("Installing dependencies ...")
+  console.log()
   bunInstall(target)
 
   gitCommitAll(target, `ci(init): re-baseline as ${name}`)
@@ -131,8 +132,10 @@ export const init = async (argv: string[]) => {
   }
   if (wantDb && dockerUp) {
     try {
-      console.log("Provisioning a local Postgres with pglaunch and migrating ...")
+      console.log("\nProvisioning a local Postgres with pglaunch and migrating ...")
+      console.log()
       provisionDatabase(target)
+      console.log()
       dbReady = true
     } catch (err) {
       const stderr = (err as { stderr?: unknown }).stderr
@@ -141,13 +144,13 @@ export const init = async (argv: string[]) => {
         : err instanceof Error
           ? err.message
           : String(err)
-      console.log(yellow("  Database setup failed; set POSTGRES_URL in .env yourself."))
+      console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
       if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
     console.log(
       yellow(
-        "  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
+        "\n  Docker isn't running, so the database wasn't provisioned. Set POSTGRES_URL in .env, or start Docker and re-run for automatic setup.",
       ),
     )
   }

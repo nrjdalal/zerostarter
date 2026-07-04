@@ -88,6 +88,7 @@ export const sync = async (argv: string[]) => {
   )
 
   console.log("Installing dependencies ...")
+  console.log()
   bunInstall(target)
 
   console.log()
