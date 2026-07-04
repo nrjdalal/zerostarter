@@ -169,11 +169,6 @@ export const init = async (argv: string[]) => {
     )
   }
 
-  const tips: [string, string][] = [
-    ["packages/config/src/site.ts", "your brand: name, tagline, links"],
-    ["web/next/content", "your docs and blog"],
-  ]
-
   const steps: string[] = []
   if (target !== process.cwd()) steps.push(orange(`cd ${dir}`))
   if (!hasPostgresUrl(target)) steps.push(orange("set POSTGRES_URL in .env"))
@@ -181,11 +176,13 @@ export const init = async (argv: string[]) => {
   steps.push(orange("bun run dev"))
   logStep(green(`${name} is ready`))
   note(steps.join("\n"), "Next steps")
-
-  console.log("\nPush to an empty GitHub repo when ready:")
-  console.log(`  ${orange("git push origin canary")}`)
-  console.log("\nMake it yours:")
-  for (const [path, desc] of tips) console.log(`  ${path.padEnd(29)} ${desc}`)
+  note(
+    [
+      `Edit ${orange("packages/config/src/site.ts")} to manage branding`,
+      `Edit ${orange("web/next/content")} to manage blog and docs`,
+    ].join("\n"),
+    "Make it yours",
+  )
   if (!dbReady) {
     console.log(
       "\nIt needs a Postgres database to run: a hosted one like Neon works, or a local Docker one (re-run with Docker running to auto-provision). OAuth and other credentials are optional.",

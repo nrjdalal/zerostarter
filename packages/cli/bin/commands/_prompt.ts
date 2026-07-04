@@ -43,7 +43,7 @@ export const note = (message: string, title = ""): void => {
     .map((ln) => `${gray(S.bar)}  ${ln}${" ".repeat(len - noteVisibleLen(ln))}${gray(S.bar)}`)
     .join("\n")
   process.stdout.write(
-    `${gray(S.bar)}\n${green(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${gray(S.connectL + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
+    `${gray(S.bar)}\n${cyan(S.submit)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${gray(S.connectL + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
   )
 }
 
