@@ -13,13 +13,13 @@ export const hyperlink = (url: string, text = url): string =>
 // A clickable, cyan URL: OSC 8 wraps the colored text (link outermost) and the URL is the visible text, so terminals that auto-detect bare URLs also linkify it.
 export const link = (url: string): string => hyperlink(url, cyan(url))
 
-// clack support functions: an indented gutter (PAD) capped by ┌ / └. Steps stack tightly (no blank │ between consecutive steps); the intro, note boxes, and outro get a │ connector for breathing room.
+// clack support functions: an indented gutter (PAD) capped by ┌ / └. Steps and notes stack tightly (no blank │ between them); only the intro and outro get a │ connector, so the first and last lines are spaced from the rest.
 export const intro = (title: string): void => {
   process.stdout.write(`\n${P}${gray(S.barStart)}  ${title}\n${P}${gray(S.bar)}\n`)
 }
 
 export const outro = (message: string): void => {
-  process.stdout.write(`${P}${gray(S.barEnd)}  ${message}\n`)
+  process.stdout.write(`${P}${gray(S.bar)}\n${P}${gray(S.barEnd)}  ${message}\n`)
 }
 
 // Close the flow as cancelled (red end); used on Ctrl-C or a declined prompt.
@@ -33,7 +33,7 @@ const noteVisibleLen = (s: string): number =>
     .replace(new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g"), "")
     .replace(new RegExp(`${ESC}\\]8;;.*?\\x07`, "g"), "").length
 
-// clack note: a box hanging off the gutter with a titled top border and the message lines inside. A │ connector sets it off above (and below, unless `last`, where the gutter closes with a rounded corner ╰ instead of the ├ tee that continues it).
+// clack note: a box hanging off the gutter with a titled top border and the message lines inside, sitting tight against the surrounding steps. When `last`, the gutter closes with a rounded corner (╰) instead of the ├ tee that continues it.
 export const note = (message: string, title = "", last = false): void => {
   const lines = `\n${message}\n`.split("\n")
   const titleLen = noteVisibleLen(title)
@@ -44,9 +44,8 @@ export const note = (message: string, title = "", last = false): void => {
     .map((ln) => `${P}${gray(S.bar)}  ${ln}${" ".repeat(len - noteVisibleLen(ln))}${gray(S.bar)}`)
     .join("\n")
   const bottomLeft = last ? S.cornerBL : S.connectL
-  const trailing = last ? "" : `${P}${gray(S.bar)}\n`
   process.stdout.write(
-    `${P}${gray(S.bar)}\n${P}${cyan(S.active)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${P}${gray(bottomLeft + S.barH.repeat(len + 2) + S.cornerBR)}\n${trailing}`,
+    `${P}${cyan(S.active)}  ${title} ${gray(S.barH.repeat(Math.max(len - titleLen - 1, 1)) + S.cornerTR)}\n${body}\n${P}${gray(bottomLeft + S.barH.repeat(len + 2) + S.cornerBR)}\n`,
   )
 }
 
