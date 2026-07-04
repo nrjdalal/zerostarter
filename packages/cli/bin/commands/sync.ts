@@ -14,7 +14,7 @@ import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
 
 import { ensureBun } from "./_bun"
-import { cyan, intro, logStep, logWarn, orange, outro, yellow } from "./_prompt"
+import { cyan, intro, logStep, logWarn, note, orange, outro, yellow } from "./_prompt"
 
 const helpMessage = `Usage:
   $ bunx zerostarter sync [dir] [options]
@@ -86,11 +86,12 @@ export const sync = async (argv: string[]) => {
 
   await bunInstall(target)
 
-  outro(orange("Synced to the latest ZeroStarter"))
-  console.log()
-  console.log(
-    "Starter files were updated (edits to them were overwritten); files you added and your",
+  note(
+    [
+      "Starter files were updated (edits overwritten); your content, public/marketing, and branding were preserved.",
+      yellow(`Review the diff and commit: git -C ${target} status`),
+    ].join("\n"),
+    "Review the changes",
   )
-  console.log("content, public/marketing, and branding were preserved.")
-  console.log(yellow(`Review the diff and commit: git -C ${target} status`))
+  outro(orange("Synced to the latest ZeroStarter"))
 }

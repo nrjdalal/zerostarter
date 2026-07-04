@@ -43,9 +43,9 @@ const isEmptyDir = (dir: string): boolean =>
 
 const isZerostarter = (dir: string): boolean => exists(join(dir, "packages/config/src/site.ts"))
 
-// The nearest ancestor that is a bun workspace root (a lockfile, or a package.json with `workspaces`), or null. Scaffolding inside one makes `bun install` climb into it and fail to resolve the new project's own workspace deps.
-const insideExistingProject = (target: string): string | null => {
-  let cur = dirname(target)
+// `dir` or the nearest ancestor that is a bun workspace root (a lockfile, or a package.json with `workspaces`), or null. Pass the directory bun install would run under; if any level up is a workspace root, bun climbs into it and fails to resolve the new project's own workspace deps.
+const insideExistingProject = (dir: string): string | null => {
+  let cur = dir
   const { root } = parse(cur)
   while (true) {
     if (existsSync(join(cur, "bun.lock")) || existsSync(join(cur, "bun.lockb"))) return cur
@@ -87,10 +87,12 @@ export const init = async (argv: string[]) => {
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
   const convertInPlace = isZerostarter(firstTarget)
+  // A non-empty, non-clone target is scaffolded into a subdirectory of itself (after the name prompt), so bun installs one level deeper.
+  const intoSubdir = !convertInPlace && !isEmptyDir(firstTarget)
 
-  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail.
+  // Refuse to scaffold inside an existing workspace/repo: bun install would climb into it and fail. Check the directory bun installs under: the target itself when scaffolding into a subdir of it, else its parent.
   if (!convertInPlace && !values["dry-run"]) {
-    const root = insideExistingProject(firstTarget)
+    const root = insideExistingProject(intoSubdir ? firstTarget : dirname(firstTarget))
     if (root) {
       throw new Error(
         `Cannot scaffold inside an existing project (a workspace was found at ${root}). Run it in a fresh directory outside that project.`,
@@ -101,7 +103,7 @@ export const init = async (argv: string[]) => {
   // Open the flow before any prompt so the name/convert prompts sit under the intro's gutter.
   if (!values["dry-run"]) intro(cyan("https://zerostarter.dev"))
 
-  if (!convertInPlace && !isEmptyDir(firstTarget)) {
+  if (intoSubdir) {
     if (!interactive) {
       throw new Error(
         "Directory is not empty. Run it in an empty directory, or pass a project name: bunx zerostarter init <name>",

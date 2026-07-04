@@ -14,6 +14,7 @@ import {
   intro,
   isInteractive,
   logStep,
+  note,
   orange,
   outro,
   promptConfirm,
@@ -91,13 +92,11 @@ export const reinit = async (argv: string[]) => {
     },
   )
 
+  const steps: string[] = []
+  if (!hasPostgresUrl(target)) steps.push("set POSTGRES_URL in .env")
+  steps.push(orange("bun run db:migrate"))
+  steps.push(orange("bun run dev"))
+  steps.push(orange("git push"))
+  note(steps.join("\n"), "Next steps")
   outro(green(`${name} re-scaffolded; .git history, remote, and .env* files are intact`))
-  console.log()
-  console.log("Next steps:")
-  if (!hasPostgresUrl(target)) {
-    console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-  }
-  console.log(`  ${orange("bun run db:migrate")}`)
-  console.log(`  ${orange("bun run dev")}`)
-  console.log(`  ${orange("git push")}  # to your existing remote`)
 }
