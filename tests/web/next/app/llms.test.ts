@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { eventually } from "@/http"
+import { fetchOk } from "@/http"
 import { DOCS_PAGES, SITE } from "@/surface"
 import { WEB_URL } from "@/urls"
 
@@ -64,13 +64,10 @@ describe("per-page markdown routes", () => {
   })
 
   test("every docs page is fetchable as .md", async () => {
-    // 25 sequential fetches; right after a build the dev server recompiles these cold, so allow retries.
+    // 25 sequential fetches; right after a build the dev server recompiles these cold, so fetchOk retries.
     for (const path of Object.keys(DOCS_PAGES)) {
       if (path === "/docs") continue
-      await eventually(async () => {
-        const res = await fetch(`${WEB_URL}${path}.md`)
-        expect(res.status, `${path}.md`).toBe(200)
-      })
+      await fetchOk(`${WEB_URL}${path}.md`)
     }
   })
 
