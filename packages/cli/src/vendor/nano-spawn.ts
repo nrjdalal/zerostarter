@@ -14,9 +14,10 @@ export class SubprocessError extends Error {
 
 const exeExtensions = [".exe", ".com"]
 
-// cmd.exe escaping (nano-spawn windows.js, taken from cross-spawn).
-const escapeFile = (file: string): string => file.replaceAll(/([()\][%!^"`<>&|;, *?])/g, "^$1")
-const escapeArgument = (argument: string): string =>
+// cmd.exe escaping (nano-spawn windows.js, taken from cross-spawn). Exported for tests since the win32 branch never runs on CI.
+export const escapeFile = (file: string): string =>
+  file.replaceAll(/([()\][%!^"`<>&|;, *?])/g, "^$1")
+export const escapeArgument = (argument: string): string =>
   escapeFile(escapeFile(`"${argument.replaceAll(/(\\*)"/g, '$1$1\\"').replace(/(\\*)$/, "$1$1")}"`))
 
 // Whether `file` is a .exe/.com directly, or resolvable to one via PATH x those extensions.
@@ -39,15 +40,16 @@ const isExe = async (file: string, cwd: string, env: NodeJS.ProcessEnv): Promise
   }
 }
 
-// nano-spawn applyForceShell: on Windows a non-exe file needs a shell, so escape file+args and set shell.
-const applyForceShell = async (
+// nano-spawn applyForceShell: on Windows a non-exe file needs a shell, so escape file+args and set shell. isWin is injectable so the branch can be tested off Windows.
+export const applyForceShell = async (
   file: string,
   args: string[],
   options: SpawnOptions,
+  isWin: boolean = process.platform === "win32",
 ): Promise<[string, string[], SpawnOptions]> => {
   const cwd = options.cwd ? String(options.cwd) : "."
   const env = (options.env as NodeJS.ProcessEnv) || process.env
-  if (process.platform === "win32" && !options.shell && !(await isExe(file, cwd, env))) {
+  if (isWin && !options.shell && !(await isExe(file, cwd, env))) {
     return [escapeFile(file), args.map(escapeArgument), { ...options, shell: true }]
   }
   return [file, args, options]
