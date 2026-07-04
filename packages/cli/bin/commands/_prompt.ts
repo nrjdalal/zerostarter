@@ -1,6 +1,6 @@
 import { createInterface } from "node:readline/promises"
 
-import { cyan, dim, gray, green, PAD as P, PULSE, red, S, yellow } from "@/style"
+import { cyan, dim, gray, green, PAD as P, pulseLabel, red, S, yellow } from "@/style"
 
 export { cyan, dim, gray, green, orange, PAD, red, yellow } from "@/style"
 
@@ -13,13 +13,13 @@ export const hyperlink = (url: string, text = url): string =>
 // A clickable, cyan URL: OSC 8 wraps the colored text (link outermost) and the URL is the visible text, so terminals that auto-detect bare URLs also linkify it.
 export const link = (url: string): string => hyperlink(url, cyan(url))
 
-// clack support functions: an indented gutter (PAD) capped by ┌ / └, with steps stacked tightly (no blank │ connector between them).
+// clack support functions: an indented gutter (PAD) capped by ┌ / └. Steps and notes stack tightly (no blank │ between them); only the intro and outro get a │ connector, so the first and last lines are spaced from the rest.
 export const intro = (title: string): void => {
-  process.stdout.write(`\n${P}${gray(S.barStart)}  ${title}\n`)
+  process.stdout.write(`\n${P}${gray(S.barStart)}  ${title}\n${P}${gray(S.bar)}\n`)
 }
 
 export const outro = (message: string): void => {
-  process.stdout.write(`${P}${gray(S.barEnd)}  ${message}\n`)
+  process.stdout.write(`${P}${gray(S.bar)}\n${P}${gray(S.barEnd)}  ${message}\n`)
 }
 
 // Close the flow as cancelled (red end); used on Ctrl-C or a declined prompt.
@@ -33,7 +33,7 @@ const noteVisibleLen = (s: string): number =>
     .replace(new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g"), "")
     .replace(new RegExp(`${ESC}\\]8;;.*?\\x07`, "g"), "").length
 
-// clack note: a box hanging off the gutter with a titled top border and the message lines inside. When `last`, the gutter closes with a rounded corner (╰) instead of the ├ tee that continues it.
+// clack note: a box hanging off the gutter with a titled top border and the message lines inside, sitting tight against the surrounding steps. When `last`, the gutter closes with a rounded corner (╰) instead of the ├ tee that continues it.
 export const note = (message: string, title = "", last = false): void => {
   const lines = `\n${message}\n`.split("\n")
   const titleLen = noteVisibleLen(title)
@@ -71,7 +71,7 @@ export const logWarn = (message: string, detail: string[] = []): void => {
   for (const line of detail) process.stdout.write(`${P}${gray(S.bar)}  ${yellow(line)}\n`)
 }
 
-// A spinner that pulses between the filled ◆ and hollow ◇ while `fn` runs, collapsing to a completed step (◆). Used for work with no streamable output (fetch, rebrand). Off a TTY it just prints the completed step.
+// A spinner whose glyph blinks hollow ◇ → filled ◆ (always cyan, never dimmed; the label stays constant) while `fn` runs, collapsing to a completed step (◆). Used for work with no streamable output (fetch, rebrand). Off a TTY it just prints the completed step.
 export const withSpinner = async <T>(
   active: string,
   done: string,
@@ -81,10 +81,10 @@ export const withSpinner = async <T>(
   let timer: ReturnType<typeof setInterval> | null = null
   if (out.isTTY) {
     let i = 0
-    out.write(`${P}${cyan(PULSE[0])}  ${active}`)
+    out.write(`${P}${pulseLabel(0, active)}`)
     timer = setInterval(() => {
-      i = (i + 1) % PULSE.length
-      out.write(`\r${P}${cyan(PULSE[i])}  ${active}`)
+      i = i + 1
+      out.write(`\r\x1b[K${P}${pulseLabel(i, active)}`)
     }, 400)
   }
   try {
@@ -108,7 +108,7 @@ const renderOptions = (value: boolean): string => {
   return `${P}${gray(S.bar)}  ${yes} ${dim("/")} ${no}`
 }
 
-// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n, collapsing to `◆ message Yes`. Falls back to the default without prompting when not interactive.
+// clack-style confirm: `◆ message` + `● Yes / ○ No`, toggled with arrows or y/n. On submit the prompt clears itself (transient: the following step speaks for the choice, so no `◆ message Yes` echo lingers). Off a TTY it takes the default without prompting, echoing the auto-choice so non-interactive logs record it.
 export const promptConfirm = async (question: string, def = true): Promise<boolean> => {
   const out = process.stdout
   if (!isInteractive()) {
@@ -120,7 +120,7 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     const stdin = process.stdin
     // rows the "◆  <question>" line occupies once it wraps at the terminal width (PAD + ◆ + two spaces = 5), so the collapse clears all of them, not just one
     const qRows = Math.max(1, Math.ceil((5 + noteVisibleLen(question)) / (out.columns || 80)))
-    out.write(`${P}${cyan(S.active)}  ${question}\n`)
+    out.write(`${P}${cyan(S.submit)}  ${question}\n`)
     out.write(renderOptions(value))
     stdin.setRawMode(true)
     stdin.resume()
@@ -137,14 +137,13 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
     const submit = (): void => {
       cleanup()
       clearPrompt()
-      out.write(`${P}${cyan(S.active)}  ${question} ${dim(value ? "Yes" : "No")}\n`)
       resolve(value)
     }
     function onData(key: string): void {
       if (key === "\x03") {
         cleanup()
         clearPrompt()
-        out.write(`${P}${dim(S.active)}  ${dim(question)}\n`)
+        out.write(`${P}${cyan(S.submit)}  ${dim(question)}\n`)
         cancel()
         process.exit(130)
       } else if (key === "\r" || key === "\n") {
@@ -173,7 +172,7 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
 
 // A single-line text prompt in the gutter; the entered value stays under the bar.
 export const promptText = async (question: string, def = ""): Promise<string> => {
-  process.stdout.write(`${P}${cyan(S.active)}  ${question}${def ? ` ${dim(`(${def})`)}` : ""}\n`)
+  process.stdout.write(`${P}${cyan(S.submit)}  ${question}${def ? ` ${dim(`(${def})`)}` : ""}\n`)
   const rl = createInterface({ input: process.stdin, output: process.stdout })
   try {
     const answer = (await rl.question(`${P}${gray(S.bar)}  `)).trim()

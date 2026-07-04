@@ -1,5 +1,5 @@
-import { cyan, dim, gray, PAD as P, PULSE, S } from "@/style"
-import { nanoSpawn } from "@/vendor/nano-spawn"
+import { cyan, dim, dimErr, gray, PAD as P, pulseLabel, red, S } from "@/style"
+import { nanoSpawn, SubprocessError } from "@/vendor/nano-spawn"
 
 // Async, Windows-safe process spawning on the vendored nano-spawn: non-blocking (the event loop stays free while a subprocess runs), and on Windows it runs `.cmd`/`.ps1` shims (e.g. a package-manager-installed `bunx`) that raw `child_process` cannot. Vendored, not a dependency, so nothing lands in the workspace catalog. Every subprocess (bun, bunx, git, docker, the bun installer) goes through here.
 
@@ -29,11 +29,24 @@ const ESC = "\x1b"
 const csi = new RegExp(`${ESC}\\[[0-9;?]*[a-zA-Z]`, "g")
 const stripAnsi = (s: string): string => s.replace(csi, "")
 
-// Format an elapsed duration like bun's install summary: [2.77s] for >= 1s, [978.00ms] otherwise.
-export const formatDuration = (ms: number): string =>
-  ms >= 1000 ? `[${(ms / 1000).toFixed(2)}s]` : `[${ms.toFixed(2)}ms]`
+// Errors whose captured output runTail already streamed to the terminal in full, so printError shows the message alone rather than repeating the tail.
+const dumped = new WeakSet<object>()
 
-// Run a command as a clack-style step: a `label` that pulses between the filled ◆ and hollow ◇ while it runs, with a dimmed rolling window of its last `lines` output lines beneath it, collapsing on success to a completed `◆ summarize(output, durationMs)`. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.
+// Top-level error renderer: the message in red, plus the tail of a failed subprocess's captured output. A SubprocessError's real cause (a gitpick/git/docker failure) lives on its stdout/stderr, which the bare message omits; runTail-dumped errors skip the tail since their full output already printed.
+export const printError = (err: unknown): void => {
+  process.stderr.write(`\n${P}${red(err instanceof Error ? err.message : String(err))}\n`)
+  if (!(err instanceof SubprocessError) || dumped.has(err)) return
+  const output = (err.stderr || err.stdout || "").trim()
+  if (!output) return
+  const lines = stripAnsi(output)
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .filter(Boolean)
+    .slice(-12)
+  for (const line of lines) process.stderr.write(`${P}${dimErr(line)}\n`)
+}
+
+// Run a command as a clack-style step: a `label` that pulses between the filled ◆ and hollow ◇ while it runs, with a dimmed rolling window of its last `lines` output lines beneath it. On success it collapses to a completed `◆ done` (a past-tense done label, defaulting to `label`) and keeps the tail of the output beneath as a trace. On failure the captured output is dumped so the error stays visible, then it rejects. Off a TTY (CI, piped) it prints the label and streams the command in full so logs are complete.
 export const runTail = async (
   cmd: string,
   args: string[],
@@ -41,10 +54,9 @@ export const runTail = async (
     cwd?: string
     lines?: number
     label?: string
-    summarize: (output: string, durationMs: number) => string
+    done?: string
   },
 ): Promise<void> => {
-  const start = Date.now()
   const out = process.stdout
   const label = opts.label ?? ""
   if (!out.isTTY) {
@@ -73,15 +85,11 @@ export const runTail = async (
   const render = (): void => {
     erase()
     let n = 0
-    out.write(`${P}${cyan(PULSE[frame])}  ${label}\n`)
+    out.write(`${P}${pulseLabel(frame, label)}\n`)
     n++
-    if (window.length) {
-      out.write(`${P}${gray(S.bar)}\n`)
+    for (const line of window.slice(-max)) {
+      out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
       n++
-      for (const line of window.slice(-max)) {
-        out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
-        n++
-      }
     }
     rendered = n
   }
@@ -104,7 +112,7 @@ export const runTail = async (
   }
   process.once("SIGINT", onSigint)
   const pulse = setInterval(() => {
-    frame = (frame + 1) % PULSE.length
+    frame = frame + 1
     render()
   }, 400)
   const stop = (): void => {
@@ -118,11 +126,16 @@ export const runTail = async (
     erase()
     setWrap(true)
     out.write(output)
+    // Full output already streamed here; mark it so the top-level printError doesn't repeat the tail.
+    if (err && typeof err === "object") dumped.add(err)
     throw err
   }
   stop()
   erase()
   setWrap(true)
-  const summary = opts.summarize(output, Date.now() - start).trim()
-  out.write(`${P}${cyan(S.active)}  ${summary || label}\n`)
+  out.write(`${P}${cyan(S.active)}  ${opts.done ?? label}\n`)
+  // Keep the tail of the output visible under the completed step as a trace, rather than erasing it.
+  for (const line of window.slice(-max)) {
+    out.write(`${P}${gray(S.bar)}  ${dim(line.slice(0, Math.max(0, width() - 5)))}\n`)
+  }
 }

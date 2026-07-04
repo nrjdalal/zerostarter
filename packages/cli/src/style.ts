@@ -8,17 +8,24 @@ const paint =
   (s: string): string =>
     stream.isTTY ? `\x1b[${open}m${s}\x1b[${close}m` : s
 
-// Match @clack/prompts' palette exactly (it uses picocolors): standard ANSI colors, so they adapt to the terminal theme. cyan is the active step and links; green is success and the selected radio; yellow is warnings; gray is the gutter; dim is subdued detail; red is cancel (stderr-guarded, since it's the only color written to console.error). orange has no ANSI/clack equivalent, so it stays a 256-color for copy-paste commands.
+// Match @clack/prompts' palette exactly (it uses picocolors): standard ANSI colors, so they adapt to the terminal theme. cyan is the active step and links; green is success and the selected radio; yellow is warnings; gray is the gutter; dim is subdued detail; orange has no ANSI/clack equivalent, so it stays a 256-color for copy-paste commands. red and dimErr are the stderr-guarded pair printError writes (message + its dimmed output tail), so their TTY check reads the stream they actually go to.
 export const cyan = paint("36", "39")
 export const green = paint("32", "39")
 export const yellow = paint("33", "39")
 export const gray = paint("90", "39")
 export const dim = paint("2", "22")
 export const red = paint("31", "39", process.stderr)
+export const dimErr = paint("2", "22", process.stderr)
 export const orange = paint("38;5;208", "39")
 
-// Spinner pulse: alternate the filled active glyph (◆) and the hollow submit glyph (◇) while work runs.
-export const PULSE = ["◆", "◇"] as const
+// Spinner pulse: blink from the hollow glyph (◇) to the filled one (◆) while work runs, so a step starts unfilled and fills in as it settles to the completed ◆.
+export const PULSE = ["◇", "◆"] as const
+
+// The active (in-progress) line for a pulse frame: only the glyph blinks, hollow (◇) → filled (◆), always cyan (never dimmed). The label stays constant (never dimmed, never blinks).
+export const pulseLabel = (frame: number, label: string): string => {
+  const i = ((frame % PULSE.length) + PULSE.length) % PULSE.length
+  return `${cyan(PULSE[i])}  ${label}`
+}
 
 // clack flow glyphs: the gutter (┌ │ └), a submitted step (◇), the active step (◆), radio bullets, and the note box border.
 export const S = {
