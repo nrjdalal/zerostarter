@@ -144,7 +144,13 @@ export const init = async (argv: string[]) => {
         : err instanceof Error
           ? err.message
           : String(err)
-      console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
+      if (hasPostgresUrl(target)) {
+        console.log(
+          yellow("\n  Postgres is provisioned, but the migration failed; run bun run db:migrate."),
+        )
+      } else {
+        console.log(yellow("\n  Database setup failed; set POSTGRES_URL in .env yourself."))
+      }
       if (detail) console.log(yellow(`  ${detail}`))
     }
   } else if (wantDb) {
@@ -164,10 +170,10 @@ export const init = async (argv: string[]) => {
   console.log(`\n${green("✓")} ${name} is ready.\n`)
   console.log("Next steps:")
   if (target !== process.cwd()) console.log(`  ${orange(`cd ${dir}`)}`)
-  if (!dbReady) {
+  if (!hasPostgresUrl(target)) {
     console.log(`  ${orange("set POSTGRES_URL in .env")}  # your Postgres connection string`)
-    console.log(`  ${orange("bun run db:migrate")}`)
   }
+  if (!dbReady) console.log(`  ${orange("bun run db:migrate")}`)
   console.log(`  ${orange("bun run dev")}`)
   console.log("\nPush to an empty GitHub repo when ready:")
   console.log(`  ${orange("git push origin canary")}`)
