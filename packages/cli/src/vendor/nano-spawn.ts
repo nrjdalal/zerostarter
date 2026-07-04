@@ -70,14 +70,6 @@ export const nanoSpawn = async (
   const child = spawn(f, a, opts)
   let stdout = ""
   let stderr = ""
-  if (child.stdout) {
-    child.stdout.setEncoding("utf8")
-    child.stdout.on("data", (chunk) => (stdout += chunk))
-  }
-  if (child.stderr) {
-    child.stderr.setEncoding("utf8")
-    child.stderr.on("data", (chunk) => (stderr += chunk))
-  }
 
   return new Promise<SpawnResult>((resolvePromise, rejectPromise) => {
     const fail = (message: string, exitCode?: number, cause?: unknown): void => {
@@ -86,6 +78,22 @@ export const nanoSpawn = async (
       error.stderr = stderr
       error.exitCode = exitCode
       rejectPromise(error)
+    }
+    // A readable stream that emits `error` with no listener crashes the process; ignore the benign close/pipe codes (as upstream nano-spawn does) and surface the rest as a rejection.
+    const onStreamError = (err: NodeJS.ErrnoException): void => {
+      if (err.code !== "ERR_STREAM_PREMATURE_CLOSE" && err.code !== "EPIPE") {
+        fail(`Command failed: ${file}`, undefined, err)
+      }
+    }
+    if (child.stdout) {
+      child.stdout.setEncoding("utf8")
+      child.stdout.on("data", (chunk) => (stdout += chunk))
+      child.stdout.on("error", onStreamError)
+    }
+    if (child.stderr) {
+      child.stderr.setEncoding("utf8")
+      child.stderr.on("data", (chunk) => (stderr += chunk))
+      child.stderr.on("error", onStreamError)
     }
     child.on("error", (err) => fail(`Command failed: ${file}`, undefined, err))
     child.on("close", (code, signal) => {
