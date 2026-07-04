@@ -37,11 +37,9 @@ const noteVisibleLen = (s: string): number =>
 export const note = (message: string, title = "", last = false): void => {
   const lines = `\n${message}\n`.split("\n")
   const titleLen = noteVisibleLen(title)
-  const len =
-    Math.max(
-      lines.reduce((m, ln) => Math.max(m, noteVisibleLen(ln)), titleLen),
-      titleLen,
-    ) + 2
+  const content = lines.reduce((m, ln) => Math.max(m, noteVisibleLen(ln)), titleLen)
+  // Floor the box at 60 columns wide (├…╯) so short notes aren't cramped; grow past that for longer content.
+  const len = Math.max(content, 54) + 2
   const body = lines
     .map((ln) => `${P}${gray(S.bar)}  ${ln}${" ".repeat(len - noteVisibleLen(ln))}${gray(S.bar)}`)
     .join("\n")
