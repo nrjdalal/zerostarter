@@ -15,6 +15,8 @@ bun run report               # open the last HTML report (CI runs)
 
 Requirements: the dev stack's Postgres reachable via `.env` `POSTGRES_URL`; web on `:3000` and api on `:4000` (override with `GOLDEN_WEB_URL` / `GOLDEN_API_URL`). A `setup` project waits for both servers, signs in the local agent once, and shares the session with every test.
 
+Do not run `bun run build` (or commit, whose pre-commit hook builds) while the suite is running: the build writes into the same `.next` the dev server serves from and causes transient failures until the dev server resettles. The suite also writes a few `golden-*@example.com` rows to the local waitlist table; organizations it creates are deleted at the end of the test.
+
 ## Layout
 
 - `src/surface.ts`: the pinned inventory (every route, title, endpoint, error code). When the surface changes on purpose, update this fixture in the same change.

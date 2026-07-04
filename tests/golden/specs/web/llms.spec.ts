@@ -63,10 +63,14 @@ test.describe("per-page markdown routes", () => {
   })
 
   test("every docs page is fetchable as .md", async ({ request }) => {
+    // 25 sequential fetches; right after a build the dev server recompiles these cold, so allow retries and extra time.
+    test.slow()
     for (const path of Object.keys(DOCS_PAGES)) {
       if (path === "/docs") continue
-      const res = await request.get(`${WEB_URL}${path}.md`)
-      expect(res.status(), `${path}.md`).toBe(200)
+      await expect(async () => {
+        const res = await request.get(`${WEB_URL}${path}.md`)
+        expect(res.status(), `${path}.md`).toBe(200)
+      }).toPass({ timeout: 30_000 })
     }
   })
 
