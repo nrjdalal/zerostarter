@@ -70,5 +70,11 @@
     "@takumi-rs/core-linux-x64-musl": "catalog:",
     "@takumi-rs/core-win32-arm64-msvc": "catalog:",
     "@takumi-rs/core-win32-x64-msvc": "catalog:"
-  }
+  },
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16.4"
+  ]
 }
