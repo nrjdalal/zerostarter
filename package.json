@@ -15,7 +15,7 @@
   "workspaces": [
     "api/*",
     "packages/*",
-    "tests",
+    "tests*",
     "web/*"
   ],
   "scripts": {
