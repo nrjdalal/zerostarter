@@ -6,7 +6,7 @@ description: "The protected app shell: sidebar, org switcher, and the layout wra
 
 <Callout type="warn" title="This is a shell, not a product">
 
-The `/dashboard` page renders a single "Intentionally empty." header and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
+The `/dashboard` page renders a single "Dashboard" heading with its "Intentionally empty." description and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
 
 </Callout>
 
@@ -62,7 +62,10 @@ import { DashboardShell } from "@/components/dashboard/shell"
 export default function Page() {
   return (
     <DashboardShell>
-      <DashboardHeader title="Dashboard" description="Your first feature starts here." />
+      <DashboardHeader
+        title="Dashboard"
+        description="Intentionally empty. Auth, orgs, and the API are wired; this page is where your product begins."
+      />
       {/* your content here */}
     </DashboardShell>
   )
