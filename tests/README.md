@@ -4,6 +4,8 @@ A black-box characterization suite that locks the app's entire observable surfac
 
 Runner: `bun test`. HTTP specs use `fetch`; interaction specs drive Chromium through `agent-browser` (a thin wrapper lives in `support/browser.ts`). No Playwright, no Puppeteer.
 
+This workspace is canonical-repo tooling: it is listed in `.gitpickignore`, so a scaffolded or synced fork never receives it. That is why fixtures like the OAuth provider list are pinned to this repo's exact configuration rather than made fork-portable, the suite only ever runs here.
+
 ## Layout mirrors the monorepo
 
 Each test file sits at the path that mirrors the source it exercises, so the suite is navigable the same way the codebase is:
