@@ -2,6 +2,7 @@ import { site } from "@packages/config/site"
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
+import { Navbar } from "@/components/navbar/home"
 import { config } from "@/lib/config"
 
 import fontsCss from "@/app/fonts.css?url"
@@ -47,6 +48,7 @@ function RootLayout() {
         </head>
         <body className="min-h-svh">
           <InnerProvider>
+            <Navbar />
             <Outlet />
           </InnerProvider>
           <Scripts />

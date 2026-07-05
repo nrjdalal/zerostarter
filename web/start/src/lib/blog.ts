@@ -1,5 +1,5 @@
+import { notFound } from "@tanstack/react-router"
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
-import { notFound } from "next/navigation"
 
 import {
   compareBlogPostPublishOrder,

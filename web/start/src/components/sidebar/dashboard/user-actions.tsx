@@ -1,8 +1,6 @@
-"use client"
-
 import { RiBookLine } from "@remixicon/react"
+import { Link } from "@tanstack/react-router"
 import { type User } from "better-auth/types"
-import Link from "next/link"
 
 import { SidebarUserMenu } from "@/components/sidebar/user-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
@@ -18,7 +16,7 @@ export function SidebarDashboardUserActions({
   return (
     <SidebarMenu className="space-y-1.5">
       <SidebarMenuItem>
-        <SidebarMenuButton render={<Link href="/docs" />}>
+        <SidebarMenuButton render={<Link to="/docs" />}>
           <RiBookLine />
           <span>Documentation</span>
           <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>

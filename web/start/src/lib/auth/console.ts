@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound } from "@tanstack/react-router"
 
 import { auth } from "@/lib/auth"
 

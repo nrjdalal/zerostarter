@@ -1,10 +1,8 @@
-"use client"
-
 import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
-import { usePathname } from "next/navigation"
+import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -29,7 +27,7 @@ const formSchema = z.object({
 })
 
 export function Access() {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,

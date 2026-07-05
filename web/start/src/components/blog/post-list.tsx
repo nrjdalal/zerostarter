@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { getPublishedBlogPosts } from "@/lib/blog"
@@ -23,7 +23,7 @@ export function BlogPostList() {
         return (
           <article key={post.url} className="flex flex-col gap-1">
             <Link
-              href={post.url}
+              to={post.url}
               className="text-foreground text-lg font-medium no-underline hover:underline"
             >
               {post.data.title}

@@ -1,5 +1,3 @@
-"use client"
-
 import { RiAddLine, RiBuildingLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useState } from "react"

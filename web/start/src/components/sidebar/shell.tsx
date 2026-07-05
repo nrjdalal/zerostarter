@@ -1,6 +1,6 @@
 import { site } from "@packages/config/site"
+import { Link } from "@tanstack/react-router"
 import { cookies } from "next/headers"
-import Link from "next/link"
 
 import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
 import { AdaptiveShellSidebar } from "@/components/sidebar/shell-sidebar"

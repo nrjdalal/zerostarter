@@ -1,5 +1,5 @@
 import { site } from "@packages/config/site"
-import { notFound } from "next/navigation"
+import { notFound } from "@tanstack/react-router"
 import type { ReactElement } from "react"
 import { render } from "takumi-js"
 

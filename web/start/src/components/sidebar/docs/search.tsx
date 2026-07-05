@@ -1,5 +1,3 @@
-"use client"
-
 import { RiSearchLine } from "@remixicon/react"
 import { useCallback, useEffect, useState } from "react"
 

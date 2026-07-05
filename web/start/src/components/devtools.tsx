@@ -1,5 +1,3 @@
-"use client"
-
 import { RiCodeLine } from "@remixicon/react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools/production"
 import { useEffect, useState } from "react"

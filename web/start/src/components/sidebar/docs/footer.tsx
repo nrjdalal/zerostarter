@@ -1,20 +1,16 @@
-"use client"
-
-import { env } from "@packages/env/web-next"
-import Link from "next/link"
+import { env } from "@packages/env/web-start"
+import { Link } from "@tanstack/react-router"
 
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { config } from "@/lib/config"
 
 export function SidebarDocsFooter() {
-  if (env.NEXT_PUBLIC_USERJOT_URL) {
+  if (env.VITE_USERJOT_URL) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
-            render={
-              <Link href={env.NEXT_PUBLIC_USERJOT_URL} target="_blank" rel="noopener noreferrer" />
-            }
+            render={<Link to={env.VITE_USERJOT_URL} target="_blank" rel="noopener noreferrer" />}
           >
             <span>Feedback</span>
             <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>

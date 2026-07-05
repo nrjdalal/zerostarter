@@ -1,8 +1,6 @@
-"use client"
-
 import { RiBookLine, RiDashboardLine } from "@remixicon/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Link } from "@tanstack/react-router"
+import { useLocation } from "@tanstack/react-router"
 
 import { SidebarDocsContent, SidebarDocsSearch } from "@/components/sidebar/docs"
 import {
@@ -22,7 +20,7 @@ const mainItems = [
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
 export function SidebarConsoleHeader() {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
     if (isMobile) setOpenMobile(false)
@@ -38,7 +36,7 @@ export function SidebarConsoleHeader() {
               isActive={isActive(pathname, "/console")}
               tooltip="Dashboard"
               className="data-active:font-normal"
-              render={<Link href="/console" onClick={close} />}
+              render={<Link to="/console" onClick={close} />}
             >
               <RiDashboardLine />
               <span>Dashboard</span>
@@ -56,7 +54,7 @@ export function SidebarConsoleHeader() {
 }
 
 export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }) {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
     if (isMobile) setOpenMobile(false)
@@ -80,7 +78,7 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
                 isActive={active}
                 tooltip={item.title}
                 className="data-active:font-normal"
-                render={<Link href={item.url} onClick={close} />}
+                render={<Link to={item.url} onClick={close} />}
               >
                 <item.icon />
                 <span>{item.title}</span>

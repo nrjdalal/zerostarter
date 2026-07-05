@@ -1,5 +1,3 @@
-"use client"
-
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
 import { useState } from "react"
 import { toast } from "sonner"
