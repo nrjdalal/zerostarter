@@ -35,8 +35,7 @@
     "lint": "oxlint",
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
-    "start": "turbo run start",
-    "test": "bun run --cwd tests test"
+    "start": "turbo run start"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",

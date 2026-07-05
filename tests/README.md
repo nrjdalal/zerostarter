@@ -42,12 +42,15 @@ Each file merges the HTTP checks and the browser-interaction checks for its rout
 
 First make sure the dev stack is up (`bun run dev` at the repo root, or `bash tests/scripts/ensure-stack.sh` which starts it if needed), then:
 
+Run from this `tests/` directory (the scripts and their flags live in `tests/package.json`; the root `package.json` intentionally has no `test` script, since this workspace does not ship to forks):
+
 ```bash
-bun run test                 # from the repo root (whole suite)
-bun run test                 # from tests/ (whole suite)
+bun run test                 # whole suite
 bun run test:api             # api/ only (fetch)
 bun run test:web             # web/ only (fetch + agent-browser)
 ```
+
+From the repo root, use `bun run --cwd tests test`.
 
 Use `bun run test`, not a bare `bun test`: the 60s per-test timeout lives in the `test` script (browser flows and cold-route retries exceed Bun's 5s default), and a bare `bun test` invokes the runner directly, skipping the script and its flag.
 

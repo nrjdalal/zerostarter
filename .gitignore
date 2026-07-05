@@ -41,7 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # custom directories
+.auth/
 .playwright-cli/
+.screenshots/
 .source/
 .turbo/
 bundle/
@@ -59,7 +61,3 @@ web/next/content/docs/meta.json
 
 # git overrides
 !.env.example
-
-# app test suite: saved agent session state (tests/.auth) and captured baselines (tests/.screenshots)
-.auth/
-.screenshots/

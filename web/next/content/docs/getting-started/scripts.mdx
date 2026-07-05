@@ -32,7 +32,6 @@ Each of these builds `@packages/env` first, then runs Drizzle Kit against `packa
 - `bun run format`: Oxfmt, writing fixes.
 - `bun run format:check`: Oxfmt, report only.
 - `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
-- `bun run test`: run the app test suite in `tests/` (every endpoint, route, and interaction, black-box via `bun test` + `fetch` for HTTP and the `agent-browser` CLI for interactions; layout mirrors the repo). Needs the dev stack already running (`bun run dev`) and `agent-browser` installed.
 
 ## Release / production
 
