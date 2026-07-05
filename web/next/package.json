@@ -14,7 +14,6 @@
     "@packages/auth": "workspace:*",
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
-    "@posthog/react": "catalog:",
     "@remixicon/react": "catalog:",
     "@shadcn/react": "catalog:",
     "@tanstack/react-form": "catalog:",

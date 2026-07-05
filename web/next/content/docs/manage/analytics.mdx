@@ -8,7 +8,7 @@ Both of these are **optional**, and both stay off until you set an environment v
 
 ## PostHog analytics
 
-[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates) and handed to React through `PostHogProvider` in `web/next/src/app/providers.tsx`. Both no-op until the key is present.
+[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates), following PostHog's current App Router setup. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present.
 
 Turn it on with two env vars (the key enables it, the host picks your region):
 
@@ -21,7 +21,7 @@ Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU, 
 
 <Callout type="info" title="Wired, but not called for you">
 
-The starter sets up initialization and the provider, but it does **not** call `capture`, `identify`, or read a feature flag anywhere. Pageviews and session replay begin once the key is set; everything below is yours to add where it makes sense.
+The starter sets up initialization, but it does **not** call `capture`, `identify`, or read a feature flag anywhere. Pageviews and session replay begin once the key is set; everything below is yours to add where it makes sense.
 
 </Callout>
 
@@ -34,15 +34,14 @@ posthog.capture("signup_clicked", { plan: "pro" })
 posthog.identify(user.id, { email: user.email, name: user.name })
 ```
 
-Inside components, reach the same client and read flags through the React hooks:
+Inside components, reach the same singleton and read flags off it (`isFeatureEnabled` resolves once flags have loaded):
 
 ```tsx
-import { usePostHog, useFeatureFlagEnabled } from "@posthog/react"
+import posthog from "posthog-js"
 
 function Dashboard() {
-  const posthog = usePostHog()
-  const showNew = useFeatureFlagEnabled("new-dashboard")
-  return showNew ? <New onClick={() => posthog?.capture("used_new")} /> : <Old />
+  const showNew = posthog.isFeatureEnabled("new-dashboard")
+  return showNew ? <New onClick={() => posthog.capture("used_new")} /> : <Old />
 }
 ```
 
