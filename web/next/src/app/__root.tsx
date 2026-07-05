@@ -8,7 +8,7 @@ import { config } from "@/lib/config"
 import fontsCss from "@/app/fonts.css?url"
 import globalsCss from "@/app/globals.css?url"
 
-// Intentional cache-bust (same rationale as generatePageMetadata): the timestamp ties the home OG URL to each deploy so scrapers refetch the regenerated image; not a bug. web/next also probes for a prebuilt public/og/home.png, an asset this repo does not ship, so the dynamic route is the effective branch here.
+// Intentional cache-bust (same rationale as generatePageMetadata): the timestamp ties the home OG URL to each deploy so scrapers refetch the regenerated image; not a bug. the Next.js app also probed for a prebuilt public/og/home.png, an asset this repo does not ship, so the dynamic route is the effective branch here.
 const ogImageUrl = `${config.app.url}/og/home?t=${Date.now()}`
 
 export const Route = createRootRoute({

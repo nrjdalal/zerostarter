@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-// Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail); callers supply the badge, nav, footer, and the persisted open state (read from the sidebar_state cookie in their route loaders, where web/next read it via next/headers).
+// Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail); callers supply the badge, nav, footer, and the persisted open state (read from the sidebar_state cookie in their route loaders, where the Next.js app read it via next/headers).
 export function SidebarShell({
   badge,
   defaultOpen = true,

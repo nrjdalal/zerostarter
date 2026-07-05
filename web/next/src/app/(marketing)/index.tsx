@@ -208,7 +208,7 @@ function getHighlighter() {
   return highlighterPromise
 }
 
-// Server function so shiki stays out of the client bundle; in web/next this ran inside the async server component.
+// Server function so shiki stays out of the client bundle; in the Next.js app this ran inside the async server component.
 const getHighlights = createServerFn({ method: "GET" }).handler(async () => {
   const initCode = `bunx zerostarter init
 bun run dev   # web :3000 · api :4000`

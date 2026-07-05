@@ -13,8 +13,8 @@ type PublishedBlogPage = BlogPage & {
   data: BlogPage["data"] & { publishedAt: string }
 }
 
-// Naming: "public" includes the /blog index plus published posts (routes, params, page tree); "published" is posts only, excluding the index (listings, sitemap, llms).
-export function isBlogIndexPage(page: BlogPage): boolean {
+// Naming: "public" includes the /blog index plus published posts (page tree); "published" is posts only, excluding the index (listings, sitemap, llms).
+function isBlogIndexPage(page: BlogPage): boolean {
   return page.url === "/blog"
 }
 
@@ -51,13 +51,6 @@ export function getPublishedBlogPosts(now = new Date()): PublishedBlogPage[] {
     .getPages()
     .filter((page) => isPublishedBlogPost(page, now))
     .sort(compareBlogPosts)
-}
-
-export function generatePublicBlogParams(now = new Date()) {
-  return blogSource.generateParams().filter((params) => {
-    const page = blogSource.getPage(params.slug)
-    return page ? isPublicBlogPage(page, now) : false
-  })
 }
 
 function filterPublishedBlogNode(node: Node, publishedUrls: Set<string>): Node | null {

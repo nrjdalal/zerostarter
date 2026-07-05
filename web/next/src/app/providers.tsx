@@ -8,7 +8,7 @@ import { Toaster } from "sonner"
 
 import { DevTools } from "@/components/devtools"
 
-// Replaces web/next's instrumentation-client.ts: Vite has no instrumentation hook, so PostHog initializes with this client-only module.
+// Replaces the Next.js app's instrumentation-client.ts: Vite has no instrumentation hook, so PostHog initializes with this client-only module.
 if (typeof window !== "undefined" && env.VITE_POSTHOG_KEY) {
   posthog.init(env.VITE_POSTHOG_KEY, {
     api_host: env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",

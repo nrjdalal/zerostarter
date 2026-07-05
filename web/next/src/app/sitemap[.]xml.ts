@@ -15,7 +15,7 @@ interface SitemapEntry {
 const xmlEscape = (value: string) =>
   value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
-// Port of web/next's app/sitemap.ts; the XML shape matches Next's MetadataRoute.Sitemap serialization.
+// Port of the Next.js app's app/sitemap.ts; the XML shape matches Next's MetadataRoute.Sitemap serialization.
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {

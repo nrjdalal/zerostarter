@@ -24,7 +24,7 @@ function sidebarDefaultOpen(): boolean {
   return state ? state === "true" : true
 }
 
-// Port of web/next's (protected)/layout.tsx server work: session gate data, the last-active-organization restore, and the sidebar cookie.
+// Port of the Next.js app's (protected)/layout.tsx server work: session gate data, the last-active-organization restore, and the sidebar cookie.
 export const getProtectedContext = createServerFn({ method: "GET" }).handler(async () => {
   const session = await auth.api.getSession()
   if (!session?.user) return null
@@ -54,7 +54,7 @@ export const getProtectedContext = createServerFn({ method: "GET" }).handler(asy
   return { session, defaultOpen: sidebarDefaultOpen() }
 })
 
-// Port of the console layout's assertConsoleAccess: admin session or a 404 (never a redirect).
+// Gates /console: admin session or a thrown notFound (never a redirect).
 export const getConsoleContext = createServerFn({ method: "GET" }).handler(async () => {
   const session = await getConsoleSession()
   if (!session) throw notFound()

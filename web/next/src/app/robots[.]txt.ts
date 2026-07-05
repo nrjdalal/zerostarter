@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { config } from "@/lib/config"
 
-// Port of web/next's app/robots.ts; the text shape matches Next's MetadataRoute.Robots serialization.
+// Port of the Next.js app's app/robots.ts; the text shape matches Next's MetadataRoute.Robots serialization.
 export const Route = createFileRoute("/robots.txt")({
   server: {
     handlers: {

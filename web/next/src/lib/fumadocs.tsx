@@ -17,7 +17,7 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
-// Serializable summary of a published blog post, for the <BlogPostList /> MDX component. In web/next that component read the server source directly (server component); in Start MDX renders on the client, so the list is passed down as data instead.
+// Serializable summary of a published blog post, for the <BlogPostList /> MDX component. In the Next.js app that component read the server source directly (server component); in Start MDX renders on the client, so the list is passed down as data instead.
 export interface PostSummary {
   url: string
   title: string
@@ -25,7 +25,7 @@ export interface PostSummary {
   publishedAt: string
 }
 
-// Serializable page payload a route loader builds server-side from a source page; the MDX body itself streams through the collections/browser client loaders (in the Vite runtime the compiled MDX module is loaded lazily on the client, unlike web/next where page.data.body existed in the server component).
+// Serializable page payload a route loader builds server-side from a source page; the MDX body itself streams through the collections/browser client loaders (in the Vite runtime the compiled MDX module is loaded lazily on the client, unlike the Next.js app where page.data.body existed in the server component).
 export interface PageInfo {
   path: string
   url: string
@@ -79,7 +79,7 @@ export function toPageInfo(page: SourcePage, { blog = false } = {}): PageInfo {
 type Toc = ComponentProps<typeof DocsPage>["toc"]
 type MDXBody = ComponentType<{ components?: MDXComponents }>
 
-// Mirror of web/next's renderPageContent, fed by the client loader instead of page.data.body. Relative-link resolution is dropped: the content uses absolute URLs only.
+// Mirror of the Next.js app's renderPageContent, fed by the client loader instead of page.data.body. Relative-link resolution is dropped: the content uses absolute URLs only.
 export function PageBody({ info, toc, MDX }: { info: PageInfo; toc: Toc; MDX: MDXBody }) {
   const isDocsPage = info.url.startsWith("/docs")
   const isBlogMainPage = info.url === "/blog"
@@ -122,7 +122,7 @@ interface PageHeadOptions {
 
 type MetaEntry = Record<string, string>
 
-// Mirror of web/next's generatePageMetadata as route head() meta entries, with the root title template ("%s | ZeroStarter") applied inline. Duplicate keys override the root head's defaults per HeadContent's dedupe.
+// Mirror of the Next.js app's generatePageMetadata as route head() meta entries, with the root title template ("%s | ZeroStarter") applied inline. Duplicate keys override the root head's defaults per HeadContent's dedupe.
 export function pageHeadMeta(info: PageInfo, options: PageHeadOptions): MetaEntry[] {
   const { ogPath, ogType } = options
   const pageUrl = `${config.app.url}${info.url}`

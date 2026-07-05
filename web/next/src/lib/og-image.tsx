@@ -19,7 +19,7 @@ interface OgImageOptions {
   defaultDescription: string
 }
 
-export async function renderOgElement(element: ReactElement): Promise<Response> {
+async function renderOgElement(element: ReactElement): Promise<Response> {
   try {
     const png = await render(element, { width: 1200, height: 630, format: "png" })
     return new Response(new Uint8Array(png), {

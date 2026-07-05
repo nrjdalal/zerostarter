@@ -12,7 +12,7 @@ const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   description: "AI-native engineer & SaaS architect",
 }).toString()}`
 
-// web/next's metadata export, with the root title template ("%s | ZeroStarter") applied inline since route head() has no template mechanism.
+// the Next.js app's metadata export, with the root title template ("%s | ZeroStarter") applied inline since route head() has no template mechanism.
 export const Route = createFileRoute("/(marketing)/resume/")({
   head: () => ({
     meta: [

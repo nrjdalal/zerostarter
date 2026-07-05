@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { config } from "@/lib/config"
 
-// Port of web/next's /api/:path* rewrite: the whole Hono API is reachable same-origin (the frontend relies on this for credentialed calls). App-owned API routes (/api/search, /api/console/search) are more specific and win over this splat.
+// Port of the Next.js app's /api/:path* rewrite: the whole Hono API is reachable same-origin (the frontend relies on this for credentialed calls). App-owned API routes (/api/search, /api/console/search) are more specific and win over this splat.
 async function proxy(request: Request, splat: string | undefined): Promise<Response> {
   const incoming = new URL(request.url)
   const base = config.api.internalUrl || config.api.url

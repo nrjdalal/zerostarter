@@ -10,7 +10,7 @@ export const Route = createFileRoute("/og/blog/$")({
     handlers: {
       GET: ({ params }) => {
         const slug = params._splat?.split("/") ?? []
-        // Unpublished or unknown posts get no OG card (mirrors web/next's public gate); the thrown notFound maps to a plain 404 in this raw handler.
+        // Unpublished or unknown posts get no OG card (mirrors the Next.js app's public gate); the thrown notFound maps to a plain 404 in this raw handler.
         try {
           void getPublicBlogPage(slug)
         } catch {
