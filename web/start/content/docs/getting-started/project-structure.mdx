@@ -1,0 +1,60 @@
+---
+slug: /docs/getting-started/project-structure
+title: Project Structure
+description: "How the monorepo fits together: two apps, four packages, one import graph."
+---
+
+The whole repo is one mental model: two deployable apps, four shared packages, and a single import graph that ties them together.
+
+- **`web/next`**: the Next.js frontend (App Router, React 19).
+- **`api/hono`**: the Hono backend that owns every route and talks to the database.
+- **`packages/*`**, the code both apps share: the auth instance, the Drizzle schema, validated env, and the brand config.
+
+Three import aliases wire it together: `@api/hono` gives the frontend its API types, `@packages/*` pulls in a shared package, and `@/` is the local-to-this-app alias. Imports only point _down_ that list: apps depend on packages, never the reverse.
+
+```
+.
+├─ api/hono/      # backend (Hono): routes, middleware, error envelope
+├─ web/next/      # frontend (Next.js): app router, components, content/
+└─ packages/
+   ├─ auth/       # Better Auth instance + session types
+   ├─ db/         # Drizzle schema + migrations
+   ├─ env/        # type-safe, validated environment variables
+   └─ config/     # TS base, tsdown factory, and site.ts (the brand)
+```
+
+## `api/hono`
+
+The entry point is `src/index.ts`, which exports the `AppType` the frontend infers from. Routes live in `src/routers/` (auth, the local-only `agents` sign-in, protected `v1`, public `waitlist`), middleware in `src/middlewares/` (auth, rate limiting), and `src/lib/error.ts` holds the `onError` switchboard that shapes every failure into the `{ error: { code, message } }` envelope.
+
+## `web/next`
+
+Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the admin console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
+
+<Callout type="info" title="Two shells to build on">
+
+`(protected)/` (dashboard) and `(console)/` (admin) are auth-gated but intentionally empty. They are where your product goes, not finished features.
+
+</Callout>
+
+<Callout type="info" title="Marketing routes">
+
+The `(marketing)/` route group under `src/app/` holds the marketing surfaces: the landing page (`/`) plus the author's own `/hire` and `/resume`. They stay in the canonical repo but `zerostarter init` strips the whole group and writes a fresh `app/page.tsx` in its place. A direct clone that skips init can delete `web/next/src/app/(marketing)`, add its own `app/page.tsx`, and remove the "Hire" link in `web/next/src/components/navbar/home.tsx`.
+
+</Callout>
+
+## The packages
+
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
+- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
+- **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
+- **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
+
+## Bun catalog
+
+The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
+
+## Next
+
+- [Architecture](/docs/getting-started/architecture): why the graph is shaped this way.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): how `AppType` crosses from api to web.

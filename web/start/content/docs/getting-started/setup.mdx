@@ -1,0 +1,69 @@
+---
+slug: /docs/getting-started/setup
+title: Quickstart
+description: Go from one command to a running, signed-in app, and where to go next.
+---
+
+Two commands take you from nothing to a running, signed-in app.
+
+<Callout type="info" title="Prerequisites">
+
+Bun is required (the repo pins `bun@1.3.14` via `packageManager` in the root `package.json`). Run the CLI with `bunx`, not `npx`: it shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress. If Bun is missing it shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you. Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
+
+</Callout>
+
+```bash
+bunx zerostarter init
+bun run dev
+```
+
+The rest of this page is what those commands do, and the one thing to check if the database step gets skipped.
+
+## `zerostarter init`
+
+`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder of its own; if the folder already has files, it asks for a project name and scaffolds into that new directory instead, and it stops early if you run it inside an existing workspace or monorepo, where a parent lockfile would break the dependency install. In one run it:
+
+- fetches the latest ZeroStarter and strips the sample content,
+- rebrands the copy to your project name,
+- installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
+- provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
+- writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET`.
+
+Everything else has a working default, so the scaffold runs as-is. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
+
+<Callout type="info" title="If Docker isn't running">
+
+`init` skips the database and leaves `POSTGRES_URL` empty. Point it at any Postgres (a hosted one like [Neon](https://neon.tech) works) by setting `POSTGRES_URL` in `.env`, then apply the migrations once:
+
+```bash
+bun run db:migrate
+```
+
+</Callout>
+
+## `zerostarter reinit`
+
+`bunx zerostarter reinit` re-scaffolds an **existing git repo** as a fresh ZeroStarter: it deletes every file (keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive), fetches the latest ZeroStarter, rebrands to the directory name, and commits on the current branch. Use it to point an existing repo at ZeroStarter without losing its git history. It refuses a dirty tree, and rolls back to your last commit if any step fails.
+
+## `zerostarter sync`
+
+`bunx zerostarter sync` re-baselines an **existing fork** on ZeroStarter's latest scaffold. A gitpick overlay updates the starter files while your content, `public/marketing`, branding (`site.ts`), `package.json` identity, lockfile (`bun.lock`), database migrations and schema (`packages/db/drizzle`, `packages/db/src/schema`), the docs config (`docs.config.ts`, which describes your own docs), and favicon are preserved and the files you added are untouched. It requires a clean tree and lands as a reviewable diff you commit yourself (no auto-commit); if the overlay or reconciliation fails it rolls the tree back to your last commit, while a later dependency-install failure leaves the synced files in place for you to re-run `bun install`.
+
+## `bun run dev`
+
+Turborepo starts both apps together:
+
+- **web** (Next.js) on [http://localhost:3000](http://localhost:3000)
+- **api** (Hono) on [http://localhost:4000](http://localhost:4000), with an interactive API reference at [/api/docs](http://localhost:4000/api/docs)
+
+## Sign in
+
+A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. To get past auth immediately, use the dev-only **Login (agents)** button (or one `curl`). It mints a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+
+When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
+
+## Next
+
+- [Working with Agents](/docs/getting-started/working-with-agents): sign in locally and build your first feature.
+- [Architecture](/docs/getting-started/architecture): what you just started, and why each piece is there.
+- [Authentication](/docs/manage/authentication): add OAuth, organizations, and teams.
