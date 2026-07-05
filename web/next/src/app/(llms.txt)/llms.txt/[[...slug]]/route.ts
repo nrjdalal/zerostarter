@@ -5,7 +5,7 @@ import docsMeta from "@/../content/docs/meta.json"
 import { generatePublicBlogParams, getPublicBlogPage, getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
-import { sortByMeta } from "@/lib/sort-by-meta"
+import { sortByMeta } from "@/lib/llms"
 import { blogSource, docsSource } from "@/lib/source"
 
 export const dynamic = "force-static"

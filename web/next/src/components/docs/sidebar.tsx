@@ -21,7 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { config } from "@/lib/config"
-import type { NavGroup, NavItem, NavNode } from "@/lib/docs/types"
+import type { NavGroup, NavItem, NavNode } from "@/lib/docs"
 import { cn, isActive as isActivePath } from "@/lib/utils"
 
 const isPage = (node: NavNode): node is NavItem => "url" in node

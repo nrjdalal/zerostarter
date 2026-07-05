@@ -89,9 +89,24 @@ Now that the folder conveys the area, redundant `Sidebar…` prefixes were dropp
 
 Unchanged (shell chrome): `SidebarShell`, `SidebarUserMenu`, `SidebarDropdownMenu`, `SidebarFloatingTrigger`. The `data-slot` values on the page shell were renamed to match (`page-shell`, `page-header`); nothing selects them.
 
+## lib/ consolidation
+
+`lib/` was audited separately and is largely healthy: no barrels, no mislabels, each file a distinct single-responsibility module. Merging unrelated utilities would create grab-bags, so only genuinely-cohesive splits were collapsed (16 files → 14):
+
+- `docs/nav.ts` + `docs/types.ts` → **`lib/docs.ts`** — one domain; `nav` builds on `types`. Importers of `@/lib/docs/nav` and `@/lib/docs/types` collapse to `@/lib/docs`.
+- `sort-by-meta.ts` → folded into **`lib/llms.ts`** — its only two consumers are the llms.txt routes.
+
+**Kept split (rationale):**
+
+- `auth/` (client + console + index) — `auth/client.ts` is the `better-auth/react` client SDK and must not share a module with the server auth; `console`/`index` are distinct layers (authz policy vs session accessor).
+- `blog.ts` + `blog-policy.ts` — `blog-policy` is a shared policy module (imported by `fumadocs`, `sitemap`, `post-list`, not only `blog`) with its own deferred test surface.
+- `config`, `source`, `fumadocs`, `og-image`, `fonts`, `utils`, `llms` — distinct heavily-used core modules.
+
+**Cross-cutting refs updated for the `docs/` merge:** `web/next/docs.config.ts` and the CLI's `docsConfigTemplate()` (`packages/cli/src/templates.ts`) both import `DocsConfig` from `./src/lib/docs/types`; without the fix, a scaffolded fork's `docs.config.ts` would import a missing module.
+
 ## Verification
 
 - `tsc --noEmit`: clean
 - `oxlint`: clean
 - `oxfmt`: clean
-- `bun test packages/cli/test/convert.test.ts`: 9 pass
+- `bun test packages/cli/test`: 85 pass (convert + templates + …)

@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import type { NavGroup } from "@/lib/docs/types"
+import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 const mainItems = [

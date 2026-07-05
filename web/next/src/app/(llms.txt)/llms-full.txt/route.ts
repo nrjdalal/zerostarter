@@ -3,7 +3,7 @@ import { site } from "@packages/config/site"
 import docsMeta from "@/../content/docs/meta.json"
 import { getPublishedBlogPosts } from "@/lib/blog"
 import { getLLMText, llmTextHeaders } from "@/lib/llms"
-import { sortByMeta } from "@/lib/sort-by-meta"
+import { sortByMeta } from "@/lib/llms"
 import { docsSource } from "@/lib/source"
 
 export const dynamic = "force-static"

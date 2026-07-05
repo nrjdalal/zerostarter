@@ -11,7 +11,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { resolveDocsNav } from "@/lib/docs/nav"
+import { resolveDocsNav } from "@/lib/docs"
 import { baseOptions } from "@/lib/fumadocs"
 import { docsSource } from "@/lib/source"
 
