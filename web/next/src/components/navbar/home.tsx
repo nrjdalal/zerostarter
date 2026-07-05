@@ -1,5 +1,3 @@
-"use client"
-
 import { site } from "@packages/config/site"
 import {
   RiArrowRightUpLine,
@@ -8,8 +6,8 @@ import {
   RiMenuLine,
   RiTwitterXFill,
 } from "@remixicon/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Link } from "@tanstack/react-router"
+import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { Access } from "@/components/access"
@@ -68,7 +66,7 @@ function SocialLinks({ onClick }: { onClick?: () => void }) {
 }
 
 export function Navbar() {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const { data: session } = authClient.useSession()
 
   const [toDashboard, setToDashboard] = useState(false)
@@ -90,7 +88,7 @@ export function Navbar() {
   return (
     <header className="bg-background fixed top-0 left-0 z-50 w-full border-b">
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
-        <Link href="/" className="flex items-center gap-2 font-bold">
+        <Link to="/" className="flex items-center gap-2 font-bold">
           {site.name}
         </Link>
         <div className="flex items-center gap-2.5">
@@ -115,7 +113,7 @@ export function Navbar() {
               return (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  to={link.href}
                   className={cn(
                     "font-medium transition-colors",
                     active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
@@ -138,7 +136,7 @@ export function Navbar() {
               className="w-24"
               variant="outline"
               onClick={() => setToDashboard(true)}
-              render={<Link href="/dashboard" />}
+              render={<Link to="/dashboard" />}
             >
               {toDashboard ? <Spinner /> : "Dashboard"}
             </Button>
@@ -169,7 +167,7 @@ export function Navbar() {
                 <SheetTitle
                   render={
                     <Link
-                      href="/"
+                      to="/"
                       className="-mt-1 flex items-center gap-2 text-2xl font-bold"
                       onClick={() => setIsOpen(false)}
                     />
@@ -199,7 +197,7 @@ export function Navbar() {
                   return (
                     <Link
                       key={link.href}
-                      href={link.href}
+                      to={link.href}
                       className={cn(
                         "font-medium transition-colors",
                         active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",

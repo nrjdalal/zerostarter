@@ -1,5 +1,3 @@
-"use client"
-
 import { RiMoonLine, RiSunLine } from "@remixicon/react"
 import { useTheme } from "next-themes"
 

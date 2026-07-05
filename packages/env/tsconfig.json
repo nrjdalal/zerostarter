@@ -6,5 +6,6 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "//": "web-next.ts is a source export for the Vite app; its literal import.meta.env.VITE_* (required for Vite static inlining) only types with vite/client, which the consuming app has and type-checks. Excluded from this package's isolated check.",
+  "exclude": ["node_modules", "src/web-next.ts"]
 }

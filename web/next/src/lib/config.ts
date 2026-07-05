@@ -12,13 +12,13 @@ const getInternalApiUrl = () => {
 export const config = {
   // Runtime / env-derived app values (NOT brand, brand lives in @packages/config/site)
   app: {
-    url: env.NEXT_PUBLIC_APP_URL,
+    url: env.VITE_APP_URL,
     version: BUILD_VERSION,
   },
 
   // API configuration
   api: {
-    url: env.NEXT_PUBLIC_API_URL,
+    url: env.VITE_API_URL,
     internalUrl: getInternalApiUrl(),
   },
 } as const

@@ -1,8 +1,6 @@
-"use client"
-
 import { RiArrowRightSLine } from "@remixicon/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Link } from "@tanstack/react-router"
+import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -27,7 +25,7 @@ function collectUrls(nodes: NavNode[]): string[] {
 }
 
 export function SidebarDocsContent({ groups }: { groups: NavGroup[] }) {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const { isMobile, setOpenMobile } = useSidebar()
 
   const isActive = (url: string): boolean => isActivePath(pathname, url)
@@ -79,7 +77,7 @@ function NavTreeNode({
   if (sub) {
     return (
       <SidebarMenuSubItem>
-        <SidebarMenuSubButton isActive={active} render={<Link href={node.url} onClick={close} />}>
+        <SidebarMenuSubButton isActive={active} render={<Link to={node.url} onClick={close} />}>
           <span>{node.title}</span>
         </SidebarMenuSubButton>
       </SidebarMenuSubItem>
@@ -92,7 +90,7 @@ function NavTreeNode({
       <SidebarMenuButton
         isActive={active}
         className={isSetupItem ? "border data-active:font-normal" : "data-active:font-normal"}
-        render={<Link href={node.url} onClick={close} />}
+        render={<Link to={node.url} onClick={close} />}
       >
         <span>{node.title}</span>
       </SidebarMenuButton>

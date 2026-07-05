@@ -22,8 +22,9 @@ test("siteTemplate capitalizes the brand and leaks no upstream identity", () => 
 
 test("homeTemplate redirects a fresh fork to the waitlist", () => {
   const out = homeTemplate()
-  expect(out).toContain('from "next/navigation"')
-  expect(out).toContain('redirect("/waitlist")')
+  expect(out).toContain('from "@tanstack/react-router"')
+  expect(out).toContain('createFileRoute("/")')
+  expect(out).toContain('to: "/waitlist"')
   expect(out).not.toContain("zerostarter")
 })
 

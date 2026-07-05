@@ -1,5 +1,3 @@
-"use client"
-
 import { RiExpandUpDownLine } from "@remixicon/react"
 import { type ReactNode } from "react"
 

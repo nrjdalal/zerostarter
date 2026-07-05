@@ -1,6 +1,4 @@
-"use client"
-
-import { usePathname } from "next/navigation"
+import { useLocation } from "@tanstack/react-router"
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { isDocsPath } from "@/lib/docs/nav"
@@ -8,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 // Shared floating sidebar trigger. In the docs area the sidebar is offcanvas, so on desktop this becomes an edge tab; elsewhere the in-sidebar header trigger covers desktop and this stays hidden. On mobile it's always a labeled button bottom-right. Label: "Docs" in docs, "Menu" elsewhere.
 export function SidebarFloatingTrigger() {
-  const isDocs = isDocsPath(usePathname())
+  const isDocs = isDocsPath(useLocation({ select: (location) => location.pathname }))
 
   return (
     <SidebarTrigger

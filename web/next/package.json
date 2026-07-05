@@ -2,11 +2,12 @@
   "name": "@web/next",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
+    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && vite build",
     "check-types": "tsc --noEmit",
-    "dev": "bun ../../.github/scripts/docs.ts && next dev",
-    "start": "bun .next/standalone/web/next/server.js"
+    "dev": "bun ../../.github/scripts/docs.ts && vite dev",
+    "start": "bun .output/server/index.mjs"
   },
   "dependencies": {
     "@api/hono": "workspace:*",
@@ -19,6 +20,8 @@
     "@shadcn/react": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
     "better-auth": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -31,7 +34,6 @@
     "hono": "catalog:",
     "input-otp": "catalog:",
     "nanoid": "catalog:",
-    "next": "catalog:",
     "next-themes": "catalog:",
     "posthog-js": "catalog:",
     "react": "catalog:",
@@ -43,23 +45,28 @@
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
     "takumi-js": "catalog:",
-    "vaul": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "catalog:",
+    "@babel/core": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
+    "@types/babel__core": "catalog:",
     "@types/bun": "catalog:",
     "@types/mdx": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "nitro": "catalog:",
     "shadcn": "catalog:",
     "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "optionalDependencies": {
     "@takumi-rs/core-darwin-arm64": "catalog:",

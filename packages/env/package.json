@@ -24,11 +24,7 @@
       "default": "./dist/db.mjs"
     },
     "./web-next": {
-      "types": "./dist/web-next.d.mts",
-      "default": "./dist/web-next.mjs"
-    },
-    "./web-start": {
-      "default": "./src/web-start.ts"
+      "default": "./src/web-next.ts"
     }
   },
   "scripts": {

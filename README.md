@@ -20,7 +20,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 
 - **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
 - **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
-- **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
+- **Frontend**: [TanStack Start](https://tanstack.com/start) (Vite build, Nitro server, file-based routing) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
 - **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
 - **Backend**: [Hono](https://hono.dev) with OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
@@ -45,7 +45,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 ├── api/
 │   └── hono/      # Backend API (Hono): /api/agents, /api/auth, /api/docs, /api/v1, /api/waitlist
 ├── web/
-│   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
+│   └── next/      # Frontend (TanStack Start): dashboard, admin console, docs, blog
 └── packages/
     ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client

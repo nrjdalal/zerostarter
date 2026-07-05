@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound } from "@tanstack/react-router"
 
 import { auth } from "@/lib/auth"
 
@@ -13,7 +13,7 @@ export async function getConsoleSession() {
 export async function assertConsoleAccess() {
   const session = await getConsoleSession()
   if (!session) {
-    notFound()
+    throw notFound()
   }
   return session
 }

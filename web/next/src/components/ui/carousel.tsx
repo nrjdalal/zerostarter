@@ -1,5 +1,3 @@
-"use client"
-
 import { RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react"
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react"
 import * as React from "react"

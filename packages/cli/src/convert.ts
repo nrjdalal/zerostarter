@@ -41,9 +41,12 @@ const removeForkExcludes = (root: string): void => {
   remove(ignore)
 }
 
-// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork. Newlines are \r?\n: a Windows/WSL checkout (gitpick under core.autocrlf) yields CRLF, and a \n-only anchor would miss the closing `})`, leaving the marketing fonts in place and tripping the drift guard below.
-const CAVEAT_EXPORT = /\r?\nexport const caveat = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
-const NEWSREADER_EXPORT = /\r?\nexport const newsreader = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
+// Author-only marketing fonts (Caveat, Newsreader) and the /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat does not break a synced fork. fonts.ts holds the Tailwind utility aliases; fonts.css holds the @font-face rules and CSS vars that point at the excluded fonts/marketing/ woff2s. Newlines are \r?\n: a Windows/WSL checkout (gitpick under core.autocrlf) yields CRLF.
+const CAVEAT_EXPORT = /\r?\nexport const caveat = \{[^}]*\}\r?\n/
+const NEWSREADER_EXPORT = /\r?\nexport const newsreader = \{[^}]*\}\r?\n/
+const MARKETING_FONT_FACE = /@font-face \{[^}]*fonts\/marketing\/[^}]*\}\r?\n+/g
+const CAVEAT_VAR = /[ \t]*--font-caveat:[^\r\n]*\r?\n/
+const NEWSREADER_VAR = /[ \t]*--font-newsreader:[^\r\n]*\r?\n/
 const HIRE_NAV = /[ \t]*\{[^}\r\n]*href:[ \t]*["']\/hire["'][^}\r\n]*\},?[ \t]*\r?\n/
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
@@ -61,7 +64,7 @@ const scaffoldContent = (root: string, brand: Brand): void => {
   write(p(root, "web/next/content/console/docs/index.mdx"), consoleIndexTemplate())
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")
-  write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
+  write(p(root, "web/next/src/app/index.tsx"), homeTemplate())
   write(p(root, "AGENTS.md"), agentsTemplate())
   write(p(root, "README.md"), readmeTemplate(brand))
 }
@@ -69,14 +72,18 @@ const scaffoldContent = (root: string, brand: Brand): void => {
 // Clean up the references the route and font deletes leave dangling; fail loudly on drift.
 export const fixDangling = (root: string): void => {
   const fontsPath = p(root, "web/next/src/lib/fonts.ts")
+  const fontsCssPath = p(root, "web/next/src/app/fonts.css")
   const navPath = p(root, "web/next/src/components/navbar/home.tsx")
   removeMatch(fontsPath, CAVEAT_EXPORT)
   removeMatch(fontsPath, NEWSREADER_EXPORT)
+  removeMatch(fontsCssPath, MARKETING_FONT_FACE)
+  removeMatch(fontsCssPath, CAVEAT_VAR)
+  removeMatch(fontsCssPath, NEWSREADER_VAR)
   removeMatch(navPath, HIRE_NAV)
-  // A gone marker is fine (the starter dropped it, so sync over an evolving main is a no-op); one that survived the strip means the regex drifted and must be fixed, else the fork ships refs to the excluded fonts/route.
-  if (exists(fontsPath) && read(fontsPath).includes("fonts/marketing/")) {
+  // A gone marker is fine (the starter dropped it, so sync over an evolving main is a no-op); one that survived the strip means the regex drifted and must be fixed, else the fork ships refs to the excluded fonts/route. The fonts/marketing/ paths now live in fonts.css.
+  if (exists(fontsCssPath) && read(fontsCssPath).includes("fonts/marketing/")) {
     throw new Error(
-      "fonts.ts still references fonts/marketing/ after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
+      "fonts.css still references fonts/marketing/ after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
   if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {

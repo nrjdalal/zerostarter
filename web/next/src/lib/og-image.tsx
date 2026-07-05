@@ -1,5 +1,4 @@
 import { site } from "@packages/config/site"
-import { notFound } from "next/navigation"
 import type { ReactElement } from "react"
 import { render } from "takumi-js"
 
@@ -30,7 +29,6 @@ export async function renderOgElement(element: ReactElement): Promise<Response> 
       },
     })
   } catch (e) {
-    if (process.env.NEXT_PHASE === "phase-production-build") throw e
     const cause =
       e instanceof Error && e.cause instanceof Error ? ` | cause: ${e.cause.message}` : ""
     console.error(`og render failed: ${e instanceof Error ? e.message : String(e)}${cause}`)
@@ -108,8 +106,9 @@ export async function generateOgImage(
 ): Promise<Response> {
   const { source, sectionName, defaultTitle, defaultDescription } = options
 
+  // Raw server routes return responses rather than throwing router notFound errors.
   const page = source.getPage(slug)
-  if (!page) notFound()
+  if (!page) return new Response("Not Found", { status: 404 })
 
   return renderOgImage({
     sectionName,

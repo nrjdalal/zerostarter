@@ -1,31 +1,4 @@
-import localFont from "next/font/local"
+// next/font/local returned { className } objects; the same names now map to Tailwind font utilities generated from the @theme font variables (fonts.css declares the @font-face rules).
+export const caveat = { className: "font-caveat" }
 
-export const dmSans = localFont({
-  src: [
-    { path: "../fonts/dm-sans-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/dm-sans-latin-wght-italic.woff2", style: "italic" },
-  ],
-  variable: "--font-dm-sans",
-  weight: "100 1000",
-})
-
-export const jetbrainsMono = localFont({
-  src: "../fonts/jetbrains-mono-latin-wght-normal.woff2",
-  variable: "--font-jetbrains-mono",
-  weight: "100 800",
-})
-
-export const caveat = localFont({
-  src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
-  variable: "--font-caveat",
-  weight: "400 700",
-})
-
-export const newsreader = localFont({
-  src: [
-    { path: "../fonts/marketing/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/marketing/newsreader-latin-wght-italic.woff2", style: "italic" },
-  ],
-  variable: "--font-newsreader",
-  weight: "200 800",
-})
+export const newsreader = { className: "font-newsreader" }

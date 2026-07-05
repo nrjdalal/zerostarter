@@ -9,7 +9,7 @@ One Bun + Turborepo monorepo: two deployable apps over four shared packages. Imp
 
 ```
 api/hono/         # backend (Hono): routers, middlewares, the AppType export
-web/next/         # frontend (Next.js App Router): app/, components/, lib/, content/
+web/next/         # frontend (TanStack Start): app/, components/, lib/, content/
 packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer

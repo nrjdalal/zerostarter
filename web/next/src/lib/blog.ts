@@ -1,5 +1,5 @@
+import { notFound } from "@tanstack/react-router"
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
-import { notFound } from "next/navigation"
 
 import {
   compareBlogPostPublishOrder,
@@ -26,10 +26,10 @@ function isPublicBlogPage(page: BlogPage, now = new Date()): boolean {
   return isBlogIndexPage(page) || isPublishedBlogPost(page, now)
 }
 
-// Calls notFound(), so only valid in a request context (Server Component or route handler).
+// Throws notFound(), so only valid inside a loader, server function, or server route.
 export function getPublicBlogPage(slug?: string[], now = new Date()): BlogPage {
   const page = blogSource.getPage(slug)
-  if (!page || !isPublicBlogPage(page, now)) notFound()
+  if (!page || !isPublicBlogPage(page, now)) throw notFound()
   return page
 }
 

@@ -1,6 +1,6 @@
 ---
 name: dev
-description: Start, restart, and verify the ZeroStarter dev stack (Next.js on 3000, Hono API on 4000). Use when the user asks to run the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.
+description: Start, restart, and verify the ZeroStarter dev stack (TanStack Start on 3000, Hono API on 4000). Use when the user asks to run the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.
 ---
 
 # Dev Stack

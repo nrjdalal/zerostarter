@@ -1,5 +1,3 @@
-"use client"
-
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { RiCloseLine } from "@remixicon/react"
 import * as React from "react"

@@ -1,5 +1,3 @@
-"use client"
-
 import { env } from "@packages/env/web-next"
 import {
   RiArrowRightSLine,
@@ -8,9 +6,9 @@ import {
   RiMessage2Line,
   RiTerminalBoxLine,
 } from "@remixicon/react"
+import { Link } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { type User } from "better-auth/types"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -28,15 +26,15 @@ function getInitials(name: string) {
 
 // Shared sidebar user dropdown (avatar, identity, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
 export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard" | "console" }) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)
 
   // The user menu is shared, so the cross-link points at the other workspace: dashboard -> console, console -> dashboard.
   const crossLink =
     area === "dashboard"
-      ? { label: "Console", href: "/console", icon: <RiTerminalBoxLine /> }
+      ? { label: "Console", href: "/console" as const, icon: <RiTerminalBoxLine /> }
       : area === "console"
-        ? { label: "Dashboard", href: "/dashboard", icon: <RiDashboardLine /> }
+        ? { label: "Dashboard", href: "/dashboard" as const, icon: <RiDashboardLine /> }
         : null
 
   const avatar = (
@@ -52,7 +50,7 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
       <SidebarDropdownMenu trigger={identity} header={identity} align="end" mobileSide="top">
         {crossLink && (
           <>
-            <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
+            <DropdownMenuItem render={<Link to={crossLink.href} className="cursor-pointer" />}>
               {crossLink.icon}
               {crossLink.label}
               <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
@@ -60,11 +58,12 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
             <DropdownMenuSeparator />
           </>
         )}
-        {env.NEXT_PUBLIC_USERJOT_URL && (
+        {env.VITE_USERJOT_URL && (
           <DropdownMenuItem
             render={
-              <Link
-                href={env.NEXT_PUBLIC_USERJOT_URL}
+              // External URL, so a plain anchor (TanStack Link is for internal routes).
+              <a
+                href={env.VITE_USERJOT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cursor-pointer"
@@ -82,7 +81,7 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
             setSigningOut(true)
             try {
               await authClient.signOut()
-              router.push("/")
+              navigate({ to: "/" })
             } catch {
               toast.error("Failed to sign out. Please try again.")
               setSigningOut(false)

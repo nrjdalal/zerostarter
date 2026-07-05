@@ -24,8 +24,8 @@ export default defineConfig({
   // The monorepo keeps one .env at the repo root; point Vite there so VITE_* vars load in every invocation, not only under turbo/bun.
   envDir: "../..",
   server: {
-    // 3001 by default so web/next can keep 3000 during the migration; override with PORT for parity runs against the test suite.
-    port: Number(process.env.PORT ?? 3001),
+    // Dev server on 3000 (the API is on 4000); override with PORT.
+    port: Number(process.env.PORT ?? 3000),
   },
   resolve: {
     tsconfigPaths: true,
@@ -48,7 +48,8 @@ export default defineConfig({
     // React Compiler, matching web/next's reactCompiler: true.
     babel({ presets: [reactCompilerPreset()] }),
     nitro({
-      preset: "bun",
+      // Vercel's Build Output API when deploying there (the project root is web/next); the bun server otherwise (local prod + the Docker image).
+      preset: process.env.VERCEL ? "vercel" : "bun",
       // takumi (OG image rendering) ships a wasm-bindgen module that self-initializes at import; bundled into the Nitro server it fails with `takumi_wasm_bg.js ... must be an object`, and Rolldown merges it into the shared shiki chunk, so the shiki-using landing 500s on SSR. Kept external, it loads from node_modules at runtime and picks the native @takumi-rs/core binding.
       rollupConfig: { external: [/^(takumi-js|@takumi-rs\/)/] },
     }),

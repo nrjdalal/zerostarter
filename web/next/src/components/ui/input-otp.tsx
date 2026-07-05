@@ -1,5 +1,3 @@
-"use client"
-
 import { RiSubtractLine } from "@remixicon/react"
 import { OTPInput, OTPInputContext } from "input-otp"
 import * as React from "react"

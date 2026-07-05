@@ -1,5 +1,3 @@
-"use client"
-
 import { RiRefreshLine } from "@remixicon/react"
 import { useEffect } from "react"
 

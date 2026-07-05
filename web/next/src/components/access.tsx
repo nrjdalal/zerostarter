@@ -1,10 +1,8 @@
-"use client"
-
 import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
-import { usePathname } from "next/navigation"
+import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -29,12 +27,11 @@ const formSchema = z.object({
 })
 
 export function Access() {
-  const pathname = usePathname()
+  const pathname = useLocation({ select: (location) => location.pathname })
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
-  // Next inlines NODE_ENV at build time: "development" only under `next dev`,
-  // "production" for any `next build`. Auto-hides in deployments.
-  const isDev = process.env.NODE_ENV === "development"
+  // Vite inlines import.meta.env.DEV identically on server and client (true only under `vite dev`, false in any build), so the local-only agent login shows in dev and auto-hides in deployments. process.env.NODE_ENV would split: SSR reads the real runtime env (e.g. "local"), the client reads Vite's mode, so the button flickers or never appears.
+  const isDev = import.meta.env.DEV
 
   // Render only the sign-in providers the API reports as enabled (GET /api/auth/providers); deploy-static so cached for the session and prefetched on mount, so the dialog (whose content mounts on open) paints the final state with no flash.
   const { data, isError, isPending } = useQuery({

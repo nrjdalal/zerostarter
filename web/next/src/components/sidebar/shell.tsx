@@ -1,6 +1,5 @@
 import { site } from "@packages/config/site"
-import { cookies } from "next/headers"
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 
 import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
 import { AdaptiveShellSidebar } from "@/components/sidebar/shell-sidebar"
@@ -14,9 +13,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-// Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail) and the persisted open state; callers supply the badge, nav, and footer.
-export async function SidebarShell({
+// Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail); callers supply the badge, nav, footer, and the persisted open state (read from the sidebar_state cookie in their route loaders, where web/next read it via next/headers).
+export function SidebarShell({
   badge,
+  defaultOpen = true,
   homeHref = "/",
   header,
   nav,
@@ -24,23 +24,20 @@ export async function SidebarShell({
   children,
 }: {
   badge?: string
-  homeHref?: string
+  defaultOpen?: boolean
+  homeHref?: "/" | "/console"
   header?: React.ReactNode
   nav?: React.ReactNode
   footer: React.ReactNode
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const sidebarStateCookie = cookieStore.get("sidebar_state")?.value
-  const defaultOpen = sidebarStateCookie ? sidebarStateCookie === "true" : true
-
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AdaptiveShellSidebar>
         <SidebarHeader>
           <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:mx-auto">
             <Link
-              href={homeHref}
+              to={homeHref}
               className="flex items-center gap-2 px-1.5 py-2 font-bold group-data-[collapsible=icon]:hidden"
             >
               {site.name}

@@ -29,13 +29,16 @@ export type Site = typeof site
 `
 }
 
-// web/next/src/app/page.tsx: a fresh fork has no product yet, so the home redirects to the waitlist.
-export const homeTemplate = (): string => `import { redirect } from "next/navigation"
+// web/next/src/app/index.tsx: a fresh fork has no product yet, so the home route redirects to the waitlist.
+export const homeTemplate =
+  (): string => `import { createFileRoute, redirect } from "@tanstack/react-router"
 
 // Fresh fork: redirect to the waitlist until you build your real home page.
-export default function Home() {
-  redirect("/waitlist")
-}
+export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/waitlist" })
+  },
+})
 `
 
 // AGENTS.md (CLAUDE.md is a symlink to it): a minimal agent guide for the fork to grow.
