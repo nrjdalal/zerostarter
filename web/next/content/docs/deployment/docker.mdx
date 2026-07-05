@@ -17,7 +17,7 @@ That builds and starts both services, **web** on [localhost:3000](http://localho
 
 Inside the Compose network the web container can't reach the api at `localhost`: that address is its own container. `INTERNAL_API_URL=http://api:4000` (set on both services in `docker-compose.yml`, and baked into the web image) is the one Docker-specific knob, and it does three jobs:
 
-- **web, build time**: baked into the Next.js rewrite in `next.config.ts`, so `/api/*` proxies to `http://api:4000`.
+- **web, build time**: handled by the `/api/*` proxy route (`web/next/src/app/api/$.ts`), so `/api/*` proxies to `http://api:4000`.
 - **web, runtime**: server-side API calls (SSR, server actions) in `src/lib/config.ts` hit the api container directly.
 - **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`packages/env/src/db.ts`), so the container reaches a database running on your host.
 
@@ -33,7 +33,7 @@ base → prepare → builder → runner
 
 `prepare` runs `turbo prune <workspace> --docker` to carve a workspace-only build context, so each image installs and builds just its own dependencies. The final `runner` stage runs as the non-root `USER bun`.
 
-- The **web** image uses Next.js `output: "standalone"`: the builder copies `.next/static` and `public` into the standalone bundle, and the runner starts `bun server.js`.
+- The **web** image builds the Nitro server bundle (`web/next/.output`), and the runner starts `bun .output/server/index.mjs`.
 - The **api** image copies its `bundle/` output and runs `bun bundle/index.mjs`.
 
 ## The .env build secret

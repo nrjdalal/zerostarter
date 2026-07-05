@@ -12,7 +12,7 @@ A fresh ZeroStarter is indexable by search engines and unfurls a rich preview on
 
 ## Indexable by default
 
-The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, so crawlers index it out of the box. `robots.ts` (a Next.js `MetadataRoute.Robots`) allows all public pages, disallows the routes that shouldn't be crawled, and points to the sitemap:
+The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, so crawlers index it out of the box. `robots[.]txt.ts` (a server route) allows all public pages, disallows the routes that shouldn't be crawled, and points to the sitemap:
 
 - **Allowed:** `/` (all public content, including the OG images at `/og`).
 - **Disallowed:** `/api/`, `/console/`, `/dashboard/`.

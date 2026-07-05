@@ -17,7 +17,7 @@ Two deployable apps share four packages:
 A request flows in a straight line, and the types flow back:
 
 ```
-Browser → Next.js (web) → typed RPC client → Hono (api) → Drizzle → Postgres
+Browser → TanStack Start (web) → typed RPC client → Hono (api) → Drizzle → Postgres
 ```
 
 - **`web/next`** renders the UI and calls the API through a client that infers its types from the backend.
@@ -45,7 +45,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 
 **Frontend** (`web/next`)
 
-- [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the React Compiler.
+- [TanStack Start](https://tanstack.com/start) (Vite build, Nitro server) with [React 19](https://react.dev) and the React Compiler.
 - [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives.
 - [TanStack Query](https://tanstack.com/query/latest) for server state, [TanStack Form](https://tanstack.com/form/latest) + [Zod](https://zod.dev) for forms.
 

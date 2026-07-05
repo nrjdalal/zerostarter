@@ -26,7 +26,7 @@ Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each 
 
 <Callout type="info" title="Only /docs and /blog aliases are routes">
 
-The per-page `.md`/`.txt` rewrites (in `web/next/next.config.ts`) cover `/docs/*` and `/blog/*` only. The top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms are not routes and 404. Use `/llms.txt/docs` and `/llms.txt/blog` for the section indexes.
+The per-page `.md`/`.txt` rewrites (in `web/next/src/server.ts` for the built server, mirrored by `web/next/vite.config.ts` in dev) cover `/docs/*` and `/blog/*` only. The top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms are not routes and 404. Use `/llms.txt/docs` and `/llms.txt/blog` for the section indexes.
 
 </Callout>
 

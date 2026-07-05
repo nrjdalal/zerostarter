@@ -8,7 +8,7 @@ Both of these are **optional**, and both stay off until you set an environment v
 
 ## PostHog analytics
 
-[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates) and handed to React through `PostHogProvider` in `web/next/src/app/providers.tsx`. Both no-op until the key is present.
+[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized at module load in `web/next/src/app/providers.tsx` (a client-only side effect that runs once before the app hydrates) and handed to React through `PostHogProvider` there. Both no-op until the key is present.
 
 Turn it on with two env vars (the key enables it, the host picks your region):
 

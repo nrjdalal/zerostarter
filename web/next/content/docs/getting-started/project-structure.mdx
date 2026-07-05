@@ -6,7 +6,7 @@ description: "How the monorepo fits together: two apps, four packages, one impor
 
 The whole repo is one mental model: two deployable apps, four shared packages, and a single import graph that ties them together.
 
-- **`web/next`**: the Next.js frontend (App Router, React 19).
+- **`web/next`**: the TanStack Start frontend (file-based routing, React 19).
 - **`api/hono`**: the Hono backend that owns every route and talks to the database.
 - **`packages/*`**, the code both apps share: the auth instance, the Drizzle schema, validated env, and the brand config.
 
@@ -15,7 +15,7 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
 ```
 .
 ├─ api/hono/      # backend (Hono): routes, middleware, error envelope
-├─ web/next/      # frontend (Next.js): app router, components, content/
+├─ web/next/      # frontend (TanStack Start): src/app routes, components, content/
 └─ packages/
    ├─ auth/       # Better Auth instance + session types
    ├─ db/         # Drizzle schema + migrations
@@ -29,7 +29,7 @@ The entry point is `src/index.ts`, which exports the `AppType` the frontend infe
 
 ## `web/next`
 
-Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the admin console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
+File-based routes under `src/app`, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the admin console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
 
 <Callout type="info" title="Two shells to build on">
 

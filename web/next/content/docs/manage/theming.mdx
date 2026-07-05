@@ -71,7 +71,7 @@ Style with the semantic utility (`bg-card`, `text-muted-foreground`, `border-bor
 
 ## Fonts
 
-Fonts are self-hosted, not fetched at runtime. `.woff2` files in `web/next/src/fonts/` are localized through `next/font/local` in `web/next/src/lib/fonts.ts`, each exposing a CSS variable:
+Fonts are self-hosted, not fetched at runtime. `.woff2` files in `web/next/src/fonts/` are declared as `@font-face` rules in `web/next/src/app/fonts.css`, each exposing a CSS variable that `web/next/src/lib/fonts.ts` maps to a Tailwind utility:
 
 - **DM Sans** → `--font-sans`: body and headings.
 - **JetBrains Mono** → `--font-mono`: code.

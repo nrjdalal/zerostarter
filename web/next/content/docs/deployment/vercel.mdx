@@ -11,10 +11,10 @@ Deploy `web/next` and `api/hono` as **two separate Vercel projects** pointed at 
 
 Both apps ship a `vercel.json`, so Vercel reads the install command, build command, framework, and Bun version automatically once you point a project at the right root. You set two things per project: the **Root Directory** and the **environment variables**.
 
-| Project  | Root Directory | Framework |
-| -------- | -------------- | --------- |
-| Backend  | `api/hono`     | Hono      |
-| Frontend | `web/next`     | Next.js   |
+| Project  | Root Directory | Framework      |
+| -------- | -------------- | -------------- |
+| Backend  | `api/hono`     | Hono           |
+| Frontend | `web/next`     | TanStack Start |
 
 Deploy the **backend first**: the frontend needs its URL.
 
