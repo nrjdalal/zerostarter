@@ -54,7 +54,7 @@
 <g id="node5" class="node">
 <title>@packages/env</title>
 <ellipse fill="none" stroke="#3b82f6" cx="299.97" cy="-162" rx="113.52" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="299.97" y="-157.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/env (4.55 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="299.97" y="-157.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/env (4.58 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/env -->
 <g id="edge4" class="edge">
@@ -114,7 +114,7 @@
 <g id="node7" class="node">
 <title>@web/next</title>
 <ellipse fill="none" stroke="#3b82f6" cx="335.97" cy="-450" rx="103.34" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="335.97" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (85.20 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="335.97" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (84.85 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge12" class="edge">
