@@ -4,6 +4,7 @@ import { env } from "@packages/env/web-next"
 import {
   RiArrowRightSLine,
   RiDashboardLine,
+  RiHome4Line,
   RiLogoutBoxLine,
   RiMessage2Line,
   RiTerminalBoxLine,
@@ -26,7 +27,7 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase()
 }
 
-// Shared sidebar user dropdown (avatar, identity, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
+// Shared sidebar user dropdown (avatar, identity, home link, feedback, sign out). Used by every sidebar footer so the menu and `getInitials` live in one place.
 export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard" | "console" }) {
   const router = useRouter()
   const [signingOut, setSigningOut] = useState(false)
@@ -50,16 +51,20 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
   return (
     <SidebarMenuItem>
       <SidebarDropdownMenu trigger={identity} header={identity} align="end" mobileSide="top">
+        {/* The sidebar brand stays inside the app, so this is the one way back to the landing page. */}
+        <DropdownMenuItem render={<Link href="/" className="cursor-pointer" />}>
+          <RiHome4Line />
+          Home
+          <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
+        </DropdownMenuItem>
         {crossLink && (
-          <>
-            <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
-              {crossLink.icon}
-              {crossLink.label}
-              <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
+          <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
+            {crossLink.icon}
+            {crossLink.label}
+            <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
+          </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator />
         {env.NEXT_PUBLIC_USERJOT_URL && (
           <DropdownMenuItem
             render={
