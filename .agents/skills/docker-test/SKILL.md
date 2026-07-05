@@ -35,7 +35,7 @@ docker compose down
       .env.example > .env
   ```
 
-  (empty optionals like `NEXT_PUBLIC_POSTHOG_KEY=` pass via `emptyStringAsUndefined`)
+  (empty optionals like `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=` pass via `emptyStringAsUndefined`)
 - Dummy-built images are for smoke tests ONLY, never promote one to a deploy: Next inlines `NEXT_PUBLIC_*` into the bundle at build, so a dummy-built web image carries dummy URLs forever. Deploy images must build with the real `.env`.
 - Secret contents are NOT part of BuildKit's cache key: after editing `.env`, a plain rebuild can reuse the cached build RUN and silently ship stale baked values (web's `NEXT_PUBLIC_*`). Rebuild with `--no-cache` after env changes.
 - Runtime requires `.env` too: compose `env_file: .env` for `up`; an invalid runtime env fails the container loudly at boot.

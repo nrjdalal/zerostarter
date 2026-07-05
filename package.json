@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.0.93",
+  "version": "0.0.94",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -71,7 +71,6 @@
     "@commitlint/config-conventional": "^21.2.0",
     "@hono/standard-validator": "^0.2.3",
     "@octokit/rest": "^22.0.1",
-    "@posthog/react": "^1.10.3",
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.11.8",
     "@shadcn/react": "^0.2.0",
