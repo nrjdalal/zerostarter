@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check-types": "tsc --noEmit",
+    "screenshots": "bun scripts/screenshots.ts",
     "test": "bun test --timeout 60000",
     "test:api": "bun test --timeout 60000 api",
     "test:web": "bun test --timeout 60000 web"

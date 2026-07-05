@@ -118,6 +118,11 @@ export class Browser {
     return this.run(["get", "title"]).stdout
   }
 
+  // Saves a screenshot of the current page to `file` (full scroll height by default).
+  screenshot(file: string, { full = true } = {}) {
+    this.run(full ? ["screenshot", "--full", file] : ["screenshot", file])
+  }
+
   snapshot({ interactive = true, urls = false } = {}): string {
     const args = interactive ? ["snapshot", "-i", "-c"] : ["snapshot", "-c"]
     if (urls) args.push("-u")

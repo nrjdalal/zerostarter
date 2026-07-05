@@ -60,5 +60,6 @@ web/next/content/docs/meta.json
 # git overrides
 !.env.example
 
-# app test suite (tests/.auth): saved agent session state
+# app test suite: saved agent session state (tests/.auth) and captured baselines (tests/.screenshots)
 .auth/
+.screenshots/

@@ -55,6 +55,17 @@ Requirements: `agent-browser` on PATH with a browser installed (`npm i -g agent-
 
 Do not run `bun run build` (or commit, whose pre-commit hook builds) while the suite is running: the build writes into the same `.next` the dev server serves from and causes transient failures until the dev server resettles. The suite also writes a few throwaway `@example.com` rows to the local waitlist table; organizations it creates are deleted at the end of the test.
 
+## Visual baseline (screenshots)
+
+`bun run screenshots` captures a full-page screenshot of every page (public routes plus the admin dashboard/console) to `tests/.screenshots/` (gitignored). Add `--upload` to also push each to litterbox with a 72h expiry and write `tests/.screenshots/manifest.md` mapping each route to its URL:
+
+```bash
+bun run screenshots            # local PNGs only
+bun run screenshots --upload   # + litterbox URLs in manifest.md
+```
+
+This is the "before" source of truth for a visual rewrite: capture the baseline on the current stack, run the same command on the migrated stack (e.g. TanStack Start), and diff the two sets page by page. It is a separate command, not part of `bun test` (capturing ~35 pages is slow and only wanted on demand).
+
 ## The pinned surface
 
 `support/surface.ts` is the inventory the suite locks: every docs page + title, every blog post, marketing titles, the sitemap set, the OpenAPI paths, the error codes, the rate limits, the auth providers. When the surface changes on purpose (a page added or removed, copy changed), update that fixture in the same change; that is the point of a characterization suite.
