@@ -222,6 +222,8 @@ docker compose up --build`
       lang,
       themes: { light: "github-light", dark: "github-dark" },
       defaultColor: false,
+      // github-dark's comment token #6a737d fails AA on the code card; nudge it lighter (dark theme only).
+      colorReplacements: { "github-dark": { "#6a737d": "#8b949e" } },
     })
 
   const [initHtml, typescriptHtml, agentHtml, deployHtml] = await Promise.all([

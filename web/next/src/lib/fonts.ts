@@ -15,10 +15,12 @@ export const jetbrainsMono = localFont({
   weight: "100 800",
 })
 
+// preload:false: these are only used on /hire and /resume, so preloading them on every page (the landing) wastes ~193KB of critical-path bytes.
 export const caveat = localFont({
   src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
   variable: "--font-caveat",
   weight: "400 700",
+  preload: false,
 })
 
 export const newsreader = localFont({
@@ -28,4 +30,5 @@ export const newsreader = localFont({
   ],
   variable: "--font-newsreader",
   weight: "200 800",
+  preload: false,
 })
