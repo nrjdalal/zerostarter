@@ -1,14 +1,12 @@
 import { site } from "@packages/config/site"
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
-import { createRelativeLink } from "fumadocs-ui/mdx"
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import type { MDXComponents } from "mdx/types"
+import type { ComponentProps, ComponentType } from "react"
 
 import { CopyAsMarkdown } from "@/components/copy-as-markdown"
 import { formatBlogDate, toBlogDate } from "@/lib/blog-policy"
 import { config } from "@/lib/config"
-import { blogSource, consoleSource, docsSource } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
 
 export function baseOptions(): BaseLayoutProps {
@@ -19,74 +17,76 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
-type Source = typeof blogSource | typeof docsSource | typeof consoleSource
-type Page<S extends Source> = Parameters<S["resolveHref"]>[1]
-
-interface PageData<S extends Source> {
-  page: Page<S>
-  source: S
+// Serializable page payload a route loader builds server-side from a source page; the MDX body itself streams through the collections/browser client loaders (in the Vite runtime the compiled MDX module is loaded lazily on the client, unlike web/next where page.data.body existed in the server component).
+export interface PageInfo {
+  path: string
+  url: string
+  title: string
+  description?: string
+  full?: boolean
+  blog?: {
+    publishedAt: string
+    updatedAt?: string
+    author?: string
+    tags?: string[]
+  } | null
 }
 
-type AnyPageData =
-  | PageData<typeof docsSource>
-  | PageData<typeof blogSource>
-  | PageData<typeof consoleSource>
-
-export async function getPageData<S extends Source>(
-  params: Promise<{ slug?: string[] }>,
-  source: S,
-): Promise<PageData<S>> {
-  const resolvedParams = await params
-  const page = source.getPage(resolvedParams.slug)
-  if (!page) notFound()
-  return { page: page as Page<S>, source }
-}
-
-function createPageRelativeLink(data: AnyPageData): ReturnType<typeof createRelativeLink> {
-  if (data.source === blogSource) {
-    return createRelativeLink(blogSource, data.page as Page<typeof blogSource>)
+type SourcePage = {
+  path: string
+  url: string
+  slugs: string[]
+  data: {
+    title: string
+    description?: string
+    full?: boolean
+    publishedAt?: string
+    updatedAt?: string
+    author?: string
+    tags?: string[]
   }
-  if (data.source === consoleSource) {
-    return createRelativeLink(consoleSource, data.page as Page<typeof consoleSource>)
-  }
-  return createRelativeLink(docsSource, data.page as Page<typeof docsSource>)
 }
 
-function getBlogArticleDates(data: AnyPageData) {
-  if (data.source !== blogSource || data.page.url === "/blog") return null
-
-  const page = data.page as Page<typeof blogSource>
-  if (!page.data.publishedAt) return null
-
+export function toPageInfo(page: SourcePage, { blog = false } = {}): PageInfo {
+  const isBlogArticle = blog && page.url !== "/blog" && page.data.publishedAt
   return {
-    publishedAt: page.data.publishedAt,
-    updatedAt: page.data.updatedAt,
+    path: page.path,
+    url: page.url,
+    title: page.data.title,
+    description: page.data.description,
+    full: page.data.full,
+    blog: isBlogArticle
+      ? {
+          publishedAt: page.data.publishedAt as string,
+          updatedAt: page.data.updatedAt,
+          author: page.data.author,
+          tags: page.data.tags,
+        }
+      : null,
   }
 }
 
-export function renderPageContent(data: AnyPageData) {
-  const { page } = data
-  const MDX = page.data.body
-  const isDocsPage = page.url.startsWith("/docs")
-  const isBlogMainPage = page.url === "/blog"
-  const blogArticleDates = getBlogArticleDates(data)
+type Toc = ComponentProps<typeof DocsPage>["toc"]
+type MDXBody = ComponentType<{ components?: MDXComponents }>
+
+// Mirror of web/next's renderPageContent, fed by the client loader instead of page.data.body. Relative-link resolution is dropped: the content uses absolute URLs only.
+export function PageBody({ info, toc, MDX }: { info: PageInfo; toc: Toc; MDX: MDXBody }) {
+  const isDocsPage = info.url.startsWith("/docs")
+  const isBlogMainPage = info.url === "/blog"
+  const blogArticleDates = info.blog
 
   return (
     <DocsPage
-      toc={isBlogMainPage ? undefined : page.data.toc}
-      full={page.data.full}
+      toc={isBlogMainPage ? undefined : toc}
+      full={info.full}
       footer={isBlogMainPage ? { enabled: false } : undefined}
     >
       <DocsTitle>
-        {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
+        {info.title} {isDocsPage && <CopyAsMarkdown url={info.url} />}
       </DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsDescription>{info.description}</DocsDescription>
       <DocsBody>
-        <MDX
-          components={getMDXComponents({
-            a: createPageRelativeLink(data),
-          })}
-        />
+        <MDX components={getMDXComponents()} />
       </DocsBody>
       {blogArticleDates && (
         <div className="not-prose text-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">
@@ -105,87 +105,50 @@ export function renderPageContent(data: AnyPageData) {
   )
 }
 
-export function createGenerateStaticParams(source: Source) {
-  return async function generateStaticParams() {
-    return source.generateParams()
-  }
-}
-
-interface GenerateMetadataOptions {
-  source: Source
+interface PageHeadOptions {
   ogPath: string
   ogType: "article" | "website"
 }
 
-export async function generatePageMetadata(
-  params: Promise<{ slug?: string[] }>,
-  options: GenerateMetadataOptions,
-): Promise<Metadata> {
-  const resolvedParams = await params
-  const { source, ogPath, ogType } = options
-  const page = source.getPage(resolvedParams.slug)
-  if (!page) notFound()
+type MetaEntry = Record<string, string>
 
-  const pageUrl = `${config.app.url}${page.url}`
-  const slugPath =
-    resolvedParams.slug && resolvedParams.slug.length > 0 ? resolvedParams.slug.join("/") : ""
-  // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
+// Mirror of web/next's generatePageMetadata as route head() meta entries, with the root title template ("%s | ZeroStarter") applied inline. Duplicate keys override the root head's defaults per HeadContent's dedupe.
+export function pageHeadMeta(info: PageInfo, options: PageHeadOptions): MetaEntry[] {
+  const { ogPath, ogType } = options
+  const pageUrl = `${config.app.url}${info.url}`
+  const slugPath = info.path ? info.url.split("/").slice(2).join("/") : ""
+  // Intentional cache-bust: the timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
   const imageUrl = `${config.app.url}${ogPath}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
-  const blogArticle =
-    options.source === blogSource && page.url !== "/blog" ? (page as Page<typeof blogSource>) : null
-  const publishedTime = blogArticle?.data.publishedAt
-    ? toBlogDate(blogArticle.data.publishedAt).toISOString()
+  const publishedTime = info.blog ? toBlogDate(info.blog.publishedAt).toISOString() : undefined
+  const modifiedTime = info.blog
+    ? toBlogDate(info.blog.updatedAt ?? info.blog.publishedAt).toISOString()
     : undefined
-  const modifiedTime = blogArticle?.data.publishedAt
-    ? toBlogDate(blogArticle.data.updatedAt ?? blogArticle.data.publishedAt).toISOString()
-    : undefined
-  const openGraph =
-    ogType === "article"
-      ? {
-          type: "article" as const,
-          title: page.data.title,
-          description: page.data.description,
-          siteName: site.name,
-          url: pageUrl,
-          images: [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 630,
-              alt: page.data.title,
-            },
-          ],
-          publishedTime,
-          modifiedTime,
-          authors: blogArticle?.data.author ? [blogArticle.data.author] : undefined,
-          tags: blogArticle?.data.tags,
-        }
-      : {
-          type: "website" as const,
-          title: page.data.title,
-          description: page.data.description,
-          siteName: site.name,
-          url: pageUrl,
-          images: [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 630,
-              alt: page.data.title,
-            },
-          ],
-        }
 
-  return {
-    title: page.data.title,
-    description: page.data.description,
-    openGraph,
-    other: {
-      "og:logo": `${config.app.url}/favicon.ico`,
-    },
-    twitter: {
-      card: "summary_large_image",
-      images: [imageUrl],
-    },
+  const meta: MetaEntry[] = [
+    { title: `${info.title} | ${site.name}` },
+    ...(info.description ? [{ name: "description", content: info.description }] : []),
+    { property: "og:type", content: ogType },
+    { property: "og:title", content: info.title },
+    ...(info.description ? [{ property: "og:description", content: info.description }] : []),
+    { property: "og:site_name", content: site.name },
+    { property: "og:url", content: pageUrl },
+    { property: "og:image", content: imageUrl },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: info.title },
+    { property: "og:logo", content: `${config.app.url}/favicon.ico` },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:image", content: imageUrl },
+  ]
+
+  if (ogType === "article" && info.blog) {
+    if (publishedTime) meta.push({ property: "article:published_time", content: publishedTime })
+    if (modifiedTime) meta.push({ property: "article:modified_time", content: modifiedTime })
+    if (info.blog.author) meta.push({ property: "article:author", content: info.blog.author })
+    for (const tag of info.blog.tags ?? []) {
+      meta.push({ property: "article:tag", content: tag })
+    }
   }
+
+  return meta
 }

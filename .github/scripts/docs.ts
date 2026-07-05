@@ -2,19 +2,22 @@ import path from "node:path"
 
 import { Glob } from "bun"
 
-import docsConfig from "../../web/next/docs.config"
-import {
-  compareBlogPostPublishOrder,
-  isBlogPostPublished,
-  normalizeBlogTimestamp,
-  type BlogPostMeta,
-} from "../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
 
 // Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
-// Runs in the web/next build (--strict: validate only, fail on drift/missing) and dev (write meta.json + frontmatter, scaffold missing pages). meta.json is git-ignored; docs.config is the single source.
+// Runs in each web app's build (--strict: validate only, fail on drift/missing) and dev (write meta.json + frontmatter, scaffold missing pages). meta.json is git-ignored; docs.config is the single source.
 
-const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
+// Invoked from an app dir (web/next, web/start), so the app's own docs.config, blog policy, and content tree drive the sync.
+const APP = process.cwd()
+const { default: docsConfig } = (await import(path.join(APP, "docs.config.ts"))) as {
+  default: DocsCollection extends never ? never : Record<string, DocsItem[]>
+}
+const { compareBlogPostPublishOrder, isBlogPostPublished, normalizeBlogTimestamp } = (await import(
+  path.join(APP, "src/lib/blog-policy.ts")
+)) as typeof import("../../web/next/src/lib/blog-policy")
+type BlogPostMeta = import("../../web/next/src/lib/blog-policy").BlogPostMeta
+
+const CONTENT = path.resolve(APP, "content")
 
 // URL base per docs.config collection; must match its loader baseUrl in source.ts. The blog is content-driven (not in docs.config); its meta.json is generated from post dates by generateBlogMeta().
 const BASE: Record<string, string> = { docs: "/docs", console: "/console/docs" }

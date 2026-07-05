@@ -109,7 +109,7 @@ export async function generateOgImage(
   const { source, sectionName, defaultTitle, defaultDescription } = options
 
   const page = source.getPage(slug)
-  if (!page) notFound()
+  if (!page) throw notFound()
 
   return renderOgImage({
     sectionName,

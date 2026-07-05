@@ -13,7 +13,7 @@ export async function getConsoleSession() {
 export async function assertConsoleAccess() {
   const session = await getConsoleSession()
   if (!session) {
-    notFound()
+    throw notFound()
   }
   return session
 }
