@@ -23,17 +23,17 @@ The four slices, each a Zod schema that validates only what that consumer needs:
 - **`@packages/env/api-hono`**: `HONO_APP_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`
 - **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, and the optional OAuth pairs
 - **`@packages/env/db`**: `POSTGRES_URL`
-- **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `NEXT_PUBLIC_*` vars
+- **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `VITE_*` vars
 
 A variable that is missing or malformed at startup fails validation with a message naming it, so a bad deploy dies at boot rather than halfway through a request.
 
 ## Server and client
 
-`web-next` is the only slice split into `server` and `client`, and the split is the security boundary: only variables prefixed `NEXT_PUBLIC_` are in the client schema, and only those are bundled into browser code. `INTERNAL_API_URL` stays server-side; `POSTGRES_URL` and `BETTER_AUTH_SECRET` are not in this slice at all.
+`web-next` is the only slice split into `server` and `client`, and the split is the security boundary: only variables prefixed `VITE_` are in the client schema, and only those are bundled into browser code. `INTERNAL_API_URL` stays server-side; `POSTGRES_URL` and `BETTER_AUTH_SECRET` are not in this slice at all.
 
 <Callout type="info" title="Why secrets can't leak">
 
-The prefix is the rule the bundler enforces. A server secret has no `NEXT_PUBLIC_` name, so it is never part of the client schema, so it can never be inlined into a page. Exposing a value to the browser means renaming it, a deliberate act, not an accident.
+The prefix is the rule the bundler enforces. A server secret has no `VITE_` name, so it is never part of the client schema, so it can never be inlined into a page. Exposing a value to the browser means renaming it, a deliberate act, not an accident.
 
 </Callout>
 
@@ -41,7 +41,7 @@ The prefix is the rule the bundler enforces. A server secret has no `NEXT_PUBLIC
 
 `NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`.
 
-To branch on the stage, `@packages/env` also exports checkers (`isLocal`, `isProduction`, and one per stage) so code reads `isProduction(env.NEXT_PUBLIC_NODE_ENV)` instead of comparing raw strings.
+To branch on the stage, `@packages/env` also exports checkers (`isLocal`, `isProduction`, and one per stage) so code reads `isProduction(env.VITE_NODE_ENV)` instead of comparing raw strings.
 
 ## Adding a variable
 

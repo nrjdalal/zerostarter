@@ -57,7 +57,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 ## Conventions & Rules
 
 **Environment variables:**
-- A single root \`.env\` (not per-package). Client code may only read \`NEXT_PUBLIC_*\` variables.
+- A single root \`.env\` (not per-package). Client code may only read \`VITE_*\` variables.
 - Always read env through the validated \`@packages/env/*\` entrypoint for the consumer, never \`process.env\` directly.
 
 **API:**

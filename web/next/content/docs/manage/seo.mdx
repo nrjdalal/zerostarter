@@ -16,7 +16,7 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 
 - **Allowed:** `/` (all public content, including the OG images at `/og`).
 - **Disallowed:** `/api/`, `/console/`, `/dashboard/`.
-- **Sitemap:** `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`.
+- **Sitemap:** `${baseUrl}/sitemap.xml`, where `baseUrl` is `VITE_APP_URL`.
 
 ## Sitemap
 
@@ -68,4 +68,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
 ## Next
 
 - [Content](/docs/manage/content): the docs and blog posts these routes describe.
-- [Environment Variables](/docs/manage/environment): where `NEXT_PUBLIC_APP_URL` is set.
+- [Environment Variables](/docs/manage/environment): where `VITE_APP_URL` is set.

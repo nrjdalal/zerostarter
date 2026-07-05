@@ -13,8 +13,8 @@ Both of these are **optional**, and both stay off until you set an environment v
 Turn it on with two env vars (the key enables it, the host picks your region):
 
 ```
-NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-NEXT_PUBLIC_POSTHOG_KEY=
+VITE_POSTHOG_HOST=https://eu.i.posthog.com
+VITE_POSTHOG_KEY=
 ```
 
 Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU, or your self-hosted URL. Both are declared optional in `packages/env/src/web-next.ts`, so an empty key simply means PostHog never initializes, which is also how you disable it.
@@ -53,7 +53,7 @@ PostHog is privacy-configurable: the host picks EU or US data residency, session
 The feedback link is simpler still (one env var, no SDK):
 
 ```
-NEXT_PUBLIC_USERJOT_URL=
+VITE_USERJOT_URL=
 ```
 
 The name points at [UserJot](https://userjot.com), but the value is just a URL: set it to any feedback destination you like. When it is set, a link appears in two places: the **docs sidebar footer** (next to the `v{version}` label) and the **dashboard user menu**, directly above "Log out". Both open the URL in a new tab. Leave the variable empty and neither renders; the footer still shows the version.
