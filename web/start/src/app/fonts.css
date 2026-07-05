@@ -1,0 +1,56 @@
+/* Self-hosted variable fonts, replacing next/font/local: same woff2 files, same CSS variables the theme reads (globals.css maps --font-sans to --font-dm-sans, etc). */
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("../fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: italic;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("../fonts/dm-sans-latin-wght-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/marketing/caveat-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/marketing/newsreader-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/marketing/newsreader-latin-wght-italic.woff2") format("woff2");
+}
+
+:root {
+  --font-dm-sans: "DM Sans";
+  --font-jetbrains-mono: "JetBrains Mono";
+  --font-caveat: "Caveat";
+  --font-newsreader: "Newsreader";
+}

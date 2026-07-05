@@ -42,13 +42,19 @@ next-env.d.ts
 
 # custom directories
 .auth/
+.nitro/
+.output/
 .playwright-cli/
 .screenshots/
 .source/
+.tanstack/
 .turbo/
 bundle/
 dist/
 vercel-bundle/
+
+# custom generated files
+routeTree.gen.ts
 
 # custom files
 .github/scripts/*.d.ts

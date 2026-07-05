@@ -5,20 +5,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "collections/*": ["./.source/*"]
-    },
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    }
   },
-  "include": [
-    "**/*.mts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "next-env.d.ts"
-  ],
+  "include": ["**/*.mts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

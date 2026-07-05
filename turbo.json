@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", ".source/**", "bundle/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".source/**", "bundle/**", "dist/**"]
     },
     "build:vercel": {
       "dependsOn": ["^build"],
@@ -44,6 +44,13 @@
     "NEXT_PUBLIC_APP_URL",
     "NEXT_PUBLIC_POSTHOG_HOST",
     "NEXT_PUBLIC_POSTHOG_KEY",
-    "NEXT_PUBLIC_USERJOT_URL"
+    "NEXT_PUBLIC_USERJOT_URL",
+    "PORT",
+    "VITE_API_URL",
+    "VITE_APP_URL",
+    "VITE_NODE_ENV",
+    "VITE_POSTHOG_HOST",
+    "VITE_POSTHOG_KEY",
+    "VITE_USERJOT_URL"
   ]
 }

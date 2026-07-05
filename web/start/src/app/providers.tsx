@@ -1,7 +1,5 @@
-"use client"
-
 import { isProduction } from "@packages/env"
-import { env } from "@packages/env/web-next"
+import { env } from "@packages/env/web-start"
 import { PostHogProvider } from "@posthog/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
@@ -11,6 +9,14 @@ import { Toaster } from "sonner"
 
 import { DevTools } from "@/components/devtools"
 
+// Replaces web/next's instrumentation-client.ts: Vite has no instrumentation hook, so PostHog initializes with this client-only module.
+if (typeof window !== "undefined" && env.VITE_POSTHOG_KEY) {
+  posthog.init(env.VITE_POSTHOG_KEY, {
+    api_host: env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",
+    defaults: "2025-11-30",
+  })
+}
+
 export function OuterProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
 
@@ -18,7 +24,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
     <PostHogProvider client={posthog}>
       <QueryClientProvider client={queryClient}>
         {children}
-        {!isProduction(env.NEXT_PUBLIC_NODE_ENV) && <DevTools />}
+        {!isProduction(env.VITE_NODE_ENV) && <DevTools />}
       </QueryClientProvider>
     </PostHogProvider>
   )
