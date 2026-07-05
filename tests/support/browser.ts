@@ -73,17 +73,14 @@ export class Browser {
     this.run(["find", "text", text, "click"])
   }
 
-  // Clicks the element whose snapshot line contains `needle`. Use for nodes role+name can't reach: portalled search results, composed accessible names, or ambiguous links disambiguated by their accessible-name text. Defaults to the full snapshot (interactive drops portalled results). Retries because the target is often client-rendered and can lag past navigation/networkidle under load.
+  // Clicks the element whose snapshot line contains `needle`. Use for nodes role+name can't reach: portalled search results, composed accessible names, or ambiguous links disambiguated by their accessible-name text. Defaults to the full snapshot (interactive drops portalled results). Retries both the lookup and the click, because the target is client-rendered and a re-render between snapshot and click can stale the ref under load.
   clickSnapshotMatch(needle: string, opts: { interactive?: boolean; urls?: boolean } = {}) {
     const deadline = Date.now() + 15_000
     for (;;) {
       const ref = this.refFor(needle, { interactive: false, ...opts })
-      if (ref) {
-        this.run(["click", `@${ref}`])
-        return
-      }
+      if (ref && this.run(["click", `@${ref}`], { allowFail: true }).ok) return
       if (Date.now() >= deadline) {
-        throw new Error(`no ref found for snapshot line containing ${JSON.stringify(needle)}`)
+        throw new Error(`could not click snapshot line containing ${JSON.stringify(needle)}`)
       }
       Bun.sleepSync(300)
     }

@@ -3,11 +3,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-# Start the stack if either half is down: api health on :4000 or the web root on :3000.
-api_up() { curl -sf --max-time 2 http://localhost:4000/api/health > /dev/null 2>&1; }
-web_up() { curl -sf --max-time 2 http://localhost:3000/ > /dev/null 2>&1; }
-if ! api_up || ! web_up; then
-  echo "dev stack not fully up, starting it..."
+# Start the stack only if a port is not already bound. Probe "is something listening" rather than "does it respond in 2s": a slow first compile keeps the port bound, and a fast liveness check would false-negative there and spawn a second turbo that collides on 3000/4000.
+listening() { lsof -nP -iTCP:"$1" -sTCP:LISTEN > /dev/null 2>&1; }
+if ! listening 4000 || ! listening 3000; then
+  echo "dev stack not running, starting it..."
   (bunx turbo run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 fi
 

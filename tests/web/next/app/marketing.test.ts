@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:tes
 
 import { Browser } from "@/browser"
 import { titleOf } from "@/html"
+import { fetchOk } from "@/http"
 import { MARKETING_PAGES, SITE } from "@/surface"
 import { WEB_URL } from "@/urls"
 
@@ -29,8 +30,8 @@ describe("marketing pages", () => {
     expect(html).toMatch(/name="twitter:card"/)
     const ogImage = html.match(/property="og:image"[^>]*content="([^"]+)"/)?.[1]
     expect(ogImage, "home page must declare an og:image").toBeTruthy()
-    const image = await fetch(ogImage!.replace(/&amp;/g, "&"))
-    expect(image.status).toBe(200)
+    // Same cold-Satori route class as og.test.ts; retry rather than race the first compile.
+    const image = await fetchOk(ogImage!.replace(/&amp;/g, "&"))
     expect(image.headers.get("content-type")).toContain("image/")
   })
 })
