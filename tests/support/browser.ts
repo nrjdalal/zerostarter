@@ -73,11 +73,20 @@ export class Browser {
     this.run(["find", "text", text, "click"])
   }
 
-  // Clicks the element whose snapshot line contains `needle`. Use for nodes role+name can't reach: portalled search results, composed accessible names, or ambiguous links disambiguated by their accessible-name text. Defaults to the full snapshot (interactive drops portalled results).
+  // Clicks the element whose snapshot line contains `needle`. Use for nodes role+name can't reach: portalled search results, composed accessible names, or ambiguous links disambiguated by their accessible-name text. Defaults to the full snapshot (interactive drops portalled results). Retries because the target is often client-rendered and can lag past navigation/networkidle under load.
   clickSnapshotMatch(needle: string, opts: { interactive?: boolean; urls?: boolean } = {}) {
-    const ref = this.refFor(needle, { interactive: false, ...opts })
-    if (!ref) throw new Error(`no ref found for snapshot line containing ${JSON.stringify(needle)}`)
-    this.run(["click", `@${ref}`])
+    const deadline = Date.now() + 15_000
+    for (;;) {
+      const ref = this.refFor(needle, { interactive: false, ...opts })
+      if (ref) {
+        this.run(["click", `@${ref}`])
+        return
+      }
+      if (Date.now() >= deadline) {
+        throw new Error(`no ref found for snapshot line containing ${JSON.stringify(needle)}`)
+      }
+      Bun.sleepSync(300)
+    }
   }
 
   // Clicks a link by its accessible name, matched in the interactive snapshot (nav/sidebar/content links appear there with refs).
@@ -162,9 +171,14 @@ export class Browser {
     return JSON.parse(this.eval("document.documentElement.className")) as string
   }
 
-  // Waits until the <html> class differs from `from`. Theme toggles apply via an async React re-render, so reading the class right after the click can race it.
-  waitHtmlClassChanges(from: string) {
-    this.run(["wait", "--fn", `document.documentElement.className !== ${JSON.stringify(from)}`])
+  // The next-themes choice persisted in localStorage ("system" | "light" | "dark", or null before the first change). This is what the toggle controls, independent of how "system" resolves in the host.
+  storedTheme(): string | null {
+    return JSON.parse(this.eval("localStorage.getItem('theme')")) as string | null
+  }
+
+  // Waits until the persisted theme differs from `from` (setTheme writes localStorage, but the React re-render that follows is async).
+  waitStoredThemeChanges(from: string | null) {
+    this.run(["wait", "--fn", `localStorage.getItem('theme') !== ${JSON.stringify(from)}`])
   }
 
   // Waits for a DOM element matching the CSS selector (for state that appears after a client-side fetch, past networkidle).

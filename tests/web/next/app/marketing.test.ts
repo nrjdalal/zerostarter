@@ -79,23 +79,27 @@ describe("landing page interactions", () => {
     expect(browser.run(["get", "attr", "a[href='/api/docs']", "target"]).stdout).toBe("_blank")
   })
 
-  test("the theme toggle switches, persists across reload, and cycles back", () => {
+  test("the theme toggle cycles the persisted theme and repaints, surviving reload", () => {
+    const toggle = "Switch between system/light/dark version"
     browser.open("/")
-    const before = browser.htmlClass()
-    browser.clickRole("button", "Switch between system/light/dark version")
-    browser.waitHtmlClassChanges(before)
-    const after = browser.htmlClass()
-    expect(after).not.toBe(before)
+    const initial = browser.storedTheme() // null or "system" on a fresh visit
 
-    const themed = after.includes("dark") ? "dark" : "light"
+    // From system the smart toggle picks an explicit theme (opposite of the resolved one); assert the persisted choice, not the env-dependent resolved class.
+    browser.clickRole("button", toggle)
+    browser.waitStoredThemeChanges(initial)
+    const explicit = browser.storedTheme() ?? ""
+    expect(["light", "dark"]).toContain(explicit)
+    expect(browser.htmlClass()).toContain(explicit) // the repaint reached the DOM
+
     browser.run(["reload"])
     browser.run(["wait", "--load", "networkidle"])
-    const persisted = browser.htmlClass()
-    expect(persisted).toContain(themed)
+    expect(browser.storedTheme()).toBe(explicit) // persists
+    expect(browser.htmlClass()).toContain(explicit)
 
-    browser.clickRole("button", "Switch between system/light/dark version")
-    browser.waitHtmlClassChanges(persisted)
-    expect(browser.htmlClass()).not.toBe(persisted)
+    // A second click cycles back to "system" regardless of the host color scheme.
+    browser.clickRole("button", toggle)
+    browser.waitStoredThemeChanges(explicit)
+    expect(browser.storedTheme()).toBe("system")
   })
 })
 
