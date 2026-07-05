@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && vite build",
+    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && vite build && bun ../../.github/scripts/vercel-runtime.ts",
     "check-types": "tsc --noEmit",
     "dev": "bun ../../.github/scripts/docs.ts && vite dev",
     "start": "bun .output/server/index.mjs"
