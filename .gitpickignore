@@ -16,6 +16,7 @@ web/next/content/
 web/next/src/app/(marketing)/
 web/next/src/components/marketing/
 web/next/src/fonts/marketing/
+web/next/src/lib/marketing/
 web/next/public/
 
 # custom files

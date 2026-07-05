@@ -40,17 +40,6 @@ const nextConfig: NextConfig = {
     },
   }),
   reactCompiler: true,
-  headers: async () => {
-    return [
-      {
-        // Stable-named marketing assets (logos, icons) are served no-cache by default. Give them a long TTL with SWR; not `immutable` since the filenames aren't content-hashed, so editing one still revalidates. In next.config (not vercel.json) so the standalone/Docker deploy benefits too. /_next/static is already immutable; don't touch it.
-        source: "/marketing/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
-        ],
-      },
-    ]
-  },
   rewrites: async () => {
     return [
       {

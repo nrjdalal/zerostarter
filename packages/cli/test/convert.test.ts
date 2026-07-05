@@ -14,24 +14,24 @@ afterEach(() => {
   rmSync(dir, { force: true, recursive: true })
 })
 
+// The shared fonts.ts that ships to forks: generic fonts only, no fonts/marketing/ refs.
 const FONTS = `import localFont from "next/font/local"
 
 export const dmSans = localFont({ src: "../fonts/dm-sans.woff2" })
+`
 
-export const caveat = localFont({
-  src: "../fonts/marketing/caveat-latin-wght-normal.woff2",
-  variable: "--font-caveat",
-  weight: "400 700",
-})
+// A regression fixture: a marketing font leaked back into the shared file (its woff2 dir is fork-excluded, so this would break the fork build).
+const FONTS_LEAKED = `import localFont from "next/font/local"
 
-export const newsreader = localFont({
-  src: [
-    { path: "../fonts/marketing/newsreader-latin-wght-normal.woff2", style: "normal" },
-    { path: "../fonts/marketing/newsreader-latin-wght-italic.woff2", style: "italic" },
-  ],
-  variable: "--font-newsreader",
-  weight: "200 800",
-})
+export const dmSans = localFont({ src: "../fonts/dm-sans.woff2" })
+
+export const caveat = localFont({ src: "../fonts/marketing/caveat.woff2" })
+`
+
+// The author-only marketing font module (web/next/src/lib/marketing/fonts.ts), wholesale fork-excluded.
+const MARKETING_FONTS = `import localFont from "next/font/local"
+
+export const caveat = localFont({ src: "../../fonts/marketing/caveat.woff2" })
 `
 
 const NAV = `export const links = [
@@ -49,46 +49,40 @@ describe("fixDangling", () => {
     write(join(dir, "web/next/src/components/navbar/home.tsx"), n)
   }
 
-  test("strips caveat/newsreader + the /hire link, keeps dmSans and other links", () => {
+  test("strips the /hire link, keeps other links and a clean fonts.ts", () => {
     setup(FONTS, NAV)
     fixDangling(dir)
-    expect(fonts()).not.toContain("caveat")
-    expect(fonts()).not.toContain("newsreader")
     expect(fonts()).toContain("dmSans")
     expect(nav()).not.toContain("/hire")
     expect(nav()).toContain("/dashboard")
   })
 
-  test("is resilient to reformatting (single quotes, deeper indent, minified nav entry)", () => {
-    setup(
-      FONTS.replaceAll('"', "'").replaceAll("  ", "    "),
-      `export const links = [\n  {href:'/hire',label:'Hire'},\n]\n`,
-    )
+  test("is resilient to nav reformatting (single quotes, minified entry)", () => {
+    setup(FONTS, `export const links = [\n  {href:'/hire',label:'Hire'},\n]\n`)
     expect(() => fixDangling(dir)).not.toThrow()
-    expect(fonts()).not.toContain("caveat")
     expect(nav()).not.toContain("/hire")
   })
 
-  test("strips CRLF-terminated exports and /hire (Windows/WSL checkout)", () => {
+  test("strips CRLF-terminated /hire (Windows/WSL checkout)", () => {
     const crlf = (s: string) => s.replace(/\n/g, "\r\n")
     setup(crlf(FONTS), crlf(NAV))
     expect(() => fixDangling(dir)).not.toThrow()
-    expect(fonts()).not.toContain("caveat")
-    expect(fonts()).not.toContain("newsreader")
-    expect(fonts()).not.toContain("fonts/marketing/")
     expect(nav()).not.toContain("/hire")
   })
 
-  test("throws on structural drift (a font export renamed)", () => {
-    setup(FONTS.replace("const caveat", "const caveatFont"), NAV)
+  test("throws when a marketing font leaked back into the shared fonts.ts", () => {
+    setup(FONTS_LEAKED, NAV)
     expect(() => fixDangling(dir)).toThrow(/fonts\.ts/)
   })
 
-  test("no-ops when the starter already dropped the author fonts and /hire (evolution)", () => {
-    setup(
-      `import localFont from "next/font/local"\n\nexport const dmSans = localFont({ src: "x" })\n`,
-      `export const links = [\n    { href: "/dashboard", label: "Dash" },\n]\n`,
-    )
+  test("throws when the marketing font module survived the fork strip", () => {
+    setup(FONTS, NAV)
+    write(join(dir, "web/next/src/lib/marketing/fonts.ts"), MARKETING_FONTS)
+    expect(() => fixDangling(dir)).toThrow(/lib\/marketing/)
+  })
+
+  test("no-ops when the starter already dropped /hire (evolution)", () => {
+    setup(FONTS, `export const links = [\n    { href: "/dashboard", label: "Dash" },\n]\n`)
     expect(() => fixDangling(dir)).not.toThrow()
     expect(fonts()).toContain("dmSans")
     expect(nav()).toContain("/dashboard")
@@ -103,12 +97,14 @@ describe("convertRepo (in-place)", () => {
         "# custom",
         "LICENSE.md",
         "web/next/content/",
+        "web/next/src/lib/marketing/",
         "packages/config/src/site.ts",
         "# PRESERVE_ON_SYNC - AUDIT.md",
       ].join("\n"),
     )
     write(join(dir, "LICENSE.md"), "MIT")
     write(join(dir, "web/next/content/old.mdx"), "author-only")
+    write(join(dir, "web/next/src/lib/marketing/fonts.ts"), MARKETING_FONTS)
     write(join(dir, "packages/config/src/site.ts"), "// upstream site")
     write(
       join(dir, "package.json"),
@@ -130,6 +126,7 @@ describe("convertRepo (in-place)", () => {
     expect(exists(join(dir, "LICENSE.md"))).toBe(false)
     expect(exists(join(dir, ".gitpickignore"))).toBe(false)
     expect(exists(join(dir, "web/next/content/old.mdx"))).toBe(false)
+    expect(exists(join(dir, "web/next/src/lib/marketing/fonts.ts"))).toBe(false)
   })
 
   test("rebrands package.json to the fork name and drops author fields", () => {
@@ -154,10 +151,10 @@ describe("convertRepo (in-place)", () => {
     expect(read(join(dir, "README.md"))).not.toContain("nrjdalal")
   })
 
-  test("reconciles the dangling font exports and /hire link", () => {
+  test("reconciles the dangling /hire link and removes the marketing font module", () => {
     scaffold()
     convertRepo(dir, { name: "acme" })
-    expect(fonts()).not.toContain("caveat")
+    expect(exists(join(dir, "web/next/src/lib/marketing/fonts.ts"))).toBe(false)
     expect(fonts()).toContain("dmSans")
     expect(nav()).not.toContain("/hire")
   })

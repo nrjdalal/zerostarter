@@ -41,9 +41,7 @@ const removeForkExcludes = (root: string): void => {
   remove(ignore)
 }
 
-// Author-only font exports + /hire nav entry to strip, matched by regex (not exact literal) so an upstream reformat of fonts.ts/navbar (quotes, indent, commas) does not break a synced fork. Newlines are \r?\n: a Windows/WSL checkout (gitpick under core.autocrlf) yields CRLF, and a \n-only anchor would miss the closing `})`, leaving the marketing fonts in place and tripping the drift guard below.
-const CAVEAT_EXPORT = /\r?\nexport const caveat = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
-const NEWSREADER_EXPORT = /\r?\nexport const newsreader = localFont\(\{[\s\S]*?\r?\n\}\)\r?\n/
+// The /hire nav entry to strip from the shared navbar, matched by regex (not exact literal) so an upstream reformat (quotes, indent, commas) does not break a synced fork. Newline is \r?\n: a Windows/WSL checkout (gitpick under core.autocrlf) yields CRLF, and a \n-only anchor would miss the trailing comma/newline. The author-only marketing fonts need no such surgery: they live in their own wholesale fork-excluded module (web/next/src/lib/marketing/), not the shared fonts.ts.
 const HIRE_NAV = /[ \t]*\{[^}\r\n]*href:[ \t]*["']\/hire["'][^}\r\n]*\},?[ \t]*\r?\n/
 
 // Write the generic stubs so the app builds clean and reads as a fresh product.
@@ -66,17 +64,21 @@ const scaffoldContent = (root: string, brand: Brand): void => {
   write(p(root, "README.md"), readmeTemplate(brand))
 }
 
-// Clean up the references the route and font deletes leave dangling; fail loudly on drift.
+// Strip the dangling /hire entry the route excludes leave in the shared navbar, then fail loudly on drift.
 export const fixDangling = (root: string): void => {
   const fontsPath = p(root, "web/next/src/lib/fonts.ts")
+  const marketingFontsPath = p(root, "web/next/src/lib/marketing/fonts.ts")
   const navPath = p(root, "web/next/src/components/navbar/home.tsx")
-  removeMatch(fontsPath, CAVEAT_EXPORT)
-  removeMatch(fontsPath, NEWSREADER_EXPORT)
   removeMatch(navPath, HIRE_NAV)
-  // A gone marker is fine (the starter dropped it, so sync over an evolving main is a no-op); one that survived the strip means the regex drifted and must be fixed, else the fork ships refs to the excluded fonts/route.
+  // The author-only marketing fonts are wholesale fork-excluded (web/next/src/lib/marketing/ in .gitpickignore). If the module survived, that .gitpickignore path drifted; if the shared fonts.ts refers to fonts/marketing/, a marketing font leaked back into the file that ships to forks (whose woff2 dir does not).
+  if (exists(marketingFontsPath)) {
+    throw new Error(
+      "web/next/src/lib/marketing/fonts.ts survived the fork strip (add web/next/src/lib/marketing/ to .gitpickignore).",
+    )
+  }
   if (exists(fontsPath) && read(fontsPath).includes("fonts/marketing/")) {
     throw new Error(
-      "fonts.ts still references fonts/marketing/ after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
+      "fonts.ts references fonts/marketing/; author-only marketing fonts must live in the fork-excluded web/next/src/lib/marketing/, not the shared fonts.ts.",
     )
   }
   if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {

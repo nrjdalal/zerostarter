@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
-import { caveat, newsreader } from "@/lib/fonts"
+import { caveat, newsreader } from "@/lib/marketing/fonts"
 import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
