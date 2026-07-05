@@ -17,10 +17,10 @@ In development, `curl localhost:3000/llms-full.txt` hands an agent the whole pro
 
 ## How they're generated
 
-Two `force-static` route handlers (both `revalidate = 60`) build the files from Fumadocs sources:
+Two server routes build the files from Fumadocs sources:
 
-- `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts`: the `/llms.txt` index, the `/docs` and `/blog` section indexes, and every per-page alias. It sorts docs by `meta.json` order and lists only published blog posts. Console docs are excluded on purpose (privacy boundary).
-- `web/next/src/app/(llms.txt)/llms-full.txt/route.ts`: the single-file dump, preamble first.
+- `web/next/src/app/(llms[.]txt)/llms[.]txt.$.ts`: the `/llms.txt` index, the `/docs` and `/blog` section indexes, and every per-page alias. It sorts docs by `meta.json` order and lists only published blog posts. Console docs are excluded on purpose (privacy boundary).
+- `web/next/src/app/(llms[.]txt)/llms-full[.]txt.ts`: the single-file dump, preamble first.
 
 Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
 

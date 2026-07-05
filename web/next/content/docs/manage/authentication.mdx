@@ -78,7 +78,7 @@ import { authClient } from "@/lib/auth/client"
 const { data: session } = authClient.useSession()
 ```
 
-The `(protected)` layout (`web/next/src/app/(protected)/layout.tsx`) redirects unauthenticated users server-side; API routes validate the session in the auth middleware (`api/hono/src/middlewares/auth.ts`).
+The `(protected)` layout (`web/next/src/app/(protected)/route.tsx`) redirects unauthenticated users server-side; API routes validate the session in the auth middleware (`api/hono/src/middlewares/auth.ts`).
 
 ## Next
 

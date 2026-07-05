@@ -6,8 +6,8 @@ description: "Dynamic OG images, sitemap, and robots: indexable and shareable by
 
 A fresh ZeroStarter is indexable by search engines and unfurls a rich preview on social the moment you deploy it, no configuration. Three metadata routes, all driven by `packages/config/src/site.ts` and your content, do the work:
 
-- `web/next/src/app/robots.ts` → `/robots.txt`
-- `web/next/src/app/sitemap.ts` → `/sitemap.xml`
+- `web/next/src/app/robots[.]txt.ts` → `/robots.txt`
+- `web/next/src/app/sitemap[.]xml.ts` → `/sitemap.xml`
 - `web/next/src/app/og/*` → dynamic Open Graph preview images
 
 ## Indexable by default
@@ -20,7 +20,7 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 
 ## Sitemap
 
-`sitemap.ts` (a `MetadataRoute.Sitemap`) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page in `docsSource`, and the published posts from `getPublishedBlogPosts()`. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
+`sitemap[.]xml.ts` (a server route) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page in `docsSource`, and the published posts from `getPublishedBlogPosts()`. It emits the standard sitemap XML with its URLs sorted alphabetically.
 
 Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in.
 
@@ -31,8 +31,8 @@ Each content type has its own Open Graph image route, rendered dynamically with 
 | Route                              | Preview                    |
 | ---------------------------------- | -------------------------- |
 | `/og/home`                         | Landing page               |
-| `/og/docs/[[...slug]]`             | Docs pages                 |
-| `/og/blog/[[...slug]]`             | Blog posts                 |
+| `/og/docs/*`                       | Docs pages                 |
+| `/og/blog/*`                       | Blog posts                 |
 | `/og?section=&title=&description=` | Generic, from query params |
 
 <Callout type="info" title="Why /og, not /api/og">
@@ -41,27 +41,33 @@ These routes live at `/og` on purpose. `robots.txt` disallows `/api/`, so keepin
 
 </Callout>
 
-The docs route is prerendered at build (`force-static` + `generateStaticParams`); the blog route prebuilds published posts and revalidates every 60s so scheduled posts appear without a rebuild; `/og/home` is static; and the generic `/og` route is `force-dynamic`. Page metadata wires each image in automatically through `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx`, so every docs and blog page gets a unique preview.
+The `/og/*` routes are server routes that render each card on demand: `/og/home` and the per-page docs and blog cards derive their title and description from the page, while the generic `/og` route reads them from query params. Page metadata wires each image in automatically through `pageHeadMeta()` in `web/next/src/lib/fumadocs.tsx`, so every docs and blog page gets a unique preview.
 
-All routes forward to the shared helper in `web/next/src/lib/og-image.tsx`. To add a section, create `web/next/src/app/og/<section>/[[...slug]]/route.tsx` and call `generateOgImage` with your source:
+All routes forward to the shared helper in `web/next/src/lib/og-image.tsx`. To add a section, create `web/next/src/app/og/<section>/$.ts` (plus an `index.ts` for the section root) and call `generateOgImage` with your source:
 
-```tsx
-export const dynamic = "force-static"
+```ts
+import { createFileRoute } from "@tanstack/react-router"
 
-export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
-  const { slug } = await params
-  return generateOgImage(slug, {
-    source: yourSource,
-    sectionName: "Your Section",
-    defaultTitle: `${site.name} - Your Section`,
-    defaultDescription: "Your default description",
-  })
-}
+import { generateOgImage } from "@/lib/og-image"
+
+export const Route = createFileRoute("/og/<section>/$")({
+  server: {
+    handlers: {
+      GET: ({ params }) =>
+        generateOgImage(params._splat?.split("/") ?? [], {
+          source: yourSource,
+          sectionName: "Your Section",
+          defaultTitle: `${site.name} - Your Section`,
+          defaultDescription: "Your default description",
+        }),
+    },
+  },
+})
 ```
 
 <Callout type="warn" title="Time-gated sources need gating">
 
-`force-static` is fine for always-public sources like docs. For content with a `publishedAt` (the blog), it would prerender previews for _unpublished_ posts. Gate on the published set and add `revalidate = 60`. See `web/next/src/app/og/blog/[[...slug]]/route.tsx` for the pattern.
+For always-public sources like docs, the handler renders any page. For content with a `publishedAt` (the blog), gate on the published set so cards aren't generated for _unpublished_ posts. See `web/next/src/app/og/blog/$.ts` for the pattern: it probes the public gate and returns a 404 for anything not visible yet.
 
 </Callout>
 
