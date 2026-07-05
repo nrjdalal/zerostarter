@@ -70,5 +70,8 @@
     "@takumi-rs/core-linux-x64-musl": "catalog:",
     "@takumi-rs/core-win32-arm64-msvc": "catalog:",
     "@takumi-rs/core-win32-x64-msvc": "catalog:"
-  }
+  },
+  "browserslist": [
+    "defaults"
+  ]
 }
