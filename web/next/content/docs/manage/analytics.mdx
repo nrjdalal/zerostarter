@@ -14,7 +14,7 @@ Turn it on with two env vars (the key enables it, the host picks your region):
 
 ```
 NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=
 ```
 
 Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU, or your self-hosted URL. Both are declared optional in `packages/env/src/web-next.ts`, so an empty key simply means PostHog never initializes, which is also how you disable it.
