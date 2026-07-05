@@ -1,3 +1,15 @@
+## v0.0.93
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.92...v0.0.93)
+
+### 🚀 Enhancements
+
+- **web:** In-app brand link, home user-menu link, shell copy, and landing cta fixes ([#651](https://github.com/nrjdalal/zerostarter/pull/651))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.92
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.91...v0.0.92)
