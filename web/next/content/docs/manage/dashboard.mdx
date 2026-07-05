@@ -6,7 +6,7 @@ description: "The protected app shell: sidebar, org switcher, and the layout wra
 
 <Callout type="warn" title="This is a shell, not a product">
 
-The `/dashboard` page renders a single "Welcome back." header and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
+The `/dashboard` page renders a single "Dashboard" heading with its "Intentionally empty." description and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
 
 </Callout>
 
@@ -27,7 +27,7 @@ if (!session?.user) redirect("/")
 
 The chrome is not inlined in the layout. It lives in `SidebarShell` (`web/next/src/components/sidebar/shell.tsx`), a shadcn/ui `Sidebar` in `collapsible="icon"` mode, shared by both the dashboard and console layouts. The layout fills three slots:
 
-- **Header**: the brand (`site.name`, linking to `homeHref`), the collapse trigger, and a caller node: for the dashboard, the org switcher.
+- **Header**: the brand (`site.name`, linking to `homeHref`, which stays inside the app: `/dashboard` by default), the collapse trigger, and a caller node: for the dashboard, the org switcher.
 - **Content**: a caller `nav` node. Empty for the dashboard; add your navigation items here.
 - **Footer**: a caller node: for the dashboard, the user actions.
 
@@ -44,7 +44,7 @@ So a user returns to the same org context every session.
 
 ### User actions
 
-The footer (`web/next/src/components/sidebar/dashboard/user-actions.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/sidebar/user-menu.tsx`): avatar, name, email, an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
+The footer (`web/next/src/components/sidebar/dashboard/user-actions.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/sidebar/user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
 
 ## Page content
 
@@ -62,7 +62,10 @@ import { DashboardShell } from "@/components/dashboard/shell"
 export default function Page() {
   return (
     <DashboardShell>
-      <DashboardHeader title="Dashboard" description="Welcome back." />
+      <DashboardHeader
+        title="Dashboard"
+        description="Intentionally empty. Auth, orgs, and the API are wired; this page is where your product begins."
+      />
       {/* your content here */}
     </DashboardShell>
   )

@@ -17,7 +17,7 @@ import {
 // Shared collapsible sidebar shell used by the dashboard and console layouts. Owns the sidebar chrome (provider, header brand, footer, rail) and the persisted open state; callers supply the badge, nav, and footer.
 export async function SidebarShell({
   badge,
-  homeHref = "/",
+  homeHref = "/dashboard",
   header,
   nav,
   footer,

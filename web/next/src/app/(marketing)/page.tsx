@@ -1,6 +1,7 @@
 import { site } from "@packages/config/site"
 import {
   RiArrowRightLine,
+  RiArrowRightSLine,
   RiBookOpenLine,
   RiDatabase2Line,
   RiGitForkLine,
@@ -253,7 +254,7 @@ docker compose up --build`
             <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
               {site.description}
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex items-center justify-center gap-3">
               <Button
                 role="link"
                 size="lg"
@@ -271,7 +272,7 @@ docker compose up --build`
                 render={<Link href="/docs" />}
               >
                 Get Started
-                <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+                <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
             <div className="mt-10 flex justify-center">
@@ -557,7 +558,7 @@ docker compose up --build`
               and documentation both humans and agents can trust. It does not choose your payments
               or email vendor; the parts that make your product yours stay yours.
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex items-center justify-center gap-3">
               <Button
                 role="link"
                 size="lg"
@@ -575,7 +576,7 @@ docker compose up --build`
                 render={<Link href="/docs" />}
               >
                 Get Started
-                <RiArrowRightLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+                <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
             <p className="text-muted-foreground mt-6 text-sm">
