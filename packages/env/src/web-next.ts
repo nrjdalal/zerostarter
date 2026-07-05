@@ -15,7 +15,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.url(),
     NEXT_PUBLIC_NODE_ENV: NODE_ENV,
     NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
-    NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
+    NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: z.string().optional(),
     NEXT_PUBLIC_USERJOT_URL: z.url().optional(),
   },
   runtimeEnv: {
@@ -29,7 +29,7 @@ export const env = createEnv({
       (process.env.SKIP_ENV_VALIDATION === "true" ? "https://polyfill.url" : undefined),
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
     NEXT_PUBLIC_USERJOT_URL: process.env.NEXT_PUBLIC_USERJOT_URL,
   },
   emptyStringAsUndefined: true,
