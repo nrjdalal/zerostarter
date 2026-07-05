@@ -32,9 +32,9 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
   // The user menu is shared, so the cross-link points at the other workspace: dashboard -> console, console -> dashboard.
   const crossLink =
     area === "dashboard"
-      ? { label: "Console", href: "/console", icon: <RiTerminalBoxLine /> }
+      ? { label: "Console", href: "/console" as const, icon: <RiTerminalBoxLine /> }
       : area === "console"
-        ? { label: "Dashboard", href: "/dashboard", icon: <RiDashboardLine /> }
+        ? { label: "Dashboard", href: "/dashboard" as const, icon: <RiDashboardLine /> }
         : null
 
   const avatar = (

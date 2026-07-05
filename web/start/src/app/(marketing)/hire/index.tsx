@@ -277,7 +277,11 @@ function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={headingClass}>writing</h2>
         <div className="space-y-2">
-          <Link to="/blog/a-biography-written-in-code" className={linkClass}>
+          <Link
+            to="/blog/$"
+            params={{ _splat: "a-biography-written-in-code" }}
+            className={linkClass}
+          >
             A Biography Written in Code
           </Link>
           <p className="text-muted-foreground mt-2">

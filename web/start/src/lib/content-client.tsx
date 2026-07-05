@@ -15,3 +15,9 @@ export const blogClientLoader = browserCollections.blog.createClientLoader({
     return <PageBody info={info} toc={toc} MDX={MDX} />
   },
 })
+
+export const consoleClientLoader = browserCollections.consoleDocs.createClientLoader({
+  component({ toc, default: MDX }, info: PageInfo) {
+    return <PageBody info={info} toc={toc} MDX={MDX} />
+  },
+})

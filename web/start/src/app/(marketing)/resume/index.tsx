@@ -317,7 +317,11 @@ export default function Page() {
           years of learning in public, and the path from shell scripts to systems like ZeroStarter,
           release automation, and AI-agent infrastructure. Read it if you want to understand how I
           think, not just what I shipped:{" "}
-          <Link to="/blog/a-biography-written-in-code" className={linkClass}>
+          <Link
+            to="/blog/$"
+            params={{ _splat: "a-biography-written-in-code" }}
+            className={linkClass}
+          >
             A Biography Written in Code
           </Link>
           . Or head{" "}
