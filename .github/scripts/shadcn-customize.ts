@@ -20,12 +20,15 @@ const SPINNER = `${UI}/spinner.tsx`
 const SIDEBAR = `${UI}/sidebar.tsx`
 const GLOBALS = "web/next/src/app/globals.css"
 
-// init/add re-scaffold these with shadcn defaults we keep none of: a next/font/google layout, a
-// stripped utils.ts, and catalog->pinned dep drift in package.json/bun.lock. Reset to HEAD.
+// init/add re-scaffold these with shadcn defaults we keep none of: our components.json (rsc:false,
+// remixicon, the base-nova/menu settings), a stripped utils.ts, catalog->pinned dep drift plus the
+// start template's @fontsource-variable/inter (we self-host DM Sans) in the root package.json, and
+// dep drift in web/next/package.json + bun.lock. Reset to HEAD.
 const RESTORE = [
   "bun.lock",
+  "package.json",
   "web/next/package.json",
-  "web/next/src/app/layout.tsx",
+  "web/next/components.json",
   "web/next/src/lib/utils.ts",
 ]
 execFileSync("git", ["checkout", "HEAD", "--", ...RESTORE], { stdio: "inherit" })
@@ -127,19 +130,34 @@ function patchSidebar() {
   log(`patched: ${SIDEBAR}`)
 }
 
-// globals.css: brand font role (init repoints --font-sans at its own Inter variable). One stable,
-// uniquely-anchored line, so a guarded string swap is enough; no CSS parser warranted.
+// globals.css: our design overrides on the registry base. Guarded string swaps (a few stable,
+// uniquely-anchored lines aren't worth a CSS parser):
+//   - drop the start template's Inter import and repoint --font-sans at the brand DM Sans var (we
+//     self-host via fonts.css). init is non-deterministic here: it sometimes leaves our --font-sans
+//     and only re-adds the import, so each edit is independently optional.
+//   - keep the seamless sidebar (--sidebar tracks --background, light and dark); the registry ships
+//     a distinct oklch value.
 function patchGlobals() {
-  const css = readFileSync(GLOBALS, "utf8")
-  const FROM = "--font-sans: var(--font-sans);"
-  const TO = "--font-sans: var(--font-dm-sans), sans-serif;"
-  if (css.includes(TO)) {
-    log(`already applied: ${GLOBALS}`)
-    return
+  const before = readFileSync(GLOBALS, "utf8")
+  const css = before
+    .replace('@import "@fontsource-variable/inter";\n', "")
+    .replace(
+      '--font-sans: "Inter Variable", sans-serif;',
+      "--font-sans: var(--font-dm-sans), sans-serif;",
+    )
+    .replace(/--sidebar: oklch\([^)]*\);/g, "--sidebar: var(--background);")
+  if (css === before) {
+    if (
+      css.includes("--font-sans: var(--font-dm-sans)") &&
+      !css.includes("@fontsource-variable/inter") &&
+      !/--sidebar: oklch/.test(css)
+    ) {
+      log(`already applied: ${GLOBALS}`)
+      return
+    }
+    throw new Error("shadcn-customize: globals.css font/sidebar anchors not found; shape changed")
   }
-  if (!css.includes(FROM))
-    throw new Error("shadcn-customize: --font-sans anchor not found in globals.css; shape changed")
-  writeFileSync(GLOBALS, css.replace(FROM, TO))
+  writeFileSync(GLOBALS, css)
   log(`patched: ${GLOBALS}`)
 }
 

@@ -1,3 +1,5 @@
+"use client"
+
 import { RiArrowDownLine } from "@remixicon/react"
 import {
   MessageScroller as MessageScrollerPrimitive,

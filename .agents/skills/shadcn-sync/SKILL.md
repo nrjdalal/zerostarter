@@ -7,7 +7,7 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 
 `bun run shadcn:update` regenerates the whole shadcn layer from the registry, then re-applies every local override programmatically. It is **self-reconciling**: run it on a clean tree and you get a clean tree back. The only diff you should ever see afterwards is a genuine upstream change to a component, which is yours to review.
 
-`bun run shadcn:update` runs `bash .github/scripts/shadcn-update.sh && bun i`. The script refuses to run on a dirty blast radius, then: wipe `web/next/src/components/ui` + `components.json` → `shadcn init` → `shadcn add -a` → `shadcn-customize.ts` → `oxfmt`. The trailing `bun i` (the wrapper, not the script) reconciles the lockfile after the HEAD restore.
+`bun run shadcn:update` runs `bash .github/scripts/shadcn-update.sh && bun i`. The script refuses to run on a dirty blast radius, then: wipe `web/next/src/components/ui` + `components.json` → `shadcn init --template start` (TanStack Start, `rsc:false`) → `shadcn add -a` → `shadcn-customize.ts` → `oxfmt`. The trailing `bun i` (the wrapper, not the script) reconciles the lockfile after the HEAD restore.
 
 ## Procedure
 
@@ -20,8 +20,8 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 
 **Restore from HEAD**, files the sync re-scaffolds but we own outright:
 
-- `bun.lock` + `web/next/package.json`, `add -a` rewrites deps off `catalog:` to pinned ranges; reset them, then `bun i` reconciles the lockfile.
-- `web/next/src/app/layout.tsx`, `init` injects `next/font/google`; we self-host via `next/font/local` (see the `fonts` skill).
+- `bun.lock` + `web/next/package.json` + root `package.json`, `add -a` rewrites deps off `catalog:` to pinned ranges and the `start` template drags `@fontsource-variable/inter` into the root catalog (we self-host DM Sans); reset them, then `bun i` reconciles the lockfile.
+- `web/next/components.json`, `init` rewrites it; we own the `rsc:false` + `remixicon` + `base-nova`/menu config.
 - `web/next/src/lib/utils.ts`, `init` drops the repo helpers (`slugify`, `generateId`).
 
 **Patch in place**, registry components we extend, edited structurally with ts-morph (located by AST shape, so whitespace and attribute/param reordering can't break them) plus one guarded string swap for CSS. Each is idempotent and throws if its target is missing, so an upstream shape change fails the sync loudly:
@@ -29,7 +29,7 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 - `button.tsx`, Base UI render wiring (`render`, `nativeButton={!render}`, `render={render}`)
 - `spinner.tsx`, `React.ComponentProps<RemixiconComponentType>` typing
 - `sidebar.tsx`, optional `children` label on `SidebarTrigger`
-- `globals.css`, `--font-sans` points at the brand DM Sans variable
+- `globals.css`, drop the `start` template's Inter `@import`, point `--font-sans` at the brand DM Sans variable, and keep the seamless sidebar (`--sidebar: var(--background)`, light + dark) over the registry's oklch
 
 `calendar.tsx` is **not** touched: it carries no local override and tracks the registry as-is (we pin `react-day-picker` to `^10`; the registry component is v10-compatible).
 

@@ -1,3 +1,5 @@
+"use client"
+
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { RiArrowDownSLine, RiCheckLine, RiArrowUpSLine } from "@remixicon/react"
 import * as React from "react"

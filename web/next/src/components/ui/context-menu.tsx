@@ -1,3 +1,5 @@
+"use client"
+
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 import { RiArrowRightSLine, RiCheckLine } from "@remixicon/react"
 import * as React from "react"
