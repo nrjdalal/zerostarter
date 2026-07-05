@@ -1,3 +1,15 @@
+## v0.0.94
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.93...v0.0.94)
+
+### 🔥 Performance
+
+- **web:** Low-risk lighthouse fixes - contrast, fonts, backdrops, cache ([#653](https://github.com/nrjdalal/zerostarter/pull/653))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.93
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.92...v0.0.93)
