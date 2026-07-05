@@ -29,6 +29,8 @@ export default defineConfig({
   },
   resolve: {
     tsconfigPaths: true,
+    // Base UI's scroll-lock deps (react-remove-scroll-bar, react-style-singleton, use-sidecar) require() tslib's CJS UMD build; Rolldown's CJS interop resolves its `.default` to null in the Nitro SSR bundle and every response 500s on `Cannot destructure property '__extends'`. Force tslib's pure-ESM build so there is no CJS wrapper to mis-interop.
+    alias: [{ find: /^tslib$/, replacement: "tslib/tslib.es6.mjs" }],
   },
   plugins: [
     mdAliasDev,
@@ -45,6 +47,10 @@ export default defineConfig({
     viteReact(),
     // React Compiler, matching web/next's reactCompiler: true.
     babel({ presets: [reactCompilerPreset()] }),
-    nitro({ preset: "bun" }),
+    nitro({
+      preset: "bun",
+      // takumi (OG image rendering) ships a wasm-bindgen module that self-initializes at import; bundled into the Nitro server it fails with `takumi_wasm_bg.js ... must be an object`, and Rolldown merges it into the shared shiki chunk, so the shiki-using landing 500s on SSR. Kept external, it loads from node_modules at runtime and picks the native @takumi-rs/core binding.
+      rollupConfig: { external: [/^(takumi-js|@takumi-rs\/)/] },
+    }),
   ],
 })

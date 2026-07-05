@@ -18,7 +18,8 @@ import {
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import type { ReactNode } from "react"
-import { codeToHtml } from "shiki"
+import { createHighlighter } from "shiki"
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript"
 
 import { ApiStatus } from "@/components/marketing/api-status"
 import { BackgroundGradient } from "@/components/marketing/background-gradient"
@@ -196,6 +197,17 @@ function Eyebrow({ children }: { children: ReactNode }) {
   )
 }
 
+// shiki's default oniguruma engine needs a wasm binary the Nitro server bundle does not emit, so highlighting silently renders nothing in production; the pure-JS regex engine is wasm-free. One highlighter, created lazily and reused across requests.
+let highlighterPromise: ReturnType<typeof createHighlighter> | null = null
+function getHighlighter() {
+  highlighterPromise ??= createHighlighter({
+    themes: ["github-light", "github-dark"],
+    langs: ["bash", "typescript"],
+    engine: createJavaScriptRegexEngine(),
+  })
+  return highlighterPromise
+}
+
 // Server function so shiki stays out of the client bundle; in web/next this ran inside the async server component.
 const getHighlights = createServerFn({ method: "GET" }).handler(async () => {
   const initCode = `bunx zerostarter init
@@ -217,8 +229,9 @@ vercel --prod
 # or the whole stack, anywhere
 docker compose up --build`
 
+  const highlighter = await getHighlighter()
   const highlight = (code: string, lang: "typescript" | "bash") =>
-    codeToHtml(code, {
+    highlighter.codeToHtml(code, {
       lang,
       themes: { light: "github-light", dark: "github-dark" },
       defaultColor: false,

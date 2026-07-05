@@ -5,9 +5,10 @@ import { BlogPostList } from "@/components/blog/post-list"
 import type { PostSummary } from "@/lib/fumadocs"
 
 // The MDX render is client-side in Start, so the blog post list is bound to data from the route loader here rather than reading the server source inside the component.
-export function getMDXComponents(
-  options?: { posts?: PostSummary[]; components?: MDXComponents },
-): MDXComponents {
+export function getMDXComponents(options?: {
+  posts?: PostSummary[]
+  components?: MDXComponents
+}): MDXComponents {
   return {
     ...defaultMdxComponents,
     BlogPostList: () => <BlogPostList posts={options?.posts ?? []} />,

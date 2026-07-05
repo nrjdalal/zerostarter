@@ -1,4 +1,3 @@
-import { isProduction } from "@packages/env"
 import { env } from "@packages/env/web-start"
 import { PostHogProvider } from "@posthog/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -24,7 +23,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
     <PostHogProvider client={posthog}>
       <QueryClientProvider client={queryClient}>
         {children}
-        {!isProduction(env.VITE_NODE_ENV) && <DevTools />}
+        {import.meta.env.DEV && <DevTools />}
       </QueryClientProvider>
     </PostHogProvider>
   )
