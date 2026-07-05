@@ -17,6 +17,14 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
+// Serializable summary of a published blog post, for the <BlogPostList /> MDX component. In web/next that component read the server source directly (server component); in Start MDX renders on the client, so the list is passed down as data instead.
+export interface PostSummary {
+  url: string
+  title: string
+  description?: string
+  publishedAt: string
+}
+
 // Serializable page payload a route loader builds server-side from a source page; the MDX body itself streams through the collections/browser client loaders (in the Vite runtime the compiled MDX module is loaded lazily on the client, unlike web/next where page.data.body existed in the server component).
 export interface PageInfo {
   path: string
@@ -30,6 +38,8 @@ export interface PageInfo {
     author?: string
     tags?: string[]
   } | null
+  // Only set for the /blog index page, where <BlogPostList /> renders it.
+  posts?: PostSummary[]
 }
 
 type SourcePage = {
@@ -86,7 +96,7 @@ export function PageBody({ info, toc, MDX }: { info: PageInfo; toc: Toc; MDX: MD
       </DocsTitle>
       <DocsDescription>{info.description}</DocsDescription>
       <DocsBody>
-        <MDX components={getMDXComponents()} />
+        <MDX components={getMDXComponents({ posts: info.posts })} />
       </DocsBody>
       {blogArticleDates && (
         <div className="not-prose text-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">

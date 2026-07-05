@@ -19,6 +19,9 @@ export const Route = createRootRoute({
       { title: `${site.name} - ${site.tagline}` },
       { name: "description", content: site.description },
       { property: "og:type", content: "website" },
+      // Next derived og:title from the page title; route head() does not, so set it explicitly (the default a page overrides via its own head).
+      { property: "og:title", content: `${site.name} - ${site.tagline}` },
+      { property: "og:description", content: site.description },
       { property: "og:site_name", content: site.name },
       { property: "og:url", content: config.app.url },
       { property: "og:image", content: ogImageUrl },

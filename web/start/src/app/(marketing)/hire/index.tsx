@@ -30,6 +30,12 @@ export const Route = createFileRoute("/(marketing)/hire/")({
           "AI-native product engineer building SaaS, developer tools, and agent infrastructure.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "Neeraj Dalal" },
+      {
+        property: "og:description",
+        content:
+          "AI-native product engineer building SaaS, developer tools, and agent infrastructure.",
+      },
       { property: "og:site_name", content: site.name },
       { property: "og:url", content: `${config.app.url}/hire` },
       { property: "og:image", content: ogImageUrl },

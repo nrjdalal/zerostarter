@@ -23,6 +23,12 @@ export const Route = createFileRoute("/(marketing)/resume/")({
           "AI-native Product Engineer building SaaS, developer tools, and AI agent infrastructure. Experience, projects, skills.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "Résumé - Neeraj Dalal" },
+      {
+        property: "og:description",
+        content:
+          "AI-native Product Engineer building SaaS, developer tools, and AI agent infrastructure. Experience, projects, skills.",
+      },
       { property: "og:site_name", content: site.name },
       { property: "og:url", content: `${config.app.url}/resume` },
       { property: "og:image", content: ogImageUrl },
