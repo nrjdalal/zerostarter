@@ -5,7 +5,7 @@ import { site } from "@packages/config/site"
 import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
-import { Navbar } from "@/components/navbar/home"
+import { Navbar } from "@/components/common/navbar"
 import { config } from "@/lib/config"
 import { dmSans, jetbrainsMono } from "@/lib/fonts"
 import { cn } from "@/lib/utils"

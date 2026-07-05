@@ -1,13 +1,13 @@
-import { DashboardHeader } from "@/components/dashboard/header"
-import { DashboardShell } from "@/components/dashboard/shell"
+import { PageHeader } from "@/components/shell/content"
+import { PageShell } from "@/components/shell/content"
 
 export default function Page() {
   return (
-    <DashboardShell>
-      <DashboardHeader
+    <PageShell>
+      <PageHeader
         title="Console"
         description="Intentionally empty. Admin-gated; this is where your internal tooling begins."
       />
-    </DashboardShell>
+    </PageShell>
   )
 }

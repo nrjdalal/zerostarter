@@ -68,7 +68,7 @@ const scaffoldContent = (root: string, brand: Brand): void => {
 export const fixDangling = (root: string): void => {
   const fontsPath = p(root, "web/next/src/lib/fonts.ts")
   const marketingFontsPath = p(root, "web/next/src/lib/marketing/fonts.ts")
-  const navPath = p(root, "web/next/src/components/navbar/home.tsx")
+  const navPath = p(root, "web/next/src/components/common/navbar.tsx")
   removeMatch(navPath, HIRE_NAV)
   // The author-only marketing fonts are wholesale fork-excluded (web/next/src/lib/marketing/ in .gitpickignore). If the module survived, that .gitpickignore path drifted; if the shared fonts.ts refers to fonts/marketing/, a marketing font leaked back into the file that ships to forks (whose woff2 dir does not).
   if (exists(marketingFontsPath)) {
@@ -83,7 +83,7 @@ export const fixDangling = (root: string): void => {
   }
   if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {
     throw new Error(
-      "navbar/home.tsx still has the /hire entry after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
+      "common/navbar.tsx still has the /hire entry after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
     )
   }
 }

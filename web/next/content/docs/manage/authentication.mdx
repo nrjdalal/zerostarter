@@ -15,7 +15,7 @@ The sign-in dialog renders itself from whatever is configured. It fetches `GET /
 - **GitHub**: `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET`
 - **Google**: `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
 
-`packages/auth/src/index.ts` builds `socialProviders` conditionally from those vars and exports the resulting `enabledSocialProviders`. Adding a brand-new provider is a small code change: register it conditionally there, then add a button in `web/next/src/components/access.tsx`.
+`packages/auth/src/index.ts` builds `socialProviders` conditionally from those vars and exports the resulting `enabledSocialProviders`. Adding a brand-new provider is a small code change: register it conditionally there, then add a button in `web/next/src/components/common/access.tsx`.
 
 **Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To enable it, add `magicLink({ sendMagicLink })` to the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
 

@@ -2,8 +2,8 @@ import { site } from "@packages/config/site"
 import { cookies } from "next/headers"
 import Link from "next/link"
 
-import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
-import { AdaptiveShellSidebar } from "@/components/sidebar/shell-sidebar"
+import { AdaptiveShellSidebar } from "@/components/shell/adaptive-sidebar"
+import { SidebarFloatingTrigger } from "@/components/shell/floating-trigger"
 import { Badge } from "@/components/ui/badge"
 import {
   SidebarContent,

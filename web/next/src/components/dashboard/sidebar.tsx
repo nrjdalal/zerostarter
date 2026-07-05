@@ -1,12 +1,15 @@
 "use client"
 
-import { RiAddLine, RiBuildingLine } from "@remixicon/react"
+import { RiAddLine, RiBookLine, RiBuildingLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
+import { type User } from "better-auth/types"
+import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
+import { SidebarDropdownMenu } from "@/components/shell/dropdown-menu"
+import { SidebarUserMenu } from "@/components/shell/user-menu"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,8 +21,10 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth/client"
+import { config } from "@/lib/config"
 import { slugify } from "@/lib/utils"
 
 type Organization = {
@@ -40,7 +45,7 @@ const formSchema = z.object({
   name: z.string().min(2).max(32),
 })
 
-export function SidebarDashboardOrgSwitcher() {
+export function OrgSwitcher() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [isOrgTransitioning, setIsOrgTransitioning] = useState(false)
 
@@ -210,5 +215,26 @@ export function SidebarDashboardOrgSwitcher() {
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+export function DashboardUserActions({
+  user,
+  canAccessConsole,
+}: {
+  user: User
+  canAccessConsole: boolean
+}) {
+  return (
+    <SidebarMenu className="space-y-1.5">
+      <SidebarMenuItem>
+        <SidebarMenuButton render={<Link href="/docs" />}>
+          <RiBookLine />
+          <span>Documentation</span>
+          <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      <SidebarUserMenu user={user} area={canAccessConsole ? "dashboard" : undefined} />
+    </SidebarMenu>
   )
 }

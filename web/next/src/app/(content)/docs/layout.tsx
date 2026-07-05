@@ -1,8 +1,8 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
-import { SidebarDocsContent, SidebarDocsFooter, SidebarDocsSearch } from "@/components/sidebar/docs"
-import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
+import { DocsNav, DocsFooter, DocsSearch } from "@/components/docs/sidebar"
+import { SidebarFloatingTrigger } from "@/components/shell/floating-trigger"
 import {
   Sidebar,
   SidebarContent,
@@ -20,13 +20,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar className="md:pt-12" collapsible="offcanvas">
         <SidebarHeader className="mt-2.5">
-          <SidebarDocsSearch />
+          <DocsSearch />
         </SidebarHeader>
         <SidebarContent>
-          <SidebarDocsContent groups={resolveDocsNav("docs")} />
+          <DocsNav groups={resolveDocsNav("docs")} />
         </SidebarContent>
         <SidebarFooter className="border-t">
-          <SidebarDocsFooter />
+          <DocsFooter />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

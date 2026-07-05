@@ -25,7 +25,7 @@ if (!session?.user) redirect("/")
 
 ## The sidebar
 
-The chrome is not inlined in the layout. It lives in `SidebarShell` (`web/next/src/components/sidebar/shell.tsx`), a shadcn/ui `Sidebar` in `collapsible="icon"` mode, shared by both the dashboard and console layouts. The layout fills three slots:
+The chrome is not inlined in the layout. It lives in `SidebarShell` (`web/next/src/components/shell/sidebar-shell.tsx`), a shadcn/ui `Sidebar` in `collapsible="icon"` mode, shared by both the dashboard and console layouts. The layout fills three slots:
 
 - **Header**: the brand (`site.name`, linking to `homeHref`, which stays inside the app: `/dashboard` by default), the collapse trigger, and a caller node: for the dashboard, the org switcher.
 - **Content**: a caller `nav` node. Empty for the dashboard; add your navigation items here.
@@ -35,7 +35,7 @@ The console layout is the same shell with two props flipped: a `badge` ("Console
 
 ### Org switcher and active-org persistence
 
-The org switcher (`web/next/src/components/sidebar/dashboard/org-switcher.tsx`) lists the user's organizations, switches between them, and offers a Create Organization dialog (the slug is auto-generated from the name). The active org survives reloads:
+The org switcher (`web/next/src/components/dashboard/sidebar.tsx`) lists the user's organizations, switches between them, and offers a Create Organization dialog (the slug is auto-generated from the name). The active org survives reloads:
 
 1. On switch, the component writes a `last-active-org_{userId}` cookie.
 2. On load, the dashboard reads that cookie and calls `POST /api/auth/organization/set-active` to restore it.
@@ -44,30 +44,29 @@ So a user returns to the same org context every session.
 
 ### User actions
 
-The footer (`web/next/src/components/sidebar/dashboard/user-actions.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/sidebar/user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
+The footer (`web/next/src/components/dashboard/sidebar.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/shell/user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
 
 ## Page content
 
 Pages never hand-roll centering, width, or padding. They wrap content in two components:
 
-- **`DashboardShell`** (`web/next/src/components/dashboard/shell.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
-- **`DashboardHeader`** (`web/next/src/components/dashboard/header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
+- **`PageShell`** (`web/next/src/components/shell/content.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
+- **`PageHeader`** (`web/next/src/components/shell/content.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
 
 A new protected page is just a file under `(protected)/` (it inherits the guard and sidebar automatically) with its content wrapped in the shell:
 
 ```tsx
-import { DashboardHeader } from "@/components/dashboard/header"
-import { DashboardShell } from "@/components/dashboard/shell"
+import { PageHeader, PageShell } from "@/components/shell/content"
 
 export default function Page() {
   return (
-    <DashboardShell>
-      <DashboardHeader
+    <PageShell>
+      <PageHeader
         title="Dashboard"
         description="Intentionally empty. Auth, orgs, and the API are wired; this page is where your product begins."
       />
       {/* your content here */}
-    </DashboardShell>
+    </PageShell>
   )
 }
 ```

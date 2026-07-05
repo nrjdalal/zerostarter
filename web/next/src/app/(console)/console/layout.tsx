@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
-import { SidebarConsoleContent, SidebarConsoleHeader } from "@/components/sidebar/console"
-import { SidebarShell } from "@/components/sidebar/shell"
-import { SidebarUserMenu } from "@/components/sidebar/user-menu"
+import { ConsoleNav, ConsoleSidebarHeader } from "@/components/console/sidebar"
+import { SidebarShell } from "@/components/shell/sidebar-shell"
+import { SidebarUserMenu } from "@/components/shell/user-menu"
 import { SidebarMenu } from "@/components/ui/sidebar"
 import { assertConsoleAccess } from "@/lib/auth/console"
 import { resolveDocsNav } from "@/lib/docs/nav"
@@ -23,8 +23,8 @@ export default async function Layout({ children }: { children: React.ReactNode }
     <SidebarShell
       badge="Console"
       homeHref="/console"
-      header={<SidebarConsoleHeader />}
-      nav={<SidebarConsoleContent docsGroups={resolveDocsNav("console")} />}
+      header={<ConsoleSidebarHeader />}
+      nav={<ConsoleNav docsGroups={resolveDocsNav("console")} />}
       footer={
         <SidebarMenu>
           <SidebarUserMenu user={session.user} area="console" />

@@ -41,12 +41,12 @@ const NAV = `export const links = [
 `
 
 const fonts = () => readFileSync(join(dir, "web/next/src/lib/fonts.ts"), "utf8")
-const nav = () => readFileSync(join(dir, "web/next/src/components/navbar/home.tsx"), "utf8")
+const nav = () => readFileSync(join(dir, "web/next/src/components/common/navbar.tsx"), "utf8")
 
 describe("fixDangling", () => {
   const setup = (f: string, n: string) => {
     write(join(dir, "web/next/src/lib/fonts.ts"), f)
-    write(join(dir, "web/next/src/components/navbar/home.tsx"), n)
+    write(join(dir, "web/next/src/components/common/navbar.tsx"), n)
   }
 
   test("strips the /hire link, keeps other links and a clean fonts.ts", () => {
@@ -117,7 +117,7 @@ describe("convertRepo (in-place)", () => {
       }),
     )
     write(join(dir, "web/next/src/lib/fonts.ts"), FONTS)
-    write(join(dir, "web/next/src/components/navbar/home.tsx"), NAV)
+    write(join(dir, "web/next/src/components/common/navbar.tsx"), NAV)
   }
 
   test("removes the excluded paths and the ignore file itself", () => {

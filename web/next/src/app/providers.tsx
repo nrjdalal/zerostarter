@@ -9,7 +9,7 @@ import posthog from "posthog-js"
 import { useState } from "react"
 import { Toaster } from "sonner"
 
-import { DevTools } from "@/components/devtools"
+import { DevTools } from "@/components/common/devtools"
 
 export function OuterProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
