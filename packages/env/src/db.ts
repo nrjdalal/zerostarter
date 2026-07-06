@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfill } from "@/lib/polyfill"
+import { polyfillServer } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {
@@ -12,7 +12,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    POSTGRES_URL: polyfill(
+    POSTGRES_URL: polyfillServer(
       process.env.INTERNAL_API_URL
         ? process.env.POSTGRES_URL?.replace("localhost", "host.docker.internal")
         : process.env.POSTGRES_URL,

@@ -69,7 +69,7 @@ jobs:
           bunx oxfmt --write CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build
           # (env mirrors auto-check-build.yml so size labels match the PR-check build)
-          NODE_ENV=production SKIP_ENV_VALIDATION=true NEXT_PUBLIC_APP_URL=https://polyfill.url NEXT_PUBLIC_API_URL=https://polyfill.url bunx turbo build
+          NODE_ENV=production SKIP_ENV_VALIDATION=true bunx turbo build
           bun .github/scripts/build-sizes.ts --graph
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun .github/scripts/changelog-manager.ts
           # gate intentionally ignores the svg: it only ships riding a real release

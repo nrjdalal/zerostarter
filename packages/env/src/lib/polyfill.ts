@@ -1,5 +1,9 @@
-const skip = process.env.SKIP_ENV_VALIDATION === "true"
+const base = process.env.SKIP_ENV_VALIDATION === "true"
+const skipServer = base || process.env.SKIP_ENV_VALIDATION_SERVER === "true"
 
-// A frontend build compiles the server packages but never uses their vars, so under SKIP_ENV_VALIDATION a missing server var falls back to a valid dummy and validation still passes. The real backend runs without the flag, so its vars stay required.
-export const polyfill = (value: string | undefined, dummy: string) =>
-  value ?? (skip ? dummy : undefined)
+// Under a skip flag a missing required var falls back to a shape-valid dummy so a build that lacks it still passes validation; without the flag it stays undefined and fails. Server vars skip under the base flag or the server-scoped one (a web build sets the latter, having no server secrets); client vars skip only under the base flag, so a web build still validates the public vars it inlines and ships.
+export const polyfillServer = (value: string | undefined, dummy: string) =>
+  value ?? (skipServer ? dummy : undefined)
+
+export const polyfillClient = (value: string | undefined, dummy: string) =>
+  value ?? (base ? dummy : undefined)

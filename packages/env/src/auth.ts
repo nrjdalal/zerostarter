@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfill } from "@/lib/polyfill"
+import { polyfillServer } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {
@@ -21,13 +21,13 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    BETTER_AUTH_SECRET: polyfill(process.env.BETTER_AUTH_SECRET, "polyfill"),
+    BETTER_AUTH_SECRET: polyfillServer(process.env.BETTER_AUTH_SECRET, "polyfill"),
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    HONO_APP_URL: polyfill(process.env.HONO_APP_URL, "https://polyfill.url"),
-    HONO_TRUSTED_ORIGINS: polyfill(process.env.HONO_TRUSTED_ORIGINS, "https://polyfill.url"),
+    HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
+    HONO_TRUSTED_ORIGINS: polyfillServer(process.env.HONO_TRUSTED_ORIGINS, "https://polyfill.url"),
   },
   emptyStringAsUndefined: true,
 })
