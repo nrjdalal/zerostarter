@@ -1,3 +1,15 @@
+## v0.0.98
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.97...v0.0.98)
+
+### 🩹 Fixes
+
+- **web:** Don't flash Login in navbar before session resolves ([#666](https://github.com/nrjdalal/zerostarter/pull/666))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.97
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.96...v0.0.97)
