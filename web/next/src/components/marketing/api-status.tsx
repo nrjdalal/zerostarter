@@ -91,9 +91,11 @@ export function ApiStatus() {
       }
     }
 
-    // When the tab comes back to the foreground and we've settled on REST, give the socket another chance.
+    // When the tab comes back to the foreground, give the socket another chance.
+    // Cancel any pending reconnect first so we never open a second overlapping socket.
     const onVisible = () => {
       if (stopped || socket !== null || document.visibilityState !== "visible") return
+      clearTimers()
       retries = 0
       connect()
     }
