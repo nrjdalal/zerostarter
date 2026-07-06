@@ -94,4 +94,4 @@ For a live server-to-client stream instead of polling, upgrade a `GET` with `upg
 - Keep a `describeRoute` so the upgrade lists in the Scalar reference as a `101`, but OpenAPI can't schema-type WS frames and there is no `{ data }` / `{ error }` envelope: describe the frame shape in the route's `description`.
 - `bun --hot` picks up edits to the existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
 
-See `components/marketing/api-status.tsx` for the reference client: it uses the socket for a live pulse and falls back to polling REST `/api/health` when the socket can't connect or deliver a frame (serverless, buffered upgrade).
+See `components/marketing/api-status.tsx` for the reference client: it uses the socket for a live pulse, retries a transient drop a few times, then falls back to polling REST `/api/health` when the socket can't connect or deliver a frame (serverless, buffered upgrade).

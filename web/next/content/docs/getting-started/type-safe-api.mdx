@@ -110,7 +110,7 @@ socket.addEventListener("message", (event) => {
 })
 ```
 
-Treat the socket as progressive enhancement. A serverless deploy can't hold a long-lived connection, so the reference component (`components/marketing/api-status.tsx`) uses the WebSocket for its live pulse but falls back to polling REST `/api/health` when the socket can't connect or deliver a frame. The badge always reflects real status; only the pulse is socket-only.
+Treat the socket as progressive enhancement. A serverless deploy can't hold a long-lived connection, so the reference component (`components/marketing/api-status.tsx`) uses the WebSocket for its live pulse, retries a transient drop a few times, and falls back to polling REST `/api/health` when the socket can't connect or deliver a frame. The badge always reflects real status; only the pulse is socket-only.
 
 <Callout type="info" title="Frames are not RPC-typed">
 
