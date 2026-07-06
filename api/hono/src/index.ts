@@ -4,6 +4,7 @@ import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
+import { upgradeWebSocket, websocket } from "hono/bun"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
@@ -14,6 +15,14 @@ import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
+
+// Live payload pushed over /api/health/ws: the REST health data plus an ISO timestamp per heartbeat.
+export type HealthEvent = {
+  message: string
+  version: string
+  environment: typeof env.NODE_ENV
+  timestamp: string
+}
 
 const app = new Hono()
 
@@ -89,6 +98,27 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
       return c.json({ data })
     },
   )
+  .get(
+    "/health/ws",
+    upgradeWebSocket(() => {
+      let heartbeat: ReturnType<typeof setInterval> | null = null
+      const snapshot = (): HealthEvent => ({
+        message: "ok",
+        version: BUILD_VERSION,
+        environment: env.NODE_ENV,
+        timestamp: new Date().toISOString(),
+      })
+      return {
+        onOpen(_event, ws) {
+          ws.send(JSON.stringify(snapshot()))
+          heartbeat = setInterval(() => ws.send(JSON.stringify(snapshot())), 5000)
+        },
+        onClose() {
+          if (heartbeat) clearInterval(heartbeat)
+        },
+      }
+    }),
+  )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)
   .route("/v1", v1Router)
@@ -130,4 +160,5 @@ export type { ErrorCode } from "@/lib/error"
 export default {
   port: env.HONO_PORT,
   fetch: app.fetch,
+  websocket,
 }
