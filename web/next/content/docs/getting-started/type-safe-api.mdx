@@ -91,7 +91,7 @@ const routes = app.basePath("/api").get(
   "/health/ws",
   upgradeWebSocket(() => ({
     onOpen(_event, ws) {
-      ws.send(JSON.stringify(snapshot()))
+      ws.send(JSON.stringify({ message: "ok", version, environment, timestamp }))
     },
   })),
 )
