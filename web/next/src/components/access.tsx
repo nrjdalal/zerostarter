@@ -28,7 +28,7 @@ const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }),
 })
 
-export function Access() {
+export function Access({ labelClassName }: { labelClassName?: string }) {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
@@ -85,7 +85,9 @@ export function Access() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="w-24" variant="outline" />}>Login</DialogTrigger>
+      <DialogTrigger render={<Button className="w-24" variant="outline" />}>
+        <span className={labelClassName}>Login</span>
+      </DialogTrigger>
       <DialogContent className="max-w-md" initialFocus={false}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
