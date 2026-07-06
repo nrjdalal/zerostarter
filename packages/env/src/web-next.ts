@@ -5,16 +5,18 @@ import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
 import { skipClientValidation, skipServerValidation } from "@/lib/skip"
 
-// Split into two createEnv calls so the server and client sections can be skipped independently (t3-env's skipValidation is one boolean per call). The client env extends the server env, so the exported `env` still carries both.
+// Split into two createEnv calls so the server and client sections can be skipped independently (t3-env's skipValidation is one boolean per call). The client env extends the server env, so the exported `env` carries both when validating.
+const serverRuntimeEnv = {
+  NODE_ENV: process.env.NODE_ENV,
+  INTERNAL_API_URL: process.env.INTERNAL_API_URL,
+}
+
 const serverEnv = createEnv({
   server: {
     NODE_ENV,
     INTERNAL_API_URL: z.url().optional(),
   },
-  runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
-    INTERNAL_API_URL: process.env.INTERNAL_API_URL,
-  },
+  runtimeEnv: serverRuntimeEnv,
   emptyStringAsUndefined: true,
   skipValidation: skipServerValidation,
 })
@@ -31,6 +33,8 @@ export const env = createEnv({
     NEXT_PUBLIC_USERJOT_URL: z.url().optional(),
   },
   runtimeEnv: {
+    // Server vars are repeated here so they survive t3-env's skip short-circuit: when the client section is skipped, createEnv returns this runtimeEnv verbatim and does not merge `extends`.
+    ...serverRuntimeEnv,
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ??
       (skipClientValidation ? "https://polyfill.url" : undefined),
