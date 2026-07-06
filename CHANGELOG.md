@@ -1,3 +1,19 @@
+## v0.0.96
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.95...v0.0.96)
+
+### 🩹 Fixes
+
+- Preserve shadcn --sidebar override, refresh CLI demo timing, add CLI README ([#659](https://github.com/nrjdalal/zerostarter/pull/659))
+
+### 🏡 Chore
+
+- Update deps ([c496eb2](https://github.com/nrjdalal/zerostarter/commit/c496eb2))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.95
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.94...v0.0.95)
