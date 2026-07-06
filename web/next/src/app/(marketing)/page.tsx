@@ -274,11 +274,11 @@ docker compose up --build`
                 <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
+            <div className="mx-auto mt-10 max-w-2xl">
+              <CodeWindow label="Quickstart" html={initHtml} />
+            </div>
             <div className="mt-10 flex justify-center">
               <ApiStatus />
-            </div>
-            <div className="mx-auto mt-6 max-w-2xl">
-              <CodeWindow label="Quickstart" html={initHtml} />
             </div>
           </div>
         </div>

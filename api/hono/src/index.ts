@@ -4,6 +4,7 @@ import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
+import { upgradeWebSocket, websocket } from "hono/bun"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
@@ -89,6 +90,51 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
       return c.json({ data })
     },
   )
+  .get(
+    "/health/ws",
+    describeRoute({
+      tags: ["System"],
+      description:
+        "Live system health over a WebSocket (Bun). On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient } from "@/lib/api/client"
+
+const socket = apiClient.health.ws.$ws()
+socket.addEventListener("message", (event) => {
+  const health = JSON.parse(event.data)
+})`,
+          },
+        ],
+      } as object),
+      responses: {
+        101: { description: "Switching Protocols: the WebSocket handshake succeeded." },
+      },
+    }),
+    upgradeWebSocket(() => {
+      let heartbeat: ReturnType<typeof setInterval> | null = null
+      const snapshot = () =>
+        JSON.stringify({
+          message: "ok",
+          version: BUILD_VERSION,
+          environment: env.NODE_ENV,
+          timestamp: new Date().toISOString(),
+        })
+      return {
+        onOpen(_event, ws) {
+          ws.send(snapshot())
+          heartbeat = setInterval(() => ws.send(snapshot()), 5000)
+        },
+        // Bun's WS adapter surfaces every disconnect as close (it has no error event), so this covers all cleanup.
+        onClose() {
+          if (heartbeat) clearInterval(heartbeat)
+        },
+      }
+    }),
+  )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)
   .route("/v1", v1Router)
@@ -130,4 +176,5 @@ export type { ErrorCode } from "@/lib/error"
 export default {
   port: env.HONO_PORT,
   fetch: app.fetch,
+  websocket,
 }

@@ -77,6 +77,47 @@ The `api-endpoint` skill has the full recipe: the router template, the mandatory
 
 Every route decorated with `describeRoute` shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas from the Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`.
 
+## Live data over WebSockets
+
+Hono serves [WebSockets](https://hono.dev/docs/helpers/websocket) on Bun, and the same typed client reaches them. The health endpoint ships a live example at `/api/health/ws` that pushes a status snapshot on connect and a heartbeat every few seconds.
+
+A WebSocket route is a `GET` upgraded with `upgradeWebSocket` from `hono/bun`. The shared `websocket` handler is added to the Bun server export next to `fetch`:
+
+```ts
+// api/hono/src/index.ts
+import { upgradeWebSocket, websocket } from "hono/bun"
+
+const routes = app.basePath("/api").get(
+  "/health/ws",
+  upgradeWebSocket(() => ({
+    onOpen(_event, ws) {
+      ws.send(JSON.stringify({ message: "ok", version, environment, timestamp }))
+    },
+  })),
+)
+
+export default { port: env.HONO_PORT, fetch: app.fetch, websocket }
+```
+
+On the client, the RPC object exposes `$ws()` on the route, so the connection URL stays derived from the same configured API base (`http` becomes `ws`):
+
+```ts
+import { apiClient } from "@/lib/api/client"
+
+const socket = apiClient.health.ws.$ws()
+socket.addEventListener("message", (event) => {
+  const health = JSON.parse(event.data)
+})
+```
+
+Treat the socket as progressive enhancement over a REST baseline. The reference component (`components/marketing/api-status.tsx`) polls REST `/api/health` whenever no frame is live and overlays a live pulse while the socket streams, reconnecting with capped backoff. So the badge always reflects real status, a serverless deploy that can't hold a socket simply shows the REST-polled state, and only the pulse is socket-only.
+
+<Callout type="info" title="Frames are not RPC-typed">
+
+`$ws()` types the route _path_, not the messages on the wire: `ws.send()` takes a raw string and the client hands back a standard `WebSocket`, so frame data arrives untyped. Parse defensively and read only what you need (`api-status.tsx` checks `message`). A WebSocket carries no `{ data }` envelope either, and OpenAPI can't schema-type its frames, so the route is listed in the reference as a `101` upgrade with the shape described in prose, not as a typed response.
+
+</Callout>
+
 ## Next
 
 - [API Conventions](/docs/manage/api-conventions): the `{ data }` / `{ error }` envelope and error codes.
