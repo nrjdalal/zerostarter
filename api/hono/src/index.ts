@@ -116,10 +116,6 @@ socket.addEventListener("message", (event) => {
     }),
     upgradeWebSocket(() => {
       let heartbeat: ReturnType<typeof setInterval> | null = null
-      const stop = () => {
-        if (heartbeat) clearInterval(heartbeat)
-        heartbeat = null
-      }
       const snapshot = () =>
         JSON.stringify({
           message: "ok",
@@ -132,11 +128,9 @@ socket.addEventListener("message", (event) => {
           ws.send(snapshot())
           heartbeat = setInterval(() => ws.send(snapshot()), 5000)
         },
+        // Bun's WS adapter surfaces every disconnect as close (it has no error event), so this covers all cleanup.
         onClose() {
-          stop()
-        },
-        onError() {
-          stop()
+          if (heartbeat) clearInterval(heartbeat)
         },
       }
     }),
