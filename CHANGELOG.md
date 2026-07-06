@@ -1,3 +1,19 @@
+## v0.0.97
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.96...v0.0.97)
+
+### 🚀 Enhancements
+
+- Stream system health over a WebSocket (live status demo) ([#661](https://github.com/nrjdalal/zerostarter/pull/661))
+
+### 🩹 Fixes
+
+- **env:** Fall back server-only vars under SKIP so the frontend build doesn't require them ([#663](https://github.com/nrjdalal/zerostarter/pull/663))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.96
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.95...v0.0.96)
