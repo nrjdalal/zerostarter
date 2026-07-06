@@ -16,14 +16,6 @@ import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
 
-// Live payload pushed over /api/health/ws: the REST health data plus an ISO timestamp per heartbeat.
-export type HealthEvent = {
-  message: string
-  version: string
-  environment: typeof env.NODE_ENV
-  timestamp: string
-}
-
 const app = new Hono()
 
 app.use(
@@ -100,18 +92,41 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
   )
   .get(
     "/health/ws",
+    describeRoute({
+      tags: ["System"],
+      description:
+        "Live system health over a WebSocket (Bun). On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient } from "@/lib/api/client"
+
+const socket = apiClient.health.ws.$ws()
+socket.addEventListener("message", (event) => {
+  const health = JSON.parse(event.data)
+})`,
+          },
+        ],
+      } as object),
+      responses: {
+        101: { description: "Switching Protocols: the WebSocket handshake succeeded." },
+      },
+    }),
     upgradeWebSocket(() => {
       let heartbeat: ReturnType<typeof setInterval> | null = null
-      const snapshot = (): HealthEvent => ({
-        message: "ok",
-        version: BUILD_VERSION,
-        environment: env.NODE_ENV,
-        timestamp: new Date().toISOString(),
-      })
+      const snapshot = () =>
+        JSON.stringify({
+          message: "ok",
+          version: BUILD_VERSION,
+          environment: env.NODE_ENV,
+          timestamp: new Date().toISOString(),
+        })
       return {
         onOpen(_event, ws) {
-          ws.send(JSON.stringify(snapshot()))
-          heartbeat = setInterval(() => ws.send(JSON.stringify(snapshot())), 5000)
+          ws.send(snapshot())
+          heartbeat = setInterval(() => ws.send(snapshot()), 5000)
         },
         onClose() {
           if (heartbeat) clearInterval(heartbeat)

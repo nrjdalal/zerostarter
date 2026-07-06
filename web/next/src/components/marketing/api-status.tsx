@@ -1,6 +1,5 @@
 "use client"
 
-import type { HealthEvent } from "@api/hono"
 import { useEffect, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -8,12 +7,14 @@ import { apiClient } from "@/lib/api/client"
 
 type ConnectionState = "connecting" | "live" | "down"
 
-function parseHealthEvent(raw: unknown): HealthEvent | null {
-  if (typeof raw !== "string") return null
+// Frames aren't RPC-typed (Hono types the route, not the payload), so read the one field we need defensively.
+function isOperational(raw: unknown): boolean {
+  if (typeof raw !== "string") return false
   try {
-    return JSON.parse(raw) as HealthEvent
+    const frame = JSON.parse(raw) as { message?: unknown }
+    return frame.message === "ok"
   } catch {
-    return null
+    return false
   }
 }
 
@@ -28,8 +29,7 @@ export function ApiStatus() {
     const connect = () => {
       socket = apiClient.health.ws.$ws()
       socket.addEventListener("message", (event) => {
-        const health = parseHealthEvent(event.data)
-        setState(health && health.message === "ok" ? "live" : "down")
+        setState(isOperational(event.data) ? "live" : "down")
       })
       socket.addEventListener("close", () => {
         if (stopped) return
