@@ -83,4 +83,15 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))   // fully typed
 ```
 
-Client components needing live data use TanStack Query (see `components/marketing/api-status.tsx`).
+Client components polling REST data use TanStack Query (see `components/access.tsx`).
+
+## WebSocket routes
+
+For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: it pushes a snapshot on connect and a heartbeat every 5s.
+
+- The typed client reaches it with `apiClient.health.ws.$ws()`, which returns a standard `WebSocket` pointed at the configured API base (`http` becomes `ws`).
+- Frame payloads are not RPC-typed, so export a shared type (the API exports `HealthEvent` from `@api/hono`) and parse against it on the client.
+- WebSocket routes skip `describeRoute`, the `{ data }` / `{ error }` envelope, and the OpenAPI reference (which only describes HTTP).
+- `bun --hot` picks up edits to the existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
+
+See `components/marketing/api-status.tsx` for the client with reconnect.

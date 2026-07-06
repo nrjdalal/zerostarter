@@ -77,6 +77,46 @@ The `api-endpoint` skill has the full recipe: the router template, the mandatory
 
 Every route decorated with `describeRoute` shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas from the Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`.
 
+## Live data over WebSockets
+
+Hono serves [WebSockets](https://hono.dev/docs/helpers/websocket) on Bun, and the same typed client reaches them. The health endpoint ships a live example at `/api/health/ws` that pushes a status snapshot on connect and a heartbeat every few seconds.
+
+A WebSocket route is a `GET` upgraded with `upgradeWebSocket` from `hono/bun`. The shared `websocket` handler is added to the Bun server export next to `fetch`:
+
+```ts
+// api/hono/src/index.ts
+import { upgradeWebSocket, websocket } from "hono/bun"
+
+const routes = app.basePath("/api").get(
+  "/health/ws",
+  upgradeWebSocket(() => ({
+    onOpen(_event, ws) {
+      ws.send(JSON.stringify(snapshot()))
+    },
+  })),
+)
+
+export default { port: env.HONO_PORT, fetch: app.fetch, websocket }
+```
+
+On the client, the RPC object exposes `$ws()` on the route, so the connection URL stays derived from the same configured API base (`http` becomes `ws`):
+
+```ts
+import type { HealthEvent } from "@api/hono"
+import { apiClient } from "@/lib/api/client"
+
+const socket = apiClient.health.ws.$ws()
+socket.addEventListener("message", (event) => {
+  const health = JSON.parse(event.data) as HealthEvent
+})
+```
+
+<Callout type="info" title="Frames are not RPC-typed">
+
+`$ws()` types the route path, not the messages on the wire. Share the payload type explicitly: the API exports `HealthEvent` from `@api/hono`, so both ends agree on the shape. WebSocket routes carry no `{ data }` envelope and stay out of the OpenAPI reference, which only describes HTTP. `components/marketing/api-status.tsx` is the reference client, with reconnect.
+
+</Callout>
+
 ## Next
 
 - [API Conventions](/docs/manage/api-conventions): the `{ data }` / `{ error }` envelope and error codes.
