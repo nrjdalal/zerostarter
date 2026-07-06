@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
+import { skipServerValidation } from "@/lib/skip"
 
 export const env = createEnv({
   server: {
@@ -16,5 +17,5 @@ export const env = createEnv({
       : process.env.POSTGRES_URL,
   },
   emptyStringAsUndefined: true,
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
+  skipValidation: skipServerValidation,
 })

@@ -3,12 +3,24 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
+import { skipClientValidation, skipServerValidation } from "@/lib/skip"
 
-export const env = createEnv({
+// Split into two createEnv calls so the server and client sections can be skipped independently (t3-env's skipValidation is one boolean per call). The client env extends the server env, so the exported `env` still carries both.
+const serverEnv = createEnv({
   server: {
     NODE_ENV,
     INTERNAL_API_URL: z.url().optional(),
   },
+  runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
+    INTERNAL_API_URL: process.env.INTERNAL_API_URL,
+  },
+  emptyStringAsUndefined: true,
+  skipValidation: skipServerValidation,
+})
+
+export const env = createEnv({
+  extends: [serverEnv],
   clientPrefix: "NEXT_PUBLIC_",
   client: {
     NEXT_PUBLIC_APP_URL: z.url(),
@@ -19,19 +31,17 @@ export const env = createEnv({
     NEXT_PUBLIC_USERJOT_URL: z.url().optional(),
   },
   runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
-    INTERNAL_API_URL: process.env.INTERNAL_API_URL,
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ??
-      (process.env.SKIP_ENV_VALIDATION === "true" ? "https://polyfill.url" : undefined),
+      (skipClientValidation ? "https://polyfill.url" : undefined),
     NEXT_PUBLIC_APP_URL:
       process.env.NEXT_PUBLIC_APP_URL ??
-      (process.env.SKIP_ENV_VALIDATION === "true" ? "https://polyfill.url" : undefined),
+      (skipClientValidation ? "https://polyfill.url" : undefined),
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
     NEXT_PUBLIC_USERJOT_URL: process.env.NEXT_PUBLIC_USERJOT_URL,
   },
   emptyStringAsUndefined: true,
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
+  skipValidation: skipClientValidation,
 })

@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
+import { skipServerValidation } from "@/lib/skip"
 
 export const env = createEnv({
   server: {
@@ -25,5 +26,5 @@ export const env = createEnv({
     HONO_TRUSTED_ORIGINS: process.env.HONO_TRUSTED_ORIGINS,
   },
   emptyStringAsUndefined: true,
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
+  skipValidation: skipServerValidation,
 })

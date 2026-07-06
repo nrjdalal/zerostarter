@@ -59,6 +59,13 @@ A variable declared in the schema but missing from the `runtimeEnv` map is silen
 
 `SKIP_ENV_VALIDATION=true` bypasses every check. This is how CI and Docker images build before real secrets exist (in `web-next`, missing public URLs fall back to `https://polyfill.url` so the build completes). Never set it for a running app: it turns off the guarantee that every variable is present and typed.
 
+Two scoped variants skip just one side, for builds that have one set of vars but not the other (e.g. a web build that must guarantee the inlined `NEXT_PUBLIC_*` client vars but has no server secrets):
+
+- `SKIP_ENV_VALIDATION_CLIENT=true` skips only the `client` section (the `NEXT_PUBLIC_*` vars).
+- `SKIP_ENV_VALIDATION_SERVER=true` skips only the `server` section.
+
+The base flag implies both, so a section is skipped when `SKIP_ENV_VALIDATION` **or** its scoped flag is set. The server-only packages (`api-hono`, `auth`, `db`) respond to the base and `_SERVER` flags; `_CLIENT` only affects `web-next`.
+
 ## Next
 
 - [Database](/docs/manage/database): where `POSTGRES_URL` is consumed.
