@@ -83,4 +83,16 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))   // fully typed
 ```
 
-Client components needing live data use TanStack Query (see `components/marketing/api-status.tsx`).
+Client components reading REST data use TanStack Query (see `components/access.tsx`).
+
+## WebSocket routes
+
+For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: it pushes a snapshot on connect and a heartbeat every 5s.
+
+- The typed client reaches it with `apiClient.health.ws.$ws()`, which returns a standard `WebSocket` pointed at the configured API base (`http` becomes `ws`).
+- Frame payloads are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`, so parse defensively on the client and read only the fields you need. Don't hand-maintain a shared payload type RPC can't derive.
+- Keep a `describeRoute` so the upgrade lists in the Scalar reference as a `101`, but OpenAPI can't schema-type WS frames and there is no `{ data }` / `{ error }` envelope: describe the frame shape in the route's `description`.
+- Unlike REST, the handshake is not gated by `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` does not send the client's credentials, so for a sensitive or authed route check the `Origin` header (or a token) in the handler rather than relying on the allowlist. `/api/health/ws` serves public data, so it doesn't.
+- `bun --hot` picks up edits to the existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
+
+See `components/marketing/api-status.tsx` for the reference client: REST `/api/health` is the always-honest baseline (polled whenever no frame is live), and the socket overlays a live pulse, reconnecting with capped backoff so a serverless deploy or a transient blip degrades to the REST-polled state instead of a broken badge.
