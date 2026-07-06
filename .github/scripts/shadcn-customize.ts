@@ -127,19 +127,28 @@ function patchSidebar() {
   log(`patched: ${SIDEBAR}`)
 }
 
-// globals.css: brand font role (init repoints --font-sans at its own Inter variable). One stable,
-// uniquely-anchored line, so a guarded string swap is enough; no CSS parser warranted.
+// globals.css: two brand overrides init reverts. --font-sans repoints at its own Inter variable;
+// --sidebar gets hardcoded light/dark defaults where we flush it with --background (PR #566). Both
+// are stable, uniquely-anchored lines, so guarded string swaps suffice; no CSS parser warranted.
 function patchGlobals() {
-  const css = readFileSync(GLOBALS, "utf8")
-  const FROM = "--font-sans: var(--font-sans);"
-  const TO = "--font-sans: var(--font-dm-sans), sans-serif;"
-  if (css.includes(TO)) {
-    log(`already applied: ${GLOBALS}`)
-    return
-  }
-  if (!css.includes(FROM))
+  let css = readFileSync(GLOBALS, "utf8")
+
+  const FONT_FROM = "--font-sans: var(--font-sans);"
+  const FONT_TO = "--font-sans: var(--font-dm-sans), sans-serif;"
+  if (css.includes(FONT_FROM)) css = css.replace(FONT_FROM, FONT_TO)
+  else if (!css.includes(FONT_TO))
     throw new Error("shadcn-customize: --font-sans anchor not found in globals.css; shape changed")
-  writeFileSync(GLOBALS, css.replace(FROM, TO))
+
+  // one --sidebar line in :root, one in .dark; both flush to --background regardless of the default
+  const SIDEBAR_LINE = /^(\s*)--sidebar: .+;$/gm
+  const sidebarLines = css.match(SIDEBAR_LINE)
+  if (!sidebarLines || sidebarLines.length !== 2)
+    throw new Error(
+      `shadcn-customize: expected 2 --sidebar lines in globals.css, found ${sidebarLines ? sidebarLines.length : 0}; shape changed`,
+    )
+  css = css.replace(SIDEBAR_LINE, "$1--sidebar: var(--background);")
+
+  writeFileSync(GLOBALS, css)
   log(`patched: ${GLOBALS}`)
 }
 

@@ -29,7 +29,7 @@ description: Run and reconcile the shadcn component sync (`bun run shadcn:update
 - `button.tsx`, Base UI render wiring (`render`, `nativeButton={!render}`, `render={render}`)
 - `spinner.tsx`, `React.ComponentProps<RemixiconComponentType>` typing
 - `sidebar.tsx`, optional `children` label on `SidebarTrigger`
-- `globals.css`, `--font-sans` points at the brand DM Sans variable
+- `globals.css`, `--font-sans` points at the brand DM Sans variable, and both `--sidebar` lines (`:root` + `.dark`) flush to `var(--background)` (PR #566)
 
 `calendar.tsx` is **not** touched: it carries no local override and tracks the registry as-is (we pin `react-day-picker` to `^10`; the registry component is v10-compatible).
 
