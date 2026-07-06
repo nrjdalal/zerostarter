@@ -35,3 +35,5 @@ jobs:
         env:
           NODE_ENV: production
           SKIP_ENV_VALIDATION: true
+          NEXT_PUBLIC_APP_URL: https://polyfill.url
+          NEXT_PUBLIC_API_URL: https://polyfill.url

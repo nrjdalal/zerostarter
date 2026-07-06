@@ -57,7 +57,7 @@ A variable declared in the schema but missing from the `runtimeEnv` map is silen
 
 ## Skipping validation
 
-`SKIP_ENV_VALIDATION=true` bypasses every check. This is how CI and Docker images build before real secrets exist (in `web-next`, missing public URLs fall back to `https://polyfill.url` so the build completes). Never set it for a running app: it turns off the guarantee that every variable is present and typed.
+`SKIP_ENV_VALIDATION=true` falls the **server-only** variables (`POSTGRES_URL`, `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`) back to shape-valid dummies, so a build that compiles the server packages without using them (the frontend build) passes without those secrets. Validation still runs otherwise: a present-but-invalid value still fails, and the public `NEXT_PUBLIC_*` client vars stay **required and validated**, because they are inlined into the shipped bundle. CI builds that lack real public URLs pass throwaway ones explicitly. Never set it for a running app: the server would then start against dummy secrets instead of real ones.
 
 ## Next
 
