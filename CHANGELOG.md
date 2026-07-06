@@ -1,3 +1,15 @@
+## v0.0.95
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.94...v0.0.95)
+
+### 💅 Refactors
+
+- **web:** Posthog canonical app router setup and docs-faithful env name ([#656](https://github.com/nrjdalal/zerostarter/pull/656))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.94
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.93...v0.0.94)
