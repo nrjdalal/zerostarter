@@ -92,10 +92,11 @@ export function ApiStatus() {
       }
     }
 
-    // On refocus, retry the socket; cancel any pending reconnect first so we never open a second overlapping socket. A recovered frame resets the retry budget, so don't zero it here (that could starve the REST fallback).
+    // Re-probe only when settled on REST (no live socket and no pending retry): reset the budget so a genuinely-reachable socket recovers, while bailing mid-burst keeps a flapping socket falling through to REST.
     const onVisible = () => {
-      if (stopped || socket !== null || document.visibilityState !== "visible") return
-      clearTimers()
+      if (stopped || socket !== null || retry !== null || document.visibilityState !== "visible")
+        return
+      retries = 0
       connect()
     }
 
@@ -114,11 +115,11 @@ export function ApiStatus() {
   let live = false
   if (useRest) {
     status = rest.isError ? "down" : rest.data ? "operational" : "connecting"
-  } else if (wsHealth === null) {
-    status = "connecting"
-  } else {
+  } else if (wsConnected && wsHealth !== null) {
     status = wsHealth ? "operational" : "down"
-    live = wsConnected
+    live = wsHealth
+  } else {
+    status = "connecting"
   }
 
   if (status === "connecting") {
