@@ -102,18 +102,17 @@ export default { port: env.HONO_PORT, fetch: app.fetch, websocket }
 On the client, the RPC object exposes `$ws()` on the route, so the connection URL stays derived from the same configured API base (`http` becomes `ws`):
 
 ```ts
-import type { HealthEvent } from "@api/hono"
 import { apiClient } from "@/lib/api/client"
 
 const socket = apiClient.health.ws.$ws()
 socket.addEventListener("message", (event) => {
-  const health = JSON.parse(event.data) as HealthEvent
+  const health = JSON.parse(event.data)
 })
 ```
 
 <Callout type="info" title="Frames are not RPC-typed">
 
-`$ws()` types the route path, not the messages on the wire. Share the payload type explicitly: the API exports `HealthEvent` from `@api/hono`, so both ends agree on the shape. WebSocket routes carry no `{ data }` envelope and stay out of the OpenAPI reference, which only describes HTTP. `components/marketing/api-status.tsx` is the reference client, with reconnect.
+`$ws()` types the route _path_, not the messages on the wire: `ws.send()` takes a raw string and the client hands back a standard `WebSocket`, so frame data arrives untyped. Parse defensively and read only what you need (`api-status.tsx` checks `message`). A WebSocket carries no `{ data }` envelope either, and OpenAPI can't schema-type its frames, so the route is listed in the reference as a `101` upgrade with the shape described in prose, not as a typed response.
 
 </Callout>
 

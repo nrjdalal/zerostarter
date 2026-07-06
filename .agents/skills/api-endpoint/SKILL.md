@@ -90,8 +90,8 @@ Client components polling REST data use TanStack Query (see `components/access.t
 For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: it pushes a snapshot on connect and a heartbeat every 5s.
 
 - The typed client reaches it with `apiClient.health.ws.$ws()`, which returns a standard `WebSocket` pointed at the configured API base (`http` becomes `ws`).
-- Frame payloads are not RPC-typed, so export a shared type (the API exports `HealthEvent` from `@api/hono`) and parse against it on the client.
-- WebSocket routes skip `describeRoute`, the `{ data }` / `{ error }` envelope, and the OpenAPI reference (which only describes HTTP).
+- Frame payloads are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`, so parse defensively on the client and read only the fields you need. Don't hand-maintain a shared payload type RPC can't derive.
+- Keep a `describeRoute` so the upgrade lists in the Scalar reference as a `101`, but OpenAPI can't schema-type WS frames and there is no `{ data }` / `{ error }` envelope: describe the frame shape in the route's `description`.
 - `bun --hot` picks up edits to the existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
 
 See `components/marketing/api-status.tsx` for the client with reconnect.
