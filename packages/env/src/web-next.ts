@@ -33,5 +33,4 @@ export const env = createEnv({
     NEXT_PUBLIC_USERJOT_URL: process.env.NEXT_PUBLIC_USERJOT_URL,
   },
   emptyStringAsUndefined: true,
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 })
