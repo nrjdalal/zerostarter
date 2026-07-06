@@ -8,6 +8,8 @@ import { apiClient, unwrap } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
 const FRAME_DEADLINE_MS = 4000
+// Rolling watchdog for a half-open socket; must exceed the server's 5s heartbeat so a real gap trips it.
+const HEARTBEAT_TIMEOUT_MS = 12000
 const RETRY_DELAY_MS = 3000
 const RETRY_LIMIT = 3
 
@@ -61,14 +63,13 @@ export function ApiStatus() {
       socket = apiClient.health.ws.$ws()
       socket.addEventListener("message", (event) => {
         if (stopped) return
-        if (deadline) {
-          clearTimeout(deadline)
-          deadline = null
-        }
         wasLive = true
         retries = 0
         setUseRest(false)
         setWsLive(isOperational(event.data))
+        // Re-arm the watchdog each frame: a heartbeat gap on a half-open socket must trip onDrop.
+        if (deadline) clearTimeout(deadline)
+        deadline = setTimeout(onDrop, HEARTBEAT_TIMEOUT_MS)
       })
       socket.addEventListener("close", onDrop)
       socket.addEventListener("error", onDrop)
