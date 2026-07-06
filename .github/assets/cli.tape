@@ -21,6 +21,8 @@ Show
 
 Sleep 800ms
 Type "bunx zerostarter init" Sleep 300ms Enter
-Sleep 16s
+Wait+Screen@90s /Provision a local Postgres/
+Sleep 1500ms
 Enter
-Sleep 13s
+Wait+Screen@120s /Learn more/
+Sleep 2s
