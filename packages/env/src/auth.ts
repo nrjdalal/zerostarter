@@ -5,7 +5,6 @@ import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
 import { lazyEnv } from "@/lib/lazy"
 
-// Lazy so that importing this module (e.g. in auth's tsdown.config.ts) does not validate at build time; the auth server validates it on first access at runtime.
 export const env = lazyEnv(() =>
   createEnv({
     server: {

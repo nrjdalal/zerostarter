@@ -5,7 +5,7 @@ type BundleDeps = {
   alwaysBundle?: (string | RegExp)[]
 }
 
-// Shared tsdown config for the backend packages: emits tsgo dts and minifies. It never reads env, so building a package does not validate env; each env file is validated at runtime by the package that owns it. The optional `env` is accepted only so a caller can keep its env import in the package's tsconfig program (auth's dts generation needs the zod reference that import transitively provides) without it counting as unused; it is never read here.
+// Shared tsdown config: never reads env, so building a package never validates it. env/getSafeEnv are accepted but intentionally unused, for callers that keep a required @packages/env import (see packages/auth/tsdown.config.ts).
 export function definePackageConfig(
   options: { env?: unknown; getSafeEnv?: unknown; deps?: BundleDeps } = {},
 ) {
