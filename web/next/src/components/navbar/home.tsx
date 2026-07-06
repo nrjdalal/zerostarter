@@ -69,7 +69,7 @@ function SocialLinks({ onClick }: { onClick?: () => void }) {
 
 export function Navbar() {
   const pathname = usePathname()
-  const { data: session } = authClient.useSession()
+  const { data: session, isPending } = authClient.useSession()
 
   const [toDashboard, setToDashboard] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -132,7 +132,15 @@ export function Navbar() {
             <SocialLinks />
           </div>
 
-          {session?.user ? (
+          {/* Shell paints immediately; only the label fades in once auth resolves, so the box never pops and a logged-in user never sees a flash of Login. */}
+          {isPending ? (
+            <Button
+              className="pointer-events-none w-24"
+              variant="outline"
+              aria-hidden
+              tabIndex={-1}
+            />
+          ) : session?.user ? (
             <Button
               role="link"
               className="w-24"
@@ -140,10 +148,14 @@ export function Navbar() {
               onClick={() => setToDashboard(true)}
               render={<Link href="/dashboard" />}
             >
-              {toDashboard ? <Spinner /> : "Dashboard"}
+              {toDashboard ? (
+                <Spinner />
+              ) : (
+                <span className="animate-in fade-in duration-1000">Dashboard</span>
+              )}
             </Button>
           ) : (
-            <Access />
+            <Access labelClassName="animate-in fade-in duration-1000" />
           )}
 
           <div className="lg:-mr-2.5">
