@@ -52,6 +52,8 @@ export function ApiStatus() {
       const current = () => !stopped && socket === ws
       const drop = () => {
         if (!current()) return
+        // Close it ourselves: on the watchdog path the socket is still OPEN, and closing lets the server's onClose clear its heartbeat instead of streaming to a dead peer (a no-op once close/error already fired).
+        ws.close()
         socket = null
         setWsFrame(null)
         if (watchdog) clearTimeout(watchdog)
