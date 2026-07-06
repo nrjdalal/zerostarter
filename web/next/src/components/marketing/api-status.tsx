@@ -25,11 +25,9 @@ function isOperational(raw: unknown): boolean {
 }
 
 export function ApiStatus() {
-  // The WebSocket is the live channel (pulsing dot). A socket that was live and
-  // blips gets a few quick retries; one that never connects (serverless deploy,
-  // a proxy that buffers the upgrade) falls straight to polling REST /api/health,
-  // so the badge always reflects real status and only the pulse is socket-only.
-  const [wsLive, setWsLive] = useState<boolean | null>(null)
+  // wsHealth is the last health seen on the socket; wsConnected is whether a frame is currently streaming (the pulse); useRest is the fallback poll when the socket can't hold.
+  const [wsHealth, setWsHealth] = useState<boolean | null>(null)
+  const [wsConnected, setWsConnected] = useState(false)
   const [useRest, setUseRest] = useState(false)
 
   const rest = useQuery({
@@ -66,7 +64,8 @@ export function ApiStatus() {
         wasLive = true
         retries = 0
         setUseRest(false)
-        setWsLive(isOperational(event.data))
+        setWsConnected(true)
+        setWsHealth(isOperational(event.data))
         // Re-arm the watchdog each frame: a heartbeat gap on a half-open socket must trip onDrop.
         if (deadline) clearTimeout(deadline)
         deadline = setTimeout(onDrop, HEARTBEAT_TIMEOUT_MS)
@@ -82,8 +81,9 @@ export function ApiStatus() {
       socket.close()
       socket = null
       clearTimers()
-      // Retry only a connection that had gone live (a transient blip); a socket
-      // that never delivered a frame commits to REST straight away.
+      // No live socket: drop the pulse but keep the last-known health showing until a retry or REST resolves it.
+      setWsConnected(false)
+      // Retry only a connection that had gone live (a transient blip); one that never delivered a frame commits to REST.
       if (wasLive && retries < RETRY_LIMIT) {
         retries += 1
         retry = setTimeout(connect, RETRY_DELAY_MS)
@@ -92,12 +92,10 @@ export function ApiStatus() {
       }
     }
 
-    // When the tab comes back to the foreground, give the socket another chance.
-    // Cancel any pending reconnect first so we never open a second overlapping socket.
+    // On refocus, retry the socket; cancel any pending reconnect first so we never open a second overlapping socket. A recovered frame resets the retry budget, so don't zero it here (that could starve the REST fallback).
     const onVisible = () => {
       if (stopped || socket !== null || document.visibilityState !== "visible") return
       clearTimers()
-      retries = 0
       connect()
     }
 
@@ -116,11 +114,11 @@ export function ApiStatus() {
   let live = false
   if (useRest) {
     status = rest.isError ? "down" : rest.data ? "operational" : "connecting"
-  } else if (wsLive === null) {
+  } else if (wsHealth === null) {
     status = "connecting"
   } else {
-    status = wsLive ? "operational" : "down"
-    live = wsLive
+    status = wsHealth ? "operational" : "down"
+    live = wsConnected
   }
 
   if (status === "connecting") {
