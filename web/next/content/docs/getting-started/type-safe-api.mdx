@@ -53,15 +53,11 @@ That typed `apiClient.v1.session.$get()` above works because the route is define
 
 ```ts
 // api/hono/src/routers/v1.ts
-export const v1Router = new Hono<{ Variables: Session }>().use("/*", authMiddleware).get(
-  "/session",
-  describeRoute({
-    /* OpenAPI metadata */
-  }),
-  (c) => {
+export const v1Router = new Hono<{ Variables: Session }>()
+  .use("/*", authMiddleware)
+  .get("/session", describeRoute({/* OpenAPI metadata */}), (c) => {
     return c.json({ data: c.get("session") })
-  },
-)
+  })
 ```
 
 ```ts
