@@ -17,32 +17,31 @@ name: api-endpoint
 description: Add a typed Hono API endpoint following repo conventions... Use when adding or modifying API routes in api/hono.
 ```
 
-An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so all fourteen skills cost almost nothing in context until one is needed; the full procedure loads only on a match.
+An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so all thirteen skills cost almost nothing in context until one is needed; the full procedure loads only on a match.
 
 When you don't know where to start, the `codebase-map` skill orients first; it maps where each kind of change lives and how types ripple across the stack. It is the one skill worth reading before you have a specific task.
 
 ## The catalog
 
-Fourteen skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
+Thirteen skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
 
-| Stage    | Skill                        | What it does                                                                                                                  |
-| -------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Navigate | `codebase-map`               | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory. |
-| Build    | `api-endpoint`               | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.     |
-| Build    | `db-migration`               | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                     |
-| Build    | `dev`                        | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                      |
-| Build    | `design`                     | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                   |
-| Operate  | `agent-browser`              | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
-| Operate  | `docker-test`                | Build and smoke-test the Docker images with `docker compose`.                                                                 |
-| Operate  | `audit`                      | Run the dependency security audit and maintain `AUDIT.md`; unblocks the pre-push audit hook.                                  |
-| Operate  | `ui-verify`                  | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                             |
-| Maintain | `shadcn-sync`                | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                              |
-| Maintain | `fonts`                      | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                        |
-| Maintain | `ignore-sync`                | Keep `.dockerignore` in step with `.gitignore`.                                                                               |
-| Ship     | `gh-commit`                  | Atomic commits in conventional-commit format.                                                                                 |
-| Ship     | `github-pull-request-review` | Turn-based PR review with hard reviewer/author role separation.                                                               |
+| Stage    | Skill           | What it does                                                                                                                  |
+| -------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Navigate | `codebase-map`  | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory. |
+| Build    | `api-endpoint`  | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.     |
+| Build    | `db-migration`  | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                     |
+| Build    | `dev`           | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                      |
+| Build    | `design`        | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                   |
+| Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
+| Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`.                                                                 |
+| Operate  | `audit`         | Run the dependency security audit and maintain `AUDIT.md`; unblocks the pre-push audit hook.                                  |
+| Operate  | `ui-verify`     | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                             |
+| Maintain | `shadcn-sync`   | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                              |
+| Maintain | `fonts`         | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                        |
+| Maintain | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                                               |
+| Ship     | `gh-commit`     | Atomic commits in conventional-commit format.                                                                                 |
 
-Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. The other thirteen are written for this repo.
+Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. The other twelve are written for this repo.
 
 ## Writing your own
 

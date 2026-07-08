@@ -30,19 +30,18 @@ Local-only and requires a trusted `Origin` header. See `api/hono/src/routers/age
 
 Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits.
 
-| Skill                        | Use it to                                                                                          |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| `agent-browser`              | Drive the running app in a browser: navigate, click, type, screenshot.                             |
-| `api-endpoint`               | Add a typed Hono API endpoint: router, validation envelope, OpenAPI, RPC wiring.                   |
-| `audit`                      | Run the dependency security audit and maintain `AUDIT.md`.                                         |
-| `codebase-map`               | Orient: where to edit for a change, trace a feature across the stack, search the repo. Start here. |
-| `db-migration`               | Create and apply a Drizzle schema change.                                                          |
-| `design`                     | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |
-| `dev`                        | Start, restart, and verify the dev stack, and fix the `bun --hot` stale-route trap.                |
-| `docker-test`                | Build and smoke-test the Docker images.                                                            |
-| `fonts`                      | Add or swap a self-hosted web font.                                                                |
-| `gh-commit`                  | Make atomic, conventional commits.                                                                 |
-| `github-pull-request-review` | Run a turn-based PR review.                                                                        |
-| `ignore-sync`                | Keep `.dockerignore` in step with `.gitignore`.                                                    |
-| `shadcn-sync`                | Run and reconcile the shadcn component sync.                                                       |
-| `ui-verify`                  | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |
+| Skill           | Use it to                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| `agent-browser` | Drive the running app in a browser: navigate, click, type, screenshot.                             |
+| `api-endpoint`  | Add a typed Hono API endpoint: router, validation envelope, OpenAPI, RPC wiring.                   |
+| `audit`         | Run the dependency security audit and maintain `AUDIT.md`.                                         |
+| `codebase-map`  | Orient: where to edit for a change, trace a feature across the stack, search the repo. Start here. |
+| `db-migration`  | Create and apply a Drizzle schema change.                                                          |
+| `design`        | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |
+| `dev`           | Start, restart, and verify the dev stack, and fix the `bun --hot` stale-route trap.                |
+| `docker-test`   | Build and smoke-test the Docker images.                                                            |
+| `fonts`         | Add or swap a self-hosted web font.                                                                |
+| `gh-commit`     | Make atomic, conventional commits.                                                                 |
+| `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
+| `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
+| `ui-verify`     | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |
