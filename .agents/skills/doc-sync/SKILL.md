@@ -45,10 +45,10 @@ Update each hit in the same change. Two couplings are easy to miss:
 ### 4. Verify with the repo's own drift gate
 
 ```bash
-cd web/next && bun run build
+bun .github/scripts/docs.ts --strict
 ```
 
-The build runs `docs.ts --strict`, which fails on any `.mdx` missing from `docs.config.ts`, any config entry with no file, and any drifted frontmatter, and regenerates the llms.txt routes and `meta.json`. Done when the strict build passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.
+This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `cd web/next && bun run build` once: it reruns this check inside the full build and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.
 
 ## Notes
 
