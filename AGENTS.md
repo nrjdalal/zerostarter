@@ -39,6 +39,7 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | `db-migration`  | Create and apply a Drizzle schema change.                                                          |
 | `design`        | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |
 | `dev`           | Start, restart, and verify the dev stack, and fix the `bun --hot` stale-route trap.                |
+| `doc-sync`      | Sync docs and skills after a change so nothing drifts: surface map, grep sweep, strict docs build. |
 | `docker-test`   | Build and smoke-test the Docker images.                                                            |
 | `fonts`         | Add or swap a self-hosted web font.                                                                |
 | `gh-commit`     | Make atomic, conventional commits.                                                                 |
