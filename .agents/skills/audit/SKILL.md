@@ -1,45 +1,38 @@
 ---
 name: audit
-description: Run the dependency security audit and maintain AUDIT.md. Use when the user asks to audit dependencies, when the pre-push audit hook fails on canary, or when bun audit reports vulnerabilities.
+description: Run the dependency security audit and maintain AUDIT.md. Use when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 ---
 
 # Dependency Audit
 
-`bun audit --audit-level high` runs in the pre-push hook on canary (`lefthook.yml`). `AUDIT.md` at the repo root is the canonical record of overrides/exceptions. It intentionally exists even when it lists none. Never delete it.
+`bun audit --audit-level high` runs in the pre-push hook on `canary` only (`lefthook.yml`). `AUDIT.md` at the repo root is the canonical record of every active override; it stays even when there are none.
 
-## Workflow
-
-### 1. Run the audit
+## 1. Run
 
 ```bash
 bun audit --audit-level high
 ```
 
-### 2. Resolve, in order of preference
+Done when the output is clean or lists the high advisories to resolve.
 
-1. **Update the vulnerable dependency** (best): bump its catalog entry in the root `package.json`, then `bun i`. Check nothing breaks: `bun run check-types && bun run build`
-2. **Update the parent** that pins the vulnerable transitive dep
-3. **Override** (last resort): add to root `package.json`
+## 2. Resolve on the highest rung that works
 
-```json
-"overrides": {
-  "<vulnerable-package>": "<patched-version>"
-}
-```
+Drop to the next rung only when the one above can't lift the tree:
 
-### 3. Record the outcome in AUDIT.md
+1. **Update the vulnerable dep** (best): bump its `catalog:` entry in the root `package.json`.
+2. **Update the parent** that pins the vulnerable transitive dep.
+3. **Override** (last resort): add to `overrides` in the root `package.json`:
 
-- Resolved by updates: keep/update the "No overrides required" line
-- Override added: record the package, the CVE/advisory link, why an update was not possible, and a revisit condition
+   ```json
+   "overrides": { "<vulnerable-package>": "<patched-version>" }
+   ```
 
-```markdown
-## Overrides
+Then `bun i` and confirm nothing broke: `bun run check-types && bun run build`. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
 
-| Package | Advisory | Why | Revisit when |
-| --- | --- | --- | --- |
-| example@1.2.3 → 1.2.4 | GHSA-xxxx | parent pins <1.3, no compatible update | parent releases v2 |
-```
+## 3. Record in AUDIT.md
 
-### 4. Ship
+Match the file's existing shape: one `### <package> → <version>` block per active override under `## Active overrides`, each carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override is dropped. Done when every entry in root `overrides` has a matching block and no block outlives its override.
 
-Changes to `package.json`/`bun.lock`/`AUDIT.md` go through a normal PR. The pre-push audit on canary will then pass by construction.
+## 4. Ship
+
+`package.json`/`bun.lock`/`AUDIT.md` go through a normal PR.

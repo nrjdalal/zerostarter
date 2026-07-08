@@ -1,43 +1,33 @@
 ---
 name: ignore-sync
-description: Keep .dockerignore in sync with .gitignore. Use whenever an entry is added to or removed from .gitignore, or when auditing why the Docker build context is bloated.
+description: Mirror .gitignore to .dockerignore. Use whenever a .gitignore entry is added or removed, or when auditing a bloated Docker build context.
 ---
 
 # Ignore Sync
 
-`.dockerignore` does not inherit from `.gitignore`. Anything ignored by git but absent from `.dockerignore` still enters the Docker build context (`COPY . .` in the prepare stage), and on this repo that has meant gigabytes: `web/next/.next` hit 3GB and `.turbo` 23GB.
+`.dockerignore` does not inherit from `.gitignore`. Anything git ignores but `.dockerignore` misses still enters the Docker build context (`COPY . .` in the `prepare` stage of `web/next/Dockerfile` and `api/hono/Dockerfile`), and on this repo that has meant gigabytes: `web/next/.next` alone hit 3GB, `.turbo` 23GB.
 
-## Rule
+## Rule: the files are MIRRORS
 
-Every `.gitignore` addition or removal gets mirrored into `.dockerignore`, same entry, same section, same order. Do both edits in the same commit.
+`.gitignore` is the source of truth; `.dockerignore` follows it. The two files are byte-identical except one line: the platform-tail label (`# git overrides` vs `# docker overrides`). Every ignore rule AND every shared `!` un-ignore (e.g. `!.yarn/patches`) lives in the shared body: same entry, same section, same order, in both files, in the same commit.
 
-## Structure
+The one sanctioned divergence is the labeled platform tail at the end of each file, for a git-only or docker-only override. Today both tails carry only `!.env.example` under their respective label.
 
-The shared body is line-for-line identical in both files and contains zero negations, pure ignore rules only. Every exception (`!` pattern) lives in a labeled platform tail at the end of its file:
+## .env stays out of the context
 
-```gitignore
-# git overrides
-!.env.example        # track the example, real .env* stay ignored
-```
-
-```gitignore
-# docker overrides
-!.env.example        # same exception as git; real .env* never enter the context
-```
-
-Real `.env*` files stay OUT of the Docker context: every build takes the host file via a required BuildKit secret mount (`--secret id=dotenv,src=.env`; compose wires it from `./.env`), which bypasses the context entirely, is validated in full during the build, and never lands in a layer. The historical inversion (docker re-including `.env*` to feed a builder-stage `COPY`) is gone; if it reappears in a diff, that is drift, sync it away.
+Real `.env*` files never enter the Docker context. Each build mounts the host file as a required BuildKit secret (`--mount=type=secret,id=dotenv,target=/app/.env,required=true`; compose supplies it via `secrets.dotenv.file: .env`), so it bypasses the context, is validated in full during the build, and never lands in a layer. If a diff re-includes `.env*` to feed a builder-stage `COPY`, that is drift; sync it away.
 
 ## Audit
 
 ```bash
-diff .gitignore .dockerignore
+diff -u .gitignore .dockerignore
 ```
 
-Expected output is exactly the tail labels:
+Done when the ONLY difference is the tail label:
 
 ```diff
 -# git overrides
 +# docker overrides
 ```
 
-Anything else in the diff is a missing sync; fix it. New entries go in the shared body of BOTH files; new exceptions go under the matching platform tail, never inline in the shared body.
+Any other line is a missing sync.
