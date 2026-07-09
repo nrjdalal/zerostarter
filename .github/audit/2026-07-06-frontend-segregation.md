@@ -102,7 +102,7 @@ Unchanged (shell chrome): `SidebarShell`, `SidebarUserMenu`, `SidebarDropdownMen
 - `blog.ts` + `blog-policy.ts` — `blog-policy` is a shared policy module (imported by `fumadocs`, `sitemap`, `post-list`, not only `blog`) with its own deferred test surface.
 - `config`, `source`, `fumadocs`, `og-image`, `fonts`, `utils`, `llms` — distinct heavily-used core modules.
 
-**Cross-cutting refs updated for the `docs/` merge:** `web/next/docs.config.ts` and the CLI's `docsConfigTemplate()` (`packages/cli/src/templates.ts`) both import `DocsConfig` from `./src/lib/docs/types`; without the fix, a scaffolded fork's `docs.config.ts` would import a missing module.
+**Cross-cutting refs updated for the `docs/` merge:** `web/next/docs.config.ts` and the CLI's `docsConfigTemplate()` (`packages/cli/src/templates.ts`) both import `DocsConfig` from `./src/lib/docs/types`; without the fix, a scaffolded fork's `docs.config.ts` would import a missing module. The build script `.github/scripts/docs.ts` also imported `DocsCollection`/`DocsItem`/`DocsMeta` from `./src/lib/docs/types` and is repointed to `./src/lib/docs`; it is checked by `check-types:scripts` (a separate tsconfig from `web/next`), so missing it reds the CI build.
 
 ## Verification
 

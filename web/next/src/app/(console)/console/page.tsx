@@ -1,5 +1,4 @@
-import { PageHeader } from "@/components/shell/content"
-import { PageShell } from "@/components/shell/content"
+import { PageHeader, PageShell } from "@/components/shell/content"
 
 export default function Page() {
   return (

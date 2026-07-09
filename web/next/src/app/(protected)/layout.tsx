@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { OrgSwitcher, DashboardUserActions } from "@/components/dashboard/sidebar"
+import { DashboardUserActions, OrgSwitcher } from "@/components/dashboard/sidebar"
 import { SidebarShell } from "@/components/shell/sidebar-shell"
 import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"

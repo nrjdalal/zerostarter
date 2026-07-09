@@ -9,7 +9,7 @@ import {
   normalizeBlogTimestamp,
   type BlogPostMeta,
 } from "../../web/next/src/lib/blog-policy"
-import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs/types"
+import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs"
 
 // Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
 // Runs in the web/next build (--strict: validate only, fail on drift/missing) and dev (write meta.json + frontmatter, scaffold missing pages). meta.json is git-ignored; docs.config is the single source.

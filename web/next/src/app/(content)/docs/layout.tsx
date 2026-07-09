@@ -1,7 +1,7 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
-import { DocsNav, DocsFooter, DocsSearch } from "@/components/docs/sidebar"
+import { DocsFooter, DocsNav, DocsSearch } from "@/components/docs/sidebar"
 import { SidebarFloatingTrigger } from "@/components/shell/floating-trigger"
 import {
   Sidebar,
