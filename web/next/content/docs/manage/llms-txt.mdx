@@ -8,8 +8,8 @@ An LLM doesn't browse; it ingests. HTML docs and the interactive [Scalar referen
 
 Two shapes:
 
-- **`/llms.txt`**: an index. Links to every docs page, plus `/llms.txt/docs` and `/llms.txt/blog` for the two section indexes.
-- **`/llms-full.txt`**: everything in one file. A `# {site.name}` title and `> {site.description}` blockquote, then `llmsFullPreamble` from `packages/config/src/site.ts` (the monorepo layout, import map, stack, and conventions), then every docs and blog page concatenated with `---` separators.
+- **`/llms.txt`**: an index. Lists every docs page (each linked as its `.md` alias) plus a link to the blog. The `/llms.txt/docs` and `/llms.txt/blog` section indexes are served as their own routes too.
+- **`/llms-full.txt`**: everything in one file. A `# {site.name}` title (with an `LLM Context File` label) and `> {site.description}` blockquote, then `llmsFullPreamble` from `packages/config/src/site.ts` (the monorepo layout, import map, stack, and conventions), then every docs and blog page concatenated with `---` separators.
 
 Every page is also available on its own as plain text: append `.md` or `.txt` to any docs or blog URL, e.g. `/docs/manage/llms-txt.md`.
 
@@ -22,7 +22,7 @@ Two `force-static` route handlers (both `revalidate = 60`) build the files from 
 - `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts`: the `/llms.txt` index, the `/docs` and `/blog` section indexes, and every per-page alias. It sorts docs by `meta.json` order and lists only published blog posts. Console docs are excluded on purpose (privacy boundary).
 - `web/next/src/app/(llms.txt)/llms-full.txt/route.ts`: the single-file dump, preamble first.
 
-Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
+Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page docs alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
 
 <Callout type="info" title="Only /docs and /blog aliases are routes">
 

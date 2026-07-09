@@ -1,3 +1,59 @@
+## v0.0.98
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.97...v0.0.98)
+
+### 🩹 Fixes
+
+- **web:** Don't flash Login in navbar before session resolves ([#666](https://github.com/nrjdalal/zerostarter/pull/666))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.0.97
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.96...v0.0.97)
+
+### 🚀 Enhancements
+
+- Stream system health over a WebSocket (live status demo) ([#661](https://github.com/nrjdalal/zerostarter/pull/661))
+
+### 🩹 Fixes
+
+- **env:** Fall back server-only vars under SKIP so the frontend build doesn't require them ([#663](https://github.com/nrjdalal/zerostarter/pull/663))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.0.96
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.95...v0.0.96)
+
+### 🩹 Fixes
+
+- Preserve shadcn --sidebar override, refresh CLI demo timing, add CLI README ([#659](https://github.com/nrjdalal/zerostarter/pull/659))
+
+### 🏡 Chore
+
+- Update deps ([c496eb2](https://github.com/nrjdalal/zerostarter/commit/c496eb2))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.0.95
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.94...v0.0.95)
+
+### 💅 Refactors
+
+- **web:** Posthog canonical app router setup and docs-faithful env name ([#656](https://github.com/nrjdalal/zerostarter/pull/656))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.94
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.93...v0.0.94)

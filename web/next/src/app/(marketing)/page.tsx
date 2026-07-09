@@ -1,6 +1,5 @@
 import { site } from "@packages/config/site"
 import {
-  RiArrowRightLine,
   RiArrowRightSLine,
   RiBookOpenLine,
   RiDatabase2Line,
@@ -245,7 +244,7 @@ docker compose up --build`
             >
               <span className="bg-success size-1.5 rounded-full" aria-hidden />
               OSS Starter for Enterprise
-              <RiArrowRightLine className="size-3.5" />
+              <RiArrowRightSLine className="size-3.5" />
             </Link>
             <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
               {/* non-breaking hyphens so "world-class" never splits across lines */}
@@ -275,11 +274,11 @@ docker compose up --build`
                 <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </div>
+            <div className="mx-auto mt-10 max-w-2xl">
+              <CodeWindow label="Quickstart" html={initHtml} />
+            </div>
             <div className="mt-10 flex justify-center">
               <ApiStatus />
-            </div>
-            <div className="mx-auto mt-6 max-w-2xl">
-              <CodeWindow label="Quickstart" html={initHtml} />
             </div>
           </div>
         </div>

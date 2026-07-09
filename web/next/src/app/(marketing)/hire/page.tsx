@@ -112,6 +112,12 @@ const sections: {
         description: "The easiest way to write Karabiner-Elements configuration files, ever!",
       },
       {
+        href: "https://github.com/nrjdalal/inscope",
+        title: "inscope",
+        description:
+          "Per-workspace identity for Claude Code: each directory auto-resolves its own login, MCP servers, GitHub account, and skills.",
+      },
+      {
         href: "https://github.com/nrjdalal/pglaunch",
         title: "pglaunch",
         description:
