@@ -50,7 +50,7 @@ When a change establishes or alters a convention, update this file in the same c
 - **Empty states:** the `Empty` primitive (`EmptyHeader` / `EmptyMedia` / `EmptyTitle` / ...). Do not hand-roll empty messages.
 - **Badges and pills:** `<Badge>` (with a variant, plus className for semantic color like `text-success`) over a hand-rolled rounded-full span. Identity rows (avatar + name + email) use `Item` / `ItemMedia` / `ItemContent`. Exceptions: the sidebar trigger identity stays hand-rolled inside `SidebarMenuButton` (the chevron is a sibling there); the marketing landing (`web/next/src/app/(marketing)/page.tsx`) hand-rolls a larger `Eyebrow` pill for section eyebrows and the hero badge, since `<Badge>` is sized for compact UI (`h-5`, `text-xs`).
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (no second `space-y-*`). Do not hand-roll labels or error markup.
-- **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/access.tsx`) uses `max-w-md`.
+- **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/common/access.tsx`) uses `max-w-md`.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
 - **shadcn (`components/ui/*`):** customize only via `.github/scripts/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 

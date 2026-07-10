@@ -44,13 +44,13 @@ components/                               components/
   sidebar/dashboard/{index,                 docs/sidebar.tsx
     org-switcher,user-actions}.tsx          docs/copy-as-markdown.tsx
   sidebar/docs/{index,content,              blog/post-list.tsx
-    footer,search}.tsx                      marketing/{api-status,
+    footer,search}.tsx                      marketing/{api-status,backdrops,
   blog/post-list.tsx                          background-gradient,landing-background}.tsx
   marketing/*.tsx                           ui/  (77 shadcn primitives, untouched)
   ui/*
 ```
 
-Non-ui file count: **27 → 21**. Barrels removed. `ui/` untouched.
+Non-ui file count: **27 → 22**. Barrels removed. `ui/` untouched.
 
 ## Consolidations
 

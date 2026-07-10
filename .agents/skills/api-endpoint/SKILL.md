@@ -83,7 +83,7 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 ```
 
-Client components reading REST data use TanStack Query (see `components/access.tsx`).
+Client components reading REST data use TanStack Query (see `components/common/access.tsx`).
 
 ## WebSocket routes
 
