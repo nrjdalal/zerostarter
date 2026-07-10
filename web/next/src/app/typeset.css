@@ -1,0 +1,166 @@
+/*
+ * typeset.css - a starter shadcn/typeset preset (https://ui.shadcn.com/docs/typeset).
+ * Regenerate on the builder (https://ui.shadcn.com/typeset) to lock in your final
+ * fonts and rhythm; this hand-authored version follows the same size/leading/flow model
+ * and references the app's own font + color tokens so it fits the theme.
+ */
+
+.typeset {
+  --typeset-font-body: inherit;
+  --typeset-font-heading: var(--font-heading);
+  --typeset-font-mono: var(--font-mono);
+  --typeset-size: 1rem;
+  --typeset-leading: 1.7;
+  --typeset-flow: 1.25em;
+
+  font-family: var(--typeset-font-body);
+  font-size: var(--typeset-size);
+  line-height: var(--typeset-leading);
+  color: var(--foreground);
+  text-wrap: pretty;
+}
+
+/* Flow: one rhythm unit between consecutive blocks; first block flush to the top. */
+.typeset > * + * {
+  margin-top: var(--typeset-flow);
+}
+.typeset > :first-child {
+  margin-top: 0;
+}
+
+/* Headings share the heading font and a tighter leading; h2/h3 open with extra air. */
+.typeset :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--typeset-font-heading);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  scroll-margin-top: 5rem;
+}
+.typeset h1 {
+  font-size: 2em;
+}
+.typeset h2 {
+  font-size: 1.5em;
+  margin-top: calc(var(--typeset-flow) * 1.6);
+}
+.typeset h3 {
+  font-size: 1.25em;
+  margin-top: calc(var(--typeset-flow) * 1.35);
+}
+.typeset h4 {
+  font-size: 1.1em;
+}
+.typeset :is(h5, h6) {
+  font-size: 1em;
+}
+/* Heading anchor links (fumadocs auto-adds them) inherit the heading, not the link style. */
+.typeset :is(h1, h2, h3, h4, h5, h6) a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+/* Links: semantic primary, subtle underline. */
+.typeset a {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.typeset a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Lists. */
+.typeset :is(ul, ol) {
+  padding-left: 1.5em;
+}
+.typeset ul {
+  list-style: disc;
+}
+.typeset ol {
+  list-style: decimal;
+}
+.typeset li + li,
+.typeset li > :is(ul, ol) {
+  margin-top: 0.375em;
+}
+.typeset li::marker {
+  color: var(--muted-foreground);
+}
+
+/* Inline code and code blocks. */
+.typeset :not(pre) > code {
+  font-family: var(--typeset-font-mono);
+  font-size: 0.875em;
+  background: var(--muted);
+  padding: 0.15em 0.4em;
+  border-radius: 0.35em;
+}
+.typeset pre {
+  font-family: var(--typeset-font-mono);
+  font-size: 0.875em;
+  overflow-x: auto;
+  border-radius: 0.5em;
+  padding: 1em;
+  background: var(--muted);
+}
+.typeset pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Blockquotes. */
+.typeset blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 1em;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* Tables (wrap in .typeset-scroll for narrow viewports). */
+.typeset-scroll {
+  overflow-x: auto;
+}
+.typeset table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.typeset :is(th, td) {
+  border: 1px solid var(--border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.typeset th {
+  font-weight: 600;
+  background: var(--muted);
+}
+
+/* Rules and media. */
+.typeset hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin-block: calc(var(--typeset-flow) * 1.5);
+}
+.typeset :is(img, video) {
+  border-radius: 0.5em;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Opt-out: elements that bring their own styling (MDX components, callouts, code blocks). */
+.typeset :is(.not-typeset, [data-not-typeset]),
+.typeset :is(.not-typeset, [data-not-typeset]) * {
+  all: revert;
+}
+
+/* Preset: docs. Tune size/leading/flow here (or regenerate on the builder). */
+.typeset-docs {
+  --typeset-size: 1rem;
+  --typeset-leading: 1.7;
+  --typeset-flow: 1.25em;
+}

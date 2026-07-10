@@ -1,5 +1,5 @@
 import { site } from "@packages/config/site"
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
+import { DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 import { createRelativeLink } from "fumadocs-ui/mdx"
 import type { Metadata } from "next"
@@ -81,13 +81,13 @@ export function renderPageContent(data: AnyPageData) {
         {page.data.title} {isDocsPage && <CopyAsMarkdown url={page.url} />}
       </DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
-      <DocsBody>
+      <div className="typeset typeset-docs flex-1">
         <MDX
           components={getMDXComponents({
             a: createPageRelativeLink(data),
           })}
         />
-      </DocsBody>
+      </div>
       {blogArticleDates && (
         <div className="not-prose text-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">
           <time dateTime={blogArticleDates.publishedAt}>
