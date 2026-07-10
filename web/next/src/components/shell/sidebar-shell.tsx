@@ -2,8 +2,8 @@ import { site } from "@packages/config/site"
 import { cookies } from "next/headers"
 import Link from "next/link"
 
-import { SidebarFloatingTrigger } from "@/components/sidebar/floating-trigger"
-import { AdaptiveShellSidebar } from "@/components/sidebar/shell-sidebar"
+import { SidebarAdaptive } from "@/components/shell/sidebar-adaptive"
+import { SidebarFloatingTrigger } from "@/components/shell/sidebar-floating-trigger"
 import { Badge } from "@/components/ui/badge"
 import {
   SidebarContent,
@@ -36,7 +36,7 @@ export async function SidebarShell({
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AdaptiveShellSidebar>
+      <SidebarAdaptive>
         <SidebarHeader>
           <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:mx-auto">
             <Link
@@ -57,7 +57,7 @@ export async function SidebarShell({
         <SidebarContent>{nav}</SidebarContent>
         <SidebarFooter>{footer}</SidebarFooter>
         <SidebarRail />
-      </AdaptiveShellSidebar>
+      </SidebarAdaptive>
       <main className="flex min-h-svh min-w-0 flex-1 flex-col">
         <SidebarFloatingTrigger />
         {children}

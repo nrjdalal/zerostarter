@@ -4,7 +4,7 @@ import { RiBookLine, RiDashboardLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { SidebarDocsContent, SidebarDocsSearch } from "@/components/sidebar/docs"
+import { DocsNav, DocsSearch } from "@/components/docs/sidebar"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import type { NavGroup } from "@/lib/docs/types"
+import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 const mainItems = [
@@ -21,7 +21,7 @@ const mainItems = [
 ] as const
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
-export function SidebarConsoleHeader() {
+export function ConsoleHeader() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
@@ -48,14 +48,14 @@ export function SidebarConsoleHeader() {
       )}
       {isDocs && (
         <div className="group-data-[collapsible=icon]:hidden">
-          <SidebarDocsSearch />
+          <DocsSearch />
         </div>
       )}
     </>
   )
 }
 
-export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }) {
+export function ConsoleNav({ docsGroups }: { docsGroups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
@@ -64,7 +64,7 @@ export function SidebarConsoleContent({ docsGroups }: { docsGroups: NavGroup[] }
 
   // Docs section swaps to the grouped doc nav (search is in the header; the brand links back to /console).
   if (pathname?.startsWith("/console/docs")) {
-    return <SidebarDocsContent groups={docsGroups} />
+    return <DocsNav groups={docsGroups} />
   }
 
   return (

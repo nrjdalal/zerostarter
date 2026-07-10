@@ -1,14 +1,17 @@
 "use client"
 
-import { RiArrowRightSLine } from "@remixicon/react"
+import { env } from "@packages/env/web-next"
+import { RiArrowRightSLine, RiSearchLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Kbd } from "@/components/ui/kbd"
 import {
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -17,8 +20,9 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import type { NavGroup, NavItem, NavNode } from "@/lib/docs/types"
-import { isActive as isActivePath } from "@/lib/utils"
+import { config } from "@/lib/config"
+import type { NavGroup, NavItem, NavNode } from "@/lib/docs"
+import { cn, isActive as isActivePath } from "@/lib/utils"
 
 const isPage = (node: NavNode): node is NavItem => "url" in node
 
@@ -26,7 +30,7 @@ function collectUrls(nodes: NavNode[]): string[] {
   return nodes.flatMap((node) => (isPage(node) ? [node.url] : collectUrls(node.items)))
 }
 
-export function SidebarDocsContent({ groups }: { groups: NavGroup[] }) {
+export function DocsNav({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -147,5 +151,121 @@ function NavTreeGroup({
         </SidebarMenuSub>
       </CollapsibleContent>
     </Collapsible>
+  )
+}
+
+export function DocsFooter() {
+  if (env.NEXT_PUBLIC_USERJOT_URL) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            render={
+              <Link href={env.NEXT_PUBLIC_USERJOT_URL} target="_blank" rel="noopener noreferrer" />
+            }
+          >
+            <span>Feedback</span>
+            <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <div className="text-muted-foreground px-2 py-1.5 text-xs">v{config.app.version}</div>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
+
+function isMacPlatform(): boolean {
+  return typeof window !== "undefined" && window.navigator.userAgent.includes("Mac")
+}
+
+function MetaOrControl() {
+  const [key, setKey] = useState<string | null>(null)
+  useEffect(() => {
+    setKey(isMacPlatform() ? "⌘" : "Ctrl")
+  }, [])
+  return key ?? "⌘"
+}
+
+export function DocsSearch() {
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  const handleSearchTrigger = useCallback(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [isMobile, setOpenMobile])
+
+  const handleClick = useCallback(() => {
+    handleSearchTrigger()
+    // Dispatch keyboard event for fumadocs to catch
+    const isMac = isMacPlatform()
+    const event = new KeyboardEvent("keydown", {
+      key: "k",
+      code: "KeyK",
+      metaKey: isMac,
+      ctrlKey: !isMac,
+      bubbles: true,
+      cancelable: true,
+    })
+    document.dispatchEvent(event)
+  }, [handleSearchTrigger])
+
+  useEffect(() => {
+    const hotKey = [
+      {
+        key: (e: KeyboardEvent) => e.metaKey || e.ctrlKey,
+      },
+      {
+        key: "k",
+      },
+    ]
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (hotKey.every((v) => (typeof v.key === "string" ? e.key === v.key : v.key(e)))) {
+        const target = e.target as HTMLElement
+        if (
+          target.isContentEditable ||
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA"
+        ) {
+          return
+        }
+
+        e.preventDefault()
+        handleSearchTrigger()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [handleSearchTrigger])
+
+  return (
+    <div className="relative">
+      <RiSearchLine className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
+      <SidebarInput
+        placeholder="Search"
+        onClick={handleClick}
+        readOnly
+        className={cn("cursor-default pl-8", isMobile ? "pr-3" : "pr-20")}
+      />
+      {!isMobile && (
+        <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
+          <Kbd>
+            <MetaOrControl />
+          </Kbd>
+          <Kbd>K</Kbd>
+        </div>
+      )}
+    </div>
   )
 }

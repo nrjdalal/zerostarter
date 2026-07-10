@@ -3,7 +3,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 // The title/description/actions row for a protected page: owns the heading typography and spacing so pages never hand-roll the header layout.
-function DashboardHeader({
+function PageHeader({
   title,
   description,
   actions,
@@ -16,7 +16,7 @@ function DashboardHeader({
 }) {
   return (
     <div
-      data-slot="dashboard-header"
+      data-slot="page-header"
       className={cn("mb-6 flex items-start justify-between gap-4", className)}
     >
       <div className="space-y-1">
@@ -28,4 +28,4 @@ function DashboardHeader({
   )
 }
 
-export { DashboardHeader }
+export { PageHeader }
