@@ -25,43 +25,43 @@ Minimize the frontend's file footprint and group components by feature, so the t
 
 ```
 BEFORE (non-ui)                          AFTER (non-ui)
-components/                              components/
-  access.tsx                              common/access.tsx
-  mode-toggle.tsx                         common/mode-toggle.tsx
-  devtools.tsx                            common/devtools.tsx
-  copy-as-markdown.tsx                    common/navbar.tsx
-  navbar/home.tsx                         common/route-error.tsx
-  route/error.tsx                         common/route-loading.tsx
-  route/loading.tsx                       shell/content.tsx
-  dashboard/header.tsx                    shell/sidebar-shell.tsx
-  dashboard/shell.tsx                     shell/adaptive-sidebar.tsx
-  sidebar/shell.tsx                       shell/dropdown-menu.tsx
-  sidebar/shell-sidebar.tsx               shell/floating-trigger.tsx
-  sidebar/dropdown-menu.tsx               shell/user-menu.tsx
-  sidebar/floating-trigger.tsx            dashboard/sidebar.tsx
-  sidebar/user-menu.tsx                   console/sidebar.tsx
-  sidebar/console.tsx                     docs/sidebar.tsx
-  sidebar/dashboard/{index,               docs/copy-as-markdown.tsx
-    org-switcher,user-actions}.tsx        blog/post-list.tsx
-  sidebar/docs/{index,content,            marketing/{api-status,
-    footer,search}.tsx                      background-gradient,landing-background}.tsx
-  blog/post-list.tsx                      ui/  (77 shadcn primitives, untouched)
-  marketing/*.tsx
+components/                               components/
+  access.tsx                                common/access.tsx
+  mode-toggle.tsx                           common/mode-toggle.tsx
+  devtools.tsx                              common/devtools.tsx
+  copy-as-markdown.tsx                      common/navbar.tsx
+  navbar/home.tsx                           common/route-error.tsx
+  route/error.tsx                           common/route-loading.tsx
+  route/loading.tsx                         shell/page-shell.tsx
+  dashboard/header.tsx                      shell/page-header.tsx
+  dashboard/shell.tsx                       shell/sidebar-shell.tsx
+  sidebar/shell.tsx                         shell/sidebar-adaptive.tsx
+  sidebar/shell-sidebar.tsx                 shell/sidebar-dropdown-menu.tsx
+  sidebar/dropdown-menu.tsx                 shell/sidebar-floating-trigger.tsx
+  sidebar/floating-trigger.tsx              shell/sidebar-user-menu.tsx
+  sidebar/user-menu.tsx                     dashboard/sidebar.tsx
+  sidebar/console.tsx                       console/sidebar.tsx
+  sidebar/dashboard/{index,                 docs/sidebar.tsx
+    org-switcher,user-actions}.tsx          docs/copy-as-markdown.tsx
+  sidebar/docs/{index,content,              blog/post-list.tsx
+    footer,search}.tsx                      marketing/{api-status,
+  blog/post-list.tsx                          background-gradient,landing-background}.tsx
+  marketing/*.tsx                           ui/  (77 shadcn primitives, untouched)
   ui/*
 ```
 
-Non-ui file count: **27 → 20**. Barrels removed. `ui/` untouched.
+Non-ui file count: **27 → 21**. Barrels removed. `ui/` untouched.
 
 ## Consolidations
 
 - `docs/sidebar.tsx` ← content + footer + search + (barrel) — all `"use client"`.
 - `dashboard/sidebar.tsx` ← org-switcher + user-actions + (barrel) — all `"use client"`.
-- `shell/content.tsx` ← header + shell (`DashboardHeader` + `DashboardShell`) — both server.
 
-**Deliberately NOT merged** (client/server boundary):
+**Deliberately NOT merged** (client/server boundary or file-per-export):
 
 - `common/route-error.tsx` (`"use client"` error boundary) kept apart from `common/route-loading.tsx` (server spinner); merging would force the spinner into the client bundle.
-- `shell/sidebar-shell.tsx` (`SidebarShell`, async server component) kept apart from its client helpers `shell/adaptive-sidebar.tsx` and `shell/floating-trigger.tsx`.
+- `shell/sidebar-shell.tsx` (`SidebarShell`, async server component) kept apart from its client helpers `shell/sidebar-adaptive.tsx` and `shell/sidebar-floating-trigger.tsx`.
+- `shell/page-shell.tsx` (`PageShell`) and `shell/page-header.tsx` (`PageHeader`), both server, kept as one component per file (the folder move de-mislabels the old `DashboardShell`/`DashboardHeader` without an artificial merge).
 
 ## Cross-cutting fix
 
@@ -73,12 +73,12 @@ The CLI fork-converter (`packages/cli/src/convert.ts`) hardcodes the navbar path
 
 ## Naming
 
-Now that the folder conveys the area, redundant `Sidebar…` prefixes were dropped and the shared page shell was de-misnamed. `shell/` keeps `Sidebar…` names (there the sidebar is the subject):
+Now that the folder conveys the area, redundant `Sidebar…` prefixes were dropped and the shared page shell was de-misnamed. In `shell/` every file basename matches its primary export (the sidebar chrome forms a uniform `sidebar-*`/`Sidebar…` family, the page container a `page-*`/`Page…` one):
 
 | Before                        | After                  | File                    |
 | ----------------------------- | ---------------------- | ----------------------- |
-| `DashboardShell`              | `PageShell`            | `shell/content.tsx`     |
-| `DashboardHeader`             | `PageHeader`           | `shell/content.tsx`     |
+| `DashboardShell`              | `PageShell`            | `shell/page-shell.tsx`  |
+| `DashboardHeader`             | `PageHeader`           | `shell/page-header.tsx` |
 | `SidebarDashboardOrgSwitcher` | `OrgSwitcher`          | `dashboard/sidebar.tsx` |
 | `SidebarDashboardUserActions` | `DashboardUserActions` | `dashboard/sidebar.tsx` |
 | `SidebarConsoleHeader`        | `ConsoleSidebarHeader` | `console/sidebar.tsx`   |
@@ -87,7 +87,7 @@ Now that the folder conveys the area, redundant `Sidebar…` prefixes were dropp
 | `SidebarDocsFooter`           | `DocsFooter`           | `docs/sidebar.tsx`      |
 | `SidebarDocsSearch`           | `DocsSearch`           | `docs/sidebar.tsx`      |
 
-Unchanged (shell chrome): `SidebarShell`, `SidebarUserMenu`, `SidebarDropdownMenu`, `SidebarFloatingTrigger`. The `data-slot` values on the page shell were renamed to match (`page-shell`, `page-header`); nothing selects them.
+Shell chrome files were renamed so each basename matches its export: `sidebar-shell.tsx` (`SidebarShell`), `sidebar-adaptive.tsx` (`SidebarAdaptive`, was `adaptive-sidebar.tsx`/`AdaptiveShellSidebar`), `sidebar-floating-trigger.tsx` (`SidebarFloatingTrigger`), `sidebar-dropdown-menu.tsx` (`SidebarDropdownMenu`, no longer shadowing `ui/dropdown-menu.tsx`), `sidebar-user-menu.tsx` (`SidebarUserMenu`). The merged `content.tsx` split into `page-shell.tsx` + `page-header.tsx` (one component each). The `data-slot` values on the page shell (`page-shell`, `page-header`) match too; nothing selects them.
 
 ## lib/ consolidation
 

@@ -24,7 +24,7 @@ When a change establishes or alters a convention, update this file in the same c
 
 - Stay on the Tailwind scale; snap to the nearest step, no off-ladder one-offs (`gap-7.5`, `size-4.5`, `w-45`, `mb-18`, `text-[0.6rem]`).
 - `gap-2` is the workhorse for tight clusters.
-- Dashboard and console pages use the collapsible `SidebarShell` (`components/shell/sidebar-shell.tsx`) and wrap content in `PageShell` (`components/shell/content.tsx`): it owns `mx-auto` + width + `p-4 sm:p-6` via a `size` variant (`sm`/`md`/`lg`/`full`, default `md` = `max-w-4xl`). The title/description/actions row is `PageHeader` (`components/shell/content.tsx`). Never hand-roll `mx-auto`/`max-w-*`/`p-*` or the header layout.
+- Dashboard and console pages use the collapsible `SidebarShell` (`components/shell/sidebar-shell.tsx`) and wrap content in `PageShell` (`components/shell/page-shell.tsx`): it owns `mx-auto` + width + `p-4 sm:p-6` via a `size` variant (`sm`/`md`/`lg`/`full`, default `md` = `max-w-4xl`). The title/description/actions row is `PageHeader` (`components/shell/page-header.tsx`). Never hand-roll `mx-auto`/`max-w-*`/`p-*` or the header layout.
 - Marketing pages share one vertical scale: `py-24` sections and a `px-4 md:px-6` container gutter.
 
 ## Typography and headings

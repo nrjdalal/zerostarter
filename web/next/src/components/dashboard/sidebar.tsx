@@ -8,8 +8,8 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { SidebarDropdownMenu } from "@/components/shell/dropdown-menu"
-import { SidebarUserMenu } from "@/components/shell/user-menu"
+import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
+import { SidebarUserMenu } from "@/components/shell/sidebar-user-menu"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

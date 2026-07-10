@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { ConsoleNav, ConsoleSidebarHeader } from "@/components/console/sidebar"
 import { SidebarShell } from "@/components/shell/sidebar-shell"
-import { SidebarUserMenu } from "@/components/shell/user-menu"
+import { SidebarUserMenu } from "@/components/shell/sidebar-user-menu"
 import { SidebarMenu } from "@/components/ui/sidebar"
 import { assertConsoleAccess } from "@/lib/auth/console"
 import { resolveDocsNav } from "@/lib/docs"

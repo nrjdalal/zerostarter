@@ -44,19 +44,20 @@ So a user returns to the same org context every session.
 
 ### User actions
 
-The footer (`web/next/src/components/dashboard/sidebar.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/shell/user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
+The footer (`web/next/src/components/dashboard/sidebar.tsx`) holds a docs link with a version badge, a cross-link to `/console` when the user is an admin (`canAccessConsole`), and the shared `SidebarUserMenu` (`web/next/src/components/shell/sidebar-user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
 
 ## Page content
 
 Pages never hand-roll centering, width, or padding. They wrap content in two components:
 
-- **`PageShell`** (`web/next/src/components/shell/content.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
-- **`PageHeader`** (`web/next/src/components/shell/content.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
+- **`PageShell`** (`web/next/src/components/shell/page-shell.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
+- **`PageHeader`** (`web/next/src/components/shell/page-header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
 
 A new protected page is just a file under `(protected)/` (it inherits the guard and sidebar automatically) with its content wrapped in the shell:
 
 ```tsx
-import { PageHeader, PageShell } from "@/components/shell/content"
+import { PageHeader } from "@/components/shell/page-header"
+import { PageShell } from "@/components/shell/page-shell"
 
 export default function Page() {
   return (
