@@ -21,7 +21,7 @@ const mainItems = [
 ] as const
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
-export function ConsoleSidebarHeader() {
+export function ConsoleHeader() {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {

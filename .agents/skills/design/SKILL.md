@@ -54,6 +54,12 @@ When a change establishes or alters a convention, update this file in the same c
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
 - **shadcn (`components/ui/*`):** customize only via `.github/scripts/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 
+## File and export naming
+
+- Components are grouped by domain folder (`common/`, `shell/`, `console/`, `dashboard/`, `docs/`, `blog/`, `marketing/`, `ui/`); file names are kebab-case and each basename matches its primary export.
+- Sidebar slot exports follow one rule: domain-prefix the generic-role names (`Nav`, `Header`, `Footer`, `Search`) so they read unambiguously and never collide across areas (`console/sidebar.tsx` imports `DocsNav`). So `ConsoleNav`, `ConsoleHeader`, `DocsNav`, `DocsFooter`, `DocsSearch`. Leave distinctive content names bare (`OrgSwitcher`, `CopyAsMarkdown`): a domain prefix on a self-explaining name is redundant.
+- `shell/` holds the shared app-shell chrome as two families, `Sidebar*` (`SidebarShell`, `SidebarAdaptive`, `SidebarFloatingTrigger`, `SidebarDropdownMenu`, `SidebarUserMenu`) and `Page*` (`PageShell`, `PageHeader`). "Shell" denotes structural layout scaffolding, not one specific component.
+
 ## Open decisions
 
 None open. Resolved decisions fold into the sections above; add new ones here (move up once chosen).
