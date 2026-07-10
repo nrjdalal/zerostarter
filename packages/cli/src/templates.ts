@@ -122,8 +122,7 @@ Your very first post. Replace it with something worth reading.
 `
 
 // web/next/docs.config.ts: regenerated to the stub doc set (one public anchor + the console anchor).
-export const docsConfigTemplate =
-  (): string => `import type { DocsConfig } from "./src/lib/docs/types"
+export const docsConfigTemplate = (): string => `import type { DocsConfig } from "./src/lib/docs"
 
 const docsConfig = {
   docs: {

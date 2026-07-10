@@ -1,42 +1,44 @@
 ---
 name: ui-verify
-description: Verify a frontend or UI change in a real browser with agent-browser and attach screenshot evidence. Use after any change to web/next pages, components, or styles, before opening or updating a PR, or when an end-to-end flow needs checking.
+description: Verify a frontend or UI change in a real browser. Use after any change to web/next pages, components, or styles, before opening or updating a PR, or when an end-to-end flow needs checking.
 ---
 
 # UI Verify
 
-A green type-check and a clean lint do not prove a page renders. For any frontend or UI change, drive the real app in a browser, confirm the change works, and attach screenshots to the PR. Never sign off a UI change on type-check and lint alone.
+A green type-check and clean lint prove the code compiles, not that the page renders.
 
 ## Workflow
 
 ### 1. Run the stack
 
-Start the dev servers (see the `dev` skill): web on :3000, api on :4000.
+Start the dev servers (`dev` skill): web on :3000, api on :4000. Done when `http://localhost:3000/` returns 200 and `http://localhost:4000/api/health` responds ok.
 
-### 2. Drive the real page with agent-browser
+### 2. Drive the affected route
 
-Use the `agent-browser` skill to open the affected route and interact with it. Confirm the change renders and behaves, not just that it compiles.
+Load the `agent-browser` skill, then open the route you changed and act on it:
 
 ```bash
 agent-browser open http://localhost:3000/<route>
-agent-browser snapshot   # read the page, then act on it
+agent-browser snapshot   # read the page, then click/type/verify
 ```
 
-Anything behind auth: sign in first with the dev-only Login (agents) button or the local sign-in (see the `dev` skill). For an end-to-end change, or whenever asked, exercise the whole flow: navigate, act, and verify the result end to end, not just the one screen you touched.
+Behind auth: sign in first with the **Login (agents)** button, or the local sign-in (`dev` skill). For an end-to-end change, or whenever asked, drive the whole flow, not just the screen you touched. Done when you have observed the change render and behave, not merely that the route loaded.
 
 ### 3. Check it holds up
 
-- **Visual change:** capture the state before and after at the same viewport.
+- **Visual:** capture before and after at the same viewport. The "before" is the pre-change state: `git stash` (or check out the pre-change commit), `agent-browser screenshot before.png`, then restore your change and `agent-browser screenshot after.png`.
 - **Responsive:** check mobile, tablet, and desktop with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
-- **Theme:** check light and dark when the change touches either.
+- **Theme:** toggle the app's theme control and check light and dark when the change touches either.
+
+Done when Visual, Responsive, and Theme are each exercised (or consciously marked N/A) for the surfaces this change touches.
 
 ### 4. Attach evidence to the PR
 
-Upload each screenshot to litterbox, a temporary host, and embed the returned URL in the PR. Do not commit binary screenshots into the repo.
+Upload each screenshot to litterbox (a temporary host) and embed the returned URL in the PR. Never commit a binary screenshot.
 
 ```bash
 curl -sS -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@screenshot.png" \
   https://litterbox.catbox.moe/resources/internals/api.php
 ```
 
-Valid `time` values: `1h`, `12h`, `24h`, `72h`. The command prints the public URL to embed.
+Valid `time`: `1h`, `12h`, `24h`, `72h`. The command prints the public URL. Done when every screenshot (before+after pairs for a visual change) has its URL embedded in the PR.

@@ -1,11 +1,11 @@
 ---
 name: api-endpoint
-description: Add a typed Hono API endpoint following repo conventions: router, OpenAPI docs, validation envelope, and RPC client wiring. Use when adding or modifying API routes in api/hono.
+description: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring. Use when adding or modifying routes in api/hono.
 ---
 
 # API Endpoint
 
-Reference implementations: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated routes). Conventions: `{ data }` success / `{ error: { code, message } }` failure envelopes, OpenAPI via `hono-openapi`, end-to-end types via Hono RPC. Errors are thrown as `ApiError` and shaped in one place by `app.onError` (`api/hono/src/lib/error.ts`).
+Every response is an envelope: `{ data }` on success, `{ error: { code, message } }` on failure. Never build the failure envelope by hand: throw `ApiError` and `errorHandler` (`api/hono/src/lib/error.ts`) shapes it in ONE place. OpenAPI comes from `hono-openapi`; end-to-end types from Hono RPC. Reference routers: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated).
 
 ## Workflow
 
@@ -56,43 +56,43 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-- The `sValidator` hook **throws `ApiError(400, "VALIDATION_ERROR", …)`**; there is no shared `validationHook` import. `onError` turns it into the repo's `{ error: { code, message } }` envelope.
-- Spread `...validationErrorResponses` into `responses` so the 400 shape shows in the OpenAPI/Scalar docs.
-- Add an `x-codeSamples` block mirroring `waitlist.ts` so Scalar shows the `hono/client` usage.
-- Auth-protected routes go in `v1.ts` (behind `authMiddleware` from `@/middlewares`, with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed); public routes get their own router.
+- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route. 429/500 are added globally in `index.ts`; don't add them per route.
+- Add an `x-codeSamples` block mirroring `waitlist.ts` so Scalar shows the `hono/client` usage (the template above omits it).
+- Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. Public routes get their own router.
 
 ### 2. Wire it
 
-- Export from `api/hono/src/routers/index.ts`
-- `.route("/<name>", exampleRouter)` in `api/hono/src/index.ts`, inside the `routes` chain (before the openapi/docs handlers), or RPC types will not include it
+- Export the router from `api/hono/src/routers/index.ts`.
+- Add `.route("/<name>", exampleRouter)` in `api/hono/src/index.ts`, inside the `routes` chain before the openapi/docs handlers, or RPC types won't include it.
 
-### 3. Restart dev and test
+### 3. Restart the stack and test
 
-`bun --hot` will NOT see the new file, restart the stack (see the `dev` skill), then:
+`bun --hot` will NOT see a new file: restart the stack (see the `dev` skill), then:
 
 ```bash
 curl -sS -X POST -H "Content-Type: application/json" -H "Origin: http://localhost:3000" \
   -d '{"email":"you@example.com"}' http://localhost:4000/api/<name>
-# verify: valid input → {data}, invalid → VALIDATION_ERROR envelope, and /api/docs lists it
 ```
+
+Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/docs` lists the route.
 
 ### 4. Consume from the web app
 
 ```ts
 import { apiClient, unwrap } from "@/lib/api/client"
-const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))   // fully typed
+const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 ```
 
-Client components reading REST data use TanStack Query (see `components/access.tsx`).
+Client components reading REST data use TanStack Query (see `components/common/access.tsx`).
 
 ## WebSocket routes
 
-For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: it pushes a snapshot on connect and a heartbeat every 5s.
+For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.
 
-- The typed client reaches it with `apiClient.health.ws.$ws()`, which returns a standard `WebSocket` pointed at the configured API base (`http` becomes `ws`).
-- Frame payloads are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`, so parse defensively on the client and read only the fields you need. Don't hand-maintain a shared payload type RPC can't derive.
-- Keep a `describeRoute` so the upgrade lists in the Scalar reference as a `101`, but OpenAPI can't schema-type WS frames and there is no `{ data }` / `{ error }` envelope: describe the frame shape in the route's `description`.
-- Unlike REST, the handshake is not gated by `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` does not send the client's credentials, so for a sensitive or authed route check the `Origin` header (or a token) in the handler rather than relying on the allowlist. `/api/health/ws` serves public data, so it doesn't.
-- `bun --hot` picks up edits to the existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
+- The typed client reaches it with `apiClient.health.ws.$ws()`, a standard `WebSocket` pointed at the API base (`http` becomes `ws`).
+- Frames are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`. Parse defensively and read only the fields you need; don't hand-maintain a shared payload type RPC can't derive.
+- Keep a `describeRoute` so the upgrade lists in Scalar as a `101`, and describe the frame shape in the route `description`, since OpenAPI can't schema-type WS frames and there is no `{ data }`/`{ error }` envelope.
+- The handshake skips `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` sends no credentials, so gate a sensitive route on the `Origin` header or a token inside the handler, not the allowlist. `/api/health/ws` serves public data, so it doesn't.
+- `bun --hot` picks up edits to an existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
 
-See `components/marketing/api-status.tsx` for the reference client: REST `/api/health` is the always-honest baseline (polled whenever no frame is live), and the socket overlays a live pulse, reconnecting with capped backoff so a serverless deploy or a transient blip degrades to the REST-polled state instead of a broken badge.
+Reference client: `components/marketing/api-status.tsx`. REST `/api/health` is the always-honest baseline, polled whenever no frame is live; the socket overlays a live pulse and reconnects with capped backoff, so a serverless deploy or transient blip degrades to the REST-polled state instead of a broken badge.

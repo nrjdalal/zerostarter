@@ -1,18 +1,18 @@
 ---
 name: fonts
-description: Add or swap web fonts by fetching latin variable woff2 files from fontsource and localizing them through next/font/local. Use when changing brand fonts, adding a font role, or debugging font loading, preload, or CLS.
+description: Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local). Use when adding a font role, or debugging font loading, preload, or CLS.
 ---
 
 # Fonts
 
-Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used here: they cannot provide metric-adjusted fallback faces (the CLS mechanism, a compiler feature) and add four dependencies for what six vendored files do. The fontsource+turbopack preload approach (upstream ZeroStarter#383) was re-tested 2026-06-06 on Next 16.2.6: prod builds are fixed (preload hashes match the CSS references), but DEV is still broken. The woff2 asset rule rewrites the fontsource CSS urls to unservable node_modules paths and every font 404s locally. Dev breakage alone rules it out, on top of fallback metrics being compiler-only.
+Fonts are self-hosted through `next/font/local`, which generates the metric-adjusted `"<family> Fallback"` faces that hold CLS near zero. Do NOT switch to fontsource CSS imports: the bundler resolves their `url()` references to `node_modules` paths that 404 in dev, and they cannot emit the compiler-only fallback metrics.
 
 ## Layout
 
 - `web/next/src/fonts/*.woff2`, vendored latin variable files
-- `web/next/src/lib/fonts.ts`, one `localFont` definition per family, each exporting a CSS variable
+- `web/next/src/lib/fonts.ts`, one `localFont` per family, each exporting a CSS variable
 - `web/next/src/app/layout.tsx`, the variables applied on `<html>`
-- `web/next/src/app/globals.css`, theme roles chain to the font variables (`--font-sans: var(--font-dm-sans), sans-serif`)
+- `web/next/src/app/globals.css` `@theme inline`, roles chain to the font variables (`--font-sans: var(--font-dm-sans), sans-serif`)
 
 ## Add or swap a font
 
@@ -23,14 +23,15 @@ Fonts are self-hosted via `next/font/local`. fontsource CSS imports are not used
      https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/files/<name>-latin-wght-normal.woff2
    ```
 
-2. Define it in `src/lib/fonts.ts`: `localFont({ src: "../fonts/<file>", variable: "--font-<name>", weight: "<min> <max>" })`. The weight range is MANDATORY for variable fonts: omitting it defaults the face to 400 and every bold glyph silently becomes faux-bold synthesis. Take the range from the fontsource CSS: `curl -s https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/index.css | grep font-weight`. Serif fonts also set `adjustFontFallback: "Times New Roman"` (default is Arial metrics)
-3. Apply the export's `.variable` on `<html>` in layout.tsx
-4. Wire the role in globals.css `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`
-5. Verify: dev CSS emits hashed `/_next/static/media/*.woff2` URLs plus generated `"<family> Fallback"` faces; a production build (Vercel preview, protection-bypass header) emits `<link rel="preload" as="font">` for each file
-6. Public pages changed: check for layout shift and Core Web Vitals (fonts affect CLS and LCP) before shipping
+2. Define it in `web/next/src/lib/fonts.ts`: `localFont({ src: "../fonts/<file>", variable: "--font-<name>", weight: "<min> <max>" })`. The weight range is MANDATORY for variable fonts: omit it and the face defaults to 400, so every bold glyph becomes faux-bold synthesis. Read the range from the fontsource CSS: `curl -s https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/index.css | grep font-weight`. A serif also sets `adjustFontFallback: "Times New Roman"` (the default fallback metrics are Arial).
+3. Apply the export's `.variable` on `<html>` in `layout.tsx`.
+4. Wire the role in `globals.css` `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`.
+5. Verify loading: dev CSS emits hashed `/_next/static/media/*.woff2` urls plus generated `"<family> Fallback"` faces, and a production build (Vercel preview, protection-bypass header) emits one `<link rel="preload" as="font">` per file. No font 404s.
+6. If a public page changed, check CLS and LCP for layout shift before shipping.
 
 ## Notes
 
-- DM Sans vendors italics: `src` as an array of `{ path, style }` entries, top-level `weight` covers both. Mono comments render synthetic oblique, chosen.
-- Non-variable fonts: fetch the per-weight files and pass `src` as an array with `weight` per entry.
-- Removing a font: delete the woff2 + its `localFont` definition + the `<html>` variable + the globals.css role wiring, then grep the variable name to catch stragglers.
+- Scoped preload: any font declared in `web/next/src/lib/fonts.ts` preloads on every page, because the root layout imports it. To scope a font's preload to specific routes, declare it in a module only those routes import: author-only fonts live in `web/next/src/lib/marketing/fonts.ts` with woff2 under `web/next/src/fonts/marketing/`.
+- DM Sans vendors italics: `src` is an array of `{ path, style }` entries and one top-level `weight` covers both. Mono renders synthetic oblique for italics, chosen.
+- Non-variable font: fetch the per-weight files and pass `src` as an array with a `weight` per entry.
+- Remove a font: delete the woff2, its `localFont` definition, the `<html>` variable, and the `globals.css` role, then grep the variable name to catch stragglers.

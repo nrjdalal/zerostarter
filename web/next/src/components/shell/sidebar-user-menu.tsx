@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
-import { SidebarDropdownMenu } from "@/components/sidebar/dropdown-menu"
+import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { SidebarMenuItem } from "@/components/ui/sidebar"

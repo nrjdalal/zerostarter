@@ -1,6 +1,6 @@
 "use client"
 
-import { RouteError } from "@/components/route/error"
+import { RouteError } from "@/components/common/route-error"
 
 import "@/app/globals.css"
 

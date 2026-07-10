@@ -20,7 +20,7 @@ You restyle ZeroStarter by editing tokens, not components. Colors, fonts, and ra
 >
 ```
 
-The `ModeToggle` (`web/next/src/components/mode-toggle.tsx`) is a smart three-state toggle: from `system` it jumps to the opposite of the OS preference, flips between `light` and `dark` while they diverge, and snaps back to `system` once the explicit choice matches the OS again.
+The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) is a smart three-state toggle: from `system` it jumps to the opposite of the OS preference, flips between `light` and `dark` while they diverge, and snaps back to `system` once the explicit choice matches the OS again.
 
 ## Design tokens
 
@@ -71,11 +71,12 @@ Style with the semantic utility (`bg-card`, `text-muted-foreground`, `border-bor
 
 ## Fonts
 
-Fonts are self-hosted, not fetched at runtime. `.woff2` files in `web/next/src/fonts/` are localized through `next/font/local` in `web/next/src/lib/fonts.ts`, each exposing a CSS variable:
+Fonts are self-hosted, not fetched at runtime, localized through `next/font/local` and each exposing a CSS variable. The core faces live in `web/next/src/lib/fonts.ts` (`.woff2` in `web/next/src/fonts/`):
 
 - **DM Sans** → `--font-sans`: body and headings.
 - **JetBrains Mono** → `--font-mono`: code.
-- **Caveat**, **Newsreader** → `--font-caveat`, `--font-newsreader`: accents you apply via the variable directly (not wired to a utility).
+
+**Caveat** and **Newsreader** (`--font-caveat`, `--font-newsreader`) are author-only accents for `/hire` and `/resume`, applied via their `.className`. They live in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`.woff2` in `web/next/src/fonts/marketing/`), kept out of `lib/fonts.ts` so their preload stays scoped to those two pages.
 
 Headings track `--font-sans` unless you repoint `--font-heading`. To add or swap a font, follow the [`fonts` skill](/docs/resources/ai-skills): it fetches the variable woff2 and wires the preload so you don't ship layout shift.
 
