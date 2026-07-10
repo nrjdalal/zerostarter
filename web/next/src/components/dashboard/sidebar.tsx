@@ -21,7 +21,12 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
@@ -225,10 +230,14 @@ export function DashboardUserActions({
   user: User
   canAccessConsole: boolean
 }) {
+  const { isMobile, setOpenMobile } = useSidebar()
+  const close = () => {
+    if (isMobile) setOpenMobile(false)
+  }
   return (
     <SidebarMenu className="space-y-1.5">
       <SidebarMenuItem>
-        <SidebarMenuButton render={<Link href="/docs" />}>
+        <SidebarMenuButton render={<Link href="/docs" onClick={close} />}>
           <RiBookLine />
           <span>Documentation</span>
           <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
