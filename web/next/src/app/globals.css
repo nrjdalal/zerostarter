@@ -147,3 +147,18 @@
     @apply mt-0;
   }
 }
+
+/* shadcn/typeset preset for docs + blog. Tune here or regenerate on https://ui.shadcn.com/typeset. */
+.typeset-docs {
+  --typeset-font-body: var(--font-sans);
+  --typeset-font-heading: var(--font-heading);
+  --typeset-font-mono: var(--font-mono);
+  --typeset-size: 15px;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1.25em;
+}
+
+/* Fumadocs wraps every heading in an anchor link; typeset underlines links, so keep heading anchors looking like headings (matches shadcn's plain-markdown look). */
+.typeset :where(:is(h1, h2, h3, h4, h5, h6) a) {
+  text-decoration: none;
+}
