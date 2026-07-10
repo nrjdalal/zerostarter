@@ -27,6 +27,7 @@
     "fumadocs-core": "catalog:",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
+    "gsap": "catalog:",
     "hono": "catalog:",
     "input-otp": "catalog:",
     "nanoid": "catalog:",
