@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { DashboardUserActions, OrgSwitcher } from "@/components/dashboard/sidebar"
+import { DashboardFooter, OrgSwitcher } from "@/components/dashboard/sidebar"
 import { SidebarShell } from "@/components/shell/sidebar-shell"
 import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"
@@ -38,10 +38,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
     <SidebarShell
       header={<OrgSwitcher />}
       footer={
-        <DashboardUserActions
-          user={session.user}
-          canAccessConsole={session.user.role === "admin"}
-        />
+        <DashboardFooter user={session.user} canAccessConsole={session.user.role === "admin"} />
       }
     >
       {children}

@@ -223,7 +223,7 @@ export function OrgSwitcher() {
   )
 }
 
-export function DashboardUserActions({
+export function DashboardFooter({
   user,
   canAccessConsole,
 }: {

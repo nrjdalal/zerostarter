@@ -56,8 +56,8 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## File and export naming
 
-- Components are grouped by domain folder (`common/`, `shell/`, `console/`, `dashboard/`, `docs/`, `blog/`, `marketing/`, `ui/`); file names are kebab-case and each basename matches its primary export.
-- Sidebar slot exports follow one rule: domain-prefix the generic-role names (`Nav`, `Header`, `Footer`, `Search`) so they read unambiguously and never collide across areas (`console/sidebar.tsx` imports `DocsNav`). So `ConsoleNav`, `ConsoleHeader`, `DocsNav`, `DocsFooter`, `DocsSearch`. Leave distinctive content names bare (`OrgSwitcher`, `CopyAsMarkdown`): a domain prefix on a self-explaining name is redundant.
+- Components are grouped by domain folder (`common/`, `shell/`, `console/`, `dashboard/`, `docs/`, `blog/`, `marketing/`, `ui/`); file names are kebab-case. A single-component file's basename matches its export (`shell/`, `common/`, `blog/`, `marketing/`); a multi-export slot file is named `<area>/sidebar.tsx` (console, dashboard, docs) and its exports follow the sidebar-slot rule below.
+- Sidebar slot exports follow one rule: domain-prefix the generic-role names (`Nav`, `Header`, `Footer`, `Search`) so they read unambiguously and never collide across areas (`console/sidebar.tsx` imports `DocsNav`). So `ConsoleNav`, `ConsoleHeader`, `DashboardFooter`, `DocsNav`, `DocsFooter`, `DocsSearch`. Leave distinctive content names bare (`OrgSwitcher`, `CopyAsMarkdown`): a domain prefix on a self-explaining name is redundant.
 - `shell/` holds the shared app-shell chrome as two families, `Sidebar*` (`SidebarShell`, `SidebarAdaptive`, `SidebarFloatingTrigger`, `SidebarDropdownMenu`, `SidebarUserMenu`) and `Page*` (`PageShell`, `PageHeader`). "Shell" denotes structural layout scaffolding, not one specific component.
 
 ## Open decisions
