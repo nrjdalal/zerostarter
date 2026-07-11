@@ -24,7 +24,7 @@ Under **Settings → Actions → General → Workflow permissions** (the pre-pus
 
 ![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/marketing/docs/release/workflow-permissions.png)
 
-On a brand-new empty repo, push `canary` first (`git push origin canary`) so GitHub makes it the default branch. The pre-push hook (`.github/scripts/ensure-remote-branches.ts`) then seeds `main` on your next push (a separate ref, so it never collides) and the release PR opens on its own. No `gh` and no repo-admin required.
+On a brand-new empty repo, push `canary` first (`git push origin canary`) so GitHub makes it the default branch. The pre-push hook (`.github/scripts/ensure-remote-branches.ts`) then seeds the release branches (`main` by default) on your next push (each a separate ref, so they never collide) and the release PR opens on its own. No `gh` and no repo-admin required.
 
 ## Land work on canary with squash-merge
 
