@@ -99,7 +99,7 @@ describe("convertRepo (in-place)", () => {
         "web/next/content/",
         "web/next/src/lib/marketing/",
         "packages/config/src/site.ts",
-        "# PRESERVE_ON_SYNC - AUDIT.md",
+        "# PRESERVE_ON_SYNC - bun.lock",
       ].join("\n"),
     )
     write(join(dir, "LICENSE.md"), "MIT")

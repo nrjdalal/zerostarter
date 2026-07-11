@@ -9,7 +9,7 @@
 
 # custom directories
 .github/assets/
-.github/audit/
+.github/notes/
 .github/rulesets/
 packages/cli/
 web/next/content/
@@ -25,7 +25,6 @@ web/next/public/
 .infisical.json
 .coderabbit.yaml
 AGENTS.md
-AUDIT.md
 CHANGELOG.md
 LICENSE.md
 packages/config/src/site.ts

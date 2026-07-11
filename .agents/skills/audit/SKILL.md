@@ -1,11 +1,11 @@
 ---
 name: audit
-description: Run the dependency security audit and maintain AUDIT.md. Use when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
+description: Run the dependency security audit and maintain .github/notes/dependencies.md. Use when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 ---
 
 # Dependency Audit
 
-`bun audit --audit-level high` runs in the pre-push hook on `canary` only (`lefthook.yml`). `AUDIT.md` at the repo root is the canonical record of every active override; it stays even when there are none.
+`bun audit --audit-level high` runs in the pre-push hook on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override; it stays even when there are none.
 
 ## 1. Run
 
@@ -29,10 +29,10 @@ Drop to the next rung only when the one above can't lift the tree:
 
 Then `bun i` and confirm nothing broke: `bun run check-types && bun run build`. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
 
-## 3. Record in AUDIT.md
+## 3. Record in .github/notes/dependencies.md
 
 Match the file's existing shape: one `### <package> → <version>` block per active override under `## Active overrides`, each carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override is dropped. Done when every entry in root `overrides` has a matching block and no block outlives its override.
 
 ## 4. Ship
 
-`package.json`/`bun.lock`/`AUDIT.md` go through a normal PR.
+`package.json`/`bun.lock`/`.github/notes/dependencies.md` go through a normal PR.

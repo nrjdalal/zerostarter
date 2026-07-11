@@ -30,4 +30,4 @@ Preview measurement (Vercel, `perf/lighthouse-followups`, before P3 was pulled):
 - **P1 backdrop, further:** IntersectionObserver scroll-pause for the grain (currently pauses only on tab-hidden), and skipping `LandingBackground`'s DOM grid under `prefers-reduced-motion`. Both change runtime/visible behavior for some users; deliberate brand calls.
 - **P5 / ~62KB assets without long TTL:** a long-TTL + `stale-while-revalidate` `Cache-Control` for `/marketing/:path*`. Pulled from this pass: the assets are stable-named (not content-hashed), so it needs its own decision on the caching/revalidation tradeoff and where it lives (`next.config.ts` vs `vercel.json`).
 
-Once P3, P4, P5, and the P1 extras are decided, delete this doc per the `.github/audit/` convention.
+Once P3, P4, P5, and the P1 extras are decided, delete this doc per the `.github/notes/audits/` convention.

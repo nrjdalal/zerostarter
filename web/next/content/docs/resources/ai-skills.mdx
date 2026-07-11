@@ -35,7 +35,7 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Build    | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                         |
 | Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
 | Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`.                                                                 |
-| Operate  | `audit`         | Run the dependency security audit and maintain `AUDIT.md`; unblocks the pre-push audit hook.                                  |
+| Operate  | `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook.             |
 | Operate  | `ui-verify`     | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                             |
 | Maintain | `shadcn-sync`   | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                              |
 | Maintain | `fonts`         | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                        |

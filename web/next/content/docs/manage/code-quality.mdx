@@ -102,7 +102,7 @@ Two repo rules the hook and skills enforce:
 - **Hooks aren't running**: reinstall them with `bun run prepare`.
 - **You need to bypass in an emergency**: `git commit --no-verify`, or `LEFTHOOK=0 git commit …` to drop every hook, or `LEFTHOOK_EXCLUDE=build git commit …` to drop just the build. CI re-checks all of it anyway.
 
-Dependency advisories that can only be resolved with a `package.json` override are recorded in `AUDIT.md` at the repo root; the `audit` skill walks you through it.
+Dependency advisories that can only be resolved with a `package.json` override are recorded in `.github/notes/dependencies.md`; the `audit` skill walks you through it.
 
 ## Next
 

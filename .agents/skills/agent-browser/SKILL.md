@@ -26,6 +26,10 @@ The CLI serves skill content that always matches the installed version,
 so instructions never go stale. The content in this stub cannot change
 between releases, which is why it just points at `skills get core`.
 
+## Viewport
+
+Default the browser viewport to **1782×972** for every session (`agent-browser set viewport 1782 972`). Use a different size only when a task requires it, e.g. mobile or tablet responsive checks, and keep before/after screenshots at the same viewport.
+
 ## Specialized skills
 
 Load a specialized skill when the task falls outside browser web pages:

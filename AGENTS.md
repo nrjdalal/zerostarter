@@ -5,7 +5,7 @@ This file provides guidance to AI coding agents when working with code in this r
 ## Instructions
 
 - ALWAYS: Use `@/` for imports, if applicable.
-- ALWAYS: Create git worktrees under `.claude/worktrees/` (repo-root relative), one directory per worktree. Never place them elsewhere (`/tmp`, home, or a sibling of the repo).
+- ALWAYS: Do every change in its own git worktree, never on the primary checked-out branch. Create it under `.claude/worktrees/` (repo-root relative, one directory per worktree; never `/tmp`, home, or a sibling of the repo), and merge the latest `canary` into the working branch before starting so the change builds on current main.
 - ALWAYS: Prefer a Bun-native API when the file runs under Bun and one exists (`Bun.file`, `Bun.write`, `Bun.spawn`); otherwise use a Node built-in with the `node:` protocol prefix (`import { join } from "node:path"`, `require("node:fs")`), never the bare specifier. Node-runtime code (the `packages/cli` npm binary, `web/next`, and shared `packages/env`) stays on `node:`. See the `runtime-apis` skill.
 - ALWAYS: Follow the `design` skill for UI, styling, and design decisions (it holds the canonical conventions). Update it in the same change when a convention changes.
 - ALWAYS: For any frontend or UI change, verify it in a real browser with agent-browser before opening or updating a PR; drive the actual page or flow, do not rely on type-check and lint alone. Run the end-to-end flow when the change spans it or when asked. Capture screenshots, upload them to litterbox (72h), and attach the URLs to the PR. See the `ui-verify` skill.
@@ -15,7 +15,8 @@ This file provides guidance to AI coding agents when working with code in this r
 - NEVER: Use em-dashes (the long dash, U+2014) in code, comments, docs, or copy. Regular hyphens are fine; for a pause or aside, use a comma, colon, or period.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
-- Write audit reports (any kind) to `.github/audit/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
+- Write audit reports (any kind) to `.github/notes/audits/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
+- Track planned, in-progress, and parked work in `.github/notes/plans/` (an index plus one file per item), not in dated audit files or scattered across issues; issues are the inbox, folded in and closed once captured.
 
 ## Logging in (agents)
 
@@ -36,7 +37,7 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | --------------- | -------------------------------------------------------------------------------------------------- |
 | `agent-browser` | Drive the running app in a browser: navigate, click, type, screenshot.                             |
 | `api-endpoint`  | Add a typed Hono API endpoint: router, validation envelope, OpenAPI, RPC wiring.                   |
-| `audit`         | Run the dependency security audit and maintain `AUDIT.md`.                                         |
+| `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                    |
 | `codebase-map`  | Orient: where to edit for a change, trace a feature across the stack, search the repo. Start here. |
 | `db-migration`  | Create and apply a Drizzle schema change.                                                          |
 | `design`        | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |
