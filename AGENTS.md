@@ -16,6 +16,7 @@ This file provides guidance to AI coding agents when working with code in this r
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
 - Write audit reports (any kind) to `.github/audit/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
+- Put forward plans and feature ideas in the root `ROADMAP.md` (persistent, undated), not in dated audit files or scattered across issues; give each a status and link its issue when one exists.
 
 ## Logging in (agents)
 
