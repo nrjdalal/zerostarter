@@ -5,9 +5,9 @@ import { merge, mergePkg, type Pkg, parsePreserve, unionArrays } from "@/pkg"
 describe("parsePreserve", () => {
   test("extracts the comma-separated paths from the directive", () => {
     const gpi =
-      "# header\n# PRESERVE_ON_SYNC - AUDIT.md, web/next/src/app/favicon.ico, web/next/src/app/icon.svg\nweb/next/content/"
+      "# header\n# PRESERVE_ON_SYNC - bun.lock, web/next/src/app/favicon.ico, web/next/src/app/icon.svg\nweb/next/content/"
     expect(parsePreserve(gpi)).toEqual([
-      "AUDIT.md",
+      "bun.lock",
       "web/next/src/app/favicon.ico",
       "web/next/src/app/icon.svg",
     ])
