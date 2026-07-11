@@ -1,4 +1,4 @@
-import path from "path"
+import path from "node:path"
 
 import { Glob } from "bun"
 import sharp from "sharp"
