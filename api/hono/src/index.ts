@@ -137,7 +137,7 @@ socket.addEventListener("message", (event) => {
           ws.send(snapshot())
           heartbeat = setInterval(() => ws.send(snapshot()), 5000)
         },
-        // Bun's WS adapter surfaces every disconnect as close (it has no error event), so this covers all cleanup.
+        // onClose fires on every disconnect on both adapters (Bun has no error event; ws always emits close after error), so this covers all cleanup.
         onClose() {
           if (heartbeat) clearInterval(heartbeat)
         },
@@ -182,7 +182,7 @@ socket.addEventListener("message", (event) => {
 export type AppType = typeof routes
 export type { ErrorCode } from "@/lib/error"
 
-// On Vercel, export the Node http.Server so the platform drives the WebSocket upgrade; Vercel owns the port (falls back to HONO_PORT when forced locally). Elsewhere, export the Bun.serve() shape so Bun owns fetch + the socket.
+// On Vercel, export the Node http.Server so the platform drives all traffic including the WebSocket upgrade; it binds PORT when Vercel sets it, else HONO_PORT (e.g. forced locally). Elsewhere, export the Bun.serve() shape so Bun owns fetch + the socket.
 export default onVercel
   ? serve({
       fetch: app.fetch,
