@@ -5,6 +5,8 @@ This file provides guidance to AI coding agents when working with code in this r
 ## Instructions
 
 - ALWAYS: Use `@/` for imports, if applicable.
+- ALWAYS: Create git worktrees under `.claude/worktrees/` (repo-root relative), one directory per worktree. Never place them elsewhere (`/tmp`, home, or a sibling of the repo).
+- ALWAYS: Prefer a Bun-native API when the file runs under Bun and one exists (`Bun.file`, `Bun.write`, `Bun.spawn`); otherwise use a Node built-in with the `node:` protocol prefix (`import { join } from "node:path"`, `require("node:fs")`), never the bare specifier. Node-runtime code (the `packages/cli` npm binary, `web/next`, and shared `packages/env`) stays on `node:`. See the `runtime-apis` skill.
 - ALWAYS: Follow the `design` skill for UI, styling, and design decisions (it holds the canonical conventions). Update it in the same change when a convention changes.
 - ALWAYS: For any frontend or UI change, verify it in a real browser with agent-browser before opening or updating a PR; drive the actual page or flow, do not rely on type-check and lint alone. Run the end-to-end flow when the change spans it or when asked. Capture screenshots, upload them to litterbox (72h), and attach the URLs to the PR. See the `ui-verify` skill.
 - ALWAYS: Keep documentation in sync with every change. Whenever code, structure, conventions, or tooling change, update the matching docs in the same change (e.g. `web/next/content/docs/`, `README.md`, the `llms.txt`/`llms-full.txt` context routes, skill docs under `.agents/skills/` and `.claude/skills/`, and these agent guides `AGENTS.md`/`CLAUDE.md`). Docs must never drift.
@@ -44,5 +46,6 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | `fonts`         | Add or swap a self-hosted web font.                                                                |
 | `gh-commit`     | Make atomic, conventional commits.                                                                 |
 | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
+| `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the `node:` prefix.                       |
 | `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
 | `ui-verify`     | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |
