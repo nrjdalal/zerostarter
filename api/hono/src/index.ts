@@ -1,13 +1,15 @@
+import { serve, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
 import { site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
-import { upgradeWebSocket, websocket } from "hono/bun"
+import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
+import { WebSocketServer } from "ws"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
@@ -15,6 +17,13 @@ import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
+
+// Vercel Functions can't run Bun.serve(), so on Vercel we serve WebSockets through the Node adapter (@hono/node-server + ws); everywhere else (local, Docker/self-host) Bun.serve() owns the socket via hono/bun.
+const onVercel = Boolean(process.env.VERCEL)
+// Both adapters accept the same handler factory; the cast collapses their otherwise non-unionable signatures to one callable type.
+const upgradeWebSocket = onVercel
+  ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
+  : bunUpgradeWebSocket
 
 const app = new Hono()
 
@@ -95,7 +104,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
     describeRoute({
       tags: ["System"],
       description:
-        "Live system health over a WebSocket (Bun). On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
+        "Live system health over a WebSocket. On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
       ...({
         "x-codeSamples": [
           {
@@ -173,8 +182,15 @@ socket.addEventListener("message", (event) => {
 export type AppType = typeof routes
 export type { ErrorCode } from "@/lib/error"
 
-export default {
-  port: env.HONO_PORT,
-  fetch: app.fetch,
-  websocket,
-}
+// On Vercel, export the Node http.Server so the platform drives the WebSocket upgrade; Vercel owns the port (falls back to HONO_PORT when forced locally). Elsewhere, export the Bun.serve() shape so Bun owns fetch + the socket.
+export default onVercel
+  ? serve({
+      fetch: app.fetch,
+      port: Number(process.env.PORT) || env.HONO_PORT,
+      websocket: { server: new WebSocketServer({ noServer: true }) },
+    })
+  : {
+      port: env.HONO_PORT,
+      fetch: app.fetch,
+      websocket,
+    }
