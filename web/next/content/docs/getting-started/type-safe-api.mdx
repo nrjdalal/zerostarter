@@ -87,7 +87,7 @@ import type { Hono } from "hono"
 import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
 import { WebSocketServer } from "ws"
 
-const onVercel = Boolean(process.env.VERCEL)
+const onVercel = process.env.VERCEL === "1"
 
 export const upgradeWebSocket = onVercel
   ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
