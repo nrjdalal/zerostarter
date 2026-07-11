@@ -91,6 +91,7 @@ For a live server-to-client stream instead of polling, upgrade a `GET` with `upg
 
 - The typed client reaches it with `apiClient.health.ws.$ws()`, a standard `WebSocket` pointed at the API base (`http` becomes `ws`).
 - Frames are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`. Parse defensively and read only the fields you need; don't hand-maintain a shared payload type RPC can't derive.
+- `@/lib/server` casts the Node adapter's `upgradeWebSocket` to the Bun type, so on the server side the handler's `ws` (WSContext) is typed as Bun's regardless of host. That is sound for `send`/`close`, but a route reaching into host-specific context (e.g. `ws.raw`) type-checks green yet can diverge at runtime on Vercel. Stick to the common surface (`send`, `close`) or branch per host.
 - Keep a `describeRoute` so the upgrade lists in Scalar as a `101`, and describe the frame shape in the route `description`, since OpenAPI can't schema-type WS frames and there is no `{ data }`/`{ error }` envelope.
 - The handshake skips `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` sends no credentials, so gate a sensitive route on the `Origin` header or a token inside the handler, not the allowlist. `/api/health/ws` serves public data, so it doesn't.
 - `bun --hot` picks up edits to an existing `index.ts` route, but restart the stack if the `upgradeWebSocket` isn't yet wired into the exported server.

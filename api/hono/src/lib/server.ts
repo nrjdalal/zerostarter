@@ -17,7 +17,7 @@ export const createServer = (app: Hono) =>
   onVercel
     ? serve({
         fetch: app.fetch,
-        port: Number(process.env.PORT) || env.HONO_PORT,
+        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : {

@@ -82,6 +82,8 @@ The route is a `GET` upgraded with `upgradeWebSocket`, but the socket owner diff
 ```ts
 // api/hono/src/lib/server.ts
 import { serve, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
+import { env } from "@packages/env/api-hono"
+import type { Hono } from "hono"
 import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
 import { WebSocketServer } from "ws"
 
@@ -95,7 +97,7 @@ export const createServer = (app: Hono) =>
   onVercel
     ? serve({
         fetch: app.fetch,
-        port: Number(process.env.PORT) || env.HONO_PORT,
+        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : { port: env.HONO_PORT, fetch: app.fetch, websocket }
