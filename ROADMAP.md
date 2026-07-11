@@ -66,8 +66,8 @@ jobs:
         run: |
           # only preview deployments
           case "$ENV" in Production|production) echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0;; esac
-          # slugify branch: lowercase, non-alnum -> '-', trim, cap so labels stay <= 63 chars
-          slug=$(echo "$REF" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-40)
+          # slugify branch: lowercase, non-alnum -> '-', cap length, then trim so truncation can't leave a trailing '-' (invalid DNS label)
+          slug=$(echo "$REF" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | cut -c1-40 | sed -E 's/^-+|-+$//g')
           # protected branches own dedicated domains; never clobber them
           case "$slug" in canary|main|master|production) echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0;; esac
           host=$(echo "$URL" | sed -E 's#https?://([^/]+).*#\1#')
