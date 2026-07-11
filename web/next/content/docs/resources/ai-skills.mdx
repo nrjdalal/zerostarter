@@ -17,13 +17,13 @@ name: api-endpoint
 description: Add a typed Hono API endpoint following repo conventions... Use when adding or modifying API routes in api/hono.
 ```
 
-An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so all fourteen skills cost almost nothing in context until one is needed; the full procedure loads only on a match.
+An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so the whole catalog costs almost nothing in context until one is needed; the full procedure loads only on a match.
 
 When you don't know where to start, the `codebase-map` skill orients first; it maps where each kind of change lives and how types ripple across the stack. It is the one skill worth reading before you have a specific task.
 
 ## The catalog
 
-Fourteen skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
+The skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
 
 | Stage    | Skill           | What it does                                                                                                                  |
 | -------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -43,7 +43,7 @@ Fourteen skills, arranged as the arc of a real task, **Navigate** to find your w
 | Ship     | `doc-sync`      | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                 |
 | Ship     | `gh-commit`     | Atomic commits in conventional-commit format.                                                                                 |
 
-Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. The other thirteen are written for this repo.
+Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. Every other skill is written for this repo.
 
 ## Writing your own
 

@@ -46,8 +46,11 @@ Bun-first applies to Bun-only files: `.github/scripts/*.ts` (`bun x.ts`). The CL
 
 No bare (unprefixed) built-in specifier may exist anywhere. This prints nothing when clean:
 
+The alternation `$B` is the full Node built-in list, so a new bare import cannot slip through; extend it only if Node ships a new module.
+
 ```bash
-rg -n "from ['\"](assert|buffer|child_process|crypto|events|fs|http|https|net|os|path|process|querystring|readline|stream|string_decoder|tls|tty|url|util|zlib)(/[a-z]+)?['\"]|require\(['\"](child_process|crypto|fs|os|path|util)['\"]\)" -g '!**/dist/**' -g '!.claude/worktrees/**' --hidden
+B='assert|async_hooks|buffer|child_process|cluster|console|constants|crypto|dgram|diagnostics_channel|dns|domain|events|fs|http|http2|https|inspector|module|net|os|path|perf_hooks|process|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|trace_events|tty|url|util|v8|vm|wasi|worker_threads|zlib'
+rg -n "from ['\"]($B)(/[a-z_]+)?['\"]|require\(['\"]($B)(/[a-z_]+)?['\"]\)" -g '!**/dist/**' -g '!.claude/worktrees/**' --hidden
 ```
 
 The full per-file inventory lives in [`index.md`](index.md): every file, its runtime, and the `node:` modules it imports. Regenerate it when the surface changes:
