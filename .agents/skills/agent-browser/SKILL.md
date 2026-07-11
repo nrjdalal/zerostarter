@@ -28,7 +28,7 @@ between releases, which is why it just points at `skills get core`.
 
 ## Viewport
 
-Default the browser viewport to **1728×963** for every session (`agent-browser set viewport 1728 963`). Use a different size only when a task requires it, e.g. mobile or tablet responsive checks, and keep before/after screenshots at the same viewport.
+Default the browser viewport to **1782×972** for every session (`agent-browser set viewport 1782 972`). Use a different size only when a task requires it, e.g. mobile or tablet responsive checks, and keep before/after screenshots at the same viewport.
 
 ## Specialized skills
 
