@@ -15,8 +15,8 @@ This file provides guidance to AI coding agents when working with code in this r
 - NEVER: Use em-dashes (the long dash, U+2014) in code, comments, docs, or copy. Regular hyphens are fine; for a pause or aside, use a comma, colon, or period.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
-- Write audit reports (any kind) to `.github/audit/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
-- Put forward plans and feature ideas in the root `ROADMAP.md` (persistent, undated), not in dated audit files or scattered across issues; give each a status and link its issue when one exists.
+- Write audit reports (any kind) to `.github/notes/audits/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
+- Track planned, in-progress, and parked work in `.github/notes/plans/` (an index plus one file per item), not in dated audit files or scattered across issues; issues are the inbox, folded in and closed once captured.
 
 ## Logging in (agents)
 
@@ -37,7 +37,7 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | --------------- | -------------------------------------------------------------------------------------------------- |
 | `agent-browser` | Drive the running app in a browser: navigate, click, type, screenshot.                             |
 | `api-endpoint`  | Add a typed Hono API endpoint: router, validation envelope, OpenAPI, RPC wiring.                   |
-| `audit`         | Run the dependency security audit and maintain `AUDIT.md`.                                         |
+| `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                    |
 | `codebase-map`  | Orient: where to edit for a change, trace a feature across the stack, search the repo. Start here. |
 | `db-migration`  | Create and apply a Drizzle schema change.                                                          |
 | `design`        | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |

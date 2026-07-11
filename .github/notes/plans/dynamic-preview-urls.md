@@ -1,24 +1,7 @@
-# Roadmap
+# Dynamic per-branch preview URLs (alias-on-deploy)
 
-The single home for forward plans and feature ideas, so they stop scattering across GitHub issues that read like bugs. This file is persistent (undated). It is distinct from the dated `.github/audit/<YYYY-MM-DD>-<topic>.md` files, which are transient code-audit findings deleted once addressed.
-
-Split of concerns:
-
-- Roadmap doc (this file): forward plans and ideas.
-- GitHub issues: actionable or discussable work (bugs, ready tasks).
-- Dated audit files: transient code-audit findings.
-
-Each item carries a status (idea / planned / in progress / done) and, when one exists, a link to its GitHub issue. An item gets a full spec once it moves to `planned`.
-
-## In progress
-
-_None._
-
-## Planned
-
-### Dynamic per-branch preview URLs (alias-on-deploy)
-
-Issue: #677 · Related: #674 (where manual canary aliasing surfaced this)
+- Status: planned
+- Links: #677 · related #674 (where manual canary aliasing surfaced this)
 
 Replace opaque generated preview URLs (e.g. `zerostarter-op988nll0-nrjdalal.vercel.app`) with predictable per-branch URLs on our own domains, for both projects:
 
@@ -96,31 +79,3 @@ jobs:
 - Stale aliases on branch delete (Vercel prunes deployments; aliases may linger). Optional cleanup follow-up.
 
 **Rollout:** provision wildcard domains + DNS, land the CORS predicate, add the action, verify on a throwaway branch that `<slug>.zerostarter.dev` + `<slug>.api.zerostarter.dev` resolve and the badge goes live over WS.
-
-## Backlog / ideas
-
-Forward plans folded here from issues (the source issues are closed; their history is preserved and linked). Promote one up to `Planned` with a full spec when we commit to it.
-
-### Passkey (WebAuthn) sign-in and management
-
-From #594. Passwordless sign-in plus passkey management via the Better Auth passkey plugin (`@better-auth/passkey`): server wiring in `packages/auth` (rpID/origin/rpName derived from the app URL + trusted origins + site name, a `passkeyEnabled` flag surfaced through `/api/auth/providers`), an additive `passkey` DB table, a client sign-in button with conditional autofill, and a `/dashboard/settings/passkeys` manage page. A near-complete WIP lives on the `feat/passkey` branch (closed PR #574, kept). Blocker: the WebAuthn ceremony needs human e2e (Touch ID / security key) and cannot run headlessly. Remaining: rebase `feat/passkey` onto canary (conflicts expected in the dashboard shell), re-confirm the migration and types, resume from there rather than starting fresh.
-
-### More deployment adapters, methods and platforms
-
-From #154. Prove out additional deploy targets on throwaway branches (e.g. `playground-railway`, `playground-cloudflare`), then open a PR per adapter once one works.
-
-### Feature flags via PostHog or a service
-
-From #153. Optionally an admin dashboard to manage flags. Discuss the approach first; not a take-directly ticket.
-
-### A logo
-
-From #113 (was `good first issue`). A modern, minimal identity around the "zero" concept, working in light and dark and from favicon to banner: SVG plus PNG sizes (512 down to 16) and a favicon, with a monochrome variant. Good candidate to hand to a contributor.
-
-### A better landing page
-
-From #26. Beyond the current hero/features/stack: add social proof (GitHub stats, usage), more interactivity/animation, a clearer "why zerostarter" differentiation vs other starters, and a sharper value proposition.
-
-## Not on the roadmap (stay as issues)
-
-Actionable tasks, bugs, and blocked concrete work stay as issues, not here: #664 (OpenAPI lists inapplicable 429/500 on the WS route), #650 (TanStack Start migration, done and verified, blocked on a Vercel Bun-runtime deploy), #485 (route the home OG through renderOgImage), #581 (generalize the ensure-branches hook), #514 (how forks get agent skills), #423 (Bun-native file APIs in scripts), #235 (Zod 4 JSON Schema for OpenAPI), #349 (org-creation name restrictions).
