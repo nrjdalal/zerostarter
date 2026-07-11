@@ -74,6 +74,8 @@
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.11.9",
     "@shadcn/react": "^0.2.1",
+    "@shikijs/langs": "^4.3.1",
+    "@shikijs/themes": "^4.3.1",
     "@t3-oss/env-core": "^0.13.11",
     "@tailwindcss/postcss": "^4.3.2",
     "@takumi-rs/core-darwin-arm64": "^2.0.2",

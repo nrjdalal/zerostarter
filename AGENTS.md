@@ -45,4 +45,5 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | `gh-commit`     | Make atomic, conventional commits.                                                                 |
 | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
 | `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
+| `shiki-langs`   | Strip the runtime shiki grammar bundle to the languages the site actually uses.                    |
 | `ui-verify`     | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |

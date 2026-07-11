@@ -56,6 +56,7 @@ cookies.txt
 web/next/content/blog/meta.json
 web/next/content/console/docs/meta.json
 web/next/content/docs/meta.json
+web/next/src/lib/shiki-languages.ts
 
 # git overrides
 !.env.example

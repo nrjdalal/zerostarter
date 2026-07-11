@@ -18,12 +18,26 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { codeToHtml } from "shiki"
+import { createBundledHighlighter, createSingletonShorthands } from "shiki/core"
+import { createOnigurumaEngine } from "shiki/engine/oniguruma"
 
 import { ApiStatus } from "@/components/marketing/api-status"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { Button } from "@/components/ui/button"
+import { bundledLanguages } from "@/lib/shiki-languages"
 import { cn } from "@/lib/utils"
+
+// Custom shiki bundle over the content-derived language map (.github/scripts/shiki-langs.ts), so only the grammars the site uses are traced in, not shiki's full ~250-grammar bundledLanguages. Languages stay string-keyed and load lazily, exactly like shiki's default codeToHtml.
+const { codeToHtml } = createSingletonShorthands(
+  createBundledHighlighter({
+    langs: bundledLanguages,
+    themes: {
+      "github-dark": () => import("@shikijs/themes/github-dark"),
+      "github-light": () => import("@shikijs/themes/github-light"),
+    },
+    engine: () => createOnigurumaEngine(import("shiki/wasm")),
+  }),
+)
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
