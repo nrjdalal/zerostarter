@@ -87,7 +87,7 @@ Client components reading REST data use TanStack Query (see `components/common/a
 
 ## WebSocket routes
 
-For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` (`api/hono/src/index.ts`). The socket owner differs by host: on Bun (local, Docker) it's `hono/bun` with the shared `websocket` handler next to `fetch` in the `Bun.serve()` export; on Vercel it's the Node adapter (`@hono/node-server` + `ws`) exporting the http server, since Vercel Functions can't run `Bun.serve()`. The starter picks the adapter at boot from `process.env.VERCEL`, so a new WS route just registers under the selected `upgradeWebSocket`. `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.
+For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` (`api/hono/src/index.ts`). The socket owner differs by host: on Bun (local, Docker) it's `hono/bun` with the shared `websocket` handler next to `fetch` in the `Bun.serve()` export; on Vercel it's the Node adapter (`@hono/node-server` + `ws`) exporting the http server, since Vercel Functions can't run `Bun.serve()`. That host branching (adapter + server export) lives in `@/lib/server`, picked at boot from `process.env.VERCEL`, so a new WS route just imports `upgradeWebSocket` from there and registers. `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.
 
 - The typed client reaches it with `apiClient.health.ws.$ws()`, a standard `WebSocket` pointed at the API base (`http` becomes `ws`).
 - Frames are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`. Parse defensively and read only the fields you need; don't hand-maintain a shared payload type RPC can't derive.
