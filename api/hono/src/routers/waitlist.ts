@@ -1,11 +1,11 @@
 import { sValidator } from "@hono/standard-validator"
-import { features } from "@packages/config/site"
 import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { ApiError, validationErrorResponses } from "@/lib/error"
+import { requireFeature } from "@/middlewares"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -19,10 +19,7 @@ const COUNT_STEP = 5
 
 export const waitlistRouter = new Hono()
   // 404 both endpoints when the waitlist feature is off; the router stays mounted so a fork can flip the flag on later.
-  .use("*", async (c, next) => {
-    if (!features.waitlist) return c.notFound()
-    await next()
-  })
+  .use("*", requireFeature("waitlist"))
   .get(
     "/",
     describeRoute({

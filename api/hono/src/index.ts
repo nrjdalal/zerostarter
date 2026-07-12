@@ -1,8 +1,8 @@
-import { features, site } from "@packages/config/site"
+import { site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
-import { Hono, type MiddlewareHandler } from "hono"
+import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
@@ -11,7 +11,7 @@ import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { createServer, upgradeWebSocket } from "@/lib/server"
-import { rateLimiterMiddleware } from "@/middlewares"
+import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
@@ -27,12 +27,6 @@ const apiReference = Scalar({
   expandAllResponses: true,
   url: "/api/openapi.json",
 })
-
-// 404 both the reference UI and its OpenAPI document when apiDocs is off. Both stay mounted so a fork can flip the flag on later; the Scalar UI fetches the spec, so gating only the UI would still leave the full spec public.
-const requireApiDocs: MiddlewareHandler = async (c, next) => {
-  if (!features.apiDocs) return c.notFound()
-  await next()
-}
 
 const app = new Hono()
 
@@ -157,7 +151,8 @@ socket.addEventListener("message", (event) => {
   .route("/auth", authRouter)
   .route("/v1", v1Router)
   .route("/waitlist", waitlistRouter)
-  .use("/openapi.json", requireApiDocs)
+  // Gate both the OpenAPI document and the Scalar UI on apiDocs; the UI fetches the spec, so gating only the UI would leave the full spec public.
+  .use("/openapi.json", requireFeature("apiDocs"))
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {
@@ -175,7 +170,7 @@ socket.addEventListener("message", (event) => {
       },
     }),
   )
-  .use("/docs", requireApiDocs)
+  .use("/docs", requireFeature("apiDocs"))
   .get("/docs", apiReference)
 
 export type AppType = typeof routes
