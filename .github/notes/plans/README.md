@@ -23,6 +23,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [A better landing page](landing-page.md) - #26.
 - [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
+- [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
 
 ### Architecture deepenings (2026-07-12 review, deep-module lens)
 

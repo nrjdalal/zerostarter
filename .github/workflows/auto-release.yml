@@ -77,7 +77,7 @@ jobs:
             fi
             AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
             if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
-              V="$MANUAL_VERSION" bunx fx package.json 'x => ({ ...x, version: process.env.V })' > package.json.tmp && mv package.json.tmp package.json
+              bunx json -I -f package.json -e "this.version=\"$MANUAL_VERSION\""
               AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
               sed -i "s|v${AUTO_ESC}|v${MANUAL_VERSION}|g" CHANGELOG.md
             fi
