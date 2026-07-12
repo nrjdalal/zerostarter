@@ -1,8 +1,9 @@
 "use client"
 
-import { site } from "@packages/config/site"
+import { features, site } from "@packages/config/site"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { notFound } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -58,6 +59,8 @@ function WaitlistCount() {
 }
 
 export default function WaitlistPage() {
+  if (!features.waitlist) notFound()
+
   const [joined, setJoined] = useState(false)
   const queryClient = useQueryClient()
 

@@ -11,10 +11,22 @@ import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { createServer, upgradeWebSocket } from "@/lib/server"
-import { rateLimiterMiddleware } from "@/middlewares"
+import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
+
+// The Scalar API reference UI, gated by the apiDocs feature. Built once; a fork can flip the flag on later without changing this route.
+const apiReference = Scalar({
+  pageTitle: `API Reference | ${site.name}`,
+  defaultHttpClient: {
+    targetKey: "js",
+    clientKey: "hono/client",
+  },
+  defaultOpenAllTags: true,
+  expandAllResponses: true,
+  url: "/api/openapi.json",
+})
 
 const app = new Hono()
 
@@ -139,6 +151,8 @@ socket.addEventListener("message", (event) => {
   .route("/auth", authRouter)
   .route("/v1", v1Router)
   .route("/waitlist", waitlistRouter)
+  // Gate both the OpenAPI document and the Scalar UI on apiDocs; the UI fetches the spec, so gating only the UI would leave the full spec public.
+  .use("/openapi.json", requireFeature("apiDocs"))
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {
@@ -156,19 +170,8 @@ socket.addEventListener("message", (event) => {
       },
     }),
   )
-  .get(
-    "/docs",
-    Scalar({
-      pageTitle: `API Reference | ${site.name}`,
-      defaultHttpClient: {
-        targetKey: "js",
-        clientKey: "hono/client",
-      },
-      defaultOpenAllTags: true,
-      expandAllResponses: true,
-      url: "/api/openapi.json",
-    }),
-  )
+  .use("/docs", requireFeature("apiDocs"))
+  .get("/docs", apiReference)
 
 export type AppType = typeof routes
 export type { ErrorCode } from "@/lib/error"

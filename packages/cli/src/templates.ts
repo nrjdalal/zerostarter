@@ -2,8 +2,39 @@ export interface Brand {
   name: string
 }
 
+export type FeatureFlags = {
+  apiDocs: boolean
+  blog: boolean
+  docs: boolean
+  internalDocs: boolean
+  waitlist: boolean
+}
+
+// A fresh fork's default surfaces: docs, blog, internal docs, and the API reference on; the waitlist off, so the home is a plain landing page. Any can be flipped later in the config.
+export const DEFAULT_FEATURES: FeatureFlags = {
+  apiDocs: true,
+  blog: true,
+  docs: true,
+  internalDocs: true,
+  waitlist: false,
+}
+
+const featuresBlock = (features: FeatureFlags): string => `// Optional surfaces a fork enables or disables. Typed boolean (not \`as const\`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface. waitlist off makes the home a plain landing page.
+export const features = {
+  apiDocs: ${features.apiDocs},
+  blog: ${features.blog},
+  docs: ${features.docs},
+  internalDocs: ${features.internalDocs},
+  waitlist: ${features.waitlist},
+}
+
+export type Feature = keyof typeof features`
+
 // packages/config/src/site.ts: regenerated with the product name, repo URL, and placeholders.
-export const siteTemplate = ({ name }: Brand): string => {
+export const siteTemplate = (
+  { name }: Brand,
+  features: FeatureFlags = DEFAULT_FEATURES,
+): string => {
   const display = name.charAt(0).toUpperCase() + name.slice(1)
   return `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
@@ -26,15 +57,27 @@ export const site = {
 } as const
 
 export type Site = typeof site
+
+${featuresBlock(features)}
 `
 }
 
-// web/next/src/app/page.tsx: a fresh fork has no product yet, so the home redirects to the waitlist.
-export const homeTemplate = (): string => `import { redirect } from "next/navigation"
+// web/next/src/app/page.tsx: a fresh fork home. With the waitlist on it redirects to the capture page; with it off it renders a plain landing. Flip features.waitlist in the config to switch, no regeneration needed.
+export const homeTemplate = (): string => `import { features, site } from "@packages/config/site"
+import { redirect } from "next/navigation"
 
-// Fresh fork: redirect to the waitlist until you build your real home page.
+// Fresh fork: the waitlist capture when the waitlist feature is on, otherwise a plain landing page. Replace this with your real home when ready.
 export default function Home() {
-  redirect("/waitlist")
+  if (features.waitlist) redirect("/waitlist")
+
+  return (
+    <main className="flex min-h-svh flex-col items-center justify-center p-8 text-center">
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center">
+        <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">{site.name}</h1>
+        <p className="text-muted-foreground max-w-md text-lg">{site.tagline}</p>
+      </div>
+    </main>
+  )
 }
 `
 

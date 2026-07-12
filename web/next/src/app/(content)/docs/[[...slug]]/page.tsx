@@ -1,26 +1,22 @@
 import type { Metadata } from "next"
 
-import {
-  createGenerateStaticParams,
-  generatePageMetadata,
-  getPageData,
-  renderPageContent,
-} from "@/lib/fumadocs"
-import { docsSource } from "@/lib/source"
+import { contentSource } from "@/lib/content"
+import { generatePageMetadata, renderPageContent } from "@/lib/fumadocs"
+
+const docs = contentSource("docs")
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
-  const pageData = await getPageData(props.params, docsSource)
-  return renderPageContent(pageData)
+  const { slug } = await props.params
+  return renderPageContent(docs, docs.getPageOr404(slug))
 }
 
-export const generateStaticParams = createGenerateStaticParams(docsSource)
+export function generateStaticParams() {
+  return docs.params()
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ slug?: string[] }>
 }): Promise<Metadata> {
-  return generatePageMetadata(props.params, {
-    source: docsSource,
-    ogPath: "/og/docs",
-    ogType: "website",
-  })
+  const { slug } = await props.params
+  return generatePageMetadata(docs, docs.getPageOr404(slug))
 }

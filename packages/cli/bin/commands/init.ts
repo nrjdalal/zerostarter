@@ -5,6 +5,7 @@ import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
 import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
+import { DEFAULT_FEATURES, type FeatureFlags } from "@/templates"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -19,9 +20,19 @@ import {
   orange,
   outro,
   promptConfirm,
+  promptMultiselect,
   promptText,
   withSpinner,
 } from "./_prompt"
+
+// The optional surfaces init can toggle, their CLI flags (--<flag> / --no-<flag>), and prompt labels. Alphabetical, to match the config's features export. Kept in lockstep with @packages/config/site's `features` by test/features-consistency.test.ts.
+export const FEATURE_DEFS = [
+  { value: "apiDocs", flag: "api-docs", label: "API docs" },
+  { value: "blog", flag: "blog", label: "Blog" },
+  { value: "docs", flag: "docs", label: "Docs" },
+  { value: "internalDocs", flag: "internal-docs", label: "Internal (console) docs" },
+  { value: "waitlist", flag: "waitlist", label: "Waitlist (else a plain landing home)" },
+] as const
 
 const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
@@ -37,7 +48,14 @@ Options:
       --canary   Scaffold from the canary branch instead of main (for testing)
       --db       Provision a local Postgres (pglaunch) and migrate; needs Docker
       --dry-run  Print the plan without writing anything
-  -h, --help     Display help`
+  -h, --help     Display help
+
+Features (default on, except the waitlist; pass any flag to skip the interactive picker):
+      --api-docs,       --no-api-docs        The /api/docs API reference
+      --blog,           --no-blog            The /blog
+      --docs,           --no-docs            The /docs
+      --internal-docs,  --no-internal-docs   The /console/docs internal docs
+      --waitlist,       --no-waitlist        The /waitlist (off leaves a plain landing home)`
 
 const isEmptyDir = (dir: string): boolean =>
   !existsSync(dir) || readdirSync(dir).filter((f) => f !== ".git").length === 0
@@ -73,6 +91,16 @@ export const init = async (argv: string[]) => {
       "dry-run": { type: "boolean" },
       help: { short: "h", type: "boolean" },
       yes: { short: "y", type: "boolean" },
+      "api-docs": { type: "boolean" },
+      "no-api-docs": { type: "boolean" },
+      blog: { type: "boolean" },
+      "no-blog": { type: "boolean" },
+      docs: { type: "boolean" },
+      "no-docs": { type: "boolean" },
+      "internal-docs": { type: "boolean" },
+      "no-internal-docs": { type: "boolean" },
+      waitlist: { type: "boolean" },
+      "no-waitlist": { type: "boolean" },
     },
   })
 
@@ -87,6 +115,18 @@ export const init = async (argv: string[]) => {
   const interactive = isInteractive() && !values.yes
   // Which starter branch to scaffold from: main (stable) by default, canary for testing unreleased changes.
   const ref = values.canary ? "canary" : "main"
+
+  // Resolve the feature set from flags over the fork defaults: --no-<flag> wins, then --<flag>, else the default. Passing any feature flag (or --yes) skips the interactive picker.
+  const flags = values as Record<string, boolean | undefined>
+  const anyFeatureFlag = FEATURE_DEFS.some((f) => flags[f.flag] || flags[`no-${f.flag}`])
+  const chosenFeatures: FeatureFlags = { ...DEFAULT_FEATURES }
+  for (const f of FEATURE_DEFS) {
+    chosenFeatures[f.value] = flags[`no-${f.flag}`]
+      ? false
+      : flags[f.flag]
+        ? true
+        : DEFAULT_FEATURES[f.value]
+  }
 
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
@@ -125,13 +165,19 @@ export const init = async (argv: string[]) => {
   const canaryInPlaceNote =
     "--canary ignored: converting the existing checkout in place, so nothing is fetched."
 
+  const featureList = (features: FeatureFlags): string =>
+    FEATURE_DEFS.filter((f) => features[f.value])
+      .map((f) => f.value)
+      .join(", ") || "none"
+
   if (values["dry-run"]) {
     console.log("bunx zerostarter init (dry run)")
-    console.log(`  target: ${target}`)
-    console.log(`  name:   ${name}`)
-    console.log(`  mode:   ${isZerostarter(target) ? "in place" : `fetch ${ref}`}`)
+    console.log(`  target:   ${target}`)
+    console.log(`  name:     ${name}`)
+    console.log(`  mode:     ${isZerostarter(target) ? "in place" : `fetch ${ref}`}`)
+    console.log(`  features: ${featureList(chosenFeatures)}`)
     if (isZerostarter(target) && values.canary) {
-      console.log(`  note:   ${canaryInPlaceNote}`)
+      console.log(`  note:     ${canaryInPlaceNote}`)
     }
     return
   }
@@ -145,6 +191,21 @@ export const init = async (argv: string[]) => {
       cancel("Aborted")
       return
     }
+  }
+
+  // Interactive picker only when no feature flag steered the choice; skipping it keeps the defaults.
+  if (interactive && !anyFeatureFlag) {
+    const selected = new Set(
+      await promptMultiselect(
+        "Which optional surfaces should this fork ship with?",
+        FEATURE_DEFS.map((f) => ({
+          value: f.value,
+          label: f.label,
+          checked: DEFAULT_FEATURES[f.value],
+        })),
+      ),
+    )
+    for (const f of FEATURE_DEFS) chosenFeatures[f.value] = selected.has(f.value)
   }
 
   if (!isZerostarter(target)) {
@@ -167,7 +228,7 @@ export const init = async (argv: string[]) => {
   }
 
   await withSpinner(`Rebranding to ${name}`, `Rebranded to ${name}`, () =>
-    convertRepo(target, brand),
+    convertRepo(target, brand, chosenFeatures),
   )
 
   await bunInstall(target)

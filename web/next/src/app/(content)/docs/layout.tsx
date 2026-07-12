@@ -11,9 +11,11 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { contentSource } from "@/lib/content"
 import { resolveDocsNav } from "@/lib/docs"
 import { baseOptions } from "@/lib/fumadocs"
-import { docsSource } from "@/lib/source"
+
+const docs = contentSource("docs")
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,7 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {...baseOptions()}
             nav={{ enabled: false }}
             sidebar={{ enabled: false }}
-            tree={docsSource.getPageTree()}
+            tree={docs.tree()}
           >
             {children}
           </DocsLayout>

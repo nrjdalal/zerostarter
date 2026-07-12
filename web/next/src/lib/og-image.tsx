@@ -1,23 +1,11 @@
 import { site } from "@packages/config/site"
-import { notFound } from "next/navigation"
 import type { ReactElement } from "react"
 import { render } from "takumi-js"
-
-import type { blogSource, docsSource } from "@/lib/source"
-
-type Source = typeof blogSource | typeof docsSource
 
 interface RenderOgImageOptions {
   sectionName?: string
   title: string
   description: string
-}
-
-interface OgImageOptions {
-  source: Source
-  sectionName: string
-  defaultTitle: string
-  defaultDescription: string
 }
 
 export async function renderOgElement(element: ReactElement): Promise<Response> {
@@ -100,20 +88,4 @@ export async function renderOgImage(options: RenderOgImageOptions): Promise<Resp
   )
 
   return renderOgElement(element)
-}
-
-export async function generateOgImage(
-  slug: string[] | undefined,
-  options: OgImageOptions,
-): Promise<Response> {
-  const { source, sectionName, defaultTitle, defaultDescription } = options
-
-  const page = source.getPage(slug)
-  if (!page) notFound()
-
-  return renderOgImage({
-    sectionName,
-    title: page.data.title || defaultTitle,
-    description: page.data.description || defaultDescription,
-  })
 }

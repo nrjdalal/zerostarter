@@ -5,6 +5,7 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { ApiError, validationErrorResponses } from "@/lib/error"
+import { requireFeature } from "@/middlewares"
 
 const joinSchema = z.object({
   email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
@@ -17,6 +18,8 @@ const COUNT_MIN = 10
 const COUNT_STEP = 5
 
 export const waitlistRouter = new Hono()
+  // 404 both endpoints when the waitlist feature is off; the router stays mounted so a fork can flip the flag on later.
+  .use("*", requireFeature("waitlist"))
   .get(
     "/",
     describeRoute({

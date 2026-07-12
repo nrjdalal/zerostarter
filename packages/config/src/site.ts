@@ -73,3 +73,14 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 } as const
 
 export type Site = typeof site
+
+// Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. waitlist off makes the home a plain landing page.
+export const features = {
+  apiDocs: true,
+  blog: true,
+  docs: true,
+  internalDocs: true,
+  waitlist: true,
+}
+
+export type Feature = keyof typeof features

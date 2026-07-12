@@ -1,23 +1,23 @@
 import { site } from "@packages/config/site"
 
-import { generateOgImage } from "@/lib/og-image"
-import { docsSource } from "@/lib/source"
+import { contentSource } from "@/lib/content"
+import { renderOgImage } from "@/lib/og-image"
 
 export const dynamic = "force-static"
 
+const docs = contentSource("docs")
+
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
+  const page = docs.getPageOr404(slug)
 
-  return generateOgImage(slug, {
-    source: docsSource,
+  return renderOgImage({
     sectionName: "Documentation",
-    defaultTitle: `${site.name} - Documentation`,
-    defaultDescription: `Documentation for ${site.name}`,
+    title: page.data.title || `${site.name} - Documentation`,
+    description: page.data.description || `Documentation for ${site.name}`,
   })
 }
 
 export function generateStaticParams() {
-  return docsSource.generateParams().map((params) => ({
-    slug: params.slug ?? [],
-  }))
+  return docs.params()
 }
