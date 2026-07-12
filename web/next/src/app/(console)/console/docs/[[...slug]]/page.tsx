@@ -1,7 +1,9 @@
-import { getPageData, renderPageContent } from "@/lib/fumadocs"
-import { consoleSource } from "@/lib/source"
+import { contentSource } from "@/lib/content"
+import { renderPageContent } from "@/lib/fumadocs"
+
+const consoleDocs = contentSource("console")
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
-  const pageData = await getPageData(props.params, consoleSource)
-  return renderPageContent(pageData)
+  const { slug } = await props.params
+  return renderPageContent(consoleDocs, consoleDocs.getPageOr404(slug))
 }

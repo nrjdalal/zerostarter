@@ -1,6 +1,6 @@
 "use client"
 
-import { site } from "@packages/config/site"
+import { features, type Feature, site } from "@packages/config/site"
 import {
   RiArrowRightUpLine,
   RiDiscordFill,
@@ -80,12 +80,14 @@ export function Navbar() {
 
   if (pathname?.startsWith("/console") || pathname?.startsWith("/dashboard")) return null
 
-  const navLinks = [
-    { href: "/docs", label: "Documentation" },
-    { href: "/api/docs", label: "API Docs", external: true },
-    { href: "/blog", label: "Blog" },
+  // A link with a `feature` is shown only when that feature is enabled; /hire has none, so it always shows (and is stripped from forks by the CLI).
+  const allNavLinks: { href: string; label: string; external?: boolean; feature?: Feature }[] = [
+    { href: "/docs", label: "Documentation", feature: "docs" },
+    { href: "/api/docs", label: "API Docs", external: true, feature: "apiDocs" },
+    { href: "/blog", label: "Blog", feature: "blog" },
     { href: "/hire", label: "Hire" },
   ]
+  const navLinks = allNavLinks.filter((link) => !link.feature || features[link.feature])
 
   return (
     <header className="bg-background fixed top-0 left-0 z-50 w-full border-b">

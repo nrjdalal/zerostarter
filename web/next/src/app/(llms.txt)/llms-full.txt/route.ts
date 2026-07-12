@@ -2,16 +2,16 @@ import { site } from "@packages/config/site"
 
 import docsMeta from "@/../content/docs/meta.json"
 import { getPublishedBlogPosts } from "@/lib/blog"
+import { contentSource } from "@/lib/content"
 import { getLLMText, llmTextHeaders, sortByMeta } from "@/lib/llms"
-import { docsSource } from "@/lib/source"
 
 export const dynamic = "force-static"
 export const revalidate = 60
 
 export async function GET() {
   const pages = [
-    ...sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs"),
-    ...getPublishedBlogPosts(),
+    ...sortByMeta(contentSource("docs").pages(), docsMeta.pages, "/docs"),
+    ...(contentSource("blog").enabled ? getPublishedBlogPosts() : []),
   ]
 
   const scanned = await Promise.all(pages.map(getLLMText))
