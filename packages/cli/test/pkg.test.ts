@@ -1,30 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { merge, mergePkg, type Pkg, parsePreserve, unionArrays } from "@/pkg"
-
-describe("parsePreserve", () => {
-  test("extracts the comma-separated paths from the directive", () => {
-    const gpi =
-      "# header\n# PRESERVE_ON_SYNC - bun.lock, web/next/src/app/favicon.ico, web/next/src/app/icon.svg\nweb/next/content/"
-    expect(parsePreserve(gpi)).toEqual([
-      "bun.lock",
-      "web/next/src/app/favicon.ico",
-      "web/next/src/app/icon.svg",
-    ])
-  })
-
-  test("returns [] when the directive is absent", () => {
-    expect(parsePreserve("# just a comment\nweb/next/content/")).toEqual([])
-  })
-
-  test("tolerates extra whitespace and a trailing comma", () => {
-    expect(parsePreserve("# PRESERVE_ON_SYNC   -   a.md ,  b.txt , ")).toEqual(["a.md", "b.txt"])
-  })
-
-  test("ignores a non-comment line that merely mentions the marker", () => {
-    expect(parsePreserve("PRESERVE_ON_SYNC - x")).toEqual([])
-  })
-})
+import { merge, mergePkg, type Pkg, unionArrays } from "@/pkg"
 
 describe("merge", () => {
   test("later object wins on shared keys and both extras are kept", () => {

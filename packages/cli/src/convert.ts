@@ -1,5 +1,6 @@
 import { join } from "node:path"
 
+import { parseForkLayout } from "@/fork-layout"
 import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
 import { AUTHOR_FIELDS } from "@/pkg"
 import {
@@ -24,13 +25,11 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Remove the fork excludes listed in .gitpickignore, then drop the ignore file (a no-op for gitpick fetches).
+// Remove the fork excludes the .gitpickignore names, then drop the ignore file (a no-op for gitpick fetches, which never copy those paths). Each exclude must be a literal path: a glob would diverge from gitpick's own fetch, so fail loudly rather than half-match.
 const removeForkExcludes = (root: string): void => {
   const ignore = p(root, ".gitpickignore")
   if (!exists(ignore)) return
-  for (const line of read(ignore).split("\n")) {
-    const path = line.trim()
-    if (!path || path.startsWith("#")) continue
+  for (const path of parseForkLayout(read(ignore)).excludes) {
     if (/[*?![\]]/.test(path)) {
       throw new Error(
         `.gitpickignore entry "${path}" is not a literal path; the in-place converter only supports literal paths (a glob or negation would diverge from gitpick's fetch).`,
