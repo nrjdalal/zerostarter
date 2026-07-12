@@ -20,10 +20,32 @@ test("siteTemplate capitalizes the brand and leaks no upstream identity", () => 
   expect(out).not.toContain("nrjdalal")
 })
 
-test("homeTemplate redirects a fresh fork to the waitlist", () => {
+test("siteTemplate emits the fork feature defaults (waitlist off)", () => {
+  const out = siteTemplate(brand)
+  expect(out).toContain("export const features")
+  expect(out).toContain("waitlist: false")
+  expect(out).toContain("docs: true")
+  expect(out).toContain("export type Feature = keyof typeof features")
+})
+
+test("siteTemplate honors an explicit feature set", () => {
+  const out = siteTemplate(brand, {
+    apiDocs: false,
+    blog: false,
+    docs: true,
+    internalDocs: false,
+    waitlist: true,
+  })
+  expect(out).toContain("apiDocs: false")
+  expect(out).toContain("blog: false")
+  expect(out).toContain("waitlist: true")
+})
+
+test("homeTemplate branches between the waitlist and a plain landing", () => {
   const out = homeTemplate()
   expect(out).toContain('from "next/navigation"')
-  expect(out).toContain('redirect("/waitlist")')
+  expect(out).toContain("if (features.waitlist) redirect(\"/waitlist\")")
+  expect(out).toContain("{site.name}")
   expect(out).not.toContain("zerostarter")
 })
 

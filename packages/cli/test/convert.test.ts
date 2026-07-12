@@ -156,6 +156,21 @@ describe("convertRepo (in-place)", () => {
     expect(read(join(dir, "README.md"))).not.toContain("nrjdalal")
   })
 
+  test("writes the chosen feature flags into site.ts", () => {
+    scaffold()
+    convertRepo(dir, { name: "acme" }, {
+      apiDocs: true,
+      blog: false,
+      docs: true,
+      internalDocs: true,
+      waitlist: true,
+    })
+    const site = read(join(dir, "packages/config/src/site.ts"))
+    expect(site).toContain("export const features")
+    expect(site).toContain("blog: false")
+    expect(site).toContain("waitlist: true")
+  })
+
   test("reconciles the dangling /hire link and removes the marketing font module", () => {
     scaffold()
     convertRepo(dir, { name: "acme" })

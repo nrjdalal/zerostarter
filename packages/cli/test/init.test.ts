@@ -40,13 +40,28 @@ describe("init --dry-run plan", () => {
 
   test("--canary on an existing checkout is noted as ignored (in place)", async () => {
     const out = await planFor(["--canary"], scaffoldCheckout)
-    expect(out).toContain("mode:   in place")
+    expect(out).toContain("mode:     in place")
     expect(out).toContain("--canary ignored")
   })
 
   test("an in-place plan without --canary shows no note", async () => {
     const out = await planFor([], scaffoldCheckout)
-    expect(out).toContain("mode:   in place")
+    expect(out).toContain("mode:     in place")
     expect(out).not.toContain("--canary ignored")
+  })
+
+  test("defaults to the four on-by-default features (waitlist off)", async () => {
+    const out = await planFor([])
+    expect(out).toContain("features: apiDocs, blog, docs, internalDocs")
+  })
+
+  test("--no-blog drops the blog from the plan", async () => {
+    const out = await planFor(["--no-blog"])
+    expect(out).toContain("features: apiDocs, docs, internalDocs")
+  })
+
+  test("--waitlist adds the waitlist to the plan", async () => {
+    const out = await planFor(["--waitlist"])
+    expect(out).toContain("features: apiDocs, blog, docs, internalDocs, waitlist")
   })
 })
