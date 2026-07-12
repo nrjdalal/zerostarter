@@ -1,4 +1,4 @@
-import { site } from "@packages/config/site"
+import { features, site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
@@ -15,6 +15,18 @@ import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
+
+// The Scalar API reference UI, gated by the apiDocs feature. Built once; a fork can flip the flag on later without changing this route.
+const apiReference = Scalar({
+  pageTitle: `API Reference | ${site.name}`,
+  defaultHttpClient: {
+    targetKey: "js",
+    clientKey: "hono/client",
+  },
+  defaultOpenAllTags: true,
+  expandAllResponses: true,
+  url: "/api/openapi.json",
+})
 
 const app = new Hono()
 
@@ -156,19 +168,11 @@ socket.addEventListener("message", (event) => {
       },
     }),
   )
-  .get(
-    "/docs",
-    Scalar({
-      pageTitle: `API Reference | ${site.name}`,
-      defaultHttpClient: {
-        targetKey: "js",
-        clientKey: "hono/client",
-      },
-      defaultOpenAllTags: true,
-      expandAllResponses: true,
-      url: "/api/openapi.json",
-    }),
-  )
+  .use("/docs", async (c, next) => {
+    if (!features.apiDocs) return c.notFound()
+    await next()
+  })
+  .get("/docs", apiReference)
 
 export type AppType = typeof routes
 export type { ErrorCode } from "@/lib/error"

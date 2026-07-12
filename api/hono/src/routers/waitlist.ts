@@ -1,4 +1,5 @@
 import { sValidator } from "@hono/standard-validator"
+import { features } from "@packages/config/site"
 import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
@@ -17,6 +18,11 @@ const COUNT_MIN = 10
 const COUNT_STEP = 5
 
 export const waitlistRouter = new Hono()
+  // 404 both endpoints when the waitlist feature is off; the router stays mounted so a fork can flip the flag on later.
+  .use("*", async (c, next) => {
+    if (!features.waitlist) return c.notFound()
+    await next()
+  })
   .get(
     "/",
     describeRoute({
