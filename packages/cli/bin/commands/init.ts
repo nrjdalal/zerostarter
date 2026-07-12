@@ -148,6 +148,8 @@ export const init = async (argv: string[]) => {
       `Fetched the latest ZeroStarter${suffix}`,
       () => fetchZerostarter(target, ref),
     )
+  } else if (values.canary) {
+    logWarn("--canary ignored: converting the existing checkout in place, so nothing is fetched.")
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
