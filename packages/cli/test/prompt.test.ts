@@ -35,4 +35,8 @@ describe("promptMultiselect (non-interactive)", () => {
     ])
     expect(result).toEqual([])
   })
+
+  test("returns [] for an empty option list", async () => {
+    expect(await promptMultiselect("Which features?", [])).toEqual([])
+  })
 })

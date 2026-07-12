@@ -175,6 +175,8 @@ export const promptMultiselect = async (
   question: string,
   options: { value: string; label: string; checked: boolean }[],
 ): Promise<string[]> => {
+  // Nothing to pick: return before any cursor math (avoids the empty-list divide/`\x1b[0A` edge).
+  if (options.length === 0) return []
   const out = process.stdout
   const selected = new Set(options.filter((o) => o.checked).map((o) => o.value))
 
