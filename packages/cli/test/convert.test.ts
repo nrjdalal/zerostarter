@@ -129,6 +129,11 @@ describe("convertRepo (in-place)", () => {
     expect(exists(join(dir, "web/next/src/lib/marketing/fonts.ts"))).toBe(false)
   })
 
+  test("throws on a non-literal (glob) .gitpickignore entry", () => {
+    write(join(dir, ".gitpickignore"), "# custom\n*.log\n")
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/literal path/)
+  })
+
   test("rebrands package.json to the fork name and drops author fields", () => {
     scaffold()
     convertRepo(dir, { name: "Acme App" })

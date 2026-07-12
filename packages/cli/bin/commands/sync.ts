@@ -1,6 +1,7 @@
 import { join, resolve } from "node:path"
 
 import { fixDangling } from "@/convert"
+import { parseForkLayout } from "@/fork-layout"
 import {
   bunInstall,
   fetchGitpickignore,
@@ -10,7 +11,7 @@ import {
   withRollback,
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
-import { mergePkg, type Pkg, parsePreserve } from "@/pkg"
+import { mergePkg, type Pkg } from "@/pkg"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -57,7 +58,7 @@ export const sync = async (argv: string[]) => {
   const forkPkgs = new Map(findPackageJsons(target).map((p) => [p, readJson<Pkg>(p)]))
 
   // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
-  const preserve = parsePreserve(await fetchGitpickignore())
+  const preserve = parseForkLayout(await fetchGitpickignore()).preserve
   if (preserve.length === 0) {
     logWarn("No PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten.")
   }
