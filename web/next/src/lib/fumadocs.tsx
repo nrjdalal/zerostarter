@@ -68,8 +68,11 @@ export async function generatePageMetadata<K extends ContentKind>(
   const pageUrl = `${config.app.url}${page.url}`
   // page.url always starts with cs.baseUrl (the loader prefixes it), so slicing the base off yields the slug path. This assumes no frontmatter slug override makes page.url diverge from the route param slug; none exists in the starter.
   const slugPath = page.url.slice(cs.baseUrl.length).replace(/^\//, "")
+  // Only kinds with an /og route (docs, blog) get an OG image; console has none, so omit it rather than link a nonexistent /og/console/docs.
   // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
-  const imageUrl = `${config.app.url}/og${cs.baseUrl}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
+  const imageUrl = cs.og
+    ? `${config.app.url}/og${cs.baseUrl}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
+    : undefined
   const article = blogArticle(cs, page)
   const publishedTime = article?.data.publishedAt
     ? toBlogDate(article.data.publishedAt).toISOString()
@@ -77,7 +80,9 @@ export async function generatePageMetadata<K extends ContentKind>(
   const modifiedTime = article?.data.publishedAt
     ? toBlogDate(article.data.updatedAt ?? article.data.publishedAt).toISOString()
     : undefined
-  const image = { url: imageUrl, width: 1200, height: 630, alt: page.data.title }
+  const images = imageUrl
+    ? [{ url: imageUrl, width: 1200, height: 630, alt: page.data.title }]
+    : undefined
   const openGraph = article
     ? {
         type: "article" as const,
@@ -85,7 +90,7 @@ export async function generatePageMetadata<K extends ContentKind>(
         description: page.data.description,
         siteName: site.name,
         url: pageUrl,
-        images: [image],
+        images,
         publishedTime,
         modifiedTime,
         authors: article.data.author ? [article.data.author] : undefined,
@@ -97,7 +102,7 @@ export async function generatePageMetadata<K extends ContentKind>(
         description: page.data.description,
         siteName: site.name,
         url: pageUrl,
-        images: [image],
+        images,
       }
 
   return {
@@ -109,7 +114,7 @@ export async function generatePageMetadata<K extends ContentKind>(
     },
     twitter: {
       card: "summary_large_image",
-      images: [imageUrl],
+      images: imageUrl ? [imageUrl] : undefined,
     },
   }
 }

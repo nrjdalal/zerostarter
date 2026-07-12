@@ -13,11 +13,11 @@ import { blogSource, consoleSource, docsSource } from "@/lib/source"
 
 export type ContentKind = "blog" | "console" | "docs"
 
-// The one place that knows each content kind's source, base URL, and the feature flag that gates it. baseUrl is `/console/docs` for the admin-gated internal docs, whose feature is `internalDocs`.
+// The one place that knows each content kind's source, base URL, the feature flag that gates it, and whether it has an /og route. baseUrl is `/console/docs` for the admin-gated internal docs (feature `internalDocs`), which has no OG route.
 const REGISTRY = {
-  blog: { source: blogSource, baseUrl: "/blog", feature: "blog" },
-  console: { source: consoleSource, baseUrl: "/console/docs", feature: "internalDocs" },
-  docs: { source: docsSource, baseUrl: "/docs", feature: "docs" },
+  blog: { source: blogSource, baseUrl: "/blog", feature: "blog", og: true },
+  console: { source: consoleSource, baseUrl: "/console/docs", feature: "internalDocs", og: false },
+  docs: { source: docsSource, baseUrl: "/docs", feature: "docs", og: true },
 } as const
 
 type Registry = typeof REGISTRY
@@ -30,6 +30,8 @@ export interface ContentSource<K extends ContentKind> {
   kind: K
   baseUrl: string
   enabled: boolean
+  // Whether this kind has an /og${baseUrl} route; false for console, so metadata omits the OG image rather than pointing at a route that does not exist.
+  og: boolean
   source: SourceOf<K>
   getPageOr404: (slug: string[] | undefined) => PageOf<K>
   pages: () => PageOf<K>[]
@@ -77,5 +79,5 @@ export function contentSource<K extends ContentKind>(kind: K): ContentSource<K> 
     return createRelativeLink(docsSource, page as PageOf<"docs">)
   }
 
-  return { kind, baseUrl: entry.baseUrl, enabled, source, getPageOr404, pages, params, tree, relativeLink }
+  return { kind, baseUrl: entry.baseUrl, enabled, og: entry.og, source, getPageOr404, pages, params, tree, relativeLink }
 }
