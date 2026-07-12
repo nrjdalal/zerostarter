@@ -44,7 +44,7 @@ jobs:
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
           LAST_VERSION="${LAST_TAG#v}"
-          # version target: a hand-set package.json version (ahead of the last tag) ships as-is; otherwise every release bumps the minor. captured before changelogen, which only computes a patch.
+          # version target: a hand-set package.json version (ahead of the last tag) ships as-is; otherwise changelogen's patch bump stands. captured before changelogen overwrites it.
           MANUAL_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
           if [ -n "$LAST_TAG" ]; then
             # only changelog commits (or nothing) since the anchor: skip, but backfill the
@@ -69,17 +69,13 @@ jobs:
           else
             bunx changelogen --bump --no-commit || true
           fi
-          # retarget changelogen's patch to the intended version: a hand-set number (ahead of the last tag) as-is, otherwise a minor bump. a pinned number resumes minor-bumping on the next release.
-          AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+          # honor a hand-set version: when package.json is ahead of the last tag, retarget changelogen's computed patch to that number; otherwise the patch bump stands.
           if [ -n "$LAST_TAG" ] && [ "$MANUAL_VERSION" != "$LAST_VERSION" ]; then
-            TARGET_VERSION="$MANUAL_VERSION"
-          else
-            BASE_VERSION="${LAST_VERSION:-${MANUAL_VERSION:-0.0.0}}"
-            TARGET_VERSION=$(bun -e "const p='$BASE_VERSION'.split('.'); console.log(p[0]+'.'+(Number(p[1])+1)+'.0')")
-          fi
-          if [ -n "$TARGET_VERSION" ] && [ "$TARGET_VERSION" != "$AUTO_VERSION" ]; then
-            sed -i "s|\"version\": \"$AUTO_VERSION\"|\"version\": \"$TARGET_VERSION\"|" package.json
-            sed -i "s|v${AUTO_VERSION}|v${TARGET_VERSION}|g" CHANGELOG.md
+            AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+            if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
+              sed -i "s|\"version\": \"$AUTO_VERSION\"|\"version\": \"$MANUAL_VERSION\"|" package.json
+              sed -i "s|v${AUTO_VERSION}|v${MANUAL_VERSION}|g" CHANGELOG.md
+            fi
           fi
           bunx oxfmt --write CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build

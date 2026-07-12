@@ -56,7 +56,7 @@ Mark the draft ready, review it, and merge with a **merge commit**. That merge i
 `auto-release.yml` checks out `canary` and:
 
 - generates `CHANGELOG.md` from the last `v*` tag,
-- bumps the **minor** version in `package.json` (or ships the exact version you hand-set, see [Pinning a version](#pinning-a-version)),
+- bumps the **patch** version in `package.json` (or ships the exact version you hand-set, see [Pinning a version](#pinning-a-version)),
 - refreshes the build-graph snapshot at `.github/assets/graph-build.svg`,
 - commits `ci(changelog): update changelog and bump version` directly onto `canary`,
 - tags `v<version>` and pushes branch and tag atomically,
@@ -71,7 +71,7 @@ The changelog commit lands directly on `canary` rather than through a second PR 
 
 ## Pinning a version
 
-Every release bumps the **minor** version by default (`0.1.0`, `0.2.0`, ...). To cut a specific milestone instead (a major like `1.0.0`, or a patch), set the `version` in the root `package.json` yourself on `canary` before you merge the release PR. `auto-release.yml` notices a hand-set version that is ahead of the last `v*` tag and ships that exact number (retargeting the generated changelog section to it), then resumes minor-bumping from it on the next release.
+Ordinary releases bump the **patch** (`0.1.0 -> 0.1.1 -> ...`). To cut something bigger (a minor like `0.2.0` or a major like `1.0.0`), set the `version` in the root `package.json` yourself on `canary` before you merge the release PR. `auto-release.yml` notices a hand-set version that is ahead of the last `v*` tag and ships that exact number (retargeting the generated changelog section to it), then resumes patch-bumping from it on the next release.
 
 ## How it deploys
 
