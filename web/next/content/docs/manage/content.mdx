@@ -10,7 +10,7 @@ Everything you publish is MDX, and it lives in one place: `web/next/content/`. U
 - **Docs** declare their structure and metadata _centrally_, in `web/next/docs.config.ts`. You write only the body.
 - **Blog** posts carry their own metadata in frontmatter, and the listing builds itself from the posts.
 
-Docs, the blog, and the private console docs are each an optional [feature](/docs/manage/features): turn one off and its routes 404 and it drops from the nav, sitemap, `llms.txt`, and search. The rest of this page assumes they are on.
+Docs, the blog, and the private console docs are each an optional [feature](/docs/manage/features): turn one off and its routes 404 and it drops from the nav and search; docs and blog also drop from the sitemap and `llms.txt` (console docs are never in those by construction). The rest of this page assumes they are on.
 
 ## Docs: the config is the source of truth
 
