@@ -101,7 +101,10 @@ jobs:
           else
             TAG="canary"
             LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "v0.0.0")
-            NEXT_VERSION=$(bun -e "const p='${LAST_TAG#v}'.split('.'); console.log(p[0]+'.'+(Number(p[1])+1)+'.0')")
+            LAST_VERSION="${LAST_TAG#v}"
+            ROOT_VERSION=$(bunx json -f ../../package.json -a version)
+            # preview the next release: a hand-set root version (a pin) or the default patch bump, matching auto-release
+            NEXT_VERSION=$([ "$ROOT_VERSION" != "$LAST_VERSION" ] && echo "$ROOT_VERSION" || bun -e "const p='$LAST_VERSION'.split('.'); console.log(p[0]+'.'+p[1]+'.'+(Number(p[2])+1))")
             TAGGED_VERSION=$(echo $VERSIONS | bunx json $TAG)
             RELEASE_VERSION=$([[ $TAGGED_VERSION == $NEXT_VERSION-canary* ]] && bunx semver $TAGGED_VERSION -i prerelease || echo $NEXT_VERSION-canary.0)
           fi
