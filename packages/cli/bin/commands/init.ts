@@ -34,6 +34,7 @@ latest ZeroStarter is fetched into it first.
 
 Options:
   -y, --yes      Skip prompts, taking defaults (provisions Postgres when Docker is running)
+      --canary   Scaffold from the canary branch instead of main (for testing)
       --db       Provision a local Postgres (pglaunch) and migrate; needs Docker
       --dry-run  Print the plan without writing anything
   -h, --help     Display help`
@@ -67,6 +68,7 @@ export const init = async (argv: string[]) => {
     allowPositionals: true,
     args: argv,
     options: {
+      canary: { type: "boolean" },
       db: { type: "boolean" },
       "dry-run": { type: "boolean" },
       help: { short: "h", type: "boolean" },
@@ -83,6 +85,8 @@ export const init = async (argv: string[]) => {
   if (!values["dry-run"]) await ensureBun(Boolean(values.yes))
 
   const interactive = isInteractive() && !values.yes
+  // Which starter branch to scaffold from: main (stable) by default, canary for testing unreleased changes.
+  const ref = values.canary ? "canary" : "main"
 
   let dir = positionals[0] ?? "."
   const firstTarget = resolve(dir)
@@ -122,7 +126,7 @@ export const init = async (argv: string[]) => {
     console.log("bunx zerostarter init (dry run)")
     console.log(`  target: ${target}`)
     console.log(`  name:   ${name}`)
-    console.log(`  mode:   ${isZerostarter(target) ? "in place" : "fetch first"}`)
+    console.log(`  mode:   ${isZerostarter(target) ? "in place" : `fetch ${ref}`}`)
     return
   }
 
@@ -138,8 +142,11 @@ export const init = async (argv: string[]) => {
   }
 
   if (!isZerostarter(target)) {
-    await withSpinner("Fetching the latest ZeroStarter", "Fetched the latest ZeroStarter", () =>
-      fetchZerostarter(target),
+    const suffix = values.canary ? " (canary)" : ""
+    await withSpinner(
+      `Fetching the latest ZeroStarter${suffix}`,
+      `Fetched the latest ZeroStarter${suffix}`,
+      () => fetchZerostarter(target, ref),
     )
   }
 
