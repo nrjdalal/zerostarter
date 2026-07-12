@@ -21,7 +21,16 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Feature flags via PostHog or a service](feature-flags.md) - #153.
 - [A logo](logo.md) - #113.
 - [A better landing page](landing-page.md) - #26.
-- [Route the home OG image through renderOgImage](og-render-consolidation.md) - #485.
 - [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
-- [OpenAPI: WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
+
+### Architecture deepenings (2026-07-12 review, deep-module lens)
+
+Candidate refactors that turn a scattered cluster into one deep module, ordered by strength.
+
+- [Own the fork boundary with one forkLayout module](cli-fork-layout.md) - in progress on `refactor/cli-fork-layout`; one `.gitpickignore` parser feeds convert + sync + tests.
+- [Collapse the content readers into one ContentSource](content-source-consolidation.md) - highest leverage; "add a collection" goes from ~8 edits to 1.
+- [One nav model and a deep SidebarShell](sidebar-nav-model.md) - collapse close/active/item-shape across the three sidebars; delete `sidebar-adaptive.tsx`.
+- [One typed API envelope and a defineRoute helper](api-envelope-typed-endpoint.md) - shared `Envelope<T>` + boilerplate collapse; subsumes #664.
+- [Consolidate OG rendering behind one seam](og-render-consolidation.md) - #485; broadened to own size + URL scheme + defaults.
+- [Consolidate env into one schema with callable validation](env-schema-consolidation.md) - speculative; collapses shared-key duplication and import-time coupling.
