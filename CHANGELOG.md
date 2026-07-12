@@ -1,3 +1,15 @@
+## v0.1.1
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.0...v0.1.1)
+
+### 📖 Documentation
+
+- **agents:** Reorganize AGENTS.md into themed sections ([#687](https://github.com/nrjdalal/zerostarter/pull/687))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.0
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.99...v0.1.0)
