@@ -26,6 +26,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
 - [Unit-test the contentSource seam](web-content-source-tests.md) - the load-bearing web gate; needs a web test harness first (PR #691 review).
 - [Console not-found returns HTTP 200](console-notfound-status.md) - pre-existing force-dynamic soft-404, admin-only, low severity (PR #691 review).
+- [Derive BlogPostMeta from the blog zod schema](blog-meta-from-schema.md) - carved out of content-source-consolidation; a decouple-vs-derive tradeoff, not a mechanical rename (PR #691 review).
 
 ### Architecture deepenings (2026-07-12 review, deep-module lens)
 
