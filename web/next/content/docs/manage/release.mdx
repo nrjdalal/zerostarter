@@ -55,8 +55,8 @@ Mark the draft ready, review it, and merge with a **merge commit**. That merge i
 
 `auto-release.yml` checks out `canary` and:
 
-- generates `CHANGELOG.md` with `changelogen --bump` from the last `v*` tag,
-- bumps the version in `package.json`,
+- generates `CHANGELOG.md` from the last `v*` tag,
+- bumps the **patch** version in `package.json` (or ships the exact version you hand-set, see [Pinning a version](#pinning-a-version)),
 - refreshes the build-graph snapshot at `.github/assets/graph-build.svg`,
 - commits `ci(changelog): update changelog and bump version` directly onto `canary`,
 - tags `v<version>` and pushes branch and tag atomically,
@@ -68,6 +68,10 @@ If the commit range holds only filtered-out types (like `ci`), it skips the rele
 </Steps>
 
 The changelog commit lands directly on `canary` rather than through a second PR because it's mechanical, generated from PR titles you already reviewed. If a run tags the version but fails before publishing, the next run backfills the missing GitHub release.
+
+## Pinning a version
+
+Ordinary releases bump the **patch** (`0.1.0 -> 0.1.1 -> ...`). To cut something bigger (a minor like `0.2.0` or a major like `1.0.0`), set the `version` in the root `package.json` yourself on `canary` before you merge the release PR. `auto-release.yml` notices a hand-set version that is ahead of the last `v*` tag and ships that exact number (retargeting the generated changelog section to it), then resumes patch-bumping from it on the next release.
 
 ## How it deploys
 
