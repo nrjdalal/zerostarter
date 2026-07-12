@@ -36,6 +36,8 @@ export const S = {
   submit: "◇",
   radioOn: "●",
   radioOff: "○",
+  checkboxOn: "◼",
+  checkboxOff: "◻",
   warn: "▲",
   error: "■",
   barH: "─",

@@ -2,20 +2,17 @@ import { site } from "@packages/config/site"
 import { notFound } from "next/navigation"
 
 import docsMeta from "@/../content/docs/meta.json"
-import { generatePublicBlogParams, getPublicBlogPage, getPublishedBlogPosts } from "@/lib/blog"
 import { config } from "@/lib/config"
+import { contentSource } from "@/lib/content"
 import { getLLMText, llmTextHeaders, sortByMeta } from "@/lib/llms"
-import { blogSource, docsSource } from "@/lib/source"
 
 export const dynamic = "force-static"
 export const revalidate = 60
 
-async function createPageResponse(
-  page: ReturnType<typeof blogSource.getPage> | ReturnType<typeof docsSource.getPage>,
-  isDocs: boolean,
-) {
-  if (!page) notFound()
+const docs = contentSource("docs")
+const blog = contentSource("blog")
 
+async function createPageResponse(page: Parameters<typeof getLLMText>[0], isDocs: boolean) {
   const content = await getLLMText(page)
 
   const footer = isDocs
@@ -33,25 +30,29 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug?: 
   const { slug } = await params
 
   if (!slug || slug.length === 0) {
-    const docsPages = sortByMeta(docsSource.getPages(), docsMeta.pages, "/docs")
-    const docsIndex = docsPages
-      .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
-      .join("\n")
-
-    return new Response(
-      `# ${site.name}
-
-> ${site.description}
+    const docsSection = docs.enabled
+      ? `
 
 ## Documentation
 
 > Complete documentation for ${site.name}
 
-${docsIndex}
+${sortByMeta(docs.pages(), docsMeta.pages, "/docs")
+  .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
+  .join("\n")}`
+      : ""
+    const blogSection = blog.enabled
+      ? `
 
 ## Optional
 
-- [Blog](${config.app.url}/blog.md): Latest articles and updates about ${site.name}
+- [Blog](${config.app.url}/blog.md): Latest articles and updates about ${site.name}`
+      : ""
+
+    return new Response(
+      `# ${site.name}
+
+> ${site.description}${docsSection}${blogSection}
 `,
       {
         headers: llmTextHeaders,
@@ -59,16 +60,15 @@ ${docsIndex}
     )
   }
 
-  const isBlog = slug[0] === "blog"
-  const isDocs = slug[0] === "docs"
+  const kind = slug[0] === "blog" ? "blog" : slug[0] === "docs" ? "docs" : null
+  if (!kind) notFound()
 
-  if (!isBlog && !isDocs) {
-    notFound()
-  }
+  const source = kind === "blog" ? blog : docs
+  if (!source.enabled) notFound()
 
-  if (isBlog && slug.length === 1) {
-    const blogPages = getPublishedBlogPosts()
-    const blogIndex = blogPages
+  if (kind === "blog" && slug.length === 1) {
+    const blogIndex = blog
+      .pages()
       .map((p) => `- [${p.data.title}](${config.app.url}${p.url}.md): ${p.data.description}`)
       .join("\n")
 
@@ -93,25 +93,13 @@ ${blogIndex}
     )
   }
 
-  if (isDocs && slug.length === 1) {
-    return createPageResponse(docsSource.getPage([]), true)
-  }
-
-  const pageSlug = slug.slice(1)
-  if (isBlog) {
-    return createPageResponse(getPublicBlogPage(pageSlug), false)
-  }
-
-  return createPageResponse(docsSource.getPage(pageSlug), true)
+  const pageSlug = slug.length === 1 ? [] : slug.slice(1)
+  return createPageResponse(source.getPageOr404(pageSlug), kind === "docs")
 }
 
 export function generateStaticParams() {
   const indexParams = [{ slug: [] }]
-  const docsParams = docsSource.generateParams().map((params) => ({
-    slug: ["docs", ...(params.slug ?? [])],
-  }))
-  const blogParams = generatePublicBlogParams().map((params) => ({
-    slug: ["blog", ...(params.slug ?? [])],
-  }))
+  const docsParams = docs.params().map((p) => ({ slug: ["docs", ...p.slug] }))
+  const blogParams = blog.params().map((p) => ({ slug: ["blog", ...p.slug] }))
   return [...indexParams, ...docsParams, ...blogParams]
 }

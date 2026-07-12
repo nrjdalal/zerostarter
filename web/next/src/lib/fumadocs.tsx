@@ -1,14 +1,12 @@
 import { site } from "@packages/config/site"
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
-import { createRelativeLink } from "fumadocs-ui/mdx"
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
 import { CopyAsMarkdown } from "@/components/docs/copy-as-markdown"
 import { formatBlogDate, toBlogDate } from "@/lib/blog-policy"
 import { config } from "@/lib/config"
-import { blogSource, consoleSource, docsSource } from "@/lib/source"
+import type { ContentKind, ContentSource, PageOf } from "@/lib/content"
 import { getMDXComponents } from "@/mdx-components"
 
 export function baseOptions(): BaseLayoutProps {
@@ -19,57 +17,18 @@ export function baseOptions(): BaseLayoutProps {
   }
 }
 
-type Source = typeof blogSource | typeof docsSource | typeof consoleSource
-type Page<S extends Source> = Parameters<S["resolveHref"]>[1]
-
-interface PageData<S extends Source> {
-  page: Page<S>
-  source: S
+// A blog article is any published post, i.e. a blog page that is not the /blog index.
+function blogArticle<K extends ContentKind>(cs: ContentSource<K>, page: PageOf<K>) {
+  if (cs.kind !== "blog" || page.url === "/blog") return null
+  return page as PageOf<"blog">
 }
 
-type AnyPageData =
-  | PageData<typeof docsSource>
-  | PageData<typeof blogSource>
-  | PageData<typeof consoleSource>
-
-export async function getPageData<S extends Source>(
-  params: Promise<{ slug?: string[] }>,
-  source: S,
-): Promise<PageData<S>> {
-  const resolvedParams = await params
-  const page = source.getPage(resolvedParams.slug)
-  if (!page) notFound()
-  return { page: page as Page<S>, source }
-}
-
-function createPageRelativeLink(data: AnyPageData): ReturnType<typeof createRelativeLink> {
-  if (data.source === blogSource) {
-    return createRelativeLink(blogSource, data.page as Page<typeof blogSource>)
-  }
-  if (data.source === consoleSource) {
-    return createRelativeLink(consoleSource, data.page as Page<typeof consoleSource>)
-  }
-  return createRelativeLink(docsSource, data.page as Page<typeof docsSource>)
-}
-
-function getBlogArticleDates(data: AnyPageData) {
-  if (data.source !== blogSource || data.page.url === "/blog") return null
-
-  const page = data.page as Page<typeof blogSource>
-  if (!page.data.publishedAt) return null
-
-  return {
-    publishedAt: page.data.publishedAt,
-    updatedAt: page.data.updatedAt,
-  }
-}
-
-export function renderPageContent(data: AnyPageData) {
-  const { page } = data
+export function renderPageContent<K extends ContentKind>(cs: ContentSource<K>, page: PageOf<K>) {
   const MDX = page.data.body
-  const isDocsPage = page.url.startsWith("/docs")
-  const isBlogMainPage = page.url === "/blog"
-  const blogArticleDates = getBlogArticleDates(data)
+  const isDocsPage = cs.kind === "docs"
+  const isBlogMainPage = cs.kind === "blog" && page.url === "/blog"
+  const article = blogArticle(cs, page)
+  const publishedAt = article?.data.publishedAt
 
   return (
     <DocsPage
@@ -84,97 +43,67 @@ export function renderPageContent(data: AnyPageData) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            a: createPageRelativeLink(data),
+            a: cs.relativeLink(page),
           })}
         />
       </DocsBody>
-      {blogArticleDates && (
+      {article && publishedAt && (
         <div className="not-prose text-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">
-          <time dateTime={blogArticleDates.publishedAt}>
-            Published {formatBlogDate(blogArticleDates.publishedAt)}
-          </time>
-          {blogArticleDates.updatedAt &&
-            blogArticleDates.updatedAt !== blogArticleDates.publishedAt && (
-              <time dateTime={blogArticleDates.updatedAt}>
-                Updated {formatBlogDate(blogArticleDates.updatedAt)}
-              </time>
-            )}
+          <time dateTime={publishedAt}>Published {formatBlogDate(publishedAt)}</time>
+          {article.data.updatedAt && article.data.updatedAt !== publishedAt && (
+            <time dateTime={article.data.updatedAt}>
+              Updated {formatBlogDate(article.data.updatedAt)}
+            </time>
+          )}
         </div>
       )}
     </DocsPage>
   )
 }
 
-export function createGenerateStaticParams(source: Source) {
-  return async function generateStaticParams() {
-    return source.generateParams()
-  }
-}
-
-interface GenerateMetadataOptions {
-  source: Source
-  ogPath: string
-  ogType: "article" | "website"
-}
-
-export async function generatePageMetadata(
-  params: Promise<{ slug?: string[] }>,
-  options: GenerateMetadataOptions,
+export async function generatePageMetadata<K extends ContentKind>(
+  cs: ContentSource<K>,
+  page: PageOf<K>,
 ): Promise<Metadata> {
-  const resolvedParams = await params
-  const { source, ogPath, ogType } = options
-  const page = source.getPage(resolvedParams.slug)
-  if (!page) notFound()
-
   const pageUrl = `${config.app.url}${page.url}`
-  const slugPath =
-    resolvedParams.slug && resolvedParams.slug.length > 0 ? resolvedParams.slug.join("/") : ""
+  // page.url always starts with cs.baseUrl (the loader prefixes it), so slicing the base off yields the slug path. This assumes no frontmatter slug override makes page.url diverge from the route param slug; none exists in the starter.
+  const slugPath = page.url.slice(cs.baseUrl.length).replace(/^\//, "")
+  // Only kinds with an /og route (docs, blog) get an OG image; console has none, so omit it rather than link a nonexistent /og/console/docs.
   // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
-  const imageUrl = `${config.app.url}${ogPath}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
-  const blogArticle =
-    options.source === blogSource && page.url !== "/blog" ? (page as Page<typeof blogSource>) : null
-  const publishedTime = blogArticle?.data.publishedAt
-    ? toBlogDate(blogArticle.data.publishedAt).toISOString()
+  const imageUrl = cs.og
+    ? `${config.app.url}/og${cs.baseUrl}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
     : undefined
-  const modifiedTime = blogArticle?.data.publishedAt
-    ? toBlogDate(blogArticle.data.updatedAt ?? blogArticle.data.publishedAt).toISOString()
+  const article = blogArticle(cs, page)
+  const publishedTime = article?.data.publishedAt
+    ? toBlogDate(article.data.publishedAt).toISOString()
     : undefined
-  const openGraph =
-    ogType === "article"
-      ? {
-          type: "article" as const,
-          title: page.data.title,
-          description: page.data.description,
-          siteName: site.name,
-          url: pageUrl,
-          images: [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 630,
-              alt: page.data.title,
-            },
-          ],
-          publishedTime,
-          modifiedTime,
-          authors: blogArticle?.data.author ? [blogArticle.data.author] : undefined,
-          tags: blogArticle?.data.tags,
-        }
-      : {
-          type: "website" as const,
-          title: page.data.title,
-          description: page.data.description,
-          siteName: site.name,
-          url: pageUrl,
-          images: [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 630,
-              alt: page.data.title,
-            },
-          ],
-        }
+  const modifiedTime = article?.data.publishedAt
+    ? toBlogDate(article.data.updatedAt ?? article.data.publishedAt).toISOString()
+    : undefined
+  const images = imageUrl
+    ? [{ url: imageUrl, width: 1200, height: 630, alt: page.data.title }]
+    : undefined
+  const openGraph = article
+    ? {
+        type: "article" as const,
+        title: page.data.title,
+        description: page.data.description,
+        siteName: site.name,
+        url: pageUrl,
+        images,
+        publishedTime,
+        modifiedTime,
+        authors: article.data.author ? [article.data.author] : undefined,
+        tags: article.data.tags,
+      }
+    : {
+        type: "website" as const,
+        title: page.data.title,
+        description: page.data.description,
+        siteName: site.name,
+        url: pageUrl,
+        images,
+      }
 
   return {
     title: page.data.title,
@@ -185,7 +114,7 @@ export async function generatePageMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      images: [imageUrl],
+      images: imageUrl ? [imageUrl] : undefined,
     },
   }
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { features } from "@packages/config/site"
 import { RiAddLine, RiBookLine, RiBuildingLine } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { type User } from "better-auth/types"
@@ -236,13 +237,15 @@ export function DashboardFooter({
   }
   return (
     <SidebarMenu className="space-y-1.5">
-      <SidebarMenuItem>
-        <SidebarMenuButton render={<Link href="/docs" onClick={close} />}>
-          <RiBookLine />
-          <span>Documentation</span>
-          <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      {features.docs && (
+        <SidebarMenuItem>
+          <SidebarMenuButton render={<Link href="/docs" onClick={close} />}>
+            <RiBookLine />
+            <span>Documentation</span>
+            <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )}
       <SidebarUserMenu user={user} area={canAccessConsole ? "dashboard" : undefined} />
     </SidebarMenu>
   )

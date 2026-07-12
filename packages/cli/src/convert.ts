@@ -8,8 +8,10 @@ import {
   blogIndexTemplate,
   type Brand,
   consoleIndexTemplate,
+  DEFAULT_FEATURES,
   docsConfigTemplate,
   docsIndexTemplate,
+  type FeatureFlags,
   homeTemplate,
   readmeTemplate,
   sampleBlogPostTemplate,
@@ -87,9 +89,9 @@ export const fixDangling = (root: string): void => {
   }
 }
 
-// Regenerate the centralized brand file and rename the root package.
-const rebrand = (root: string, b: Brand): void => {
-  write(p(root, "packages/config/src/site.ts"), siteTemplate(b))
+// Regenerate the centralized brand file (brand + chosen feature flags) and rename the root package.
+const rebrand = (root: string, b: Brand, features: FeatureFlags): void => {
+  write(p(root, "packages/config/src/site.ts"), siteTemplate(b, features))
   const path = p(root, "package.json")
   const pkg = readJson<Record<string, unknown>>(path)
   pkg.name = slugify(b.name)
@@ -98,9 +100,13 @@ const rebrand = (root: string, b: Brand): void => {
   writeJson(path, pkg)
 }
 
-export const convertRepo = (root: string, brand: Brand): void => {
+export const convertRepo = (
+  root: string,
+  brand: Brand,
+  features: FeatureFlags = DEFAULT_FEATURES,
+): void => {
   removeForkExcludes(root)
   scaffoldContent(root, brand)
   fixDangling(root)
-  rebrand(root, brand)
+  rebrand(root, brand, features)
 }

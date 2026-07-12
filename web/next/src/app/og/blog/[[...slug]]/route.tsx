@@ -1,26 +1,24 @@
 import { site } from "@packages/config/site"
 
-import { generatePublicBlogParams, getPublicBlogPage } from "@/lib/blog"
-import { generateOgImage } from "@/lib/og-image"
-import { blogSource } from "@/lib/source"
+import { contentSource } from "@/lib/content"
+import { renderOgImage } from "@/lib/og-image"
 
 export const dynamic = "force-static"
 export const revalidate = 60
 
+const blog = contentSource("blog")
+
 export function generateStaticParams() {
-  return generatePublicBlogParams().map((params) => ({
-    slug: params.slug ?? [],
-  }))
+  return blog.params()
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
-  void getPublicBlogPage(slug)
+  const page = blog.getPageOr404(slug)
 
-  return generateOgImage(slug, {
-    source: blogSource,
+  return renderOgImage({
     sectionName: "Blog",
-    defaultTitle: `${site.name} - Blog`,
-    defaultDescription: `Blog post from ${site.name}`,
+    title: page.data.title || `${site.name} - Blog`,
+    description: page.data.description || `Blog post from ${site.name}`,
   })
 }

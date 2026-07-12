@@ -22,7 +22,7 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 
 `sitemap.ts` (a `MetadataRoute.Sitemap`) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page in `docsSource`, and the published posts from `getPublishedBlogPosts()`. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
 
-Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in.
+Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in. The docs and blog blocks follow their [feature flags](/docs/manage/features): turn one off and its entries drop from the sitemap.
 
 ## OG images
 
@@ -43,25 +43,36 @@ These routes live at `/og` on purpose. `robots.txt` disallows `/api/`, so keepin
 
 The docs route is prerendered at build (`force-static` + `generateStaticParams`); the blog route prebuilds published posts and revalidates every 60s so scheduled posts appear without a rebuild; `/og/home` is static; and the generic `/og` route is `force-dynamic`. Page metadata wires each image in automatically through `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx`, so every docs and blog page gets a unique preview.
 
-All routes forward to the shared helper in `web/next/src/lib/og-image.tsx`. To add a section, create `web/next/src/app/og/<section>/[[...slug]]/route.tsx` and call `generateOgImage` with your source:
+All routes render through `renderOgImage` in `web/next/src/lib/og-image.tsx`, resolving the page through the [`contentSource`](/docs/manage/features) seam so the feature gate and publish policy apply for free. To add a section, register its kind in `web/next/src/lib/content.ts`, then create `web/next/src/app/og/<section>/[[...slug]]/route.tsx`:
 
 ```tsx
+import { site } from "@packages/config/site"
+
+import { contentSource } from "@/lib/content"
+import { renderOgImage } from "@/lib/og-image"
+
 export const dynamic = "force-static"
+
+const section = contentSource("docs") // your content kind
 
 export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug } = await params
-  return generateOgImage(slug, {
-    source: yourSource,
+  const page = section.getPageOr404(slug)
+  return renderOgImage({
     sectionName: "Your Section",
-    defaultTitle: `${site.name} - Your Section`,
-    defaultDescription: "Your default description",
+    title: page.data.title || `${site.name} - Your Section`,
+    description: page.data.description || "Your default description",
   })
+}
+
+export function generateStaticParams() {
+  return section.params()
 }
 ```
 
-<Callout type="warn" title="Time-gated sources need gating">
+<Callout type="info" title="Publish gating is built in">
 
-`force-static` is fine for always-public sources like docs. For content with a `publishedAt` (the blog), it would prerender previews for _unpublished_ posts. Gate on the published set and add `revalidate = 60`. See `web/next/src/app/og/blog/[[...slug]]/route.tsx` for the pattern.
+`getPageOr404` and `params()` apply each kind's publish policy, so you never hand-filter: the blog kind excludes unpublished or scheduled posts (via `isPublicBlogPage`), and a `force-static` OG route therefore never prerenders a preview for a post that isn't live. Keep `revalidate = 60` for a time-gated kind so a scheduled post gets its preview without a rebuild, as `web/next/src/app/og/blog/[[...slug]]/route.tsx` does.
 
 </Callout>
 

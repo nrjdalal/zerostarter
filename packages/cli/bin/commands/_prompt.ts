@@ -170,6 +170,85 @@ export const promptConfirm = async (question: string, def = true): Promise<boole
   })
 }
 
+// clack-style multiselect: `◇ question` + a checkbox line per option, moved with arrows (or j/k), toggled with space, submitted with enter. On submit it collapses to a single `◇ question  selected` summary. Off a TTY it takes the pre-checked defaults and echoes them, so non-interactive logs record the choice.
+export const promptMultiselect = async (
+  question: string,
+  options: { value: string; label: string; checked: boolean }[],
+): Promise<string[]> => {
+  // Nothing to pick: return before any cursor math (avoids the empty-list divide/`\x1b[0A` edge).
+  if (options.length === 0) return []
+  const out = process.stdout
+  const selected = new Set(options.filter((o) => o.checked).map((o) => o.value))
+
+  const summary = (): string =>
+    options
+      .filter((o) => selected.has(o.value))
+      .map((o) => o.label)
+      .join(", ") || "none"
+
+  if (!isInteractive()) {
+    out.write(`${P}${cyan(S.submit)}  ${question}  ${dim(summary())}\n`)
+    return [...selected]
+  }
+
+  return new Promise<string[]>((resolve) => {
+    const stdin = process.stdin
+    let cursor = 0
+
+    const renderOption = (index: number): string => {
+      const o = options[index]
+      const box = selected.has(o.value) ? green(S.checkboxOn) : dim(S.checkboxOff)
+      const label = index === cursor ? o.label : dim(o.label)
+      return `${P}${gray(S.bar)}  ${box} ${label}`
+    }
+
+    const draw = (initial: boolean): void => {
+      if (!initial) out.write(`\x1b[${options.length}A`)
+      for (let i = 0; i < options.length; i++) out.write(`\r\x1b[K${renderOption(i)}\n`)
+    }
+
+    out.write(`${P}${cyan(S.submit)}  ${question}\n`)
+    draw(true)
+    stdin.setRawMode(true)
+    stdin.resume()
+    stdin.setEncoding("utf8")
+
+    const cleanup = (): void => {
+      stdin.setRawMode(false)
+      stdin.pause()
+      stdin.removeListener("data", onData)
+    }
+
+    // Assumes each keypress arrives as one data chunk (raw mode can split an escape sequence or coalesce a paste); fine for a single interactive picker.
+    function onData(key: string): void {
+      if (key === "\x03") {
+        cleanup()
+        out.write(`\x1b[${options.length + 1}A\r\x1b[0J${P}${cyan(S.submit)}  ${dim(question)}\n`)
+        cancel()
+        process.exit(130)
+      } else if (key === "\r" || key === "\n") {
+        cleanup()
+        out.write(
+          `\x1b[${options.length + 1}A\r\x1b[0J${P}${cyan(S.submit)}  ${question}  ${dim(summary())}\n`,
+        )
+        resolve([...selected])
+      } else if (key === "\x1b[A" || key === "k") {
+        cursor = (cursor - 1 + options.length) % options.length
+        draw(false)
+      } else if (key === "\x1b[B" || key === "j") {
+        cursor = (cursor + 1) % options.length
+        draw(false)
+      } else if (key === " ") {
+        const value = options[cursor].value
+        if (selected.has(value)) selected.delete(value)
+        else selected.add(value)
+        draw(false)
+      }
+    }
+    stdin.on("data", onData)
+  })
+}
+
 // A single-line text prompt in the gutter; the entered value stays under the bar.
 export const promptText = async (question: string, def = ""): Promise<string> => {
   process.stdout.write(`${P}${cyan(S.submit)}  ${question}${def ? ` ${dim(`(${def})`)}` : ""}\n`)

@@ -9,4 +9,4 @@ Narrow (#485): `web/next/src/app/og/home/route.tsx` calls only `renderOgElement`
 
 Broad (architecture review): the OG contract is smeared. `1200x630` is hardcoded in 6+ places (`lib/og-image.tsx`, `lib/fumadocs.tsx`, the docs and blog layouts, the marketing pages), the `/og/{kind}/{slug}?t=` URL scheme is built in `fumadocs.tsx` while the images are rendered in `og-image.tsx` (two owners of one contract), and the `og/docs` and `og/blog` routes are near-identical. Deepen into `ogForPage(kind, slug)` owning the size, the URL scheme, and the defaults; the metadata builder imports the same size/URL helper, and `og/docs` plus `og/blog` collapse into one parameterized route.
 
-Pairs with [content-source-consolidation](content-source-consolidation.md). Small to medium effort.
+Builds on the shipped `contentSource(kind)` seam (`web/next/src/lib/content.ts`), which already removed the `Source` union and the get-or-404 duplication from `og-image.tsx`. Small to medium effort.

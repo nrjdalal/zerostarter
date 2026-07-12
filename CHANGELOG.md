@@ -1,3 +1,15 @@
+## v0.1.2
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.1...v0.1.2)
+
+### 🚀 Enhancements
+
+- **cli:** Preview the --canary no-op in the init dry-run ([#690](https://github.com/nrjdalal/zerostarter/pull/690))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.1
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.0...v0.1.1)

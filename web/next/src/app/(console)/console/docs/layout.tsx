@@ -1,8 +1,10 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import { RootProvider } from "fumadocs-ui/provider/next"
 
+import { contentSource } from "@/lib/content"
 import { baseOptions } from "@/lib/fumadocs"
-import { consoleSource } from "@/lib/source"
+
+const consoleDocs = contentSource("console")
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {...baseOptions()}
           nav={{ enabled: false }}
           sidebar={{ enabled: false }}
-          tree={consoleSource.getPageTree()}
+          tree={consoleDocs.tree()}
         >
           {children}
         </DocsLayout>
