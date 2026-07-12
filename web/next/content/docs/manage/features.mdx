@@ -25,10 +25,16 @@ export const features = {
 | `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec | both 404 and the navbar "API Docs" link is hidden                            |
 | `blog`         | `/blog` and its posts                          | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop      |
 | `docs`         | `/docs`                                        | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
-| `internalDocs` | `/console/docs` (admin-gated internal docs)    | `/console/docs` and its search (`/api/console/search`) 404                                     |
+| `internalDocs` | `/console/docs` (admin-gated internal docs)    | the console docs render the not-found page and their search (`/api/console/search`) 404s        |
 | `waitlist`     | `/waitlist` page and its API                   | `/waitlist` and `/api/waitlist` 404, and a fresh fork's home becomes a plain landing page      |
 
 "Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
+
+<Callout type="info" title="One soft 404">
+
+The console area is `force-dynamic` (its admin gate runs per request), and Next commits a 200 status before a page-level `notFound()` fires mid-stream, so a disabled `/console/docs` renders the not-found page with an HTTP 200, not a 404. It is admin-gated and `noindex` with no content leak, and the console docs search still returns a hard 404. Every other disabled surface returns a real 404.
+
+</Callout>
 
 One nuance: the API routers stay mounted behind a runtime 404 guard so a fork can flip a flag on later without an `AppType` change. `apiDocs` gates the Scalar UI and the `/api/openapi.json` spec together, but the other flags do not rewrite the spec, so with `apiDocs` on and, say, `waitlist` off, `/api/waitlist` still appears in the document and returns 404 at runtime.
 
