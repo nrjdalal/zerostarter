@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 import { parseForkLayout } from "@/fork-layout"
 
@@ -48,5 +50,21 @@ describe("parseForkLayout", () => {
 
   test("ignores a non-comment line that merely mentions the marker", () => {
     expect(parseForkLayout("PRESERVE_ON_SYNC - x").preserve).toEqual([])
+  })
+
+  test("the checked-in .gitpickignore has only literal excludes and the expected preserve set", () => {
+    const { excludes, preserve } = parseForkLayout(
+      readFileSync(join(import.meta.dir, "../../../.gitpickignore"), "utf8"),
+    )
+    // A glob exclude would make fork `init` throw at the guard in convert.ts; catch it in CI, not on a fork user's machine.
+    for (const path of excludes) expect(path).not.toMatch(/[*?![\]]/)
+    // The fork-owned paths sync restores after the overlay; drift here silently overwrites a fork's own DB state, lockfile, or docs config.
+    expect(preserve).toEqual([
+      "bun.lock",
+      "packages/db/drizzle/",
+      "packages/db/src/schema/",
+      "web/next/docs.config.ts",
+      "web/next/src/app/favicon.ico",
+    ])
   })
 })
