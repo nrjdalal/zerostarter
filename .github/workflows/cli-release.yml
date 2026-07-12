@@ -6,6 +6,9 @@ on:
       - canary
     paths:
       - "packages/cli/**"
+  workflow_run:
+    workflows: ["auto-release"]
+    types: [completed]
   release:
     types: [published]
   issue_comment:
@@ -21,7 +24,7 @@ permissions:
 
 jobs:
   test:
-    if: github.event_name == 'push' || github.event_name == 'release'
+    if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -49,6 +52,7 @@ jobs:
       always() && !failure() && !cancelled() && (
         github.event_name == 'push' ||
         github.event_name == 'release' ||
+        (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
         github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner && startsWith(github.event.comment.body, '/release')
       )
     needs: [test]
@@ -79,16 +83,19 @@ jobs:
           npm view "$PACKAGE_NAME" 2>/dev/null || { echo "$PACKAGE_NAME does not exist in the npm registry. Skipping publish."; exit 0; }
           VERSIONS=$(npm view $PACKAGE_NAME dist-tags --json)
           LATEST_VERSION=$(echo $VERSIONS | bunx json latest)
-          # the CLI has no version of its own (package.json is a 0.0.0 placeholder CI stamps): it ships the repo's release version, read from the tag the release event carries
+          # the CLI has no version of its own (package.json is a 0.0.0 placeholder CI stamps): it ships the repo's release version, read from the tag auto-release created
           if [[ $GITHUB_EVENT_NAME == 'issue_comment' ]]; then
             PR_NUMBER=$(echo "${{ github.event.issue.pull_request.url }}" | grep -o '[0-9]*$')
             LATEST_COMMIT_SHA=$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" | bunx json -a sha | tail -n 1)
             git checkout $LATEST_COMMIT_SHA
             TAG="test"
             RELEASE_VERSION="0.0.0-${LATEST_COMMIT_SHA:0:7}"
-          elif [[ $GITHUB_EVENT_NAME == 'release' ]]; then
-            TAG_NAME="${{ github.event.release.tag_name }}"
-            RELEASE_VERSION="${TAG_NAME#v}"
+          elif [[ $GITHUB_EVENT_NAME == 'workflow_run' || $GITHUB_EVENT_NAME == 'release' ]]; then
+            # after auto-release cuts the release, publish the CLI at that version from the latest tag. workflow_run fires even though auto-release used GITHUB_TOKEN (release:published does not), and gives a default-branch checkout, so read the tag rather than the event payload.
+            git fetch --tags --force --quiet
+            RELEASE_TAG=$(git describe --tags --abbrev=0 --match "v*")
+            git checkout --quiet "$RELEASE_TAG"
+            RELEASE_VERSION="${RELEASE_TAG#v}"
             [[ $RELEASE_VERSION == $LATEST_VERSION ]] && { echo "CLI already at $RELEASE_VERSION on npm. Skipping publish."; exit 0; }
             TAG="latest"
           else

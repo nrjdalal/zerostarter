@@ -1,3 +1,34 @@
+## v0.1.0
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.99...v0.1.0)
+
+### 🚀 Enhancements
+
+- **api:** Serve WebSockets on Vercel via the Node adapter ([#674](https://github.com/nrjdalal/zerostarter/pull/674))
+- **cli:** Add --canary to init to scaffold from the canary branch ([1b2a31d](https://github.com/nrjdalal/zerostarter/commit/1b2a31d))
+- **cli:** Warn when --canary is a no-op on an in-place convert ([3d3f94a](https://github.com/nrjdalal/zerostarter/commit/3d3f94a))
+
+### 💅 Refactors
+
+- **scripts:** Generalize ensure-branches to a declared branch list ([#679](https://github.com/nrjdalal/zerostarter/pull/679))
+- **node:** Require the node protocol prefix and add the runtime-apis skill ([#680](https://github.com/nrjdalal/zerostarter/pull/680))
+- **cli:** Unify .gitpickignore parsing into parseForkLayout ([6a150e2](https://github.com/nrjdalal/zerostarter/commit/6a150e2))
+
+### 📖 Documentation
+
+- **web:** Mark the /og file-tracing include as load-bearing on Vercel ([#675](https://github.com/nrjdalal/zerostarter/pull/675))
+- Consolidate working docs under .github/notes/ and tighten agent conventions ([#678](https://github.com/nrjdalal/zerostarter/pull/678))
+- **notes:** Capture architecture-deepening candidates in the plans backlog ([1234ad9](https://github.com/nrjdalal/zerostarter/commit/1234ad9))
+
+### ✅ Tests
+
+- **cli:** Lock the real .gitpickignore against exclude/preserve drift ([622856a](https://github.com/nrjdalal/zerostarter/commit/622856a))
+- **cli:** Cover the --canary init dry-run plan ([eac06ed](https://github.com/nrjdalal/zerostarter/commit/eac06ed))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.99
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.98...v0.0.99)
