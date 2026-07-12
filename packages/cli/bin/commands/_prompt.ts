@@ -217,6 +217,7 @@ export const promptMultiselect = async (
       stdin.removeListener("data", onData)
     }
 
+    // Assumes each keypress arrives as one data chunk (raw mode can split an escape sequence or coalesce a paste); fine for a single interactive picker.
     function onData(key: string): void {
       if (key === "\x03") {
         cleanup()

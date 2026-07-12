@@ -66,7 +66,7 @@ export async function generatePageMetadata<K extends ContentKind>(
   page: PageOf<K>,
 ): Promise<Metadata> {
   const pageUrl = `${config.app.url}${page.url}`
-  const slugPath = page.url.replace(cs.baseUrl, "").replace(/^\//, "")
+  const slugPath = page.url.slice(cs.baseUrl.length).replace(/^\//, "")
   // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
   const imageUrl = `${config.app.url}/og${cs.baseUrl}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`
   const article = blogArticle(cs, page)

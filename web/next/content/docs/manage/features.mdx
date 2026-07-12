@@ -30,6 +30,8 @@ export const features = {
 
 "Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
 
+One exception: the API routers stay mounted behind a runtime 404 guard (so a fork can flip them on later without an `AppType` change), so a disabled `/api/waitlist` still appears in the OpenAPI document at `/api/openapi.json`. It returns 404 until re-enabled; the generated spec does not follow the flags.
+
 ## The home and the waitlist
 
 A fresh fork's home (`web/next/src/app/page.tsx`) reads `features.waitlist` at runtime:

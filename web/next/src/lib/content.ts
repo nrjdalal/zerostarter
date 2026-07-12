@@ -70,9 +70,12 @@ export function contentSource<K extends ContentKind>(kind: K): ContentSource<K> 
     return source.getPageTree()
   }
 
-  // All three sources share the loader shape createRelativeLink resolves against, so the cast to the docs source/page is behavior-safe and spares callers a per-kind dispatch.
-  const relativeLink = (page: PageOf<K>): ReturnType<typeof createRelativeLink> =>
-    createRelativeLink(docsSource, page as PageOf<"docs">)
+  // Resolve relative markdown links against this kind's own source: each has its own baseUrl and file tree, so a blog or console page must not resolve against docs. kind pins the source, so the per-branch cast is safe.
+  const relativeLink = (page: PageOf<K>): ReturnType<typeof createRelativeLink> => {
+    if (kind === "blog") return createRelativeLink(blogSource, page as PageOf<"blog">)
+    if (kind === "console") return createRelativeLink(consoleSource, page as PageOf<"console">)
+    return createRelativeLink(docsSource, page as PageOf<"docs">)
+  }
 
   return { kind, baseUrl: entry.baseUrl, enabled, source, getPageOr404, pages, params, tree, relativeLink }
 }
