@@ -22,7 +22,7 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 
 `sitemap.ts` (a `MetadataRoute.Sitemap`) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page in `docsSource`, and the published posts from `getPublishedBlogPosts()`. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
 
-Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in.
+Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in. The docs and blog blocks follow their [feature flags](/docs/manage/features): turn one off and its entries drop from the sitemap.
 
 ## OG images
 

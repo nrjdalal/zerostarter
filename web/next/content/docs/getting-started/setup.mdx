@@ -25,11 +25,12 @@ The rest of this page is what those commands do, and the one thing to check if t
 
 - fetches the latest ZeroStarter and strips the sample content,
 - rebrands the copy to your project name,
+- sets your [feature flags](/docs/manage/features) (docs, blog, API reference, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
 - installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
 - provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
 - writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET`.
 
-Everything else has a working default, so the scaffold runs as-is. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
+Everything else has a working default, so the scaffold runs as-is. The feature checklist is pre-checked to the defaults (all on except the waitlist), and any feature can be flipped later in config. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
 
 <Callout type="info" title="If Docker isn't running">
 

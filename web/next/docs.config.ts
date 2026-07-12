@@ -118,6 +118,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/features": {
+          title: "Features",
+          description:
+            "Toggle optional surfaces (docs, blog, API reference, waitlist) from one config, chosen at init and flippable anytime.",
+        },
+      },
+      {
         "/docs/manage/seo": {
           title: "SEO & Metadata",
           description:

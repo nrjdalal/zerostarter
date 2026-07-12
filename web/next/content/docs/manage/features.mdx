@@ -1,0 +1,78 @@
+---
+slug: /docs/manage/features
+title: Features
+description: Toggle optional surfaces (docs, blog, API reference, waitlist) from one config, chosen at init and flippable anytime.
+---
+
+Not every product wants a public blog, a docs site, or a waitlist. ZeroStarter makes each optional surface a **feature flag**: one boolean in config that turns the whole surface on or off. The starter ships with every feature on (it demos them all); a fork picks its set at `init` and can change it at any time.
+
+## The flags
+
+The flags live next to the brand in `packages/config/src/site.ts`, as a separate `features` export (typed `boolean`, not `as const`, so a fork can flip them and the runtime gates stay live):
+
+```ts
+export const features = {
+  apiDocs: true,
+  blog: true,
+  docs: true,
+  internalDocs: true,
+  waitlist: true,
+}
+```
+
+| Flag           | Surface                                        | Off means                                                                                     |
+| -------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `apiDocs`      | `/api/docs` OpenAPI + Scalar reference (the API) | the route 404s and the navbar "API Docs" link is hidden                                       |
+| `blog`         | `/blog` and its posts                          | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop      |
+| `docs`         | `/docs`                                        | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
+| `internalDocs` | `/console/docs` (admin-gated internal docs)    | `/console/docs` and its search (`/api/console/search`) 404                                     |
+| `waitlist`     | `/waitlist` page and its API                   | `/waitlist` and `/api/waitlist` 404, and a fresh fork's home becomes a plain landing page      |
+
+"Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
+
+## The home and the waitlist
+
+A fresh fork's home (`web/next/src/app/page.tsx`) reads `features.waitlist` at runtime:
+
+- **on** it redirects to the `/waitlist` capture page;
+- **off** it renders a plain landing page (your product name and tagline).
+
+Flip `features.waitlist` and the home re-themes on the next request. Nothing is regenerated. (The starter's own marketing home is separate and always renders; the landing branch is for forks.)
+
+## Choosing at `init`
+
+`zerostarter init` sets the fork's `features` for you. Non-interactively, pass a flag per surface (its `--no-` form turns it off); interactively, a checklist appears, pre-checked to the fork defaults:
+
+```bash
+# flags: any --<flag>/--no-<flag> skips the picker
+bunx zerostarter init my-app --no-blog --waitlist
+
+# no flags + a TTY: pick from the checklist (space toggles, enter confirms)
+bunx zerostarter init my-app
+```
+
+The fork defaults are **docs, blog, internal docs, and the API reference on; the waitlist off** (so a fresh fork lands on a plain home). Skipping the picker keeps those defaults. `--yes` takes them without prompting.
+
+## Enable anytime
+
+Toggling a feature never strips code. `init` only writes the flags, and every surface stays in the tree gated behind a runtime read of `features`. So turning a feature back on is a one-line config edit, no re-scaffolding:
+
+```ts
+// packages/config/src/site.ts
+export const features = {
+  // ...
+  blog: true, // was false; the /blog, its nav link, sitemap, and llms entries all return
+}
+```
+
+<Callout type="info" title="Bigger surfaces stay on">
+
+Auth, the dashboard, the console shell, and organizations are foundational (they reach into the database, login, and route protection), so they are not feature-flagged. The waitlist's database table also stays when the flag is off; dropping it would be a migration.
+
+</Callout>
+
+## Next
+
+- [Content (Blog & Docs)](/docs/manage/content): how the docs, blog, and console collections are authored behind these flags.
+- [SEO & Metadata](/docs/manage/seo): the sitemap and OG routes that read the flags.
+- [Quickstart](/docs/getting-started/setup): the `init` run that sets them.

@@ -10,6 +10,8 @@ Everything you publish is MDX, and it lives in one place: `web/next/content/`. U
 - **Docs** declare their structure and metadata _centrally_, in `web/next/docs.config.ts`. You write only the body.
 - **Blog** posts carry their own metadata in frontmatter, and the listing builds itself from the posts.
 
+Docs, the blog, and the private console docs are each an optional [feature](/docs/manage/features): turn one off and its routes 404 and it drops from the nav, sitemap, `llms.txt`, and search. The rest of this page assumes they are on.
+
 ## Docs: the config is the source of truth
 
 `web/next/docs.config.ts` is the single source for docs structure and metadata. Each collection maps to ordered sidebar groups, and every entry is keyed by the page's URL:
@@ -68,5 +70,6 @@ Full-text search is powered by [Orama](https://orama.com) through Fumadocs, buil
 
 ## Next
 
+- [Features](/docs/manage/features): turn the docs, blog, or console docs on or off per fork.
 - [SEO & Metadata](/docs/manage/seo): the OG images, sitemap, and robots that cover everything you publish.
 - [llms.txt](/docs/manage/llms-txt): how the docs collection becomes agent-readable context.
