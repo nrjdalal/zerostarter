@@ -2,7 +2,7 @@ import { features, site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
-import { Hono } from "hono"
+import { Hono, type MiddlewareHandler } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
@@ -27,6 +27,12 @@ const apiReference = Scalar({
   expandAllResponses: true,
   url: "/api/openapi.json",
 })
+
+// 404 both the reference UI and its OpenAPI document when apiDocs is off. Both stay mounted so a fork can flip the flag on later; the Scalar UI fetches the spec, so gating only the UI would still leave the full spec public.
+const requireApiDocs: MiddlewareHandler = async (c, next) => {
+  if (!features.apiDocs) return c.notFound()
+  await next()
+}
 
 const app = new Hono()
 
@@ -151,6 +157,7 @@ socket.addEventListener("message", (event) => {
   .route("/auth", authRouter)
   .route("/v1", v1Router)
   .route("/waitlist", waitlistRouter)
+  .use("/openapi.json", requireApiDocs)
   .get(
     "/openapi.json",
     openAPIRouteHandler(app, {
@@ -168,10 +175,7 @@ socket.addEventListener("message", (event) => {
       },
     }),
   )
-  .use("/docs", async (c, next) => {
-    if (!features.apiDocs) return c.notFound()
-    await next()
-  })
+  .use("/docs", requireApiDocs)
   .get("/docs", apiReference)
 
 export type AppType = typeof routes

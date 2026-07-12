@@ -22,7 +22,7 @@ export const features = {
 
 | Flag           | Surface                                        | Off means                                                                                     |
 | -------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `apiDocs`      | `/api/docs` OpenAPI + Scalar reference (the API) | the route 404s and the navbar "API Docs" link is hidden                                       |
+| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec | both 404 and the navbar "API Docs" link is hidden                            |
 | `blog`         | `/blog` and its posts                          | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop      |
 | `docs`         | `/docs`                                        | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
 | `internalDocs` | `/console/docs` (admin-gated internal docs)    | `/console/docs` and its search (`/api/console/search`) 404                                     |
@@ -30,7 +30,7 @@ export const features = {
 
 "Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
 
-One exception: the API routers stay mounted behind a runtime 404 guard (so a fork can flip them on later without an `AppType` change), so a disabled `/api/waitlist` still appears in the OpenAPI document at `/api/openapi.json`. It returns 404 until re-enabled; the generated spec does not follow the flags.
+One nuance: the API routers stay mounted behind a runtime 404 guard so a fork can flip a flag on later without an `AppType` change. `apiDocs` gates the Scalar UI and the `/api/openapi.json` spec together, but the other flags do not rewrite the spec, so with `apiDocs` on and, say, `waitlist` off, `/api/waitlist` still appears in the document and returns 404 at runtime.
 
 ## The home and the waitlist
 
