@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     }))
 
-  // Blog pages (empty when the blog feature is off)
+  // Blog pages: gate on the seam's `enabled`, but read through getPublishedBlogPosts() (not pages()) for its narrowed `publishedAt: string`, which lastModified needs. Empty when the blog feature is off.
   const blogRoutes: MetadataRoute.Sitemap = contentSource("blog").enabled
     ? getPublishedBlogPosts().map((page) => ({
         url: `${baseUrl}${page.url}`,

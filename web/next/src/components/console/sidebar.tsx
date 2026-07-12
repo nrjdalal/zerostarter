@@ -1,5 +1,6 @@
 "use client"
 
+import { features } from "@packages/config/site"
 import { RiBookLine, RiDashboardLine } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -17,7 +18,7 @@ import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 const mainItems = [
-  { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false },
+  { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false, feature: "internalDocs" },
 ] as const
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
@@ -67,11 +68,15 @@ export function ConsoleNav({ docsGroups }: { docsGroups: NavGroup[] }) {
     return <DocsNav groups={docsGroups} />
   }
 
+  // Drop items whose feature is off, and the whole group with them when nothing is left.
+  const items = mainItems.filter((item) => features[item.feature])
+  if (items.length === 0) return null
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
-        {mainItems.map((item) => {
+        {items.map((item) => {
           const active = isActive(pathname, item.url, { exact: item.exact })
 
           return (
