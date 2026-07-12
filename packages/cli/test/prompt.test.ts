@@ -4,19 +4,26 @@ import { promptMultiselect } from "../bin/commands/_prompt"
 
 type Tty = { isTTY?: boolean }
 
-// Force the non-interactive branch so the test never blocks on raw-mode stdin, even when `bun test` runs in a real terminal.
+// Force the non-interactive branch so the test never blocks on raw-mode stdin when bun test runs in a real terminal. Best-effort: piped streams (CI) already report isTTY false but expose it read-only, so swallow that assignment and rely on the already-non-interactive streams there.
+const setTty = (out: boolean | undefined, inp: boolean | undefined): void => {
+  try {
+    ;(process.stdout as Tty).isTTY = out
+    ;(process.stdin as Tty).isTTY = inp
+  } catch {
+    // isTTY is read-only on piped streams (CI); they are already non-interactive, so no override is needed there.
+  }
+}
+
 describe("promptMultiselect (non-interactive)", () => {
   let stdout: boolean | undefined
   let stdin: boolean | undefined
   beforeEach(() => {
     stdout = process.stdout.isTTY
     stdin = process.stdin.isTTY
-    ;(process.stdout as Tty).isTTY = false
-    ;(process.stdin as Tty).isTTY = false
+    setTty(false, false)
   })
   afterEach(() => {
-    ;(process.stdout as Tty).isTTY = stdout
-    ;(process.stdin as Tty).isTTY = stdin
+    setTty(stdout, stdin)
   })
 
   test("echoes and returns the pre-checked defaults", async () => {
