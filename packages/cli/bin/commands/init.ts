@@ -122,11 +122,17 @@ export const init = async (argv: string[]) => {
   const name = basename(target)
   const brand = { name }
 
+  const canaryInPlaceNote =
+    "--canary ignored: converting the existing checkout in place, so nothing is fetched."
+
   if (values["dry-run"]) {
     console.log("bunx zerostarter init (dry run)")
     console.log(`  target: ${target}`)
     console.log(`  name:   ${name}`)
     console.log(`  mode:   ${isZerostarter(target) ? "in place" : `fetch ${ref}`}`)
+    if (isZerostarter(target) && values.canary) {
+      console.log(`  note:   ${canaryInPlaceNote}`)
+    }
     return
   }
 
@@ -149,7 +155,7 @@ export const init = async (argv: string[]) => {
       () => fetchZerostarter(target, ref),
     )
   } else if (values.canary) {
-    logWarn("--canary ignored: converting the existing checkout in place, so nothing is fetched.")
+    logWarn(canaryInPlaceNote)
   }
 
   // Commit the pristine starter first (fresh repos only) so the conversion lands as its own diff.
