@@ -99,7 +99,7 @@ describe("convertRepo (in-place)", () => {
         "web/next/content/",
         "web/next/src/lib/marketing/",
         "packages/config/src/site.ts",
-        "# PRESERVE_ON_SYNC - AUDIT.md",
+        "# PRESERVE_ON_SYNC - bun.lock",
       ].join("\n"),
     )
     write(join(dir, "LICENSE.md"), "MIT")
@@ -127,6 +127,11 @@ describe("convertRepo (in-place)", () => {
     expect(exists(join(dir, ".gitpickignore"))).toBe(false)
     expect(exists(join(dir, "web/next/content/old.mdx"))).toBe(false)
     expect(exists(join(dir, "web/next/src/lib/marketing/fonts.ts"))).toBe(false)
+  })
+
+  test("throws on a non-literal (glob) .gitpickignore entry", () => {
+    write(join(dir, ".gitpickignore"), "# custom\n*.log\n")
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/literal path/)
   })
 
   test("rebrands package.json to the fork name and drops author fields", () => {

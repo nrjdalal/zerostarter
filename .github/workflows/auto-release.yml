@@ -43,6 +43,9 @@ jobs:
           # the boundary this changelog covers; tagged below so the next run starts exactly here
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+          LAST_VERSION="${LAST_TAG#v}"
+          # version target: a hand-set package.json version (ahead of the last tag) ships as-is; otherwise changelogen's patch bump stands. captured before changelogen overwrites it.
+          MANUAL_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
           if [ -n "$LAST_TAG" ]; then
             # only changelog commits (or nothing) since the anchor: skip, but backfill the
             # release if a previous run pushed the commit+tag and failed before publishing
@@ -65,6 +68,19 @@ jobs:
             fi
           else
             bunx changelogen --bump --no-commit || true
+          fi
+          # honor a hand-set version: ship it exactly when package.json is ahead of the last tag; otherwise changelogen's patch bump stands. a lower pin would move the release backward, so fail loud instead.
+          if [ -n "$LAST_TAG" ] && [ "$MANUAL_VERSION" != "$LAST_VERSION" ]; then
+            if ! bun -e "const a='$MANUAL_VERSION'.split('.').map(Number), b='$LAST_VERSION'.split('.').map(Number); process.exit((a[0]-b[0] || a[1]-b[1] || a[2]-b[2]) > 0 ? 0 : 1)"; then
+              echo "::error::hand-set version $MANUAL_VERSION is not ahead of the last release v$LAST_VERSION"
+              exit 1
+            fi
+            AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+            if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
+              bunx json -I -f package.json -e "this.version=\"$MANUAL_VERSION\""
+              AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
+              sed -i "s|v${AUTO_ESC}|v${MANUAL_VERSION}|g" CHANGELOG.md
+            fi
           fi
           bunx oxfmt --write CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build

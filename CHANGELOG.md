@@ -1,3 +1,28 @@
+## v0.0.99
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.98...v0.0.99)
+
+### 🚀 Enhancements
+
+- **web:** Add inscope to hire page npm projects ([#670](https://github.com/nrjdalal/zerostarter/pull/670))
+
+### 💅 Refactors
+
+- **web:** Group components by feature and consolidate sidebars ([#654](https://github.com/nrjdalal/zerostarter/pull/654))
+
+### 📖 Documentation
+
+- **skills:** Skill-editor pass; drop github-pull-request-review, add doc-sync ([#669](https://github.com/nrjdalal/zerostarter/pull/669))
+
+### 🏡 Chore
+
+- Update deps ([1f09226](https://github.com/nrjdalal/zerostarter/commit/1f09226))
+- **cli:** Bump version to 0.0.25 for release ([3ac00c8](https://github.com/nrjdalal/zerostarter/commit/3ac00c8))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.0.98
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.0.97...v0.0.98)

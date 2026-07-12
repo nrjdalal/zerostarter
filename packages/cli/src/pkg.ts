@@ -15,20 +15,6 @@ export const AUTHOR_FIELDS = ["homepage", "bugs", "license", "author", "reposito
 // Root identity fields the fork owns on sync: name/version plus the author fields (restored-or-dropped).
 const IDENTITY_FIELDS = ["name", "version", ...AUTHOR_FIELDS]
 
-// Parse the "# PRESERVE_ON_SYNC - <paths>" directive from the starter's .gitpickignore.
-export const parsePreserve = (gitpickignore: string): string[] => {
-  const marker = "# PRESERVE_ON_SYNC"
-  const line = gitpickignore.split("\n").find((l) => l.trim().startsWith(marker))
-  if (!line) return []
-  return line
-    .trim()
-    .slice(marker.length)
-    .replace(/^\s*-\s*/, "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
 // Merge two package.json object fields (later wins shared keys); undefined when both empty.
 export const merge = (first: unknown, second: unknown): Record<string, unknown> | undefined => {
   const both = { ...(first as Record<string, unknown>), ...(second as Record<string, unknown>) }

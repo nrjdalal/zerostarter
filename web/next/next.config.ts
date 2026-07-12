@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
+    // Kept for Vercel: /og is traced into its own function and needs the takumi core binary here; removing it 500s /og at runtime (redundant only in Docker standalone).
     outputFileTracingIncludes: {
       "/og": [`node_modules/@takumi-rs/core-linux-*-${{ glibc: "gnu", musl: "musl" }[libc]}/**`],
     },

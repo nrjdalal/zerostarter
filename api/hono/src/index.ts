@@ -4,13 +4,13 @@ import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
-import { upgradeWebSocket, websocket } from "hono/bun"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
+import { createServer, upgradeWebSocket } from "@/lib/server"
 import { rateLimiterMiddleware } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
@@ -95,7 +95,7 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
     describeRoute({
       tags: ["System"],
       description:
-        "Live system health over a WebSocket (Bun). On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
+        "Live system health over a WebSocket. On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
       ...({
         "x-codeSamples": [
           {
@@ -128,7 +128,7 @@ socket.addEventListener("message", (event) => {
           ws.send(snapshot())
           heartbeat = setInterval(() => ws.send(snapshot()), 5000)
         },
-        // Bun's WS adapter surfaces every disconnect as close (it has no error event), so this covers all cleanup.
+        // onClose fires on every disconnect on both adapters (Bun has no error event; ws always emits close after error), so this covers all cleanup.
         onClose() {
           if (heartbeat) clearInterval(heartbeat)
         },
@@ -173,8 +173,5 @@ socket.addEventListener("message", (event) => {
 export type AppType = typeof routes
 export type { ErrorCode } from "@/lib/error"
 
-export default {
-  port: env.HONO_PORT,
-  fetch: app.fetch,
-  websocket,
-}
+// Bun.serve() shape locally and self-hosted, Node http.Server on Vercel; see @/lib/server.
+export default createServer(app)
