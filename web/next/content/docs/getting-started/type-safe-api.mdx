@@ -130,7 +130,7 @@ socket.addEventListener("message", (event) => {
 })
 ```
 
-Treat the socket as progressive enhancement over a REST baseline. The reference component (`components/marketing/api-status.tsx`) polls REST `/api/health` whenever no frame is live and overlays a live pulse while the socket streams, reconnecting with capped backoff. So the badge always reflects real status before the socket connects or if it drops (Vercel caps a single connection at a few minutes), and only the pulse is socket-only.
+Treat the socket as progressive enhancement over a REST baseline. The reference component (`components/marketing/api-status.tsx`) polls REST `/api/health` whenever no frame is live and overlays a live pulse while the socket streams, reconnecting with capped backoff. So the badge always reflects real status before the socket connects or if it drops (Vercel closes a connection when the function reaches its max duration, a few minutes by default), and only the pulse is socket-only.
 
 <Callout type="info" title="Frames are not RPC-typed">
 

@@ -85,7 +85,7 @@ Env vars are set per project and don't propagate between them, and the two proje
 
 ## WebSockets
 
-The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created after April 23, 2025). `hono/bun` can't drive the upgrade because Vercel Functions don't run `Bun.serve()`, so the api switches to the Node adapter (`@hono/node-server` + `ws`) when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. A single connection is pinned to one function instance and capped at a few minutes, so keep any shared socket state external (for example Redis) and let clients reconnect.
+The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). `hono/bun` can't drive the upgrade because Vercel Functions don't run `Bun.serve()`, so the api switches to the Node adapter (`@hono/node-server` + `ws`) when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. A single connection is pinned to one function instance and closes when the function reaches its max duration (a few minutes by default), so keep any shared socket state external (for example Redis) and let clients reconnect.
 
 ## Next
 
