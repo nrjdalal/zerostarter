@@ -64,4 +64,9 @@ describe("init --dry-run plan", () => {
     const out = await planFor(["--waitlist"])
     expect(out).toContain("features: apiDocs, blog, docs, internalDocs, waitlist")
   })
+
+  test("--no-blog wins over --blog (--no- takes precedence)", async () => {
+    const out = await planFor(["--blog", "--no-blog"])
+    expect(out).toContain("features: apiDocs, docs, internalDocs")
+  })
 })
