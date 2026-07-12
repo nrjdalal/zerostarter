@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@arcjet/ip": "catalog:",
+    "@hono/node-server": "catalog:",
     "@hono/standard-validator": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/config": "workspace:*",
@@ -28,11 +29,13 @@
     "hono": "catalog:",
     "hono-openapi": "catalog:",
     "hono-rate-limiter": "catalog:",
+    "ws": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
+    "@types/ws": "catalog:",
     "concurrently": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

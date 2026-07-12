@@ -87,12 +87,13 @@ Client components reading REST data use TanStack Query (see `components/common/a
 
 ## WebSocket routes
 
-For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` from `hono/bun` and add the shared `websocket` handler to the Bun server export next to `fetch` (`api/hono/src/index.ts`). `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.
+For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` (`api/hono/src/index.ts`). The socket owner differs by host: on Bun (local, Docker) it's `hono/bun` with the shared `websocket` handler next to `fetch` in the `Bun.serve()` export; on Vercel it's the Node adapter (`@hono/node-server` + `ws`) exporting the http server, since Vercel Functions can't run `Bun.serve()`. That host branching (adapter + server export) lives in `@/lib/server`, picked at boot from `process.env.VERCEL`, so a new WS route just imports `upgradeWebSocket` from there and registers. `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.
 
 - The typed client reaches it with `apiClient.health.ws.$ws()`, a standard `WebSocket` pointed at the API base (`http` becomes `ws`).
 - Frames are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`. Parse defensively and read only the fields you need; don't hand-maintain a shared payload type RPC can't derive.
+- `@/lib/server` casts the Node adapter's `upgradeWebSocket` to the Bun type, so on the server side the handler's `ws` (WSContext) is typed as Bun's regardless of host. That is sound for `send`/`close`, but a route reaching into host-specific context (e.g. `ws.raw`) type-checks green yet can diverge at runtime on Vercel. Stick to the common surface (`send`, `close`) or branch per host.
 - Keep a `describeRoute` so the upgrade lists in Scalar as a `101`, and describe the frame shape in the route `description`, since OpenAPI can't schema-type WS frames and there is no `{ data }`/`{ error }` envelope.
 - The handshake skips `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` sends no credentials, so gate a sensitive route on the `Origin` header or a token inside the handler, not the allowlist. `/api/health/ws` serves public data, so it doesn't.
-- `bun --hot` picks up edits to an existing `index.ts` route, but restart the stack if `hono/bun` isn't yet wired into the Bun export.
+- `bun --hot` picks up edits to an existing `index.ts` route, but restart the stack if the `upgradeWebSocket` isn't yet wired into the exported server.
 
-Reference client: `components/marketing/api-status.tsx`. REST `/api/health` is the always-honest baseline, polled whenever no frame is live; the socket overlays a live pulse and reconnects with capped backoff, so a serverless deploy or transient blip degrades to the REST-polled state instead of a broken badge.
+Reference client: `components/marketing/api-status.tsx`. REST `/api/health` is the always-honest baseline, polled whenever no frame is live; the socket overlays a live pulse and reconnects with capped backoff, so a cold start or transient blip (Vercel caps a connection at a few minutes) degrades to the REST-polled state instead of a broken badge.

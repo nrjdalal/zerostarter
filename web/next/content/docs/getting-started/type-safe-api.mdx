@@ -75,13 +75,37 @@ Every route decorated with `describeRoute` shows up in an interactive [Scalar](h
 
 ## Live data over WebSockets
 
-Hono serves [WebSockets](https://hono.dev/docs/helpers/websocket) on Bun, and the same typed client reaches them. The health endpoint ships a live example at `/api/health/ws` that pushes a status snapshot on connect and a heartbeat every few seconds.
+Hono serves [WebSockets](https://hono.dev/docs/helpers/websocket) and the same typed client reaches them. The health endpoint ships a live example at `/api/health/ws` that pushes a status snapshot on connect and a heartbeat every few seconds.
 
-A WebSocket route is a `GET` upgraded with `upgradeWebSocket` from `hono/bun`. The shared `websocket` handler is added to the Bun server export next to `fetch`:
+The route is a `GET` upgraded with `upgradeWebSocket`, but the socket owner differs by host. Bun (local, Docker/self-host) runs `Bun.serve()`, so the socket comes from `hono/bun`. Vercel Functions can't run `Bun.serve()`, so on Vercel the upgrade goes through the Node adapter (`@hono/node-server` + `ws`), which Vercel [drives natively](https://vercel.com/docs/functions/websockets). `lib/server.ts` picks the adapter at boot from `process.env.VERCEL` and builds the matching server export, keeping `index.ts` to route registration:
+
+```ts
+// api/hono/src/lib/server.ts
+import { serve, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
+import { env } from "@packages/env/api-hono"
+import type { Hono } from "hono"
+import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
+import { WebSocketServer } from "ws"
+
+const onVercel = process.env.VERCEL === "1"
+
+export const upgradeWebSocket = onVercel
+  ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
+  : bunUpgradeWebSocket
+
+export const createServer = (app: Hono) =>
+  onVercel
+    ? serve({
+        fetch: app.fetch,
+        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
+        websocket: { server: new WebSocketServer({ noServer: true }) },
+      })
+    : { port: env.HONO_PORT, fetch: app.fetch, websocket }
+```
 
 ```ts
 // api/hono/src/index.ts
-import { upgradeWebSocket, websocket } from "hono/bun"
+import { createServer, upgradeWebSocket } from "@/lib/server"
 
 const routes = app.basePath("/api").get(
   "/health/ws",
@@ -92,7 +116,7 @@ const routes = app.basePath("/api").get(
   })),
 )
 
-export default { port: env.HONO_PORT, fetch: app.fetch, websocket }
+export default createServer(app)
 ```
 
 On the client, the RPC object exposes `$ws()` on the route, so the connection URL stays derived from the same configured API base (`http` becomes `ws`):
@@ -106,7 +130,7 @@ socket.addEventListener("message", (event) => {
 })
 ```
 
-Treat the socket as progressive enhancement over a REST baseline. The reference component (`components/marketing/api-status.tsx`) polls REST `/api/health` whenever no frame is live and overlays a live pulse while the socket streams, reconnecting with capped backoff. So the badge always reflects real status, a serverless deploy that can't hold a socket simply shows the REST-polled state, and only the pulse is socket-only.
+Treat the socket as progressive enhancement over a REST baseline. The reference component (`components/marketing/api-status.tsx`) polls REST `/api/health` whenever no frame is live and overlays a live pulse while the socket streams, reconnecting with capped backoff. So the badge always reflects real status before the socket connects or if it drops (Vercel closes a connection when the function reaches its max duration, a few minutes by default), and only the pulse is socket-only.
 
 <Callout type="info" title="Frames are not RPC-typed">
 
