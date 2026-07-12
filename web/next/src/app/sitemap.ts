@@ -8,6 +8,9 @@ import { contentSource } from "@/lib/content"
 export const dynamic = "force-static"
 export const revalidate = 60
 
+const docs = contentSource("docs")
+const blog = contentSource("blog")
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = config.app.url
 
@@ -21,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Docs pages (empty when the docs feature is off)
-  const docsRoutes: MetadataRoute.Sitemap = contentSource("docs")
+  const docsRoutes: MetadataRoute.Sitemap = docs
     .pages()
     .map((page) => ({
       url: `${baseUrl}${page.url}`,
@@ -31,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
 
   // Blog pages: gate on the seam's `enabled`, but read through getPublishedBlogPosts() (not pages()) for its narrowed `publishedAt: string`, which lastModified needs. Empty when the blog feature is off.
-  const blogRoutes: MetadataRoute.Sitemap = contentSource("blog").enabled
+  const blogRoutes: MetadataRoute.Sitemap = blog.enabled
     ? getPublishedBlogPosts().map((page) => ({
         url: `${baseUrl}${page.url}`,
         lastModified: toBlogDate(page.data.updatedAt ?? page.data.publishedAt),

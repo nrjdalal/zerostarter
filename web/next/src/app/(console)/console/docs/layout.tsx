@@ -4,6 +4,8 @@ import { RootProvider } from "fumadocs-ui/provider/next"
 import { contentSource } from "@/lib/content"
 import { baseOptions } from "@/lib/fumadocs"
 
+const consoleDocs = contentSource("console")
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <main className="console-docs">
@@ -21,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {...baseOptions()}
           nav={{ enabled: false }}
           sidebar={{ enabled: false }}
-          tree={contentSource("console").tree()}
+          tree={consoleDocs.tree()}
         >
           {children}
         </DocsLayout>

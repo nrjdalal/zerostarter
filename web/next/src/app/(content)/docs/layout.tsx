@@ -15,6 +15,8 @@ import { contentSource } from "@/lib/content"
 import { resolveDocsNav } from "@/lib/docs"
 import { baseOptions } from "@/lib/fumadocs"
 
+const docs = contentSource("docs")
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
@@ -41,7 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {...baseOptions()}
             nav={{ enabled: false }}
             sidebar={{ enabled: false }}
-            tree={contentSource("docs").tree()}
+            tree={docs.tree()}
           >
             {children}
           </DocsLayout>
