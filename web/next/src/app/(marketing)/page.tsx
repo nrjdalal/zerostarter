@@ -197,7 +197,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
 
 export default async function Home() {
   const initCode = `bunx zerostarter init
-bun run dev   # web :3000 · api :4000`
+bun run dev   # → zerostarter.localhost:1355`
 
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
