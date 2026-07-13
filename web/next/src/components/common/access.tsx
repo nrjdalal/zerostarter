@@ -46,10 +46,12 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       return data
     },
   })
+  // The extra isDev keeps this dev-only admin control out of any production bundle.
+  const agentEnabled = isDev && (data?.providers.includes("agent") ?? false)
   const githubEnabled = data?.providers.includes("github") ?? false
   const googleEnabled = data?.providers.includes("google") ?? false
   const magicLinkEnabled = data?.providers.includes("magic-link") ?? false
-  const hasAlternatives = isDev || githubEnabled || googleEnabled
+  const hasAlternatives = agentEnabled || githubEnabled || googleEnabled
   const hasNoProviders = !magicLinkEnabled && !hasAlternatives
 
   useEffect(() => {
@@ -157,7 +159,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
           )}
           {hasAlternatives && (
             <div className="grid gap-4">
-              {isDev && (
+              {agentEnabled && (
                 <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
                   <Button type="submit" variant="outline" className="w-full">
                     Login (agents)
@@ -225,6 +227,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
             ) : (
               <p className="text-muted-foreground text-center text-sm">
                 No sign-in options are configured yet.
+                {isDev && " Set AGENT_SIGNIN_ENABLED=true in .env to enable local agent login."}
               </p>
             ))}
         </div>

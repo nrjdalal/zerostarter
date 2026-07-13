@@ -22,7 +22,7 @@ agent-browser open http://localhost:3000/<route>
 agent-browser snapshot   # read the page, then click/type/verify
 ```
 
-Behind auth: sign in first with the **Login (agents)** button, or the local sign-in (`dev` skill). For an end-to-end change, or whenever asked, drive the whole flow, not just the screen you touched. Done when you have observed the change render and behave, not merely that the route loaded.
+Behind auth: sign in first with the **Login (agents)** button (shown once `AGENT_SIGNIN_ENABLED=true`) or the local sign-in (`dev` skill). For an end-to-end change, or whenever asked, drive the whole flow, not just the screen you touched. Done when you have observed the change render and behave, not merely that the route loaded.
 
 ### 3. Check it holds up
 

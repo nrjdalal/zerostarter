@@ -1,20 +1,20 @@
 import { auth } from "@packages/auth"
 import { site } from "@packages/config/site"
 import { db, user as userTable } from "@packages/db"
-import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { makeSignature } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { setCookie } from "hono/cookie"
 
+import { agentSignInEnabled } from "@/lib/agent-signin"
 import { ApiError } from "@/lib/error"
 
 const AGENT_EMAIL = site.agent.email
 const AGENT_NAME = site.agent.name
 
 export const agentsRouter = new Hono()
-  .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
+  .use(async (c, next) => (agentSignInEnabled() ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
     const fail = (message: string): never => {
       throw new ApiError(500, "AGENT_LOGIN_FAILED", message)
