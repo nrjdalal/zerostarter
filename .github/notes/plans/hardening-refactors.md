@@ -13,9 +13,11 @@ The PR gate (`auto-check-build.yml`) ran `audit + lint + build` only, so a type 
 
 `packages/env/src/auth.ts` substituted a placeholder for a missing `BETTER_AUTH_SECRET` under `SKIP_ENV_VALIDATION`. A security secret should never resolve to a constant. Add a `serverSecret()` helper: under the skip flag the schema is optional (a tooling build passes with `undefined`), otherwise it stays required, failing closed at runtime. Read the raw `process.env` value.
 
-## Gate the agent sign-in route behind an explicit secret
+## Gate the agent sign-in route behind an explicit toggle
 
-`api/hono/src/routers/agents.ts` `/api/agents/sign-in-as` (the local-only agent login) was gated on `NODE_ENV=local`, which is the `.env.example` default, so it could stay reachable in a default self-host. Add an `AGENT_AUTH_SECRET` (unset by default) and mount the route only when it is set, so agent login is opted into deliberately in dev and a default env never exposes it. Thread it through `packages/env`, `.env.example`, `AGENTS.md`, and the `dev`/docs. The deferred route test lands with the product-test harness below.
+`api/hono/src/routers/agents.ts` `/api/agents/sign-in-as` (the local-only agent login) was gated on `NODE_ENV=local`, which is the `.env.example` default, so it could stay reachable in a default self-host. Add an `AGENT_SIGNIN_ENABLED` toggle (off by default) and mount the route only when it is true, so agent login is opted into deliberately in dev and a default env never exposes it. Thread it through `packages/env`, `.env.example`, `AGENTS.md`, and the `dev`/docs. The deferred route test lands with the product-test harness below.
+
+To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `AGENT_SIGNIN_ENABLED=true` in the scaffolded project's `.env` alongside a generated `BETTER_AUTH_SECRET`, so `bunx zerostarter init` yields working agent login out of the box. This only touches the gitignored `.env`, never the committed `.env.example`, so clone/deploy defaults stay off and the `isLocal(NODE_ENV)` gate keeps the toggle inert on a real deploy.
 
 ## Larger, tracked separately
 

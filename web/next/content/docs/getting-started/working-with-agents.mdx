@@ -24,7 +24,7 @@ This is about AI agents that _build on_ the codebase: coding assistants. ZeroSta
 The full cycle an agent runs, start to finish:
 
 ```bash
-# 1: scaffold a product, then start the stack
+# 1: scaffold a product (init sets AGENT_SIGNIN_ENABLED=true, enabling Login (agents)), then start the stack
 bunx zerostarter init
 bun run dev
 
@@ -50,19 +50,20 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 
 ## Local sign-in
 
-Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request:
+Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, enable it once with the first line below (it is off by default, so the route stays unmounted until you opt in):
 
 ```bash
+grep -q '^AGENT_SIGNIN_ENABLED=true' .env || echo "AGENT_SIGNIN_ENABLED=true" >> .env   # only if you cloned; init already did this
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
   http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated
 ```
 
-It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing.
+It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing; in a dev build it appears once `AGENT_SIGNIN_ENABLED` is true, so a visible button always has a live route behind it.
 
 <Callout type="warn" title="Local only, by construction">
 
-The route is gated to a local `NODE_ENV` and requires a trusted `Origin`. It returns `404` anywhere else, so it can never mint a session in production.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true`. It ships off (blank) in `.env.example`, so a fresh clone and any deployed default env expose no admin-minting route: it returns `404`. `bunx zerostarter init` sets it only in your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button appears only in a dev build when the API advertises the route, so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
 
 </Callout>
 
