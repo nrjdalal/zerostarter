@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 const base = process.env.SKIP_ENV_VALIDATION === "true"
 const skipServer = base || process.env.SKIP_ENV_VALIDATION_SERVER === "true"
 
@@ -7,3 +9,7 @@ export const polyfillServer = (value: string | undefined, dummy: string) =>
 
 export const polyfillClient = (value: string | undefined, dummy: string) =>
   value || (base ? dummy : value)
+
+// A security-critical server secret, never substituted with a dummy (unlike polyfillServer). Under a server skip flag its schema becomes optional so a tooling build passes without the secret; otherwise it stays required, so a missing secret fails closed at runtime instead of silently using a predictable constant. Pair with a raw `process.env` value in runtimeEnv (no polyfill).
+export const serverSecret = <T extends z.ZodTypeAny>(schema: T) =>
+  skipServer ? schema.optional() : schema
