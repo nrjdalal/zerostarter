@@ -11,7 +11,7 @@ Run two Claude Code sessions at once, one in a work project and one in a persona
 
 You can't fix this with discipline; there's no "remember to switch back" when two sessions are switching at the same time. And it isn't only `gh`: the same shared-state bug stamps commits with the wrong email and leaves your assistant's Linear pointed at last week's workspace. The fix is to stop sharing a mutable "current account" at all, and let identity follow _where you are_.
 
-## The Idea
+## Scope identity to the directory you're in
 
 Your directory already knows which org you're working for, so scope everything to it. Each shell reads its own location and resolves its own identity, with nothing global to toggle. Two terminals in two trees run at once because they share no mutable state to fight over.
 
@@ -177,7 +177,7 @@ Nothing mutates shared state, so there's nothing to race. The one global thing l
 
 ---
 
-## Verify it
+## Verify which identity is active
 
 From a session in a workspace, ask the GitHub MCP server who it is (`get_me`), and check the shell in one command:
 

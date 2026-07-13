@@ -5,129 +5,59 @@ createdAt: 2026-06-09
 publishedAt: 2026-06-09
 ---
 
-I used to think my GitHub was a portfolio.
+I used to think my GitHub was a portfolio. Reading it back in order, I think it is closer to a diary.
 
-Now I think it is closer to a diary.
+There are around 250 repositories under my name. A few of them are real things: used, starred, downloaded, opened by people I have never met. Most are not. They are half-finished experiments, afternoon ideas, broken scaffolds, abandoned rewrites, and projects that died after three commits.
 
-There are around 250 repositories under my name. A few of them are real things: used, starred, downloaded, opened by people I have never met. Many of them are not. They are half-finished experiments, afternoon ideas, broken scaffolds, abandoned rewrites, and projects that died after three commits.
+Read in order, though, they stop looking like a pile of code and start looking like a record of how I learned to think. Not cleanly, not strategically, not in the polished way people describe their careers after the fact. More like this: build something, get annoyed by the bad version, build it again, understand a little more, and repeat. That has been the pattern for six years.
 
-But when I read them in order, something changed.
-
-They stopped looking like a pile of code.
-
-They started looking like a record of how I learned to think.
-
-Not cleanly. Not strategically. Not in the polished way people usually describe their careers after the fact. More like this: build something, get annoyed by the bad version, build it again, understand a little more, repeat.
-
-That has been the pattern for six years.
-
-From a shell script in 2020 to the monorepo I am working on now, my GitHub has become an accidental biography. It has the confidence, the confusion, the overreach, the bad commit messages, the real improvements, and the unfinished ideas all sitting in public.
-
-This is the honest version.
+From a shell script in 2020 to the monorepo I am working on now, my GitHub has become an accidental biography. The confidence, the confusion, the overreach, the bad commit messages, the real improvements, and the unfinished ideas all sit in public. This is the honest version.
 
 ---
 
 ## The first instinct was automation
 
-The first repo was not impressive.
+The first repo was not impressive. It was a shell script for deploying a website over SSH: a bare Git repository, a post-receive hook, and the thrill of pushing code and watching a server update itself. That was the first pattern, before I knew it was a pattern. I hated repeating something manually, so I tried to automate it.
 
-It was a shell script for deploying a website over SSH. A bare Git repository, a post-receive hook, and the thrill of pushing code and seeing a server update itself.
+`GIT-Website-Workflow` was the same instinct, just slightly more packaged: a `curl | bash` script, an ASCII banner, and the kind of commit messages you write when you are still editing files directly in GitHub because you do not yet understand that Git itself is a skill.
 
-That was the first pattern, before I knew it was a pattern: I hated repeating something manually, so I tried to automate it.
+Then came `no.CSS`. I was tired of writing the same layout classes, so I wrote a tiny utility CSS library, and in hindsight I had reinvented a small piece of Tailwind without knowing Tailwind existed. I abandoned it quickly, which happened a lot back then. Good instinct, weak follow-through, which describes a lot of my early work.
 
-`GIT-Website-Workflow` was the same instinct, just slightly more packaged. A `curl | bash` script, an ASCII banner, and the kind of commit messages you write when you are still editing files directly in GitHub because you do not yet understand that Git itself is a skill.
-
-Then came `no.CSS`.
-
-I was tired of writing the same layout classes, so I wrote a tiny utility CSS library. In hindsight, I had reinvented a small piece of Tailwind without knowing Tailwind existed. I abandoned it quickly, which happened a lot back then.
-
-Good instinct. Weak follow-through.
-
-That sentence describes a lot of my early work.
-
-There was also `beloans`, the first template I ever made. It was a fake instant-loans landing page with images and a zip file dumped into the repo root. No structure, no build step, no real hygiene.
-
-I am not embarrassed by it anymore.
-
-Starting badly still counts as starting.
+There was also `beloans`, the first template I ever made: a fake instant-loans landing page with images and a zip file dumped into the repo root, no structure, no build step, no real hygiene. I am not embarrassed by it anymore, because starting badly still counts as starting.
 
 ---
 
 ## I learned by making things too painful to keep messy
 
-I think I learned to actually program through crypto trading bots.
+I think I learned to actually program through crypto trading bots. `binance`, `binancefy`, and `telegram-crypto-notifications` were all versions of the same itch: pull market data, calculate indicators, send myself signals.
 
-`binance`, `binancefy`, and `telegram-crypto-notifications` were all versions of the same itch: pull market data, calculate indicators, send myself signals.
+The earliest version was ugly, a single file of loose variables and strange function names, logic piled on top of logic until the whole thing became hard to hold in my head. Then, slowly, I started splitting things apart: one file fetched symbols, one pulled candle data, one calculated indicators, one sent alerts. Nobody told me to do that. The code became painful, so I made it less painful.
 
-The earliest version was ugly. A single file. Loose variables. Strange function names. Logic piled on top of logic until the whole thing became hard to hold in my head.
+That is probably the most accurate description of how I have learned software. Not through a perfect curriculum, but by building the bad version until the better version became obvious.
 
-Then, slowly, I started splitting things apart.
-
-One file fetched symbols. One pulled candle data. One calculated indicators. One sent alerts.
-
-Nobody told me to do that.
-
-The code became painful, so I made it less painful.
-
-That is probably the most accurate description of how I have learned software: not through a perfect curriculum, but by building the bad version until the better version became obvious.
-
-`binancefy` was where I set up TypeScript properly for the first time. Linting. Build scripts. npm publishing. The README called it "the world's largest crypto exchange trading library," which is funny now because it was mostly a wrapper around axios.
-
-But I like that version of me.
-
-The ambition was bigger than the execution, but the ambition mattered. I was writing the README for the thing I wanted to become capable of building.
+`binancefy` was where I set up TypeScript properly for the first time, with linting, build scripts, and npm publishing. The README called it "the world's largest crypto exchange trading library," which is funny now because it was mostly a wrapper around axios. But I like that version of me. The ambition was bigger than the execution, and the ambition mattered: I was writing the README for the thing I wanted to become capable of building.
 
 ---
 
 ## The first time strangers used something I made
 
-`JioTV-Next` was different.
+`JioTV-Next` was different. It streamed live TV in the browser, and to make it work I had to understand how the real app signed its requests, how the tokens worked, and how to package the whole thing so another person could run it.
 
-It streamed live TV in the browser. To make it work, I had to understand how the real app signed its requests, how the tokens worked, how to package the whole thing so another person could run it.
+It got stars. It got contributors. It even got a security report. That was new. Until then, most of my projects were for me, but this one crossed a line: a stranger could land on it, understand it, run it, and care enough to open an issue.
 
-It got stars. It got contributors. It even got a security report.
-
-That was new.
-
-Until then, most of my projects were for me. This one crossed a line: a stranger could land on it, understand it, run it, and care enough to open an issue.
-
-That changed how I thought about building.
-
-The code was still the center, but it was no longer the whole product. The README mattered. The setup mattered. The deployment story mattered. The error messages mattered. The project had to survive contact with people who were not inside my head.
-
-That was the first time GitHub felt less like storage and more like distribution.
+That changed how I thought about building. The code was still the center, but it was no longer the whole product. The README mattered, the setup mattered, the deployment story mattered, the error messages mattered. The project had to survive contact with people who were not inside my head. That was the first time GitHub felt less like storage and more like distribution.
 
 ---
 
 ## The work kept circling the same problems
 
-For a while, the projects looked unrelated.
+For a while, the projects looked unrelated: crypto bots, email templates, scrapers, e-commerce experiments, server managers, proxy pools, torrent search UIs, Next.js starters, VS Code extensions, CLI tools. But reading them back, the same few obsessions kept showing up. I build tools for myself, and sometimes it turns out other people had the same problem.
 
-Crypto bots. Email templates. Scrapers. E-commerce experiments. Server managers. Proxy pools. Torrent search UIs. Next.js starters. VS Code extensions. CLI tools.
-
-But reading them back, the same few obsessions kept showing up.
-
-I build tools for myself, and sometimes it turns out other people had the same problem.
-
-I wanted easier deploys, so I wrote shell scripts.
-
-I wanted cleaner project setup, so I wrote starters.
-
-I wanted to clone only one folder from a GitHub repo, so I built `gitpick`.
-
-I wanted shadcn registry setup to be less manual, so I built `smart-registry`.
-
-I wanted safer env handling after making a bad mistake, so I built `commitsafe`.
-
-The surface area kept changing, but the reflex stayed the same:
+I wanted easier deploys, so I wrote shell scripts. I wanted cleaner project setup, so I wrote starters. I wanted to clone only one folder from a GitHub repo, so I built `gitpick`. I wanted shadcn registry setup to be less manual, so I built `smart-registry`. I wanted safer env handling after making a bad mistake, so I built `commitsafe`. The surface area kept changing, but the reflex stayed the same:
 
 > Find the annoying part. Build the tool I wish existed. Package it so someone else can use it.
 
-That is probably the through-line of the whole thing.
-
-I am also, apparently, obsessed with starting points.
-
-There is a straight line from `beloans` to `onset` to `the-typescript-starter` to `zerostarter`. Different levels of skill, different stacks, different names, but the same question underneath:
+That is probably the through-line of the whole thing. I am also, apparently, obsessed with starting points. There is a straight line from `beloans` to `onset` to `the-typescript-starter` to `zerostarter`: different levels of skill, different stacks, different names, but the same question underneath.
 
 > What would a clean beginning look like?
 
@@ -137,155 +67,63 @@ Six years later, I am still answering that question.
 
 ## Around 2023, it started feeling like engineering
 
-At some point, the repos stopped looking like experiments.
+At some point, the repos stopped looking like experiments. `google-parser` was one of the first projects where that shift was obvious. It was not just a script that worked once. It had tests, releases, a cleaner structure, and a reason to exist beyond "I wonder if I can do this."
 
-`google-parser` was one of the first projects where that shift was obvious. It was not just a script that worked once. It had tests. Releases. A cleaner structure. A reason to exist beyond "I wonder if I can do this."
+Then came `onset`. That project mattered because the documentation was not an afterthought: the README was part of the product, and it taught the architecture step by step instead of just saying "clone this and figure it out."
 
-Then came `onset`.
-
-That project mattered because the documentation was not an afterthought. The README was part of the product. It taught the architecture step by step instead of just saying, "clone this and figure it out."
-
-That lesson carried into `rdt-li`, the URL shortener that actually caught on. The idea itself was not new. A URL shortener is one of the oldest web-app ideas there is.
-
-What worked was the packaging.
-
-One-click deploy. Pre-wired configuration. Analytics. A README that respected the person trying to use it.
-
-That was a turning point.
-
-I started to understand that good software is not just the clever core. It is the path into it.
+That lesson carried into `rdt-li`, the URL shortener that actually caught on. The idea itself was not new, since a URL shortener is one of the oldest web-app ideas there is. What worked was the packaging: one-click deploy, pre-wired configuration, analytics, and a README that respected the person trying to use it. That was a turning point, where I started to understand that good software is not just the clever core, it is the path into it.
 
 ---
 
 ## Not everything good gets noticed
 
-One thing GitHub teaches you quickly: quality and traction are not the same thing.
+One thing GitHub teaches you quickly is that quality and traction are not the same thing. `smart-registry` is one of the projects I am proudest of. It solves a real problem, it removes boilerplate, and it understands files and dependencies so the user does not have to write as much configuration by hand. It did not take off like `gitpick`.
 
-`smart-registry` is one of the projects I am proudest of. It solves a real problem. It removes boilerplate. It understands files and dependencies so the user does not have to write as much configuration by hand.
-
-It did not take off like `gitpick`.
-
-That used to bother me more than it does now.
-
-Stars are useful feedback, but they are not the only feedback. Some projects are popular because the timing is right. Some are quiet because the audience is small. Some are good because they raise your own standard, even if nobody else notices.
-
-I would still build `smart-registry` again.
-
-That is the difference between chasing attention and developing taste.
+That used to bother me more than it does now. Stars are useful feedback, but they are not the only feedback. Some projects are popular because the timing is right, some are quiet because the audience is small, and some are good because they raise your own standard even if nobody else notices. I would still build `smart-registry` again, which is the difference between chasing attention and developing taste.
 
 ---
 
 ## The mistakes became part of the system
 
-The worst parts are in the record too.
+The worst parts are in the record too. I leaked AWS keys in a public README, twice. That is not a cute mistake. It is the kind of thing that teaches you quickly, because the cost is obvious.
 
-I leaked AWS keys in a public README. Twice.
+The more interesting part is what happened after. Later, I built `commitsafe`, a tool that encrypts `.env` files before they touch Git. I moved toward short-lived publishing tokens, and I started caring more about release safety, changelogs, and whether a project could be shipped without leaving sharp edges everywhere. That is the real growth: not that I stopped making mistakes, but that I started turning mistakes into guardrails.
 
-That is not a cute mistake. It is the kind of thing that teaches you quickly because the cost is obvious.
-
-But the more interesting part is what happened after.
-
-Later, I built `commitsafe`, a tool that encrypts `.env` files before they touch Git. I moved toward short-lived publishing tokens. I started caring more about release safety, changelogs, and whether a project could be shipped without leaving sharp edges everywhere.
-
-That is the real growth.
-
-Not "I stopped making mistakes."
-
-More like:
-
-> I started turning mistakes into guardrails.
-
-My commit messages were bad for years too. Raw timestamps. "Initial commit." Lazy `chore: tweaks` commits next to huge changes. Even now, smaller side projects can be messy.
-
-But the projects that matter now have more discipline around them.
-
-That is probably a fair description of me as a builder: careful where it matters, sometimes sloppy where it does not, and slowly moving more things into the "matters" category.
+My commit messages were bad for years too, full of raw timestamps, "Initial commit," and lazy `chore: tweaks` commits sitting next to huge changes. Even now, smaller side projects can be messy. But the projects that matter now have more discipline around them. That is probably a fair description of me as a builder: careful where it matters, sometimes sloppy where it does not, and slowly moving more things into the "matters" category.
 
 ---
 
 ## The thing that changed was judgment
 
-When I look across the whole GitHub history, the biggest change is not that I learned a framework.
+When I look across the whole GitHub history, the biggest change is not that I learned a framework. Frameworks changed constantly: shell, Node, TypeScript, Next.js, Prisma, Drizzle, Hono, Bun, TanStack, Cloudflare Workers, AI tooling. The real change is judgment.
 
-Frameworks changed constantly.
+Early on, the question was "can I make this work?" Later it became "can someone else use this?" Then "can this be maintained?" And now, "is this safe, documented, typed, releasable, and worth shipping?" That is a very different bar.
 
-Shell. Node. TypeScript. Next.js. Prisma. Drizzle. Hono. Bun. TanStack. Cloudflare Workers. AI tooling.
-
-The real change is judgment.
-
-Early on, the question was:
-
-> Can I make this work?
-
-Later, it became:
-
-> Can someone else use this?
-
-Then:
-
-> Can this be maintained?
-
-And now:
-
-> Is this safe, documented, typed, releasable, and worth shipping?
-
-That is a very different bar.
-
-`zerostarter` is where most of that thinking currently lives. It is not just another starter. It is the place where years of opinions collapsed into one system: shared types, one database schema, a real release process, and a stack that tries to remove the usual friction from starting a serious product.
-
-The thing I am proudest of is not that it runs.
-
-It is that it is trying to be correct.
-
-That sounds less exciting, but it feels more like engineering.
+`zerostarter` is where most of that thinking currently lives. It is not just another starter. It is the place where years of opinions collapsed into one system: shared types, one database schema, a real release process, and a stack that tries to remove the usual friction from starting a serious product. The thing I am proudest of is not that it runs, but that it is trying to be correct. That sounds less exciting, and it feels more like engineering.
 
 ---
 
 ## The current direction
 
-The newest repos point toward AI, agents, and memory.
+The newest repos point toward AI, agents, and memory. `ai-x-terminal` was the early signal, a CLI that brings a workspace into a model. Now the work is moving toward agent sign-in flows, `AGENTS.md` files, bundled skills, and backends that exist to help software remember context.
 
-`ai-x-terminal` was the early signal: a CLI that brings a workspace into a model. Now the work is moving toward agent sign-in flows, `AGENTS.md` files, bundled skills, and backends that exist to help software remember context.
+In one sense, this is a new direction. In another, it is the same old instinct: the reflex that automated a deploy script in 2020 is now pointed at infrastructure for software that can help write software.
 
-In one sense, this is a new direction.
-
-In another sense, it is the same old instinct.
-
-The reflex that automated a deploy script in 2020 is now pointed at infrastructure for software that can help write software.
-
-I do not know exactly where that goes yet.
-
-That uncertainty used to bother me. Now it feels familiar.
-
-Most of the useful things I have built started with a vague irritation, not a perfect plan.
+I do not know exactly where that goes yet. That uncertainty used to bother me, and now it feels familiar, because most of the useful things I have built started with a vague irritation rather than a perfect plan.
 
 ---
 
 ## What my GitHub actually says
 
-My GitHub is not a clean list of wins.
-
-It is messier and more useful than that.
-
-It says I learn by building real things. It says I chase new tools early, sometimes too early. It says I abandon ideas when the question has been answered. It says I have confused ambition with execution more than once. It says I care more now about documentation, safety, release quality, and the user's path into the project than I did when I started.
+My GitHub is not a clean list of wins. It is messier and more useful than that. It says I learn by building real things, that I chase new tools early and sometimes too early, that I abandon ideas once the question has been answered, that I have confused ambition with execution more than once, and that I care more now about documentation, safety, release quality, and the user's path into the project than I did when I started.
 
 Most of all, it says I keep returning to the same promise:
 
 > Give me a domain I do not fully understand, and I will learn it by building something real inside it.
 
-That is the part I trust.
+That is the part I trust. Not mastery, not polish, not a perfect portfolio, but a public trail of attempts, corrections, taste, and judgment.
 
-Not mastery. Not polish. Not a perfect portfolio.
-
-A public trail of attempts, corrections, taste, and judgment.
-
-Six years ago, I was writing shell scripts to avoid repeating myself.
-
-Now I am building systems that try to make software easier to start, safer to ship, and maybe soon, easier for agents to understand.
-
-The work changed.
-
-The instinct did not.
+Six years ago, I was writing shell scripts to avoid repeating myself. Now I am building systems that try to make software easier to start, safer to ship, and maybe soon, easier for agents to understand. The work changed, but the instinct did not.
 
 ---
 
