@@ -63,7 +63,7 @@ It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable
 
 <Callout type="warn" title="Local only, by construction">
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_AUTH_SECRET` is set. It ships blank in `.env.example`, so a fresh clone and any deployed default env expose no admin-minting route: it returns `404`. `bunx zerostarter init` seeds the secret only into your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button is gated on the same condition (it appears only when the API advertises the route), so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_AUTH_SECRET` is set. It ships blank in `.env.example`, so a fresh clone and any deployed default env expose no admin-minting route: it returns `404`. `bunx zerostarter init` seeds the secret only into your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button appears only in a dev build when the API advertises the route, so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
 
 </Callout>
 

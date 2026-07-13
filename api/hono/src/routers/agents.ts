@@ -1,23 +1,21 @@
 import { auth } from "@packages/auth"
 import { site } from "@packages/config/site"
 import { db, user as userTable } from "@packages/db"
-import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { makeSignature } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { setCookie } from "hono/cookie"
 
+import { agentSignInEnabled } from "@/lib/agent-auth"
 import { ApiError } from "@/lib/error"
 
 const AGENT_EMAIL = site.agent.email
 const AGENT_NAME = site.agent.name
 
 export const agentsRouter = new Hono()
-  // Mount only when a fork deliberately provisions AGENT_AUTH_SECRET in a local dev env. A default clone (secret unset) exposes no admin-minting route, even though it ships NODE_ENV=local; a production env never reaches it. The secret gates availability; the Origin check below still guards the request.
-  .use(async (c, next) =>
-    isLocal(env.NODE_ENV) && env.AGENT_AUTH_SECRET ? next() : c.notFound(),
-  )
+  // Mount only when agent sign-in is enabled (see agentSignInEnabled). The Origin check below still guards each request.
+  .use(async (c, next) => (agentSignInEnabled() ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
     const fail = (message: string): never => {
       throw new ApiError(500, "AGENT_LOGIN_FAILED", message)
