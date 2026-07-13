@@ -24,9 +24,8 @@ This is about AI agents that _build on_ the codebase: coding assistants. ZeroSta
 The full cycle an agent runs, start to finish:
 
 ```bash
-# 1: scaffold a product, enable the local sign-in, then start the stack
+# 1: scaffold a product (init seeds AGENT_AUTH_SECRET, enabling Login (agents)), then start the stack
 bunx zerostarter init
-grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # enables Login (agents)
 bun run dev
 
 # 2: sign in locally (drive the real UI, or the curl below)
@@ -51,10 +50,10 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 
 ## Local sign-in
 
-Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. Enable it once by setting `AGENT_AUTH_SECRET` in `.env` (it is unset by default, so the route stays unmounted until you opt in):
+Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` seeds `AGENT_AUTH_SECRET` for you, so the route is already live; if you cloned the repo instead, enable it once with the first line below (it is unset in `.env.example`, so the route stays unmounted until you opt in):
 
 ```bash
-grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # once, to enable the route
+grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # only if you cloned; init already seeded it
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
   http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated
@@ -64,7 +63,7 @@ It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable
 
 <Callout type="warn" title="Local only, by construction">
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_AUTH_SECRET` is set. Because the secret is unset by default, a fresh clone and any deployed default env expose no admin-minting route: it returns `404`, and you opt in deliberately in local dev. The **Login (agents)** button is gated on the same condition (it appears only when the API advertises the route), so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_AUTH_SECRET` is set. It ships blank in `.env.example`, so a fresh clone and any deployed default env expose no admin-minting route: it returns `404`. `bunx zerostarter init` seeds the secret only into your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button is gated on the same condition (it appears only when the API advertises the route), so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
 
 </Callout>
 

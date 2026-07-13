@@ -15,11 +15,13 @@ afterEach(() => {
   rmSync(dir, { force: true, recursive: true })
 })
 
-const secretOf = (env: string): string =>
+const valueOf = (env: string, key: string): string =>
   env
     .split("\n")
-    .find((l) => l.startsWith("BETTER_AUTH_SECRET="))
-    ?.slice("BETTER_AUTH_SECRET=".length) ?? ""
+    .find((l) => l.startsWith(`${key}=`))
+    ?.slice(`${key}=`.length) ?? ""
+
+const secretOf = (env: string): string => valueOf(env, "BETTER_AUTH_SECRET")
 
 test("seedEnv copies .env.example and fills BETTER_AUTH_SECRET", () => {
   writeFileSync(join(dir, ".env.example"), "NODE_ENV=local\nBETTER_AUTH_SECRET=\nPOSTGRES_URL=\n")
@@ -27,6 +29,21 @@ test("seedEnv copies .env.example and fills BETTER_AUTH_SECRET", () => {
   const env = readFileSync(join(dir, ".env"), "utf8")
   expect(env).toContain("NODE_ENV=local")
   expect(secretOf(env).length).toBeGreaterThan(20)
+})
+
+test("seedEnv fills AGENT_AUTH_SECRET with its own value", () => {
+  writeFileSync(join(dir, ".env.example"), "BETTER_AUTH_SECRET=\nAGENT_AUTH_SECRET=\n")
+  seedEnv(dir)
+  const env = readFileSync(join(dir, ".env"), "utf8")
+  const agent = valueOf(env, "AGENT_AUTH_SECRET")
+  expect(agent.length).toBeGreaterThan(20)
+  expect(agent).not.toBe(secretOf(env))
+})
+
+test("seedEnv does not overwrite a pre-set AGENT_AUTH_SECRET", () => {
+  writeFileSync(join(dir, ".env"), "BETTER_AUTH_SECRET=preset\nAGENT_AUTH_SECRET=agentpreset\n")
+  seedEnv(dir)
+  expect(valueOf(readFileSync(join(dir, ".env"), "utf8"), "AGENT_AUTH_SECRET")).toBe("agentpreset")
 })
 
 test("seedEnv is idempotent and keeps the existing secret", () => {
