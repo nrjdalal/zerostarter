@@ -31,8 +31,7 @@ const libcExcludes = {
   ],
 }
 
-// Dev-only: Next 16 blocks cross-origin dev requests; behind portless the browser Host is a named .localhost
-// subdomain, so allow the app's base domain and all its subdomains (** spans the worktree branch label too).
+// Dev-only: Next 16 blocks cross-origin dev requests; behind portless the browser Host is a named .localhost subdomain, so allow the app's base domain and all its subdomains (** spans the worktree branch label too). The base domain is inlined (last two labels) rather than importing baseDomainOf from @packages/auth, which would pull better-auth/db into next.config.
 const appDevHost = (() => {
   try {
     return new URL(env.NEXT_PUBLIC_APP_URL).hostname.split(".").slice(-2).join(".")

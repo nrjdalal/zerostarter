@@ -22,9 +22,7 @@ import {
 
 import { baseDomainOf, buildTrustedOrigins } from "@/lib/origins"
 
-// The canonical public WEB origin (browser-facing). Auth is same-origin: the browser calls the web host's
-// /api/auth, Next rewrites it to this API. baseURL must be that web origin so OAuth callbacks return through
-// the same-origin proxy (an api-origin baseURL bypasses it). The first trusted origin is that web origin.
+// The canonical public WEB origin (browser-facing), and the first trusted origin by convention. Auth is same-origin: the browser calls the web host's /api/auth, Next rewrites it to this API, so baseURL must be that web origin or OAuth callbacks bypass the proxy.
 const appOrigin = env.HONO_TRUSTED_ORIGINS[0]
 // Wildcard subdomain origins are trusted only outside production (previews); production is a strict allowlist.
 const allowWildcard = !isProduction(env.NODE_ENV)
@@ -82,9 +80,7 @@ export const auth = betterAuth({
   },
 })
 
-// Better Auth sets host-only cookies by default (no crossSubDomainCookies, no Domain), so a session set on one
-// host is never sent to a sibling env. The API additionally rewrites the __Secure- prefix to __Host- on https
-// (see api/hono/src/lib/host-cookie.ts) so a compromised sibling cannot plant a Domain cookie the host reads.
+// Better Auth sets host-only cookies by default (no crossSubDomainCookies, no Domain), so a session set on one host is never sent to a sibling env; the API additionally rewrites __Secure- to __Host- on https (api/hono/src/lib/host-cookie.ts) so a compromised sibling cannot plant a Domain cookie the host reads.
 
 // Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.
 export const magicLinkEnabled = (auth.options.plugins ?? []).some(

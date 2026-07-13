@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import {
-  fromBetterAuthResponse,
-  handleAuthWithHostCookies,
-  toBetterAuthRequest,
-} from "@/lib/host-cookie"
+import { fromBetterAuthResponse, toBetterAuthRequest, withHostCookies } from "@/lib/host-cookie"
 
 const cookies = (res: Response) => res.headers.getSetCookie()
 
@@ -59,22 +55,37 @@ describe("toBetterAuthRequest: __Host- -> __Secure- on read", () => {
   })
 })
 
-describe("handleAuthWithHostCookies: round trip", () => {
-  test("a browser __Host- cookie is read by the handler and re-emitted as __Host-", async () => {
+describe("withHostCookies: fetch-boundary round trip (covers /api/v1 reads, not just /api/auth)", () => {
+  test("renames the incoming __Host- cookie for the handler and re-emits Set-Cookie as __Host-", async () => {
     const seen: (string | null)[] = []
-    const handler = async (req: Request): Promise<Response> => {
+    const fetch = ((req: Request) => {
       seen.push(req.headers.get("cookie"))
       return new Response(null, {
         headers: {
           "set-cookie": "__Secure-better-auth.session_token=new; Path=/; Secure; HttpOnly",
         },
       })
-    }
-    const raw = new Request("https://zerostarter.dev/api/auth/get-session", {
-      headers: { cookie: "__Host-better-auth.session_token=old" },
-    })
-    const res = await handleAuthWithHostCookies(handler, raw)
+    }) as Parameters<typeof withHostCookies>[0]
+    const res = await withHostCookies(fetch)(
+      new Request("https://zerostarter.dev/api/v1/user", {
+        headers: { cookie: "__Host-better-auth.session_token=old" },
+      }),
+    )
     expect(seen[0]).toBe("__Secure-better-auth.session_token=old")
-    expect(cookies(res)[0]).toStartWith("__Host-better-auth.session_token=new")
+    expect(cookies(res as Response)[0]).toStartWith("__Host-better-auth.session_token=new")
+  })
+
+  test("a websocket upgrade bypasses the rewrite untouched (does not break the upgrade)", async () => {
+    const seen: (string | null)[] = []
+    const fetch = ((req: Request) => {
+      seen.push(req.headers.get("cookie"))
+      return new Response(null, { status: 101 })
+    }) as Parameters<typeof withHostCookies>[0]
+    await withHostCookies(fetch)(
+      new Request("https://api.zerostarter.dev/api/health/ws", {
+        headers: { upgrade: "websocket", cookie: "__Host-better-auth.session_token=x" },
+      }),
+    )
+    expect(seen[0]).toBe("__Host-better-auth.session_token=x")
   })
 })

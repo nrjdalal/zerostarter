@@ -1,5 +1,4 @@
-// The registrable base domain (last two labels) of a URL, or undefined for localhost/IP hosts.
-// api.zerostarter.dev -> zerostarter.dev; zerostarter.localhost -> zerostarter.localhost; localhost -> undefined.
+// The registrable base domain (last two labels) of a URL, or undefined for localhost/IP (api.zerostarter.dev -> zerostarter.dev; localhost -> undefined).
 export function baseDomainOf(url: string): string | undefined {
   try {
     const { hostname } = new URL(url)
@@ -12,8 +11,7 @@ export function baseDomainOf(url: string): string | undefined {
   }
 }
 
-// Whether an Origin is trusted: an exact match against the allowlist always, plus any subdomain of
-// baseDomain when wildcards are allowed (non-production only). Production stays a strict exact allowlist.
+// Whether an Origin is trusted: an exact allowlist match always, plus any subdomain of baseDomain when wildcards are allowed (non-production only). Production stays a strict exact allowlist.
 export function isTrustedOrigin(
   origin: string | undefined | null,
   allowlist: string[],
@@ -31,8 +29,7 @@ export function isTrustedOrigin(
   }
 }
 
-// The trustedOrigins value Better Auth consumes: the exact allowlist, plus wildcard subdomain patterns
-// (both schemes) only when non-production. Better Auth's `*` spans dots, so one pattern covers api.<base> too.
+// The trustedOrigins value Better Auth consumes: the exact allowlist, plus wildcard subdomain patterns (both schemes) only when non-production. Better Auth's `*` spans dots, so one pattern covers api.<base> too.
 export function buildTrustedOrigins(
   allowlist: string[],
   opts: { baseDomain?: string; allowWildcard: boolean },
