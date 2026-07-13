@@ -28,6 +28,20 @@ describe("fromBetterAuthResponse: __Secure- -> __Host- on https", () => {
     expect(out).not.toContain("__Host-")
   })
 
+  test("renames a Secure deletion cookie (Max-Age=0) so logout clears the __Host- cookie the browser holds", () => {
+    const res = new Response(null, {
+      headers: {
+        "set-cookie":
+          "__Secure-better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax; Domain=.zerostarter.dev",
+      },
+    })
+    const [out] = cookies(fromBetterAuthResponse(res))
+    expect(out).toStartWith("__Host-better-auth.session_token=")
+    expect(out).toMatch(/Max-Age=0/i)
+    expect(out.toLowerCase()).not.toContain("domain=")
+    expect(out).toMatch(/;\s*Path=\/$/i)
+  })
+
   test("forces Path=/ (a __Host- requirement): adds it when missing, normalizes a narrower path", () => {
     const missing = fromBetterAuthResponse(
       new Response(null, { headers: { "set-cookie": "__Secure-x=1; Secure" } }),

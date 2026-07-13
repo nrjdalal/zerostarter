@@ -1,4 +1,4 @@
-// The registrable base domain (last two labels) of a URL, or undefined for localhost/IP (api.zerostarter.dev -> zerostarter.dev; localhost -> undefined).
+// The registrable base domain (last two labels) of a URL, or undefined for localhost/IP (api.zerostarter.dev -> zerostarter.dev; localhost -> undefined). Naive last-two-labels: right for single-label TLDs (.dev/.com), but a multi-part public suffix like foo.co.uk yields co.uk, so a fork deploying on such a TLD would get an over-broad non-prod wildcard.
 export function baseDomainOf(url: string): string | undefined {
   try {
     const { hostname } = new URL(url)
