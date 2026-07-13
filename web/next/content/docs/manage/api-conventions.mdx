@@ -55,10 +55,11 @@ The codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`: the single s
 
 ### Validation errors
 
-A request validator throws too. The waitlist `POST` (`api/hono/src/routers/waitlist.ts`) shows the pattern. Its `sValidator` hook throws on failure so `errorHandler` shapes the 400 in one place:
+A request validator throws too. The waitlist `POST` (`api/hono/src/routers/waitlist.ts`) shows the pattern. The `jsonBody` helper (`api/hono/src/lib/route.ts`) validates the body and documents the `requestBody` from the same schema; its hook throws on failure so `errorHandler` shapes the 400 in one place:
 
 ```ts
-sValidator("json", joinSchema, (result) => {
+// jsonBody(schema, message), from @/lib/route
+validator("json", joinSchema, (result) => {
   if (!result.success) {
     throw new ApiError(400, "VALIDATION_ERROR", "Invalid email address", { issues: result.error })
   }

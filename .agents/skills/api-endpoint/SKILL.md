@@ -5,7 +5,7 @@ description: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI d
 
 # API Endpoint
 
-Every response is an envelope: `{ data }` on success, `{ error: { code, message } }` on failure. Never build the failure envelope by hand: throw `ApiError` and `errorHandler` (`api/hono/src/lib/error.ts`) shapes it in ONE place. OpenAPI comes from `hono-openapi`; end-to-end types from Hono RPC. Reference routers: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated).
+Every response is an envelope: `{ data }` on success, `{ error: { code, message } }` on failure. Never build the failure envelope by hand: throw `ApiError` and `errorHandler` (`api/hono/src/lib/error.ts`) shapes it in ONE place. Document a route with the `jsonRoute`/`jsonBody` helpers from `@/lib/route`: they generate the OpenAPI schema from your Zod validators (no hand-written second copy), and end-to-end types come from Hono RPC. Reference routers: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated).
 
 ## Workflow
 
@@ -14,41 +14,28 @@ Every response is an envelope: `{ data }` on success, `{ error: { code, message 
 `api/hono/src/routers/<name>.ts`:
 
 ```ts
-import { sValidator } from "@hono/standard-validator"
 import { Hono } from "hono"
-import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { ApiError, validationErrorResponses } from "@/lib/error"
+import { jsonBody, jsonRoute } from "@/lib/route"
 
 const bodySchema = z.object({
   // z.string().trim().pipe(...) for user-supplied strings
-  email: z.string().trim().pipe(z.email().max(254)),
+  email: z.string().trim().pipe(z.email().max(254)).meta({ example: "you@example.com" }),
 })
 
 export const exampleRouter = new Hono().post(
   "/",
-  describeRoute({
+  jsonRoute({
     tags: ["Example"],
     description: "...",
-    responses: {
-      200: {
-        description: "OK",
-        content: {
-          "application/json": {
-            schema: resolver(z.object({ data: z.object({ message: z.string() }) })),
-          },
-        },
-      },
-      ...validationErrorResponses,
-    },
+    // Just the call expression; jsonRoute wraps it in the import + unwrap scaffold for the Scalar sample.
+    sample: `apiClient.example.$post({ json: { email: "you@example.com" } })`,
+    // The success payload; jsonRoute wraps it in the { data } envelope for the 200.
+    output: z.object({ message: z.string().meta({ example: "ok" }) }),
+    validated: true,
   }),
-  // Validation failures throw ApiError so onError shapes the 400 VALIDATION_ERROR envelope in one place.
-  sValidator("json", bodySchema, (result) => {
-    if (!result.success) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
-    }
-  }),
+  jsonBody(bodySchema, "Invalid input"),
   async (c) => {
     const body = c.req.valid("json")
     return c.json({ data: { message: "ok" } })
@@ -56,9 +43,10 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route. 429/500 are added globally in `index.ts`; don't add them per route.
-- Add an `x-codeSamples` block mirroring `waitlist.ts` so Scalar shows the `hono/client` usage (the template above omits it).
-- Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. Public routes get their own router.
+- `jsonRoute` owns the OpenAPI: it wraps `output` in `{ data }` for the 200, expands `sample` into the `hono/client` code sample, and lists the error responses that apply. 429/500 are always included; add `validated: true` for the 400 and `auth: true` for the 401. Don't hand-write a `responses`/`content`/`resolver` block or a second copy of the schema.
+- `jsonBody(schema, message)` validates the request body AND documents the `requestBody` from the same schema (hono-openapi's `validator`), so the spec and the validator cannot drift. A failure throws `ApiError` so `onError` shapes the 400 in one place. Pair it with `validated: true` on `jsonRoute`.
+- A non-JSON route (a WebSocket upgrade with no `{ data }` envelope) keeps using `describeRoute`/`resolver` from `hono-openapi` directly; see the WebSocket section.
+- Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed, and pass `auth: true` to `jsonRoute`. Public routes get their own router.
 
 ### 2. Wire it
 
@@ -92,7 +80,7 @@ For a live server-to-client stream instead of polling, upgrade a `GET` with `upg
 - The typed client reaches it with `apiClient.health.ws.$ws()`, a standard `WebSocket` pointed at the API base (`http` becomes `ws`).
 - Frames are not RPC-typed: `ws.send()` takes a raw string and `$ws()` returns a plain `WebSocket`. Parse defensively and read only the fields you need; don't hand-maintain a shared payload type RPC can't derive.
 - `@/lib/server` casts the Node adapter's `upgradeWebSocket` to the Bun type, so on the server side the handler's `ws` (WSContext) is typed as Bun's regardless of host. That is sound for `send`/`close`, but a route reaching into host-specific context (e.g. `ws.raw`) type-checks green yet can diverge at runtime on Vercel. Stick to the common surface (`send`, `close`) or branch per host.
-- Keep a `describeRoute` so the upgrade lists in Scalar as a `101`, and describe the frame shape in the route `description`, since OpenAPI can't schema-type WS frames and there is no `{ data }`/`{ error }` envelope.
+- Use `describeRoute` directly (not `jsonRoute`) so the upgrade lists in Scalar as a bare `101` with no `{ data }` error responses, and describe the frame shape in the route `description`, since OpenAPI can't schema-type WS frames and there is no `{ data }`/`{ error }` envelope.
 - The handshake skips `cors()` (browsers don't apply CORS to WebSockets) and `$ws()` sends no credentials, so gate a sensitive route on the `Origin` header or a token inside the handler, not the allowlist. `/api/health/ws` serves public data, so it doesn't.
 - `bun --hot` picks up edits to an existing `index.ts` route, but restart the stack if the `upgradeWebSocket` isn't yet wired into the exported server.
 
