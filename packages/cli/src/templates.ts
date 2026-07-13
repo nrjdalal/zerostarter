@@ -19,7 +19,9 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   waitlist: false,
 }
 
-const featuresBlock = (features: FeatureFlags): string => `// Optional surfaces a fork enables or disables. Typed boolean (not \`as const\`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface. waitlist off makes the home a plain landing page.
+const featuresBlock = (
+  features: FeatureFlags,
+): string => `// Optional surfaces a fork enables or disables. Typed boolean (not \`as const\`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface. waitlist off makes the home a plain landing page.
 export const features = {
   apiDocs: ${features.apiDocs},
   blog: ${features.blog},

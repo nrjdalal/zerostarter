@@ -24,14 +24,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Docs pages (empty when the docs feature is off)
-  const docsRoutes: MetadataRoute.Sitemap = docs
-    .pages()
-    .map((page) => ({
-      url: `${baseUrl}${page.url}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.9,
-    }))
+  const docsRoutes: MetadataRoute.Sitemap = docs.pages().map((page) => ({
+    url: `${baseUrl}${page.url}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }))
 
   // Blog pages: gate on the seam's `enabled`, but read through getPublishedBlogPosts() (not pages()) for its narrowed `publishedAt: string`, which lastModified needs. Empty when the blog feature is off.
   const blogRoutes: MetadataRoute.Sitemap = blog.enabled
