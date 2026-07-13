@@ -46,7 +46,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       return data
     },
   })
-  // The agent button posts to a route that only mounts locally with AGENT_SIGNIN_ENABLED=true, so gate it on what the API advertises (never in production, where isDev is false and this is dead code).
+  // The extra isDev keeps this dev-only admin control out of any production bundle.
   const agentEnabled = isDev && (data?.providers.includes("agent") ?? false)
   const githubEnabled = data?.providers.includes("github") ?? false
   const googleEnabled = data?.providers.includes("google") ?? false

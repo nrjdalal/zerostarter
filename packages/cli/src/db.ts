@@ -42,7 +42,7 @@ const setEnvVar = (envPath: string, key: string, value: string): void => {
   write(envPath, lines.join("\n"))
 }
 
-// Create .env from .env.example, filling a generated BETTER_AUTH_SECRET and enabling the local agent sign-in (AGENT_SIGNIN_ENABLED=true) when each is empty. Both land only in the gitignored .env, never the committed .env.example, so a clone or deploy still ships them blank (agent sign-in off).
+// Create .env from .env.example, filling a generated BETTER_AUTH_SECRET and enabling agent sign-in (AGENT_SIGNIN_ENABLED=true) when each is empty.
 export const seedEnv = (dir: string): void => {
   const envPath = ensureEnv(dir)
   if (!getEnvVar(envPath, "BETTER_AUTH_SECRET")) {

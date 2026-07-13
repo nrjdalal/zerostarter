@@ -8,7 +8,6 @@ import { polyfillServer } from "@/lib/polyfill"
 export const env = createEnv({
   server: {
     NODE_ENV,
-    // Toggles the local-only agent sign-in route. Off by default; a fork sets it to true in dev to enable agent login, and leaves it off everywhere else. Parsed as a boolean and defaulted to false, so a build passes without it and the route stays unmounted.
     AGENT_SIGNIN_ENABLED: z.stringbool().default(false),
     HONO_APP_URL: z.url(),
     HONO_PORT: z.coerce.number().default(4000),

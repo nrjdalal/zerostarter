@@ -14,7 +14,6 @@ const AGENT_EMAIL = site.agent.email
 const AGENT_NAME = site.agent.name
 
 export const agentsRouter = new Hono()
-  // Mount only when agent sign-in is enabled (see agentSignInEnabled). The Origin check below still guards each request.
   .use(async (c, next) => (agentSignInEnabled() ? next() : c.notFound()))
   .post("/sign-in-as", async (c) => {
     const fail = (message: string): never => {
