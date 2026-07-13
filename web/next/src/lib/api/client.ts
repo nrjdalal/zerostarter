@@ -18,6 +18,7 @@ const honoClient = hcWithType(httpUrl, {
 
 export const apiClient = honoClient.api
 
+// Auth-gated WebSockets are incompatible with host-only cookies: this cross-origin socket to the api host carries no session (the cookie is host-only on the web host). Only the public health socket exists; an authenticated socket would need a token/ticket, not the cookie.
 const wsClient = hcWithType(config.api.url, {
   init: {
     credentials: "include",

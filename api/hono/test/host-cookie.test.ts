@@ -28,9 +28,16 @@ describe("fromBetterAuthResponse: __Secure- -> __Host- on https", () => {
     expect(out).not.toContain("__Host-")
   })
 
-  test("adds Path=/ when missing (a __Host- requirement)", () => {
-    const res = new Response(null, { headers: { "set-cookie": "__Secure-x=1; Secure" } })
-    expect(cookies(fromBetterAuthResponse(res))[0]).toMatch(/Path=\//i)
+  test("forces Path=/ (a __Host- requirement): adds it when missing, normalizes a narrower path", () => {
+    const missing = fromBetterAuthResponse(
+      new Response(null, { headers: { "set-cookie": "__Secure-x=1; Secure" } }),
+    )
+    expect(cookies(missing)[0]).toMatch(/;\s*Path=\/$/i)
+    const narrower = fromBetterAuthResponse(
+      new Response(null, { headers: { "set-cookie": "__Secure-x=1; Secure; Path=/app" } }),
+    )
+    expect(cookies(narrower)[0]).not.toContain("/app")
+    expect(cookies(narrower)[0]).toMatch(/;\s*Path=\/$/i)
   })
 
   test("passes a response with no Set-Cookie through unchanged", () => {

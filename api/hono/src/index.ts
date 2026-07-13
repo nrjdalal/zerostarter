@@ -35,17 +35,12 @@ const app = new Hono()
 // Strict allowlist in production; subdomains of the base domain are trusted only outside production (previews).
 const corsAllowWildcard = !isProduction(env.NODE_ENV)
 const corsBaseDomain = baseDomainOf(env.HONO_TRUSTED_ORIGINS[0])
+const originOpts = { baseDomain: corsBaseDomain, allowWildcard: corsAllowWildcard }
 
 // WebSocket upgrades bypass the browser's CORS, so gate them server-side on the same trusted-origin check as HTTP; without this any site (a preview page, another environment) could open the API's sockets cross-origin and read them.
 const requireTrustedOrigin = createMiddleware(async (c, next) => {
   const origin = c.req.header("origin")
-  if (
-    origin &&
-    !isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, {
-      baseDomain: corsBaseDomain,
-      allowWildcard: corsAllowWildcard,
-    })
-  ) {
+  if (origin && !isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, originOpts)) {
     throw new HTTPException(403, { message: "Untrusted origin" })
   }
   await next()
@@ -55,12 +50,7 @@ app.use(
   "*",
   cors({
     origin: (origin) =>
-      isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, {
-        baseDomain: corsBaseDomain,
-        allowWildcard: corsAllowWildcard,
-      })
-        ? origin
-        : null,
+      isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, originOpts) ? origin : null,
     allowHeaders: ["content-type", "authorization"],
     allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
     exposeHeaders: ["content-length"],

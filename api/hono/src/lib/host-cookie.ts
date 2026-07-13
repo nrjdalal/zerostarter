@@ -4,6 +4,10 @@ import type { Hono } from "hono"
 const SECURE = "__Secure-"
 const HOST = "__Host-"
 
+// A Set-Cookie carrying Better Auth's __Secure- name with the Secure attribute is the only kind we upgrade to __Host-.
+const isSecureBetterAuthCookie = (sc: string): boolean =>
+  sc.startsWith(SECURE) && /;\s*secure/i.test(sc)
+
 // Rename __Host- cookie names back to __Secure- on the way in so Better Auth (which only reads __Secure-) finds the session.
 export function toBetterAuthRequest(raw: Request): Request {
   const cookie = raw.headers.get("cookie")
@@ -13,17 +17,18 @@ export function toBetterAuthRequest(raw: Request): Request {
   return new Request(raw, { headers })
 }
 
-// Rename Secure __Secure- cookies to __Host- and drop any Domain on the way out so the browser enforces host-only.
+// Rename Secure __Secure- cookies to __Host- on the way out, dropping any Domain and forcing Path=/ (both are __Host- requirements; a narrower Path makes the browser silently drop the cookie).
 export function fromBetterAuthResponse(res: Response): Response {
   const setCookies = res.headers.getSetCookie()
-  if (!setCookies.some((c) => c.startsWith(SECURE) && /;\s*secure/i.test(c))) return res
+  if (!setCookies.some(isSecureBetterAuthCookie)) return res
   const headers = new Headers(res.headers)
   headers.delete("set-cookie")
   for (const sc of setCookies) {
-    if (sc.startsWith(SECURE) && /;\s*secure/i.test(sc)) {
-      let out = `${HOST}${sc.slice(SECURE.length)}`.replace(/;\s*domain=[^;]*/i, "")
-      if (!/;\s*path=/i.test(out)) out += "; Path=/"
-      headers.append("set-cookie", out)
+    if (isSecureBetterAuthCookie(sc)) {
+      const out = `${HOST}${sc.slice(SECURE.length)}`
+        .replace(/;\s*domain=[^;]*/i, "")
+        .replace(/;\s*path=[^;]*/i, "")
+      headers.append("set-cookie", `${out}; Path=/`)
     } else {
       headers.append("set-cookie", sc)
     }
@@ -34,7 +39,8 @@ export function fromBetterAuthResponse(res: Response): Response {
 // Wrap the whole app's fetch so every session read and write carries the rename uniformly, applied once at the server boundary rather than per route: each handler and middleware sees __Secure-, every outgoing Set-Cookie leaves as __Host-. WebSocket upgrades never carry the host-only cookie and reconstructing their request would break the upgrade, so they bypass the rewrite untouched.
 export function withHostCookies(fetch: Hono["fetch"]): Hono["fetch"] {
   return (req, ...rest) => {
-    if (req.headers.get("upgrade")?.toLowerCase() === "websocket") return fetch(req, ...rest)
+    const upgrade = req.headers.get("upgrade")
+    if (upgrade && upgrade.toLowerCase() === "websocket") return fetch(req, ...rest)
     return Promise.resolve(fetch(toBetterAuthRequest(req), ...rest)).then(fromBetterAuthResponse)
   }
 }
