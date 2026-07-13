@@ -50,10 +50,9 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 
 ## Local sign-in
 
-Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, enable it once with the first line below (it is off by default, so the route stays unmounted until you opt in):
+Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route stays unmounted until you opt in):
 
 ```bash
-grep -q '^AGENT_SIGNIN_ENABLED=true' .env || echo "AGENT_SIGNIN_ENABLED=true" >> .env   # only if you cloned; init already did this
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
   http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated

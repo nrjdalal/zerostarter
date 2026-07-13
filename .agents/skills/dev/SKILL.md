@@ -42,7 +42,6 @@ Restart the same way after changing `@packages/*` exports the API consumes; they
 Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no admin-minting route.
 
 ```bash
-grep -q '^AGENT_SIGNIN_ENABLED=true' .env || echo "AGENT_SIGNIN_ENABLED=true" >> .env   # once, to enable
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
