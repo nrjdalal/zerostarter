@@ -26,7 +26,7 @@ The full cycle an agent runs, start to finish:
 ```bash
 # 1: scaffold a product, enable the local sign-in, then start the stack
 bunx zerostarter init
-echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # enables Login (agents)
+grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # enables Login (agents)
 bun run dev
 
 # 2: sign in locally (drive the real UI, or the curl below)
@@ -54,7 +54,7 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. Enable it once by setting `AGENT_AUTH_SECRET` in `.env` (it is unset by default, so the route stays unmounted until you opt in):
 
 ```bash
-echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # once, to enable the route
+grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # once, to enable the route
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
   http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated
