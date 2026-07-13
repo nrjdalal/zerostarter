@@ -1,7 +1,7 @@
 # Dynamic per-branch preview URLs (alias-on-deploy)
 
 - Status: planned
-- Links: #677 · related #674 (where manual canary aliasing surfaced this)
+- Links: #677 · related #674 (where manual canary aliasing surfaced this) · shares the host/cookie model with [portless-local-urls.md](portless-local-urls.md)
 
 Replace opaque generated preview URLs (e.g. `zerostarter-op988nll0-nrjdalal.vercel.app`) with predictable per-branch URLs on our own domains, for both projects:
 
@@ -68,7 +68,10 @@ jobs:
         run: npx vercel@<pin> alias set "${{ steps.vars.outputs.url }}" "${{ steps.vars.outputs.domain }}" --token "$VERCEL_TOKEN" --scope nrjdalal
 ```
 
-**Required code change (api CORS becomes a predicate):** `HONO_TRUSTED_ORIGINS` is a static allowlist; dynamic preview origins need `cors({ origin })` to be a function that also accepts `https://<slug>.zerostarter.dev` and `https://<slug>.api.zerostarter.dev` in non-production, keeping production and canary on the explicit list. This is a security decision (trusting any `*.zerostarter.dev` origin with credentials in preview only).
+**Required code changes (the "fix for once", shared with [portless-local-urls.md](portless-local-urls.md)):**
+
+1. **Cookies.** The 4-label preview API host `<slug>.api.zerostarter.dev` breaks today's cookie helpers (`packages/auth/src/lib/utils.ts`): `getCookieDomain` returns `.api.zerostarter.dev` (not shared with the web host `<slug>.zerostarter.dev`) and `getCookiePrefix` returns `"api"` - because they assume the _old_ label order `<service>.<env>.<app>.<tld>` (service leftmost). Adopt the unified grammar `<slug>.api.<app>.<tld>` (slug leftmost, `api` just left of the base) and rework both helpers off the registrable domain: `getCookieDomain` = `.` + last two labels; `getCookiePrefix` = labels before the base minus a trailing `api`. Then web+api share `.zerostarter.dev` at any prefix depth and each branch/env namespaces its cookie name. This requires the `api.canary.zerostarter.dev` -> `canary.api.zerostarter.dev` migration below (only the new order parses).
+2. **CORS + trusted origins.** `HONO_TRUSTED_ORIGINS` stays the explicit allowlist; dynamic origins need one predicate reused by Hono `cors({ origin })` and better-auth `trustedOrigins`: accept if in the explicit list, **or** `NODE_ENV !== "production"` and the host matches `*.<baseDomain>`. This is a security decision (trusting any `*.zerostarter.dev` origin with credentials in preview only); the same predicate covers local `*.zerostarter.localhost`.
 
 **Edge cases / open decisions:**
 
@@ -78,4 +81,4 @@ jobs:
 - Project detection currently keys off the `apizerostarter` URL prefix; revisit if a project slug changes.
 - Stale aliases on branch delete (Vercel prunes deployments; aliases may linger). Optional cleanup follow-up.
 
-**Rollout:** provision wildcard domains + DNS, land the CORS predicate, add the action, verify on a throwaway branch that `<slug>.zerostarter.dev` + `<slug>.api.zerostarter.dev` resolve and the badge goes live over WS.
+**Rollout:** land the cookie + CORS/trusted-origins fix (shared with portless-local-urls.md; migrate canary to `canary.api.zerostarter.dev` in the same release, shared DB), provision wildcard domains + DNS, add the action, verify on a throwaway branch that `<slug>.zerostarter.dev` + `<slug>.api.zerostarter.dev` resolve, a full sign-in works cross-subdomain, and the badge goes live over WS.

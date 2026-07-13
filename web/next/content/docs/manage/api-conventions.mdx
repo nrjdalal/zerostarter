@@ -83,7 +83,7 @@ Wrap any call in `unwrap` to get `{ data, error }`. `error.code` is this same `E
 
 ## Middleware
 
-Every request passes the global middleware in order (from `api/hono/src/index.ts`): **CORS** (trusted origins from `HONO_TRUSTED_ORIGINS`, credentials on) → **logger** → **rate limiter**. Protected routes add auth on top.
+Every request passes the global middleware in order (from `api/hono/src/index.ts`): **CORS** (origins from `HONO_TRUSTED_ORIGINS` as a strict allowlist in production, plus `*.<base-domain>` subdomains outside production, credentials on) → **logger** → **rate limiter**. Protected routes add auth on top.
 
 ### Rate limiting
 

@@ -12,8 +12,10 @@
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --external hono",
     "check-types": "tsc --noEmit",
-    "dev": "concurrently \"tsdown --watch\" \"bun --hot src/index.ts\"",
-    "start": "bun bundle/index.mjs"
+    "dev": "portless",
+    "dev:app": "concurrently \"tsdown --watch\" \"bun ../../.github/scripts/portless-env.ts bun --hot src/index.ts\"",
+    "start": "bun bundle/index.mjs",
+    "test": "bun test"
   },
   "dependencies": {
     "@arcjet/ip": "catalog:",
@@ -37,7 +39,13 @@
     "@types/node": "catalog:",
     "@types/ws": "catalog:",
     "concurrently": "catalog:",
+    "portless": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
+  },
+  "portless": {
+    "name": "api.zerostarter",
+    "script": "dev:app",
+    "appPort": 4000
   }
 }

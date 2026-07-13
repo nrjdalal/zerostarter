@@ -14,6 +14,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## Planned
 
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
+- [Portless local URLs](portless-local-urls.md) - named `.localhost` dev hosts via portless, mirroring the preview/prod scheme; unprivileged (no sudo, no global install).
 
 ## Backlog / ideas
 

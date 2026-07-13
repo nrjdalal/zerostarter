@@ -5,12 +5,12 @@ description: Start, restart, and verify the ZeroStarter dev stack (Next.js on 30
 
 # Dev Stack
 
-`bun dev` (`turbo run dev --ui tui`) needs an interactive terminal. Run stream mode detached instead.
+`bun dev` runs the stack through portless: named URLs (web `http://zerostarter.localhost:1355`, api `http://api.zerostarter.localhost:1355`; branch-prefixed in a worktree) on a shared unprivileged `:1355` HTTP proxy, with the apps pinned to loopback `:3000`/`:4000`. It uses `--ui tui` and needs an interactive terminal; run stream mode detached instead. `PORTLESS=0 bun dev` bypasses portless (plain localhost).
 
 ## Start
 
 ```bash
-(bunx turbo run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
+(bun dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 curl -sf --retry 60 --retry-delay 1 --retry-connrefused http://localhost:4000/api/health > /dev/null
 curl -sS http://localhost:4000/api/health           # {"data":{"message":"ok",...}}
 curl -sS -o /dev/null -w "%{http_code}" http://localhost:3000/   # 200
@@ -29,7 +29,7 @@ The API dev task runs `bun --hot src/index.ts`, and **`--hot` does not pick up n
 lsof -nP -iTCP:3000 -iTCP:4000 -sTCP:LISTEN 2>/dev/null | awk 'NR>1 {print $2}' | sort -u | xargs kill -9 2>/dev/null
 pkill -f "turbo run dev" 2>/dev/null
 sleep 2
-(bunx turbo run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
+(bun dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 curl -sf --retry 60 --retry-delay 1 --retry-connrefused http://localhost:4000/api/health > /dev/null
 ```
 
@@ -42,8 +42,9 @@ Restart the same way after changing `@packages/*` exports the API consumes; they
 Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no admin-minting route.
 
 ```bash
-curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
-curl -sS -b cookies.txt http://localhost:4000/api/v1/user
+WEB=http://zerostarter.localhost:1355   # the web URL `bun dev` prints (branch-prefixed in a worktree)
+curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$WEB/api/agents/sign-in-as"
+curl -sS -b cookies.txt "$WEB/api/v1/user"
 ```
 
 In the browser: click **Login** in the top navbar (hidden on `/console` and `/dashboard`), then **Login (agents)** in the dialog (development only, with `AGENT_SIGNIN_ENABLED=true`).

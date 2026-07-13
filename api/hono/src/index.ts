@@ -1,5 +1,6 @@
+import { baseDomainOf, isTrustedOrigin } from "@packages/auth"
 import { site } from "@packages/config/site"
-import { getBuildVersion } from "@packages/env"
+import { getBuildVersion, isProduction } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
@@ -30,10 +31,20 @@ const apiReference = Scalar({
 
 const app = new Hono()
 
+// Strict allowlist in production; subdomains of the base domain are trusted only outside production (previews).
+const corsAllowWildcard = !isProduction(env.NODE_ENV)
+const corsBaseDomain = baseDomainOf(env.HONO_TRUSTED_ORIGINS[0])
+
 app.use(
   "*",
   cors({
-    origin: env.HONO_TRUSTED_ORIGINS,
+    origin: (origin) =>
+      isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, {
+        baseDomain: corsBaseDomain,
+        allowWildcard: corsAllowWildcard,
+      })
+        ? origin
+        : null,
     allowHeaders: ["content-type", "authorization"],
     allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
     exposeHeaders: ["content-length"],
