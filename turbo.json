@@ -20,6 +20,9 @@
     "start": {
       "persistent": true,
       "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"]
     }
   },
   "globalEnv": [
