@@ -27,10 +27,13 @@ jobs:
       - name: Install dependencies
         run: bun install --ignore-scripts
 
-      - name: Audit, Lint, and Build
+      - name: Audit, Format, Lint, Check-types, Test, and Build
         run: |
           bun audit --audit-level high
+          bun run format:check
           bun run lint
+          bun run check-types
+          bun run test
           bun run build
         env:
           NODE_ENV: production

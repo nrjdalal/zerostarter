@@ -8,7 +8,7 @@ description: Better Auth with OAuth, organizations, teams, and the role gate beh
 
 ## Sign-in methods
 
-The sign-in dialog renders itself from whatever is configured. It fetches `GET /api/auth/providers`, which returns `enabledProviders`, and draws only those buttons, so turning a method on or off is usually an env change, not a UI change.
+The sign-in dialog renders itself from whatever is configured. It fetches the enabled methods from `GET /api/auth/providers` (the configured OAuth and magic-link providers, plus agent sign-in when its local-only route is mounted) and draws only those buttons, so turning a method on or off is usually an env change, not a UI change.
 
 **OAuth (GitHub and Google) is optional.** A provider registers only when _both_ halves of its credential pair are set, so a fork can ship with GitHub, Google, both, or neither:
 
@@ -19,7 +19,7 @@ The sign-in dialog renders itself from whatever is configured. It fetches `GET /
 
 **Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To enable it, add `magicLink({ sendMagicLink })` to the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
 
-**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, gated to the `local` environment and a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
+**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
 <Callout type="warn" title="Configure at least one method before shipping">
 

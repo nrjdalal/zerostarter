@@ -1,3 +1,19 @@
+## v0.1.3
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.2...v0.1.3)
+
+### 🚀 Enhancements
+
+- Toggle optional surfaces with feature flags, behind a contentSource seam ([#691](https://github.com/nrjdalal/zerostarter/pull/691))
+
+### ✅ Tests
+
+- **cli:** Tolerate read-only isTTY in the multiselect test on CI ([#693](https://github.com/nrjdalal/zerostarter/pull/693))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.2
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.1...v0.1.2)

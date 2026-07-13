@@ -35,7 +35,7 @@ Run either across the tree yourself:
 ```bash
 bun run lint          # oxlint over everything (this is what CI runs)
 bun run format        # oxfmt, writing fixes
-bun run format:check  # oxfmt, report only
+bun run format:check  # oxfmt, report only (also what CI runs)
 ```
 
 ## The git hooks
@@ -73,6 +73,8 @@ pre-push:
 **commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 
 **pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-branches.ts` seeds the release branches (default `main`) that drive the release PR (see [Releases](/docs/manage/release)).
+
+**On a pull request**, the `auto-check-build` workflow re-runs the full gate on GitHub: `bun audit`, `bun run format:check`, `bun run lint`, `bun run check-types`, `bun run test`, and `bun run build`. A failing type error or test blocks the merge, so the checks that are cheap to skip locally (the pre-commit build tolerates type errors that `tsc` would reject) still cannot reach `canary`.
 
 <Callout type="warn" title="The local build sees your real .env">
 

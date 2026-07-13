@@ -3,12 +3,12 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfillServer } from "@/lib/polyfill"
+import { polyfillServer, serverSecret } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {
     NODE_ENV,
-    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_SECRET: serverSecret(z.string().min(1)),
     GITHUB_CLIENT_ID: z.string().min(1).optional(),
     GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
@@ -21,7 +21,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    BETTER_AUTH_SECRET: polyfillServer(process.env.BETTER_AUTH_SECRET, "polyfill"),
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

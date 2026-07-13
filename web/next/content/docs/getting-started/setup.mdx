@@ -28,7 +28,7 @@ The rest of this page is what those commands do, and the one thing to check if t
 - sets your [feature flags](/docs/manage/features) (docs, blog, API reference, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
 - installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
 - provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
-- writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET`.
+- writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`, which enables the local **Login (agents)** sign-in out of the box.
 
 Everything else has a working default, so the scaffold runs as-is. The feature checklist is pre-checked to the defaults (all on except the waitlist), and any feature can be flipped later in config. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
 
@@ -59,7 +59,7 @@ Turborepo starts both apps together:
 
 ## Sign in
 
-A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. To get past auth immediately, use the dev-only **Login (agents)** button (or one `curl`). It mints a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. `init` already set `AGENT_SIGNIN_ENABLED=true` in your local `.env`, so the dev-only **Login (agents)** button is ready in the sign-in dialog: click it (or use one `curl`) to mint a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
 
 When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
 

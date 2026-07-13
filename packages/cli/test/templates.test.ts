@@ -44,7 +44,7 @@ test("siteTemplate honors an explicit feature set", () => {
 test("homeTemplate branches between the waitlist and a plain landing", () => {
   const out = homeTemplate()
   expect(out).toContain('from "next/navigation"')
-  expect(out).toContain("if (features.waitlist) redirect(\"/waitlist\")")
+  expect(out).toContain('if (features.waitlist) redirect("/waitlist")')
   expect(out).toContain("{site.name}")
   expect(out).not.toContain("zerostarter")
 })

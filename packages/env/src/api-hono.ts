@@ -8,6 +8,7 @@ import { polyfillServer } from "@/lib/polyfill"
 export const env = createEnv({
   server: {
     NODE_ENV,
+    AGENT_SIGNIN_ENABLED: z.stringbool().default(false),
     HONO_APP_URL: z.url(),
     HONO_PORT: z.coerce.number().default(4000),
     HONO_RATE_LIMIT: z.coerce.number().default(60),
@@ -19,6 +20,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    AGENT_SIGNIN_ENABLED: process.env.AGENT_SIGNIN_ENABLED,
     HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
     HONO_PORT: process.env.HONO_PORT,
     HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,

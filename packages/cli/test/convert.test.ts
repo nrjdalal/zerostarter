@@ -158,13 +158,17 @@ describe("convertRepo (in-place)", () => {
 
   test("writes the chosen feature flags into site.ts", () => {
     scaffold()
-    convertRepo(dir, { name: "acme" }, {
-      apiDocs: true,
-      blog: false,
-      docs: true,
-      internalDocs: true,
-      waitlist: true,
-    })
+    convertRepo(
+      dir,
+      { name: "acme" },
+      {
+        apiDocs: true,
+        blog: false,
+        docs: true,
+        internalDocs: true,
+        waitlist: true,
+      },
+    )
     const site = read(join(dir, "packages/config/src/site.ts"))
     expect(site).toContain("export const features")
     expect(site).toContain("blog: false")
