@@ -18,7 +18,13 @@ import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 const mainItems = [
-  { title: "Documentation", url: "/console/docs", icon: RiBookLine, exact: false, feature: "internalDocs" },
+  {
+    title: "Documentation",
+    url: "/console/docs",
+    icon: RiBookLine,
+    exact: false,
+    feature: "internalDocs",
+  },
 ] as const
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).

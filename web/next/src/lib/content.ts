@@ -79,5 +79,16 @@ export function contentSource<K extends ContentKind>(kind: K): ContentSource<K> 
     return createRelativeLink(docsSource, page as PageOf<"docs">)
   }
 
-  return { kind, baseUrl: entry.baseUrl, enabled, og: entry.og, source, getPageOr404, pages, params, tree, relativeLink }
+  return {
+    kind,
+    baseUrl: entry.baseUrl,
+    enabled,
+    og: entry.og,
+    source,
+    getPageOr404,
+    pages,
+    params,
+    tree,
+    relativeLink,
+  }
 }
