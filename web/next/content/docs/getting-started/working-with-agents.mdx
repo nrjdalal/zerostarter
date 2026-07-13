@@ -50,19 +50,20 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 
 ## Local sign-in
 
-Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request:
+Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. Enable it once by setting `AGENT_AUTH_SECRET` in `.env` (it is unset by default, so the route stays unmounted until you opt in):
 
 ```bash
+echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # once, to enable the route
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" \
   http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user   # now authenticated
 ```
 
-It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing.
+It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing (once the secret is set).
 
 <Callout type="warn" title="Local only, by construction">
 
-The route is gated to a local `NODE_ENV` and requires a trusted `Origin`. It returns `404` anywhere else, so it can never mint a session in production.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_AUTH_SECRET` is set. Because the secret is unset by default, a fresh clone and any deployed default env expose no admin-minting route: it returns `404`, and you opt in deliberately in local dev. The trusted-`Origin` check still guards each request.
 
 </Callout>
 

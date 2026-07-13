@@ -59,7 +59,7 @@ Turborepo starts both apps together:
 
 ## Sign in
 
-A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. To get past auth immediately, use the dev-only **Login (agents)** button (or one `curl`). It mints a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. To get past auth immediately, set `AGENT_AUTH_SECRET` in `.env` (it gates the route, unset by default) and use the dev-only **Login (agents)** button (or one `curl`). It mints a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
 
 When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
 

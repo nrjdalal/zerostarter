@@ -39,11 +39,12 @@ Restart the same way after changing `@packages/*` exports the API consumes; they
 
 ## Agent login
 
-Sign in as `LocalAgent` (local only, trusted Origin required):
+Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_AUTH_SECRET`: set it to any high-entropy value in `.env` first, or the route 404s. It is unset by default, so a fresh clone and any deploy expose no admin-minting route.
 
 ```bash
+grep -q '^AGENT_AUTH_SECRET=.\+' .env || echo "AGENT_AUTH_SECRET=$(openssl rand -base64 32)" >> .env   # once, to enable
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
 
-In the browser: click **Login** in the top navbar (hidden on `/console` and `/dashboard`), then **Login (agents)** in the dialog (development only).
+In the browser: click **Login** in the top navbar (hidden on `/console` and `/dashboard`), then **Login (agents)** in the dialog (development only, with `AGENT_AUTH_SECRET` set).

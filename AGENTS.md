@@ -33,14 +33,14 @@ Guidance for AI coding agents working in this repository, a Bun monorepo: the `p
 
 ## Logging in (agents)
 
-Signs in as `LocalAgent` (`agent@local.host`). Click **Login (agents)** in the dev UI, or use curl:
+Signs in as `LocalAgent` (`agent@local.host`). The route is gated: set `AGENT_AUTH_SECRET` to any high-entropy value in `.env` first (it is unset by default, so the route 404s without it and a deployed default env never exposes it). Then click **Login (agents)** in the dev UI, or use curl:
 
 ```bash
 curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
 curl -sS -b cookies.txt http://localhost:4000/api/v1/user
 ```
 
-Local-only and requires a trusted `Origin` header. See `api/hono/src/routers/agents.ts` if needed.
+Local-only (needs `NODE_ENV=local` and a set `AGENT_AUTH_SECRET`) and requires a trusted `Origin` header. See `api/hono/src/routers/agents.ts` if needed.
 
 ## Skills
 

@@ -14,7 +14,10 @@ const AGENT_EMAIL = site.agent.email
 const AGENT_NAME = site.agent.name
 
 export const agentsRouter = new Hono()
-  .use(async (c, next) => (isLocal(env.NODE_ENV) ? next() : c.notFound()))
+  // Mount only when a fork deliberately provisions AGENT_AUTH_SECRET in a local dev env. A default clone (secret unset) exposes no admin-minting route, even though it ships NODE_ENV=local; a production env never reaches it. The secret gates availability; the Origin check below still guards the request.
+  .use(async (c, next) =>
+    isLocal(env.NODE_ENV) && env.AGENT_AUTH_SECRET ? next() : c.notFound(),
+  )
   .post("/sign-in-as", async (c) => {
     const fail = (message: string): never => {
       throw new ApiError(500, "AGENT_LOGIN_FAILED", message)
