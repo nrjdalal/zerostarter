@@ -14,7 +14,9 @@ Serve local dev through the [portless](https://portless.sh) reverse proxy so dev
 
 One host grammar everywhere: **`[<slug>.]` (branch/env, leftmost) + `[api.]` (service) + `<app>.<tld>` (registrable)**. Portless prepends the worktree branch as the leftmost label automatically, so the worktree row is free.
 
-## The shared fix (this is what "fixes dynamic-preview-urls.md for once")
+## The shared fix (SUPERSEDED - see the "What shipped" callout at the top)
+
+> Rejected draft. The cross-origin cookie-domain rework described in this section did NOT ship: `getCookieDomain`/`getCookiePrefix` are **deleted**, not reworked, and there is no shared `Domain` cookie. The shipped design is same-origin host-only + `__Host-` (`packages/auth/src/lib/origins.ts`, `api/hono/src/lib/host-cookie.ts`). Kept below as history only; do not implement it.
 
 Both this plan and the preview-URLs plan produce 4-label API hosts (`<slug>.api.zerostarter.<tld>`). Today's cookie helpers (`packages/auth/src/lib/utils.ts`) assume the opposite label order (`<service>.<env>.<app>.<tld>`, service leftmost) and break on them: `getCookieDomain("…/<slug>.api.zerostarter.dev")` returns `.api.zerostarter.dev` (not shared with the web host `<slug>.zerostarter.dev`) and `getCookiePrefix` returns `"api"`. So preview/worktree auth silently breaks. The web genuinely needs the shared cookie: it reads the session by forwarding the incoming request's cookies to the API (`web/next/src/lib/auth/index.ts`).
 
@@ -46,7 +48,7 @@ better-auth supports this directly: `advanced.crossSubDomainCookies.domain` (exp
 
 This trusts every `*.zerostarter.dev` in preview and every `*.zerostarter.localhost` locally (with credentials) - the same security decision the preview plan records, now covering local worktrees too. Ensure preview deployments run `NODE_ENV` != `production` (canary can stay production; its origins are explicit).
 
-## Local run: unprivileged, worktree-aware, cross-origin (mirrors prod)
+## Local run: unprivileged, worktree-aware (SUPERSEDED auth topology below - shipped is same-origin, not cross-origin; the portless mechanics here did ship)
 
 Default dev flow, **project-level dependency (no global install), zero sudo.** Portless defaults to port 443 + auto-sudo; pin its unprivileged fallback and drop the two admin steps:
 
@@ -71,7 +73,7 @@ Parallel worktree stacks (two `bun dev` at once) still collide on the pinned 300
 - Root `package.json`: `"dev": "bun .github/scripts/dev.ts"` - sets `PORTLESS_PORT/HTTPS/SYNC_HOSTS`, spawns `turbo run dev --ui tui` (turbo still owns `^build` + persistence), forwards args. `PORTLESS=0 bun dev` bypasses portless.
 - `portless` in the catalog + both apps' devDependencies. No root `portless.json` needed.
 
-## Required code changes (shipped runtime)
+## Required code changes (SUPERSEDED draft - see the "What shipped" callout at the top for the real changes)
 
 1. `packages/auth/src/lib/utils.ts` - rewrite `getCookieDomain`/`getCookiePrefix` per the table above; update the JSDoc examples to the unified grammar; add unit tests for every row (prod/canary/preview/worktree/localhost).
 2. `api/hono/src/index.ts` + `packages/auth/src/index.ts` - replace the static `origin`/`trustedOrigins` with the shared predicate (new helper, e.g. `packages/auth/src/lib/origins.ts`, consumed by both).
