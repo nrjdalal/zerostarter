@@ -2,6 +2,8 @@
 // the worktree branch prefix baked in). This keeps the branch slug in ONE place (portless) and keeps
 // @packages/env portless-agnostic. Without PORTLESS_URL (PORTLESS=0, CI, or a non-portless run) it is a
 // transparent pass-through using whatever the static .env provides.
+export {}
+
 const cmd = process.argv.slice(2)
 if (cmd.length === 0) {
   console.error("portless-env: no command given")
