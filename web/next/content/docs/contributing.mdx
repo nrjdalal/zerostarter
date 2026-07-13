@@ -16,10 +16,11 @@ Branch off `canary` with a descriptive name (`feat/...`, `fix/...`), then run th
 
 ```bash
 bun audit --audit-level high   # the first CI gate
-bun run build
-bun run check-types
 bun run format
 bun run lint
+bun run check-types
+bun run test
+bun run build
 ```
 
 Two rules from `AGENTS.md` are non-negotiable:
