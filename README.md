@@ -97,7 +97,7 @@ const { data, error } = await unwrap(apiClient.health.$get())
 # Postgres (Docker), migrates, and writes .env with a generated auth secret
 bunx zerostarter init
 
-# Start the dev servers (web on :3000, api on :4000)
+# Start the dev servers on named portless .localhost URLs (bunx portless list to see them)
 bun run dev
 ```
 
@@ -109,7 +109,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 
 | Command                           | Description                                 |
 | --------------------------------- | ------------------------------------------- |
-| `bun dev`                         | Start the api and web dev servers           |
+| `bun dev`                         | Start both dev servers on portless URLs     |
 | `bun run build`                   | Build every workspace                       |
 | `bun run check-types`             | Type-check every workspace                  |
 | `bun run test`                    | Run every workspace's tests                 |
