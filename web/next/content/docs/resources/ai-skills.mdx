@@ -31,6 +31,7 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Build    | `api-endpoint`  | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.     |
 | Build    | `db-migration`  | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                     |
 | Build    | `dev`           | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                      |
+| Build    | `portless`      | Set up and use portless for stable named `.localhost` dev URLs instead of `localhost:PORT`.                                   |
 | Build    | `design`        | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                   |
 | Build    | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                         |
 | Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
@@ -43,7 +44,7 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Ship     | `doc-sync`      | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                 |
 | Ship     | `gh-commit`     | Atomic commits in conventional-commit format.                                                                                 |
 
-Only `agent-browser` is vendored. It comes from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser), pinned in `skills-lock.json` for integrity. Its committed `SKILL.md` is a discovery stub; the agent loads the live workflow from the CLI with `agent-browser skills get core`. Install it with `npm i -g agent-browser && agent-browser install`. Every other skill is written for this repo.
+Two skills are vendored from Vercel Labs; every other skill is written for this repo. `agent-browser` (from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser)) is a discovery stub pinned in `skills-lock.json` for integrity: its committed `SKILL.md` just points the agent at the live workflow (`agent-browser skills get core`), installed with `npm i -g agent-browser && agent-browser install`. `portless` (from [`vercel-labs/portless`](https://github.com/vercel-labs/portless)) is copied in full and self-contained. Re-vendor to update either; do not hand-edit.
 
 ## Writing your own
 
