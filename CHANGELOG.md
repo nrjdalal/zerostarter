@@ -1,3 +1,25 @@
+## v0.1.5
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.4...v0.1.5)
+
+### 🚀 Enhancements
+
+- **auth,dev:** Same-origin host-only auth + portless local URLs ([#702](https://github.com/nrjdalal/zerostarter/pull/702))
+- **auth,dev:** Same-origin host-only auth + portless local URLs ([#712](https://github.com/nrjdalal/zerostarter/pull/712))
+- **dev:** Serve local dev through portless named URLs ([#715](https://github.com/nrjdalal/zerostarter/pull/715))
+
+### 💅 Refactors
+
+- Alphabetize enumerable lists across the site ([#717](https://github.com/nrjdalal/zerostarter/pull/717))
+
+### 📖 Documentation
+
+- **skills:** Add an icebox skill for parking undecided items ([#709](https://github.com/nrjdalal/zerostarter/pull/709))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.4
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.3...v0.1.4)
