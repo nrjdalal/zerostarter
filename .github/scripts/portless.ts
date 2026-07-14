@@ -1,9 +1,9 @@
-// Sets each app's public URLs from portless's PORTLESS_URL (worktree branch included); a transparent pass-through when it is unset (PORTLESS=0, CI).
+// Injects each app's public URLs derived from portless's PORTLESS_URL (worktree branch included); a transparent pass-through when it is unset (PORTLESS=0, CI).
 export {}
 
 const cmd = process.argv.slice(2)
 if (cmd.length === 0) {
-  console.error("portless-env: no command given")
+  console.error("portless: no command given")
   process.exit(1)
 }
 
