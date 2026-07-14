@@ -8,7 +8,7 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 
 ## Dev loop
 
-- `bun run dev`: start both apps in Turbo's TUI: web on `:3000`, api on `:4000`.
+- `bun run dev`: start both apps through portless on named `.localhost` URLs (run `bunx portless list` to see them; branch-prefixed in a worktree). `PORTLESS=0 bun run dev` uses fixed ports instead: web `:3000`, api `:4000`.
 - `bun run clean`: remove build artifacts and caches (`.next`, `.turbo`, `dist`), every `node_modules`, and generated typedefs.
 - `bun run devtools`: open Turborepo DevTools.
 

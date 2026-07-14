@@ -17,7 +17,7 @@ packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 ```
 
-Read `AGENTS.md` first for the rules; `curl localhost:3000/llms-full.txt` dumps the whole codebase as one context file.
+Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the whole codebase as one context file.
 
 ## Where to edit for X
 
