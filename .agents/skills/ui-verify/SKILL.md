@@ -11,7 +11,7 @@ A green type-check and clean lint prove the code compiles, not that the page ren
 
 ### 1. Run the stack
 
-Start the dev servers (`dev` skill). Under the default portless dev the base URLs are named and branch-prefixed, so resolve them once: `WEB=$(bunx portless get zerostarter)` and `API=$(bunx portless get api.zerostarter)` (or `PORTLESS=0 bun run dev` for fixed `http://localhost:3000` / `http://localhost:4000`). Done when `$WEB/` returns 200 and `$API/api/health` responds ok.
+Start the dev servers (`dev` skill). Under the default portless dev the base URLs are named and branch-prefixed, so resolve them once: `WEB=$(bunx portless get zerostarter)` and `API=$(echo "$WEB" | sed 's#://#://api.#')` (its api-first sibling; or `PORTLESS=0 bun run dev` for fixed `http://localhost:3000` / `http://localhost:4000`). Done when `$WEB/` returns 200 and `$API/api/health` responds ok.
 
 ### 2. Drive the affected route
 

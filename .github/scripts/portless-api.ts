@@ -4,6 +4,8 @@
 // app's already-prefixed host from `portless get` (which uses portless's own worktree
 // sanitization) and prepend `api.`. PORTLESS=0 skips all of this (fixed ports, no proxy).
 
+export {} // makes this a module so the top-level await type-checks
+
 const cmd = process.argv.slice(2)
 if (cmd.length === 0) {
   console.error("portless-api: no command given")

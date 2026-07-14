@@ -13,7 +13,7 @@ description: Start, restart, and verify the ZeroStarter dev stack. `bun run dev`
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 # Resolve this worktree's URLs (branch-prefixed); the proxy needs a moment, so retry
 for i in $(seq 1 60); do WEB=$(bunx portless get zerostarter 2>/dev/null); [ -n "$WEB" ] && break; sleep 1; done
-API=$(bunx portless get api.zerostarter)
+API=$(echo "$WEB" | sed 's#://#://api.#')         # api-first sibling of the web host
 curl -sf --retry 60 --retry-delay 1 --retry-connrefused "$API/api/health" > /dev/null
 curl -sS "$API/api/health"                        # {"data":{"message":"ok",...}}
 curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
@@ -21,7 +21,7 @@ curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 
 Ready when the health curl prints `"message":"ok"` and `/` returns `200`. `bunx portless list` shows every active route.
 
-- Web / API base URLs: `bunx portless get zerostarter` / `bunx portless get api.zerostarter`
+- Web / API base URLs: `bunx portless get zerostarter` and its `api.` sibling (`echo "$WEB" | sed 's#://#://api.#'`)
 - Scalar API docs: `$API/api/docs`
 - Logs: `tail -f /tmp/zerostarter-dev.log`
 
@@ -35,7 +35,7 @@ The API dev task runs `bun --hot src/index.ts`, and **`--hot` does not pick up n
 pkill -f "turbo run dev" 2>/dev/null
 sleep 2
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
-API=$(bunx portless get api.zerostarter)
+API=$(bunx portless get zerostarter | sed 's#://#://api.#')
 curl -sf --retry 60 --retry-delay 1 --retry-connrefused "$API/api/health" > /dev/null
 ```
 
@@ -48,7 +48,7 @@ Restart the same way after changing `@packages/*` exports the API consumes; they
 Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no admin-minting route.
 
 ```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
+WEB=$(bunx portless get zerostarter); API=$(echo "$WEB" | sed 's#://#://api.#')
 curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
 curl -sS -b cookies.txt "$API/api/v1/user"
 ```

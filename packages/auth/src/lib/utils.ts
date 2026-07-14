@@ -6,7 +6,7 @@
  * getCookieDomain("https://api.canary.example.com")      // ".canary.example.com"
  * getCookieDomain("https://api.dev.example.com")         // ".dev.example.com"
  * getCookieDomain("http://api.zerostarter.localhost")    // ".zerostarter.localhost" (portless dev)
- * getCookieDomain("http://feat.api.zerostarter.localhost") // ".zerostarter.localhost" (portless worktree)
+ * getCookieDomain("http://api.feat.zerostarter.localhost") // ".zerostarter.localhost" (portless worktree)
  * getCookieDomain("http://localhost:4000")               // undefined
  */
 export function getCookieDomain(url: string): string | undefined {
@@ -33,7 +33,7 @@ export function getCookieDomain(url: string): string | undefined {
  * getCookiePrefix("https://api.example.com")             // undefined (production, uses default)
  * getCookiePrefix("https://api.canary.example.com")      // "canary"
  * getCookiePrefix("https://api.dev.example.com")         // "dev"
- * getCookiePrefix("http://feat.api.zerostarter.localhost") // undefined (local dev, no prefix)
+ * getCookiePrefix("http://api.feat.zerostarter.localhost") // undefined (local dev, no prefix)
  * getCookiePrefix("http://localhost:4000")               // undefined
  */
 export function getCookiePrefix(url: string): string | undefined {
