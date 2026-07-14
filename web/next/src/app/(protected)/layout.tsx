@@ -15,7 +15,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
     const cookieStore = await cookies()
     const lastOrgId = cookieStore.get(`last-active-org_${session.user.id}`)?.value
     if (lastOrgId) {
-      const url = `${config.api.url}/api/auth/organization/set-active`
+      const url = `${config.api.base}/api/auth/organization/set-active`
       const reqHeaders = Object.fromEntries((await headers()).entries())
       try {
         const response = await fetch(url, {
