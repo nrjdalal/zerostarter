@@ -12,6 +12,7 @@ Guidance for AI coding agents working in this repository, a Bun monorepo: the `p
 
 - ALWAYS: Use `@/` for imports, if applicable.
 - ALWAYS: Prefer a Bun-native API when the file runs under Bun and one exists (`Bun.file`, `Bun.write`, `Bun.spawn`); otherwise use a Node built-in with the `node:` protocol prefix (`import { join } from "node:path"`, `require("node:fs")`), never the bare specifier. Node-runtime code (the `packages/cli` npm binary, `web/next`, and shared `packages/env`) stays on `node:`. See the `runtime-apis` skill.
+- ALWAYS: Keep enumerable lists alphabetical (A→Z), union/enum members, env-var schemas and their `runtimeEnv`/`turbo.json` mirrors, and the docs that list them, so the code and its docs stay in the same order. Use a meaningful order (flow, priority, required-then-optional) only where alphabetical would obscure intent.
 - Do not comment unnecessarily. Only comment if it is absolutely necessary.
 - Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
 - NEVER: Use em-dashes (the long dash, U+2014) in code, comments, docs, or copy. Regular hyphens are fine; for a pause or aside, use a comma, colon, or period.
@@ -61,6 +62,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | `docker-test`  | Build and smoke-test the Docker images with docker compose.                                                              |
 | `fonts`        | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).       |
 | `gh-commit`    | Create atomic commits in the conventional format.                                                                        |
+| `icebox`       | Park a raised-but-undecided concern on ice (issue #707 + `plans/`), no verdict.                                          |
 | `ignore-sync`  | Mirror `.gitignore` to `.dockerignore`.                                                                                  |
 | `runtime-apis` | Prefer Bun-native APIs, else Node built-ins with the `node:` prefix.                                                     |
 | `shadcn-sync`  | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                   |
