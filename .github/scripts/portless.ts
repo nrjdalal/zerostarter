@@ -1,6 +1,6 @@
 // Derives each app's public URLs from portless's PORTLESS_URL (worktree branch included) and injects them before spawning the real dev command; a transparent pass-through when PORTLESS_URL is unset (PORTLESS=0, CI).
 
-// Toggle the adjacent `api.` label (it sits just before the two base labels) to get the sibling app's host.
+// Toggle the adjacent `api.` label (it sits just before the two base labels) to get the sibling app's host. Assumes the two-app `<name>` / `api.<name>` naming from the package.json `portless.name`s (convert.ts keeps forks in sync); update this if that scheme changes.
 export function deriveUrls(portlessUrl: string): { web: string; api: string } {
   const labels = new URL(portlessUrl).hostname.split(".")
   const apiIdx = labels.length - 3
@@ -39,5 +39,5 @@ if (import.meta.main) {
   const stop = () => proc.kill()
   process.on("SIGINT", stop)
   process.on("SIGTERM", stop)
-  process.exit(await proc.exited)
+  process.exit((await proc.exited) ?? 1)
 }
