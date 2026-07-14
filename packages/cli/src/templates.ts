@@ -113,7 +113,7 @@ Built on top of [ZeroStarter](https://zerostarter.dev).
 bun run dev
 \`\`\`
 
-Web runs on http://localhost:3000 and the API on http://localhost:4000.
+This serves named \`.localhost\` dev URLs via portless (\`bunx portless list\` shows them); \`PORTLESS=0 bun run dev\` uses fixed ports instead (web \`:3000\`, api \`:4000\`).
 `
 }
 

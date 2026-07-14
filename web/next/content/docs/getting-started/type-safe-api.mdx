@@ -93,18 +93,20 @@ export const upgradeWebSocket = onVercel
   ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
   : bunUpgradeWebSocket
 
-export const createServer = (app: Hono) =>
-  onVercel
+export const createServer = (app: Hono) => {
+  const port = process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT
+  return onVercel
     ? serve({
         fetch: app.fetch,
-        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
+        port,
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : {
-        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
+        port,
         fetch: app.fetch,
         websocket,
       }
+}
 ```
 
 ```ts

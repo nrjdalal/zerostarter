@@ -197,7 +197,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
 
 export default async function Home() {
   const initCode = `bunx zerostarter init
-bun run dev   # web :3000 · api :4000`
+bun run dev   # named .localhost URLs`
 
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
@@ -205,7 +205,7 @@ bun run dev   # web :3000 · api :4000`
 const { data, error } = await unwrap(apiClient.health.$get())`
 
   const agentCode = `# sign an agent in, drive the app
-agent-browser open http://localhost:3000
+agent-browser open zerostarter.localhost:1355
 agent-browser snapshot   # read the UI
 agent-browser click "@e5"   # act`
 
