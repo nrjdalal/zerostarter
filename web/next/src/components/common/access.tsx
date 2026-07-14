@@ -160,7 +160,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
           {hasAlternatives && (
             <div className="grid gap-4">
               {agentEnabled && (
-                <form action={`${config.app.url}/api/agents/sign-in-as`} method="POST">
+                <form action={`${config.api.url}/api/agents/sign-in-as`} method="POST">
                   <Button type="submit" variant="outline" className="w-full">
                     Login (agents)
                   </Button>

@@ -7,25 +7,15 @@ type Client = ReturnType<typeof hc<AppType>>
 
 const hcWithType = (...args: Parameters<typeof hc>): Client => hc<AppType>(...args)
 
-// Browser HTTP goes same-origin to the web host (config.app.url), proxied to the API by the Next /api rewrite, so the host-only session cookie is sent; server-side uses the loopback internal URL. WebSockets can't ride the HTTP-only rewrite, so they open cross-origin against the API host directly (wsApiClient).
-const httpUrl = config.api.internalUrl ? config.api.internalUrl : config.app.url
+const url = config.api.internalUrl ? config.api.internalUrl : config.api.url
 
-const honoClient = hcWithType(httpUrl, {
+const honoClient = hcWithType(url, {
   init: {
     credentials: "include",
   },
 })
 
 export const apiClient = honoClient.api
-
-// Auth-gated WebSockets are incompatible with host-only cookies: this cross-origin socket to the api host carries no session (the cookie is host-only on the web host). Only the public health socket exists; an authenticated socket would need a token/ticket, not the cookie.
-const wsClient = hcWithType(config.api.url, {
-  init: {
-    credentials: "include",
-  },
-})
-
-export const wsApiClient = wsClient.api
 
 // Standard error shape, matching the jsonError envelope in api/hono/src/lib/error.ts; extras like the validation `issues` array are preserved. `code` is the API's ErrorCode union plus the transport codes unwrap itself produces.
 export type ApiError = {

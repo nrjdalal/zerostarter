@@ -1,12 +1,10 @@
-import { baseDomainOf, isTrustedOrigin } from "@packages/auth"
 import { site } from "@packages/config/site"
-import { getBuildVersion, isProduction } from "@packages/env"
+import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
-import { createMiddleware } from "hono/factory"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
 import { z } from "zod"
@@ -32,25 +30,10 @@ const apiReference = Scalar({
 
 const app = new Hono()
 
-// Strict allowlist in production; subdomains of the base domain are trusted only outside production (previews).
-const corsAllowWildcard = !isProduction(env.NODE_ENV)
-const corsBaseDomain = baseDomainOf(env.HONO_TRUSTED_ORIGINS[0])
-const originOpts = { baseDomain: corsBaseDomain, allowWildcard: corsAllowWildcard }
-
-// WebSocket upgrades bypass the browser's CORS, so gate them server-side on the same trusted-origin check as HTTP; without this any site (a preview page, another environment) could open the API's sockets cross-origin and read them.
-const requireTrustedOrigin = createMiddleware(async (c, next) => {
-  const origin = c.req.header("origin")
-  if (origin && !isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, originOpts)) {
-    throw new HTTPException(403, { message: "Untrusted origin" })
-  }
-  await next()
-})
-
 app.use(
   "*",
   cors({
-    origin: (origin) =>
-      isTrustedOrigin(origin, env.HONO_TRUSTED_ORIGINS, originOpts) ? origin : null,
+    origin: env.HONO_TRUSTED_ORIGINS,
     allowHeaders: ["content-type", "authorization"],
     allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
     exposeHeaders: ["content-length"],
@@ -141,10 +124,8 @@ socket.addEventListener("message", (event) => {
       } as object),
       responses: {
         101: { description: "Switching Protocols: the WebSocket handshake succeeded." },
-        403: { description: "Forbidden: the request Origin is not trusted." },
       },
     }),
-    requireTrustedOrigin,
     upgradeWebSocket(() => {
       let heartbeat: ReturnType<typeof setInterval> | null = null
       const snapshot = () =>

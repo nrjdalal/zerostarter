@@ -49,7 +49,6 @@
         "@types/node": "catalog:",
         "@types/ws": "catalog:",
         "concurrently": "catalog:",
-        "portless": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -72,7 +71,7 @@
     },
     "packages/cli": {
       "name": "zerostarter",
-      "version": "0.0.0",
+      "version": "0.0.25",
       "bin": {
         "zerostarter": "dist/bin/index.mjs",
       },
@@ -174,7 +173,6 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "babel-plugin-react-compiler": "catalog:",
-        "portless": "catalog:",
         "shadcn": "catalog:",
         "sharp": "catalog:",
         "tailwindcss": "catalog:",
@@ -255,7 +253,6 @@
     "next-themes": "^0.4.6",
     "oxfmt": "^0.58.0",
     "oxlint": "^1.73.0",
-    "portless": "0.15.1",
     "postgres": "^3.4.9",
     "posthog-js": "^1.399.1",
     "react": "^19.2.7",
@@ -1942,8 +1939,6 @@
     "pkg-types": ["pkg-types@2.3.1", "", { "dependencies": { "confbox": "^0.2.4", "exsolve": "^1.0.8", "pathe": "^2.0.3" } }, "sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg=="],
 
     "pkg-up": ["pkg-up@3.1.0", "", { "dependencies": { "find-up": "^3.0.0" } }, "sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA=="],
-
-    "portless": ["portless@0.15.1", "", { "os": [ "linux", "win32", "darwin", ], "bin": { "portless": "dist/cli.js" } }, "sha512-MQTt405HrcIa3m9OSKpH6WjJDbfNP4oFMNg0VzAoUO4B19l1eFJBFcSWfQY8KYMhzZVfa+Gea2OUrlDm8+/M4A=="],
 
     "postcss": ["postcss@8.5.16", "", { "dependencies": { "nanoid": "^3.3.12", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-vuwillviilfKZsg0VGj5R/YwwcHx4SLsIOI/7K6mQkWx+l5cUHTjj5g0AasTBcyXsbfTgrwsUNmVUb5xVwyPwg=="],
 
