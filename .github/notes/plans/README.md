@@ -10,6 +10,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
+- [Same-origin host-only auth](same-origin-host-only-auth.md) - implemented in `feat/host-only-auth`: host-only cookies + same-origin proxy so the `<env>.api.<domain>` layout isolates every env structurally (canary was already migrated and its auth was broken); unblocks the preview URLs below.
 
 ## Planned
 

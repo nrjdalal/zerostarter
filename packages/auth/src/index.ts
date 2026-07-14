@@ -19,11 +19,6 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
-
-const cookieDomain = getCookieDomain(env.HONO_APP_URL)
-const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
-
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
 
@@ -34,7 +29,8 @@ export const enabledSocialProviders: SocialProvider[] = [
 ]
 
 export const auth = betterAuth({
-  baseURL: env.HONO_APP_URL,
+  // baseURL is the public WEB origin: the browser reaches auth same-origin through the web app's /api proxy, so the host-only session cookie binds to the web origin and never crosses environments (no crossSubDomainCookies).
+  baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: env.HONO_TRUSTED_ORIGINS,
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -73,15 +69,6 @@ export const auth = betterAuth({
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
       ? { google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET } }
       : {}),
-  },
-  advanced: {
-    ...(cookiePrefix && { cookiePrefix }),
-    ...(cookieDomain && {
-      crossSubDomainCookies: {
-        enabled: true,
-        domain: cookieDomain,
-      },
-    }),
   },
 })
 

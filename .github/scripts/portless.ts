@@ -28,7 +28,7 @@ if (import.meta.main) {
     const { web, api } = deriveUrls(portlessUrl)
     overrides.NEXT_PUBLIC_APP_URL = web
     overrides.NEXT_PUBLIC_API_URL = api
-    overrides.HONO_APP_URL = api
+    overrides.BETTER_AUTH_URL = web
     overrides.HONO_TRUSTED_ORIGINS = web
   }
 

@@ -7,7 +7,7 @@ type Client = ReturnType<typeof hc<AppType>>
 
 const hcWithType = (...args: Parameters<typeof hc>): Client => hc<AppType>(...args)
 
-const url = config.api.internalUrl ? config.api.internalUrl : config.api.url
+const url = config.api.url
 
 const honoClient = hcWithType(url, {
   init: {
@@ -16,6 +16,9 @@ const honoClient = hcWithType(url, {
 })
 
 export const apiClient = honoClient.api
+
+// The WebSocket client points at the absolute API origin so the health socket connects cross-origin: WS upgrades don't ride the same-origin `/api` proxy cleanly (and Vercel special-cases WS), and the health stream is unauthenticated so it needs no cookie.
+export const wsApiClient = hcWithType(config.api.publicUrl).api
 
 // Standard error shape, matching the jsonError envelope in api/hono/src/lib/error.ts; extras like the validation `issues` array are preserved. `code` is the API's ErrorCode union plus the transport codes unwrap itself produces.
 export type ApiError = {

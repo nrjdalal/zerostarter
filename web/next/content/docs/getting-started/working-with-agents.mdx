@@ -53,9 +53,9 @@ See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write
 Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route stays unmounted until you opt in):
 
 ```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
-curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
-curl -sS -b cookies.txt "$API/api/v1/user"   # now authenticated
+WEB=$(bunx portless get zerostarter)
+curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$WEB/api/agents/sign-in-as"
+curl -sS -b cookies.txt "$WEB/api/v1/user"   # now authenticated
 ```
 
 It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing; in a dev build it appears once `AGENT_SIGNIN_ENABLED` is true, so a visible button always has a live route behind it.

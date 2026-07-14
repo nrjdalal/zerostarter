@@ -29,10 +29,10 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 ## Callback URLs
 
-Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on, `/api/auth/callback/<provider>` on your API origin:
+Each OAuth app needs the redirect URL Better Auth listens on: `/api/auth/callback/<provider>` on your **web** origin. Auth is served same-origin through the web app's `/api` proxy, so the provider redirects back to the web app and the host-only session cookie binds there; `BETTER_AUTH_URL` is that web origin.
 
-- **Local**: use `PORTLESS=0 bun run dev` for social login so the API origin is `http://localhost:4000`, then register `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`. (The default portless dev serves `.localhost` URLs, which providers reject as redirect URIs, Google especially, so OAuth won't round-trip there; the local **Login (agents)** button still works either way.)
-- **Production**: the same `/api/auth/callback/<provider>` path on your deployed API origin, e.g. `https://api.example.com/api/auth/callback/github`
+- **Local**: use `PORTLESS=0 bun run dev` for social login so the web origin is `http://localhost:3000`, then register `http://localhost:3000/api/auth/callback/github` and `http://localhost:3000/api/auth/callback/google`. (The default portless dev serves `.localhost` URLs, which providers reject as redirect URIs, Google especially, so OAuth won't round-trip there; the local **Login (agents)** button still works either way.)
+- **Production**: the same `/api/auth/callback/<provider>` path on your deployed web origin, e.g. `https://example.com/api/auth/callback/github`
 
 This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".
 
@@ -64,7 +64,7 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. Cross-subdomain cookies switch on automatically when `HONO_APP_URL` is a subdomain. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+Sessions live in the `session` table and travel as a secure, **host-only** cookie: it carries no `Domain`, so it binds only to the web origin the browser is on and never crosses to another environment (prod, canary, a preview). The browser reaches auth same-origin (the web app proxies `/api` to the API server), so the cookie is set on the web origin and forwarded to the API from there. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
 Reading the session is one call on either side:
 

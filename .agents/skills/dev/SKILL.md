@@ -48,9 +48,9 @@ Restart the same way after changing `@packages/*` exports the API consumes; they
 Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no admin-minting route.
 
 ```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
-curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
-curl -sS -b cookies.txt "$API/api/v1/user"
+WEB=$(bunx portless get zerostarter)
+curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$WEB/api/agents/sign-in-as"
+curl -sS -b cookies.txt "$WEB/api/v1/user"
 ```
 
 In the browser: click **Login** in the top navbar (hidden on `/console` and `/dashboard`), then **Login (agents)** in the dialog (development only, with `AGENT_SIGNIN_ENABLED=true`).

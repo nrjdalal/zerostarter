@@ -9,7 +9,7 @@ export const env = createEnv({
   server: {
     NODE_ENV,
     AGENT_SIGNIN_ENABLED: z.stringbool().default(false),
-    HONO_APP_URL: z.url(),
+    BETTER_AUTH_URL: z.url(),
     HONO_PORT: z.coerce.number().default(4000),
     HONO_RATE_LIMIT: z.coerce.number().default(60),
     HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
@@ -21,7 +21,7 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     AGENT_SIGNIN_ENABLED: process.env.AGENT_SIGNIN_ENABLED,
-    HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
+    BETTER_AUTH_URL: polyfillServer(process.env.BETTER_AUTH_URL, "https://polyfill.url"),
     HONO_PORT: process.env.HONO_PORT,
     HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,
     HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,

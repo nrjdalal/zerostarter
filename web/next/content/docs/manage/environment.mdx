@@ -22,8 +22,8 @@ At runtime the api binds `process.env.PORT` when the host injects one (portless 
 
 The four slices, each a Zod schema that validates only what that consumer needs:
 
-- **`@packages/env/api-hono`**: `HONO_APP_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`, and the optional `AGENT_SIGNIN_ENABLED` (gates the local agent sign-in)
-- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, and the optional OAuth pairs
+- **`@packages/env/api-hono`**: `BETTER_AUTH_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`, and the optional `AGENT_SIGNIN_ENABLED` (gates the local agent sign-in)
+- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `HONO_TRUSTED_ORIGINS`, and the optional OAuth pairs
 - **`@packages/env/db`**: `POSTGRES_URL`
 - **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `NEXT_PUBLIC_*` vars
 
@@ -62,7 +62,7 @@ A variable declared in the schema but missing from the `runtimeEnv` map is silen
 Two flags let a build pass without real secrets: missing required variables fall back to shape-valid dummies, except `BETTER_AUTH_SECRET`, which is made optional and stays `undefined` rather than a predictable dummy. Validation still runs otherwise, so a present-but-invalid value always fails:
 
 - `SKIP_ENV_VALIDATION=true` covers **every** variable, server and client. This is the CI/Docker escape hatch, used before any real secrets exist.
-- `SKIP_ENV_VALIDATION_SERVER=true` covers only the **server-only** variables (`POSTGRES_URL`, `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`); the public `NEXT_PUBLIC_*` client vars stay **required and validated**. The web build sets this: it compiles the server packages for their types without their secrets, but must still guarantee the client vars it inlines and ships.
+- `SKIP_ENV_VALIDATION_SERVER=true` covers only the **server-only** variables (`POSTGRES_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `HONO_TRUSTED_ORIGINS`); the public `NEXT_PUBLIC_*` client vars stay **required and validated**. The web build sets this: it compiles the server packages for their types without their secrets, but must still guarantee the client vars it inlines and ships.
 
 Never set either for a running app: the server would then start against dummy URLs and an undefined `BETTER_AUTH_SECRET` instead of real values.
 

@@ -38,7 +38,7 @@ app.use(
     allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
     exposeHeaders: ["content-length"],
     maxAge: 600,
-    credentials: true,
+    // No `credentials: true`: the browser reaches the API same-origin through the web app's /api proxy, so a credentialed cross-origin request is never needed; this CORS serves only public callers (docs, the health socket).
   }),
   logger(),
   rateLimiterMiddleware,
