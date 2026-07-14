@@ -70,9 +70,27 @@ describe("toBetterAuthRequest: __Host- -> __Secure- on read", () => {
     )
   })
 
-  test("a request without a __Host- cookie is a no-op", () => {
+  test("a request with neither prefix is a no-op", () => {
     const req = new Request("https://zerostarter.dev/x", { headers: { cookie: "plain=1" } })
     expect(toBetterAuthRequest(req)).toBe(req)
+  })
+
+  test("drops a bare __Secure- cookie (a Domain cookie leaked from a sibling env), so it can't authenticate here", () => {
+    const req = new Request("https://canary.zerostarter.dev/api/auth/get-session", {
+      headers: { cookie: "__Secure-better-auth.session_token=prod; other=1" },
+    })
+    expect(toBetterAuthRequest(req).headers.get("cookie")).toBe("other=1")
+  })
+
+  test("with both our __Host- and a leaked __Secure-, only our __Host- session survives", () => {
+    const req = new Request("https://canary.zerostarter.dev/api/auth/get-session", {
+      headers: {
+        cookie: "__Host-better-auth.session_token=mine; __Secure-better-auth.session_token=leaked",
+      },
+    })
+    expect(toBetterAuthRequest(req).headers.get("cookie")).toBe(
+      "__Secure-better-auth.session_token=mine",
+    )
   })
 })
 

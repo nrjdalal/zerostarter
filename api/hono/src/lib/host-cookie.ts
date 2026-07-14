@@ -8,12 +8,18 @@ const HOST = "__Host-"
 const isSecureBetterAuthCookie = (sc: string): boolean =>
   sc.startsWith(SECURE) && /;\s*secure/i.test(sc)
 
-// Rename __Host- cookie names back to __Secure- on the way in so Better Auth (which only reads __Secure-) finds the session.
+// On the way in, trust only host-only __Host- cookies: rename them to __Secure- (the name Better Auth reads), and DROP any bare __Secure- cookie. A bare __Secure- arriving here was set with a Domain by a sibling env (an un-migrated prod) and sent to us cross-subdomain; we never set one, so it must not authenticate here.
 export function toBetterAuthRequest(raw: Request): Request {
   const cookie = raw.headers.get("cookie")
-  if (!cookie || !cookie.includes(HOST)) return raw
+  if (!cookie || (!cookie.includes(HOST) && !cookie.includes(SECURE))) return raw
+  const kept: string[] = []
+  for (const part of cookie.split(/;\s*/)) {
+    if (part.startsWith(HOST)) kept.push(SECURE + part.slice(HOST.length))
+    else if (!part.startsWith(SECURE)) kept.push(part)
+  }
   const headers = new Headers(raw.headers)
-  headers.set("cookie", cookie.replace(new RegExp(`(^|;\\s*)${HOST}`, "g"), `$1${SECURE}`))
+  if (kept.length) headers.set("cookie", kept.join("; "))
+  else headers.delete("cookie")
   return new Request(raw, { headers })
 }
 
