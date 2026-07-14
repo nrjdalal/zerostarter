@@ -59,6 +59,7 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | `docker-test`   | Build and smoke-test the Docker images.                                                            |
 | `fonts`         | Add or swap a self-hosted web font.                                                                |
 | `gh-commit`     | Make atomic, conventional commits.                                                                 |
+| `icebox`        | Park a raised-but-undecided concern on ice (issue #707 + `plans/`), no verdict.                    |
 | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
 | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the `node:` prefix.                       |
 | `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
