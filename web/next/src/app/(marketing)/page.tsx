@@ -205,7 +205,7 @@ bun run dev   # named .localhost URLs`
 const { data, error } = await unwrap(apiClient.health.$get())`
 
   const agentCode = `# sign an agent in, drive the app
-agent-browser open zerostarter.localhost:1355
+agent-browser open "$(bunx portless get zerostarter)"
 agent-browser snapshot   # read the UI
 agent-browser click "@e5"   # act`
 
