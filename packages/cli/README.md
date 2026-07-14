@@ -14,7 +14,7 @@ Go from zero to a production-ready SaaS, rebranded and ready to ship.
 # In a new, empty directory (its name becomes your project name):
 bunx zerostarter init
 
-# Start the dev servers (web on :3000, api on :4000)
+# Start the dev servers on named portless .localhost URLs (bunx portless list to see them)
 bun run dev
 ```
 
