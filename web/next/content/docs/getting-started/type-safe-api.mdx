@@ -100,7 +100,11 @@ export const createServer = (app: Hono) =>
         port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
-    : { port: env.HONO_PORT, fetch: app.fetch, websocket }
+    : {
+        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
+        fetch: app.fetch,
+        websocket,
+      }
 ```
 
 ```ts

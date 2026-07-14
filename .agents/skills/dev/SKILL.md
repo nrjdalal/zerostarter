@@ -5,7 +5,7 @@ description: Start, restart, and verify the ZeroStarter dev stack. `bun run dev`
 
 # Dev Stack
 
-`bun run dev` runs both apps (Next.js web + Hono API) through **portless**: stable named `.localhost` URLs off one unprivileged HTTP proxy on `:1355`, instead of raw ports. In a linked worktree the branch name prefixes each host, so parallel worktrees never collide. `bun dev` (turbo's TUI) needs an interactive terminal; run stream mode detached instead.
+`bun run dev` runs both apps (Next.js web + Hono API) through **portless**: stable named `.localhost` URLs off one unprivileged HTTP proxy on `:1355`, instead of raw ports. In a linked worktree the branch name prefixes each host, so parallel worktrees never collide on a port (they do share the auth session: the cookie is scoped to the base `.localhost` domain, so signing in on one worktree's URL signs you in on the others). `bun run dev` with no flags uses turbo's TUI, which needs an interactive terminal; run stream mode detached instead.
 
 ## Start
 

@@ -36,8 +36,9 @@ Guidance for AI coding agents working in this repository, a Bun monorepo: the `p
 Signs in as `LocalAgent` (`agent@local.host`). The route is gated: set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route 404s without it and a deployed default env never exposes it). Then click **Login (agents)** in the dev UI, or use curl:
 
 ```bash
-curl -sS -c cookies.txt -X POST -H "Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as
-curl -sS -b cookies.txt http://localhost:4000/api/v1/user
+WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)   # or PORTLESS=0 for fixed :3000/:4000
+curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
+curl -sS -b cookies.txt "$API/api/v1/user"
 ```
 
 Local-only (needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`) and requires a trusted `Origin` header. See `api/hono/src/routers/agents.ts` if needed.
@@ -55,7 +56,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | `codebase-map` | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code. |
 | `db-migration` | Create and apply a Drizzle schema change.                                                                                |
 | `design`       | Follow and maintain the app's UI conventions.                                                                            |
-| `dev`          | Start, restart, and verify the ZeroStarter dev stack (Next.js on 3000, Hono API on 4000).                                |
+| `dev`          | Start, restart, and verify the dev stack; `bun run dev` serves portless named `.localhost` URLs.                         |
 | `doc-sync`     | Sync docs and skills so they never drift from the code.                                                                  |
 | `docker-test`  | Build and smoke-test the Docker images with docker compose.                                                              |
 | `fonts`        | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).       |

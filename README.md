@@ -109,7 +109,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 
 | Command                           | Description                                 |
 | --------------------------------- | ------------------------------------------- |
-| `bun dev`                         | Start both dev servers on portless URLs     |
+| `bun run dev`                     | Start both dev servers on portless URLs     |
 | `bun run build`                   | Build every workspace                       |
 | `bun run check-types`             | Type-check every workspace                  |
 | `bun run test`                    | Run every workspace's tests                 |
