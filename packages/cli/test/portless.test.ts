@@ -17,17 +17,17 @@ test("deriveUrls toggles the api label from the api host (main checkout)", () =>
   })
 })
 
-// Worktree: the branch name prefixes each host as the leftmost label.
+// Worktree (api-first): web `feat.zerostarter.localhost`, api `api.feat.zerostarter.localhost`.
 test("deriveUrls handles the branch-prefixed web host (worktree)", () => {
   expect(deriveUrls("http://feat.zerostarter.localhost:1355")).toEqual({
     web: "http://feat.zerostarter.localhost:1355",
-    api: "http://feat.api.zerostarter.localhost:1355",
+    api: "http://api.feat.zerostarter.localhost:1355",
   })
 })
 
 test("deriveUrls handles the branch-prefixed api host (worktree)", () => {
-  expect(deriveUrls("http://feat.api.zerostarter.localhost:1355")).toEqual({
+  expect(deriveUrls("http://api.feat.zerostarter.localhost:1355")).toEqual({
     web: "http://feat.zerostarter.localhost:1355",
-    api: "http://feat.api.zerostarter.localhost:1355",
+    api: "http://api.feat.zerostarter.localhost:1355",
   })
 })
