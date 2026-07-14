@@ -11,14 +11,14 @@ A green type-check and clean lint prove the code compiles, not that the page ren
 
 ### 1. Run the stack
 
-Start the dev servers (`dev` skill). `bun dev` serves the web at the named portless URL it prints (e.g. `http://zerostarter.localhost:1355`, branch-prefixed in a worktree); the api answers on loopback `http://localhost:4000/api/health`. Done when the web URL returns 200 and health is ok. Drive the browser at the **named web URL, not `localhost:3000`**, so auth stays same-origin and the host-only session cookie lands on the right host.
+Start the dev servers (`dev` skill): web on :3000, api on :4000. Done when `http://localhost:3000/` returns 200 and `http://localhost:4000/api/health` responds ok.
 
 ### 2. Drive the affected route
 
 Load the `agent-browser` skill, then open the route you changed and act on it:
 
 ```bash
-agent-browser open http://zerostarter.localhost:1355/<route>   # the web URL bun dev prints
+agent-browser open http://localhost:3000/<route>
 agent-browser snapshot   # read the page, then click/type/verify
 ```
 
