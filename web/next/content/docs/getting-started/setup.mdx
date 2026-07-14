@@ -52,10 +52,12 @@ bun run db:migrate
 
 ## `bun run dev`
 
-Turborepo starts both apps together:
+Turborepo starts both apps together through [portless](https://portless.sh), which serves stable named `.localhost` URLs off one unprivileged proxy (`bunx portless list` shows them; in a git worktree each host is branch-prefixed so parallel checkouts never collide):
 
-- **web** (Next.js) on [http://localhost:3000](http://localhost:3000)
-- **api** (Hono) on [http://localhost:4000](http://localhost:4000), with an interactive API reference at [/api/docs](http://localhost:4000/api/docs)
+- **web** (Next.js) at `http://zerostarter.localhost:1355`
+- **api** (Hono) at `http://api.zerostarter.localhost:1355`, with an interactive API reference at `/api/docs`
+
+`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`), which is what OAuth callbacks expect (see [Authentication](/docs/manage/authentication)). It is also the fallback where the OS does not resolve `*.localhost` to loopback server-side (macOS and most Linux do; some containers and corporate DNS setups do not); without it, the web server can't reach `api.<name>.localhost` to render authenticated pages and they redirect to the home page.
 
 ## Sign in
 

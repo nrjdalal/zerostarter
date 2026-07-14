@@ -11,14 +11,14 @@ A green type-check and clean lint prove the code compiles, not that the page ren
 
 ### 1. Run the stack
 
-Start the dev servers (`dev` skill): web on :3000, api on :4000. Done when `http://localhost:3000/` returns 200 and `http://localhost:4000/api/health` responds ok.
+Start the dev servers (`dev` skill). Under the default portless dev the base URLs are named and branch-prefixed, so resolve them once: `WEB=$(bunx portless get zerostarter)` and `API=$(bunx portless get api.zerostarter)` (or `PORTLESS=0 bun run dev` for fixed `http://localhost:3000` / `http://localhost:4000`). Done when `$WEB/` returns 200 and `$API/api/health` responds ok.
 
 ### 2. Drive the affected route
 
 Load the `agent-browser` skill, then open the route you changed and act on it:
 
 ```bash
-agent-browser open http://localhost:3000/<route>
+agent-browser open "$WEB/<route>"
 agent-browser snapshot   # read the page, then click/type/verify
 ```
 
