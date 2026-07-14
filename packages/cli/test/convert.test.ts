@@ -165,6 +165,12 @@ describe("convertRepo (in-place)", () => {
     expect(api.portless.name).toBe("api.acme-app")
   })
 
+  test("throws when an app package.json lost its portless config (drift)", () => {
+    scaffold()
+    write(join(dir, "web/next/package.json"), JSON.stringify({ name: "@web/next" }))
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/portless/)
+  })
+
   test("writes a fresh branded site.ts and content stubs with no upstream identity", () => {
     scaffold()
     convertRepo(dir, { name: "acme" })
