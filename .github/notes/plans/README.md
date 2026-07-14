@@ -9,7 +9,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## In progress
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
-- [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
+- [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit toggle, read the auth secret directly, and gate tests + check-types in PR CI.
 - [ZeroStarter tracked against the external evaluation](saas-starter-evals.md) - the full P0 to P3 eval backlog as a roadmap; P0 is in progress (executed via hardening-refactors.md).
 
 ## Planned
@@ -44,5 +44,5 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 
 Undecided, on-ice items: raised but not yet triaged into a decision, so neither promised nor rejected. Each may later graduate to the backlog above, ship directly, be dismissed as not worth it, turn out not to be a real problem, or prove to be a false claim. Mirrored in the standing [issue #707](https://github.com/nrjdalal/zerostarter/issues/707) (the GitHub-visible index, which stays open permanently); see it for the full explanation.
 
-- [Rate limiter may lose the client IP behind the same-origin proxy](rate-limit-client-ip.md) - the anonymous IP bucket under #702's same-origin proxy; sibling of the eval's P0-4.
-- [Portless local URLs, follow-ups](portless-local-urls.md) - four loose ends from #702: fork portless name, remove `HONO_APP_URL`, parallel worktree dev ports, and an authenticated WS ticket.
+- [Rate limiter's anonymous IP key](rate-limit-client-ip.md) - spoofable today and fail-open when no IP resolves; sibling of the eval's P0-4, where the trusted-proxy decision belongs.
+- [Portless local URLs, follow-ups](portless-local-urls.md) - four loose ends from #702: fork portless name, remove `HONO_APP_URL` (blocked on the deferred auth change), parallel worktree dev ports, and an authenticated WS ticket.

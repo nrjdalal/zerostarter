@@ -4,16 +4,16 @@
 - Source: [nrjdalal/saas-starter-evals](https://github.com/nrjdalal/saas-starter-evals), `ZEROSTARTER-RECOMMENDATIONS.md` (repo inspected at v0.1.2)
 - Executes via: [hardening-refactors.md](hardening-refactors.md) (the P0 sprint)
 
-An evidence-based external evaluation of the starter: a source inspection, an AI-agent build benchmark, a monetisation analysis, and a security audit. Its backlog is captured here as the roadmap. Each item keeps the eval's priority (P0 security/correctness down to P3 recipes) and classification (`core` / optional `pkg` / `recipe`). File paths were from v0.1.2; re-verify against the current tree before acting.
+An evidence-based external evaluation of the starter: a source inspection, an AI-agent build benchmark, a monetization analysis, and a security audit. Its backlog is captured here as the roadmap. Each item keeps the eval's priority (P0 security/correctness down to P3 recipes) and classification (`core` / optional `pkg` / `recipe`). File paths were from v0.1.2; re-verify against the current tree before acting.
 
 Preserve the six strengths the eval measured while working it: accurate docs, verified end-to-end type safety, the upstream-update path (`init`/`reinit`/`sync`), the OpenAPI-documented rate-limited API, ops hygiene, and one canonical way per task. A capability may go in core; a specific vendor goes in an optional package or a recipe, never as a hard core dependency, and a fresh keyless clone must still install and run.
 
 ## P0: Security & correctness
 
-- **P0-1 · Re-gate the agent sign-in route** [core] · **done** (#695). Mounts only with `AGENT_SIGNIN_ENABLED=true` (off by default); a default clone exposes no admin-minting route, and the UI button follows the same gate.
+- **P0-1 · Re-gate the agent sign-in route** [core] · **done** (#698). Mounts only with `AGENT_SIGNIN_ENABLED=true` (off by default); a default clone exposes no admin-minting route, and the UI button follows the same gate. (#695 proposed gating on an `AGENT_AUTH_SECRET` instead and was closed unmerged; the toggle shipped in its place.)
 - **P0-2 · Remove the polyfill secret fallback** [core] · **done** (#696). `BETTER_AUTH_SECRET` is read directly and fails closed when required; no constant is substituted under the skip flag.
-- **P0-3 · Product test harness, gated in CI** [core] · **partial**. The CI half is done (#694 runs `check-types` + `test` on every PR); the harness itself (a disposable-Postgres integration layer + Playwright e2e, with example auth-flow / org-scoped / cross-tenant-denial / migration-smoke tests) is not built. Building it un-parks the route/env regression tests deferred from #695/#696.
-- **P0-4 · Security headers/CSP + a durable rate-limit store** [core] · **not started**. No security headers or CSP anywhere; the rate limiter uses the in-memory store (a no-op on serverless). Add default headers + CSP (report-only, then enforce) and a Postgres-backed durable store. Related: the same-origin-proxy client-IP question is on ice ([portless-local-urls.md](portless-local-urls.md) has the sibling [rate-limit-client-ip.md](rate-limit-client-ip.md)).
+- **P0-3 · Product test harness, gated in CI** [core] · **partial**. The CI half is done (#694 runs `check-types` + `test` on every PR); the harness itself (a disposable-Postgres integration layer + Playwright e2e, with example auth-flow / org-scoped / cross-tenant-denial / migration-smoke tests) is not built. Building it un-parks the route/env regression tests deferred from #698/#696.
+- **P0-4 · Security headers/CSP + a durable rate-limit store** [core] · **not started**. No security headers or CSP anywhere; the rate limiter uses the in-memory store (a no-op on serverless). Add default headers + CSP (report-only, then enforce) and a Postgres-backed durable store. Related: the anonymous IP key is on ice in [rate-limit-client-ip.md](rate-limit-client-ip.md); it is spoofable today and fails open when no IP resolves, and the trusted-proxy decision it needs is cheapest to make alongside the durable store here.
 
 ## P1: Adoption blockers
 
@@ -35,7 +35,7 @@ Preserve the six strengths the eval measured while working it: accurate docs, ve
 
 ## The eval's explicit non-goals (§5)
 
-The eval lists things it argues should **not** go in core, because each recreates the bloat/lock-in it penalised in the feature-complete competitors. These are decided non-goals, not undecided ice: a bundled payment provider or email vendor in core (both live as packages/recipes above); analytics beyond the existing hooks, a CMS, general-purpose feature flags, i18n by default, onboarding flows, plan/entitlement matrices, multi-database support; and any second way to do a task that already has a canonical one. The test: if it forces a fresh keyless clone to depend on a third-party vendor, or adds a second pattern for an existing task, it is a recipe or an optional package, not core.
+The eval lists things it argues should **not** go in core, because each recreates the bloat/lock-in it penalized in the feature-complete competitors. These are decided non-goals, not undecided ice: a bundled payment provider or email vendor in core (both live as packages/recipes above); analytics beyond the existing hooks, a CMS, general-purpose feature flags, i18n by default, onboarding flows, plan/entitlement matrices, multi-database support; and any second way to do a task that already has a canonical one. The test: if it forces a fresh keyless clone to depend on a third-party vendor, or adds a second pattern for an existing task, it is a recipe or an optional package, not core.
 
 ## Sequencing (eval §6)
 
