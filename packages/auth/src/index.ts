@@ -10,6 +10,7 @@ import {
   user,
   verification,
 } from "@packages/db"
+import { isProduction } from "@packages/env"
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
@@ -19,10 +20,13 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
+import { baseDomainOf, buildTrustedOrigins } from "@/lib/origins"
 
-const cookieDomain = getCookieDomain(env.HONO_APP_URL)
-const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
+// The canonical public WEB origin (browser-facing), and the first trusted origin by convention. Auth is same-origin: the browser calls the web host's /api/auth, Next rewrites it to this API, so baseURL must be that web origin or OAuth callbacks bypass the proxy.
+const appOrigin = env.HONO_TRUSTED_ORIGINS[0]
+// Wildcard subdomain origins are trusted only outside production (previews); production is a strict allowlist.
+const allowWildcard = !isProduction(env.NODE_ENV)
+const baseDomain = baseDomainOf(appOrigin)
 
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
@@ -34,8 +38,8 @@ export const enabledSocialProviders: SocialProvider[] = [
 ]
 
 export const auth = betterAuth({
-  baseURL: env.HONO_APP_URL,
-  trustedOrigins: env.HONO_TRUSTED_ORIGINS,
+  baseURL: appOrigin,
+  trustedOrigins: buildTrustedOrigins(env.HONO_TRUSTED_ORIGINS, { baseDomain, allowWildcard }),
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -74,16 +78,9 @@ export const auth = betterAuth({
       ? { google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET } }
       : {}),
   },
-  advanced: {
-    ...(cookiePrefix && { cookiePrefix }),
-    ...(cookieDomain && {
-      crossSubDomainCookies: {
-        enabled: true,
-        domain: cookieDomain,
-      },
-    }),
-  },
 })
+
+// Better Auth sets host-only cookies by default (no crossSubDomainCookies, no Domain), so a session set on one host is never sent to a sibling env; the API additionally rewrites __Secure- to __Host- on https (api/hono/src/lib/host-cookie.ts) so a compromised sibling cannot plant a Domain cookie the host reads.
 
 // Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.
 export const magicLinkEnabled = (auth.options.plugins ?? []).some(
@@ -97,3 +94,5 @@ export const enabledProviders: AuthProvider[] = [
 ]
 
 export type Session = typeof auth.$Infer.Session
+
+export { baseDomainOf, isTrustedOrigin } from "@/lib/origins"
