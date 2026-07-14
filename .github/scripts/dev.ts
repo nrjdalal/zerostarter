@@ -1,4 +1,4 @@
-// Runs `turbo run dev` through portless: each dev server gets a stable named .localhost URL instead of a port. Sets PORTLESS_* so the per-app portless runners auto-start the shared proxy unprivileged (:1355, HTTP, no /etc/hosts write) instead of the default 443 (which needs sudo); turbo forwards these to the tasks via globalPassThroughEnv. `PORTLESS=0 bun run dev` bypasses portless and uses the plain localhost ports from .env. Chrome/Firefox/Edge resolve `.localhost` natively; Safari needs the hosts file.
+// Runs turbo through portless on an unprivileged :1355 HTTP proxy (no sudo, no /etc/hosts write); PORTLESS=0 bypasses it.
 import { join } from "node:path"
 
 const env = {

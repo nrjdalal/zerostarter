@@ -1,4 +1,4 @@
-// Runs a dev command with this app's public URLs derived from PORTLESS_URL (portless's assigned URL, worktree branch prefix included), keeping the branch slug in one place (portless) and @packages/env portless-agnostic. Without PORTLESS_URL (PORTLESS=0, CI, or a non-portless run) it is a transparent pass-through using the static .env.
+// Sets each app's public URLs from portless's PORTLESS_URL (worktree branch included); a transparent pass-through when it is unset (PORTLESS=0, CI).
 export {}
 
 const cmd = process.argv.slice(2)
@@ -7,19 +7,19 @@ if (cmd.length === 0) {
   process.exit(1)
 }
 
-// Host grammar (local and cloud): [<branch>.]{api.}<project>.<tld>. The base is the last two labels; the "api" service label, when present, sits immediately before the base (the leftmost label is the branch slug in a worktree, not the service). Derive the sibling by toggling that adjacent "api" label.
+// Toggle the adjacent `api.` label (it sits just before the two base labels) to get the sibling app's host.
 function deriveUrls(portlessUrl: string): { web: string; api: string } {
-  const url = new URL(portlessUrl)
-  const labels = url.hostname.split(".")
+  const labels = new URL(portlessUrl).hostname.split(".")
   const apiIdx = labels.length - 3
   const isApi = apiIdx >= 0 && labels[apiIdx] === "api"
-  const webLabels = isApi ? [...labels.slice(0, apiIdx), ...labels.slice(apiIdx + 1)] : labels
-  const apiLabels = isApi
-    ? labels
-    : [...labels.slice(0, labels.length - 2), "api", ...labels.slice(labels.length - 2)]
-  const port = url.port ? `:${url.port}` : ""
-  const toUrl = (l: string[]) => `${url.protocol}//${l.join(".")}${port}`
-  return { web: toUrl(webLabels), api: toUrl(apiLabels) }
+  const webLabels = isApi ? labels.toSpliced(apiIdx, 1) : labels
+  const apiLabels = isApi ? labels : labels.toSpliced(labels.length - 2, 0, "api")
+  const toOrigin = (host: string[]) => {
+    const url = new URL(portlessUrl)
+    url.hostname = host.join(".")
+    return url.origin
+  }
+  return { web: toOrigin(webLabels), api: toOrigin(apiLabels) }
 }
 
 const overrides: Record<string, string> = {}

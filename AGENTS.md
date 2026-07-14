@@ -44,23 +44,30 @@ Local-only (needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`) and requires
 
 ## Skills
 
-Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits.
+Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
 
-| Skill           | Use it to                                                                                          |
-| --------------- | -------------------------------------------------------------------------------------------------- |
-| `agent-browser` | Drive the running app in a browser: navigate, click, type, screenshot.                             |
-| `api-endpoint`  | Add a typed Hono API endpoint: router, validation envelope, OpenAPI, RPC wiring.                   |
-| `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                    |
-| `codebase-map`  | Orient: where to edit for a change, trace a feature across the stack, search the repo. Start here. |
-| `db-migration`  | Create and apply a Drizzle schema change.                                                          |
-| `design`        | Follow the app's UI conventions: spacing, color, tokens, primitives.                               |
-| `dev`           | Start, restart, and verify the dev stack, and fix the `bun --hot` stale-route trap.                |
-| `doc-sync`      | Sync docs and skills after a change so nothing drifts: surface map, grep sweep, strict docs build. |
-| `docker-test`   | Build and smoke-test the Docker images.                                                            |
-| `fonts`         | Add or swap a self-hosted web font.                                                                |
-| `gh-commit`     | Make atomic, conventional commits.                                                                 |
-| `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
-| `portless`      | Set up and use portless for named local dev URLs (the Vercel Labs official skill, vendored).       |
-| `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the `node:` prefix.                       |
-| `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
-| `ui-verify`     | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |
+**Custom**
+
+| Skill          | Description                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `api-endpoint` | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.      |
+| `audit`        | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                                          |
+| `codebase-map` | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code. |
+| `db-migration` | Create and apply a Drizzle schema change.                                                                                |
+| `design`       | Follow and maintain the app's UI conventions.                                                                            |
+| `dev`          | Start, restart, and verify the ZeroStarter dev stack (Next.js on 3000, Hono API on 4000).                                |
+| `doc-sync`     | Sync docs and skills so they never drift from the code.                                                                  |
+| `docker-test`  | Build and smoke-test the Docker images with docker compose.                                                              |
+| `fonts`        | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).       |
+| `gh-commit`    | Create atomic commits in the conventional format.                                                                        |
+| `ignore-sync`  | Mirror `.gitignore` to `.dockerignore`.                                                                                  |
+| `runtime-apis` | Prefer Bun-native APIs, else Node built-ins with the `node:` prefix.                                                     |
+| `shadcn-sync`  | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                   |
+| `ui-verify`    | Verify a frontend or UI change in a real browser.                                                                        |
+
+**Vendored** (upstream, copied verbatim)
+
+| Skill           | Description                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `agent-browser` | Browser automation CLI for AI agents.                                                                                        |
+| `portless`      | Set up and use portless for named local dev server URLs (e.g. `https://myapp.localhost` instead of `http://localhost:3000`). |
