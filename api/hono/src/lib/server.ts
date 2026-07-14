@@ -12,7 +12,7 @@ export const upgradeWebSocket = onVercel
   ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
   : bunUpgradeWebSocket
 
-// On Vercel, return the Node http.Server so the platform drives all traffic including the WebSocket upgrade; it binds PORT when Vercel sets it, else HONO_PORT (e.g. forced locally). Elsewhere, return the Bun.serve() shape so Bun owns fetch + the socket.
+// On Vercel, return the Node http.Server so the platform drives all traffic including the WebSocket upgrade; elsewhere return the Bun.serve() shape so Bun owns fetch + the socket. Both honor process.env.PORT when set (Vercel, or portless assigning a dev port), else HONO_PORT.
 export const createServer = (app: Hono) =>
   onVercel
     ? serve({
@@ -21,7 +21,7 @@ export const createServer = (app: Hono) =>
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : {
-        port: env.HONO_PORT,
+        port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
         fetch: app.fetch,
         websocket,
       }
