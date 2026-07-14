@@ -70,8 +70,9 @@ export const exampleRouter = new Hono().post(
 `bun --hot` will NOT see a new file: restart the stack (see the `dev` skill), then:
 
 ```bash
-curl -sS -X POST -H "Content-Type: application/json" -H "Origin: http://localhost:3000" \
-  -d '{"email":"you@example.com"}' http://localhost:4000/api/<name>
+WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
+curl -sS -X POST -H "Content-Type: application/json" -H "Origin: $WEB" \
+  -d '{"email":"you@example.com"}' "$API/api/<name>"
 ```
 
 Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/docs` lists the route.

@@ -31,8 +31,18 @@ const libcExcludes = {
   ],
 }
 
+// Dev-only: Next 16 blocks cross-origin dev requests; behind portless the browser Host is a named .localhost subdomain, so allow the app's base domain and its subdomains. A single `*` (one label) is enough: the web dev server only ever sees its own host, portless-prefixed with the worktree branch as a single leftmost label.
+const appDevHost = (() => {
+  try {
+    return new URL(env.NEXT_PUBLIC_APP_URL).hostname.split(".").slice(-2).join(".")
+  } catch {
+    return undefined
+  }
+})()
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
     // Kept for Vercel: /og is traced into its own function and needs the takumi core binary here; removing it 500s /og at runtime (redundant only in Docker standalone).

@@ -5,9 +5,9 @@ export const site = {
     "Modern, type-safe/RPC starter monorepo with foundations for building scalable SaaS products with clean architecture, automation, and great developer experience.",
   tagline: "Production-ready SaaS infrastructure with world-class human and agent DX",
   social: {
+    discord: "https://discord.gg/38FeAUmHSZ",
     github: "https://github.com/nrjdalal/zerostarter",
     x: "https://x.com/nrjdalal",
-    discord: "https://discord.gg/38FeAUmHSZ",
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
