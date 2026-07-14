@@ -29,6 +29,12 @@ The four slices, each a Zod schema that validates only what that consumer needs:
 
 A variable that is missing or malformed at startup fails validation with a message naming it, so a bad deploy dies at boot rather than halfway through a request.
 
+<Callout type="info" title="Upgrading a fork: HONO_APP_URL is now BETTER_AUTH_URL">
+
+`HONO_APP_URL` was renamed to `BETTER_AUTH_URL`, and its value is now the public **web** origin (not the API's), because auth is served same-origin through the web app's `/api` proxy. `zerostarter sync` preserves your `.env`, so rename the key there and in your deploy env. A build with `SKIP_ENV_VALIDATION` still passes, so the app only fails at boot until you do.
+
+</Callout>
+
 ## Server and client
 
 `web-next` is the only slice split into `server` and `client`, and the split is the security boundary: only variables prefixed `NEXT_PUBLIC_` are in the client schema, and only those are bundled into browser code. `INTERNAL_API_URL` stays server-side; `POSTGRES_URL` and `BETTER_AUTH_SECRET` are not in this slice at all.

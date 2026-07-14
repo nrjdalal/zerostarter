@@ -125,12 +125,12 @@ const routes = app.basePath("/api").get(
 export default createServer(app)
 ```
 
-On the client, the RPC object exposes `$ws()` on the route, so the connection URL stays derived from the same configured API base (`http` becomes `ws`):
+On the client, the RPC object exposes `$ws()` on the route. Use `wsApiClient`, not `apiClient`: browser RPC goes same-origin through the `/api` proxy, but a WebSocket can't ride that proxy, so `wsApiClient` targets the API's own origin and the socket connects cross-origin (`http` becomes `ws`):
 
 ```ts
-import { apiClient } from "@/lib/api/client"
+import { wsApiClient } from "@/lib/api/client"
 
-const socket = apiClient.health.ws.$ws()
+const socket = wsApiClient.health.ws.$ws()
 socket.addEventListener("message", (event) => {
   const health = JSON.parse(event.data)
 })
