@@ -5,7 +5,8 @@
   "scripts": {
     "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
     "check-types": "bun ../../.github/scripts/docs.ts && fumadocs-mdx && tsc --noEmit",
-    "dev": "bun ../../.github/scripts/docs.ts && next dev",
+    "dev": "portless",
+    "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../.github/scripts/portless.ts next dev",
     "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "portless": "catalog:",
     "shadcn": "catalog:",
     "sharp": "catalog:",
     "tailwindcss": "catalog:",
@@ -72,5 +74,9 @@
   },
   "browserslist": [
     "defaults"
-  ]
+  ],
+  "portless": {
+    "name": "zerostarter",
+    "script": "dev:app"
+  }
 }

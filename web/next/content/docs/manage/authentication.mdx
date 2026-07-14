@@ -29,9 +29,9 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 ## Callback URLs
 
-Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on. The API runs on port 4000 locally, so the callback path is `/api/auth/callback/<provider>` on your API origin:
+Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on, `/api/auth/callback/<provider>` on your API origin:
 
-- **Local**: `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`
+- **Local**: use `PORTLESS=0 bun run dev` for social login so the API origin is `http://localhost:4000`, then register `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`. (The default portless dev serves `.localhost` URLs, which providers reject as redirect URIs, Google especially, so OAuth won't round-trip there; the local **Login (agents)** button still works either way.)
 - **Production**: the same `/api/auth/callback/<provider>` path on your deployed API origin, e.g. `https://api.example.com/api/auth/callback/github`
 
 This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".

@@ -23,11 +23,6 @@ import { cn, isActive } from "@/lib/utils"
 
 const socialLinks = [
   {
-    href: site.social.x,
-    icon: RiTwitterXFill,
-    label: "X",
-  },
-  {
     href: site.social.discord,
     icon: RiDiscordFill,
     label: "Discord",
@@ -36,6 +31,11 @@ const socialLinks = [
     href: site.social.github,
     icon: RiGithubFill,
     label: "GitHub",
+  },
+  {
+    href: site.social.x,
+    icon: RiTwitterXFill,
+    label: "X",
   },
 ]
 

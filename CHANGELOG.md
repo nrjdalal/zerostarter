@@ -1,3 +1,20 @@
+## v0.1.4
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.3...v0.1.4)
+
+### 🚀 Enhancements
+
+- Gate the local agent sign-in behind an AGENT_SIGNIN_ENABLED toggle ([#698](https://github.com/nrjdalal/zerostarter/pull/698))
+
+### 💅 Refactors
+
+- **ci:** Run check-types and tests in the PR workflow ([#694](https://github.com/nrjdalal/zerostarter/pull/694))
+- **env:** Read the auth secret directly instead of polyfilling it ([#696](https://github.com/nrjdalal/zerostarter/pull/696))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.3
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.2...v0.1.3)

@@ -13,7 +13,7 @@ Two shapes:
 
 Every page is also available on its own as plain text: append `.md` or `.txt` to any docs or blog URL, e.g. `/docs/manage/llms-txt.md`.
 
-In development, `curl localhost:3000/llms-full.txt` hands an agent the whole project as one file before it writes a line, which is exactly what the `codebase-map` skill does to orient.
+In development, `curl "$(bunx portless get zerostarter)/llms-full.txt"` hands an agent the whole project as one file before it writes a line, which is exactly what the `codebase-map` skill does to orient.
 
 ## How they're generated
 
