@@ -5,7 +5,7 @@
   "scripts": {
     "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
     "check-types": "bun ../../.github/scripts/docs.ts && fumadocs-mdx && tsc --noEmit",
-    "dev": "portless",
+    "dev": "portless --app-port ${WEB_PORT:-3000} zerostarter bun run dev:app",
     "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../.github/scripts/portless-env.ts next dev",
     "start": "bun .next/standalone/web/next/server.js"
   },
@@ -74,10 +74,5 @@
   },
   "browserslist": [
     "defaults"
-  ],
-  "portless": {
-    "name": "zerostarter",
-    "script": "dev:app",
-    "appPort": 3000
-  }
+  ]
 }

@@ -50,5 +50,12 @@
     "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN",
     "NEXT_PUBLIC_USERJOT_URL"
   ],
-  "globalPassThroughEnv": ["PORTLESS", "PORTLESS_PORT", "PORTLESS_HTTPS", "PORTLESS_SYNC_HOSTS"]
+  "globalPassThroughEnv": [
+    "PORTLESS",
+    "PORTLESS_PORT",
+    "PORTLESS_HTTPS",
+    "PORTLESS_SYNC_HOSTS",
+    "WEB_PORT",
+    "HONO_PORT"
+  ]
 }

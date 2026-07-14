@@ -9,7 +9,7 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | File | Runtime | `node:` modules (APIs used) |
 | --- | --- | --- |
 | `.github/scripts/compress-images.ts` | Bun | `node:path` (path) |
-| `.github/scripts/dev.ts` | Bun | `node:path` (join) |
+| `.github/scripts/dev.ts` | Bun | `node:net` (createServer); `node:path` (join) |
 | `.github/scripts/docs.ts` | Bun | `node:path` (path) |
 | `.github/scripts/ensure-remote-branches.ts` | Bun | `node:child_process` (execFileSync) |
 | `.github/scripts/shadcn-customize.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (readFileSync, writeFileSync) |

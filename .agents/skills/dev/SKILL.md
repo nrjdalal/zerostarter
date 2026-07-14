@@ -5,7 +5,7 @@ description: Start, restart, and verify the ZeroStarter dev stack (Next.js on 30
 
 # Dev Stack
 
-`bun dev` runs the stack through portless: named URLs (web `http://zerostarter.localhost:1355`, api `http://api.zerostarter.localhost:1355`; branch-prefixed in a worktree) on a shared unprivileged `:1355` HTTP proxy, with the apps pinned to loopback `:3000`/`:4000`. It uses `--ui tui` and needs an interactive terminal; run stream mode detached instead. `PORTLESS=0 bun dev` bypasses portless (plain localhost).
+`bun dev` runs the stack through portless: named URLs (web `http://zerostarter.localhost:1355`, api `http://api.zerostarter.localhost:1355`; branch-prefixed in a worktree) on a shared unprivileged `:1355` HTTP proxy, with the apps on loopback `:3000`/`:4000` (each extra worktree auto-picks the next free pair, 3001/4001, ..., so several run at once). It uses `--ui tui` and needs an interactive terminal; run stream mode detached instead. `PORTLESS=0 bun dev` bypasses portless (plain localhost).
 
 ## Start
 

@@ -12,7 +12,7 @@
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --external hono",
     "check-types": "tsc --noEmit",
-    "dev": "portless",
+    "dev": "portless --app-port ${HONO_PORT:-4000} api.zerostarter bun run dev:app",
     "dev:app": "concurrently \"tsdown --watch\" \"bun ../../.github/scripts/portless-env.ts bun --hot src/index.ts\"",
     "start": "bun bundle/index.mjs",
     "test": "bun test"
@@ -42,10 +42,5 @@
     "portless": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
-  },
-  "portless": {
-    "name": "api.zerostarter",
-    "script": "dev:app",
-    "appPort": 4000
   }
 }
