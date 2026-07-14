@@ -1,9 +1,9 @@
 // Runs turbo through portless on an unprivileged :1355 HTTP proxy (no sudo, no /etc/hosts write); PORTLESS=0 bypasses it.
-import { join } from "node:path"
+import { delimiter, join } from "node:path"
 
 const env = {
   ...process.env,
-  PATH: `${join(process.cwd(), "node_modules", ".bin")}:${process.env.PATH ?? ""}`,
+  PATH: `${join(process.cwd(), "node_modules", ".bin")}${delimiter}${process.env.PATH ?? ""}`,
   PORTLESS_HTTPS: process.env.PORTLESS_HTTPS ?? "0",
   PORTLESS_PORT: process.env.PORTLESS_PORT ?? "1355",
   PORTLESS_SYNC_HOSTS: process.env.PORTLESS_SYNC_HOSTS ?? "0",
