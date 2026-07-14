@@ -64,13 +64,13 @@ Keep the **cross-origin** topology (browser -> API host directly), matching prod
 - Each app's `dev:app` runs through a shared shim `.github/scripts/portless-env.ts <cmd…>`: when `PORTLESS_URL` is set, it derives the web+api URL pair by adding/removing the `api.` label, exports the five URL vars (`HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, `INTERNAL_API_URL=http://localhost:4000`), then execs the real command. Setting real `NEXT_PUBLIC_*` env _before_ `next dev` keeps client inlining correct (deriving inside `packages/env` would not inline client-side). When `PORTLESS_URL` is unset (`PORTLESS=0`, CI), it passes through untouched and static `.env` values win.
 - All portless-awareness lives in `.github/scripts` dev tooling. That directory **ships to forks** (`.gitpickignore` excludes only `.github/{assets,notes,rulesets}`, not `scripts/`), which forks need since root `dev` and both apps' `dev:app` reference it; `packages/env` stays portless-agnostic. The only shipped runtime change is the cookie/origins fix (a real cross-env fix, not portless-specific). A fresh fork therefore inherits portless dev with the template's un-rebranded `name`, so its local URL reads `zerostarter.localhost` until the `convert.ts` rebrand below lands.
 
-Parallel worktree stacks (multiple `bun dev` at once) work with zero config: `.github/scripts/dev.ts` picks the next free web/api port pair per checkout (3000/4000, then 3001/4001, ...) and hands them to portless via `--app-port`. `INTERNAL_API_URL` follows `HONO_PORT`, and the named `.localhost` URLs stay distinct (branch-prefixed), so several worktrees serve at once without colliding.
+Parallel worktree stacks (multiple `bun run dev` at once) work with zero config: `.github/scripts/dev.ts` picks the next free web/api port pair per checkout (3000/4000, then 3001/4001, ...) and hands them to portless via `--app-port`. `INTERNAL_API_URL` follows `HONO_PORT`, and the named `.localhost` URLs stay distinct (branch-prefixed), so several worktrees serve at once without colliding.
 
 ## Orchestration & config
 
 - `web/next/package.json`: `"dev": "portless"`, `"dev:app": "bun ../../.github/scripts/portless-env.ts bun ../../.github/scripts/docs.ts && next dev"` (shim wraps the real command), `"portless": { "name": "zerostarter", "script": "dev:app", "appPort": 3000 }`.
 - `api/hono/package.json`: `"dev": "portless"`, `"dev:app": "bun ../../.github/scripts/portless-env.ts concurrently \"tsdown --watch\" \"bun --hot src/index.ts\""`, `"portless": { "name": "api.zerostarter", "script": "dev:app", "appPort": 4000 }`.
-- Root `package.json`: `"dev": "bun .github/scripts/dev.ts"` - sets `PORTLESS_PORT/HTTPS/SYNC_HOSTS`, spawns `turbo run dev --ui tui` (turbo still owns `^build` + persistence), forwards args. `PORTLESS=0 bun dev` bypasses portless.
+- Root `package.json`: `"dev": "bun .github/scripts/dev.ts"` - sets `PORTLESS_PORT/HTTPS/SYNC_HOSTS`, spawns `turbo run dev --ui tui` (turbo still owns `^build` + persistence), forwards args. `PORTLESS=0 bun run dev` bypasses portless.
 - `portless` in the catalog + both apps' devDependencies. No root `portless.json` needed.
 
 ## Required code changes (SUPERSEDED draft - see the "What shipped" callout at the top for the real changes)
@@ -108,7 +108,7 @@ NEXT_PUBLIC_API_URL=http://api.zerostarter.localhost:1355
 
 1. Land the cookie/origins fix + tests (works for preview/canary independently of portless).
 2. Add the wrapper + shim + portless config + `.env` + `server.ts`/`next.config.ts`; `bun install`.
-3. `bun dev`, verify main + worktree flows in Chrome, health via loopback.
+3. `bun run dev`, verify main + worktree flows in Chrome, health via loopback.
 4. doc-sync sweep (strict build) + CLI convert test.
 5. Coordinate the `canary.api.zerostarter.dev` host migration with a release (shared DB).
 6. PR to canary (feature-scale, auth-touching - review before merge).

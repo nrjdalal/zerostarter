@@ -31,7 +31,7 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 Auth is same-origin: the browser calls `/api/auth` on the **web** origin and Next rewrites it to the API, so Better Auth's `baseURL` is the web origin and OAuth callbacks land on the `/api/auth/callback/<provider>` path of your **web** origin:
 
-- **Local**: `http://zerostarter.localhost:1355/api/auth/callback/github` and `.../google` (the web URL `bun dev` prints; `http://localhost:3000/...` under `PORTLESS=0`)
+- **Local**: `http://zerostarter.localhost:1355/api/auth/callback/github` and `.../google` (the web URL `bun run dev` prints; `http://localhost:3000/...` under `PORTLESS=0`)
 - **Production**: the same path on your deployed **web** origin, e.g. `https://example.com/api/auth/callback/github`
 
 This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".
