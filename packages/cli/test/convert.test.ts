@@ -118,6 +118,17 @@ describe("convertRepo (in-place)", () => {
     )
     write(join(dir, "web/next/src/lib/fonts.ts"), FONTS)
     write(join(dir, "web/next/src/components/common/navbar.tsx"), NAV)
+    write(
+      join(dir, "web/next/package.json"),
+      JSON.stringify({ name: "@web/next", portless: { name: "zerostarter", script: "dev:app" } }),
+    )
+    write(
+      join(dir, "api/hono/package.json"),
+      JSON.stringify({
+        name: "@api/hono",
+        portless: { name: "api.zerostarter", script: "dev:app" },
+      }),
+    )
   }
 
   test("removes the excluded paths and the ignore file itself", () => {
@@ -143,6 +154,15 @@ describe("convertRepo (in-place)", () => {
     expect(pkg.author).toBeUndefined()
     expect(pkg.homepage).toBeUndefined()
     expect(pkg.license).toBeUndefined()
+  })
+
+  test("rebrands the portless dev-URL names in the app workspaces", () => {
+    scaffold()
+    convertRepo(dir, { name: "Acme App" })
+    const web = readJson<{ portless: { name: string } }>(join(dir, "web/next/package.json"))
+    const api = readJson<{ portless: { name: string } }>(join(dir, "api/hono/package.json"))
+    expect(web.portless.name).toBe("acme-app")
+    expect(api.portless.name).toBe("api.acme-app")
   })
 
   test("writes a fresh branded site.ts and content stubs with no upstream identity", () => {

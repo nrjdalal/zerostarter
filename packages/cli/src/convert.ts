@@ -89,15 +89,30 @@ export const fixDangling = (root: string): void => {
   }
 }
 
-// Regenerate the centralized brand file (brand + chosen feature flags) and rename the root package.
+// Regenerate the centralized brand file (brand + chosen feature flags), rename the root package, and rebrand the app portless dev-URL names.
 const rebrand = (root: string, b: Brand, features: FeatureFlags): void => {
   write(p(root, "packages/config/src/site.ts"), siteTemplate(b, features))
+  const slug = slugify(b.name)
   const path = p(root, "package.json")
   const pkg = readJson<Record<string, unknown>>(path)
-  pkg.name = slugify(b.name)
+  pkg.name = slug
   pkg.version = "0.0.0"
   for (const field of AUTHOR_FIELDS) delete pkg[field]
   writeJson(path, pkg)
+  // Rebrand the portless dev-URL names so a fork serves <slug>.localhost, not zerostarter.localhost.
+  for (const [rel, portlessName] of [
+    ["web/next", slug],
+    ["api/hono", `api.${slug}`],
+  ] as const) {
+    const appPath = p(root, rel, "package.json")
+    const appPkg = readJson<Record<string, unknown>>(appPath)
+    const portless = appPkg.portless
+    if (portless && typeof portless === "object") {
+      const portlessConfig = portless as Record<string, unknown>
+      portlessConfig.name = portlessName
+      writeJson(appPath, appPkg)
+    }
+  }
 }
 
 export const convertRepo = (
