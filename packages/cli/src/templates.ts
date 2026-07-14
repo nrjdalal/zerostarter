@@ -113,7 +113,7 @@ Built on top of [ZeroStarter](https://zerostarter.dev).
 bun run dev
 \`\`\`
 
-Run \`bun run dev\`; it prints the local URLs (portless named \`.localhost\` hosts, or http://localhost:3000 and http://localhost:4000 under \`PORTLESS=0\`).
+Web runs on http://localhost:3000 and the API on http://localhost:4000.
 `
 }
 

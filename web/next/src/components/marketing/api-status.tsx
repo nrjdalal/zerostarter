@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
-import { apiClient, unwrap, wsApiClient } from "@/lib/api/client"
+import { apiClient, unwrap } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
 const HEARTBEAT_TIMEOUT_MS = 12000
@@ -46,7 +46,7 @@ export function ApiStatus() {
 
     const connect = () => {
       if (stopped) return
-      const ws = wsApiClient.health.ws.$ws()
+      const ws = apiClient.health.ws.$ws()
       socket = ws
       // Ignore events from a socket that has already been superseded, so a late close can't tear down a newer one.
       const current = () => !stopped && socket === ws
