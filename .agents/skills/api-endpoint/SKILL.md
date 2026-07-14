@@ -70,7 +70,7 @@ export const exampleRouter = new Hono().post(
 `bun --hot` will NOT see a new file: restart the stack (see the `dev` skill), then:
 
 ```bash
-curl -sS -X POST -H "Content-Type: application/json" -H "Origin: http://zerostarter.localhost:1355" \
+curl -sS -X POST -H "Content-Type: application/json" -H "Origin: http://localhost:3000" \
   -d '{"email":"you@example.com"}' http://localhost:4000/api/<name>
 ```
 
