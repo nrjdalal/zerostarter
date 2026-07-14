@@ -1,14 +1,7 @@
-// Injects each app's public URLs derived from portless's PORTLESS_URL (worktree branch included); a transparent pass-through when it is unset (PORTLESS=0, CI).
-export {}
-
-const cmd = process.argv.slice(2)
-if (cmd.length === 0) {
-  console.error("portless: no command given")
-  process.exit(1)
-}
+// Derives each app's public URLs from portless's PORTLESS_URL (worktree branch included) and injects them before spawning the real dev command; a transparent pass-through when PORTLESS_URL is unset (PORTLESS=0, CI).
 
 // Toggle the adjacent `api.` label (it sits just before the two base labels) to get the sibling app's host.
-function deriveUrls(portlessUrl: string): { web: string; api: string } {
+export function deriveUrls(portlessUrl: string): { web: string; api: string } {
   const labels = new URL(portlessUrl).hostname.split(".")
   const apiIdx = labels.length - 3
   const isApi = apiIdx >= 0 && labels[apiIdx] === "api"
@@ -22,21 +15,29 @@ function deriveUrls(portlessUrl: string): { web: string; api: string } {
   return { web: toOrigin(webLabels), api: toOrigin(apiLabels) }
 }
 
-const overrides: Record<string, string> = {}
-const portlessUrl = process.env.PORTLESS_URL
-if (portlessUrl) {
-  const { web, api } = deriveUrls(portlessUrl)
-  overrides.NEXT_PUBLIC_APP_URL = web
-  overrides.NEXT_PUBLIC_API_URL = api
-  overrides.HONO_APP_URL = api
-  overrides.HONO_TRUSTED_ORIGINS = web
-}
+if (import.meta.main) {
+  const cmd = process.argv.slice(2)
+  if (cmd.length === 0) {
+    console.error("portless: no command given")
+    process.exit(1)
+  }
 
-const proc = Bun.spawn(cmd, {
-  env: { ...process.env, ...overrides },
-  stdio: ["inherit", "inherit", "inherit"],
-})
-const stop = () => proc.kill()
-process.on("SIGINT", stop)
-process.on("SIGTERM", stop)
-process.exit(await proc.exited)
+  const overrides: Record<string, string> = {}
+  const portlessUrl = process.env.PORTLESS_URL
+  if (portlessUrl) {
+    const { web, api } = deriveUrls(portlessUrl)
+    overrides.NEXT_PUBLIC_APP_URL = web
+    overrides.NEXT_PUBLIC_API_URL = api
+    overrides.HONO_APP_URL = api
+    overrides.HONO_TRUSTED_ORIGINS = web
+  }
+
+  const proc = Bun.spawn(cmd, {
+    env: { ...process.env, ...overrides },
+    stdio: ["inherit", "inherit", "inherit"],
+  })
+  const stop = () => proc.kill()
+  process.on("SIGINT", stop)
+  process.on("SIGTERM", stop)
+  process.exit(await proc.exited)
+}
