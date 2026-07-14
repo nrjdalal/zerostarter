@@ -29,10 +29,10 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 ## Callback URLs
 
-Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on. The API runs on port 4000 locally, so the callback path is `/api/auth/callback/<provider>` on your API origin:
+Auth is same-origin: the browser calls `/api/auth` on the **web** origin and Next rewrites it to the API, so Better Auth's `baseURL` is the web origin and OAuth callbacks land on the `/api/auth/callback/<provider>` path of your **web** origin:
 
-- **Local**: `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`
-- **Production**: the same `/api/auth/callback/<provider>` path on your deployed API origin, e.g. `https://api.example.com/api/auth/callback/github`
+- **Local**: `http://zerostarter.localhost:1355/api/auth/callback/github` and `.../google` (the web URL `bun dev` prints; `http://localhost:3000/...` under `PORTLESS=0`)
+- **Production**: the same path on your deployed **web** origin, e.g. `https://example.com/api/auth/callback/github`
 
 This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".
 
@@ -64,7 +64,7 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. Cross-subdomain cookies switch on automatically when `HONO_APP_URL` is a subdomain. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+Sessions live in the `session` table and travel as a **host-only** cookie (no `Domain`). Because sign-in is same-origin against the web host, the browser scopes the cookie to that one host, so a session is never sent to a sibling environment: prod's session cannot leak to `staging.` or `canary.`, and vice versa. In production (https) the API rewrites the cookie name to the browser-enforced `__Host-` prefix (`api/hono/src/lib/host-cookie.ts`), which additionally stops a compromised sibling from planting a cookie the host would read. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
 Reading the session is one call on either side:
 

@@ -56,7 +56,7 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-`HONO_PORT` (default 4000) is in the schema but unused on Vercel: the serverless runtime owns the port.
+`HONO_PORT` (default 4000) is in the schema but unused on Vercel: the serverless runtime owns the port. `HONO_TRUSTED_ORIGINS` is the web origin(s) the API trusts for CORS, and its **first entry is also Better Auth's `baseURL`**, so lead with the web app's own origin; it stays a strict allowlist in production, while outside production subdomains of the base domain are trusted too. That non-prod wildcard means `staging`/`development`/`test` are deliberately not strict: never run such an environment on the same registrable base as production, or it would gain a credentialed cross-origin trust to prod. `HONO_APP_URL` is still required by the schema but no longer drives auth.
 
 ## Frontend project
 
@@ -69,17 +69,19 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://your-web.vercel.app
 NEXT_PUBLIC_API_URL=https://your-api.vercel.app
+# Recommended in production: lets SSR + the /api rewrite reach the API directly (see below)
+INTERNAL_API_URL=https://your-api.vercel.app
 # Optional analytics / feedback
 NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
 NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=your_posthog_key
 NEXT_PUBLIC_USERJOT_URL=your_userjot_url
 ```
 
-`NEXT_PUBLIC_NODE_ENV` is required by the web env schema but derived from `NODE_ENV`, so you don't set it separately.
+`NEXT_PUBLIC_NODE_ENV` is required by the web env schema but derived from `NODE_ENV`, so you don't set it separately. `INTERNAL_API_URL` is optional but **recommended in production**: the server-side session read on every protected page and the `/api` rewrite use it to reach the API directly on Vercel's network. Without it they fall back to `NEXT_PUBLIC_API_URL` and re-enter through the public web origin, an extra hop per SSR render (and the API then attributes those server-side calls to the web function's IP, not the client's). It does not change the anonymous browser path, which is same-origin by design.
 
 <Callout type="info" title="Two projects, two env stores">
 
-Env vars are set per project and don't propagate between them, and the two projects deploy independently. When you add a custom domain, update the URL vars on both projects, and update the OAuth callback URLs in GitHub/Google to match your production domains.
+Env vars are set per project and don't propagate between them, and the two projects deploy independently. When you add a custom domain, update the URL vars on both projects, and update the OAuth callback URLs in GitHub/Google. Auth is same-origin, so callbacks are on the **web** origin, not the api: `https://<your-web-domain>/api/auth/callback/<provider>`.
 
 </Callout>
 

@@ -10,6 +10,8 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
+- [Portless local URLs](portless-local-urls.md) - implemented; same-origin host-only auth + portless dev URLs (PR #702, in review).
+- [Rate limiter loses the client IP behind the same-origin proxy](rate-limit-client-ip.md) - verify per-IP attribution on a real preview before/after the PR #702 merge.
 
 ## Planned
 

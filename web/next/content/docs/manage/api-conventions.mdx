@@ -83,7 +83,7 @@ Wrap any call in `unwrap` to get `{ data, error }`. `error.code` is this same `E
 
 ## Middleware
 
-Every request passes the global middleware in order (from `api/hono/src/index.ts`): **CORS** (trusted origins from `HONO_TRUSTED_ORIGINS`, credentials on) → **logger** → **rate limiter**. Protected routes add auth on top.
+Every request passes the global middleware in order (from `api/hono/src/index.ts`): **CORS** (origins from `HONO_TRUSTED_ORIGINS` as a strict allowlist when `NODE_ENV=production`, which is what keeps prod and canary from reaching each other, plus `*.<base-domain>` subdomains in every other stage (development/test/staging), credentials on) → **logger** → **rate limiter**. Protected routes add auth on top. Browsers do not apply CORS to WebSocket upgrades, so WebSocket routes carry an explicit `requireTrustedOrigin` gate that rejects an untrusted `Origin` with `403`, applying the same trusted-origin check server-side.
 
 ### Rate limiting
 
