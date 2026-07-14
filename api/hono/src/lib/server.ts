@@ -22,8 +22,8 @@ export const createServer = (app: Hono) => {
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : {
-        port,
         fetch: app.fetch,
+        port,
         websocket,
       }
 }
