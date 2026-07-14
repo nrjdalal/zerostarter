@@ -60,6 +60,7 @@ Custom skills live in `.agents/skills` (symlinked to `.claude/skills` and `.gith
 | `fonts`         | Add or swap a self-hosted web font.                                                                |
 | `gh-commit`     | Make atomic, conventional commits.                                                                 |
 | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                    |
+| `portless`      | Set up and use portless for named local dev URLs (the Vercel Labs official skill, vendored).       |
 | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the `node:` prefix.                       |
 | `shadcn-sync`   | Run and reconcile the shadcn component sync.                                                       |
 | `ui-verify`     | Verify a frontend or UI change in a real browser and attach screenshots to the PR.                 |
