@@ -108,9 +108,9 @@ const rebrand = (root: string, b: Brand, features: FeatureFlags): void => {
     const appPkg = readJson<Record<string, unknown>>(appPath)
     const portless = appPkg.portless
     // Fail loudly on drift, like fixDangling: a missing portless config means the dev-URL setup moved and a fork would silently keep zerostarter.localhost.
-    if (!portless || typeof portless !== "object") {
+    if (!portless || typeof portless !== "object" || Array.isArray(portless)) {
       throw new Error(
-        `${rel}/package.json has no "portless" config to rebrand (the dev-URL setup drifted). Update packages/cli/src/convert.ts.`,
+        `${rel}/package.json has no "portless" object to rebrand (the dev-URL setup drifted). Update packages/cli/src/convert.ts.`,
       )
     }
     const portlessConfig = portless as Record<string, unknown>
