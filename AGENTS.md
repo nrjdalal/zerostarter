@@ -37,7 +37,7 @@ Guidance for AI coding agents working in this repository, a Bun monorepo: the `p
 Signs in as `LocalAgent` (`agent@local.host`). The route is gated: set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route 404s without it and a deployed default env never exposes it). Then click **Login (agents)** in the dev UI, or use curl:
 
 ```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
+WEB=$(bunx portless get zerostarter); API=$(echo "$WEB" | sed 's#://#://api.#')
 curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
 curl -sS -b cookies.txt "$API/api/v1/user"
 ```
