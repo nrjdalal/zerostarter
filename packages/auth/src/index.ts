@@ -19,9 +19,10 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
+import { getCookiePrefix, resolveDeployMode } from "@/lib/utils"
 
-const cookieDomain = getCookieDomain(env.HONO_APP_URL)
+// Resolved once; the handoff router and the web client read it too.
+export const deployMode = resolveDeployMode(env.HONO_APP_URL, env.HONO_TRUSTED_ORIGINS)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
 
 export type SocialProvider = "github" | "google"
@@ -76,10 +77,18 @@ export const auth = betterAuth({
   },
   advanced: {
     ...(cookiePrefix && { cookiePrefix }),
-    ...(cookieDomain && {
+    // Shared-domain (custom domains, portless localhost): today's cross-subdomain cookies, byte-identical.
+    ...(deployMode.kind === "shared-domain" && {
       crossSubDomainCookies: {
         enabled: true,
-        domain: cookieDomain,
+        domain: deployMode.cookieDomain,
+      },
+    }),
+    // Split (two projects on a public hosting suffix): host-only SameSite=None, the only attributes browsers store across two unrelated sites.
+    ...(deployMode.kind === "split" && {
+      defaultCookieAttributes: {
+        sameSite: "none" as const,
+        secure: true,
       },
     }),
   },
