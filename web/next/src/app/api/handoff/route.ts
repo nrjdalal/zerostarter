@@ -12,12 +12,8 @@ export async function GET(request: Request) {
   const nonceCookie = jar.get(HANDOFF_NONCE_COOKIE)
   const nonce = nonceCookie ? nonceCookie.value : null
 
-  // Every failure ends the same way: back to home, with the one-time nonce cleared so it cannot linger.
-  const fail = () => {
-    const failed = NextResponse.redirect(new URL("/", requestUrl))
-    failed.cookies.delete(HANDOFF_NONCE_COOKIE)
-    return failed
-  }
+  // Every failure ends the same way: back to home. The nonce is left in place, not cleared: two tabs share this one cookie (last write wins), so clearing on failure would nuke a concurrent sign-in's live nonce. Lingering is harmless, it is Max-Age bounded and useless without a matching parked row, and the success path below always clears it.
+  const fail = () => NextResponse.redirect(new URL("/", requestUrl))
 
   if (!id || !nonce) return fail()
 
