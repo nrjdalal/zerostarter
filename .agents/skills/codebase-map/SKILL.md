@@ -13,7 +13,7 @@ web/next/         # frontend (Next.js App Router): app/, components/, lib/, cont
 packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
-packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
+packages/config/  # TS base, tsdown factory, site.ts (brand identity), deploy.ts (deploy-mode helpers, shared client+server)
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 ```
 
