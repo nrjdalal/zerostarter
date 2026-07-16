@@ -27,8 +27,9 @@ export async function GET(request: Request) {
   const { name, value, expiresAt } = data
   if (!name || !value || !expiresAt) return fail()
 
-  // Match the cookie lifetime to the api session's real expiry rather than a hardcoded window, so the first-party copy expires exactly when the source session does.
+  // Match the cookie lifetime to the api session's real expiry rather than a hardcoded window, so the first-party copy expires exactly when the source session does. A malformed expiresAt yields NaN, which the cookie serializer rejects with a 500, so bail if it is not finite.
   const maxAge = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
+  if (!Number.isFinite(maxAge)) return fail()
   const redirect = NextResponse.redirect(new URL("/dashboard", requestUrl))
   redirect.cookies.delete(HANDOFF_NONCE_COOKIE)
   redirect.cookies.set(name, value, {
