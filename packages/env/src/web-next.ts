@@ -3,9 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { applyVercelSelfOrigin, polyfillClient } from "@/lib/polyfill"
-
-applyVercelSelfOrigin("NEXT_PUBLIC_APP_URL")
+import { polyfillClient } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {

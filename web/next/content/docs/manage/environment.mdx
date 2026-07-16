@@ -66,10 +66,6 @@ Two flags let a build pass without real secrets: missing required variables fall
 
 Never set either for a running app: the server would then start against dummy URLs and an undefined `BETTER_AUTH_SECRET` instead of real values.
 
-## Vercel preview URLs
-
-On Vercel, `NEXT_PUBLIC_APP_URL` (web) and `HONO_APP_URL` (api) stay required, so a deploy that omits them fails validation loudly. Set `VERCEL_URL_FALLBACK=true`, scoped to the Preview environment, to opt into filling a _missing_ one from `VERCEL_BRANCH_URL` (the branch-stable `*.vercel.app` origin Vercel injects), so a preview needs no per-branch URL config. An explicit value always wins, and production is unaffected unless the flag is set there too. The cross-references (`NEXT_PUBLIC_API_URL`, `HONO_TRUSTED_ORIGINS`) point at the _other_ project and cannot self-derive, so they stay explicit; in a split deploy the api also reads the first non-api `HONO_TRUSTED_ORIGINS` entry as the web origin, and warns at boot if several are trusted.
-
 ## Next
 
 - [Database](/docs/manage/database): where `POSTGRES_URL` is consumed.

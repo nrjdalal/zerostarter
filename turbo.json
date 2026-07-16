@@ -43,8 +43,6 @@
     "HONO_TRUSTED_ORIGINS",
     "INTERNAL_API_URL",
     "POSTGRES_URL",
-    "VERCEL_BRANCH_URL",
-    "VERCEL_URL_FALLBACK",
     // Client variables
     "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_APP_URL",
