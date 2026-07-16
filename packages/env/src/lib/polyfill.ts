@@ -10,11 +10,11 @@ export const polyfillServer = (value: string | undefined, dummy: string) =>
 export const polyfillClient = (value: string | undefined, dummy: string) =>
   value || (base ? dummy : value)
 
-// Opt-in only: a project's own url var is required by default, so a deploy that forgets it fails validation loudly (fail first). Setting VERCEL_URL_FALLBACK=true fills a MISSING value from VERCEL_BRANCH_URL (the branch-stable Vercel origin) instead, letting a preview skip per-branch config; scope the flag to preview in the dashboard so production still fails loud. An explicit url always wins, so this only ever fills a genuinely absent one. VERCEL_URL itself is unused: it changes per deployment and would bust the turbo cache. Cross-references to the sibling app are separate projects and stay explicit.
-export const vercelSelfOrigin = () => {
-  if (process.env.VERCEL_URL_FALLBACK !== "true") return undefined
+// Opt-in only: a project's own url var is required by default, so a deploy that forgets it fails validation loudly (fail first). With VERCEL_URL_FALLBACK=true this fills a MISSING var from VERCEL_BRANCH_URL (the branch-stable Vercel origin), letting a preview skip per-branch config; scope the flag to preview so production still fails loud, and an explicit url always wins. It MUTATES process.env before createEnv (rather than a call inside runtimeEnv) so a NEXT_PUBLIC_ var resolves to a literal Next can inline into the client bundle: a function reading VERCEL_BRANCH_URL inside runtimeEnv would only run in the browser, where that var is undefined, and the client would fail validation. VERCEL_URL is unused (per-deployment, would bust the turbo cache); cross-references to the sibling app stay explicit.
+export const applyVercelSelfOrigin = (name: string) => {
+  if (process.env[name] || process.env.VERCEL_URL_FALLBACK !== "true") return
   const host = process.env.VERCEL_BRANCH_URL
-  return host ? `https://${host}` : undefined
+  if (host) process.env[name] = `https://${host}`
 }
 
 // A security-critical server secret, never substituted with a dummy (unlike polyfillServer). Under a server skip flag its schema becomes optional so a tooling build passes without the secret; otherwise it stays required, so a missing secret fails closed at runtime instead of silently using a predictable constant. Pair with a raw `process.env` value in runtimeEnv (no polyfill).

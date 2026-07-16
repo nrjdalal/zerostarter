@@ -3,7 +3,9 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfillServer, serverSecret, vercelSelfOrigin } from "@/lib/polyfill"
+import { applyVercelSelfOrigin, polyfillServer, serverSecret } from "@/lib/polyfill"
+
+applyVercelSelfOrigin("HONO_APP_URL")
 
 export const env = createEnv({
   server: {
@@ -26,10 +28,7 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    HONO_APP_URL: polyfillServer(
-      process.env.HONO_APP_URL || vercelSelfOrigin(),
-      "https://polyfill.url",
-    ),
+    HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
     HONO_TRUSTED_ORIGINS: polyfillServer(process.env.HONO_TRUSTED_ORIGINS, "https://polyfill.url"),
   },
   emptyStringAsUndefined: true,
