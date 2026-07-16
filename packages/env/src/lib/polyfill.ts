@@ -10,8 +10,9 @@ export const polyfillServer = (value: string | undefined, dummy: string) =>
 export const polyfillClient = (value: string | undefined, dummy: string) =>
   value || (base ? dummy : value)
 
-// On Vercel, each deploy's own origin is injected as VERCEL_BRANCH_URL (stable per branch) or VERCEL_URL (per deployment). Use it as a fallback for a project's OWN url var so a preview needs no per-deploy config; cross-references to the sibling app are separate projects and stay explicit.
+// On a Vercel PREVIEW deploy, fill a project's OWN url var from the injected origin (VERCEL_BRANCH_URL is stable per branch, else VERCEL_URL) so previews need no per-deploy config. Preview-only, so a production deploy still requires its explicit custom-domain url and fails loudly if it is missing rather than silently resolving to the deploy URL. Cross-references to the sibling app are separate projects and stay explicit.
 export const vercelSelfOrigin = () => {
+  if (process.env.VERCEL_ENV !== "preview") return undefined
   const host = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
   return host ? `https://${host}` : undefined
 }
