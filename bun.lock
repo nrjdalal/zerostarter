@@ -59,12 +59,12 @@
       "name": "@packages/auth",
       "version": "0.0.0",
       "dependencies": {
+        "@packages/config": "workspace:*",
         "@packages/db": "workspace:*",
         "@packages/env": "workspace:*",
         "better-auth": "catalog:",
       },
       "devDependencies": {
-        "@packages/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "tsdown": "catalog:",

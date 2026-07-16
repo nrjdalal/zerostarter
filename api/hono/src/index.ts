@@ -148,8 +148,8 @@ socket.addEventListener("message", (event) => {
     }),
   )
   .route("/agents", agentsRouter)
-  .route("/handoff", handoffRouter)
   .route("/auth", authRouter)
+  .route("/handoff", handoffRouter)
   .route("/v1", v1Router)
   .route("/waitlist", waitlistRouter)
   // Gate both the OpenAPI document and the Scalar UI on apiDocs; the UI fetches the spec, so gating only the UI would leave the full spec public.

@@ -1,48 +1,55 @@
+import { HANDOFF_NONCE_COOKIE } from "@packages/config/deploy"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 import { config } from "@/lib/config"
 
-// Finishes the cross-origin session handoff (split deployments only; the api's routes 404 otherwise, so this handler is inert everywhere else). Claims the one-time id server-to-server, then sets the session cookie first-party on this origin so server-rendered pages can read the session. The cookie value is the api's own signed token; a forged value fails the api's signature check on every read, so this route holds no secrets.
+// Finishes the cross-origin session handoff (split deployments only; the api's routes 404 otherwise, so this handler is inert everywhere else). Claims the one-time id server-to-server, presenting this browser's nonce so the api can verify only the initiating browser redeems it, then sets the session cookie first-party on this origin so server-rendered pages can read the session. The cookie value is the api's own signed token; a forged value fails the api's signature check on every read, so this route holds no secrets.
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const id = requestUrl.searchParams.get("id")
-  if (!id) return NextResponse.redirect(new URL("/", requestUrl))
+  const jar = await cookies()
+  const nonceCookie = jar.get(HANDOFF_NONCE_COOKIE)
+  const nonce = nonceCookie ? nonceCookie.value : null
+
+  // Every failure ends the same way: back to home with a flag, and the one-time nonce cleared so it cannot linger.
+  const fail = () => {
+    const failed = NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
+    failed.cookies.delete(HANDOFF_NONCE_COOKIE)
+    return failed
+  }
+
+  if (!id || !nonce) return fail()
 
   try {
-    const response = await fetch(`${config.api.url}/api/handoff/claim`, {
+    const claim = await fetch(`${config.api.url}/api/handoff/claim`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id, nonce }),
       cache: "no-store",
     })
-    if (!response.ok) {
-      return NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
+    if (!claim.ok) return fail()
+    const body = (await claim.json()) as {
+      data?: { name?: string; value?: string; expiresAt?: string }
     }
-    const body = (await response.json()) as {
-      data?: { name?: string; value?: string; nonce?: string }
-    }
-    const { name, value, nonce } = body.data ?? {}
-    if (!name || !value || !nonce) {
-      return NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
-    }
-    // Only the browser that started this sign-in holds the matching nonce cookie; anyone else's claim dies here even with a valid id.
-    const jar = await cookies()
-    if (jar.get("handoff_nonce")?.value !== nonce) {
-      return NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
-    }
+    const name = body.data && body.data.name
+    const value = body.data && body.data.value
+    const expiresAt = body.data && body.data.expiresAt
+    if (!name || !value || !expiresAt) return fail()
 
+    // Match the cookie lifetime to the api session's real expiry rather than a hardcoded window, so the first-party copy expires exactly when the source session does.
+    const maxAge = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
     const redirect = NextResponse.redirect(new URL("/dashboard", requestUrl))
-    redirect.cookies.delete("handoff_nonce")
+    redirect.cookies.delete(HANDOFF_NONCE_COOKIE)
     redirect.cookies.set(name, value, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge,
     })
     return redirect
   } catch {
-    return NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
+    return fail()
   }
 }

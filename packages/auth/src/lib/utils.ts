@@ -1,3 +1,5 @@
+import { isPublicHostingSuffix } from "@packages/config/deploy"
+
 /**
  * Extracts the cookie domain from a URL for cross-subdomain cookie sharing.
  *
@@ -7,17 +9,9 @@
  * getCookieDomain("https://api.dev.example.com")         // ".dev.example.com"
  * getCookieDomain("http://api.zerostarter.localhost")    // ".zerostarter.localhost" (portless dev)
  * getCookieDomain("http://feat.api.zerostarter.localhost") // ".zerostarter.localhost" (portless worktree)
+ * getCookieDomain("https://myapp-api.vercel.app")        // undefined (public suffix, host-only)
  * getCookieDomain("http://localhost:4000")               // undefined
  */
-// Multi-tenant hosting domains are public suffixes: browsers reject cookies scoped to them, so cookie sharing is impossible there and split mode takes over.
-const PUBLIC_HOSTING_SUFFIXES = new Set([
-  "vercel.app",
-  "netlify.app",
-  "pages.dev",
-  "github.io",
-  "fly.dev",
-])
-
 export function getCookieDomain(url: string): string | undefined {
   try {
     const { hostname } = new URL(url)
@@ -28,9 +22,9 @@ export function getCookieDomain(url: string): string | undefined {
       return parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : undefined
     }
     if (parts.length <= 2) return undefined
-    const candidate = parts.slice(1).join(".")
-    if (PUBLIC_HOSTING_SUFFIXES.has(candidate)) return undefined
-    return `.${candidate}`
+    // Public-suffix hosting apex (e.g. *.vercel.app): a Domain cookie there is rejected by browsers, so stay host-only and let split mode take over.
+    if (isPublicHostingSuffix(hostname)) return undefined
+    return `.${parts.slice(1).join(".")}`
   } catch {
     return undefined
   }
@@ -64,8 +58,8 @@ export function getCookiePrefix(url: string): string | undefined {
 
 // The deployment shape, resolved once at module init from strings the api already has. Everything conditional (cookie attributes, the session handoff) branches on this value, never on env at request time, so a shared-domain deployment runs byte-identical code to a template without split support at all.
 export type DeployMode =
-  | { readonly kind: "shared-domain"; readonly cookieDomain: string }
   | { readonly kind: "host-only" }
+  | { readonly kind: "shared-domain"; readonly cookieDomain: string }
   | { readonly kind: "split"; readonly webOrigin: string }
 
 export function resolveDeployMode(appUrl: string, trustedOrigins: readonly string[]): DeployMode {
@@ -74,10 +68,16 @@ export function resolveDeployMode(appUrl: string, trustedOrigins: readonly strin
   if (cookieDomain) return { kind: "shared-domain", cookieDomain }
   try {
     const api = new URL(appUrl)
-    const web = trustedOrigins[0] ? new URL(trustedOrigins[0]) : null
-    const suffix = api.hostname.split(".").slice(1).join(".")
-    if (web && PUBLIC_HOSTING_SUFFIXES.has(suffix) && web.origin !== api.origin) {
-      return { kind: "split", webOrigin: web.origin }
+    if (isPublicHostingSuffix(api.hostname)) {
+      // The web origin is the trusted origin whose origin differs from the api's own, not simply the first entry: HONO_TRUSTED_ORIGINS is an ordered list an operator may write api-first.
+      const webOrigin = trustedOrigins.find((o) => {
+        try {
+          return new URL(o).origin !== api.origin
+        } catch {
+          return false
+        }
+      })
+      if (webOrigin) return { kind: "split", webOrigin: new URL(webOrigin).origin }
     }
   } catch {
     // fall through to host-only

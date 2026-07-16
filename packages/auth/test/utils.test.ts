@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
+import { getCookieDomain, getCookiePrefix, resolveDeployMode } from "@/lib/utils"
 
 test("getCookieDomain scopes the cookie to the environment subdomain in production", () => {
   expect(getCookieDomain("https://api.example.com")).toBe(".example.com")
@@ -37,4 +37,57 @@ test("getCookiePrefix returns no prefix for local dev (.localhost) so web + api 
   expect(getCookiePrefix("http://api.zerostarter.localhost:1355")).toBeUndefined()
   expect(getCookiePrefix("http://feat.api.zerostarter.localhost:1355")).toBeUndefined()
   expect(getCookiePrefix("http://feat.zerostarter.localhost:1355")).toBeUndefined()
+})
+
+test("getCookieDomain stays host-only on public hosting suffixes", () => {
+  for (const host of [
+    "https://myapp-api.vercel.app",
+    "https://myapp.netlify.app",
+    "https://myapp.pages.dev",
+    "https://me.github.io",
+    "https://myapp.fly.dev",
+    "https://myapp.onrender.com",
+    "https://myapp.herokuapp.com",
+  ]) {
+    expect(getCookieDomain(host)).toBeUndefined()
+  }
+})
+
+test("resolveDeployMode resolves shared-domain for custom domains and portless", () => {
+  expect(resolveDeployMode("https://api.example.com", ["https://app.example.com"])).toEqual({
+    kind: "shared-domain",
+    cookieDomain: ".example.com",
+  })
+  expect(
+    resolveDeployMode("http://api.zerostarter.localhost", ["http://zerostarter.localhost"]),
+  ).toEqual({ kind: "shared-domain", cookieDomain: ".zerostarter.localhost" })
+})
+
+test("resolveDeployMode resolves split for two projects on a public suffix", () => {
+  expect(
+    resolveDeployMode("https://myapp-api.vercel.app", ["https://myapp-web.vercel.app"]),
+  ).toEqual({ kind: "split", webOrigin: "https://myapp-web.vercel.app" })
+  expect(
+    resolveDeployMode("https://myapp-api.netlify.app", ["https://myapp-web.netlify.app"]),
+  ).toEqual({ kind: "split", webOrigin: "https://myapp-web.netlify.app" })
+})
+
+test("resolveDeployMode finds the web origin regardless of trusted-origin order", () => {
+  // Operator lists the api origin first: the web origin is resolved by differing from the api, not by position.
+  expect(
+    resolveDeployMode("https://myapp-api.vercel.app", [
+      "https://myapp-api.vercel.app",
+      "https://myapp-web.vercel.app",
+    ]),
+  ).toEqual({ kind: "split", webOrigin: "https://myapp-web.vercel.app" })
+})
+
+test("resolveDeployMode resolves host-only for same-origin suffix, bare hosts, no trusted origins", () => {
+  expect(resolveDeployMode("https://myapp.vercel.app", ["https://myapp.vercel.app"])).toEqual({
+    kind: "host-only",
+  })
+  expect(resolveDeployMode("http://localhost:4000", ["http://localhost:3000"])).toEqual({
+    kind: "host-only",
+  })
+  expect(resolveDeployMode("https://myapp-api.vercel.app", [])).toEqual({ kind: "host-only" })
 })

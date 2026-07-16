@@ -1,25 +1,33 @@
-import type { Session } from "@packages/auth"
-import { deployMode } from "@packages/auth"
-import { auth } from "@packages/auth"
+import { sValidator } from "@hono/standard-validator"
+import { auth, deployMode, type Session } from "@packages/auth"
 import { db, verification } from "@packages/db"
-import { eq, lt } from "drizzle-orm"
+import { and, eq, like, lt, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { getCookie } from "hono/cookie"
+import { z } from "zod"
 
 import { ApiError } from "@/lib/error"
 import { authMiddleware } from "@/middlewares"
 
-// Cross-origin session handoff, mounted in split mode only (two apps on unrelated public-suffix origins). After OAuth completes on the api origin, /start parks the session cookie value under an opaque one-time id (verification table, 60s, single use) and bounces to the web origin, whose /api/handoff route claims it server-to-server and sets the cookie first-party. Shared-domain and host-only deployments never reach these routes: every request 404s exactly as if the router did not exist.
+// Cross-origin session handoff, live in split mode only (two apps on unrelated public-suffix origins). After OAuth completes on the api origin, /start parks the session cookie value under an opaque one-time id (verification table, 60s, single use, bound to the caller's nonce) and bounces to the web origin, whose /api/handoff route claims it server-to-server and sets the cookie first-party. Shared-domain and host-only deployments never reach these routes: the mode gate below 404s every request before auth even runs, exactly as if the router did not exist.
 const HANDOFF_TTL_MS = 60_000
+const HANDOFF_ID_PREFIX = "handoff:"
+// Empty outside split mode, where the mode gate 404s before any handler runs, so it is only ever read as the real web origin.
+const webOrigin = deployMode.kind === "split" ? deployMode.webOrigin : ""
 
-export const handoffRouter = new Hono<{
-  Variables: Session
-}>()
-  // Outside split mode every route here answers 404 before auth even runs, exactly as if the router were not mounted.
-  .use(async (c, next) => (deployMode.kind === "split" ? next() : c.notFound()))
-  .get("/start", authMiddleware, async (c) => {
+// The whole secret is the id plus the nonce, so both must be long and single-use.
+const claimSchema = z.object({
+  id: z.string().min(32),
+  nonce: z.string().min(32),
+})
+
+export const handoffRouter = new Hono<{ Variables: Session }>()
+  // Mode gate first, ahead of authMiddleware: outside split mode every handoff request 404s as if the router were never mounted (it stays mounted so AppType is stable across deploy shapes).
+  .use("*", async (c, next) => {
     if (deployMode.kind !== "split") return c.notFound()
-
+    await next()
+  })
+  .get("/start", authMiddleware, async (c) => {
     const ctx = await auth.$context
     const cookieName = ctx.authCookies.sessionToken.name
     const value = getCookie(c, cookieName)
@@ -31,36 +39,55 @@ export const handoffRouter = new Hono<{
       throw new ApiError(400, "VALIDATION_ERROR", "Missing handoff nonce")
     }
 
-    // Two UUIDs of entropy: the id is the whole secret, single-use and short-lived. The sweep keeps abandoned handoffs from accumulating; one indexed delete, no cron.
+    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie and is matched inside the claim, so a leaked id alone can never redeem the session. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
     const id = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
-    await db.delete(verification).where(lt(verification.expiresAt, new Date()))
+    const { expiresAt } = c.get("session")
+    // Opportunistic cleanup of abandoned handoffs only (scoped to handoff rows so magic-link and email-verification rows are never swept); the identifier index carries the prefix match.
+    await db
+      .delete(verification)
+      .where(
+        and(
+          like(verification.identifier, `${HANDOFF_ID_PREFIX}%`),
+          lt(verification.expiresAt, new Date()),
+        ),
+      )
     await db.insert(verification).values({
       id: crypto.randomUUID(),
-      identifier: `handoff:${id}`,
-      value: JSON.stringify({ name: cookieName, value, nonce }),
+      identifier: `${HANDOFF_ID_PREFIX}${id}`,
+      value: JSON.stringify({ name: cookieName, value, nonce, expiresAt }),
       expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
     })
 
-    return c.redirect(`${deployMode.webOrigin}/api/handoff?id=${id}`, 302)
+    return c.redirect(`${webOrigin}/api/handoff?id=${id}`, 302)
   })
-  .post("/claim", async (c) => {
-    if (deployMode.kind !== "split") return c.notFound()
-
-    const body = (await c.req.json().catch(() => null)) as { id?: unknown } | null
-    const id = body?.id
-    if (typeof id !== "string" || id.length < 32) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Invalid handoff id")
-    }
-
-    // Delete-returning makes the claim atomic and single-use: a replayed id finds nothing.
-    const rows = await db
-      .delete(verification)
-      .where(eq(verification.identifier, `handoff:${id}`))
-      .returning()
-    const row = rows[0]
-    if (!row || row.expiresAt.getTime() < Date.now()) {
-      throw new ApiError(404, "NOT_FOUND", "Unknown or expired handoff")
-    }
-
-    return c.json({ data: JSON.parse(row.value) as { name: string; value: string; nonce: string } })
-  })
+  .post(
+    "/claim",
+    sValidator("json", claimSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid handoff claim", {
+          issues: result.error,
+        })
+      }
+    }),
+    async (c) => {
+      const { id, nonce } = c.req.valid("json")
+      // Atomic single-use claim bound to the nonce: the DELETE matches the id AND the parked nonce in one statement, so a wrong nonce matches nothing (the row survives, no self-inflicted DoS) and a caller holding only a leaked id gets nothing. The token is returned to the trusted web server, never the nonce.
+      const rows = await db
+        .delete(verification)
+        .where(
+          and(
+            eq(verification.identifier, `${HANDOFF_ID_PREFIX}${id}`),
+            sql`${verification.value}::jsonb->>'nonce' = ${nonce}`,
+          ),
+        )
+        .returning()
+      const row = rows[0]
+      if (!row || row.expiresAt.getTime() < Date.now()) {
+        throw new ApiError(404, "NOT_FOUND", "Unknown or expired handoff")
+      }
+      const parked = JSON.parse(row.value) as { name: string; value: string; expiresAt: string }
+      return c.json({
+        data: { name: parked.name, value: parked.value, expiresAt: parked.expiresAt },
+      })
+    },
+  )

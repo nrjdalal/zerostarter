@@ -1,5 +1,6 @@
 "use client"
 
+import { HANDOFF_NONCE_COOKIE, isSplitPair } from "@packages/config/deploy"
 import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
@@ -23,14 +24,13 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
-import { isSplitPair } from "@/lib/deploy"
 
 // Where sign-in lands: straight to the dashboard when app and api share a site (today's behavior, byte-identical), through the api's session handoff when they are two unrelated public-suffix origins. In split mode each sign-in mints a nonce, kept as a first-party cookie here and threaded through the handoff, so only the browser that started the flow can claim it (login-CSRF binding, the same job OAuth state does). Note: with magic link, the email must be opened in the same browser that requested it.
 const splitPair = isSplitPair(config.app.url, config.api.url)
 function postLoginUrl(): string {
   if (!splitPair) return `${config.app.url}/dashboard`
   const nonce = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
-  document.cookie = `handoff_nonce=${nonce}; Path=/; Max-Age=600; Secure; SameSite=Lax`
+  document.cookie = `${HANDOFF_NONCE_COOKIE}=${nonce}; Path=/; Max-Age=600; Secure; SameSite=Lax`
   return `${config.api.url}/api/handoff/start?nonce=${nonce}`
 }
 
