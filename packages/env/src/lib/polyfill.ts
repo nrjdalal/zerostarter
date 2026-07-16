@@ -10,10 +10,10 @@ export const polyfillServer = (value: string | undefined, dummy: string) =>
 export const polyfillClient = (value: string | undefined, dummy: string) =>
   value || (base ? dummy : value)
 
-// On a Vercel PREVIEW deploy, fill a project's OWN url var from the injected origin (VERCEL_BRANCH_URL is stable per branch, else VERCEL_URL) so previews need no per-deploy config. Preview-only, so a production deploy still requires its explicit custom-domain url and fails loudly if it is missing rather than silently resolving to the deploy URL. Cross-references to the sibling app are separate projects and stay explicit.
+// Opt-in only: a project's own url var is required by default, so a deploy that forgets it fails validation loudly (fail first). Setting VERCEL_URL_FALLBACK=true fills a MISSING value from VERCEL_BRANCH_URL (the branch-stable Vercel origin) instead, letting a preview skip per-branch config; scope the flag to preview in the dashboard so production still fails loud. An explicit url always wins, so this only ever fills a genuinely absent one. VERCEL_URL itself is unused: it changes per deployment and would bust the turbo cache. Cross-references to the sibling app are separate projects and stay explicit.
 export const vercelSelfOrigin = () => {
-  if (process.env.VERCEL_ENV !== "preview") return undefined
-  const host = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+  if (process.env.VERCEL_URL_FALLBACK !== "true") return undefined
+  const host = process.env.VERCEL_BRANCH_URL
   return host ? `https://${host}` : undefined
 }
 
