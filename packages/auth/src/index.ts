@@ -52,6 +52,25 @@ if (deployMode.kind === "split") {
   }
 }
 
+// Shared-domain scopes the session cookie to cookieDomain; if no trusted origin sits under it, the web app can never receive that cookie and sign-in fails silently after OAuth. Warn at boot. (A correct config, custom domain or portless localhost, always lists a web origin under the domain, so this stays quiet.)
+if (deployMode.kind === "shared-domain") {
+  const domain = deployMode.cookieDomain
+  const bare = domain.slice(1)
+  const underDomain = env.HONO_TRUSTED_ORIGINS.some((o) => {
+    try {
+      const { hostname } = new URL(o)
+      return hostname === bare || hostname.endsWith(domain)
+    } catch {
+      return false
+    }
+  })
+  if (!underDomain) {
+    console.warn(
+      `[auth] cookies are scoped to ${domain}, but no HONO_TRUSTED_ORIGINS entry is under it, so the web app cannot receive the session cookie. Add your web origin (under ${bare}) to HONO_TRUSTED_ORIGINS.`,
+    )
+  }
+}
+
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
 
