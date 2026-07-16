@@ -50,8 +50,10 @@ test("getCookieDomain stays host-only on public hosting suffixes", () => {
     "https://myapp.netlify.app",
     "https://myapp.onrender.com",
     "https://myapp.pages.dev",
+    "https://myapp.up.railway.app",
     "https://myapp-api.vercel.app",
     "https://myapp.web.app",
+    "https://myapp.workers.dev",
   ]) {
     expect(getCookieDomain(host)).toBeUndefined()
   }

@@ -10,8 +10,10 @@ const PUBLIC_HOSTING_SUFFIXES = new Set([
   "netlify.app",
   "onrender.com",
   "pages.dev",
+  "up.railway.app",
   "vercel.app",
   "web.app",
+  "workers.dev",
 ])
 
 // Name of the first-party cookie that binds a split-mode sign-in to the browser that started it: set on the web origin, matched by the api's handoff claim. Its Max-Age (10 min) bounds how long a started handoff stays claimable; a fork that raises an auth-link expiry past that gets a silent handoff failure, so keep the two in step.
