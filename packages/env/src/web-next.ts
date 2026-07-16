@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfillClient } from "@/lib/polyfill"
+import { polyfillClient, vercelSelfOrigin } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {
@@ -23,7 +23,10 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     INTERNAL_API_URL: process.env.INTERNAL_API_URL,
     NEXT_PUBLIC_API_URL: polyfillClient(process.env.NEXT_PUBLIC_API_URL, "https://polyfill.url"),
-    NEXT_PUBLIC_APP_URL: polyfillClient(process.env.NEXT_PUBLIC_APP_URL, "https://polyfill.url"),
+    NEXT_PUBLIC_APP_URL: polyfillClient(
+      process.env.NEXT_PUBLIC_APP_URL || vercelSelfOrigin(),
+      "https://polyfill.url",
+    ),
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,

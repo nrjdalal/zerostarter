@@ -10,6 +10,12 @@ export const polyfillServer = (value: string | undefined, dummy: string) =>
 export const polyfillClient = (value: string | undefined, dummy: string) =>
   value || (base ? dummy : value)
 
+// On Vercel, each deploy's own origin is injected as VERCEL_BRANCH_URL (stable per branch) or VERCEL_URL (per deployment). Use it as a fallback for a project's OWN url var so a preview needs no per-deploy config; cross-references to the sibling app are separate projects and stay explicit.
+export const vercelSelfOrigin = () => {
+  const host = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+  return host ? `https://${host}` : undefined
+}
+
 // A security-critical server secret, never substituted with a dummy (unlike polyfillServer). Under a server skip flag its schema becomes optional so a tooling build passes without the secret; otherwise it stays required, so a missing secret fails closed at runtime instead of silently using a predictable constant. Pair with a raw `process.env` value in runtimeEnv (no polyfill).
 export const serverSecret = <T extends z.ZodTypeAny>(schema: T) =>
   skipServer ? schema.optional() : schema

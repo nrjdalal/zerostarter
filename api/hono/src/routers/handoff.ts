@@ -1,7 +1,5 @@
 import { sValidator } from "@hono/standard-validator"
 import { auth, deployMode, type Session } from "@packages/auth"
-import { db, verification } from "@packages/db"
-import { and, eq, like, lt } from "drizzle-orm"
 import { Hono } from "hono"
 import { getCookie } from "hono/cookie"
 import { z } from "zod"
@@ -9,7 +7,7 @@ import { z } from "zod"
 import { ApiError } from "@/lib/error"
 import { authMiddleware } from "@/middlewares"
 
-// Cross-origin session handoff, live in split mode only (two apps on unrelated public-suffix origins). After OAuth completes on the api origin, /start parks the session cookie value under an opaque one-time id (verification table, 60s, single use, bound to the caller's nonce) and bounces to the web origin, whose /api/handoff route claims it server-to-server and sets the cookie first-party. Shared-domain and host-only deployments never reach these routes: the mode gate below 404s every request before auth even runs, exactly as if the router did not exist.
+// Cross-origin session handoff, live in split mode only (two apps on unrelated public-suffix origins). After OAuth completes on the api origin, /start parks the session-cookie value under a one-time id and bounces to the web origin, whose /api/handoff route claims it server-to-server and sets the cookie first-party. Storage goes through Better Auth's own verification adapter, the same primitive its one-time-token plugin uses, so there is no bespoke SQL to drift from the framework. Shared-domain and host-only deployments never reach these routes: the mode gate below 404s every request before auth even runs.
 const HANDOFF_TTL_MS = 60_000
 const HANDOFF_ID_PREFIX = "handoff:"
 // Empty outside split mode, where the mode gate 404s before any handler runs, so it is only ever read as the real web origin.
@@ -39,20 +37,10 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
       throw new ApiError(400, "VALIDATION_ERROR", "Missing handoff nonce")
     }
 
-    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie and is folded into the row's identifier, so only a caller presenting both the id and the nonce can claim. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
+    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie, folded into the row identifier so only a caller presenting both can claim. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
     const id = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
     const { expiresAt } = c.get("session")
-    // Opportunistic cleanup of abandoned handoffs only, scoped to handoff rows so magic-link and email-verification rows are never swept. The prefix LIKE seq-scans on a default-collation column, but the verification table is tiny and this runs once per sign-in.
-    await db
-      .delete(verification)
-      .where(
-        and(
-          like(verification.identifier, `${HANDOFF_ID_PREFIX}%`),
-          lt(verification.expiresAt, new Date()),
-        ),
-      )
-    await db.insert(verification).values({
-      id: crypto.randomUUID(),
+    await ctx.internalAdapter.createVerificationValue({
       identifier: `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
       value: JSON.stringify({ name: cookieName, value, expiresAt }),
       expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
@@ -71,16 +59,19 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
     }),
     async (c) => {
       const { id, nonce } = c.req.valid("json")
-      // Atomic single-use claim: the nonce is folded into the identifier, so the DELETE matches only when the caller presents both the id and the initiating browser's nonce. A wrong nonce forms a different identifier and matches nothing, so the row survives (no self-inflicted DoS) and a leaked id alone gets nothing. Plain identifier equality keeps the claim on the index with no json cast of the shared verification.value column.
-      const rows = await db
-        .delete(verification)
-        .where(eq(verification.identifier, `${HANDOFF_ID_PREFIX}${id}:${nonce}`))
-        .returning()
-      const row = rows[0]
-      if (!row || row.expiresAt.getTime() < Date.now()) {
+      const ctx = await auth.$context
+      // Atomic single-use consume via Better Auth's adapter: it validates, deletes, and re-checks expiry in one locked transaction, and only the first concurrent caller wins. A wrong nonce forms a different identifier and consumes nothing, so the row survives (no self-inflicted DoS) and a leaked id alone gets nothing.
+      const consumed = await ctx.internalAdapter.consumeVerificationValue(
+        `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
+      )
+      if (!consumed) {
         throw new ApiError(404, "NOT_FOUND", "Unknown or expired handoff")
       }
-      const parked = JSON.parse(row.value) as { name: string; value: string; expiresAt: string }
+      const parked = JSON.parse(consumed.value) as {
+        name: string
+        value: string
+        expiresAt: string
+      }
       return c.json({
         data: { name: parked.name, value: parked.value, expiresAt: parked.expiresAt },
       })

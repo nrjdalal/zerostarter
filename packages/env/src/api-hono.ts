@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import "@/lib/utils"
 import { NODE_ENV } from "@/lib/constants"
-import { polyfillServer } from "@/lib/polyfill"
+import { polyfillServer, vercelSelfOrigin } from "@/lib/polyfill"
 
 export const env = createEnv({
   server: {
@@ -21,7 +21,10 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     AGENT_SIGNIN_ENABLED: process.env.AGENT_SIGNIN_ENABLED,
-    HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
+    HONO_APP_URL: polyfillServer(
+      process.env.HONO_APP_URL || vercelSelfOrigin(),
+      "https://polyfill.url",
+    ),
     HONO_PORT: process.env.HONO_PORT,
     HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,
     HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,
