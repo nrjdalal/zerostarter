@@ -1,6 +1,6 @@
 import { sValidator } from "@hono/standard-validator"
 import { auth, deployMode, type Session } from "@packages/auth"
-import { mintHandoffToken } from "@packages/config/deploy"
+import { HANDOFF_TOKEN_PATTERN, mintHandoffToken } from "@packages/config/deploy"
 import { Hono } from "hono"
 import { getCookie } from "hono/cookie"
 import { z } from "zod"
@@ -14,8 +14,8 @@ const HANDOFF_ID_PREFIX = "handoff:"
 // Empty outside split mode, where the mode gate 404s before any handler runs, so it is only ever read as the real web origin.
 const webOrigin = deployMode.kind === "split" ? deployMode.webOrigin : ""
 
-// The id and the nonce are each the whole secret, so both are bounded long: min keeps them unguessable, max stops an authenticated caller parking oversized verification rows.
-const token = z.string().min(32).max(128)
+// The id and the nonce are each the whole secret. Both are pinned to the exact shape the web mints (64 hex chars), so a malformed value is rejected before any lookup and a caller cannot park oversized verification rows.
+const token = z.string().regex(HANDOFF_TOKEN_PATTERN)
 const startSchema = z.object({ nonce: token })
 const claimSchema = z.object({ id: token, nonce: token })
 

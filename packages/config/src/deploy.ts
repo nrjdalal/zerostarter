@@ -22,6 +22,9 @@ export function mintHandoffToken(): string {
   return (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
 }
 
+// The exact shape mintHandoffToken emits (64 lowercase hex chars). The api validates ids and nonces against this so a malformed value is rejected before any lookup, and it lives beside the minter so the two can never drift.
+export const HANDOFF_TOKEN_PATTERN = /^[0-9a-f]{64}$/
+
 // True when a host sits directly under one of those apexes (e.g. your-api.vercel.app), so its only shareable parent domain is a public suffix.
 export function isPublicHostingSuffix(hostname: string): boolean {
   const parent = hostname.split(".").slice(1).join(".")
