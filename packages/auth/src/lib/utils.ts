@@ -22,6 +22,8 @@ export function getCookieDomain(url: string): string | undefined {
       return parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : undefined
     }
     if (parts.length <= 2) return undefined
+    // IPv4 hosts cannot carry a Domain cookie, so stay host-only. (A bare two-part-TLD domain like example.co.uk is also unsupported: the curated suffix set does not know ccTLD second levels, so an api under one should use a subdomain such as api.example.co.uk.)
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname)) return undefined
     // Public-suffix hosting apex (e.g. *.vercel.app): a Domain cookie there is rejected by browsers, so stay host-only and let split mode take over.
     if (isPublicHostingSuffix(hostname)) return undefined
     return `.${parts.slice(1).join(".")}`
@@ -70,14 +72,14 @@ export function resolveDeployMode(appUrl: string, trustedOrigins: readonly strin
     const api = new URL(appUrl)
     if (isPublicHostingSuffix(api.hostname)) {
       // The web origin is the trusted origin whose origin differs from the api's own, not simply the first entry: HONO_TRUSTED_ORIGINS is an ordered list an operator may write api-first.
-      const webOrigin = trustedOrigins.find((o) => {
+      for (const origin of trustedOrigins) {
         try {
-          return new URL(o).origin !== api.origin
+          const web = new URL(origin)
+          if (web.origin !== api.origin) return { kind: "split", webOrigin: web.origin }
         } catch {
-          return false
+          // skip unparseable trusted origins
         }
-      })
-      if (webOrigin) return { kind: "split", webOrigin: new URL(webOrigin).origin }
+      }
     }
   } catch {
     // fall through to host-only
