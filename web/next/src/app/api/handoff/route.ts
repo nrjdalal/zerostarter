@@ -1,11 +1,16 @@
-import { HANDOFF_NONCE_COOKIE } from "@packages/config/deploy"
+import { HANDOFF_NONCE_COOKIE, isSplitPair } from "@packages/config/deploy"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 import { apiClient, unwrap } from "@/lib/api/client"
+import { config } from "@/lib/config"
+
+// The claim route mounts only in split mode, matching the api's handoff gate; the (app, api) pair is a build-time constant.
+const splitPair = isSplitPair(config.app.url, config.api.url)
 
 // Finishes the cross-origin session handoff (split deployments only; the api's routes 404 otherwise, so this handler is inert everywhere else). Claims the one-time id server-to-server through the typed api client, presenting this browser's nonce so the api verifies only the initiating browser redeems it, then sets the session cookie first-party on this origin so server-rendered pages can read the session. The cookie value is the api's own signed token; a forged value fails the api's signature check on every read, so this route holds no secrets.
 export async function GET(request: Request) {
+  if (!splitPair) return new NextResponse(null, { status: 404 })
   const requestUrl = new URL(request.url)
   const id = requestUrl.searchParams.get("id")
   const jar = await cookies()
