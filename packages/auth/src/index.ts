@@ -1,3 +1,4 @@
+import { isPublicHostingSuffix } from "@packages/config/deploy"
 import {
   account,
   db,
@@ -24,6 +25,13 @@ import { getCookiePrefix, resolveDeployMode } from "@/lib/utils"
 // Resolved once; the handoff router and the web client read it too.
 export const deployMode = resolveDeployMode(env.HONO_APP_URL, env.HONO_TRUSTED_ORIGINS)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
+
+// A public-suffix host that did not resolve to split (no web origin distinct from the api in HONO_TRUSTED_ORIGINS) means cookies cannot be shared and the handoff is off, so sign-in dies silently post-OAuth. Warn loudly at boot.
+if (deployMode.kind === "host-only" && isPublicHostingSuffix(new URL(env.HONO_APP_URL).hostname)) {
+  console.warn(
+    "[auth] HONO_APP_URL is on a public-suffix host but HONO_TRUSTED_ORIGINS has no distinct web origin, so split-deploy sign-in is off and OAuth will fail with state_mismatch. Set HONO_TRUSTED_ORIGINS to your web origin, or use a custom domain.",
+  )
+}
 
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"

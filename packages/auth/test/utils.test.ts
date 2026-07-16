@@ -41,13 +41,16 @@ test("getCookiePrefix returns no prefix for local dev (.localhost) so web + api 
 
 test("getCookieDomain stays host-only on public hosting suffixes", () => {
   for (const host of [
-    "https://myapp-api.vercel.app",
-    "https://myapp.netlify.app",
-    "https://myapp.pages.dev",
-    "https://me.github.io",
+    "https://myapp.deno.dev",
+    "https://myapp.firebaseapp.com",
     "https://myapp.fly.dev",
-    "https://myapp.onrender.com",
+    "https://me.github.io",
     "https://myapp.herokuapp.com",
+    "https://myapp.netlify.app",
+    "https://myapp.onrender.com",
+    "https://myapp.pages.dev",
+    "https://myapp-api.vercel.app",
+    "https://myapp.web.app",
   ]) {
     expect(getCookieDomain(host)).toBeUndefined()
   }

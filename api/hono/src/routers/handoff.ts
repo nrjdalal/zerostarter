@@ -1,7 +1,7 @@
 import { sValidator } from "@hono/standard-validator"
 import { auth, deployMode, type Session } from "@packages/auth"
 import { db, verification } from "@packages/db"
-import { and, eq, like, lt, sql } from "drizzle-orm"
+import { and, eq, like, lt } from "drizzle-orm"
 import { Hono } from "hono"
 import { getCookie } from "hono/cookie"
 import { z } from "zod"
@@ -39,10 +39,10 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
       throw new ApiError(400, "VALIDATION_ERROR", "Missing handoff nonce")
     }
 
-    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie and is matched inside the claim, so a leaked id alone can never redeem the session. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
+    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie and is folded into the row's identifier, so only a caller presenting both the id and the nonce can claim. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
     const id = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
     const { expiresAt } = c.get("session")
-    // Opportunistic cleanup of abandoned handoffs only (scoped to handoff rows so magic-link and email-verification rows are never swept); the identifier index carries the prefix match.
+    // Opportunistic cleanup of abandoned handoffs only, scoped to handoff rows so magic-link and email-verification rows are never swept. The prefix LIKE seq-scans on a default-collation column, but the verification table is tiny and this runs once per sign-in.
     await db
       .delete(verification)
       .where(
@@ -53,8 +53,8 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
       )
     await db.insert(verification).values({
       id: crypto.randomUUID(),
-      identifier: `${HANDOFF_ID_PREFIX}${id}`,
-      value: JSON.stringify({ name: cookieName, value, nonce, expiresAt }),
+      identifier: `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
+      value: JSON.stringify({ name: cookieName, value, expiresAt }),
       expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
     })
 
@@ -71,15 +71,10 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
     }),
     async (c) => {
       const { id, nonce } = c.req.valid("json")
-      // Atomic single-use claim bound to the nonce: the DELETE matches the id AND the parked nonce in one statement, so a wrong nonce matches nothing (the row survives, no self-inflicted DoS) and a caller holding only a leaked id gets nothing. The token is returned to the trusted web server, never the nonce.
+      // Atomic single-use claim: the nonce is folded into the identifier, so the DELETE matches only when the caller presents both the id and the initiating browser's nonce. A wrong nonce forms a different identifier and matches nothing, so the row survives (no self-inflicted DoS) and a leaked id alone gets nothing. Plain identifier equality keeps the claim on the index with no json cast of the shared verification.value column.
       const rows = await db
         .delete(verification)
-        .where(
-          and(
-            eq(verification.identifier, `${HANDOFF_ID_PREFIX}${id}`),
-            sql`${verification.value}::jsonb->>'nonce' = ${nonce}`,
-          ),
-        )
+        .where(eq(verification.identifier, `${HANDOFF_ID_PREFIX}${id}:${nonce}`))
         .returning()
       const row = rows[0]
       if (!row || row.expiresAt.getTime() < Date.now()) {
