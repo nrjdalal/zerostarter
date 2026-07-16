@@ -11,6 +11,8 @@ import { authMiddleware } from "@/middlewares"
 // Cross-origin session handoff, live in split mode only (two apps on unrelated public-suffix origins). After OAuth completes on the api origin, /start parks the session-cookie value under a one-time id and bounces to the web origin, whose /api/handoff route claims it server-to-server and sets the cookie first-party. Storage goes through Better Auth's own verification adapter, the same primitive its one-time-token plugin uses, so there is no bespoke SQL to drift from the framework. Shared-domain and host-only deployments never reach these routes: the mode gate below 404s every request before auth even runs.
 const HANDOFF_TTL_MS = 60_000
 const HANDOFF_ID_PREFIX = "handoff:"
+// Fold the opaque id and the browser's nonce into one verification-row identifier, built in a single place so /start and /claim cannot drift.
+const handoffIdentifier = (id: string, nonce: string) => `${HANDOFF_ID_PREFIX}${id}:${nonce}`
 // Empty outside split mode, where the mode gate 404s before any handler runs, so it is only ever read as the real web origin.
 const webOrigin = deployMode.kind === "split" ? deployMode.webOrigin : ""
 
@@ -48,7 +50,7 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
       const id = mintHandoffToken()
       const { expiresAt } = c.get("session")
       await ctx.internalAdapter.createVerificationValue({
-        identifier: `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
+        identifier: handoffIdentifier(id, nonce),
         value: JSON.stringify({ name: cookieName, value, expiresAt }),
         expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
       })
@@ -70,7 +72,7 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
       const ctx = await auth.$context
       // Atomic single-use consume via Better Auth's adapter: it validates, deletes, and re-checks expiry in one locked transaction, and only the first concurrent caller wins. A wrong nonce forms a different identifier and consumes nothing, so the row survives (no self-inflicted DoS) and a leaked id alone gets nothing.
       const consumed = await ctx.internalAdapter.consumeVerificationValue(
-        `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
+        handoffIdentifier(id, nonce),
       )
       if (!consumed) {
         throw new ApiError(404, "NOT_FOUND", "Unknown or expired handoff")

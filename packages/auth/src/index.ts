@@ -22,7 +22,7 @@ import {
 
 import { getCookiePrefix, resolveDeployMode } from "@/lib/utils"
 
-// Resolved once; the handoff router and the web client read it too.
+// Resolved once at module init; the handoff router reads it. The web client makes its own split decision via isSplitPair (from @packages/config/deploy), since this server-env module must never reach the client bundle.
 export const deployMode = resolveDeployMode(env.HONO_APP_URL, env.HONO_TRUSTED_ORIGINS)
 const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
 
