@@ -16,7 +16,7 @@ const PUBLIC_HOSTING_SUFFIXES = new Set([
   "workers.dev",
 ])
 
-// Name of the first-party cookie that binds a split-mode sign-in to the browser that started it: set on the web origin, matched by the api's handoff claim. Its Max-Age (10 min) bounds how long a started handoff stays claimable; a fork that raises an auth-link expiry past that gets a silent handoff failure, so keep the two in step.
+// Name of the first-party cookie that binds a split-mode sign-in to the browser that started it: set on the web origin, matched by the api's handoff claim. Its Max-Age (10 min) bounds how long after a sign-in is requested the flow may still complete, so a fork that raises a magic-link expiry past 10 min gets a silent handoff failure when the link is opened after the cookie lapses; keep the two in step. (A parked handoff row is itself claimable only for its 60s TTL.)
 export const HANDOFF_NONCE_COOKIE = "handoff_nonce"
 
 // A single-use handoff token (the id or the nonce): two UUIDs of entropy with hyphens stripped, so the whole 64-char value is the secret. Shared so the web (mint) and api (validate) agree on the shape.
