@@ -15,6 +15,8 @@ const HANDOFF_TTL_MS = 60_000
 export const handoffRouter = new Hono<{
   Variables: Session
 }>()
+  // Outside split mode every route here answers 404 before auth even runs, exactly as if the router were not mounted.
+  .use(async (c, next) => (deployMode.kind === "split" ? next() : c.notFound()))
   .get("/start", authMiddleware, async (c) => {
     if (deployMode.kind !== "split") return c.notFound()
 
