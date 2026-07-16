@@ -138,6 +138,8 @@ export const auth = betterAuth({
       },
     }),
   },
+  // In split mode the OAuth `state` cookie is written by the api on a cross-site fetch response (signIn.social posts, then does a top-level redirect), which Safari (ITP) blocks and Firefox partitions, so it is absent on the first-party provider callback and sign-in dies with state_mismatch before the handoff runs. Skip the state COOKIE check: with a server session store the state is also persisted in the DB (single-use CSPRNG, deleted on parse), which stays the CSRF binding. This is what Better Auth's own oauth-proxy plugin does for the cross-origin case.
+  ...(deployMode.kind === "split" && { account: { skipStateCookieCheck: true } }),
 })
 
 // Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.
