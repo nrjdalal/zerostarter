@@ -1,5 +1,6 @@
 import { sValidator } from "@hono/standard-validator"
 import { auth, deployMode, type Session } from "@packages/auth"
+import { mintHandoffToken } from "@packages/config/deploy"
 import { Hono } from "hono"
 import { getCookie } from "hono/cookie"
 import { z } from "zod"
@@ -13,11 +14,10 @@ const HANDOFF_ID_PREFIX = "handoff:"
 // Empty outside split mode, where the mode gate 404s before any handler runs, so it is only ever read as the real web origin.
 const webOrigin = deployMode.kind === "split" ? deployMode.webOrigin : ""
 
-// The whole secret is the id plus the nonce, so both must be long and single-use.
-const claimSchema = z.object({
-  id: z.string().min(32),
-  nonce: z.string().min(32),
-})
+// The id and the nonce are each the whole secret, so both are bounded long: min keeps them unguessable, max stops an authenticated caller parking oversized verification rows.
+const token = z.string().min(32).max(128)
+const startSchema = z.object({ nonce: token })
+const claimSchema = z.object({ id: token, nonce: token })
 
 export const handoffRouter = new Hono<{ Variables: Session }>()
   // Mode gate first, ahead of authMiddleware: outside split mode every handoff request 404s as if the router were never mounted (it stays mounted so AppType is stable across deploy shapes).
@@ -25,29 +25,37 @@ export const handoffRouter = new Hono<{ Variables: Session }>()
     if (deployMode.kind !== "split") return c.notFound()
     await next()
   })
-  .get("/start", authMiddleware, async (c) => {
-    const ctx = await auth.$context
-    const cookieName = ctx.authCookies.sessionToken.name
-    const value = getCookie(c, cookieName)
-    if (!value) {
-      throw new ApiError(401, "UNAUTHORIZED", "No session cookie to hand off")
-    }
-    const nonce = c.req.query("nonce")
-    if (!nonce || nonce.length < 32) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Missing handoff nonce")
-    }
+  .get(
+    "/start",
+    authMiddleware,
+    sValidator("query", startSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Missing handoff nonce", {
+          issues: result.error,
+        })
+      }
+    }),
+    async (c) => {
+      const ctx = await auth.$context
+      const cookieName = ctx.authCookies.sessionToken.name
+      const value = getCookie(c, cookieName)
+      if (!value) {
+        throw new ApiError(401, "UNAUTHORIZED", "No session cookie to hand off")
+      }
+      const { nonce } = c.req.valid("query")
 
-    // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie, folded into the row identifier so only a caller presenting both can claim. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
-    const id = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
-    const { expiresAt } = c.get("session")
-    await ctx.internalAdapter.createVerificationValue({
-      identifier: `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
-      value: JSON.stringify({ name: cookieName, value, expiresAt }),
-      expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
-    })
+      // The id travels in the redirect URL, so it is not secret-grade; the nonce is the initiating browser's first-party cookie, folded into the row identifier so only a caller presenting both can claim. The parked expiry lets the web mint a cookie matching the real session lifetime, not a guessed one.
+      const id = mintHandoffToken()
+      const { expiresAt } = c.get("session")
+      await ctx.internalAdapter.createVerificationValue({
+        identifier: `${HANDOFF_ID_PREFIX}${id}:${nonce}`,
+        value: JSON.stringify({ name: cookieName, value, expiresAt }),
+        expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
+      })
 
-    return c.redirect(`${webOrigin}/api/handoff?id=${id}`, 302)
-  })
+      return c.redirect(`${webOrigin}/api/handoff?id=${id}`, 302)
+    },
+  )
   .post(
     "/claim",
     sValidator("json", claimSchema, (result) => {

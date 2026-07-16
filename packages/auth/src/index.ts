@@ -33,6 +33,25 @@ if (deployMode.kind === "host-only" && isPublicHostingSuffix(new URL(env.HONO_AP
   )
 }
 
+// In split mode the web origin is inferred as the first trusted origin that differs from the api. HONO_TRUSTED_ORIGINS is a CORS allowlist that can hold several, so warn if more than one distinct non-api origin is trusted: the inference could pick the wrong site (not a leak, the nonce cookie lives on the real web origin, but a baffling misroute).
+if (deployMode.kind === "split") {
+  const apiOrigin = new URL(env.HONO_APP_URL).origin
+  const nonApiOrigins = new Set(
+    env.HONO_TRUSTED_ORIGINS.map((o) => {
+      try {
+        return new URL(o).origin
+      } catch {
+        return ""
+      }
+    }).filter((o) => o && o !== apiOrigin),
+  )
+  if (nonApiOrigins.size > 1) {
+    console.warn(
+      `[auth] split mode treats the first non-api HONO_TRUSTED_ORIGINS entry as the web origin (${deployMode.webOrigin}), but ${nonApiOrigins.size} distinct non-api origins are trusted. List the web origin first if that is not it.`,
+    )
+  }
+}
+
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
 

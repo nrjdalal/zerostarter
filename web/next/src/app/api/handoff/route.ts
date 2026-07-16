@@ -12,9 +12,9 @@ export async function GET(request: Request) {
   const nonceCookie = jar.get(HANDOFF_NONCE_COOKIE)
   const nonce = nonceCookie ? nonceCookie.value : null
 
-  // Every failure ends the same way: back to home with a flag, and the one-time nonce cleared so it cannot linger.
+  // Every failure ends the same way: back to home, with the one-time nonce cleared so it cannot linger.
   const fail = () => {
-    const failed = NextResponse.redirect(new URL("/?error=handoff_failed", requestUrl))
+    const failed = NextResponse.redirect(new URL("/", requestUrl))
     failed.cookies.delete(HANDOFF_NONCE_COOKIE)
     return failed
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { HANDOFF_NONCE_COOKIE, isSplitPair } from "@packages/config/deploy"
+import { HANDOFF_NONCE_COOKIE, isSplitPair, mintHandoffToken } from "@packages/config/deploy"
 import { site } from "@packages/config/site"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
@@ -29,7 +29,7 @@ import { config } from "@/lib/config"
 const splitPair = isSplitPair(config.app.url, config.api.url)
 function postLoginUrl(): string {
   if (!splitPair) return `${config.app.url}/dashboard`
-  const nonce = (crypto.randomUUID() + crypto.randomUUID()).replaceAll("-", "")
+  const nonce = mintHandoffToken()
   document.cookie = `${HANDOFF_NONCE_COOKIE}=${nonce}; Path=/; Max-Age=600; Secure; SameSite=Lax`
   return `${config.api.url}/api/handoff/start?nonce=${nonce}`
 }

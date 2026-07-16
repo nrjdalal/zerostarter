@@ -1,4 +1,4 @@
-import { isPublicHostingSuffix } from "@packages/config/deploy"
+import { isPublicHostingSuffix, isSplitPair } from "@packages/config/deploy"
 
 /**
  * Extracts the cookie domain from a URL for cross-subdomain cookie sharing.
@@ -68,21 +68,15 @@ export function resolveDeployMode(appUrl: string, trustedOrigins: readonly strin
   // A shareable parent domain exists: the classic cross-subdomain setup (custom domains, portless localhost). Today's behavior, untouched.
   const cookieDomain = getCookieDomain(appUrl)
   if (cookieDomain) return { kind: "shared-domain", cookieDomain }
-  try {
-    const api = new URL(appUrl)
-    if (isPublicHostingSuffix(api.hostname)) {
-      // The web origin is the trusted origin whose origin differs from the api's own, not simply the first entry: HONO_TRUSTED_ORIGINS is an ordered list an operator may write api-first.
-      for (const origin of trustedOrigins) {
-        try {
-          const web = new URL(origin)
-          if (web.origin !== api.origin) return { kind: "split", webOrigin: web.origin }
-        } catch {
-          // skip unparseable trusted origins
-        }
+  // Split when a trusted origin is a distinct site from the api on a public suffix. isSplitPair is the one predicate the web client also uses, so server and client cannot disagree; the web origin is the first trusted origin that differs from the api's, not simply the first entry (HONO_TRUSTED_ORIGINS is an ordered list an operator may write api-first).
+  for (const origin of trustedOrigins) {
+    if (isSplitPair(origin, appUrl)) {
+      try {
+        return { kind: "split", webOrigin: new URL(origin).origin }
+      } catch {
+        // unreachable: isSplitPair already parsed this origin
       }
     }
-  } catch {
-    // fall through to host-only
   }
   return { kind: "host-only" }
 }
