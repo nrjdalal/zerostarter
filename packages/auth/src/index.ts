@@ -139,6 +139,7 @@ export const auth = betterAuth({
     }),
   },
   // In split mode the OAuth `state` cookie is written by the api on a cross-site fetch response (signIn.social posts, then does a top-level redirect), which Safari (ITP) blocks and Firefox partitions, so it is absent on the first-party provider callback and sign-in dies with state_mismatch before the handoff runs. Skip the state COOKIE check: with a server session store the state is also persisted in the DB (single-use CSPRNG, deleted on parse), which stays the CSRF binding. This is what Better Auth's own oauth-proxy plugin does for the cross-origin case.
+  // Accepted tradeoff: the DB state is single-use but not browser-bound, so a relayed OAuth callback can still set the api-origin session in another browser (a bounded login-CSRF on the api-origin cookie, mostly Chrome third-party cookies; the nonce handoff still protects the web-origin SSR cookie). Known split-mode tradeoff; the tighter binding is deferred, see .github/notes/plans/split-oauth-callback-binding.md.
   ...(deployMode.kind === "split" && { account: { skipStateCookieCheck: true } }),
 })
 
