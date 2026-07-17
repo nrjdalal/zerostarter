@@ -23,6 +23,10 @@
       "types": "./dist/db.d.mts",
       "default": "./dist/db.mjs"
     },
+    "./deploy": {
+      "types": "./dist/deploy.d.mts",
+      "default": "./dist/deploy.mjs"
+    },
     "./web-next": {
       "types": "./dist/web-next.d.mts",
       "default": "./dist/web-next.mjs"
@@ -30,7 +34,8 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
@@ -41,6 +46,7 @@
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
+    "tldts": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

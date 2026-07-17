@@ -25,7 +25,14 @@ export default defineConfig({
   dts: {
     tsgo: true,
   },
-  entry: ["src/index.ts", "src/api-hono.ts", "src/auth.ts", "src/db.ts", "src/web-next.ts"],
+  entry: [
+    "src/index.ts",
+    "src/api-hono.ts",
+    "src/auth.ts",
+    "src/db.ts",
+    "src/deploy.ts",
+    "src/web-next.ts",
+  ],
   minify: true,
   outDir: "dist",
 })
