@@ -1,9 +1,19 @@
+import { resolveDeployMode } from "@packages/auth/deploy"
 import { getSafeEnv } from "@packages/env"
+import { resolveCookieDomain } from "@packages/env/deploy"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 import type { NextConfig } from "next"
 
 getSafeEnv(env, "@web/next")
+
+// The deploy mode is decided here, once, per build: resolveCookieDomain consults the real Public Suffix List (tldts, a dev-only dependency of @packages/env) and resolveDeployMode is the same pure decision the api's auth runs at boot, so the two sides cannot drift. Next inlines the kind as the NEXT_PUBLIC_DEPLOY_MODE literal (the browser has no runtime env, so on this side the decision itself is baked), and the client bundle ships a constant instead of a suffix predicate. next dev passes through here too, so the value always exists for web code.
+const deployMode = resolveDeployMode(
+  resolveCookieDomain(env.NEXT_PUBLIC_API_URL),
+  env.NEXT_PUBLIC_API_URL,
+  [env.NEXT_PUBLIC_APP_URL],
+)
+console.log(`[deploy] web build: NEXT_PUBLIC_DEPLOY_MODE=${deployMode.kind}`)
 
 function detectLibc() {
   if (process.platform !== "linux") return undefined
@@ -41,6 +51,7 @@ const appDevHost = (() => {
 })()
 
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_DEPLOY_MODE: deployMode.kind },
   output: "standalone",
   ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
   ...(libc && {

@@ -1,6 +1,8 @@
 "use client"
 
+import { HANDOFF_NONCE_COOKIE, mintHandoffToken } from "@packages/auth/handoff"
 import { site } from "@packages/config/site"
+import { env } from "@packages/env/web-next"
 import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
@@ -23,6 +25,15 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
+
+// Where sign-in lands: straight to the dashboard when app and api share a site (today's behavior, byte-identical), through the api's session handoff when the build baked split mode (NEXT_PUBLIC_DEPLOY_MODE, a literal in this bundle, so no suffix predicate ships to the browser). In split mode each sign-in mints a nonce, kept as a first-party cookie here and threaded through the handoff, so only the browser that started the flow can claim it (login-CSRF binding, the same job OAuth state does). Note: with magic link, the email must be opened in the same browser that requested it.
+const splitPair = env.NEXT_PUBLIC_DEPLOY_MODE === "split"
+function postLoginUrl(): string {
+  if (!splitPair) return `${config.app.url}/dashboard`
+  const nonce = mintHandoffToken()
+  document.cookie = `${HANDOFF_NONCE_COOKIE}=${nonce}; Path=/; Max-Age=600; Secure; SameSite=Lax`
+  return `${config.api.url}/api/handoff/start?nonce=${nonce}`
+}
 
 const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }),
@@ -72,7 +83,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       setLoader("email")
       const res = await authClient.signIn.magicLink({
         email: value.email,
-        callbackURL: `${config.app.url}/dashboard`,
+        callbackURL: postLoginUrl(),
       })
       if (res.error) {
         toast.error(res.error.message || "Provider Not Found")
@@ -175,7 +186,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                     setLoader("github")
                     const res = await authClient.signIn.social({
                       provider: "github",
-                      callbackURL: `${config.app.url}/dashboard`,
+                      callbackURL: postLoginUrl(),
                     })
                     if (res.error) {
                       toast.error(res.error.message)
@@ -197,7 +208,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                     setLoader("google")
                     const res = await authClient.signIn.social({
                       provider: "google",
-                      callbackURL: `${config.app.url}/dashboard`,
+                      callbackURL: postLoginUrl(),
                     })
                     if (res.error) {
                       toast.error(res.error.message)
