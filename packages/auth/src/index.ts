@@ -19,10 +19,11 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { getCookieDomain, getCookiePrefix } from "@/lib/utils"
+import { cookieConfig, type ParsedHost } from "@/lib/utils"
 
-const cookieDomain = getCookieDomain(env.HONO_APP_URL)
-const cookiePrefix = getCookiePrefix(env.HONO_APP_URL)
+// The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-tldts.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime.
+declare const __DERIVED_TLDTS__: ParsedHost
+const { cookieDomain, cookiePrefix, isPrivate } = cookieConfig(__DERIVED_TLDTS__)
 
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
@@ -75,13 +76,24 @@ export const auth = betterAuth({
       : {}),
   },
   advanced: {
+    // The environment name-prefix isolates cookie names across envs; it applies independent of the cookie-mode switch below (a private-suffix env would still want it).
     ...(cookiePrefix && { cookiePrefix }),
-    ...(cookieDomain && {
-      crossSubDomainCookies: {
-        enabled: true,
-        domain: cookieDomain,
-      },
-    }),
+    // On a hosting suffix (tldts isPrivate) sibling origins cannot share a Domain cookie, so send SameSite=None; otherwise scope a cross-subdomain cookie to the derived domain when there is one. A host with no shareable parent (apex, bare localhost, IP) stays host-only rather than letting Better Auth widen to Domain=<hostname>.
+    ...(isPrivate
+      ? {
+          defaultCookieAttributes: {
+            sameSite: "none" as const,
+            secure: true,
+          },
+        }
+      : cookieDomain
+        ? {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: cookieDomain,
+            },
+          }
+        : {}),
   },
 })
 

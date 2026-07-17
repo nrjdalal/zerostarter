@@ -25,6 +25,7 @@
       "dependsOn": ["^build"]
     }
   },
+  "globalDependencies": [".env*"],
   "globalEnv": [
     // CI variables
     "SKIP_ENV_VALIDATION",
