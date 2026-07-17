@@ -17,7 +17,24 @@ The sign-in dialog renders itself from whatever is configured. It fetches the en
 
 `packages/auth/src/index.ts` builds `socialProviders` conditionally from those vars and exports the resulting `enabledSocialProviders`. Adding a brand-new provider is a small code change: register it conditionally there, then add a button in `web/next/src/components/common/access.tsx`.
 
-**Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To enable it, add `magicLink({ sendMagicLink })` to the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email.
+**Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To turn it on, register the server plugin in the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email:
+
+```ts
+import { magicLink } from "better-auth/plugins"
+
+// inside betterAuth({ plugins: [...] })
+magicLink({
+  sendMagicLink: async ({ email, url }) => {
+    await sendEmail({
+      to: email,
+      subject: `Sign in to ${site.name}`,
+      html: `<a href="${url}">Sign in</a>`,
+    })
+  },
+})
+```
+
+`sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
 
 **Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
@@ -81,7 +98,7 @@ The guard reads the session with the cookie cache disabled, so a grant or revoke
 
 ## Organizations and teams
 
-The [Organization plugin](https://www.better-auth.com/docs/plugins/organization) (with `teams` enabled) makes the app multi-tenant. Users create and switch organizations from the dashboard sidebar; the last active org is stored in a cookie and restored on next login. Members carry a `role` within an org (default `member`), invitations go out by email, and teams group members inside an org. The backing tables (`organization`, `member`, `team`, `teamMember`, `invitation`) live in [the schema](/docs/manage/database).
+The [Organization plugin](https://www.better-auth.com/docs/plugins/organization) (with `teams` enabled) makes the app multi-tenant. Users create and switch organizations from the dashboard sidebar; the last active org is stored in a cookie and restored on next login. Members carry a `role` within an org (default `member`), and the backing tables (`organization`, `member`, `team`, `teamMember`, `invitation`) live in [the schema](/docs/manage/database). Creating and switching organizations is wired; invitations, teams, and member management are available in the plugin but not yet built into the UI. See [Organizations & Teams](/docs/manage/organizations) for the full data model and what to build on top.
 
 Read the current context on the client:
 
@@ -95,7 +112,7 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, while on a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share, the client routes sign-in same-origin through the web's `/api` proxy so the cookie stays host-only and first-party to the web (see [Deploy on Vercel](/docs/deployment/vercel)), and a bare or apex host stays host-only. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, while on a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share, the client routes sign-in same-origin through the web's `/api` proxy so the cookie stays host-only and first-party to the web (see [Deploy on Vercel](/docs/deployment/vercel)), and a bare or apex host stays host-only. Local portless dev is the exception to the build-time rule: the api re-derives the scope at runtime from the `.localhost` subdomain portless injects, so the web and api hosts share one `Domain` cookie; a bare `localhost` (as under Docker) stays host-only across ports. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
 Reading the session is one call on either side:
 

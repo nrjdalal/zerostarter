@@ -76,6 +76,20 @@ export function generateStaticParams() {
 
 </Callout>
 
+### How the images render
+
+Each image is a 1200x630 PNG. `renderOgImage` builds a plain flex layout (a section label, a title whose size steps down as it grows, and a description) and hands it to [takumi](https://takumi.kane.tw), which rasterizes the JSX to PNG. No custom font ships: the layout uses `system-ui` and takumi resolves it. The response carries a one-year immutable `Cache-Control`, and a render failure during a production build throws to fail the build rather than ship a broken image, while a runtime failure logs and returns a `500`.
+
+To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or the generic `/og?title=Hello&description=World&section=Demo` to tweak the text live.
+
+Because the images are cached hard, the page metadata appends a per-deploy `?t=` timestamp to each OG URL (`web/next/src/app/layout.tsx` for the home image, `web/next/src/lib/fumadocs.tsx` for docs and blog), so social and CDN scrapers refetch the regenerated image after each deploy instead of serving a stale one. To ship a hand-made landing image instead of the rendered one, drop a `public/og/home.png` and the home metadata uses it.
+
+<Callout type="warn" title="Keep the takumi binary traced for /og on Vercel">
+
+Vercel traces `/og` into its own serverless function, and the takumi core is a native binary loaded dynamically (it sits in `serverExternalPackages`, so tracing can't follow the import). `next.config.ts` force-includes the matching-libc `@takumi-rs/core` binary for the `/og` function through `outputFileTracingIncludes`; remove it and `/og` returns a `500` at runtime. It is redundant only in Docker standalone, where the whole `node_modules` ships in one image.
+
+</Callout>
+
 ## Next
 
 - [Content](/docs/manage/content): the docs and blog posts these routes describe.

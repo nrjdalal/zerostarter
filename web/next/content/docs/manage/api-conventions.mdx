@@ -87,13 +87,7 @@ Every request passes the global middleware in order (from `api/hono/src/index.ts
 
 ### Rate limiting
 
-The limiter keys each request by the first available of: user id (if authenticated) → API key (a hash of the `Authorization` header) → IP (via [Arcjet](https://arcjet.com)) → a random UUID fallback. Limits come from `HONO_RATE_LIMIT` / `HONO_RATE_LIMIT_WINDOW_MS` (default 60 requests / 60s); authenticated users get 2× the limit, installed by the auth middleware. Exceeding it returns `429 TOO_MANY_REQUESTS`.
-
-<Callout type="warn" title="The API-key tier is unwired">
-
-No limiter passes `getApiKey`, so the API-key branch never fires; requests fall back to the user-id or IP tier. Wire `getApiKey` into a limiter to activate it.
-
-</Callout>
+The limiter keys each request by user id, then API key, then IP, and gives authenticated users a higher tier. Exceeding it returns `429 TOO_MANY_REQUESTS` in the same envelope. See [Rate Limiting](/docs/manage/rate-limiting) for the tiers, the environment variables, and the response headers.
 
 ### Auth
 

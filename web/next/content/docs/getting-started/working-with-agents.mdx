@@ -84,6 +84,8 @@ agent-browser click "@e12"    # act on a referenced element
 
 `AGENTS.md` (symlinked to `CLAUDE.md`) makes one rule load-bearing: **documentation is updated in the same change as the code.** When a convention moves, its skill and doc move with it. Paired with the symlinked skill directory, what an agent reads is always what the code actually does: the single biggest cause of agent mistakes, designed out.
 
+It is enforced, not just requested. Docs structure and page metadata live in one file, `web/next/docs.config.ts`, and the build derives every page's frontmatter and sidebar from it; `docs.ts --strict` fails the build when a page and the config disagree, so a doc can't silently fall out of sync. The `doc-sync` skill is the checklist an agent runs to keep code, docs, and skills aligned in the same change.
+
 ## Next
 
 - [AI Skills](/docs/resources/ai-skills): the full skill catalog, and writing your own.
