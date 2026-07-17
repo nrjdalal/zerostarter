@@ -30,3 +30,22 @@ export function cookieConfig({ domain, isIp, isPrivate, publicSuffix, subdomain 
   // isPrivate is tldts's own flag, passed through: true when the app sits on a PSL private-section hosting suffix (vercel.app, pages.dev, github.io), where sibling deployments cannot share a cross-subdomain cookie. Null for an IP.
   return { cookieDomain, cookiePrefix, isPrivate }
 }
+
+// Portless serves dev over .localhost subdomains (api.<name>.localhost) injected at runtime, which the build-time breakdown, baked from the fixed-ports .env, cannot see. Re-derive the host from a runtime .localhost app URL so web and api share one Domain cookie; no Public Suffix List is needed since ".localhost" is the known suffix. Bare localhost (Docker, PORTLESS=0) and every real deploy return null and fall through to the baked breakdown.
+export function localhostHost(appUrl: string): ParsedHost | null {
+  let hostname: string
+  try {
+    hostname = new URL(appUrl).hostname
+  } catch {
+    return null
+  }
+  if (!hostname.endsWith(".localhost")) return null
+  const labels = hostname.split(".")
+  return {
+    domain: labels.slice(-2).join("."),
+    isIp: false,
+    isPrivate: false,
+    publicSuffix: "localhost",
+    subdomain: labels.slice(0, -2).join("."),
+  }
+}

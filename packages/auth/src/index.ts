@@ -19,11 +19,13 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { cookieConfig, type ParsedHost } from "@/lib/utils"
+import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
-// The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime.
+// The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime. A runtime .localhost host (portless dev, injected after the build) overrides it so web and api share the cookie.
 declare const __DERIVED_TLDTS__: ParsedHost
-const { cookieDomain, cookiePrefix, isPrivate } = cookieConfig(__DERIVED_TLDTS__)
+const { cookieDomain, cookiePrefix, isPrivate } = cookieConfig(
+  localhostHost(env.HONO_APP_URL) ?? __DERIVED_TLDTS__,
+)
 
 // On a public hosting suffix (isPrivate) web and api are sibling sites that cannot share a cookie, so the browser only ever talks to the web, which proxies /api to us and Better Auth builds OAuth callbacks and cookies for the web origin. Everything stays first-party to the web: no cross-site cookie, no handoff.
 const apiOrigin = new URL(env.HONO_APP_URL).origin
