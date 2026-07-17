@@ -10,12 +10,14 @@ export function definePackageConfig(options: {
   name: string
   env: Record<string, unknown>
   getSafeEnv: (env: Record<string, unknown>, name?: string) => unknown
+  define?: Record<string, string>
   deps?: BundleDeps
 }) {
-  const { name, env, getSafeEnv, deps } = options
+  const { name, env, getSafeEnv, define, deps } = options
 
   return [
     defineConfig({
+      ...(define ? { define } : {}),
       ...(deps ? { deps } : {}),
       dts: { tsgo: true },
       entry: ["src/index.ts"],

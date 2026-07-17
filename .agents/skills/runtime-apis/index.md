@@ -1,7 +1,7 @@
 # Node API index
 
 Per-file inventory of every Node built-in used in the repo, for the [`runtime-apis`](SKILL.md) skill.
-Snapshot: 2026-07-11. Regenerate with the `rg "node:..."` command in `SKILL.md`.
+Snapshot: 2026-07-17. Regenerate with the `rg "node:..."` command in `SKILL.md`.
 
 The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:` (no `Bun.*`);
 **Bun** files may move a call to a `Bun.*` equivalent where one exists.
@@ -13,6 +13,7 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | `.github/scripts/ensure-remote-branches.ts` | Bun | `node:child_process` (execFileSync) |
 | `.github/scripts/shadcn-customize.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (readFileSync, writeFileSync) |
 | `.github/workflows/auto-labeler.yml` | Node | `node:fs`, `node:path` (via `require`, `actions/github-script`) |
+| `packages/auth/tsdown.config.ts` | Build | `node:fs` (existsSync, readFileSync); `node:path` (resolve) |
 | `packages/cli/bin/commands/_args.ts` | Node | `node:util` (parseArgs, ParseArgsConfig) |
 | `packages/cli/bin/commands/_bun.ts` | Node | `node:os` (homedir); `node:path` (delimiter, join) |
 | `packages/cli/bin/commands/_prompt.ts` | Node | `node:readline/promises` (createInterface) |
@@ -30,6 +31,8 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | `packages/cli/test/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `packages/env/src/lib/utils.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
+| `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
+| `web/next/next.config.ts` | Node | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Node | `node:fs` (existsSync); `node:path` (join) |
 
 ## Convertible to `Bun.*` (optional, Bun-only files)

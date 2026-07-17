@@ -29,7 +29,8 @@ const docsConfig = {
       {
         "/docs/getting-started/project-structure": {
           title: "Project Structure",
-          description: "How the monorepo fits together: two apps, four packages, one import graph.",
+          description:
+            "How the monorepo fits together: two apps, their packages, one import graph.",
         },
       },
     ],

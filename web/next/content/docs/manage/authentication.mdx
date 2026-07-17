@@ -29,12 +29,43 @@ A deployed fork with no OAuth providers and no magic link shows "No sign-in opti
 
 ## Callback URLs
 
-Each OAuth app needs the redirect URL that Better Auth (mounted at `/api/auth`) listens on, `/api/auth/callback/<provider>` on your API origin:
+Each OAuth app takes your app's **origin** (GitHub's "Homepage URL", Google's "Authorized JavaScript origins") and the **callback** Better Auth listens on at `/api/auth/callback/<provider>` (GitHub's "Authorization callback URL", Google's "Authorized redirect URIs"). The origin is your web app, the callback your API origin. Register both providers.
 
-- **Local**: use `PORTLESS=0 bun run dev` for social login so the API origin is `http://localhost:4000`, then register `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`. (The default portless dev serves `.localhost` URLs, which providers reject as redirect URIs, Google especially, so OAuth won't round-trip there; the local **Login (agents)** button still works either way.)
-- **Production**: the same `/api/auth/callback/<provider>` path on your deployed API origin, e.g. `https://api.example.com/api/auth/callback/github`
+**Production** (swap in your domains):
 
-This is the value for GitHub's "Authorization callback URL" and Google's "Authorized redirect URI".
+```txt
+# origin (web app)
+https://example.com
+# callback (api)
+https://api.example.com/api/auth/callback/github
+https://api.example.com/api/auth/callback/google
+```
+
+**Local** (`PORTLESS=0 bun run dev`, web `:3000`, api `:4000`):
+
+```txt
+# origin (web app)
+http://localhost:3000
+# callback (api)
+http://localhost:4000/api/auth/callback/github
+http://localhost:4000/api/auth/callback/google
+```
+
+The default portless dev serves `.localhost` URLs, which providers reject as redirect URIs (Google especially), so OAuth won't round-trip there; the local **Login (agents)** button still works either way.
+
+<Callout type="warn" title="Public-suffix deploys register on the web origin">
+
+If web and api are separate deployments on a public hosting suffix (two `*.vercel.app` projects), sign-in completes on the **web** origin, so both the origin and the callback are the web (see [Deploy on Vercel](/docs/deployment/vercel)):
+
+```txt
+# origin (web app)
+https://your-web.vercel.app
+# callback (web, not the api)
+https://your-web.vercel.app/api/auth/callback/github
+https://your-web.vercel.app/api/auth/callback/google
+```
+
+</Callout>
 
 ## The admin role and /console
 
@@ -64,7 +95,7 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. Cross-subdomain cookies switch on automatically when `HONO_APP_URL` is a subdomain. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, while on a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share, the client routes sign-in same-origin through the web's `/api` proxy so the cookie stays host-only and first-party to the web (see [Deploy on Vercel](/docs/deployment/vercel)), and a bare or apex host stays host-only. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
 Reading the session is one call on either side:
 

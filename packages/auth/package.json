@@ -9,7 +9,7 @@
   "types": "./dist/index.d.mts",
   "exports": "./dist/index.mjs",
   "scripts": {
-    "build": "tsdown",
+    "build": "bun ../scripts/src/generate-env.ts auth && tsdown",
     "check-types": "tsc --noEmit",
     "test": "bun test"
   },
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
+    "@packages/scripts": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

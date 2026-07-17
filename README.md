@@ -51,10 +51,11 @@ Every item below is wired and working out of the box, not just a dependency in `
     ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client
     ├── env/       # Type-safe environment variables (t3-oss/env + Zod)
-    └── config/    # Shared config: TS/tsdown bases and the `site` brand identity
+    ├── config/    # Shared config: TS/tsdown bases and the `site` brand identity
+    └── scripts/   # Build-only tooling (e.g. build-time tldts/env derivation); never bundled
 ```
 
-Two deployable apps (`api/hono` and `web/next`) and four shared packages. Brand identity lives in one place, `@packages/config/site`, so a fork rebrands by editing a single file.
+Two deployable apps (`api/hono` and `web/next`) and shared `packages/*` (auth, config, db, env, scripts). Brand identity lives in one place, `@packages/config/site`, so a fork rebrands by editing a single file.
 
 📖 **[Full project structure →](https://zerostarter.dev/docs/getting-started/project-structure)**
 

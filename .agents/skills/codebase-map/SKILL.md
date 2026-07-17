@@ -8,12 +8,14 @@ description: Orient in this repo: which file to edit for a change, how a change 
 One Bun + Turborepo monorepo: two deployable apps over shared packages. Imports use `@api/hono`, `@packages/*`, and the `@/` alias, never deep relative paths.
 
 ```
+.generated/       # repo-root home for build-time generated assets (gitignored)
 api/hono/         # backend (Hono): routers, middlewares, the AppType export
 web/next/         # frontend (Next.js App Router): app/, components/, lib/, content/
 packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
+packages/scripts/ # build-only bun tooling (e.g. generate-env, the tldts host breakdown per consumer); never bundled
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 ```
 

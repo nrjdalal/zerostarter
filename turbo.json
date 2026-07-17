@@ -25,6 +25,7 @@
       "dependsOn": ["^build"]
     }
   },
+  "globalDependencies": [".env*"],
   "globalEnv": [
     // CI variables
     "SKIP_ENV_VALIDATION",
@@ -41,6 +42,7 @@
     "HONO_RATE_LIMIT",
     "HONO_RATE_LIMIT_WINDOW_MS",
     "HONO_TRUSTED_ORIGINS",
+    "HONO_WEB_URL",
     "INTERNAL_API_URL",
     "POSTGRES_URL",
     // Client variables
