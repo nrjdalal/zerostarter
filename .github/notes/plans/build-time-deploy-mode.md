@@ -42,7 +42,7 @@ result in as a literal** that both bundles read at runtime. Runtime code branche
 runtime module ever imports `tldts`; the client bundle and the api bundle both ship zero PSL code.
 
 The proven runtime behavior of #720 (the cross-origin session handoff, the nonce binding, the
-`skipStateCookieCheck` split path, the `SameSite=None` split cookies) is **carried over intact** —
+`skipStateCookieCheck` split path, the `SameSite=None` split cookies) is **carried over intact** -
 it is verified and must not be redesigned. What changes is (a) _how the mode is detected_ (build-time
 `tldts` instead of runtime string-match), (b) _how wide the split trigger is_ (any pair that cannot
 share a cookie domain, not only "api sits on a public suffix"), and (c) _where the code lives_
@@ -61,7 +61,7 @@ These were decided with the maintainer and are **not open** for the spec to reli
 - **L1. Placement: env = value, auth = behavior.** `packages/env` owns the build-time detector and
   exposes the baked `DEPLOY_MODE` as one more validated env value (its exact charter). `packages/auth`
   owns all runtime behavior keyed on that value and the handoff mechanics. `packages/config` hosts
-  **no** deploy logic (it stays clean — on `canary` `config/src` is only `site.ts`, and it must stay
+  **no** deploy logic (it stays clean - on `canary` `config/src` is only `site.ts`, and it must stay
   that way; the `deploy.ts` #720 added to config is not ported).
 - **L2. Trigger width: wide.** The handoff activates whenever the web origin and the api origin
   **cannot share a cookie domain** (they have no common registrable domain, per `tldts`), which
@@ -109,8 +109,14 @@ These were decided with the maintainer and are **not open** for the spec to reli
 > client-safe), so an env change takes effect on restart with no rebuild, and the baked-decision
 > mismatch/downgrade machinery this spec described became unnecessary. The web build bakes the
 > decision itself (`NEXT_PUBLIC_DEPLOY_MODE`) using the same `resolveDeployMode` function, since the
-> browser has no runtime env. Mode outcomes are identical to the matrix below; only where each half
-> computes moved. The sections that follow are the pre-amendment design, kept as the review trail.
+> browser has no runtime env. Two deliberate narrowings of the pre-amendment prose, both test-pinned:
+> "shared" requires the api's environment-scoped parent (canary getCookieDomain semantics, preserving
+> the #715 cookie isolation) to cover a trusted web origin, not merely a common registrable domain, so
+> an env-scope mismatch or an apex api resolves split (which works) instead of a wider cookie; and the
+> mode names are `host-only | shared | split`. Testing item 3's letter ("auth branches on
+> env.DEPLOY_MODE") maps onto the decision-function + option-plumbing tests; asserting the assembled
+> Better Auth instance applies split config end to end needs the api test harness already iceboxed in
+> `handoff-route-tests.md`. The sections that follow are the pre-amendment design, kept as the trail.
 
 ### Current state on `canary` (the base this builds on)
 
@@ -136,28 +142,28 @@ One canonical tri-state enum, defined once and shared by type across build and r
 DeployMode = "shared" | "host-only" | "split"
 ```
 
-- **shared** — web and api share a registrable domain (custom domain + subdomains, or dev `.localhost`).
+- **shared** - web and api share a registrable domain (custom domain + subdomains, or dev `.localhost`).
   Behavior: today's `crossSubDomainCookies` path, byte-identical, `Lax` untouched.
-- **host-only** — a bare host / unresolvable shape where no cookie domain can be asserted. Today's
+- **host-only** - a bare host / unresolvable shape where no cookie domain can be asserted. Today's
   fallback, unchanged.
-- **split** — web and api cannot share a cookie domain (no common registrable domain; includes
+- **split** - web and api cannot share a cookie domain (no common registrable domain; includes
   "api on a public suffix" and "two different custom domains"). Behavior: host-only `SameSite=None`
   cookies + the nonce-bound single-use session handoff + `account.skipStateCookieCheck: true`.
 
 ### L1 concrete split (the proposed env/auth division)
 
-**`packages/env` — owns detection + the value.**
+**`packages/env` - owns detection + the value.**
 
 - New **build-only** module `packages/env/src/deploy.ts`, exporting:
   - `type DeployMode` (canonical; re-exported for runtime typing).
-  - `resolveDeployMode(webUrl: string, apiUrl: string): DeployMode` — pure, uses `tldts`
+  - `resolveDeployMode(webUrl: string, apiUrl: string): DeployMode` - pure, uses `tldts`
     (`getDomain` / `getPublicSuffix`):
     - either host is `localhost` or a `*.localhost` host → `shared` (dev; `tldts` not consulted). [L4]
     - both resolve to the **same** registrable domain → `shared`.
     - they resolve to **different** registrable domains, or either host sits **directly on a public
       suffix** (no registrable domain) → `split`. [L2, wide]
     - a URL is unparseable / a bare host with no suffix → `host-only`.
-  - `resolveSharedCookieDomain(webUrl: string): string | undefined` — the `.registrable.tld`
+  - `resolveSharedCookieDomain(webUrl: string): string | undefined` - the `.registrable.tld`
     (or `.zerostarter.localhost` in dev) to bake for shared mode, so runtime never derives it from the
     request host with PSL logic.
 - `tldts` is added as a **devDependency of `packages/env`**.
@@ -169,7 +175,7 @@ DeployMode = "shared" | "host-only" | "split"
   the typed `DeployMode` value the same way every other env value is exposed today. Runtime code reads
   `env.DEPLOY_MODE`, never recomputes it.
 
-**`packages/auth` — owns behavior.**
+**`packages/auth` - owns behavior.**
 
 - Consolidate the runtime handoff mechanics here (moved out of where #720 put them in config):
   `mintHandoffToken`, `HANDOFF_TOKEN_PATTERN`, `HANDOFF_NONCE_COOKIE`, the `handoffIdentifier(id, nonce)`
@@ -181,7 +187,7 @@ DeployMode = "shared" | "host-only" | "split"
 - No `tldts` in auth's runtime graph. `getCookieDomain` returns the baked shared cookie domain (or the
   dev `.localhost` value) with no PSL parsing.
 
-**`packages/config` — build plumbing only, no deploy logic.**
+**`packages/config` - build plumbing only, no deploy logic.**
 
 - `definePackageConfig` (`@packages/config/tsdown`) gains a **generic** `define` pass-through so the api
   build can bake a literal. This stays generic (it is not deploy-aware); the deploy value is computed in
@@ -202,7 +208,7 @@ DeployMode = "shared" | "host-only" | "split"
 
 ### Port, replace, new
 
-**Port from the #720 branch verbatim in behavior (verified — do not redesign):**
+**Port from the #720 branch verbatim in behavior (verified - do not redesign):**
 
 - The api handoff router (`/start` + `/claim`, mode-gated to 404 outside split, the 64-hex token regex,
   the `handoffIdentifier` nonce-in-identifier scheme, single-use `createVerificationValue` /
@@ -210,7 +216,7 @@ DeployMode = "shared" | "host-only" | "split"
 - The web claim route (mode-gated 404, the `maxAge` `Number.isFinite` guard, `fail()` keeping the nonce
   on failure, first-party cookie set on success).
 - The per-sign-in nonce minted as a first-party web cookie and threaded through the handoff.
-- `account.skipStateCookieCheck: true` in split mode — **A/B-proven load-bearing on Safari** (P0 true →
+- `account.skipStateCookieCheck: true` in split mode - **A/B-proven load-bearing on Safari** (P0 true →
   dashboard; P1 false → breaks at the api origin). Carries the documented, accepted login-CSRF tradeoff
   (see Further notes).
 - `SameSite=None` host-only cookies in split mode.
@@ -267,7 +273,7 @@ Prefer the existing seams. #720's tests live in `packages/auth/test/` (a `utils.
 3. **Runtime reads the baked literal, not a recomputation.** A test proving auth branches on
    `env.DEPLOY_MODE` and that no runtime module imports `@packages/env/deploy` (grep/import-graph
    assertion), so `tldts` cannot reach a runtime graph.
-4. **The L3 invariant — no PSL in shipped bundles (the load-bearing new check).** AMENDED during
+4. **The L3 invariant - no PSL in shipped bundles (the load-bearing new check).** AMENDED during
    implementation (maintainer call): enforced at the source seam, not the built artifact. A repo-wide
    test asserts no file under any `src/` imports `@packages/env/deploy` or `tldts` (import statements
    only); build configs live outside `src/`, so the boundary is exact, and bundlers cannot pull PSL
@@ -306,7 +312,7 @@ Carried from #720's "Not in this PR" plus this PR's own deferrals. Track under I
 ## Further notes
 
 - **Better Auth's own position (research verdict).** There is no first-class Better Auth fix for two
-  `*.vercel.app` projects — the maintainer (ping-maxwell, discussion #5073) states it is "not something
+  `*.vercel.app` projects - the maintainer (ping-maxwell, discussion #5073) states it is "not something
   Better-Auth can fix... browser-level cookie isolation via `.vercel.app`", and recommends: a reverse
   proxy (= the closed Plan B / PR #716), a custom domain + `crossSubDomainCookies`, or OIDC/Bearer.
   Issues #4270 / #4878 are closed-not-planned; #7283 is open-unanswered. Our handoff is Better Auth's own
@@ -315,7 +321,7 @@ Carried from #720's "Not in this PR" plus this PR's own deferrals. Track under I
   primitives; it does not fight the framework.
 - **Accepted split-mode tradeoff (documented at the call site).** `skipStateCookieCheck` validates the
   OAuth callback against the DB state (single-use, server-issued CSPRNG, deleted on parse) but not a
-  browser-bound cookie, so a relayed callback can set the api-origin session in another browser — a
+  browser-bound cookie, so a relayed callback can set the api-origin session in another browser - a
   bounded login-CSRF (mostly Chrome third-party cookies; SSR stays protected by the nonce). Inherent to
   cookie-less cross-origin OAuth and the posture `oauth-proxy` takes. The tighter binding that closes it
   is deferred (see Out of scope, Icebox #707).

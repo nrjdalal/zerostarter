@@ -5,18 +5,20 @@ import { expect, test } from "bun:test"
 const FORBIDDEN = /(?:from\s*|import\s*\(\s*)["'](?:@packages\/env\/deploy|tldts)["']/
 
 const repoRoot = new URL("../../../", import.meta.url).pathname
-const srcRoots = [
-  "api/hono/src",
-  "packages/auth/src",
-  "packages/config/src",
-  "packages/db/src",
-  "packages/env/src",
-  "web/next/src",
-]
 
 test("no runtime source imports the build-only deploy detector or tldts", async () => {
+  // Derive the roots from the workspace globs so a new package is swept automatically instead of silently skipped.
+  const rootPkg = await Bun.file(`${repoRoot}package.json`).json()
+  const srcRoots: string[] = []
+  for (const workspace of rootPkg.workspaces as string[]) {
+    const glob = new Bun.Glob(`${workspace}/src`)
+    for await (const dir of glob.scan({ cwd: repoRoot, onlyFiles: false })) {
+      srcRoots.push(dir)
+    }
+  }
+  expect(srcRoots.length).toBeGreaterThanOrEqual(6)
   let scanned = 0
-  for (const root of srcRoots) {
+  for (const root of srcRoots.sort()) {
     const glob = new Bun.Glob("**/*.{ts,tsx}")
     for await (const rel of glob.scan({ cwd: repoRoot + root })) {
       if (root === "packages/env/src" && rel === "deploy.ts") continue

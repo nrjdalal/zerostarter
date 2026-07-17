@@ -23,7 +23,7 @@ At runtime the api binds `process.env.PORT` when the host injects one (portless 
 The four slices, each a Zod schema that validates only what that consumer needs:
 
 - **`@packages/env/api-hono`**: `HONO_APP_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`, and the optional `AGENT_SIGNIN_ENABLED` (gates the local agent sign-in)
-- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, the optional OAuth pairs, and the auto-derived `DEPLOY_MODE`
+- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, the optional OAuth pairs, and the auto-derived `COOKIE_DOMAIN` facts
 - **`@packages/env/db`**: `POSTGRES_URL`
 - **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `NEXT_PUBLIC_*` vars
 

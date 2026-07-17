@@ -8,7 +8,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 ## In progress
 
-- [Build-time deploy-mode detection](build-time-deploy-mode.md) - implemented on `feat/build-time-deploy-mode` (#721): the web/api deployment shape resolves at build via tldts (dev-only) and bakes a `DEPLOY_MODE` literal both bundles read; supersedes the runtime detection in #720 (#719).
+- [Build-time deploy-mode detection](build-time-deploy-mode.md) - implemented on `feat/build-time-deploy-mode` (#721): the build bakes the api's cookie-domain PSL facts via tldts (dev-only) plus the web's `NEXT_PUBLIC_DEPLOY_MODE` literal, and auth decides shared/split/host-only at boot; supersedes the runtime detection in #720 (#719).
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
 
