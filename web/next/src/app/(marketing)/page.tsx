@@ -3,6 +3,7 @@ import {
   RiArrowRightSLine,
   RiBookOpenLine,
   RiDatabase2Line,
+  RiFocus3Line,
   RiGitForkLine,
   RiGithubFill,
   RiGlobalLine,
@@ -115,10 +116,10 @@ const featureCards = [
       "Organizations, teams, roles, invitations, and active-org switching are built into the dashboard from the first run.",
   },
   {
-    icon: RiGlobalLine,
-    title: "Dynamic OG & SEO",
+    icon: RiGitForkLine,
+    title: "Fork and rebrand",
     description:
-      "takumi social cards, sitemap, robots, and metadata are already wired, so every page ships indexable by default.",
+      "Edit one site.ts and the CLI rebrands the whole fork: name, dev URLs, and metadata. Re-baseline on the latest starter anytime with a single sync.",
   },
 ]
 
@@ -127,25 +128,25 @@ const whyPoints = [
     icon: RiStackLine,
     title: "Minimal footprint, maximum leverage",
     description:
-      "No spare layers, no framework soup, no speculative complexity. Every package earns its place; every boundary has a job.",
+      "Two apps over a few shared packages, one import graph. No framework soup to fight, no speculative layer to delete: every package earns its place.",
   },
   {
     icon: RiRocketLine,
     title: "Automation from PR to release",
     description:
-      "Checks, changelogs, versioning, and releases run through repeatable workflows, so shipping does not depend on memory.",
+      "One canary-to-main flow runs the checks, writes the changelog, versions the repo, and cuts the release, so shipping never rides on remembering the steps.",
   },
   {
-    icon: RiGitForkLine,
+    icon: RiFocus3Line,
     title: "Centralized where it matters",
     description:
-      "Brand, env, auth, schema, and build config live in one place each. Change it once and the whole system stays aligned.",
+      "Brand, env, auth, schema, and build config each live in one file. Edit site.ts and the CLI rebrands the entire fork; the rest stay just as single-sourced.",
   },
   {
     icon: RiBookOpenLine,
     title: "Docs as part of the product",
     description:
-      "Structured docs, generated API reference, and llms.txt ship with the code, so onboarding works for humans and agents alike.",
+      "Structured docs, a generated API reference, and llms.txt ship with the code, and a strict build fails when a doc drifts, so onboarding stays true for humans and agents.",
   },
 ]
 
@@ -197,7 +198,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
 
 export default async function Home() {
   const initCode = `bunx zerostarter init
-bun run dev   # named .localhost URLs`
+bun run dev`
 
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
@@ -243,7 +244,7 @@ docker compose up --build`
               className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
             >
               <span className="bg-success size-1.5 rounded-full" aria-hidden />
-              OSS Starter for Enterprise
+              Starter for Enterprise
               <RiArrowRightSLine className="size-3.5" />
             </Link>
             <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
@@ -277,6 +278,11 @@ docker compose up --build`
             <div className="mx-auto mt-10 max-w-2xl">
               <CodeWindow label="Quickstart" html={initHtml} />
             </div>
+            <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-sm text-balance">
+              Powered by portless: named{" "}
+              <code className="text-foreground font-mono">.localhost</code> URLs that never collide
+              across worktrees and share one sign-in.
+            </p>
             <div className="mt-10 flex justify-center">
               <ApiStatus />
             </div>
@@ -361,11 +367,13 @@ docker compose up --build`
               />
               <div className="relative sm:-mr-4">
                 <RiRobot2Line className="text-muted-foreground size-5" />
-                <h3 className="mt-3.5 text-lg font-semibold">Human-readable. Agent-ready.</h3>
+                <h3 className="mt-3.5 text-lg font-semibold">
+                  Agents operate the real app, behind auth
+                </h3>
                 <p className="text-muted-foreground mt-1.5 text-base">
                   SKILL.md playbooks, AGENTS.md, and generated llms.txt give Claude Code, Cursor,
-                  and Copilot the repo-specific context they need. A dev-only login and
-                  agent-browser let agents operate the real app behind auth. No mocks.
+                  and Copilot the repo-specific context they need. A dev-only login lets
+                  agent-browser drive the running app for real, no mocks and no fixtures.
                 </p>
                 <div className="mt-3.5 flex flex-wrap gap-2">
                   {["SKILL.md", "llms.txt", "AGENTS.md"].map((chip) => (
@@ -480,6 +488,33 @@ docker compose up --build`
               </div>
             ))}
 
+            {/* SEO & OG, full-width row */}
+            <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <RiGlobalLine
+                aria-hidden
+                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
+              />
+              <div className="relative sm:-mr-4">
+                <RiGlobalLine className="text-muted-foreground size-5" />
+                <h3 className="mt-3.5 text-lg font-semibold">Indexable and shareable by default</h3>
+                <p className="text-muted-foreground mt-1.5 text-base">
+                  takumi renders a unique social card for every page at request time, alongside a
+                  generated sitemap, robots, and metadata. The preview here is this page&apos;s own,
+                  rendered live.
+                </p>
+              </div>
+              <div className="relative overflow-hidden rounded-md border">
+                <Image
+                  src="/og/home"
+                  alt="Open Graph preview for this page"
+                  width={1200}
+                  height={630}
+                  unoptimized
+                  className="h-auto w-full"
+                />
+              </div>
+            </div>
+
             {/* Docs, full-width row */}
             <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
               <RiBookOpenLine
@@ -524,10 +559,10 @@ docker compose up --build`
               Not another starter. A better default.
             </h2>
             <p className="text-muted-foreground mt-4 text-lg text-balance">
-              Most starters give you folders and dependencies. {site.name} gives you the operating
-              practices behind a production-grade codebase: shaped architecture, clear boundaries,
-              centralized decisions, and workflows that keep the system clean as it grows. You do
-              not just clone code; you inherit a way of building.
+              Most starters give you folders and dependencies. {site.name} gives you the decisions
+              already made and wired: one file rebrands the fork, one command re-baselines it on
+              upstream, and a canary-to-main pipeline versions and ships it. You inherit a way of
+              building, not just a pile of code.
             </p>
           </div>
           <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
