@@ -8,6 +8,7 @@
  * getCookieDomain("http://api.zerostarter.localhost")    // ".zerostarter.localhost" (portless dev)
  * getCookieDomain("http://feat.api.zerostarter.localhost") // ".zerostarter.localhost" (portless worktree)
  * getCookieDomain("http://localhost:4000")               // undefined
+ * getCookieDomain("http://192.168.1.100:4000")           // undefined
  */
 export function getCookieDomain(url: string): string | undefined {
   try {
@@ -19,6 +20,8 @@ export function getCookieDomain(url: string): string | undefined {
       return parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : undefined
     }
     if (parts.length <= 2) return undefined
+    // IPv4 hosts cannot carry a Domain cookie, so stay host-only.
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname)) return undefined
     return `.${parts.slice(1).join(".")}`
   } catch {
     return undefined

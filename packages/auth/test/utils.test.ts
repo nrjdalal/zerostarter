@@ -11,6 +11,7 @@ test("getCookieDomain scopes the cookie to the environment subdomain in producti
 test("getCookieDomain returns undefined for bare localhost / IP / apex", () => {
   expect(getCookieDomain("http://localhost:4000")).toBeUndefined()
   expect(getCookieDomain("http://127.0.0.1:4000")).toBeUndefined()
+  expect(getCookieDomain("http://192.168.1.100:4000")).toBeUndefined()
   expect(getCookieDomain("https://example.com")).toBeUndefined()
   expect(getCookieDomain("not a url")).toBeUndefined()
 })
