@@ -1,3 +1,24 @@
+## v0.1.6
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.5...v0.1.6)
+
+### 🚀 Enhancements
+
+- **auth:** Derive cookie config from a build-generated tldts breakdown ([#723](https://github.com/nrjdalal/zerostarter/pull/723))
+- **auth:** Route sign-in same-origin through the web proxy on public suffixes ([4f4922f](https://github.com/nrjdalal/zerostarter/commit/4f4922f))
+
+### 📖 Documentation
+
+- **web:** Sync the per-workspace hook with inscope and link it ([a574186](https://github.com/nrjdalal/zerostarter/commit/a574186))
+
+### 🏡 Chore
+
+- Merge main into canary to reconcile the #710 squash ([#710](https://github.com/nrjdalal/zerostarter/issues/710))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.5
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.4...v0.1.5)
