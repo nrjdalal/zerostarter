@@ -198,7 +198,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
 
 export default async function Home() {
   const initCode = `bunx zerostarter init
-bun run dev   # named .localhost URLs`
+bun run dev`
 
   const typescriptCode = `import { apiClient, unwrap } from "@/lib/api/client"
 
@@ -244,7 +244,7 @@ docker compose up --build`
               className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
             >
               <span className="bg-success size-1.5 rounded-full" aria-hidden />
-              The type-safe SaaS monorepo
+              Starter for Enterprise
               <RiArrowRightSLine className="size-3.5" />
             </Link>
             <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
