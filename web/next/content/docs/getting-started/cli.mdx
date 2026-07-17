@@ -1,0 +1,83 @@
+---
+slug: /docs/getting-started/cli
+title: CLI
+description: "Scaffold, re-scaffold, and re-baseline a fork: the init, reinit, and sync commands."
+---
+
+The `zerostarter` CLI is how you start a project and keep it current. `init` scaffolds a fresh product, `reinit` re-scaffolds a repo you already have, and `sync` re-baselines a fork on the latest starter without discarding your work. All three run under Bun (`bunx`), fetch the starter with [gitpick](https://github.com/nrjdalal/gitpick) as a subtree (no upstream git history rides along), and rebrand everything to your project.
+
+## `init`: scaffold a fresh product
+
+```bash
+bunx zerostarter init [dir]
+```
+
+Fetches the latest starter into `dir` (default `.`), rebrands it to the directory name, seeds `.env`, installs dependencies, and makes the first commits on a `canary` branch with `main` seeded behind it. It can also provision a local Postgres and run migrations.
+
+When the terminal is interactive it asks three things, each skippable with `--yes`: a project name (only when the target directory is non-empty and not already a starter), which optional surfaces to ship, and whether to provision a local database.
+
+| Flag                             | Default   | Effect                                                                                                 |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
+| `--yes`, `-y`                    | off       | Skip every prompt and take defaults; provisions Postgres if Docker is running.                         |
+| `--canary`                       | `main`    | Scaffold from the `canary` branch instead of `main`.                                                   |
+| `--db`                           | off       | Force-provision a local Postgres and migrate (needs Docker); ignored if `POSTGRES_URL` is already set. |
+| `--dry-run`                      | off       | Print the plan and write nothing.                                                                      |
+| `--<feature>` / `--no-<feature>` | see below | Turn an optional surface on or off instead of the picker.                                              |
+| `--help`, `-h`                   | -         | Print usage.                                                                                           |
+
+The feature flags are `--api-docs`, `--blog`, `--docs`, `--internal-docs`, and `--waitlist`. All are on by default except `waitlist`; each gates a surface that a fork can drop (see [Features](/docs/manage/features)). Passing any feature flag skips the interactive picker.
+
+<Callout type="info" title="The directory name becomes the project name">
+
+Scaffolding into an empty `.` (or a fresh directory) names the project after that directory. Point `init` at a non-empty directory and it prompts for a name and scaffolds into a subdirectory of that name instead. `--canary` applies only when fetching; converting an existing checkout in place ignores it.
+
+</Callout>
+
+## `reinit`: re-scaffold a repo you already have
+
+```bash
+bunx zerostarter reinit [dir]
+```
+
+Deletes every file except `.git` and any `.env*`, re-fetches the latest starter, rebrands to the directory name, installs, and commits on the current branch. It always uses `main` and the default features, so there is no picker and no `--canary` or `--db`. The only flag is `--yes` to skip the confirmation.
+
+The operation is atomic: any failure resets the working tree to your last commit. It also requires a clean repo up front.
+
+<Callout type="warn" title="reinit deletes files">
+
+`reinit` removes every tracked and untracked file except `.git` and `.env*`. Committed files are restored on rollback, but gitignored files that are not `.env*` are gone for good, so commit or stash anything you want to keep first.
+
+</Callout>
+
+## `sync`: re-baseline a fork on the latest starter
+
+```bash
+bunx zerostarter sync [dir]
+```
+
+Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo and rolls back on failure.
+
+What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
+
+```bash
+# review before committing
+git -C <dir> status
+```
+
+## The fork boundary
+
+All three commands fetch with gitpick, which reads the repo's root `.gitpickignore`. That one file declares the fork boundary in two parts: the paths a fork does not take from the starter (your `web/next/content/`, the `(marketing)` route group and marketing assets, `packages/cli/`, and author-only workflows), and a `PRESERVE_ON_SYNC` line naming the paths `sync` restores after an overlay (your applied database migrations and schema, `docs.config.ts`, the lockfile, and favicon). The boundary applies only to gitpick fetches; a plain `git clone` still gets the whole repository.
+
+## Rebrand: one edit, whole system
+
+`init` and `reinit` regenerate `packages/config/src/site.ts` from the project name (the name, plus placeholder description, tagline, and socials for you to fill in), rename the root package to a slug, rebrand the [portless](/docs/getting-started/setup) dev-URL names to `<slug>` and `api.<slug>`, and strip the demo `/hire` nav entry. Every surface reads its identity from `@packages/config/site`, so that one file is your brand. The rebrand fails loudly rather than half-applying if the starter's shape has drifted (a missing `portless` block, a leaked marketing font), which keeps a fork from shipping a broken identity.
+
+## Publishing a fork
+
+`init` seeds git on a `canary` working branch with `main` behind it. On your first `git push`, a pre-push hook publishes `canary` (GitHub makes it your default branch); push again and it seeds the release branches, so the canary-to-main release automation configures itself with no repository admin. Enable read-write workflow permissions when the hook prompts you. See [Releases](/docs/manage/release) for the flow it sets up.
+
+## Next
+
+- [Quickstart](/docs/getting-started/setup): the guided first run with `init`.
+- [Features](/docs/manage/features): the optional surfaces `init` writes into `site.ts`.
+- [Releases](/docs/manage/release): the canary-to-main flow the fork bootstrap wires up.

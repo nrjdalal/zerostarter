@@ -36,6 +36,12 @@ base → prepare → builder → runner
 - The **web** image uses Next.js `output: "standalone"`: the builder copies `.next/static` and `public` into the standalone bundle, and the runner starts `bun server.js`.
 - The **api** image copies its `bundle/` output and runs `bun bundle/index.mjs`.
 
+<Callout type="info" title="Why the images stay small and self-contained">
+
+The api runner ships only its bundle: no `node_modules`, so it resolves every import from the bundle and starts with no network. The web build prunes the native binaries it will never run: `next.config.ts` detects the image's libc (alpine is musl) and drops the other-libc `sharp` and `@takumi-rs` binaries from output tracing, keeping only the takumi core `/og` needs. That keeps a single libc stack in the standalone output instead of both.
+
+</Callout>
+
 ## The .env build secret
 
 Both builds validate the full env, so they need `.env` at build time, but never bake it into a layer. It's passed as a **BuildKit secret**, mounted only for the build step:

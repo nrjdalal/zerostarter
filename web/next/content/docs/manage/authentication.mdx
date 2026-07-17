@@ -81,7 +81,7 @@ The guard reads the session with the cookie cache disabled, so a grant or revoke
 
 ## Organizations and teams
 
-The [Organization plugin](https://www.better-auth.com/docs/plugins/organization) (with `teams` enabled) makes the app multi-tenant. Users create and switch organizations from the dashboard sidebar; the last active org is stored in a cookie and restored on next login. Members carry a `role` within an org (default `member`), invitations go out by email, and teams group members inside an org. The backing tables (`organization`, `member`, `team`, `teamMember`, `invitation`) live in [the schema](/docs/manage/database).
+The [Organization plugin](https://www.better-auth.com/docs/plugins/organization) (with `teams` enabled) makes the app multi-tenant. Users create and switch organizations from the dashboard sidebar; the last active org is stored in a cookie and restored on next login. Members carry a `role` within an org (default `member`), and the backing tables (`organization`, `member`, `team`, `teamMember`, `invitation`) live in [the schema](/docs/manage/database). Creating and switching organizations is wired; invitations, teams, and member management are available in the plugin but not yet built into the UI. See [Organizations & Teams](/docs/manage/organizations) for the full data model and what to build on top.
 
 Read the current context on the client:
 
