@@ -51,6 +51,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/getting-started/realtime": {
+          title: "Realtime",
+          description:
+            "WebSockets on Hono: one typed client, a Bun and Node adapter split for Vercel, and a REST-baseline fallback.",
+        },
+      },
+      {
         "/docs/manage/api-conventions": {
           title: "API Conventions",
           description:
