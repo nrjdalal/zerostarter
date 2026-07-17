@@ -176,7 +176,7 @@ async function main() {
       for (const [name, version] of Object.entries(deps)) {
         if (isLocalProtocol(version)) continue
         if (!catalogKeys.has(name) && !safeToMove.has(name)) continue
-        if (version !== "catalog:") {
+        if (!version.startsWith("catalog:")) {
           deps[name] = "catalog:"
           mutated = true
         }

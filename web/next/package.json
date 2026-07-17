@@ -60,7 +60,7 @@
     "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:next"
   },
   "optionalDependencies": {
     "@takumi-rs/core-darwin-arm64": "catalog:",

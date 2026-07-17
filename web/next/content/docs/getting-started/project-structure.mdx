@@ -54,6 +54,8 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 
 The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
 
+When a workspace genuinely needs a different version, a named entry in the root `catalogs` block holds the exception and the workspace references it as `catalog:<name>`. There is one today: `catalog:next` pins `typescript` 6 in `web/next`, because `next build` type-checks through the TypeScript JS API that the native `typescript` 7 package no longer ships.
+
 ## Next
 
 - [Architecture](/docs/getting-started/architecture): why the graph is shaped this way.
