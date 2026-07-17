@@ -31,7 +31,7 @@ Each of these builds `@packages/env` first, then runs Drizzle Kit against `packa
 - `bun run lint`: Oxlint over the whole tree (also what CI runs).
 - `bun run format`: Oxfmt, writing fixes.
 - `bun run format:check`: Oxfmt, report only (also what CI runs).
-- `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
+- `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsc` over `.github/scripts`).
 - `bun run test`: run every workspace's tests through Turbo (the `packages/cli` suite today). PR CI runs this and `check-types` too, so a failing test or type error blocks the merge.
 
 ## Release / production
