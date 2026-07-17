@@ -82,7 +82,7 @@ test("localhostHost re-derives portless .localhost hosts, feeding cookieConfig a
     subdomain: "feat.api",
   })
   // The web origin (no api leaf) resolves to the same base.
-  expect(localhostHost("http://zerostarter.localhost:1355")?.domain).toBe("zerostarter.localhost")
+  expect(localhostHost("http://zerostarter.localhost:1355")!.domain).toBe("zerostarter.localhost")
   // Every branch lands on one shared Domain.
   for (const url of [
     "http://api.zerostarter.localhost:1355",
