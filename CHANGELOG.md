@@ -1,3 +1,24 @@
+## v0.1.7
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.6...v0.1.7)
+
+### 🚀 Enhancements
+
+- **marketing:** Sharpen the landing page (overhaul phase 3) ([#732](https://github.com/nrjdalal/zerostarter/pull/732))
+
+### 🩹 Fixes
+
+- **auth:** Share the session cookie across web and api under portless dev ([#728](https://github.com/nrjdalal/zerostarter/pull/728))
+
+### 📖 Documentation
+
+- Add CLI, Organizations & Teams, and Rate Limiting pages; fill gaps ([#730](https://github.com/nrjdalal/zerostarter/pull/730))
+- Realtime page + WebSockets/OG/magic-link/doc-sync depth (overhaul phase 2) ([#731](https://github.com/nrjdalal/zerostarter/pull/731))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.6
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.5...v0.1.6)
