@@ -19,11 +19,58 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 
-import { cookieConfig, type ParsedHost } from "@/lib/utils"
+import { cookieConfig, resolveDeployMode, type ParsedHost } from "@/lib/utils"
 
 // The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-tldts.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime.
 declare const __DERIVED_TLDTS__: ParsedHost
-const { cookieDomain, cookiePrefix, isPrivate } = cookieConfig(__DERIVED_TLDTS__)
+const config = cookieConfig(__DERIVED_TLDTS__)
+// Resolved once at module init; the handoff router reads it. The web client makes its own split decision (via @packages/config/deploy), since this server-env module must never reach the client bundle.
+export const deployMode = resolveDeployMode(config, env.HONO_APP_URL, env.HONO_TRUSTED_ORIGINS)
+
+// A public-suffix host that did not resolve to split (no web origin distinct from the api in HONO_TRUSTED_ORIGINS) means cookies cannot be shared and the handoff is off, so sign-in dies silently post-OAuth. Warn loudly at boot.
+if (deployMode.kind === "host-only" && config.isPrivate) {
+  console.warn(
+    "[auth] HONO_APP_URL is on a public-suffix host but HONO_TRUSTED_ORIGINS has no distinct web origin, so split-deploy sign-in is off and OAuth will fail with state_mismatch. Set HONO_TRUSTED_ORIGINS to your web origin, or use a custom domain.",
+  )
+}
+
+// In split mode the web origin is inferred as the first trusted origin that differs from the api. HONO_TRUSTED_ORIGINS is a CORS allowlist that can hold several, so warn if more than one distinct non-api origin is trusted: the inference could pick the wrong site (not a leak, the nonce cookie lives on the real web origin, but a baffling misroute).
+if (deployMode.kind === "split") {
+  const apiOrigin = new URL(env.HONO_APP_URL).origin
+  const nonApiOrigins = new Set(
+    env.HONO_TRUSTED_ORIGINS.map((o) => {
+      try {
+        return new URL(o).origin
+      } catch {
+        return ""
+      }
+    }).filter((o) => o && o !== apiOrigin),
+  )
+  if (nonApiOrigins.size > 1) {
+    console.warn(
+      `[auth] split mode treats the first non-api HONO_TRUSTED_ORIGINS entry as the web origin (${deployMode.webOrigin}), but ${nonApiOrigins.size} distinct non-api origins are trusted. List the web origin first if that is not it.`,
+    )
+  }
+}
+
+// Shared-domain scopes the session cookie to cookieDomain; if no trusted origin sits under it, the web app can never receive that cookie and sign-in fails silently after OAuth. Warn at boot. (A correct config, custom domain or portless localhost, always lists a web origin under the domain, so this stays quiet.)
+if (deployMode.kind === "shared-domain") {
+  const domain = deployMode.cookieDomain
+  const bare = domain.slice(1)
+  const underDomain = env.HONO_TRUSTED_ORIGINS.some((o) => {
+    try {
+      const { hostname } = new URL(o)
+      return hostname === bare || hostname.endsWith(domain)
+    } catch {
+      return false
+    }
+  })
+  if (!underDomain) {
+    console.warn(
+      `[auth] cookies are scoped to ${domain}, but no HONO_TRUSTED_ORIGINS entry is under it, so the web app cannot receive the session cookie. Add your web origin (under ${bare}) to HONO_TRUSTED_ORIGINS.`,
+    )
+  }
+}
 
 export type SocialProvider = "github" | "google"
 export type AuthProvider = SocialProvider | "magic-link"
@@ -77,24 +124,25 @@ export const auth = betterAuth({
   },
   advanced: {
     // The environment name-prefix isolates cookie names across envs; it applies independent of the cookie-mode switch below (a private-suffix env would still want it).
-    ...(cookiePrefix && { cookiePrefix }),
-    // On a hosting suffix (tldts isPrivate) sibling origins cannot share a Domain cookie, so send SameSite=None; otherwise scope a cross-subdomain cookie to the derived domain when there is one. A host with no shareable parent (apex, bare localhost, IP) stays host-only rather than letting Better Auth widen to Domain=<hostname>.
-    ...(isPrivate
-      ? {
-          defaultCookieAttributes: {
-            sameSite: "none" as const,
-            secure: true,
-          },
-        }
-      : cookieDomain
-        ? {
-            crossSubDomainCookies: {
-              enabled: true,
-              domain: cookieDomain,
-            },
-          }
-        : {}),
+    ...(deployMode.cookiePrefix && { cookiePrefix: deployMode.cookiePrefix }),
+    // Shared-domain (custom domains, portless localhost): today's cross-subdomain cookies, byte-identical.
+    ...(deployMode.kind === "shared-domain" && {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: deployMode.cookieDomain,
+      },
+    }),
+    // Split (two projects on a public hosting suffix): host-only SameSite=None, the only attributes browsers store across two unrelated sites.
+    ...(deployMode.kind === "split" && {
+      defaultCookieAttributes: {
+        sameSite: "none" as const,
+        secure: true,
+      },
+    }),
   },
+  // In split mode the OAuth `state` cookie is written by the api on a cross-site fetch response (signIn.social posts, then does a top-level redirect), which Safari (ITP) blocks and Firefox partitions, so it is absent on the first-party provider callback and sign-in dies with state_mismatch before the handoff runs. Skip the state COOKIE check: with a server session store the state is also persisted in the DB (single-use CSPRNG, deleted on parse), which stays the CSRF binding. This is what Better Auth's own oauth-proxy plugin does for the cross-origin case.
+  // Accepted tradeoff: the DB state is single-use but not browser-bound, so a relayed OAuth callback can still set the api-origin session in another browser (a bounded login-CSRF on the api-origin cookie, mostly Chrome third-party cookies; the nonce handoff still protects the web-origin SSR cookie). Known split-mode tradeoff; the tighter binding is deferred, see .github/notes/plans/split-oauth-callback-binding.md.
+  ...(deployMode.kind === "split" && { account: { skipStateCookieCheck: true } }),
 })
 
 // Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.

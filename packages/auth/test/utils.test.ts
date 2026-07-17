@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { cookieConfig, type ParsedHost } from "@/lib/utils"
+import { cookieConfig, resolveDeployMode, type ParsedHost } from "@/lib/utils"
 
 // A real tldts parse result (allowPrivateDomains), narrowed to the fields cookieConfig reads.
 const host = (h: Partial<ParsedHost>): ParsedHost => ({
@@ -126,4 +126,68 @@ test("cookieConfig still computes a domain under a private suffix with a subdoma
       }),
     ),
   ).toEqual({ cookieDomain: ".myapp.vercel.app", cookiePrefix: undefined, isPrivate: true })
+})
+
+const configFor = (h: Partial<ParsedHost>) => cookieConfig(host(h))
+
+test("resolveDeployMode is shared-domain for a host with a shareable parent (custom domain, portless)", () => {
+  expect(
+    resolveDeployMode(
+      configFor({ subdomain: "api", domain: "example.com", publicSuffix: "com" }),
+      "https://api.example.com",
+      ["https://app.example.com"],
+    ),
+  ).toEqual({ kind: "shared-domain", cookieDomain: ".example.com", cookiePrefix: undefined })
+  expect(
+    resolveDeployMode(
+      configFor({ subdomain: "api", domain: "zerostarter.localhost", publicSuffix: "localhost" }),
+      "http://api.zerostarter.localhost",
+      ["http://zerostarter.localhost"],
+    ),
+  ).toEqual({
+    kind: "shared-domain",
+    cookieDomain: ".zerostarter.localhost",
+    cookiePrefix: undefined,
+  })
+})
+
+test("resolveDeployMode is split for a public hosting suffix with a distinct trusted web origin", () => {
+  const config = configFor({
+    subdomain: "",
+    domain: "myapp-api.vercel.app",
+    isPrivate: true,
+    publicSuffix: "vercel.app",
+  })
+  expect(
+    resolveDeployMode(config, "https://myapp-api.vercel.app", ["https://myapp-web.vercel.app"]),
+  ).toEqual({ kind: "split", webOrigin: "https://myapp-web.vercel.app", cookiePrefix: undefined })
+  // Operator lists the api origin first: the web origin is the first entry distinct from the api's.
+  expect(
+    resolveDeployMode(config, "https://myapp-api.vercel.app", [
+      "https://myapp-api.vercel.app",
+      "https://myapp-web.vercel.app",
+    ]),
+  ).toEqual({ kind: "split", webOrigin: "https://myapp-web.vercel.app", cookiePrefix: undefined })
+})
+
+test("resolveDeployMode is host-only for a public suffix with no distinct web origin, and for apex/IP", () => {
+  expect(
+    resolveDeployMode(
+      configFor({
+        subdomain: "",
+        domain: "myapp.vercel.app",
+        isPrivate: true,
+        publicSuffix: "vercel.app",
+      }),
+      "https://myapp.vercel.app",
+      ["https://myapp.vercel.app"],
+    ),
+  ).toEqual({ kind: "host-only", cookiePrefix: undefined })
+  expect(
+    resolveDeployMode(
+      configFor({ subdomain: "", domain: "example.com", publicSuffix: "com" }),
+      "https://example.com",
+      [],
+    ),
+  ).toEqual({ kind: "host-only", cookiePrefix: undefined })
 })

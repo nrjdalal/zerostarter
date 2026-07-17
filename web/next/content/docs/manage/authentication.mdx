@@ -64,7 +64,7 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share falls back to `SameSite=None`, and a bare or apex host stays host-only. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, and a bare or apex host stays host-only. On a public hosting suffix like `*.vercel.app`, where two sibling deployments cannot share a cookie, cookies stay host-only with `SameSite=None` and split-deploy sign-in routes through the api's session handoff instead. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
 Reading the session is one call on either side:
 

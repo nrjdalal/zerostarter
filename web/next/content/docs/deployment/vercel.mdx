@@ -79,7 +79,7 @@ NEXT_PUBLIC_USERJOT_URL=your_userjot_url
 
 <Callout type="info" title="Two projects, two env stores">
 
-Env vars are set per project and don't propagate between them, and the two projects deploy independently. When you add a custom domain, update the URL vars on both projects, and update the OAuth callback URLs in GitHub/Google to match your production domains.
+Env vars are set per project and don't propagate between them, and the two projects deploy independently. Because both live on `*.vercel.app` (a public suffix, where the browser rejects a shared `Domain` cookie), the app detects this "split" shape from your URL vars and routes sign-in through a one-time, server-to-server session handoff automatically, so the two-project setup above works with no extra configuration. When you add a custom domain, update the URL vars on both projects, and update the OAuth callback URLs in GitHub/Google to match your production domains.
 
 </Callout>
 

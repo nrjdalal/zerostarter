@@ -12,7 +12,7 @@ import { z } from "zod"
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { createServer, upgradeWebSocket } from "@/lib/server"
 import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
-import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
+import { agentsRouter, authRouter, handoffRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
 
@@ -149,6 +149,7 @@ socket.addEventListener("message", (event) => {
   )
   .route("/agents", agentsRouter)
   .route("/auth", authRouter)
+  .route("/handoff", handoffRouter)
   .route("/v1", v1Router)
   .route("/waitlist", waitlistRouter)
   // Gate both the OpenAPI document and the Scalar UI on apiDocs; the UI fetches the spec, so gating only the UI would leave the full spec public.

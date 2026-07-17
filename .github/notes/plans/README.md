@@ -39,3 +39,11 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 - [One typed API envelope and a defineRoute helper](api-envelope-typed-endpoint.md) - shared `Envelope<T>` + boilerplate collapse; subsumes #664.
 - [Consolidate OG rendering behind one seam](og-render-consolidation.md) - #485; broadened to own size + URL scheme + defaults.
 - [Consolidate env into one schema with callable validation](env-schema-consolidation.md) - speculative; collapses shared-key duplication and import-time coupling.
+
+## Icebox
+
+Raised but not yet triaged into a decision, kept out of both the backlog above and a closed issue. The standing at-a-glance index is issue #707; one write-up per item lives here.
+
+- [Handoff route regression tests](handoff-route-tests.md) - mode-gate 404, single-use replay, wrong-nonce; blocked on an api integration-test harness (#720 review).
+- [Split-mode web cookie lifetime drift](handoff-cookie-lifetime.md) - SSR expires the session at its original lifetime on long-lived sessions (#720 review).
+- [Split-mode OAuth callback login-CSRF](split-oauth-callback-binding.md) - decided: accepted as a known tradeoff (`skipStateCookieCheck`); the tighter callback-to-nonce binding is a deferred optional hardening (#720 review).

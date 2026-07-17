@@ -2,6 +2,7 @@ import { getSafeEnv } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 import type { NextConfig } from "next"
+import { parse } from "tldts"
 
 getSafeEnv(env, "@web/next")
 
@@ -40,8 +41,21 @@ const appDevHost = (() => {
   }
 })()
 
+// Split-deploy sign-in: web and api are two unrelated sites on a PSL private-section suffix (e.g. separate *.vercel.app projects), so no cookie can be shared and sign-in must route through the api's handoff. Computed once at build from the app + api URLs and inlined as NEXT_PUBLIC_SPLIT_AUTH; tldts (the Public Suffix List) runs only here at build, never in the client bundle. The server makes the same call from its own baked tldts breakdown.
+const isSplitAuth = (() => {
+  try {
+    const api = new URL(env.NEXT_PUBLIC_API_URL)
+    const app = new URL(env.NEXT_PUBLIC_APP_URL)
+    if (app.origin === api.origin) return false
+    return parse(env.NEXT_PUBLIC_API_URL, { allowPrivateDomains: true }).isPrivate === true
+  } catch {
+    return false
+  }
+})()
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  env: { NEXT_PUBLIC_SPLIT_AUTH: String(isSplitAuth) },
   ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
