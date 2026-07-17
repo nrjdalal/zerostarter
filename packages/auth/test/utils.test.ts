@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { cookieConfig, type ParsedHost } from "@/lib/utils"
+import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
 // A real tldts parse result (allowPrivateDomains), narrowed to the fields cookieConfig reads.
 const host = (h: Partial<ParsedHost>): ParsedHost => ({
@@ -62,6 +62,45 @@ test("cookieConfig shares the cookie across web + api under portless (.localhost
       cookieConfig(host({ subdomain, domain: "zerostarter.localhost", publicSuffix: "localhost" })),
     ).toEqual({ cookieDomain: ".zerostarter.localhost", cookiePrefix: undefined, isPrivate: false })
   }
+})
+
+test("localhostHost re-derives portless .localhost hosts, feeding cookieConfig a shared Domain", () => {
+  // The api host portless injects at runtime; web and api both sit under zerostarter.localhost.
+  expect(localhostHost("http://api.zerostarter.localhost:1355")).toEqual({
+    domain: "zerostarter.localhost",
+    isIp: false,
+    isPrivate: false,
+    publicSuffix: "localhost",
+    subdomain: "api",
+  })
+  // A worktree prefixes each host with the branch label; the Domain still collapses to the base.
+  expect(localhostHost("http://feat.api.zerostarter.localhost:1355")).toEqual({
+    domain: "zerostarter.localhost",
+    isIp: false,
+    isPrivate: false,
+    publicSuffix: "localhost",
+    subdomain: "feat.api",
+  })
+  // The web origin (no api leaf) resolves to the same base.
+  expect(localhostHost("http://zerostarter.localhost:1355")?.domain).toBe("zerostarter.localhost")
+  // Every branch lands on one shared Domain.
+  for (const url of [
+    "http://api.zerostarter.localhost:1355",
+    "http://feat.api.zerostarter.localhost:1355",
+    "http://zerostarter.localhost:1355",
+  ]) {
+    expect(cookieConfig(localhostHost(url)!).cookieDomain).toBe(".zerostarter.localhost")
+  }
+})
+
+test("localhostHost returns null for bare localhost, real hosts, and unparseable URLs", () => {
+  // Docker and PORTLESS=0 serve bare localhost across ports: host-only is correct, so fall through to the baked breakdown.
+  expect(localhostHost("http://localhost:4000")).toBeNull()
+  expect(localhostHost("http://localhost")).toBeNull()
+  // Real deploys keep the build-time PSL breakdown.
+  expect(localhostHost("https://api.example.com")).toBeNull()
+  expect(localhostHost("https://myapp-api.vercel.app")).toBeNull()
+  expect(localhostHost("not a url")).toBeNull()
 })
 
 test("cookieConfig treats a multi-level public suffix as an apex, not a shareable parent", () => {
