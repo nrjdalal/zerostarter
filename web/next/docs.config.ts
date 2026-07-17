@@ -33,6 +33,13 @@ const docsConfig = {
             "How the monorepo fits together: two apps, their packages, one import graph.",
         },
       },
+      {
+        "/docs/getting-started/cli": {
+          title: "CLI",
+          description:
+            "Scaffold, re-scaffold, and re-baseline a fork: the init, reinit, and sync commands.",
+        },
+      },
     ],
     "Core Concepts": [
       {
@@ -51,6 +58,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/rate-limiting": {
+          title: "Rate Limiting",
+          description:
+            "Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.",
+        },
+      },
+      {
         "/docs/manage/database": {
           title: "Database",
           description: "PostgreSQL with Drizzle: the schema, and the generate-then-migrate loop.",
@@ -61,6 +75,14 @@ const docsConfig = {
           title: "Auth & Organizations",
           description:
             "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
+        },
+      },
+      {
+        "/docs/manage/organizations": {
+          title: "Organizations & Teams",
+          description:
+            "Multi-tenant from Better Auth: the org and team data model, roles, invitations, and active-org switching.",
+          label: "Organizations",
         },
       },
       {
