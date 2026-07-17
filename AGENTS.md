@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository, a Bun monorepo: the `packages/cli` npm binary, the `web/next` app, the `api/hono` service, and shared `packages/*` (auth, config, db, env). Start each task with the `codebase-map` skill to orient, then load the task skill that fits (see [Skills](#skills)).
+Guidance for AI coding agents working in this repository, a Bun monorepo: the `packages/cli` npm binary, the `web/next` app, the `api/hono` service, and shared `packages/*` (auth, config, db, env), with build-only tooling in `packages/scripts`. Start each task with the `codebase-map` skill to orient, then load the task skill that fits (see [Skills](#skills)).
 
 ## Workflow
 
@@ -52,6 +52,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 | Skill          | Description                                                                                                              |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `add-package`  | Add a shared workspace package under `packages/*` (library or build-only script), matching the standard shape.           |
 | `api-endpoint` | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.      |
 | `audit`        | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                                          |
 | `codebase-map` | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code. |

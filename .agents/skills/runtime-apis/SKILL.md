@@ -23,7 +23,7 @@ The prefix is mandatory even in Bun-only code: it marks the import as a built-in
 | `packages/env/**` | Node + Bun | `node:` only. Imported by both web (Node) and api (Bun); stays portable. |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
 
-Bun-first applies to Bun-only files: `.github/scripts/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
+Bun-first applies to Bun-only files: `.github/scripts/*.ts` and `packages/scripts/src/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
 
 ## Bun equivalents
 

@@ -1,14 +1,14 @@
 ---
 slug: /docs/getting-started/project-structure
 title: Project Structure
-description: "How the monorepo fits together: two apps, four packages, one import graph."
+description: "How the monorepo fits together: two apps, their packages, one import graph."
 ---
 
-The whole repo is one mental model: two deployable apps, four shared packages, and a single import graph that ties them together.
+The whole repo is one mental model: two deployable apps, their packages, and a single import graph that ties them together.
 
 - **`web/next`**: the Next.js frontend (App Router, React 19).
 - **`api/hono`**: the Hono backend that owns every route and talks to the database.
-- **`packages/*`**, the code both apps share: the auth instance, the Drizzle schema, validated env, and the brand config.
+- **`packages/*`**, the shared code plus build tooling: the auth instance, the Drizzle schema, validated env, the brand config, and a build-only scripts package.
 
 Three import aliases wire it together: `@api/hono` gives the frontend its API types, `@packages/*` pulls in a shared package, and `@/` is the local-to-this-app alias. Imports only point _down_ that list: apps depend on packages, never the reverse.
 
@@ -20,7 +20,8 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
    ├─ auth/       # Better Auth instance + session types
    ├─ db/         # Drizzle schema + migrations
    ├─ env/        # type-safe, validated environment variables
-   └─ config/     # TS base, tsdown factory, and site.ts (the brand)
+   ├─ config/     # TS base, tsdown factory, and site.ts (the brand)
+   └─ scripts/    # build-only tooling (tldts generation); never bundled
 ```
 
 ## `api/hono`
@@ -49,6 +50,7 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 - **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
+- **`scripts`**: build-only Bun tooling (e.g. the tldts breakdown baked into `auth`). It runs during a build and writes to the gitignored repo-root `.generated/`, never bundled or imported at runtime.
 
 ## Bun catalog
 

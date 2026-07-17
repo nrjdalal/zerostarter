@@ -10,6 +10,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
+- [Auth cookie derivation from a build-generated tldts breakdown](env-derived-tldts.md) - a `@packages/scripts` build step writes the parse to a gitignored JSON, auth bakes it via tsdown `define` (tldts stays out of the runtime bundle) and reconciles `{ cookieDomain, cookiePrefix, isPrivate }` via one `cookieConfig` (`feat/tldts-cookie-domain`, PR #723).
 
 ## Planned
 

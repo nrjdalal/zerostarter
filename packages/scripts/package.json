@@ -1,0 +1,17 @@
+{
+  "name": "@packages/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@packages/config": "workspace:*",
+    "@packages/env": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "tldts": "catalog:",
+    "typescript": "catalog:"
+  }
+}

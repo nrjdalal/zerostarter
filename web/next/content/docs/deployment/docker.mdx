@@ -48,7 +48,7 @@ Compose wires this from `secrets: dotenv` (sourced from `./.env`); a plain `dock
 
 <Callout type="warn" title="Rebuild with --no-cache after editing .env">
 
-Secret contents aren't part of BuildKit's cache key. Edit `.env` and a plain rebuild can reuse the cached build step, silently shipping stale values, including web's `NEXT_PUBLIC_*`, which Next inlines into the bundle at build time. After any env change, run `docker compose build --no-cache`.
+Secret contents aren't part of BuildKit's cache key. Edit `.env` and a plain rebuild can reuse the cached build step, silently shipping stale values, including web's `NEXT_PUBLIC_*` and the auth session-cookie scope derived from `HONO_APP_URL`, both baked into the bundle at build time. After any env change, run `docker compose build --no-cache`.
 
 </Callout>
 
