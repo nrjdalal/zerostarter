@@ -23,11 +23,15 @@ At runtime the api binds `process.env.PORT` when the host injects one (portless 
 The four slices, each a Zod schema that validates only what that consumer needs:
 
 - **`@packages/env/api-hono`**: `HONO_APP_URL`, `HONO_PORT`, the rate-limit knobs, `HONO_TRUSTED_ORIGINS`, and the optional `AGENT_SIGNIN_ENABLED` (gates the local agent sign-in)
-- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, and the optional OAuth pairs
+- **`@packages/env/auth`**: `BETTER_AUTH_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, the optional OAuth pairs, and the auto-derived `DEPLOY_MODE`
 - **`@packages/env/db`**: `POSTGRES_URL`
 - **`@packages/env/web-next`**: the server-only `INTERNAL_API_URL` plus the client `NEXT_PUBLIC_*` vars
 
 A variable that is missing or malformed at startup fails validation with a message naming it, so a bad deploy dies at boot rather than halfway through a request.
+
+## Auto-derived variables
+
+A few values are wired by tooling, never set by hand, and deliberately absent from `.env.example`. The api build bakes `COOKIE_DOMAIN` and `COOKIE_DOMAIN_PUBLIC_SUFFIX`: the api's parent cookie domain plus the real Public Suffix List's verdict on it (`tldts`, a dev-only dependency that never ships in a bundle). Whether the deployment is `shared`, `split`, or `host-only` is then decided at boot from those facts and your URL vars, so an env change takes effect on restart without a rebuild. The web build bakes the decision itself as `NEXT_PUBLIC_DEPLOY_MODE` (browsers have no runtime env, so on that side everything is inlined anyway). In dev nothing is baked and the api derives the same domain from source, minus the PSL veto; setting `COOKIE_DOMAIN_PUBLIC_SUFFIX=true` in `.env` is a dev-only escape hatch to force cross-site behavior. `INTERNAL_API_URL` is likewise injected (by Docker compose, see the Docker guide), not user-set.
 
 ## Server and client
 

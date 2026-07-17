@@ -5,7 +5,7 @@ description: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI d
 
 # API Endpoint
 
-Every response is an envelope: `{ data }` on success, `{ error: { code, message } }` on failure. Never build the failure envelope by hand: throw `ApiError` and `errorHandler` (`api/hono/src/lib/error.ts`) shapes it in ONE place. OpenAPI comes from `hono-openapi`; end-to-end types from Hono RPC. Reference routers: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated).
+Every response is an envelope: `{ data }` on success, `{ error: { code, message } }` on failure. Never build the failure envelope by hand: throw `ApiError` and `errorHandler` (`api/hono/src/lib/error.ts`) shapes it in ONE place. OpenAPI comes from `hono-openapi`; end-to-end types from Hono RPC. Reference routers: `api/hono/src/routers/waitlist.ts` (public, body-validated POST) and `api/hono/src/routers/v1.ts` (auth-gated). Gated internal routes that 404 outside their own mode (e.g. `agents.ts`, `handoff.ts`) deliberately omit `describeRoute` so they stay out of the public spec; that is the exception, not the rule.
 
 ## Workflow
 

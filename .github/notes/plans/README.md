@@ -8,6 +8,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 ## In progress
 
+- [Build-time deploy-mode detection](build-time-deploy-mode.md) - implemented on `feat/build-time-deploy-mode` (#721): the web/api deployment shape resolves at build via tldts (dev-only) and bakes a `DEPLOY_MODE` literal both bundles read; supersedes the runtime detection in #720 (#719).
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
 
@@ -38,3 +39,11 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 - [One typed API envelope and a defineRoute helper](api-envelope-typed-endpoint.md) - shared `Envelope<T>` + boilerplate collapse; subsumes #664.
 - [Consolidate OG rendering behind one seam](og-render-consolidation.md) - #485; broadened to own size + URL scheme + defaults.
 - [Consolidate env into one schema with callable validation](env-schema-consolidation.md) - speculative; collapses shared-key duplication and import-time coupling.
+
+## Icebox
+
+Raised but not yet triaged into a decision, kept out of both the backlog above and a closed issue. The standing at-a-glance index is issue #707; one write-up per item lives here.
+
+- [Handoff route regression tests](handoff-route-tests.md) - mode-gate 404, single-use replay, wrong-nonce; blocked on an api integration-test harness (#720 review).
+- [Split-mode web cookie lifetime drift](handoff-cookie-lifetime.md) - SSR expires the session at its original lifetime on long-lived sessions (#720 review).
+- [Split-mode OAuth callback login-CSRF](split-oauth-callback-binding.md) - decided: accepted as a known tradeoff (`skipStateCookieCheck`); the tighter callback-to-nonce binding is a deferred optional hardening (#720 review).

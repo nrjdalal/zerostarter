@@ -10,9 +10,9 @@ One Bun + Turborepo monorepo: two deployable apps over shared packages. Imports 
 ```
 api/hono/         # backend (Hono): routers, middlewares, the AppType export
 web/next/         # frontend (Next.js App Router): app/, components/, lib/, content/
-packages/auth/    # Better Auth instance
+packages/auth/    # Better Auth instance; ./deploy = pure same-or-cross decision; ./handoff = client-safe split primitives
 packages/db/      # Drizzle schema + client
-packages/env/     # type-safe env, one validated entry per consumer
+packages/env/     # type-safe env, one validated entry per consumer; ./deploy = build-only PSL facts (tldts)
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 ```
