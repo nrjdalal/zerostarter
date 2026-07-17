@@ -42,6 +42,7 @@
     "HONO_RATE_LIMIT",
     "HONO_RATE_LIMIT_WINDOW_MS",
     "HONO_TRUSTED_ORIGINS",
+    "HONO_WEB_URL",
     "INTERNAL_API_URL",
     "POSTGRES_URL",
     // Client variables

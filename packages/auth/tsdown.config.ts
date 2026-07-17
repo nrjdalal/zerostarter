@@ -7,8 +7,8 @@ import { env } from "@packages/env/auth"
 
 import type { ParsedHost } from "@/lib/utils"
 
-// The build-time tldts breakdown that generate-tldts writes to repo-root .generated/, parsed and spread over a null-host fallback (a renamed tldts field falls back to null), then inlined via define so no Public Suffix List ships. Anchored to this file, not cwd, so a stray tsdown run still resolves it.
-const generatedPath = resolve(import.meta.dirname, "../../.generated/tldts.json")
+// The build-time tldts breakdown that generate-env (auth target) writes to repo-root .generated/, parsed and spread over a null-host fallback (a renamed tldts field falls back to null), then inlined via define so no Public Suffix List ships. Anchored to this file, not cwd, so a stray tsdown run still resolves it.
+const generatedPath = resolve(import.meta.dirname, "../../.generated/auth-env.json")
 const fallback: ParsedHost = {
   domain: null,
   isIp: false,
@@ -25,7 +25,7 @@ if (existsSync(generatedPath)) {
   console.warn(`@packages/auth: ${generatedPath} missing; baking the host-only fallback.`)
 } else {
   throw new Error(
-    `@packages/auth: ${generatedPath} missing; run generate-tldts before tsdown (or set SKIP_ENV_VALIDATION).`,
+    `@packages/auth: ${generatedPath} missing; run generate-env auth before tsdown (or set SKIP_ENV_VALIDATION).`,
   )
 }
 
