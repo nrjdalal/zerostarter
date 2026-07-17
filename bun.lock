@@ -180,6 +180,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@packages/scripts": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
         "@types/bun": "catalog:",

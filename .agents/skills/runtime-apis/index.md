@@ -31,7 +31,8 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | `packages/cli/test/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `packages/env/src/lib/utils.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
-| `packages/scripts/src/generate-tldts.ts` | Bun | `node:path` (resolve) |
+| `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
+| `web/next/next.config.ts` | Node | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Node | `node:fs` (existsSync); `node:path` (join) |
 
 ## Convertible to `Bun.*` (optional, Bun-only files)

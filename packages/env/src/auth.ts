@@ -18,6 +18,7 @@ export const env = createEnv({
       .string()
       .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
       .pipe(z.array(z.url())),
+    HONO_WEB_URL: z.url().optional(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -28,6 +29,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     HONO_APP_URL: polyfillServer(process.env.HONO_APP_URL, "https://polyfill.url"),
     HONO_TRUSTED_ORIGINS: polyfillServer(process.env.HONO_TRUSTED_ORIGINS, "https://polyfill.url"),
+    HONO_WEB_URL: process.env.HONO_WEB_URL,
   },
   emptyStringAsUndefined: true,
 })

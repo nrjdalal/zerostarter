@@ -10,7 +10,7 @@ Workspaces are globbed as `api/*`, `packages/*`, `web/*` (root `package.json`). 
 ## Pick the shape
 
 - **Library** (`env`, `db`, `auth`, `config`): built with tsdown to `dist/`, imported by other workspaces via an `exports` map. Use when code is consumed at runtime.
-- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (e.g. `@packages/auth`'s `build` runs `bun ../scripts/src/generate-tldts.ts` first). Use for build-time codegen. Keep CI/repo tooling in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
+- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (e.g. `@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first). Use for build-time codegen. Keep CI/repo tooling in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
 
 ## Common skeleton (both shapes)
 
@@ -19,7 +19,7 @@ packages/<name>/
 ├── package.json
 ├── tsconfig.json
 └── src/
-    └── index.ts        # source under src/, imported via @/ (a build-only script names its entry by function, e.g. generate-tldts.ts, not index.ts)
+    └── index.ts        # source under src/, imported via @/ (a build-only script names its entry by function, e.g. generate-env.ts, not index.ts)
 ```
 
 `package.json` fields shared by every package:

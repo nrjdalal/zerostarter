@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
+    "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
     "check-types": "bun ../../.github/scripts/docs.ts && fumadocs-mdx && tsc --noEmit",
     "dev": "portless",
     "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../.github/scripts/portless.ts next dev",
@@ -47,6 +47,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@packages/scripts": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@types/bun": "catalog:",
