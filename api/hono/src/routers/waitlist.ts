@@ -1,10 +1,8 @@
-import { sValidator } from "@hono/standard-validator"
 import { db, waitlist } from "@packages/db"
 import { Hono } from "hono"
-import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { ApiError, validationErrorResponses } from "@/lib/error"
+import { jsonBody, jsonRoute } from "@/lib/route"
 import { requireFeature } from "@/middlewares"
 
 const joinSchema = z.object({
@@ -22,33 +20,12 @@ export const waitlistRouter = new Hono()
   .use("*", requireFeature("waitlist"))
   .get(
     "/",
-    describeRoute({
+    jsonRoute({
       tags: ["Waitlist"],
       description:
         "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.waitlist.$get())`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({ data: z.object({ count: z.number().meta({ example: 40 }) }) }),
-              ),
-            },
-          },
-        },
-      },
+      sample: "apiClient.waitlist.$get()",
+      output: z.object({ count: z.number().meta({ example: 40 }) }),
     }),
     async (c) => {
       const exact = await db.$count(waitlist)
@@ -58,42 +35,14 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())`,
   )
   .post(
     "/",
-    describeRoute({
+    jsonRoute({
       tags: ["Waitlist"],
       description: "Join the waitlist",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
-
-const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`,
-          },
-        ],
-      } as object),
-      responses: {
-        200: {
-          description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(
-                z.object({ data: z.object({ message: z.string().meta({ example: "ok" }) }) }),
-              ),
-            },
-          },
-        },
-        ...validationErrorResponses,
-      },
+      sample: `apiClient.waitlist.$post({ json: { email: "you@example.com" } })`,
+      output: z.object({ message: z.string().meta({ example: "ok" }) }),
+      validated: true,
     }),
-    // validation failures throw so onError shapes the 400 in one place
-    sValidator("json", joinSchema, (result) => {
-      if (!result.success) {
-        throw new ApiError(400, "VALIDATION_ERROR", "Invalid email address", {
-          issues: result.error,
-        })
-      }
-    }),
+    jsonBody(joinSchema, "Invalid email address"),
     async (c) => {
       const { email, subject } = c.req.valid("json")
       // honeypot filled => silently accept without storing (bot)

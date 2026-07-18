@@ -55,7 +55,7 @@ That typed `apiClient.v1.session.$get()` above works because the route is define
 // api/hono/src/routers/v1.ts
 export const v1Router = new Hono<{ Variables: Session }>()
   .use("/*", authMiddleware)
-  .get("/session", describeRoute({/* OpenAPI metadata */}), (c) => {
+  .get("/session", jsonRoute({/* tags, description, sample, output, auth */}), (c) => {
     return c.json({ data: c.get("session") })
   })
 ```
@@ -71,7 +71,7 @@ The `api-endpoint` skill has the full recipe: the router template, the mandatory
 
 ## The API reference
 
-Every route decorated with `describeRoute` shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas from the Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`.
+Every documented route (`jsonRoute`, or `describeRoute` for the WebSocket upgrade) shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas derived from its Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`.
 
 ## Live data over WebSockets
 

@@ -19,7 +19,6 @@
   "dependencies": {
     "@arcjet/ip": "catalog:",
     "@hono/node-server": "catalog:",
-    "@hono/standard-validator": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/config": "workspace:*",
     "@packages/db": "workspace:*",
