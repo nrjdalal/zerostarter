@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { parseForkLayout } from "@/fork-layout"
 import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
 import { AUTHOR_FIELDS } from "@/pkg"
+import { reconcileForkSkills, slugify } from "@/skills"
 import {
   agentsTemplate,
   blogIndexTemplate,
@@ -19,13 +20,6 @@ import {
 } from "@/templates"
 
 const p = (root: string, ...parts: string[]): string => join(root, ...parts)
-
-// npm-safe package name derived from the project name.
-const slugify = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "app"
 
 // Remove the fork excludes the .gitpickignore names, then drop the ignore file (a no-op for gitpick fetches, which never copy those paths). Each exclude must be a literal path: a glob would diverge from gitpick's own fetch, so fail loudly rather than half-match.
 const removeForkExcludes = (root: string): void => {
@@ -128,4 +122,6 @@ export const convertRepo = (
   scaffoldContent(root, brand)
   fixDangling(root)
   rebrand(root, brand, features)
+  // Reconcile the inherited skills to the fork: rename the upstream identity, point source at it, and stamp the sync note.
+  reconcileForkSkills(root, brand)
 }

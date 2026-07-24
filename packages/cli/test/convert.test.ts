@@ -214,4 +214,32 @@ describe("convertRepo (in-place)", () => {
     expect(fonts()).toContain("dmSans")
     expect(nav()).not.toContain("/hire")
   })
+
+  test("reconciles an inherited skill: renames the identity, sets source, stamps the sync note", () => {
+    scaffold()
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: Start the ZeroStarter dev stack.\nsource: local\n---\n\n# Dev\n\nRun `bunx portless get zerostarter`.\n",
+    )
+    convertRepo(dir, { name: "Acme App" })
+    const skill = read(join(dir, ".agents/skills/dev/SKILL.md"))
+    expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
+    expect(skill).toContain("[!CAUTION]")
+    expect(skill).toContain("Start the Acme App dev stack")
+    expect(skill).toContain("portless get acme-app")
+    expect(skill).not.toContain("get zerostarter")
+  })
+
+  test("re-points a vendored skill's source at upstream (a fork inherits it through zerostarter, not the tool)", () => {
+    scaffold()
+    write(
+      join(dir, ".agents/skills/agent-browser/SKILL.md"),
+      "---\nname: agent-browser\ndescription: Browser automation CLI for AI agents.\nsource: agent-browser\n---\n\n# Agent Browser\n",
+    )
+    convertRepo(dir, { name: "acme" })
+    const skill = read(join(dir, ".agents/skills/agent-browser/SKILL.md"))
+    expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
+    expect(skill).not.toContain("source: agent-browser")
+    expect(skill).toContain("[!CAUTION]")
+  })
 })

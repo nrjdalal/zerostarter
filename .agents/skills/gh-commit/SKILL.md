@@ -1,15 +1,14 @@
 ---
 name: gh-commit
 description: Create atomic commits in the conventional format. Use when the user asks to commit or save changes.
+source: local
 ---
 
 # Git Commit
 
 ATOMIC commits, conventional format. Stage and commit only; never push unless the user explicitly asks.
 
-## Workflow
-
-### 1. Inspect
+## 1. Inspect
 
 ```bash
 git status --short
@@ -17,17 +16,17 @@ git diff
 git diff --staged
 ```
 
-Read staged and unstaged changes before deciding what belongs together.
+Read the staged and unstaged changes before deciding what belongs together.
 
-### 2. Stage
+## 2. Stage
 
-Stage one logical unit per commit (ATOMIC); split unrelated changes into separate commits so every staged file belongs to the same unit.
+One logical unit per commit (ATOMIC): split unrelated changes into separate commits so every staged file belongs to the same unit.
 
 ```bash
 git add <paths>
 ```
 
-### 3. Commit
+## 3. Commit
 
 ```bash
 git commit -m "<type>(<scope>): <subject>"
@@ -52,7 +51,7 @@ docs(readme): update installation steps
 chore(deps): bump dependencies to latest versions
 ```
 
-### 4. Push (only when explicitly requested)
+## 4. Push (only when explicitly requested)
 
 Stop after the commit. Push only when the user says "commit and push", "push the changes", or confirms when asked.
 

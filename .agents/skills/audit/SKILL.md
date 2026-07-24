@@ -1,11 +1,12 @@
 ---
 name: audit
 description: Run the dependency security audit and maintain .github/notes/dependencies.md. Use when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
+source: local
 ---
 
 # Dependency Audit
 
-`bun audit --audit-level high` runs in the pre-push hook on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override; it stays even when there are none.
+The pre-push hook runs `bun audit --audit-level high`, on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override, and it stays in place even when there are none.
 
 ## 1. Run
 
@@ -13,26 +14,26 @@ description: Run the dependency security audit and maintain .github/notes/depend
 bun audit --audit-level high
 ```
 
-Done when the output is clean or lists the high advisories to resolve.
+Done when the output is clean, or you have the list of high advisories to clear.
 
-## 2. Resolve on the highest rung that works
+## 2. Fix on the highest rung that works
 
-Drop to the next rung only when the one above can't lift the tree:
+Fix each advisory on the highest rung that lifts the whole tree; drop a rung only when the one above cannot:
 
-1. **Update the vulnerable dep** (best): bump its `catalog:` entry in the root `package.json`.
-2. **Update the parent** that pins the vulnerable transitive dep.
-3. **Override** (last resort): add to `overrides` in the root `package.json`:
+1. **Update the vulnerable dependency** (best): bump its `catalog:` entry in the root `package.json`.
+2. **Update the parent** that pins the vulnerable transitive dependency.
+3. **Override** (last resort): pin the patched version in root `overrides`:
 
    ```json
    "overrides": { "<vulnerable-package>": "<patched-version>" }
    ```
 
-Then `bun i` and confirm nothing broke: `bun run check-types && bun run build`. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
+Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
 
-## 3. Record in .github/notes/dependencies.md
+## 3. Record every override
 
-Match the file's existing shape: one `### <package> → <version>` block per active override under `## Active overrides`, each carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override is dropped. Done when every entry in root `overrides` has a matching block and no block outlives its override.
+Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
 
 ## 4. Ship
 
-`package.json`/`bun.lock`/`.github/notes/dependencies.md` go through a normal PR.
+`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR.

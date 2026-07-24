@@ -50,28 +50,38 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 **Custom**
 
-| Skill          | Description                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `add-package`  | Add a shared workspace package under `packages/*` (library or build-only script), matching the standard shape.           |
-| `api-endpoint` | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.      |
-| `audit`        | Run the dependency security audit and maintain `.github/notes/dependencies.md`.                                          |
-| `codebase-map` | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code. |
-| `db-migration` | Create and apply a Drizzle schema change.                                                                                |
-| `design`       | Follow and maintain the app's UI conventions.                                                                            |
-| `dev`          | Start, restart, and verify the dev stack; `bun run dev` serves portless named `.localhost` URLs.                         |
-| `doc-sync`     | Sync docs and skills so they never drift from the code.                                                                  |
-| `docker-test`  | Build and smoke-test the Docker images with docker compose.                                                              |
-| `fonts`        | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).       |
-| `gh-commit`    | Create atomic commits in the conventional format.                                                                        |
-| `icebox`       | Park a raised-but-undecided concern on ice (issue #707 + `plans/`), no verdict.                                          |
-| `ignore-sync`  | Mirror `.gitignore` to `.dockerignore`.                                                                                  |
-| `runtime-apis` | Prefer Bun-native APIs, else Node built-ins with the `node:` prefix.                                                     |
-| `shadcn-sync`  | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                   |
-| `ui-verify`    | Verify a frontend or UI change in a real browser.                                                                        |
+<!-- skills:custom -->
+
+| Skill            | Description                                                                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add-package`    | Add a new shared workspace package under packages/*.                                                                                                                                |
+| `api-endpoint`   | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                                 |
+| `audit`          | Run the dependency security audit and maintain .github/notes/dependencies.md.                                                                                                       |
+| `codebase-map`   | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                            |
+| `db-migration`   | Create and apply a Drizzle schema change.                                                                                                                                           |
+| `design`         | Follow and maintain the app's UI conventions.                                                                                                                                       |
+| `dev`            | Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. |
+| `doc-sync`       | Sync docs and skills so they never drift from the code.                                                                                                                             |
+| `docker-test`    | Build and smoke-test the Docker images with docker compose.                                                                                                                         |
+| `fonts`          | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).                                                                  |
+| `gh-commit`      | Create atomic commits in the conventional format.                                                                                                                                   |
+| `icebox`         | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                                 |
+| `ignore-sync`    | Mirror .gitignore to .dockerignore.                                                                                                                                                 |
+| `release`        | Cut a production release by promoting canary to main.                                                                                                                               |
+| `runtime-apis`   | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                                  |
+| `shadcn-sync`    | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                              |
+| `skills-manager` | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                                       |
+| `ui-verify`      | Verify a frontend or UI change in a real browser.                                                                                                                                   |
+
+<!-- /skills:custom -->
 
 **Vendored** (upstream, copied verbatim)
 
-| Skill           | Description                                                                                                                  |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `agent-browser` | Browser automation CLI for AI agents.                                                                                        |
-| `portless`      | Set up and use portless for named local dev server URLs (e.g. `https://myapp.localhost` instead of `http://localhost:3000`). |
+<!-- skills:vendored -->
+
+| Skill           | Description                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `agent-browser` | Browser automation CLI for AI agents.                                                                                    |
+| `portless`      | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+
+<!-- /skills:vendored -->
