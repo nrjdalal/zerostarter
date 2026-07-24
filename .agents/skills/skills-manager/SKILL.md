@@ -29,7 +29,7 @@ Each cell is the description's summary, the sentence before `Use ...`, so keep e
 
 ## How a fork syncs
 
-A fork inherits its skills from the scaffold, and the CLI marks each with `source: <upstream repo>` plus a `[!CAUTION]` note at the top. That note is the contract: `bunx zerostarter` updates a skill only while the note is intact and the body still matches upstream. Customize the skill or drop the note and the fork owns it. Check state with:
+A fork inherits its skills from the scaffold. On `init` and `sync` the CLI rebrands each skill's prose to the fork's project name (read from `package.json`) and marks it with `source: <upstream repo>` plus a `[!CAUTION]` note at the top. That note is the contract: `bunx zerostarter` updates a skill only while the note is intact and the body still matches upstream. Customize the skill or drop the note and the fork owns it. Check state with:
 
 ```bash
 bun .github/scripts/skills-manager.ts --outdated

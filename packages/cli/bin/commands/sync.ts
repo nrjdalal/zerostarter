@@ -12,6 +12,7 @@ import {
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg } from "@/pkg"
+import { reconcileForkSkillsFromRoot } from "@/skills"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -78,6 +79,8 @@ export const sync = async (argv: string[]) => {
         if (!exists(path)) continue
         writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
       }
+      // Rebrand the overlaid skills to the fork: the overlay re-added upstream SKILL.md files naming "zerostarter", so re-run init's reconcile, sourcing the fork name from the just-restored root package.json.
+      reconcileForkSkillsFromRoot(target)
       // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
       await gitRestore(target, preserve)
     },

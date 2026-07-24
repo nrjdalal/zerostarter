@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs"
 import { join } from "node:path"
 
-import { exists, read, write } from "@/io"
+import { exists, read, readJson, write } from "@/io"
 import type { Brand } from "@/templates"
 
 // A fork inherits its whole skill set from zerostarter (vendored skills included, received through zerostarter rather than the tool directly), so every scaffolded skill is marked as synced from here.
@@ -21,7 +21,7 @@ const reconcile = (text: string, slug: string, name: string): string =>
 // The sync CAUTION stamped just below each fork skill's frontmatter; its presence is the contract, since bunx zerostarter updates a skill only while the note is intact and the body still matches upstream, and customizing the skill or dropping the note hands ownership to the fork.
 const syncNote = (): string =>
   `> [!CAUTION]
-> Synced from ${UPSTREAM}. If you customize this skill or remove this note, it stops syncing and your fork owns it.`
+> Synced from ${UPSTREAM}. Customize this skill or remove this note to stop syncing.`
 
 // Reconcile every scaffolded skill to the fork: rename the upstream identity in prose, point source at the upstream repo, and stamp the sync note; a fork has no packages/cli of its own, so bunx zerostarter is how it later pulls skill updates.
 export const reconcileForkSkills = (root: string, brand: Brand): void => {
@@ -49,4 +49,10 @@ export const reconcileForkSkills = (root: string, brand: Brand): void => {
     const body = reconcile(lines.slice(close + 1).join("\n"), slug, brand.name).replace(/^\n+/, "")
     write(file, `---\n${fm.join("\n")}\n---\n\n${syncNote()}\n\n${body}`)
   }
+}
+
+// Rebrand a fork's overlaid skills from its own package.json name. A sync overlay re-adds upstream SKILL.md files that name "zerostarter" and there is no brand prompt, so source the fork identity from the preserved root package.json (mergePkg keeps `name` on sync). A missing name (never scaffolded) is a no-op.
+export const reconcileForkSkillsFromRoot = (root: string): void => {
+  const name = readJson<{ name?: string }>(join(root, "package.json")).name
+  if (name) reconcileForkSkills(root, { name })
 }
