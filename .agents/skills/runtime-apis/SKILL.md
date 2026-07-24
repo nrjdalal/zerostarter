@@ -1,6 +1,6 @@
 ---
 name: runtime-apis
-description: Prefer Bun-native APIs, else Node built-ins with the node: prefix. Use when importing a Node built-in (fs, path, child_process, crypto, os, util), reading or writing files, spawning a process, or choosing between a Bun and a Node API.
+description: "Prefer Bun-native APIs, else Node built-ins with the node: prefix. Use when importing a Node built-in (fs, path, child_process, crypto, os, util), reading or writing files, spawning a process, or choosing between a Bun and a Node API."
 source: local
 ---
 
