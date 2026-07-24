@@ -146,19 +146,3 @@
     @apply mt-0;
   }
 }
-
-/* marketing marquee: animates only when motion is welcome, and pauses on hover (WCAG 2.2.2) */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes marquee {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-    to {
-      transform: translate3d(-50%, 0, 0);
-    }
-  }
-  .animate-marquee {
-    animation: marquee 50s linear infinite;
-    will-change: transform;
-  }
-}

@@ -169,7 +169,7 @@ function NoBreakCompounds({ text }: { text: string }) {
   const words = text.split(" ")
   return words.map((word, index) => (
     <Fragment key={`${word}-${index}`}>
-      {word.includes("-") ? <span className="whitespace-nowrap">{word}</span> : word}
+      {word.includes("-") ? <span className="sm:whitespace-nowrap">{word}</span> : word}
       {index < words.length - 1 ? " " : ""}
     </Fragment>
   ))
@@ -276,14 +276,14 @@ docker compose up --build`
                   <span className="relative size-4 shrink-0">
                     <Image
                       src={tech.icon.light}
-                      alt={tech.name}
+                      alt=""
                       fill
                       sizes="1rem"
                       className="block dark:hidden"
                     />
                     <Image
                       src={tech.icon.dark}
-                      alt={tech.name}
+                      alt=""
                       fill
                       sizes="1rem"
                       className="hidden dark:block"
@@ -295,6 +295,11 @@ docker compose up --build`
             </div>
             <div className="from-sidebar pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
             <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@media (prefers-reduced-motion: no-preference){@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}.animate-marquee{animation:marquee 50s linear infinite;will-change:transform}}`,
+              }}
+            />
           </div>
         </section>
 

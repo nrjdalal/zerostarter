@@ -18,6 +18,8 @@ const formSchema = z.object({
   // empty and malformed are separate failures, so each names its own problem
   email: z
     .string()
+    .trim()
+    .toLowerCase()
     .min(1, { error: "Enter your email address to join." })
     .pipe(
       z.email({ error: "That does not look like an email address. Check for a typo." }).max(254),
@@ -89,7 +91,8 @@ export default function WaitlistPage() {
       onBlur: formSchema,
     },
     onSubmit: ({ value }) => {
-      joinWaitlist.mutate(value)
+      // the form hands back raw input, so normalize here: the API dedupes with onConflictDoNothing, which a stray space or capital would defeat
+      joinWaitlist.mutate({ ...value, email: value.email.trim().toLowerCase() })
     },
   })
 
