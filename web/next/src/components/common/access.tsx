@@ -90,7 +90,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       <DialogTrigger render={<Button className="w-24" variant="outline" />}>
         <span className={labelClassName}>Login</span>
       </DialogTrigger>
-      <DialogContent className="max-w-md" initialFocus={false}>
+      <DialogContent className="max-w-md">
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
         </DialogHeader>
@@ -102,7 +102,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
               </div>
               <span className="sr-only">{site.name}</span>
             </div>
-            <h1 className="text-xl font-semibold">Welcome to {site.name}</h1>
+            <h2 className="text-xl font-semibold">Welcome to {site.name}</h2>
           </div>
           {magicLinkEnabled && (
             <form
@@ -124,6 +124,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                           id={field.name}
                           type="email"
                           name={field.name}
+                          autoComplete="email"
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}

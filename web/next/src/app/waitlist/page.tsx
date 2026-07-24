@@ -4,11 +4,10 @@ import { features, site } from "@packages/config/site"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -16,7 +15,13 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
-  email: z.email({ error: "Please enter a valid email address." }).max(254),
+  // empty and malformed are separate failures, so each names its own problem
+  email: z
+    .string()
+    .min(1, { error: "Enter your email address to join." })
+    .pipe(
+      z.email({ error: "That does not look like an email address. Check for a typo." }).max(254),
+    ),
   // honeypot: unconstrained so it never blocks submission; the server silently drops bots
   subject: z.string(),
 })
@@ -38,17 +43,6 @@ function WaitlistCount() {
     <div className="mt-10 flex h-7 items-center justify-center">
       {data && data.count > 0 && (
         <div className="animate-in fade-in flex items-center gap-3 duration-500">
-          <AvatarGroup>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-2 text-xs text-white">A</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-3 text-xs text-white">B</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-4 text-xs text-white">C</AvatarFallback>
-            </Avatar>
-          </AvatarGroup>
           <span className="text-muted-foreground text-sm">
             {data.count}+ people on the waitlist
           </span>
@@ -61,16 +55,24 @@ function WaitlistCount() {
 export default function WaitlistPage() {
   if (!features.waitlist) notFound()
 
-  const [joined, setJoined] = useState(false)
+  // holds the address that was accepted, so the confirmation can echo it back
+  const [joined, setJoined] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
   const queryClient = useQueryClient()
+
+  // the form unmounts on success, so focus would otherwise fall to <body>
+  useEffect(() => {
+    if (joined && successRef.current) successRef.current.focus()
+  }, [joined])
 
   const joinWaitlist = useMutation({
     mutationFn: async (value: { email: string; subject: string }) => {
       const { error } = await unwrap(apiClient.waitlist.$post({ json: value }))
       if (error) throw new Error(error.message)
+      return value.email
     },
-    onSuccess: () => {
-      setJoined(true)
+    onSuccess: (email) => {
+      setJoined(email)
       queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
     },
     onError: (error) => {
@@ -99,8 +101,26 @@ export default function WaitlistPage() {
 
         {joined ? (
           // matches the single-row form height so submitting never shifts the layout (sm+); on mobile the form stacks
-          <div className="text-success flex min-h-12 w-full items-center justify-center text-lg">
-            {"You're on the list. We'll be in touch soon."}
+          <div
+            ref={successRef}
+            role="status"
+            tabIndex={-1}
+            className="flex min-h-12 w-full flex-col items-center justify-center gap-1 outline-none"
+          >
+            <p className="text-success text-lg">
+              {"You're on the list. We sent a note to "}
+              <span className="font-medium">{joined}</span>.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setJoined(null)
+                form.reset()
+              }}
+              className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
+            >
+              Not your email? Change it
+            </button>
           </div>
         ) : (
           <form
@@ -137,18 +157,22 @@ export default function WaitlistPage() {
                       id={field.name}
                       type="email"
                       name={field.name}
+                      autoComplete="email"
+                      inputMode="email"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
+                      aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                       placeholder="you@example.com"
                       className="h-12 px-4 text-center text-base sm:text-left"
                       disabled={joinWaitlist.isPending}
                     />
                     {isInvalid && (
                       <FieldError
+                        id={`${field.name}-error`}
                         className="mt-1 text-center sm:absolute sm:top-full sm:left-0 sm:text-left"
-                        errors={field.state.meta.errors}
+                        errors={field.state.meta.errors.slice(0, 1)}
                       />
                     )}
                   </Field>
@@ -161,7 +185,8 @@ export default function WaitlistPage() {
               className="h-12 w-full px-6 text-base sm:w-auto"
               disabled={joinWaitlist.isPending}
             >
-              {joinWaitlist.isPending ? <Spinner /> : "Join the waitlist"}
+              {joinWaitlist.isPending && <Spinner />}
+              Join the waitlist
             </Button>
           </form>
         )}
