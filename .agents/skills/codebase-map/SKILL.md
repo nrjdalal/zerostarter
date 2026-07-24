@@ -45,7 +45,7 @@ Types flow downhill, so a change ripples predictably:
 packages/db/src/schema  →  api/hono/src/routers  →  api/hono/src/index.ts (AppType)  →  web/next/src/lib/api/client.ts  →  app / components
 ```
 
-Add a field end to end: edit and migrate the schema, then select/return it in the router. Every `apiClient` call site is retyped automatically and the compiler becomes your worklist of what still must change.
+To add a field end to end: edit and migrate the schema, then select and return it in the router. Every `apiClient` call site is retyped automatically, and the compiler becomes your worklist of what still must change.
 
 ## Entry points (read these first)
 
@@ -66,4 +66,4 @@ ls .agents/skills                                     # every task skill availab
 
 ## Then
 
-Load the task skill (the table's right column); `dev` runs/restarts the stack, and concept docs live under `/docs`.
+Load the task skill (the table's right column); `dev` runs and restarts the stack, and concept docs live under `/docs`.
