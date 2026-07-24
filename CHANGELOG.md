@@ -1,3 +1,15 @@
+## v0.1.9
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.8...v0.1.9)
+
+### 📖 Documentation
+
+- **skills:** Link each skill name to its SKILL.md in AGENTS.md ([#736](https://github.com/nrjdalal/zerostarter/pull/736))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.8
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.7...v0.1.8)
