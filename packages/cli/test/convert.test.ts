@@ -214,4 +214,19 @@ describe("convertRepo (in-place)", () => {
     expect(fonts()).toContain("dmSans")
     expect(nav()).not.toContain("/hire")
   })
+
+  test("reconciles an inherited skill: renames the identity, sets source, stamps the sync note", () => {
+    scaffold()
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: Start the ZeroStarter dev stack.\nsource: local\n---\n\n# Dev\n\nRun `bunx portless get zerostarter`.\n",
+    )
+    convertRepo(dir, { name: "Acme App" })
+    const skill = read(join(dir, ".agents/skills/dev/SKILL.md"))
+    expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
+    expect(skill).toContain("[!CAUTION]")
+    expect(skill).toContain("Start the Acme App dev stack")
+    expect(skill).toContain("portless get acme-app")
+    expect(skill).not.toContain("get zerostarter")
+  })
 })
