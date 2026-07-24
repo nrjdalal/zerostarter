@@ -67,7 +67,7 @@ const table = (skills: Skill[]) =>
   [
     "| Skill | Description |",
     "| --- | --- |",
-    ...skills.map((s) => `| [\`${s.name}\`](.agents/skills/${s.dir}/SKILL.md) | ${s.summary} |`),
+    ...skills.map((s) => `| [${s.name}](.agents/skills/${s.dir}/SKILL.md) | ${s.summary} |`),
   ].join("\n")
 
 // Replace the body between `<!-- skills:<id> -->` and `<!-- /skills:<id> -->`.

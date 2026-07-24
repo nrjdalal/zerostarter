@@ -5,6 +5,7 @@ import { join } from "node:path"
 
 import { convertRepo, fixDangling } from "@/convert"
 import { exists, read, readJson, write } from "@/io"
+import { reconcileForkSkillsFromRoot } from "@/skills"
 
 let dir: string
 beforeEach(() => {
@@ -241,5 +242,53 @@ describe("convertRepo (in-place)", () => {
     expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
     expect(skill).not.toContain("source: agent-browser")
     expect(skill).toContain("[!CAUTION]")
+  })
+})
+
+describe("reconcileForkSkillsFromRoot (sync path)", () => {
+  const devSkill = (dir: string) =>
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: Start the ZeroStarter dev stack.\nsource: local\n---\n\n# Dev\n\nRun `bunx portless get zerostarter`.\n",
+    )
+
+  test("rebrands overlaid skills from the fork's package.json name", () => {
+    write(join(dir, "package.json"), JSON.stringify({ name: "acme-app" }))
+    devSkill(dir)
+    reconcileForkSkillsFromRoot(dir)
+    const skill = read(join(dir, ".agents/skills/dev/SKILL.md"))
+    expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
+    expect(skill).toContain("[!CAUTION]")
+    expect(skill).toContain("Start the acme-app dev stack")
+    expect(skill).toContain("portless get acme-app")
+    expect(skill).not.toContain("ZeroStarter")
+    expect(skill).not.toContain("get zerostarter")
+    // The upstream URL in the source line and sync note must NOT be rebranded to the fork.
+    expect(skill).toContain("Synced from https://github.com/nrjdalal/zerostarter")
+    expect(skill).not.toContain("nrjdalal/acme-app")
+  })
+
+  test("no-ops when the root package.json has no name", () => {
+    write(join(dir, "package.json"), JSON.stringify({ version: "1.0.0" }))
+    devSkill(dir)
+    expect(() => reconcileForkSkillsFromRoot(dir)).not.toThrow()
+    expect(read(join(dir, ".agents/skills/dev/SKILL.md"))).toContain("ZeroStarter")
+  })
+
+  test("keeps upstream refs (bunx zerostarter, scaffolding CLI) but rebrands fork identity", () => {
+    write(join(dir, "package.json"), JSON.stringify({ name: "acme-app" }))
+    write(
+      join(dir, ".agents/skills/codebase-map/SKILL.md"),
+      "---\nname: codebase-map\ndescription: Orient in the repo.\nsource: local\n---\n\n" +
+        "Sync with `bunx zerostarter sync`; `packages/cli/` is the zerostarter scaffolding CLI.\n" +
+        "Dev URL `bunx portless get zerostarter`, api `api.zerostarter`, image `zerostarter-web`.\n",
+    )
+    reconcileForkSkillsFromRoot(dir)
+    const skill = read(join(dir, ".agents/skills/codebase-map/SKILL.md"))
+    expect(skill).toContain("bunx zerostarter sync")
+    expect(skill).toContain("zerostarter scaffolding CLI")
+    expect(skill).toContain("portless get acme-app")
+    expect(skill).toContain("api.acme-app")
+    expect(skill).toContain("acme-app-web")
   })
 })
