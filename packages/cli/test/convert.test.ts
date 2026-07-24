@@ -229,4 +229,17 @@ describe("convertRepo (in-place)", () => {
     expect(skill).toContain("portless get acme-app")
     expect(skill).not.toContain("get zerostarter")
   })
+
+  test("re-points a vendored skill's source at upstream (a fork inherits it through zerostarter, not the tool)", () => {
+    scaffold()
+    write(
+      join(dir, ".agents/skills/agent-browser/SKILL.md"),
+      "---\nname: agent-browser\ndescription: Browser automation CLI for AI agents.\nsource: agent-browser\n---\n\n# Agent Browser\n",
+    )
+    convertRepo(dir, { name: "acme" })
+    const skill = read(join(dir, ".agents/skills/agent-browser/SKILL.md"))
+    expect(skill).toContain("source: https://github.com/nrjdalal/zerostarter")
+    expect(skill).not.toContain("source: agent-browser")
+    expect(skill).toContain("[!CAUTION]")
+  })
 })
