@@ -52,26 +52,26 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 <!-- skills:custom -->
 
-| Skill            | Description                                                                                                                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add-package`    | Add a new shared workspace package under packages/*.                                                                                                                                |
-| `api-endpoint`   | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                                 |
-| `audit`          | Run the dependency security audit and maintain .github/notes/dependencies.md.                                                                                                       |
-| `codebase-map`   | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                            |
-| `db-migration`   | Create and apply a Drizzle schema change.                                                                                                                                           |
-| `design`         | Follow and maintain the app's UI conventions.                                                                                                                                       |
-| `dev`            | Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. |
-| `doc-sync`       | Sync docs and skills so they never drift from the code.                                                                                                                             |
-| `docker-test`    | Build and smoke-test the Docker images with docker compose.                                                                                                                         |
-| `fonts`          | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).                                                                  |
-| `gh-commit`      | Create atomic commits in the conventional format.                                                                                                                                   |
-| `icebox`         | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                                 |
-| `ignore-sync`    | Mirror .gitignore to .dockerignore.                                                                                                                                                 |
-| `release`        | Cut a production release by promoting canary to main.                                                                                                                               |
-| `runtime-apis`   | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                                  |
-| `shadcn-sync`    | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                              |
-| `skills-manager` | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                                       |
-| `ui-verify`      | Verify a frontend or UI change in a real browser.                                                                                                                                   |
+| Skill                                                      | Description                                                                                                                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`add-package`](.agents/skills/add-package/SKILL.md)       | Add a new shared workspace package under packages/*.                                                                                                                                |
+| [`api-endpoint`](.agents/skills/api-endpoint/SKILL.md)     | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                                 |
+| [`audit`](.agents/skills/audit/SKILL.md)                   | Run the dependency security audit and maintain .github/notes/dependencies.md.                                                                                                       |
+| [`codebase-map`](.agents/skills/codebase-map/SKILL.md)     | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                            |
+| [`db-migration`](.agents/skills/db-migration/SKILL.md)     | Create and apply a Drizzle schema change.                                                                                                                                           |
+| [`design`](.agents/skills/design/SKILL.md)                 | Follow and maintain the app's UI conventions.                                                                                                                                       |
+| [`dev`](.agents/skills/dev/SKILL.md)                       | Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. |
+| [`doc-sync`](.agents/skills/doc-sync/SKILL.md)             | Sync docs and skills so they never drift from the code.                                                                                                                             |
+| [`docker-test`](.agents/skills/docker-test/SKILL.md)       | Build and smoke-test the Docker images with docker compose.                                                                                                                         |
+| [`fonts`](.agents/skills/fonts/SKILL.md)                   | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).                                                                  |
+| [`gh-commit`](.agents/skills/gh-commit/SKILL.md)           | Create atomic commits in the conventional format.                                                                                                                                   |
+| [`icebox`](.agents/skills/icebox/SKILL.md)                 | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                                 |
+| [`ignore-sync`](.agents/skills/ignore-sync/SKILL.md)       | Mirror .gitignore to .dockerignore.                                                                                                                                                 |
+| [`release`](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                                               |
+| [`runtime-apis`](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                                  |
+| [`shadcn-sync`](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                              |
+| [`skills-manager`](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                                       |
+| [`ui-verify`](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                                   |
 
 <!-- /skills:custom -->
 
@@ -79,9 +79,9 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 <!-- skills:vendored -->
 
-| Skill           | Description                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `agent-browser` | Browser automation CLI for AI agents.                                                                                    |
-| `portless`      | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+| Skill                                                    | Description                                                                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [`agent-browser`](.agents/skills/agent-browser/SKILL.md) | Browser automation CLI for AI agents.                                                                                    |
+| [`portless`](.agents/skills/portless/SKILL.md)           | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
 
 <!-- /skills:vendored -->
