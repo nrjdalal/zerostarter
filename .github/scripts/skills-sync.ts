@@ -4,9 +4,9 @@ import { $, Glob } from "bun"
 
 // Skill maintainer. The AGENTS.md skills tables duplicate each skill's own `description`,
 // so they are GENERATED from `.agents/skills/*/SKILL.md` frontmatter instead of hand-kept:
-//   bun .github/scripts/skills.ts            rewrite the AGENTS.md tables from the skills (default)
-//   bun .github/scripts/skills.ts --check    fail on drift instead of writing (doc-sync gate, CI)
-//   bun .github/scripts/skills.ts --outdated fetch each skill's `source` upstream and report drift
+//   bun .github/scripts/skills-sync.ts            rewrite the AGENTS.md tables from the skills (default)
+//   bun .github/scripts/skills-sync.ts --check    fail on drift instead of writing (doc-sync gate, CI)
+//   bun .github/scripts/skills-sync.ts --outdated fetch each skill's `source` upstream and report drift
 // A skill's `source:` is its provenance: an `owner/repo` it was inherited from (checked by --outdated),
 // a bare tool name (vendored, re-synced by re-running the tool), or `local` (authored here, no upstream).
 
@@ -125,7 +125,7 @@ if (arg === "--outdated") {
 } else if (arg === "--check") {
   const want = await render()
   if ((await Bun.file(AGENTS).text()) !== want) {
-    console.error("AGENTS.md skills tables are stale. Run: bun .github/scripts/skills.ts")
+    console.error("AGENTS.md skills tables are stale. Run: bun .github/scripts/skills-sync.ts")
     process.exit(1)
   }
   console.log("AGENTS.md skills tables are up to date.")
