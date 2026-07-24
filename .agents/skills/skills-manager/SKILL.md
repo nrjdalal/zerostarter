@@ -1,40 +1,43 @@
 ---
-name: skills-sync
-description: Regenerate the AGENTS.md skills tables from skill descriptions, and re-sync a vendored skill from its upstream tool. Use after editing a skill's frontmatter, when adding or removing a skill, or when the AGENTS.md skills-table check fails.
+name: skills-manager
+description: Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream. Use after editing a skill's frontmatter, when adding or removing a skill, or when the AGENTS.md skills-table check fails.
 source: local
 files:
-  - .github/scripts/skills-sync.ts
+  - .github/scripts/skills-manager.ts
 ---
 
-# Skill Sync
+# Skills Manager
 
-Every skill carries its **provenance** in frontmatter, and `.github/scripts/skills-sync.ts` is the maintainer that reads it:
+The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `.github/scripts/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
 
-- `source: local` is authored here, this repo is the origin (no upstream to check).
-- `source: <tool>` is vendored: re-synced by re-running the tool, never hand-edited (see the `vendor` skill).
-- `source: owner/repo` marks a skill inherited from another repo, checked against it by `--outdated` (forks use this; the scaffold itself does not).
-- `files:` are the dependent files that travel with the skill, reconciled alongside it.
+Each skill carries its **provenance** in frontmatter:
 
-## Regenerate the AGENTS.md tables
+- `source: local` is authored here (this repo is the origin).
+- `source: <tool>` is vendored: re-synced by re-running the tool, never hand-edited.
+- `source: https://github.com/<owner>/<repo>` marks a skill a fork syncs from upstream (the CLI stamps this, with a `[!CAUTION]` sync note, when it scaffolds a fork).
 
-The skills tables in `AGENTS.md` are generated from each skill's `description`, never hand-kept, so the description is the single source:
+## Regenerate the tables
+
+The hook handles this on commit, but to run it by hand:
 
 ```bash
-bun .github/scripts/skills-sync.ts          # rewrite the tables from the skills
-bun .github/scripts/skills-sync.ts --check  # fail on drift instead of writing (the gate)
+bun .github/scripts/skills-manager.ts          # rewrite the tables from the skills
+bun .github/scripts/skills-manager.ts --check  # fail on drift instead of writing (the gate)
 ```
 
 Each cell is the description's summary, the sentence before `Use ...`, so keep every description in the `<summary>. Use when <triggers>` shape and edit the description, not the table. Done when `--check` passes.
 
-## Re-sync a vendored skill
+## How a fork syncs
+
+A fork inherits its skills from the scaffold, and the CLI marks each with `source: <upstream repo>` plus a `[!CAUTION]` note at the top. That note is the contract: `bunx zerostarter` updates a skill only while the note is intact and the body still matches upstream. Customize the skill or drop the note and the fork owns it. Check state with:
 
 ```bash
-bun .github/scripts/skills-sync.ts --outdated
+bun .github/scripts/skills-manager.ts --outdated
 ```
 
-reports each skill as `local, no upstream`, `vendored (<tool>)`, or, for an inherited skill, `up to date` / `DIFFERS from upstream`. A `vendored` skill is not hand-edited: re-run the tool's own export (e.g. `agent-browser skills get core`) or re-vendor it. Done when `--outdated` shows only intended divergence.
+which reports each skill as `local, no upstream`, `vendored (<tool>)`, or, for a synced skill, `up to date` / `DIFFERS from upstream`.
 
 ## Notes
 
-- Adding or removing a skill changes the tables: run the generator so `AGENTS.md` matches, or the `--check` gate fails.
-- `name`, `description`, and `source` are the contract the maintainer reads; a missing one makes `skills-sync.ts` throw rather than emit a half-built table.
+- Adding or removing a skill changes the tables; the hook regenerates them, and `--check` is the gate if it is ever bypassed.
+- `name`, `description`, and `source` are the contract the manager reads; a missing one makes it throw rather than emit a half-built table.

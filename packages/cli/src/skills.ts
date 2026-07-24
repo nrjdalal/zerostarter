@@ -4,9 +4,7 @@ import { join } from "node:path"
 import { exists, read, write } from "@/io"
 import type { Brand } from "@/templates"
 
-// A fork inherits its whole skill set from zerostarter (vendored skills included, since the fork
-// receives them through zerostarter, not the tool directly). So every scaffolded skill is marked
-// as synced from here.
+// A fork inherits its whole skill set from zerostarter (vendored skills included, received through zerostarter rather than the tool directly), so every scaffolded skill is marked as synced from here.
 const UPSTREAM = "https://github.com/nrjdalal/zerostarter"
 
 // npm-safe slug derived from the project name (shared with convert.ts's rebrand).
@@ -16,21 +14,16 @@ export const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Rename the upstream identity to the fork's, in prose only. The frontmatter `source` line is set
-// separately and never rewritten (it must keep pointing at the real upstream repo).
+// Rename the upstream identity to the fork's in prose only; the frontmatter source line is set separately and never rewritten, so it keeps pointing at the real upstream repo.
 const reconcile = (text: string, slug: string, name: string): string =>
   text.replaceAll("ZeroStarter", name).replaceAll("zerostarter", slug)
 
-// The sync CAUTION stamped just below each fork skill's frontmatter. Its presence is the contract:
-// `bunx zerostarter` updates a skill only while this note is intact and the body still matches
-// upstream. Customize the skill or drop the note and the fork owns it, no more syncing.
+// The sync CAUTION stamped just below each fork skill's frontmatter; its presence is the contract, since bunx zerostarter updates a skill only while the note is intact and the body still matches upstream, and customizing the skill or dropping the note hands ownership to the fork.
 const syncNote = (): string =>
   `> [!CAUTION]
 > Synced from ${UPSTREAM}. If you customize this skill or remove this note, it stops syncing and your fork owns it.`
 
-// Reconcile every scaffolded skill to the fork: rename the upstream identity in prose, point
-// `source` at the upstream repo, and stamp the sync note. Runs during a fork convert; a fork has no
-// packages/cli of its own, so `bunx zerostarter` is how it later pulls skill updates.
+// Reconcile every scaffolded skill to the fork: rename the upstream identity in prose, point source at the upstream repo, and stamp the sync note; a fork has no packages/cli of its own, so bunx zerostarter is how it later pulls skill updates.
 export const reconcileForkSkills = (root: string, brand: Brand): void => {
   const dir = join(root, ".agents/skills")
   if (!exists(dir)) return

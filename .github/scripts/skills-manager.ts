@@ -2,13 +2,11 @@ import path from "node:path"
 
 import { $, Glob } from "bun"
 
-// Skill maintainer. The AGENTS.md skills tables duplicate each skill's own `description`,
-// so they are GENERATED from `.agents/skills/*/SKILL.md` frontmatter instead of hand-kept:
-//   bun .github/scripts/skills-sync.ts            rewrite the AGENTS.md tables from the skills (default)
-//   bun .github/scripts/skills-sync.ts --check    fail on drift instead of writing (doc-sync gate, CI)
-//   bun .github/scripts/skills-sync.ts --outdated fetch each skill's `source` upstream and report drift
-// A skill's `source:` is its provenance: an `owner/repo` it was inherited from (checked by --outdated),
-// a bare tool name (vendored, re-synced by re-running the tool), or `local` (authored here, no upstream).
+// Skill maintainer: the AGENTS.md skills tables duplicate each skill's own description, so they are GENERATED from .agents/skills/*/SKILL.md frontmatter instead of hand-kept.
+//   bun .github/scripts/skills-manager.ts            rewrite the AGENTS.md tables from the skills (default)
+//   bun .github/scripts/skills-manager.ts --check    fail on drift instead of writing (the pre-commit gate)
+//   bun .github/scripts/skills-manager.ts --outdated fetch each skill's source upstream and report drift
+// A skill's source is its provenance: a full github link it was inherited from (checked by --outdated), a bare tool name (vendored, re-run the tool), or local (authored here).
 
 const ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.join(ROOT, ".agents/skills")
@@ -79,8 +77,7 @@ async function render(): Promise<string> {
   return format(doc)
 }
 
-// oxfmt owns the table-column alignment, so run the render through it; otherwise the compact
-// output drifts from what lint-staged commits and the --check gate would flip-flop.
+// oxfmt owns the table-column alignment, so run the render through it, otherwise the compact output drifts from what lint-staged commits and the --check gate flip-flops.
 async function format(doc: string): Promise<string> {
   const tmp = path.join(ROOT, ".skills.agents.tmp.md")
   try {
@@ -95,13 +92,15 @@ async function format(doc: string): Promise<string> {
 async function outdated(): Promise<void> {
   const skills = await readSkills()
   for (const s of skills) {
-    if (!s.source.includes("/")) {
+    // `source` is a full github link on a fork, an `owner/repo` shorthand, a tool name, or `local`.
+    const repo = s.source.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "")
+    if (!repo.includes("/")) {
       console.log(
         `  ${s.name}: ${s.source === "local" ? "local, no upstream" : `vendored (${s.source})`}`,
       )
       continue
     }
-    const url = `https://raw.githubusercontent.com/${s.source}/${UPSTREAM_REF}/.agents/skills/${s.name}/SKILL.md`
+    const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.name}/SKILL.md`
     const res = await fetch(url)
     if (res.status === 404) {
       console.log(`  ${s.name}: not in ${s.source} (local-only or renamed upstream)`)
@@ -125,7 +124,7 @@ if (arg === "--outdated") {
 } else if (arg === "--check") {
   const want = await render()
   if ((await Bun.file(AGENTS).text()) !== want) {
-    console.error("AGENTS.md skills tables are stale. Run: bun .github/scripts/skills-sync.ts")
+    console.error("AGENTS.md skills tables are stale. Run: bun .github/scripts/skills-manager.ts")
     process.exit(1)
   }
   console.log("AGENTS.md skills tables are up to date.")
