@@ -31,7 +31,6 @@ When a change establishes or alters a convention, update this file in the same c
 ## Typography and headings
 
 - Exactly one `<h1>` per page (the page title); sections use `<h2>` and below, never skipping a level.
-- A scrollable region (a code block, a wide table) needs `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
 - Use the existing type scale and tokens; no off-scale font sizes.
 - Marketing-page headings are `font-bold`. A sub-heading within a section stays lighter (a `font-semibold` `h3`) to preserve hierarchy; non-heading display text (a stat value) follows its own weight.
 
@@ -45,8 +44,14 @@ When a change establishes or alters a convention, update this file in the same c
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so add none to the root layout or you nest landmarks.
 - Site credit and footer content belongs in a real `<footer>` rendered as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark.
-- Name a `<section>` with `aria-labelledby` pointing at its own heading id, never a hand-written `aria-label`. Internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name.
+- Name a `<section>` that has a visible heading with `aria-labelledby` pointing at that heading's id, not a hand-written `aria-label`: internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name. A wrapper with no visible heading (a `role="region"` scroll container) still takes `aria-label`.
+- A scrollable region (a code block, a wide table) needs `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
 - Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. A surface nested inside the shell content pane (route `error`/`loading`, dashboard/console content) fills it with `flex-1`: the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so do not re-assert `min-h-svh` inside an already-full-height parent.
+
+## Motion
+
+- Every looping or auto-playing animation is gated on reduced motion. For a Tailwind utility use the `motion-safe:` variant (`motion-safe:animate-pulse`). For a keyframe Tailwind does not ship, declare it next to the section that uses it and wrap the rule in `@media (prefers-reduced-motion: no-preference)`; marketing keyframes stay out of `globals.css`.
+- Anything that moves for more than five seconds also needs a pause affordance, on both hover and `focus-within`, so a keyboard user can stop it (WCAG 2.2.2).
 
 ## Components
 

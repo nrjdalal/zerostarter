@@ -34,7 +34,7 @@ function CopyButton({ code, label }: { code: string; label: string }) {
       variant="ghost"
       onClick={copy}
       aria-label={copied ? `Copied ${label}` : `Copy ${label}`}
-      className="text-muted-foreground hover:text-foreground -my-1 h-7 gap-1.5 px-2 text-xs"
+      className="text-muted-foreground hover:text-foreground -my-1"
     >
       {copied ? (
         <RiCheckLine className="text-success size-3.5" />
@@ -46,7 +46,32 @@ function CopyButton({ code, label }: { code: string; label: string }) {
   )
 }
 
-// `html` is server-highlighted by shiki; `code` is the same source, kept raw so it can be copied
+// `html` is server-highlighted by shiki; `code` is the same source kept raw so it can be copied. Both blocks share one scroll region: it is focusable with an accessible name, since overflow no keyboard can reach is a dead focus stop.
+function ShikiRegion({
+  html,
+  label,
+  className,
+}: {
+  html: string
+  label: string
+  className?: string
+}) {
+  return (
+    <div
+      tabIndex={0}
+      role="region"
+      aria-label={label}
+      className={cn(
+        "focus-visible:ring-ring/50 overflow-x-auto py-5 outline-none focus-visible:ring-2",
+        shikiReset,
+        className,
+      )}
+      dangerouslySetInnerHTML={{ __html: html }}
+      style={{ colorScheme: "light dark" }}
+    />
+  )
+}
+
 export function CodeWindow({ label, html, code }: { label: string; html: string; code: string }) {
   return (
     <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left">
@@ -56,36 +81,17 @@ export function CodeWindow({ label, html, code }: { label: string; html: string;
           <CopyButton code={code} label={label} />
         </span>
       </div>
-      <div
-        // tabIndex makes the scroll container reachable, so its overflow can actually be scrolled by keyboard
-        tabIndex={0}
-        role="region"
-        aria-label={label}
-        className={cn(
-          "focus-visible:ring-ring/50 overflow-x-auto py-5 outline-none focus-visible:ring-2",
-          shikiReset,
-          "[&_pre]:leading-relaxed!",
-        )}
-        dangerouslySetInnerHTML={{ __html: html }}
-        style={{ colorScheme: "light dark" }}
-      />
+      <ShikiRegion html={html} label={label} className="[&_pre]:leading-relaxed!" />
     </div>
   )
 }
 
 export function CodeCard({ html, label }: { html: string; label: string }) {
   return (
-    <div
-      tabIndex={0}
-      role="region"
-      aria-label={label}
-      className={cn(
-        "bg-background focus-visible:ring-ring/50 flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border py-5 outline-none focus-visible:ring-2",
-        shikiReset,
-        "[&_pre]:leading-loose!",
-      )}
-      dangerouslySetInnerHTML={{ __html: html }}
-      style={{ colorScheme: "light dark" }}
+    <ShikiRegion
+      html={html}
+      label={label}
+      className="bg-background flex min-w-0 flex-col justify-center rounded-lg border [&_pre]:leading-loose!"
     />
   )
 }

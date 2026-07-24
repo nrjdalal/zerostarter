@@ -161,10 +161,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
   )
 }
 
-// Keeps hyphenated compounds ("world-class") whole across a line break using real hyphens, so
-// find-in-page and copy-paste still work; a U+2011 would hold the line but break both. The
-// separating space stays outside the nowrap span, or it becomes non-breaking too and glues the
-// compound to the next word.
+// Holds hyphenated compounds on one line from sm up, with real hyphens so find-in-page and copy-paste keep working; a U+2011 would hold the line but break both. Below sm they wrap, since a long compound at text-4xl overflows a 320px viewport. The separating space stays outside the span, or it turns non-breaking too and glues the compound to the next word.
 function NoBreakCompounds({ text }: { text: string }) {
   const words = text.split(" ")
   return words.map((word, index) => (
@@ -267,7 +264,7 @@ docker compose up --build`
 
           {/* Tech stack, pinned to the bottom of the hero */}
           <div className="bg-sidebar group relative overflow-hidden border-y py-6">
-            <div className="animate-marquee flex w-max gap-10 px-6 group-hover:[animation-play-state:paused]">
+            <div className="animate-marquee flex w-max gap-10 px-6 group-focus-within:[animation-play-state:paused] group-hover:[animation-play-state:paused]">
               {[...techStack, ...techStack].map((tech, index) => (
                 <div
                   key={`${tech.name}-${index}`}
@@ -464,11 +461,10 @@ docker compose up --build`
                   <RiLayoutGridLine className="text-muted-foreground size-5" />
                   <h3 className="mt-3.5 text-lg font-semibold">The shell is already built</h3>
                   <p className="text-muted-foreground mt-1.5 text-base">
-                    A collapsible sidebar, page header, breadcrumbs, user menu, and organization
-                    switcher ship wired to real sessions.{" "}
-                    <code className="font-mono">/dashboard</code> is auth-gated and{" "}
-                    <code className="font-mono">/console</code> is role-gated, so the only thing
-                    left to add is your product logic.
+                    A collapsible sidebar, page header, user menu, and organization switcher ship
+                    wired to real sessions. <code className="font-mono">/dashboard</code> is
+                    auth-gated and <code className="font-mono">/console</code> is role-gated, so the
+                    only thing left to add is your product logic.
                   </p>
                 </div>
                 <AppShellDiagram />
@@ -604,12 +600,12 @@ docker compose up --build`
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <MarketingFooter />
     </>
   )
 }
 
-function SiteFooter() {
+function MarketingFooter() {
   return (
     <footer className="bg-sidebar border-t">
       <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">

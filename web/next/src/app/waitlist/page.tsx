@@ -19,7 +19,6 @@ const formSchema = z.object({
   email: z
     .string()
     .trim()
-    .toLowerCase()
     .min(1, { error: "Enter your email address to join." })
     .pipe(
       z.email({ error: "That does not look like an email address. Check for a typo." }).max(254),

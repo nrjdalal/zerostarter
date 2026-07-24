@@ -1,9 +1,10 @@
 import { RiLockLine } from "@remixicon/react"
 
-// An authored abstraction of the shipped app shell, not a screenshot: route names and gating are real, so it stays true when the UI is restyled. Decorative for AT; the prose beside it carries the same facts.
-const nav = [
-  { group: "Dashboard", items: ["Overview", "Organizations", "Teams", "Settings"] },
-  { group: "Console", items: ["Users", "Sessions"], gated: true },
+// An authored abstraction of the shipped shell, not a screenshot. Every route and gate below exists: /dashboard is auth-gated, /console and /console/docs are role-gated. Decorative for AT; the prose beside it carries the same facts.
+const rows = [
+  { label: "/dashboard", note: "session" },
+  { label: "/console", note: "admin", gated: true },
+  { label: "/console/docs", note: "admin", gated: true },
 ]
 
 export function AppShellDiagram() {
@@ -14,22 +15,15 @@ export function AppShellDiagram() {
     >
       <div className="flex h-8 items-center gap-2 border-b px-3">
         <span className="bg-foreground/70 size-1.5 rounded-full" />
-        <span className="text-foreground/70">{"/dashboard"}</span>
-        <span className="border-border ml-auto rounded border px-1.5 py-0.5">session</span>
+        <span className="text-foreground/70">SidebarShell</span>
       </div>
       <div className="flex min-h-44">
-        <div className="w-32 shrink-0 space-y-3 border-r p-3">
-          {nav.map((section) => (
-            <div key={section.group} className="space-y-1.5">
-              <div className="text-foreground/70 flex items-center gap-1">
-                {section.group}
-                {section.gated && <RiLockLine className="size-2.5" />}
-              </div>
-              {section.items.map((item) => (
-                <div key={item} className="pl-2 leading-relaxed">
-                  {item}
-                </div>
-              ))}
+        <div className="w-36 shrink-0 space-y-2 border-r p-3">
+          <div className="border-border rounded border border-dashed px-2 py-1.5">OrgSwitcher</div>
+          {rows.map((row) => (
+            <div key={row.label} className="flex items-center gap-1 pt-1">
+              {row.gated && <RiLockLine className="size-2.5 shrink-0" />}
+              <span className="text-foreground/70 truncate">{row.label}</span>
             </div>
           ))}
         </div>
@@ -40,7 +34,7 @@ export function AppShellDiagram() {
             <div className="bg-foreground/10 h-1.5 w-1/2 rounded-full" />
             <div className="bg-foreground/10 h-1.5 w-3/5 rounded-full" />
           </div>
-          <div className="text-foreground/50">{"your product logic"}</div>
+          <div className="text-foreground/50">your product logic</div>
         </div>
       </div>
     </div>

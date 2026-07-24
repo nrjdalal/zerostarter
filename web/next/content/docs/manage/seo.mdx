@@ -7,6 +7,7 @@ description: "Dynamic OG images, sitemap, and robots: indexable and shareable by
 A fresh ZeroStarter is indexable by search engines and unfurls a rich preview on social the moment you deploy it, no configuration. Three metadata routes, all driven by `packages/config/src/site.ts` and your content, do the work:
 
 - `web/next/src/app/robots.ts` → `/robots.txt`
+- `web/next/src/app/rss.xml/route.ts` → `/rss.xml`
 - `web/next/src/app/sitemap.ts` → `/sitemap.xml`
 - `web/next/src/app/og/*` → dynamic Open Graph preview images
 
@@ -21,6 +22,10 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 ## Sitemap
 
 `sitemap.ts` (a `MetadataRoute.Sitemap`) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page in `docsSource`, and the published posts from `getPublishedBlogPosts()`. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
+
+## RSS feed
+
+`rss.xml/route.ts` serves an RSS 2.0 feed of published blog posts at `/rss.xml`, built from the same `getPublishedBlogPosts()` gate the sitemap uses, so an unpublished or draft post can never leak into it. It is `force-static` with `revalidate = 60`. The root layout advertises it via `alternates.types`, so a reader autodiscovers the feed from any page. With the blog [feature](/docs/manage/features) off, the channel is still valid but carries no items.
 
 Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in. The docs and blog blocks follow their [feature flags](/docs/manage/features): turn one off and its entries drop from the sitemap.
 

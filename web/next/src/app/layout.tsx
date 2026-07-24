@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  // feed autodiscovery, so a reader finds /rss.xml from any page
+  alternates: {
+    types: { "application/rss+xml": `${config.app.url}/rss.xml` },
+  },
   openGraph: {
     type: "website",
     siteName: site.name,

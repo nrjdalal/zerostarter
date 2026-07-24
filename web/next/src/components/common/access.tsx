@@ -125,6 +125,8 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                           type="email"
                           name={field.name}
                           autoComplete="email"
+                          inputMode="email"
+                          aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}
@@ -133,7 +135,12 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                           placeholder="you@example.com"
                           disabled={loader === "email"}
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {isInvalid && (
+                          <FieldError
+                            id={`${field.name}-error`}
+                            errors={field.state.meta.errors.slice(0, 1)}
+                          />
+                        )}
                       </Field>
                     )
                   }}
@@ -211,9 +218,29 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                   Continue with Google
                 </Button>
               )}
-              <div className="text-muted-foreground text-center text-xs text-balance">
-                By clicking continue, you agree to our Terms of Service and Privacy Policy.
-              </div>
+              {site.legal.terms && site.legal.privacy && (
+                <div className="text-muted-foreground text-center text-xs text-balance">
+                  By clicking continue, you agree to our{" "}
+                  <a
+                    href={site.legal.terms}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground underline underline-offset-4"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href={site.legal.privacy}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground underline underline-offset-4"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </div>
+              )}
             </div>
           )}
           {hasNoProviders &&
