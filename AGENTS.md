@@ -65,6 +65,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | `gh-commit`    | Create atomic commits in the conventional format.                                                                        |
 | `icebox`       | Park a raised-but-undecided concern on ice (issue #707 + `plans/`), no verdict.                                          |
 | `ignore-sync`  | Mirror `.gitignore` to `.dockerignore`.                                                                                  |
+| `release`      | Cut a production release by promoting canary to main (version, changelog, tag, GitHub release automated).                |
 | `runtime-apis` | Prefer Bun-native APIs, else Node built-ins with the `node:` prefix.                                                     |
 | `shadcn-sync`  | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                   |
 | `ui-verify`    | Verify a frontend or UI change in a real browser.                                                                        |
