@@ -274,4 +274,21 @@ describe("reconcileForkSkillsFromRoot (sync path)", () => {
     expect(() => reconcileForkSkillsFromRoot(dir)).not.toThrow()
     expect(read(join(dir, ".agents/skills/dev/SKILL.md"))).toContain("ZeroStarter")
   })
+
+  test("keeps upstream refs (bunx zerostarter, scaffolding CLI) but rebrands fork identity", () => {
+    write(join(dir, "package.json"), JSON.stringify({ name: "acme-app" }))
+    write(
+      join(dir, ".agents/skills/codebase-map/SKILL.md"),
+      "---\nname: codebase-map\ndescription: Orient in the repo.\nsource: local\n---\n\n" +
+        "Sync with `bunx zerostarter sync`; `packages/cli/` is the zerostarter scaffolding CLI.\n" +
+        "Dev URL `bunx portless get zerostarter`, api `api.zerostarter`, image `zerostarter-web`.\n",
+    )
+    reconcileForkSkillsFromRoot(dir)
+    const skill = read(join(dir, ".agents/skills/codebase-map/SKILL.md"))
+    expect(skill).toContain("bunx zerostarter sync")
+    expect(skill).toContain("zerostarter scaffolding CLI")
+    expect(skill).toContain("portless get acme-app")
+    expect(skill).toContain("api.acme-app")
+    expect(skill).toContain("acme-app-web")
+  })
 })
