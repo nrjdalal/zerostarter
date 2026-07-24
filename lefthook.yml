@@ -1,7 +1,14 @@
 pre-commit:
   piped: true
   commands:
+    skills-manager:
+      priority: 1
+      glob:
+        - ".agents/skills/**/*.md"
+        - ".github/scripts/skills-manager.ts"
+      run: bun .github/scripts/skills-manager.ts && git add AGENTS.md
     lint-staged:
+      priority: 2
       run: bunx lint-staged --verbose
       stage_fixed: true
     build:

@@ -1,3 +1,43 @@
+## v0.1.10
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.9...v0.1.10)
+
+### 🚀 Enhancements
+
+- **cli:** Rebrand fork skills on sync, keep upstream refs + plain-text AGENTS.md links ([#738](https://github.com/nrjdalal/zerostarter/pull/738))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.9
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.8...v0.1.9)
+
+### 📖 Documentation
+
+- **skills:** Link each skill name to its SKILL.md in AGENTS.md ([#736](https://github.com/nrjdalal/zerostarter/pull/736))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.8
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.7...v0.1.8)
+
+### 📖 Documentation
+
+- **skills:** Skills-writer rewrite of all skills + add release skill ([#734](https://github.com/nrjdalal/zerostarter/pull/734))
+
+### 🏡 Chore
+
+- Update deps ([a8b9ef7](https://github.com/nrjdalal/zerostarter/commit/a8b9ef7))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.7
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.6...v0.1.7)
