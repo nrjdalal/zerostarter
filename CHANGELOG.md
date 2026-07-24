@@ -1,3 +1,15 @@
+## v0.1.10
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.9...v0.1.10)
+
+### 🚀 Enhancements
+
+- **cli:** Rebrand fork skills on sync, keep upstream refs + plain-text AGENTS.md links ([#738](https://github.com/nrjdalal/zerostarter/pull/738))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.9
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.8...v0.1.9)
