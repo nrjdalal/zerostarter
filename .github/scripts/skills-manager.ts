@@ -13,7 +13,14 @@ const SKILLS_DIR = path.join(ROOT, ".agents/skills")
 const AGENTS = path.join(ROOT, "AGENTS.md")
 const UPSTREAM_REF = "canary" // zerostarter default branch; where --outdated reads from
 
-type Skill = { name: string; description: string; summary: string; source: string; file: string }
+type Skill = {
+  name: string
+  description: string
+  summary: string
+  source: string
+  dir: string
+  file: string
+}
 
 // Parse the `---` frontmatter block into a flat key->value map (values are single-line here).
 function frontmatter(text: string): Record<string, string> {
@@ -49,6 +56,7 @@ async function readSkills(): Promise<Skill[]> {
       description: fm.description,
       summary: summaryOf(fm.description),
       source: fm.source,
+      dir: rel.split(/[/\\]/)[0]!,
       file,
     })
   }
@@ -59,7 +67,7 @@ const table = (skills: Skill[]) =>
   [
     "| Skill | Description |",
     "| --- | --- |",
-    ...skills.map((s) => `| \`${s.name}\` | ${s.summary} |`),
+    ...skills.map((s) => `| [\`${s.name}\`](.agents/skills/${s.dir}/SKILL.md) | ${s.summary} |`),
   ].join("\n")
 
 // Replace the body between `<!-- skills:<id> -->` and `<!-- /skills:<id> -->`.
@@ -100,7 +108,7 @@ async function outdated(): Promise<void> {
       )
       continue
     }
-    const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.name}/SKILL.md`
+    const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.dir}/SKILL.md`
     const res = await fetch(url)
     if (res.status === 404) {
       console.log(`  ${s.name}: not in ${s.source} (local-only or renamed upstream)`)
