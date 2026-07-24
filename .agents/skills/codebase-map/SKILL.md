@@ -1,6 +1,7 @@
 ---
 name: codebase-map
 description: Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code. Use at the start of a task in an unfamiliar area, or before a cross-cutting change.
+source: local
 ---
 
 # Codebase Map

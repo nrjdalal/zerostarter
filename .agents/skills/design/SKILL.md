@@ -1,6 +1,7 @@
 ---
 name: design
 description: Follow and maintain the app's UI conventions. Use for any UI, styling, or component work (spacing, color, cursor, layout, typography), or when making or changing a design-system convention.
+source: local
 ---
 
 # Design Conventions

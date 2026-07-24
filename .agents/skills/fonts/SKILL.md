@@ -1,6 +1,7 @@
 ---
 name: fonts
 description: Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local). Use when adding a font role, or debugging font loading, preload, or CLS.
+source: local
 ---
 
 # Fonts

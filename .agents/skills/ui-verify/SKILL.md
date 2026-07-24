@@ -1,6 +1,7 @@
 ---
 name: ui-verify
 description: Verify a frontend or UI change in a real browser. Use after any change to web/next pages, components, or styles, before opening or updating a PR, or when an end-to-end flow needs checking.
+source: local
 ---
 
 # UI Verify

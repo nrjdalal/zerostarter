@@ -1,6 +1,7 @@
 ---
 name: db-migration
 description: Create and apply a Drizzle schema change. Use when adding or altering tables, columns, or indexes in @packages/db, or when asked for a migration.
+source: local
 ---
 
 # Database Migration

@@ -1,6 +1,7 @@
 ---
 name: gh-commit
 description: Create atomic commits in the conventional format. Use when the user asks to commit or save changes.
+source: local
 ---
 
 # Git Commit

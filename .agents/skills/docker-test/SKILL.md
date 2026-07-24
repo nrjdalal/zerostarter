@@ -1,6 +1,7 @@
 ---
 name: docker-test
 description: Build and smoke-test the Docker images with docker compose. Use when touching a Dockerfile, the bundle build, or compose config.
+source: local
 ---
 
 # Docker Testing

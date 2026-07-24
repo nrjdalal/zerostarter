@@ -1,6 +1,7 @@
 ---
 name: api-endpoint
 description: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring. Use when adding or modifying routes in api/hono.
+source: local
 ---
 
 # API Endpoint

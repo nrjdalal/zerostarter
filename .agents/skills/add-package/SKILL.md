@@ -1,6 +1,7 @@
 ---
 name: add-package
 description: Add a new shared workspace package under packages/*. Use when creating a new @packages/<name>, whether a bundled library other workspaces import or a build-only script package that runs during a build.
+source: local
 ---
 
 # Add a Package

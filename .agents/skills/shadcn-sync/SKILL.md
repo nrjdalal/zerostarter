@@ -1,6 +1,7 @@
 ---
 name: shadcn-sync
 description: Run and reconcile the shadcn component sync (`bun run shadcn:update`). Use when refreshing shadcn components, or when a sync regresses a local customization or breaks the build.
+source: local
 ---
 
 # Shadcn Sync

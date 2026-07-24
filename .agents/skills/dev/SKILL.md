@@ -1,6 +1,7 @@
 ---
 name: dev
 description: Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. Use when asked to run the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.
+source: local
 ---
 
 # Dev Stack
