@@ -43,6 +43,8 @@ When a change establishes or alters a convention, update this file in the same c
 ## Layout and landmarks
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so add none to the root layout or you nest landmarks.
+- Site credit and footer content belongs in a real `<footer>` rendered as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark.
+- Name a `<section>` with `aria-labelledby` pointing at its own heading id, never a hand-written `aria-label`. Internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name.
 - Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. A surface nested inside the shell content pane (route `error`/`loading`, dashboard/console content) fills it with `flex-1`: the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so do not re-assert `min-h-svh` inside an already-full-height parent.
 
 ## Components
@@ -50,6 +52,8 @@ When a change establishes or alters a convention, update this file in the same c
 - **Loading:** `<Spinner />`, bare, at its default `size-4`. Never hand-roll `RiLoaderLine`.
 - **Empty states:** the `Empty` primitive (`EmptyHeader` / `EmptyMedia` / `EmptyTitle` / ...). Do not hand-roll empty messages.
 - **Badges and pills:** prefer `<Badge>` (with a variant, plus className for a semantic color like `text-success`) over a hand-rolled rounded-full span. Identity rows (avatar + name + email) use `Item` / `ItemMedia` / `ItemContent`. Exceptions: the sidebar trigger identity stays hand-rolled inside `SidebarMenuButton` (the chevron is a sibling there); the marketing landing (`web/next/src/app/(marketing)/page.tsx`) hand-rolls a larger `Eyebrow` pill for section eyebrows and the hero badge, since `<Badge>` is sized for compact UI (`h-5`, `text-xs`).
+- **The status dot is reserved.** A small filled `bg-success` dot means live system state, and only `ApiStatus` may use it. Inert section labels (`Eyebrow`) and navigation pills carry no dot, so a visitor never has to learn that one mark means three different things.
+- **Code blocks:** marketing code uses `CodeWindow` / `CodeCard` from `components/marketing/code-window.tsx`. `CodeWindow` takes `html` (server-highlighted by shiki) plus the raw `code` so it can offer copy-to-clipboard. Both are focusable scroll regions with an accessible name: a horizontally scrolling block no keyboard can reach is a dead focus stop.
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (no second `space-y-*`). Do not hand-roll labels or error markup.
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/common/access.tsx`) uses `max-w-md`.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
