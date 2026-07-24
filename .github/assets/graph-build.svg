@@ -18,7 +18,7 @@
 <g id="node2" class="node">
 <title>@packages/auth</title>
 <ellipse fill="none" stroke="#3b82f6" cx="254.3" cy="-306" rx="116.2" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="254.3" y="-301.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/auth (2.45 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="254.3" y="-301.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/auth (2.70 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/auth -->
 <g id="edge1" class="edge">
@@ -138,7 +138,7 @@
 <g id="node8" class="node">
 <title>@web/next</title>
 <ellipse fill="none" stroke="#3b82f6" cx="398.3" cy="-450" rx="103.34" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (87.50 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (90.07 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge15" class="edge">

@@ -1,11 +1,12 @@
 ---
 name: dev
 description: Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. Use when asked to run the app, when the API returns NOT_FOUND for routes that exist in source, or before browser testing.
+source: local
 ---
 
 # Dev Stack
 
-`bun run dev` runs both apps (Next.js web + Hono API) through **portless**: stable named `.localhost` URLs off one unprivileged HTTP proxy on `:1355`, instead of raw ports. In a linked worktree the branch name prefixes each host, so parallel worktrees never collide on a port (they do share the auth session: the cookie is scoped to the base `.localhost` domain, so signing in on one worktree's URL signs you in on the others). `bun run dev` with no flags uses turbo's TUI, which needs an interactive terminal; run stream mode detached instead.
+`bun run dev` runs both apps (Next.js web + Hono API) through **portless**: stable named `.localhost` URLs off one unprivileged HTTP proxy on `:1355`, instead of raw ports. In a linked worktree the branch name prefixes each host, so parallel worktrees never collide on a port. They do share the auth session, since the cookie is scoped to the base `.localhost` domain, so signing in on one worktree's URL signs you in on the others. Bare `bun run dev` uses turbo's TUI, which needs an interactive terminal; run stream mode detached instead.
 
 ## Start
 
@@ -25,11 +26,11 @@ Ready when the health curl prints `"message":"ok"` and `/` returns `200`. `bunx 
 - Scalar API docs: `$API/api/docs`
 - Logs: `tail -f /tmp/zerostarter-dev.log`
 
-**Fixed ports:** `PORTLESS=0 bun run dev` skips the proxy and serves web on `:3000`, api on `:4000` (the ports the curl examples in other skills assume). Single stack only: two worktrees on fixed ports collide, which is why portless is the default.
+**Fixed ports:** `PORTLESS=0 bun run dev` skips the proxy and serves web on `:3000`, api on `:4000` (the ports the curl examples in other skills assume). It runs a single stack only: two worktrees on fixed ports collide, which is why portless is the default.
 
 ## Stale-route trap
 
-The API dev task runs `bun --hot src/index.ts`, and **`--hot` does not pick up newly created files** (new routers, new schema exports). Symptom: a route that exists in source returns `{"error":{"code":"NOT_FOUND"}}`. Touching files does not clear it; only a full restart does:
+The API dev task runs `bun --hot src/index.ts`, and **`--hot` does not pick up newly created files** (new routers, new schema exports). The symptom is a route that exists in source returning `{"error":{"code":"NOT_FOUND"}}`. Touching files does not clear it; only a full restart does:
 
 ```bash
 pkill -f "turbo run dev" 2>/dev/null
@@ -41,7 +42,7 @@ curl -sf --retry 60 --retry-delay 1 --retry-connrefused "$API/api/health" > /dev
 
 `pkill -f "turbo run dev"` matches any turbo dev process regardless of worktree; the shared portless proxy keeps running, and this worktree's apps re-register on restart. Before restarting, confirm no other worktree needs the turbo process you are killing. Done when the previously-NOT_FOUND route responds.
 
-Restart the same way after changing `@packages/*` exports the API consumes; they resolve to built dist, so run `bunx turbo run build --filter=@packages/<name>` first.
+Restart the same way after changing `@packages/*` exports the API consumes: they resolve to built dist, so run `bunx turbo run build --filter=@packages/<name>` first.
 
 ## Agent login
 
