@@ -19,7 +19,7 @@ import {
 } from "@remixicon/react"
 import Image from "next/image"
 import Link from "next/link"
-import type { ReactNode } from "react"
+import { Fragment, type ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/marketing/api-status"
@@ -152,14 +152,27 @@ const whyPoints = [
   },
 ]
 
-// no status dot here: the green dot is reserved for live system state (ApiStatus), so an inert
-// section label never reads as telemetry
 function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <span className="bg-muted/50 text-muted-foreground mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm">
+      <span className="bg-success size-1.5 rounded-full" aria-hidden />
       {children}
     </span>
   )
+}
+
+// Keeps hyphenated compounds ("world-class") whole across a line break using real hyphens, so
+// find-in-page and copy-paste still work; a U+2011 would hold the line but break both. The
+// separating space stays outside the nowrap span, or it becomes non-breaking too and glues the
+// compound to the next word.
+function NoBreakCompounds({ text }: { text: string }) {
+  const words = text.split(" ")
+  return words.map((word, index) => (
+    <Fragment key={`${word}-${index}`}>
+      {word.includes("-") ? <span className="whitespace-nowrap">{word}</span> : word}
+      {index < words.length - 1 ? " " : ""}
+    </Fragment>
+  ))
 }
 
 export default async function Home() {
@@ -208,13 +221,15 @@ docker compose up --build`
             <div>
               <Link
                 href="/docs"
-                className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-6 inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
+                className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-6 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
               >
-                Read the docs
+                <span className="bg-success size-1.5 rounded-full" aria-hidden />
+                Starter for Enterprise
                 <RiArrowRightSLine className="size-3.5" />
               </Link>
-              <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
-                {site.tagline}
+              {/* max-w-5xl is what lands the tagline on three lines at md and up */}
+              <h1 className="mx-auto max-w-5xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
+                <NoBreakCompounds text={site.tagline} />
               </h1>
               <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
                 {site.description}
@@ -555,9 +570,24 @@ docker compose up --build`
                 workflows, and documentation both humans and agents can trust. It does not choose
                 your payments or email vendor; the parts that make your product yours stay yours.
               </p>
-              {/* the page closes on the action itself, not a rerun of the hero's button pair */}
-              <div className="mx-auto mt-8 max-w-md text-left">
-                <CodeWindow label="Quickstart" html={initHtml} code={initCode} />
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
+                  render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+                >
+                  <RiGithubFill className="size-5" />
+                  GitHub
+                </Button>
+                <Button
+                  size="lg"
+                  className="group h-11 px-4 md:px-6"
+                  render={<Link href="/docs" />}
+                >
+                  Get Started
+                  <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+                </Button>
               </div>
               <p className="text-muted-foreground mt-6 text-sm">
                 Open source. Use it freely, including for commercial products.
