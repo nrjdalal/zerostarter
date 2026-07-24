@@ -1,3 +1,15 @@
+## v0.1.11
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.10...v0.1.11)
+
+### 🩹 Fixes
+
+- **skills:** Quote skill descriptions containing a colon ([#740](https://github.com/nrjdalal/zerostarter/pull/740))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.10
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.9...v0.1.10)
