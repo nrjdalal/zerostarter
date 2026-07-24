@@ -22,17 +22,23 @@ type Skill = {
   file: string
 }
 
-// Parse the `---` frontmatter block into a flat key->value map (values are single-line here).
+// Parse the `---` frontmatter into a flat key->string map via real YAML, so a quoted value (a description with a colon must be quoted for strict parsers like GitHub's) is unwrapped, not read literally; fail loudly on an unquoted colon so a GitHub-unrenderable description never lands.
 function frontmatter(text: string): Record<string, string> {
   const lines = text.split("\n")
   if (lines[0] !== "---") throw new Error("missing frontmatter")
   const end = lines.indexOf("---", 1)
   if (end === -1) throw new Error("unterminated frontmatter")
-  const fm: Record<string, string> = {}
   for (const line of lines.slice(1, end)) {
-    const m = line.match(/^([a-z0-9_-]+):\s*(.*)$/i)
-    if (m) fm[m[1]!] = m[2]!.trim()
+    const m = line.match(/^([a-z0-9_-]+): (.*: .*)$/i)
+    if (m && !/^["']/.test(m[2]!))
+      throw new Error(
+        `frontmatter "${m[1]}" has an unquoted colon; wrap the value in quotes, since strict YAML like GitHub's rejects it: ${line.trim()}`,
+      )
   }
+  const parsed = Bun.YAML.parse(lines.slice(1, end).join("\n"))
+  const fm: Record<string, string> = {}
+  if (parsed && typeof parsed === "object")
+    for (const [k, v] of Object.entries(parsed)) if (typeof v === "string") fm[k] = v
   return fm
 }
 
