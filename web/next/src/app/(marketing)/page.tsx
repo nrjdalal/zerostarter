@@ -216,8 +216,8 @@ docker compose up --build`
       <main className="relative isolate flex flex-col">
         <MarketingBackdrops />
         {/* Hero */}
-        <section className="flex min-h-svh flex-col">
-          <div className="flex flex-1 flex-col justify-center px-4 py-16 text-center md:px-6">
+        <section aria-labelledby="hero-title" className="flex min-h-svh flex-col">
+          <div className="flex flex-1 flex-col justify-center px-4 py-24 text-center md:px-6">
             <div>
               <Link
                 href="/docs"
@@ -228,7 +228,10 @@ docker compose up --build`
                 <RiArrowRightSLine className="size-3.5" />
               </Link>
               {/* max-w-5xl is what lands the tagline on three lines at md and up */}
-              <h1 className="mx-auto max-w-5xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
+              <h1
+                id="hero-title"
+                className="mx-auto max-w-5xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl"
+              >
                 <NoBreakCompounds text={site.tagline} />
               </h1>
               <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">

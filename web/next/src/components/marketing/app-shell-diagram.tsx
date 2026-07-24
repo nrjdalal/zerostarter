@@ -1,8 +1,6 @@
 import { RiLockLine } from "@remixicon/react"
 
-// An authored abstraction of the shipped app shell, not a screenshot: route names and gating are
-// real, so it stays true when the UI is restyled. Decorative for AT; the prose beside it carries
-// the same facts.
+// An authored abstraction of the shipped app shell, not a screenshot: route names and gating are real, so it stays true when the UI is restyled. Decorative for AT; the prose beside it carries the same facts.
 const nav = [
   { group: "Dashboard", items: ["Overview", "Organizations", "Teams", "Settings"] },
   { group: "Console", items: ["Users", "Sessions"], gated: true },
@@ -12,7 +10,7 @@ export function AppShellDiagram() {
   return (
     <div
       aria-hidden
-      className="bg-background text-muted-foreground overflow-hidden rounded-lg border font-mono text-[10px] select-none"
+      className="bg-background text-muted-foreground overflow-hidden rounded-lg border font-mono text-xs select-none"
     >
       <div className="flex h-8 items-center gap-2 border-b px-3">
         <span className="bg-foreground/70 size-1.5 rounded-full" />

@@ -108,19 +108,21 @@ export default function WaitlistPage() {
             className="flex min-h-12 w-full flex-col items-center justify-center gap-1 outline-none"
           >
             <p className="text-success text-lg">
-              {"You're on the list. We sent a note to "}
+              {"You're on the list. We'll be in touch at "}
               <span className="font-medium">{joined}</span>.
             </p>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={() => {
                 setJoined(null)
                 form.reset()
               }}
-              className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
+              className="text-muted-foreground hover:text-foreground"
             >
               Not your email? Change it
-            </button>
+            </Button>
           </div>
         ) : (
           <form
