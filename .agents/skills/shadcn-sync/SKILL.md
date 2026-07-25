@@ -30,6 +30,7 @@ Two strategies. Each guard is idempotent and throws when its target is absent, s
 **Patch in place**, registry components we extend, located by AST shape with ts-morph (so attribute or param reordering can't break them) plus one guarded string swap for CSS:
 
 - `button.tsx`, Base UI render wiring (`render`, `nativeButton={!render}`, `render={render}`)
+- `checkbox.tsx`, the indeterminate state: Base UI sets `data-indeterminate` (never `data-checked`), so the registry's check-only indicator paints a partial selection identically to a checked one. Fills the box on `data-indeterminate` and swaps the glyph to a minus. The guard tests for the patch before the target, since the swapped-in ternary still contains the `<RiCheckLine />` it replaced.
 - `spinner.tsx`, `React.ComponentProps<RemixiconComponentType>` typing
 - `sidebar.tsx`, optional `children` label on `SidebarTrigger`
 - `globals.css`, `--font-sans` repointed at the brand DM Sans variable (`--font-dm-sans`), and both `--sidebar` lines (`:root` + `.dark`) flushed to `var(--background)` (PR #566)

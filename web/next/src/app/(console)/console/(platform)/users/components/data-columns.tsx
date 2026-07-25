@@ -37,10 +37,10 @@ async function copyText(value: string, message: string) {
   }
 }
 
-// This table's layout, colocated with its columns and written in column order. Widthless columns size from their header title; email floors at header + 48 units and grows; select stays left so its box reads as the gap when it inherits growth.
+// This table's layout, colocated with its columns and written in column order. Widthless columns size from their meta.label (the string the header renders); email floors at label + 48 units and grows; select stays left so its box reads as the gap when it inherits growth.
 export const usersColumnConfig: Record<string, ColumnConfig> = {
   select: { width: 12 },
-  // header title + 9rem
+  // label + 9rem
   name: { extra: 36 },
   email: { extra: 48, flex: true },
   role: { align: "center" },
@@ -72,7 +72,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column} className="font-medium">
         {row.original.name}
@@ -82,7 +82,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column} className="text-muted-foreground">
         {row.original.email}
@@ -92,7 +92,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "role",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column} className="capitalize">
         {row.original.role}
@@ -103,7 +103,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "status",
     accessorKey: "banned",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column}>
         {row.original.banned ? "Banned" : "Active"}
@@ -113,7 +113,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column}>
         {new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}

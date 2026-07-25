@@ -20,7 +20,7 @@ const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
 
 const usersQuerySchema = z.object({
   dir: z.enum(["asc", "desc"]).default("desc"),
-  page: z.coerce.number().int().min(1).default(1),
+  page: z.coerce.number().int().min(1).max(10000).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(10),
   q: z.string().trim().max(254).optional(),
   role: z

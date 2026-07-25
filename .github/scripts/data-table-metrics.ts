@@ -4,13 +4,13 @@ import * as fontkit from "fontkit"
 import wawoff2 from "wawoff2"
 
 // Generates the data-table font metrics: per-character advances for the app header font's whole character set plus a sparse kerning-pair table, in px at 500 14px, so any header label (current or future) measures by pure arithmetic on the server and the client alike; nothing touches a canvas and SSR ships final widths. wawoff2 decompresses the woff2 first: fontkit's own woff2 path loses the cmap under getVariation, while the decompressed TTF at wght 500 matches browser canvas metrics exactly.
-// Runs in the web/next build, dev, and check-types chains next to docs.ts; the output is git-ignored and regenerated on every run, so swapping the sans font (see the fonts skill) re-measures automatically. Output depends only on the font file and this script.
+// Runs in the web/next build, dev, and check-types chains next to docs.ts; the output lands in repo-root .generated/ (git-ignored) and is regenerated on every run, so swapping the sans font (see the fonts skill) re-measures automatically. Output depends only on the font file and this script.
 
 const WEB = path.resolve(import.meta.dir, "../../web/next")
 const FONT = path.join(WEB, "src/fonts/dm-sans-latin-wght-normal.woff2")
 const HEADER_FONT_PX = 14
 const HEADER_FONT_WEIGHT = 500
-const OUT = path.join(WEB, "src/components/data-table-metrics.json")
+const OUT = path.resolve(import.meta.dir, "../../.generated/data-table-metrics.json")
 
 const ttf = Buffer.from(await wawoff2.decompress(await Bun.file(FONT).bytes()))
 const base = fontkit.create(ttf)

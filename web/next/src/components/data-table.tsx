@@ -27,10 +27,10 @@ import {
   type Updater,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import rawFontMetrics from "generated/data-table-metrics.json"
 import { createParser, parseAsArrayOf, parseAsString, useQueryStates } from "nuqs"
 import * as React from "react"
 
-import rawFontMetrics from "@/components/data-table-metrics.json"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -164,7 +164,7 @@ export function applyColumnManager<TData extends RowData>(
 // ---------------------------------------------------------------------------
 // URL state: q, sort, and one array param per filter id. No page state; tables scroll infinitely and a queryKey change resets the list.
 
-// SortingState in the URL as "column.asc" or "column.desc", comma-separated for multi-sort.
+// SortingState in the URL as "column.asc" or "column.desc". Tables sort by one column (enableMultiSort: false) and server fetchers read sorting[0], so a hand-written multi-sort URL clamps to its first entry instead of marking two columns aria-sort while only one reaches the server.
 const parseAsSorting = createParser<SortingState>({
   parse(value) {
     const sorting: SortingState = []
@@ -174,7 +174,7 @@ const parseAsSorting = createParser<SortingState>({
         sorting.push({ desc: direction === "desc", id })
       }
     }
-    return sorting.length ? sorting : null
+    return sorting.length ? [sorting[0]] : null
   },
   serialize(value) {
     return value.map((entry) => `${entry.id}.${entry.desc ? "desc" : "asc"}`).join(",")
@@ -630,12 +630,13 @@ export function DataTable<TData>({
 export function DataTableColumnHeader<TData, TValue>({
   className,
   column,
-  title,
 }: {
   className?: string
   column: Column<TData, TValue>
-  title: string
 }) {
+  // meta.label is the one source for this column's header text, its measured width, and its view-options entry; a separate title prop would silently desync the width from what the header actually renders.
+  const title =
+    column.columnDef.meta && column.columnDef.meta.label ? column.columnDef.meta.label : column.id
   if (!column.getCanSort()) {
     return <div className={className}>{title}</div>
   }

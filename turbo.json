@@ -25,7 +25,11 @@
       "dependsOn": ["^build"]
     }
   },
-  "globalDependencies": [".env*"],
+  "globalDependencies": [
+    ".env*",
+    // emits the font metrics that decide rendered column widths, so a build cached before an edit here would ship stale layout
+    ".github/scripts/data-table-metrics.ts"
+  ],
   "globalEnv": [
     // CI variables
     "SKIP_ENV_VALIDATION",

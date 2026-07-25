@@ -57,7 +57,6 @@ cookies.txt
 web/next/content/blog/meta.json
 web/next/content/console/docs/meta.json
 web/next/content/docs/meta.json
-web/next/src/components/data-table-metrics.json
 
 # git overrides
 !.env.example

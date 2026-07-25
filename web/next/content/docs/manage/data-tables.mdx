@@ -35,7 +35,8 @@ type ColumnConfig = {
 ```
 
 - Widths are Tailwind spacing units (1 = `0.25rem`, so 12 = 48px at the default scale) rendered through `calc(var(--spacing) * n)`, so tables ride the theme token and user font-size. On a fixed column the width is exact (`shrink-0`); on a flex column it is the floor (`min-width` + `flex-1`).
-- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`.github/scripts/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size, so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. Swapping the font (see [Fonts](/docs/manage/theming)) re-measures on the next run.
+- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`.github/scripts/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size into `.generated/data-table-metrics.json` (imported as `generated/*`), so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. It costs ~5KB gzipped on routes that render a table. Swapping the font (see [Fonts](/docs/manage/theming)) re-measures on the next run.
+- `meta.label` is the one source for a column's header text, its measured width, and its view-options entry, so the three can never desync.
 - Names follow what the column says, never the backing field: the column headed Status keys as `status` with `accessorKey: "banned"` underneath.
 - Numbers live in the config map, never inline in the defs.
 
@@ -67,7 +68,7 @@ const { error, isError, refetch, table, tableProps } = useDataTable({
 
 - `fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, total }`; the console maps column ids onto the endpoint's sort whitelist through a `satisfies`-checked record, so a server rename becomes a compile error, and the row type derives from `InferResponseType`.
 - `getNextPageParam` compares loaded rows against the response total and ends the list on a zero-row page, so a stale total cannot loop the load-more effect. `placeholderData: keepPreviousData` keeps rows on screen while a sort or filter refetches, and the search term passes through `useDeferredValue`.
-- `defaultSorting` applies as real table state when the URL carries no sort, so the header chevron and `aria-sort` show it while the URL stays clean.
+- `defaultSorting` applies as real table state when the URL carries no sort, so the header chevron and `aria-sort` show it while the URL stays clean. Tables sort by one column, so a hand-written multi-sort URL clamps to its first entry.
 - The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns (nullable ones coalesced so rows group with the labels they display), escapes `LIKE` wildcards, filters roles with null-as-"user", adds an id tiebreaker against page-boundary drift, and sits behind `adminMiddleware` (see [API Conventions](/docs/manage/api-conventions)).
 
 ## Client-side tables
