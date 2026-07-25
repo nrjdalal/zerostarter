@@ -1,6 +1,8 @@
 "use client"
 "use no memo"
 
+import type { InferRequestType } from "hono/client"
+
 import {
   usersColumns,
   type ConsoleUser,
@@ -24,8 +26,11 @@ const ROLE_OPTIONS = [
   { label: "User", value: "user" },
 ]
 
-const SORTS = ["createdAt", "email", "name", "role"] as const
-type UsersSort = (typeof SORTS)[number]
+// Kept in lockstep with the endpoint's whitelist: satisfies makes any server-side rename a compile error here.
+type UsersSort = NonNullable<
+  InferRequestType<typeof apiClient.v1.admin.users.$get>["query"]["sort"]
+>
+const SORTS = ["createdAt", "email", "name", "role"] as const satisfies readonly UsersSort[]
 
 async function fetchUsers({
   filters,

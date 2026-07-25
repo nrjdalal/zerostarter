@@ -1,10 +1,16 @@
 "use client"
 "use no memo"
 
-import { flexRender, type RowData, type Table as TableInstance } from "@tanstack/react-table"
+import {
+  flexRender,
+  type Column,
+  type RowData,
+  type Table as TableInstance,
+} from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import * as React from "react"
 
+import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -32,9 +38,11 @@ interface DataTableProps<TData> {
   "aria-label": string
   empty?: React.ReactNode
   hasMore?: boolean
+  isError?: boolean
   isLoading?: boolean
   isLoadingMore?: boolean
   onLoadMore?: () => void
+  onRetry?: () => void
   table: TableInstance<TData>
   total?: number
 }
@@ -44,9 +52,11 @@ function DataTable<TData>({
   "aria-label": ariaLabel,
   empty,
   hasMore = false,
+  isError = false,
   isLoading = false,
   isLoadingMore = false,
   onLoadMore,
+  onRetry,
   table,
   total,
 }: DataTableProps<TData>) {
@@ -80,15 +90,17 @@ function DataTable<TData>({
     loadMoreOnBottomReached(containerRef.current)
   }, [loadMoreOnBottomReached, rows.length])
 
-  // Back to the top whenever sorting, search, or filters reshape the list.
-  const stateKey = JSON.stringify({
-    filters: table.getState().columnFilters,
-    search: table.getState().globalFilter,
-    sorting: table.getState().sorting,
-  })
+  // Back to the top whenever sorting, search, or filters reshape the list; these state slices keep stable identities between changes, so they work as deps directly. The virtualizer instance is stable and deliberately not a dep.
+  const { columnFilters, globalFilter, sorting } = table.getState()
   React.useEffect(() => {
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
-  }, [stateKey])
+  }, [columnFilters, globalFilter, sorting])
+
+  // The one column marked meta.flex absorbs leftover width (its size acts as a floor); the rest hold their size, so on narrow viewports the row overflows into the region's horizontal scroll instead of crushing cells.
+  const columnLayout = (column: Column<TData, unknown>) =>
+    column.columnDef.meta && column.columnDef.meta.flex
+      ? { className: "flex-1", style: { minWidth: column.getSize() } }
+      : { className: "shrink-0", style: { width: column.getSize() } }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
@@ -100,21 +112,22 @@ function DataTable<TData>({
         onScroll={(event) => loadMoreOnBottomReached(event.currentTarget)}
         className="focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible"
       >
-        <Table className="grid">
-          <TableHeader className="bg-background sticky top-0 z-10 grid">
+        {/* Grid/flex display strips the implicit table semantics, so every structural role is restated explicitly (upstream's example skips this). */}
+        <Table
+          role="table"
+          aria-rowcount={(typeof total === "number" ? total : rows.length) + 1}
+          className="grid min-w-max"
+        >
+          <TableHeader role="rowgroup" className="bg-background sticky top-0 z-10 grid">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="flex w-full">
+              <TableRow key={headerGroup.id} role="row" aria-rowindex={1} className="flex w-full">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    className={cn(
-                      "flex items-center",
-                      header.column.columnDef.meta && header.column.columnDef.meta.flex
-                        ? "flex-1"
-                        : undefined,
-                    )}
-                    style={{ width: header.getSize() }}
+                    role="columnheader"
+                    className={cn("flex items-center", columnLayout(header.column).className)}
+                    style={columnLayout(header.column).style}
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -133,6 +146,7 @@ function DataTable<TData>({
           </TableHeader>
           {!isLoading && rows.length > 0 && (
             <TableBody
+              role="rowgroup"
               className="relative grid"
               style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
             >
@@ -144,19 +158,20 @@ function DataTable<TData>({
                     data-index={virtualRow.index}
                     ref={(node) => rowVirtualizer.measureElement(node)}
                     data-state={row.getIsSelected() && "selected"}
+                    role="row"
+                    aria-rowindex={virtualRow.index + 2}
                     className="absolute flex w-full"
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
+                        role="cell"
                         className={cn(
                           "flex items-center overflow-hidden",
-                          cell.column.columnDef.meta && cell.column.columnDef.meta.flex
-                            ? "flex-1"
-                            : undefined,
+                          columnLayout(cell.column).className,
                         )}
-                        style={{ width: cell.column.getSize() }}
+                        style={columnLayout(cell.column).style}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
@@ -186,6 +201,16 @@ function DataTable<TData>({
         {isLoadingMore && (
           <div className="flex items-center justify-center py-2">
             <Spinner />
+          </div>
+        )}
+        {isError && rows.length > 0 && (
+          <div className="text-destructive flex items-center justify-center gap-2 py-2 text-sm">
+            Something went wrong
+            {onRetry && (
+              <Button variant="outline" onClick={() => onRetry()}>
+                Retry
+              </Button>
+            )}
           </div>
         )}
       </div>

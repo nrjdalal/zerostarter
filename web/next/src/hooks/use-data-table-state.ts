@@ -35,7 +35,7 @@ const baseParsers = {
   sort: parseAsSorting.withDefault([]),
 }
 
-function apply<T>(updater: Updater<T>, previous: T): T {
+function resolveUpdater<T>(updater: Updater<T>, previous: T): T {
   return typeof updater === "function" ? (updater as (old: T) => T)(previous) : updater
 }
 
@@ -62,14 +62,15 @@ export function useDataTableState(filterIds: string[] = []) {
   )
 
   const onSortingChange: OnChangeFn<SortingState> = (updater) => {
-    setBase({ sort: apply(updater, sorting) })
+    setBase({ sort: resolveUpdater(updater, sorting) })
   }
-  const onGlobalFilterChange = (updater: Updater<string>) => {
-    const next = apply(updater, globalFilter)
+  // Widened to undefined: table.resetGlobalFilter() passes initialState.globalFilter, which is undefined here.
+  const onGlobalFilterChange = (updater: Updater<string | undefined>) => {
+    const next = resolveUpdater<string | undefined>(updater, globalFilter)
     setBase({ q: next ? next : null })
   }
   const onColumnFiltersChange: OnChangeFn<ColumnFiltersState> = (updater) => {
-    const next = apply(updater, columnFilters)
+    const next = resolveUpdater(updater, columnFilters)
     const patch: Record<string, string[] | null> = {}
     for (const id of Object.keys(filterParsers)) {
       const entry = next.find((filter) => filter.id === id)

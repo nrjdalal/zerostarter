@@ -1,7 +1,9 @@
 "use client"
+"use no memo"
 
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
+import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
 
 import { DataTableColumnHeader } from "@/components/data-table/column-header"
@@ -17,17 +19,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { apiClient } from "@/lib/api/client"
 
-// Row shape served by GET /api/v1/admin/users (createdAt is an ISO string over the wire).
-export type ConsoleUser = {
-  createdAt: string
-  email: string
-  emailVerified: boolean
-  id: string
-  image: string | null
-  name: string
-  role: string
-}
+// Row shape inferred from GET /api/v1/admin/users, so the endpoint cannot drift from these columns.
+export type ConsoleUser = InferResponseType<
+  typeof apiClient.v1.admin.users.$get
+>["data"]["users"][number]
 
 export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
@@ -105,16 +102,24 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={async () => {
-                await navigator.clipboard.writeText(row.original.id)
-                toast.success("User ID copied")
+                try {
+                  await navigator.clipboard.writeText(row.original.id)
+                  toast.success("User ID copied")
+                } catch {
+                  toast.error("Copy failed")
+                }
               }}
             >
               Copy user ID
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async () => {
-                await navigator.clipboard.writeText(row.original.email)
-                toast.success("Email copied")
+                try {
+                  await navigator.clipboard.writeText(row.original.email)
+                  toast.success("Email copied")
+                } catch {
+                  toast.error("Copy failed")
+                }
               }}
             >
               Copy email

@@ -19,7 +19,7 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 Two hooks carry the state:
 
 - **`useDataTable`** (`hooks/use-data-table.ts`): the whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance. A page brings only what a generic hook cannot know: its columns, its `fetchPage`, its filter ids.
-- **`useDataTableState`** (`hooks/use-data-table-state.ts`): just the URL state (`q`, `sort` as `column.asc`/`column.desc`, one array param per filter id via [nuqs](https://nuqs.dev)), pre-shaped for `useReactTable`. Client-side tables use this directly. There is no page state: any change resets the list.
+- **`useDataTableState`** (`hooks/use-data-table-state.ts`): just the URL state (`q`, `sort` as `column.asc`/`column.desc`, one array param per filter id via [nuqs](https://nuqs.dev)), pre-shaped for `useReactTable`. Client-side tables use this directly. There is no page state: any change resets the list. The `sort` param accepts a comma list for client tables; `useDataTable` disables multi-sort, since a server-driven fetch sorts by the first entry only.
 
 A page's table pieces colocate with its route (`app/(console)/console/(platform)/users/components/data-columns.tsx` is the reference): typed `ColumnDef<Row>[]`, headers rendered through `DataTableColumnHeader`, a `meta: { label }` per hideable column so the view-options menu reads "Joined" instead of `createdAt`, an explicit `size` per column (virtualized rows position absolutely, so widths must be declared), and `meta: { flex: true }` on the one column that absorbs leftover width.
 

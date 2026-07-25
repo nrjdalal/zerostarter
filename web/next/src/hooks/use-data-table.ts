@@ -72,11 +72,19 @@ export function useDataTable<TRow>({
       fetchPage({ filters, page: pageParam, perPage: batchSize, search, sorting }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
+      // A zero-row page ends the list unconditionally: without this, a stale total (rows deleted mid-scroll) would keep hasNextPage true and the load-more effect firing forever.
+      if (lastPage.rows.length === 0) return undefined
       const loaded = allPages.reduce((count, page) => count + page.rows.length, 0)
       return loaded < lastPage.total ? allPages.length + 1 : undefined
     },
     placeholderData: keepPreviousData,
   })
+
+  // Stable identity so DataTable's load-more callback and effect do not re-arm on every render.
+  const fetchNextPage = query.fetchNextPage
+  const onLoadMore = React.useCallback(() => {
+    fetchNextPage()
+  }, [fetchNextPage])
 
   const rows = React.useMemo(
     () => (query.data ? query.data.pages.flatMap((page) => page.rows) : []),
@@ -84,10 +92,17 @@ export function useDataTable<TRow>({
   )
   const total = query.data ? query.data.pages[query.data.pages.length - 1].total : undefined
 
+  // Selected ids reference rows of the current result set; a new search, sort, or filter would leave invisible selections behind, so reset.
+  React.useEffect(() => {
+    setRowSelection({})
+  }, [filters, search, sorting])
+
   const table = useReactTable({
     columns,
     data: rows,
     state: { columnFilters, globalFilter, rowSelection, sorting },
+    // Single-column sorting only: fetchPage sends one sort to the server, so shift-click multi-sort would silently drop the extra columns.
+    enableMultiSort: false,
     enableRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getRowId,
@@ -102,13 +117,15 @@ export function useDataTable<TRow>({
   return {
     error: query.error,
     isError: query.isError,
-    refetch: () => query.refetch(),
+    refetch: query.refetch,
     table,
     tableProps: {
       hasMore: query.hasNextPage,
+      isError: query.isError,
       isLoading: query.isPending,
       isLoadingMore: query.isFetchingNextPage,
-      onLoadMore: () => query.fetchNextPage(),
+      onLoadMore,
+      onRetry: query.refetch,
       table,
       total,
     },

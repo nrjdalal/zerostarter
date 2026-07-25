@@ -33,13 +33,8 @@ function DataTableFacetedFilter<TData, TValue>({
 }: DataTableFacetedFilterProps<TData, TValue>) {
   if (!column) return null
 
-  // Counts need the faceted row models wired on the table; a server-driven table skips them and shows no counts.
-  let facets: Map<unknown, number> | undefined
-  try {
-    facets = column.getFacetedUniqueValues()
-  } catch {
-    facets = undefined
-  }
+  // Returns an empty map when the faceted row models are not wired (server-driven tables), so counts simply stay hidden.
+  const facets = column.getFacetedUniqueValues()
 
   const filterValue = column.getFilterValue()
   const selectedValues = new Set(Array.isArray(filterValue) ? (filterValue as string[]) : [])
@@ -79,7 +74,7 @@ function DataTableFacetedFilter<TData, TValue>({
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = selectedValues.has(option.value)
-                const count = facets ? facets.get(option.value) : undefined
+                const count = facets.get(option.value)
                 return (
                   <CommandItem
                     key={option.value}
