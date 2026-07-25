@@ -1,7 +1,7 @@
 import { sValidator } from "@hono/standard-validator"
 import type { Session } from "@packages/auth"
 import { db, user } from "@packages/db"
-import { and, asc, desc, eq, ilike, isNull, or } from "drizzle-orm"
+import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
@@ -15,6 +15,8 @@ import {
 import { adminMiddleware } from "@/middlewares"
 
 const ROLES = ["admin", "user"] as const
+// Single source for the sortable columns: the schema enum and the column map both derive from it.
+const SORTS = ["createdAt", "email", "name", "role"] as const
 
 const usersQuerySchema = z.object({
   dir: z.enum(["asc", "desc"]).default("desc"),
@@ -24,9 +26,9 @@ const usersQuerySchema = z.object({
   role: z
     .string()
     .optional()
-    .transform((value) => (value ? value.split(",") : []))
+    .transform((value) => (value ? [...new Set(value.split(","))] : []))
     .pipe(z.array(z.enum(ROLES)).max(ROLES.length)),
-  sort: z.enum(["createdAt", "email", "name", "role"]).default("createdAt"),
+  sort: z.enum(SORTS).default("createdAt"),
 })
 
 const userSchema = z.object({
@@ -43,8 +45,9 @@ const sortColumns = {
   createdAt: user.createdAt,
   email: user.email,
   name: user.name,
-  role: user.role,
-}
+  // Coalesce so null-role rows sort with the "user" label they display as, instead of nulls-last splitting the group.
+  role: sql`coalesce(${user.role}, 'user')`,
+} satisfies Record<(typeof SORTS)[number], unknown>
 
 // Escape LIKE wildcards so a search for "100%" matches literally.
 const escapeLike = (value: string) => value.replace(/[%_\\]/g, "\\$&")
@@ -105,7 +108,7 @@ const { data, error } = await unwrap(
       const search = q
         ? or(ilike(user.name, `%${escapeLike(q)}%`), ilike(user.email, `%${escapeLike(q)}%`))
         : undefined
-      // The role column defaults to "user" but predates rows may hold null; treat null as "user".
+      // The role column defaults to "user", but rows created before the default may hold null; treat null as "user".
       const roleConditions = role.map((value) =>
         value === "user" ? or(eq(user.role, "user"), isNull(user.role)) : eq(user.role, value),
       )
@@ -127,6 +130,7 @@ const { data, error } = await unwrap(
           .orderBy(dir === "asc" ? asc(sortColumns[sort]) : desc(sortColumns[sort]), asc(user.id))
           .limit(perPage)
           .offset((page - 1) * perPage),
+        // Runs per batch, cheap at starter scale; for large tables return it only on page 1 or back the ILIKE with a pg_trgm index.
         db.$count(user, where),
       ])
 

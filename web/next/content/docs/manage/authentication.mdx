@@ -96,7 +96,7 @@ bun run console:roles grant you@example.com   # also: revoke <email>, list
 
 The guard reads the session with the cookie cache disabled, so a grant or revoke takes effect on the very next request.
 
-The console's Users page (`/console/users`) puts the role to work: a server-driven users table backed by `GET /api/v1/admin/users`, which `adminMiddleware` gates on the same `role === "admin"` rule (403 `FORBIDDEN` otherwise). See [Data Tables](/docs/manage/data-tables).
+The console's Users page (`/console/users`) puts the role to work: a server-driven users table backed by `GET /api/v1/admin/users`, which `adminMiddleware` gates on the same `role === "admin"` rule with the same cookie-cache bypass (403 `FORBIDDEN` otherwise, effective on the next request after a revoke). See [Data Tables](/docs/manage/data-tables).
 
 ## Organizations and teams
 

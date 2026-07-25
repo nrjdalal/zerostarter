@@ -95,7 +95,7 @@ The limiter keys each request by user id, then API key, then IP, and gives authe
 
 ### Admin
 
-`adminMiddleware` (on `/api/v1/admin/*`, downstream of auth) returns `403 FORBIDDEN` unless the session user's `role` is `admin`, the same rule the `/console` gate uses. Routes behind it document the 403 by spreading `forbiddenErrorResponses` into their OpenAPI responses.
+`adminMiddleware` (on `/api/v1/admin/*`, downstream of auth) returns `403 FORBIDDEN` unless the session user's `role` is `admin`, the same rule the `/console` gate uses, read with the same freshness: it bypasses the session cookie cache, so a role grant or revoke applies on the very next request instead of after the cache window. Routes behind it document the 403 by spreading `forbiddenErrorResponses` into their OpenAPI responses.
 
 ## Next
 
