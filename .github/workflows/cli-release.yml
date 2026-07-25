@@ -45,7 +45,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Test
+        # The suite lives at the repo root now (one tests/ mirror, no per-package test script), so this step steps out of the job's packages/cli default.
         run: bun run test
+        working-directory: .
 
   release:
     if: |
