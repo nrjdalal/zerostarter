@@ -29,21 +29,24 @@ function DataTableColumnHeader<TData, TValue>({
     return <div className={className}>{title}</div>
   }
 
-  // The margin nudge lines the button label up with cell text on the aligned side; centered headers take none.
+  // The margin nudge lines the button label up with cell text on the aligned side; centered headers take none. A right-aligned header mirrors the sort icon to the left so the title stays flush with the cell text.
   const align = column.columnDef.meta && column.columnDef.meta.align
   const nudge = align === "right" ? "-mr-2.5" : align === "center" ? undefined : "-ml-2.5"
+  const icon =
+    column.getIsSorted() === "desc" ? (
+      <RiArrowDownLine />
+    ) : column.getIsSorted() === "asc" ? (
+      <RiArrowUpLine />
+    ) : (
+      <RiExpandUpDownLine className="text-muted-foreground" />
+    )
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" className={cn(nudge, className)} />}>
+        {align === "right" ? icon : null}
         {title}
-        {column.getIsSorted() === "desc" ? (
-          <RiArrowDownLine />
-        ) : column.getIsSorted() === "asc" ? (
-          <RiArrowUpLine />
-        ) : (
-          <RiExpandUpDownLine className="text-muted-foreground" />
-        )}
+        {align === "right" ? null : icon}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         <DropdownMenuGroup>
