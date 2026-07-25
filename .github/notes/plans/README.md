@@ -13,6 +13,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 ## Planned
 
+- [Platform data table](data-table.md) - full PRD; working spike on `spike/platform-data-table`, rebuild clean from the spec (PR #753).
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
 
 ## Backlog / ideas
