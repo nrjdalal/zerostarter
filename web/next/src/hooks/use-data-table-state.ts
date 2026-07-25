@@ -1,13 +1,7 @@
 "use client"
 
-import type {
-  ColumnFiltersState,
-  OnChangeFn,
-  PaginationState,
-  SortingState,
-  Updater,
-} from "@tanstack/react-table"
-import { createParser, parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from "nuqs"
+import type { ColumnFiltersState, OnChangeFn, SortingState, Updater } from "@tanstack/react-table"
+import { createParser, parseAsArrayOf, parseAsString, useQueryStates } from "nuqs"
 import * as React from "react"
 
 // SortingState in the URL as "column.asc" or "column.desc", comma-separated for multi-sort.
@@ -37,8 +31,6 @@ const filterParser = parseAsArrayOf(parseAsString).withDefault([])
 
 // Parser identities must be stable across renders (nuqs caches parsed values per parser); building this inline in the hook would defeat the cache and leave useSyncExternalStore reading one update behind.
 const baseParsers = {
-  page: parseAsInteger.withDefault(1),
-  perPage: parseAsInteger.withDefault(10),
   q: parseAsString.withDefault(""),
   sort: parseAsSorting.withDefault([]),
 }
@@ -47,7 +39,7 @@ function apply<T>(updater: Updater<T>, previous: T): T {
   return typeof updater === "function" ? (updater as (old: T) => T)(previous) : updater
 }
 
-// URL-synced table state (page, perPage, q, sort, plus one array param per filter id), shaped for useReactTable: spread the returned state into `state` and the handlers into the matching onChange options. Works for client tables and manual (server-driven) ones alike; filter ids share the query-string namespace, so keep them clear of page/perPage/q/sort. Search and filter changes snap back to page 1.
+// URL-synced table state (q, sort, plus one array param per filter id), shaped for useReactTable: spread the returned state into `state` and the handlers into the matching onChange options. Tables scroll infinitely, so there is no page state; a queryKey built from these values resets the list on any change. Filter ids share the query-string namespace, so keep them clear of q/sort.
 export function useDataTableState(filterIds: string[] = []) {
   const filterKey = filterIds.join(",")
   const filterParsers = React.useMemo(() => {
@@ -59,10 +51,6 @@ export function useDataTableState(filterIds: string[] = []) {
   const [base, setBase] = useQueryStates(baseParsers)
   const [filters, setFilters] = useQueryStates(filterParsers)
 
-  const pagination: PaginationState = {
-    pageIndex: Math.max(base.page - 1, 0),
-    pageSize: Math.max(base.perPage, 1),
-  }
   const sorting = base.sort
   const globalFilter = base.q
   const columnFilters: ColumnFiltersState = React.useMemo(
@@ -73,19 +61,12 @@ export function useDataTableState(filterIds: string[] = []) {
     [filters],
   )
 
-  const onPaginationChange: OnChangeFn<PaginationState> = (updater) => {
-    const next = apply(updater, pagination)
-    setBase({
-      page: next.pageSize === pagination.pageSize ? next.pageIndex + 1 : 1,
-      perPage: next.pageSize,
-    })
-  }
   const onSortingChange: OnChangeFn<SortingState> = (updater) => {
-    setBase({ page: 1, sort: apply(updater, sorting) })
+    setBase({ sort: apply(updater, sorting) })
   }
   const onGlobalFilterChange = (updater: Updater<string>) => {
     const next = apply(updater, globalFilter)
-    setBase({ page: 1, q: next ? next : null })
+    setBase({ q: next ? next : null })
   }
   const onColumnFiltersChange: OnChangeFn<ColumnFiltersState> = (updater) => {
     const next = apply(updater, columnFilters)
@@ -96,7 +77,6 @@ export function useDataTableState(filterIds: string[] = []) {
         entry && Array.isArray(entry.value) && entry.value.length ? (entry.value as string[]) : null
     }
     setFilters(patch)
-    setBase({ page: 1 })
   }
 
   return {
@@ -104,9 +84,7 @@ export function useDataTableState(filterIds: string[] = []) {
     globalFilter,
     onColumnFiltersChange,
     onGlobalFilterChange,
-    onPaginationChange,
     onSortingChange,
-    pagination,
     sorting,
   }
 }

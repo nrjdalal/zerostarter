@@ -8,10 +8,10 @@ export default async function Page() {
   await assertConsoleAccess()
 
   return (
-    <PageShell size="lg">
+    <PageShell size="lg" className="flex h-svh flex-col">
       <PageHeader
         title="Console"
-        description="Every user on the platform: server-driven search, sort, and pagination."
+        description="Every user on the platform: server-driven search, sort, and infinite scroll."
       />
       <ConsoleUsersTable />
     </PageShell>
