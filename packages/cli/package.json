@@ -31,9 +31,8 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit",
-    "dev": "tsdown --watch",
-    "test": "bun test"
+    "check-types": "tsc --noEmit && tsc --noEmit -p ../../tests/packages/cli/tsconfig.json",
+    "dev": "tsdown --watch"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",

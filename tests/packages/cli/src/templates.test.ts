@@ -9,7 +9,7 @@ import {
   homeTemplate,
   sampleBlogPostTemplate,
   siteTemplate,
-} from "../src/templates"
+} from "../../../../packages/cli/src/templates"
 
 const brand = { name: "acme" }
 

@@ -14,7 +14,7 @@ import {
   removeMatch,
   write,
   writeJson,
-} from "@/io"
+} from "../../../../packages/cli/src/io"
 
 let dir: string
 beforeEach(() => {

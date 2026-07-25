@@ -20,15 +20,12 @@
     "start": {
       "persistent": true,
       "cache": false
-    },
-    "test": {
-      "dependsOn": ["^build"]
     }
   },
   "globalDependencies": [
     ".env*",
     // emits the font metrics that decide rendered column widths, so a build cached before an edit here would ship stale layout
-    ".github/scripts/data-table-metrics.ts"
+    "packages/scripts/src/data-table-metrics.ts"
   ],
   "globalEnv": [
     // CI variables

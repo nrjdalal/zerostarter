@@ -1,0 +1,8 @@
+{
+  "extends": "../../../packages/cli/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["**/*.ts"]
+}

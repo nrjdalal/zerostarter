@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 
-import { promptMultiselect } from "../bin/commands/_prompt"
+import { promptMultiselect } from "../../../../../packages/cli/bin/commands/_prompt"
 
 type Tty = { isTTY?: boolean }
 

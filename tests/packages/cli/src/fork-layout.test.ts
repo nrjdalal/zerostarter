@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 
-import { parseForkLayout } from "@/fork-layout"
+import { parseForkLayout } from "../../../../packages/cli/src/fork-layout"
 
 describe("parseForkLayout", () => {
   test("collects the literal exclude paths, skipping comments and blank lines", () => {
@@ -54,7 +54,7 @@ describe("parseForkLayout", () => {
 
   test("the checked-in .gitpickignore has only literal excludes and the expected preserve set", () => {
     const { excludes, preserve } = parseForkLayout(
-      readFileSync(join(import.meta.dir, "../../../.gitpickignore"), "utf8"),
+      readFileSync(join(import.meta.dir, "../../../../.gitpickignore"), "utf8"),
     )
     // A glob exclude would make fork `init` throw at the guard in convert.ts; catch it in CI, not on a fork user's machine.
     for (const path of excludes) expect(path).not.toMatch(/[*?![\]]/)

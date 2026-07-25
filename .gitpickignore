@@ -12,6 +12,7 @@
 .github/notes/
 .github/rulesets/
 packages/cli/
+tests/
 web/next/content/
 web/next/src/app/(marketing)/
 web/next/src/components/marketing/

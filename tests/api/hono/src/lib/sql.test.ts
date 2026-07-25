@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { escapeLike } from "@/lib/sql"
+import { escapeLike } from "../../../../../api/hono/src/lib/sql"
 
 test("escapeLike leaves an ordinary term untouched", () => {
   expect(escapeLike("ada@example.com")).toBe("ada@example.com")

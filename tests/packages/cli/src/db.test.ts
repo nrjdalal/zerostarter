@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { hasPostgresUrl, parseLaunch, seedEnv } from "@/db"
+import { hasPostgresUrl, parseLaunch, seedEnv } from "../../../../packages/cli/src/db"
 
 let dir: string
 

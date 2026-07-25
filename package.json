@@ -20,7 +20,7 @@
   "scripts": {
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts",
-    "check-types:scripts": "tsgo -p .github/scripts/tsconfig.json",
+    "check-types:scripts": "tsgo -p .github/scripts/tsconfig.json && tsgo -p tests/github/scripts/tsconfig.json",
     "clean": "bash .github/scripts/clean.sh",
     "console:roles": "bun .github/scripts/console-roles.ts",
     "db:generate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit generate",
@@ -30,24 +30,22 @@
     "devtools": "turbo devtools",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "postinstall": "bun .github/scripts/deps-manager.ts",
     "lint": "oxlint",
+    "postinstall": "bun .github/scripts/deps-manager.ts",
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test": "turbo run test"
+    "test": "if [ -d tests ]; then bun test tests; fi"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
     "@octokit/rest": "catalog:",
     "@types/bun": "catalog:",
-    "@types/fontkit": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@viz-js/viz": "catalog:",
     "changelogen": "catalog:",
-    "fontkit": "catalog:",
     "globby": "catalog:",
     "lefthook": "catalog:",
     "lint-staged": "catalog:",
@@ -57,8 +55,7 @@
     "sharp": "catalog:",
     "svgo": "catalog:",
     "ts-morph": "catalog:",
-    "turbo": "catalog:",
-    "wawoff2": "catalog:"
+    "turbo": "catalog:"
   },
   "overrides": {
     "postcss": "^8.5.23",

@@ -16,8 +16,9 @@ packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
-packages/scripts/ # build-only bun tooling (e.g. generate-env, the tldts host breakdown per consumer); never bundled
+packages/scripts/ # build-only bun tooling (generate-env, the data-table font metrics); every new script lands here, never bundled
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
+tests/            # the whole suite, mirroring each subject's path (canonical repo only; forks take no tests)
 ```
 
 Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the whole codebase as one context file.
@@ -35,6 +36,8 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(platform)/users/`) | `design` skill |
+| Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test` | - |
+| Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package | - |
 | Gate by role | `web/next/src/lib/auth/console.ts` gates the web admin console; the API's `middlewares/auth.ts` checks the session only (401), not role; `middlewares/admin.ts` adds the role check (403) for `/api/v1/admin/*` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
