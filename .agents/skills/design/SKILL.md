@@ -66,7 +66,7 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## Data tables
 
-Every table uses the `components/data-table.tsx` family (docs: `manage/data-tables`); do not hand-roll a `<Table>` with its own state. The full architecture, behaviors, and traps live in `.github/notes/plans/data-table.md`.
+Every table uses the `components/data-table.tsx` family; do not hand-roll a `<Table>` with its own state. The full architecture and behaviors live in the `manage/data-tables` docs page; the sharp-edge rationale is commented in the module at each site it bites.
 
 - Compose headless: the page owns the TanStack Table instance (`useDataTable` for server-driven, `useDataTableState` + row models for client-side) and renders `DataTableToolbar` + `DataTable`. Infinite scroll with virtualized rows everywhere; never numbered pagination.
 - Layout lives in a colocated `Record<string, ColumnConfig>` in the table's `data-columns.tsx`, written in column order; never put widths inline in column defs. Widths are Tailwind spacing units; omit `width` to size from the measured header title plus `extra` (default 10, snapped to the 3-unit grid).

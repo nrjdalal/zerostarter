@@ -447,14 +447,14 @@ export function DataTable<TData>({
     overscan: 5,
   })
 
-  // Fetch the next batch once the user scrolls within 500px of the bottom; also checked after every batch so a not-yet-full region keeps loading.
+  // Fetch the next batch once the user scrolls within 500px of the bottom; also checked after every batch so a not-yet-full region keeps loading. isError parks the loop after a failed batch, or the effect would re-fire the failing request forever; recovery goes through the visible Retry.
   const loadMoreOnBottomReached = React.useCallback(
     (container: HTMLDivElement | null) => {
-      if (!container || !onLoadMore || !hasMore || isLoading || isLoadingMore) return
+      if (!container || !onLoadMore || !hasMore || isError || isLoading || isLoadingMore) return
       const { clientHeight, scrollHeight, scrollTop } = container
       if (scrollHeight - scrollTop - clientHeight < 500) onLoadMore()
     },
-    [hasMore, isLoading, isLoadingMore, onLoadMore],
+    [hasMore, isError, isLoading, isLoadingMore, onLoadMore],
   )
   React.useEffect(() => {
     loadMoreOnBottomReached(containerRef.current)
@@ -513,29 +513,29 @@ export function DataTable<TData>({
           <TableHeader role="rowgroup" className="bg-background sticky top-0 z-10 grid">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} role="row" aria-rowindex={1} className="flex w-full">
-                {headerGroup.headers.map((header, index) => (
-                  <TableHead
-                    key={header.id}
-                    colSpan={header.colSpan}
-                    role="columnheader"
-                    aria-sort={
-                      header.column.getIsSorted() === "asc"
-                        ? "ascending"
-                        : header.column.getIsSorted() === "desc"
-                          ? "descending"
-                          : undefined
-                    }
-                    className={cn(
-                      "flex items-center overflow-hidden",
-                      columnLayout(header.column, index).className,
-                    )}
-                    style={columnLayout(header.column, index).style}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header, index) => {
+                  const layout = columnLayout(header.column, index)
+                  return (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      role="columnheader"
+                      aria-sort={
+                        header.column.getIsSorted() === "asc"
+                          ? "ascending"
+                          : header.column.getIsSorted() === "desc"
+                            ? "descending"
+                            : undefined
+                      }
+                      className={cn("flex items-center overflow-hidden", layout.className)}
+                      style={layout.style}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -558,19 +558,19 @@ export function DataTable<TData>({
                     className="absolute flex w-full"
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
-                    {row.getVisibleCells().map((cell, index) => (
-                      <TableCell
-                        key={cell.id}
-                        role="cell"
-                        className={cn(
-                          "flex items-center overflow-hidden",
-                          columnLayout(cell.column, index).className,
-                        )}
-                        style={columnLayout(cell.column, index).style}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell, index) => {
+                      const layout = columnLayout(cell.column, index)
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          role="cell"
+                          className={cn("flex items-center overflow-hidden", layout.className)}
+                          style={layout.style}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      )
+                    })}
                   </TableRow>
                 )
               })}
@@ -738,12 +738,14 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex flex-1 items-center gap-2">
+        {/* maxLength mirrors the API convention's 254-char cap on q, so a long paste cannot flip the table into the error state. */}
         <Input
           type="search"
           aria-label={searchPlaceholder}
           placeholder={searchPlaceholder}
           value={search}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
+          maxLength={254}
           className="w-40 lg:w-64"
         />
         {children}
