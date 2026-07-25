@@ -32,6 +32,7 @@ export type ConsoleUser = {
 export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "select",
+    size: 48,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -51,6 +52,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "name",
+    size: 240,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
@@ -65,12 +67,14 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "email",
+    size: 320,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => <span className="text-muted-foreground">{row.original.email}</span>,
-    meta: { label: "Email" },
+    meta: { flex: true, label: "Email" },
   },
   {
     accessorKey: "role",
+    size: 110,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => (
       <Badge variant={row.original.role === "admin" ? "default" : "outline"} className="capitalize">
@@ -81,6 +85,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "createdAt",
+    size: 150,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
     cell: ({ row }) =>
       new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" }),
@@ -88,6 +93,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
+    size: 56,
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
