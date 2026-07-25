@@ -15,4 +15,4 @@ The same harness gap blocks the data table's pure functions, which decide render
 - `applyColumnManager`: flex reach-back (`index <= lastFlex`) and the `auto` flag on widthless columns.
 - The `flexAt` ownership rule in `DataTable`: last visible capable column grows, growth hands backward when that column hides, and a flex-less table spreads its `auto` columns. This reads correct and will regress silently.
 
-Api-side helpers are reachable once they sit outside a router (importing one boots the db client and Better Auth, which throws on CI's dummy secret): `lib/sql.ts` and `lib/admin-query.ts` are both tested under `tests/api/hono/src/lib/`. What remains blocked is web-side.
+Api-side helpers are reachable only once they sit outside a router (importing one boots the db client and Better Auth, which throws on CI's dummy secret): `lib/sql.ts` is tested under `tests/api/hono/src/lib/`, while the router's own validation schema is not, since a file per schema is fragmentation the test runner does not justify. See `shared-contracts-package.md`.
