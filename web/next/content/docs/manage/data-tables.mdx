@@ -18,7 +18,7 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 | `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                                                                          |
 | `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                                                                               |
 | `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly. Takes the filter ids, a default sorting, and optionally the set of sortable column ids, which drops a URL sort naming a column the table does not have |
-| `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs                                                                                                                                                                                     |
+| `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs. Re-exported from `lib/data-table-layout.ts`, where the pure width and slack math lives (no React, no DOM, unit-tested in `tests/web/next/src/lib`)                                 |
 
 ## Column config
 

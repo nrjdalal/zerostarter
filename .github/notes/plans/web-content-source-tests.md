@@ -9,10 +9,8 @@ When a web test harness lands (see the deferred cafe `web/next` test port), asse
 
 ## Data-table layout math (PR #754)
 
-The same harness gap blocks the data table's pure functions, which decide rendered layout and were verified once by hand:
+The data table's layout math is no longer part of this gap: `measureLabelPx`, `autoWidthUnits`, `applyColumnManager`, and the slack rule moved to `web/next/src/lib/data-table-layout.ts` and are covered in `tests/web/next/src/lib/`. That was worth a module boundary because the functions are genuinely pure and decide every rendered width; the same trade was declined for a router's validation schema, which would have meant a file per schema (see `shared-contracts-package.md`).
 
-- `measureLabelPx` / `autoWidthUnits` (`web/next/src/components/data-table.tsx`): the kerning-pair sum, the `average` fallback for an unmapped char, and the 3-unit snap. These are pure and DOM-free, so a harness is not strictly what blocks them: they are untestable only because they sit in a module that imports React and the UI kit, and splitting a module to suit the test runner is a trade this repo has already declined once (see `shared-contracts-package.md`). The generator asserts its emitted metrics against real font shaping, so the data is covered even while the consumer is not.
-- `applyColumnManager`: flex reach-back (`index <= lastFlex`) and the `auto` flag on widthless columns.
-- The `flexAt` ownership rule in `DataTable`: last visible capable column grows, growth hands backward when that column hides, and a flex-less table spreads its `auto` columns. This reads correct and will regress silently.
+What still needs a harness is anything that has to render: the `DataTable` region itself (virtualization, the load-more effect, the error and empty branches), `DataTableCellText`'s truncation measurement, and the toolbar and faceted-filter interactions. Those are verified in a browser today.
 
 Api-side helpers are reachable only once they sit outside a router (importing one boots the db client and Better Auth, which throws on CI's dummy secret): `lib/sql.ts` is tested under `tests/api/hono/src/lib/`, while the router's own validation schema is not, since a file per schema is fragmentation the test runner does not justify. See `shared-contracts-package.md`.

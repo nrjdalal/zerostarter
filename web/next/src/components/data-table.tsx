@@ -20,14 +20,12 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type OnChangeFn,
-  type RowData,
   type RowSelectionState,
   type SortingState,
   type Table as TableInstance,
   type Updater,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import rawFontMetrics from "generated/data-table-metrics.json"
 import { createParser, parseAsArrayOf, parseAsString, useQueryStates } from "nuqs"
 import * as React from "react"
 
@@ -70,104 +68,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { applyColumnManager, growingColumnIds, type ColumnConfig } from "@/lib/data-table-layout"
 import { cn } from "@/lib/utils"
 
 // The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table v8 mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
-
-// Column meta carried from the column config: labels for the view-options menu, plus the layout and overflow flags the renderer reads.
-declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData extends RowData, TValue> {
-    align?: "center" | "left" | "right"
-    auto?: boolean
-    flex?: boolean
-    label?: string
-    wrap?: boolean
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Column config: per-table layout data, colocated with each table's columns file.
-
-export type ColumnConfig = {
-  align?: "center" | "left" | "right"
-  extra?: number
-  flex?: boolean
-  width?: number
-  wrap?: boolean
-}
-
-// A widthless column sizes as header title + an allowance in spacing units, snapped up to the 3-unit grid: config.extra when set, else this default (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset).
-const AUTO_WIDTH_EXTRA_UNITS = 10
-
-// The app header font (text-sm font-medium) as bundled data: per-character advances plus sparse kerning-pair deltas in px at 500 14px, generated at build by packages/scripts/src/data-table-metrics.ts, so any label measures the same on server and client and SSR ships final widths with no settle. The generator asserts this exact algorithm against real font shaping.
-const fontMetrics: {
-  advances: Record<string, number>
-  average: number
-  kerning: Record<string, number>
-} = rawFontMetrics
-
-function measureLabelPx(label: string): number {
-  let widthPx = 0
-  let previous = ""
-  for (const char of label) {
-    const advance = fontMetrics.advances[char]
-    widthPx += advance !== undefined ? advance : fontMetrics.average
-    if (previous) {
-      const pair = fontMetrics.kerning[previous + char]
-      if (pair !== undefined) widthPx += pair
-    }
-    previous = char
-  }
-  return widthPx
-}
-
-// px converts to spacing units at the default scale (1 unit = 4px).
-function autoWidthUnits(label: string, extraUnits: number): number {
-  return Math.ceil((measureLabelPx(label) / 4 + extraUnits) / 3) * 3
-}
-
-// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta; columns without an entry pass through untouched. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
-export function applyColumnManager<TData extends RowData>(
-  columns: ColumnDef<TData>[],
-  columnConfig: Record<string, ColumnConfig>,
-): ColumnDef<TData>[] {
-  const configFor = (column: ColumnDef<TData>) => {
-    const id = column.id
-      ? column.id
-      : "accessorKey" in column
-        ? String(column.accessorKey)
-        : undefined
-    return { config: id ? columnConfig[id] : undefined, id }
-  }
-  let lastFlex = -1
-  columns.forEach((column, index) => {
-    const { config } = configFor(column)
-    if (config && config.flex) lastFlex = index
-  })
-  return columns.map((column, index) => {
-    const { config: entry, id } = configFor(column)
-    if (!id) return column
-    // An id with no entry takes the defaults rather than passing through: untouched, it would keep tanstack's size default of 150, which this renderer reads as 150 spacing units (600px).
-    const config = entry ? entry : {}
-    const label = column.meta && column.meta.label ? column.meta.label : id
-    const width =
-      config.width !== undefined
-        ? config.width
-        : autoWidthUnits(label, config.extra !== undefined ? config.extra : AUTO_WIDTH_EXTRA_UNITS)
-    return {
-      ...column,
-      size: width,
-      meta: {
-        ...column.meta,
-        align: config.align ? config.align : "left",
-        // auto marks widthless columns: a table with no flex column spreads them instead of trailing dead space
-        auto: config.width === undefined,
-        flex: index <= lastFlex,
-        wrap: config.wrap ? true : false,
-      },
-    }
-  })
-}
+// The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, re-exported here so a table still has one import site.
+export { applyColumnManager, type ColumnConfig }
 
 // ---------------------------------------------------------------------------
 // URL state: q, sort, and one array param per filter id. No page state; tables scroll infinitely and a queryKey change resets the list.
@@ -495,23 +401,14 @@ export function DataTable<TData>({
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
 
-  // Slack ownership: of the visible flex-capable columns (capability reaches back from a flex column), only the last one grows; the rest hold their width, so hiding the growing column hands growth backward and two growing neighbors cannot fight. A table with no flex column spreads its widthless columns instead. Fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells.
-  const visibleColumns = table.getVisibleLeafColumns()
-  const anyCapableVisible = visibleColumns.some(
-    (column) => column.columnDef.meta && column.columnDef.meta.flex,
+  // Slack ownership, computed over the visible columns in order (see growingColumnIds).
+  const growing = growingColumnIds(
+    table.getVisibleLeafColumns().map((column) => ({
+      auto: column.columnDef.meta && column.columnDef.meta.auto,
+      flex: column.columnDef.meta && column.columnDef.meta.flex,
+      id: column.id,
+    })),
   )
-  // Keyed by column id, not position: headers and cells iterate their own arrays, and a grouped header row (colSpan) would not line up with the leaf order this is derived from.
-  const growsById = new Map<string, boolean>()
-  visibleColumns.forEach((column, index) => {
-    if (!anyCapableVisible) {
-      growsById.set(column.id, Boolean(column.columnDef.meta && column.columnDef.meta.auto))
-      return
-    }
-    const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
-    const next = visibleColumns[index + 1]
-    const nextFlex = Boolean(next && next.columnDef.meta && next.columnDef.meta.flex)
-    growsById.set(column.id, flex && !nextFlex)
-  })
   const columnLayout = (column: Column<TData, unknown>) => {
     const meta = column.columnDef.meta
     // Centered columns drop the horizontal padding: the shadcn cell strips pr when it holds a checkbox, which would skew a padded center.
@@ -523,7 +420,7 @@ export function DataTable<TData>({
           : undefined
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
-    return growsById.get(column.id)
+    return growing.has(column.id)
       ? { className: cn("flex-1", align), style: { minWidth: width } }
       : { className: cn("shrink-0", align), style: { width } }
   }
