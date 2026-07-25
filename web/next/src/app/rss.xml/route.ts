@@ -32,11 +32,11 @@ export async function GET() {
       return [
         "    <item>",
         `      <title>${escapeXml(page.data.title)}</title>`,
-        `      <link>${baseUrl}${page.url}</link>`,
-        `      <guid isPermaLink="true">${baseUrl}${page.url}</guid>`,
+        `      <link>${escapeXml(`${baseUrl}${page.url}`)}</link>`,
+        `      <guid isPermaLink="true">${escapeXml(`${baseUrl}${page.url}`)}</guid>`,
         `      <pubDate>${published.toUTCString()}</pubDate>`,
         description ? `      <description>${escapeXml(description)}</description>` : "",
-        page.data.author ? `      <author>${escapeXml(page.data.author)}</author>` : "",
+        page.data.author ? `      <dc:creator>${escapeXml(page.data.author)}</dc:creator>` : "",
         "    </item>",
       ]
         .filter(Boolean)
@@ -47,14 +47,14 @@ export async function GET() {
   const latest = posts.length > 0 ? toBlogDate(posts[0].data.publishedAt) : new Date()
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(site.name)}</title>
-    <link>${baseUrl}/blog</link>
+    <link>${escapeXml(`${baseUrl}/blog`)}</link>
     <description>${escapeXml(site.description)}</description>
     <language>en</language>
     <lastBuildDate>${latest.toUTCString()}</lastBuildDate>
-    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeXml(`${baseUrl}/rss.xml`)}" rel="self" type="application/rss+xml" />
 ${items}
   </channel>
 </rss>

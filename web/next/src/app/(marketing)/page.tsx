@@ -25,7 +25,8 @@ import { codeToHtml } from "shiki"
 import { ApiStatus } from "@/components/marketing/api-status"
 import { AppShellDiagram } from "@/components/marketing/app-shell-diagram"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
-import { CodeCard, CodeWindow } from "@/components/marketing/code-window"
+import { CodeCard } from "@/components/marketing/code-card"
+import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
@@ -263,8 +264,14 @@ docker compose up --build`
           </div>
 
           {/* Tech stack, pinned to the bottom of the hero */}
-          <div className="bg-sidebar group relative overflow-hidden border-y py-6">
-            <div className="animate-marquee flex w-max gap-10 px-6 group-focus-within:[animation-play-state:paused] group-hover:[animation-play-state:paused]">
+          <div
+            tabIndex={0}
+            role="group"
+            aria-label="Technologies wired into the starter"
+            data-marquee
+            className="bg-sidebar focus-visible:ring-ring/50 relative overflow-hidden border-y py-6 outline-none focus-visible:ring-2"
+          >
+            <div className="animate-marquee flex w-max gap-10 px-6">
               {[...techStack, ...techStack].map((tech, index) => (
                 <div
                   key={`${tech.name}-${index}`}
@@ -294,7 +301,7 @@ docker compose up --build`
             <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
             <style
               dangerouslySetInnerHTML={{
-                __html: `@media (prefers-reduced-motion: no-preference){@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}.animate-marquee{animation:marquee 50s linear infinite;will-change:transform}}`,
+                __html: `@media (prefers-reduced-motion: no-preference){@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}[data-marquee] .animate-marquee{animation:marquee 50s linear infinite;will-change:transform}[data-marquee]:hover .animate-marquee,[data-marquee]:focus-within .animate-marquee{animation-play-state:paused}}`,
               }}
             />
           </div>

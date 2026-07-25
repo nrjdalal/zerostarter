@@ -90,8 +90,8 @@ export default function WaitlistPage() {
       onBlur: formSchema,
     },
     onSubmit: ({ value }) => {
-      // the form hands back raw input, so normalize here: the API dedupes with onConflictDoNothing, which a stray space or capital would defeat
-      joinWaitlist.mutate({ ...value, email: value.email.trim().toLowerCase() })
+      // the API owns storage normalization (its schema trims and the insert lowercases); trimming here only keeps the echoed confirmation clean
+      joinWaitlist.mutate({ ...value, email: value.email.trim() })
     },
   })
 

@@ -3,11 +3,8 @@
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
 import { useEffect, useState } from "react"
 
+import { ShikiRegion } from "@/components/marketing/shiki-region"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-
-const shikiReset =
-  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
 
 function CopyButton({ code, label }: { code: string; label: string }) {
   const [copied, setCopied] = useState(false)
@@ -46,32 +43,7 @@ function CopyButton({ code, label }: { code: string; label: string }) {
   )
 }
 
-// `html` is server-highlighted by shiki; `code` is the same source kept raw so it can be copied. Both blocks share one scroll region: it is focusable with an accessible name, since overflow no keyboard can reach is a dead focus stop.
-function ShikiRegion({
-  html,
-  label,
-  className,
-}: {
-  html: string
-  label: string
-  className?: string
-}) {
-  return (
-    <div
-      tabIndex={0}
-      role="region"
-      aria-label={label}
-      className={cn(
-        "focus-visible:ring-ring/50 overflow-x-auto py-5 outline-none focus-visible:ring-2",
-        shikiReset,
-        className,
-      )}
-      dangerouslySetInnerHTML={{ __html: html }}
-      style={{ colorScheme: "light dark" }}
-    />
-  )
-}
-
+// `html` is server-highlighted by shiki; `code` is the same source kept raw so it can be copied.
 export function CodeWindow({ label, html, code }: { label: string; html: string; code: string }) {
   return (
     <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left">
@@ -83,15 +55,5 @@ export function CodeWindow({ label, html, code }: { label: string; html: string;
       </div>
       <ShikiRegion html={html} label={label} className="[&_pre]:leading-relaxed!" />
     </div>
-  )
-}
-
-export function CodeCard({ html, label }: { html: string; label: string }) {
-  return (
-    <ShikiRegion
-      html={html}
-      label={label}
-      className="bg-background flex min-w-0 flex-col justify-center rounded-lg border [&_pre]:leading-loose!"
-    />
   )
 }

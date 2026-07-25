@@ -43,7 +43,7 @@ When a change establishes or alters a convention, update this file in the same c
 ## Layout and landmarks
 
 - Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so add none to the root layout or you nest landmarks.
-- Site credit and footer content belongs in a real `<footer>` rendered as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark.
+- A surface that has footer content renders it in a real `<footer>` as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark. Only the marketing landing carries footer content today; the other surfaces have none rather than an empty one.
 - Name a `<section>` that has a visible heading with `aria-labelledby` pointing at that heading's id, not a hand-written `aria-label`: internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name. A wrapper with no visible heading (a `role="region"` scroll container) still takes `aria-label`.
 - A scrollable region (a code block, a wide table) needs `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
 - Top-level full-height surfaces (the body, marketing pages, the `SidebarShell` root) use `min-h-svh`, matching the shadcn sidebar; no `dvh`. A surface nested inside the shell content pane (route `error`/`loading`, dashboard/console content) fills it with `flex-1`: the shell `<main>` is `flex min-h-svh min-w-0 flex-1 flex-col`, so do not re-assert `min-h-svh` inside an already-full-height parent.
