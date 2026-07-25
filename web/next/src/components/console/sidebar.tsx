@@ -31,7 +31,7 @@ type ConsoleNavItem = {
   url: string
 }
 
-const navGroups: { label: string; items: ConsoleNavItem[] }[] = [
+const navGroups: { items: ConsoleNavItem[]; label: string }[] = [
   {
     label: "Getting Started",
     items: [

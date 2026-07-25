@@ -15,4 +15,4 @@ The same harness gap blocks the data table's pure functions, which decide render
 - `applyColumnManager`: flex reach-back (`index <= lastFlex`) and the `auto` flag on widthless columns.
 - The `flexAt` ownership rule in `DataTable`: last visible capable column grows, growth hands backward when that column hides, and a flex-less table spreads its `auto` columns. This reads correct and will regress silently.
 
-`escapeLike` (`api/hono/src/routers/admin.ts`) needs no web harness and could be tested first, wherever api-side unit tests land.
+Api-side coverage cannot fill the gap either: importing a router to reach `usersQuerySchema` boots Better Auth, which throws on CI's dummy secret, so only genuinely standalone helpers (like `api/hono/src/lib/sql.ts`, tested in `tests/api/hono/src/lib/`) are reachable today.

@@ -468,14 +468,19 @@ export function DataTable<TData>({
   const anyCapableVisible = visibleColumns.some(
     (column) => column.columnDef.meta && column.columnDef.meta.flex,
   )
-  const flexAt = visibleColumns.map((column, index) => {
-    if (!anyCapableVisible) return Boolean(column.columnDef.meta && column.columnDef.meta.auto)
+  // Keyed by column id, not position: headers and cells iterate their own arrays, and a grouped header row (colSpan) would not line up with the leaf order this is derived from.
+  const growsById = new Map<string, boolean>()
+  visibleColumns.forEach((column, index) => {
+    if (!anyCapableVisible) {
+      growsById.set(column.id, Boolean(column.columnDef.meta && column.columnDef.meta.auto))
+      return
+    }
     const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
     const next = visibleColumns[index + 1]
     const nextFlex = Boolean(next && next.columnDef.meta && next.columnDef.meta.flex)
-    return flex && !nextFlex
+    growsById.set(column.id, flex && !nextFlex)
   })
-  const columnLayout = (column: Column<TData, unknown>, index: number) => {
+  const columnLayout = (column: Column<TData, unknown>) => {
     const meta = column.columnDef.meta
     // Centered columns drop the horizontal padding: the shadcn cell strips pr when it holds a checkbox, which would skew a padded center.
     const align =
@@ -486,7 +491,7 @@ export function DataTable<TData>({
           : undefined
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
-    return flexAt[index]
+    return growsById.get(column.id)
       ? { className: cn("flex-1", align), style: { minWidth: width } }
       : { className: cn("shrink-0", align), style: { width } }
   }
@@ -510,8 +515,8 @@ export function DataTable<TData>({
           <TableHeader role="rowgroup" className="bg-background sticky top-0 z-10 grid">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} role="row" aria-rowindex={1} className="flex w-full">
-                {headerGroup.headers.map((header, index) => {
-                  const layout = columnLayout(header.column, index)
+                {headerGroup.headers.map((header) => {
+                  const layout = columnLayout(header.column)
                   return (
                     <TableHead
                       key={header.id}
@@ -555,8 +560,8 @@ export function DataTable<TData>({
                     className="absolute flex w-full"
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
-                    {row.getVisibleCells().map((cell, index) => {
-                      const layout = columnLayout(cell.column, index)
+                    {row.getVisibleCells().map((cell) => {
+                      const layout = columnLayout(cell.column)
                       return (
                         <TableCell
                           key={cell.id}

@@ -53,7 +53,6 @@ const sortColumns = {
   role: sql`coalesce(${user.role}, 'user')`,
 } satisfies Record<(typeof SORTS)[number], unknown>
 
-// Escape LIKE wildcards so a search for "100%" matches literally.
 // Admin-only endpoints, mounted under /v1 behind authMiddleware; adminMiddleware layers the fresh role check on top.
 export const adminRouter = new Hono<{
   Variables: Session

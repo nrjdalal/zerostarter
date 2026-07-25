@@ -1,2 +1,2 @@
-// Escapes the LIKE/ILIKE metacharacters so a user-supplied search term matches literally. Postgres treats backslash as the default escape under standard_conforming_strings, so no explicit ESCAPE clause is needed; the term still binds as a parameter, this only stops % and _ from acting as wildcards.
+// Escapes the LIKE/ILIKE metacharacters so a user-supplied search term matches literally. Postgres's LIKE always treats backslash as its escape character unless an ESCAPE clause says otherwise, so escaping with backslash needs no clause. This is not about SQL injection: the term binds as a parameter either way, it only stops % and _ from acting as wildcards.
 export const escapeLike = (value: string) => value.replace(/[%_\\]/g, "\\$&")

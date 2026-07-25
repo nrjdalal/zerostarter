@@ -34,6 +34,8 @@ const ROLE_OPTIONS = [
   { label: "User", value: "user" },
 ]
 const ROLE_VALUES = new Set(ROLE_OPTIONS.map((option) => option.value))
+// Mirrors the endpoint's q cap: the toolbar input caps typing and pasting, but a hand-written URL would otherwise 400 the table into an error state whose Retry replays it.
+const Q_MAX = 254
 
 // Column ids mapped to the endpoint's sort whitelist (status sorts by the backing banned flag); satisfies makes any server-side rename a compile error here.
 type UsersSort = NonNullable<
@@ -67,7 +69,7 @@ async function fetchUsers({
         dir: sort.desc ? "desc" : "asc",
         page: `${page}`,
         perPage: `${perPage}`,
-        q: search ? search : undefined,
+        q: search ? search.slice(0, Q_MAX) : undefined,
         role: roles.length ? roles.join(",") : undefined,
         sort: sortId,
       },
