@@ -8,7 +8,7 @@ export default function Page() {
     <PageShell size="lg" className="flex h-svh flex-col">
       <PageHeader
         title="Users"
-        description="Every user on the platform: server-driven search, sort, and infinite scroll."
+        description="Everyone with an account, newest first. Search by name or email, filter by role, or sort by any column."
       />
       <UsersDataTable />
     </PageShell>
