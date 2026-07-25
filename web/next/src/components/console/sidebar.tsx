@@ -1,7 +1,12 @@
 "use client"
 
 import { features } from "@packages/config/site"
-import { RiBookLine, RiDashboardLine } from "@remixicon/react"
+import {
+  RiBookLine,
+  RiDashboardLine,
+  RiGroupLine,
+  type RemixiconComponentType,
+} from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -17,15 +22,39 @@ import {
 import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
-const mainItems = [
+type ConsoleNavItem = {
+  title: string
+  url: string
+  icon: RemixiconComponentType
+  exact: boolean
+  feature?: keyof typeof features
+}
+
+const navGroups: { label: string; items: ConsoleNavItem[] }[] = [
   {
-    title: "Documentation",
-    url: "/console/docs",
-    icon: RiBookLine,
-    exact: false,
-    feature: "internalDocs",
+    label: "Getting Started",
+    items: [
+      {
+        title: "Documentation",
+        url: "/console/docs",
+        icon: RiBookLine,
+        exact: false,
+        feature: "internalDocs",
+      },
+    ],
   },
-] as const
+  {
+    label: "Platform",
+    items: [
+      {
+        title: "Users",
+        url: "/console/users",
+        icon: RiGroupLine,
+        exact: false,
+      },
+    ],
+  },
+]
 
 // Sidebar-header slot: the console home ("Dashboard") link, plus the docs search inside /console/docs (matching public /docs).
 export function ConsoleHeader() {
@@ -42,7 +71,7 @@ export function ConsoleHeader() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive(pathname, "/console")}
+              isActive={isActive(pathname, "/console", { exact: true })}
               tooltip="Dashboard"
               className="data-active:font-normal"
               render={<Link href="/console" onClick={close} />}
@@ -74,32 +103,41 @@ export function ConsoleNav({ docsGroups }: { docsGroups: NavGroup[] }) {
     return <DocsNav groups={docsGroups} />
   }
 
-  // Drop items whose feature is off, and the whole group with them when nothing is left.
-  const items = mainItems.filter((item) => features[item.feature])
-  if (items.length === 0) return null
+  // Drop items whose feature is off, and a whole group with them when nothing is left.
+  const groups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.feature || features[item.feature]),
+    }))
+    .filter((group) => group.items.length > 0)
+  if (groups.length === 0) return null
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="pl-2.5">Getting Started</SidebarGroupLabel>
-      <SidebarMenu className="space-y-0.5">
-        {items.map((item) => {
-          const active = isActive(pathname, item.url, { exact: item.exact })
+    <>
+      {groups.map((group) => (
+        <SidebarGroup key={group.label}>
+          <SidebarGroupLabel className="pl-2.5">{group.label}</SidebarGroupLabel>
+          <SidebarMenu className="space-y-0.5">
+            {group.items.map((item) => {
+              const active = isActive(pathname, item.url, { exact: item.exact })
 
-          return (
-            <SidebarMenuItem key={item.url}>
-              <SidebarMenuButton
-                isActive={active}
-                tooltip={item.title}
-                className="data-active:font-normal"
-                render={<Link href={item.url} onClick={close} />}
-              >
-                <item.icon />
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
+              return (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    isActive={active}
+                    tooltip={item.title}
+                    className="data-active:font-normal"
+                    render={<Link href={item.url} onClick={close} />}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      ))}
+    </>
   )
 }

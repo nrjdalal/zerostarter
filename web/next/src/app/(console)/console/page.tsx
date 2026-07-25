@@ -6,7 +6,7 @@ export default function Page() {
     <PageShell>
       <PageHeader
         title="Console"
-        description="Intentionally empty. Admin-gated; this is where your internal tooling begins."
+        description="Intentionally minimal. Platform surfaces live in the sidebar; Users is the first."
       />
     </PageShell>
   )
