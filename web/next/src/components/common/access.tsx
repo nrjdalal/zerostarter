@@ -25,7 +25,7 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
-  // string() is here for trim(): z.email() alone rejects a padded address before any trim runs. One error function covers both failures, so no separate min() is needed.
+  // string() is here for trim(): z.email() runs its format check before any trim, so a padded address would be rejected. One error function separates the empty case from the malformed one.
   email: z
     .string()
     .trim()
@@ -43,7 +43,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
-  // focus lands on the heading, not the first field: entering the dialog keeps the focus trap and the screen-reader announcement, while autofocusing the email input would pop the keyboard on mobile
+  // focus enters the dialog so the trap and the screen-reader announcement work, but lands on the heading: autofocusing the first field pops the keyboard on mobile, which is what initialFocus={false} originally guarded against
   const headingRef = useRef<HTMLHeadingElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
@@ -77,7 +77,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
     defaultValues: {
       email: "",
     },
-    // one validator source on purpose: TanStack keeps an error per source, so adding onSubmit/onBlur leaves a stale entry from the previous value and FieldError lists both
+    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onChange rather than the guide's onSubmit, because with onSubmit alone a malformed value blocks submission without ever rendering a message.
     validators: { onChange: formSchema },
     onSubmitInvalid: () => {
       if (emailRef.current) emailRef.current.focus()
@@ -143,12 +143,12 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                           name={field.name}
                           autoComplete="email"
                           inputMode="email"
-                          aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
+                          aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                           placeholder="you@example.com"
                           disabled={loader === "email"}
                         />
@@ -234,6 +234,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
               )}
             </div>
           )}
+          {/* site.legal is non-optional upstream, but a fork that syncs this component against a site.ts predating the key would crash without the first check */}
           {(magicLinkEnabled || hasAlternatives) &&
             site.legal &&
             site.legal.terms &&
@@ -247,6 +248,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                   className="hover:text-foreground underline underline-offset-4"
                 >
                   Terms of Service
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>{" "}
                 and{" "}
                 <a
@@ -256,6 +258,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                   className="hover:text-foreground underline underline-offset-4"
                 >
                   Privacy Policy
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>
                 .
               </div>

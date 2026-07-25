@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
-  // string() is here for trim(): z.email() alone rejects a padded address before any trim runs. One error function covers both failures, so no separate min() is needed.
+  // string() is here for trim(): z.email() runs its format check before any trim, so a padded address would be rejected. One error function separates the empty case from the malformed one.
   email: z
     .string()
     .trim()
@@ -62,16 +62,16 @@ function WaitlistCount() {
 export default function WaitlistPage() {
   if (!features.waitlist) notFound()
 
-  // holds the address that was accepted, so the confirmation can echo it back
+  // holds the accepted address so the confirmation can echo it back
   const [joined, setJoined] = useState<string | null>(null)
   const successRef = useRef<HTMLDivElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
-  const queryClient = useQueryClient()
 
   // the form unmounts on success, so focus would otherwise fall to <body>
   useEffect(() => {
     if (joined && successRef.current) successRef.current.focus()
   }, [joined])
+  const queryClient = useQueryClient()
 
   const joinWaitlist = useMutation({
     mutationFn: async (value: { email: string; subject: string }) => {
@@ -91,13 +91,13 @@ export default function WaitlistPage() {
   const form = useForm({
     // `subject` is a honeypot: humans never see it, bots fill it (dodges browser autofill)
     defaultValues: { email: "", subject: "" },
-    // one validator source on purpose: TanStack keeps an error per source, so adding onSubmit/onBlur leaves a stale entry from the previous value and FieldError lists both
+    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onChange rather than the guide's onSubmit, because with onSubmit alone a malformed value blocks submission without ever rendering a message.
     validators: { onChange: formSchema },
     onSubmitInvalid: () => {
       if (emailRef.current) emailRef.current.focus()
     },
     onSubmit: ({ value }) => {
-      // the API owns storage normalization (its schema trims and the insert lowercases); trimming here only keeps the echoed confirmation clean
+      // the API owns storage normalization (its schema trims, the insert lowercases); trimming here only keeps the echoed confirmation clean
       joinWaitlist.mutate({ ...value, email: value.email.trim() })
     },
   })
