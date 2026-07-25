@@ -1,8 +1,6 @@
 "use client"
 "use no memo"
 
-import { isDevelopment } from "@packages/env"
-import { env } from "@packages/env/web-next"
 import {
   flexRender,
   type Column,
@@ -36,11 +34,6 @@ declare module "@tanstack/react-table" {
 
 // Estimated data-row height for the virtualizer's scrollbar math; rows self-measure after render.
 const ROW_ESTIMATE_PX = 45
-
-// next dev only (a build inlines production): alternating column tints make the column boxes visible while tuning widths in column-sizes.ts.
-const DEBUG_COLUMN_COLORS = isDevelopment(env.NEXT_PUBLIC_NODE_ENV)
-const debugColumnClass = (index: number) =>
-  DEBUG_COLUMN_COLORS && index % 2 ? "bg-foreground/5" : undefined
 
 interface DataTableProps<TData> {
   "aria-label": string
@@ -104,7 +97,7 @@ function DataTable<TData>({
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
 
-  // Flex columns absorb leftover width above their floor; fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells. In a run of consecutive flex columns only the last one grows (earlier ones hold their min width), so two growing neighbors cannot fight; everything after the last flex column sits docked at the right edge.
+  // Of the visible flex-capable columns (the manager marks capability, reaching back through widthless columns), only the last one grows; the rest hold their width, so hiding the growing column hands growth backward, two growing neighbors cannot fight, and everything after the growing column sits docked at the right edge. Fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells.
   const visibleColumns = table.getVisibleLeafColumns()
   const flexAt = visibleColumns.map((column, index) => {
     const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
@@ -155,7 +148,6 @@ function DataTable<TData>({
                     className={cn(
                       "flex items-center overflow-hidden",
                       columnLayout(header.column, index).className,
-                      debugColumnClass(index),
                     )}
                     style={columnLayout(header.column, index).style}
                     aria-sort={
@@ -200,7 +192,6 @@ function DataTable<TData>({
                         className={cn(
                           "flex items-center overflow-hidden",
                           columnLayout(cell.column, index).className,
-                          debugColumnClass(index),
                         )}
                         style={columnLayout(cell.column, index).style}
                       >

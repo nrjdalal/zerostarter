@@ -24,7 +24,7 @@ export const COLUMN_MANAGER = {
       select: { align: "center", width: global.select },
       // header title + 12rem
       name: { extra: 48 },
-      // floor of header title + 60 units, then grows
+      // floor of header title + 60 units, then grows; flex reaches back through widthless columns, so with email hidden name grows
       email: { extra: 60, flex: true },
       role: { align: "center" },
       status: { align: "center" },
@@ -52,19 +52,27 @@ function autoWidthUnits(label: string, extraUnits: number): number | undefined {
   return units
 }
 
-// Folds a table's manager block into its column defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex meta; columns without an entry pass through untouched. A widthless config measures its header label once measure flips true (after mount, keeping server and hydration renders identical). Client-side tables call this directly; useDataTable applies it for server-driven ones.
+// Folds a table's manager block into its column defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex meta; columns without an entry pass through untouched. A widthless config measures its header label once measure flips true (after mount, keeping server and hydration renders identical). Flex capability reaches back from a flex column through the widthless columns before it (explicitly sized columns stay fixed), so hiding the growing column hands growth to the previous auto column instead of leaving dead space. Client-side tables call this directly; useDataTable applies it for server-driven ones.
 export function applyColumnManager<TData extends RowData>(
   columns: ColumnDef<TData>[],
   manager: Record<string, ColumnConfig>,
   measure = true,
 ): ColumnDef<TData>[] {
-  return columns.map((column) => {
+  const configFor = (column: ColumnDef<TData>) => {
     const id = column.id
       ? column.id
       : "accessorKey" in column
         ? String(column.accessorKey)
         : undefined
-    const config = id ? manager[id] : undefined
+    return { config: id ? manager[id] : undefined, id }
+  }
+  let lastFlex = -1
+  columns.forEach((column, index) => {
+    const { config } = configFor(column)
+    if (config && config.flex) lastFlex = index
+  })
+  return columns.map((column, index) => {
+    const { config, id } = configFor(column)
     if (!config || !id) return column
     const label = column.meta && column.meta.label ? column.meta.label : id
     const measured = measure
@@ -76,13 +84,14 @@ export function applyColumnManager<TData extends RowData>(
         : measured !== undefined
           ? measured
           : AUTO_WIDTH_FALLBACK
+    const flexCapable = index <= lastFlex && (config.flex === true || config.width === undefined)
     return {
       ...column,
       size: width,
       meta: {
         ...column.meta,
         align: config.align ? config.align : "left",
-        flex: config.flex ? true : false,
+        flex: flexCapable,
       },
     }
   })
