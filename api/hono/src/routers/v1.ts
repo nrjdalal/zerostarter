@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { authErrorResponses } from "@/lib/error"
 import { authMiddleware } from "@/middlewares"
+import { adminRouter } from "@/routers/admin"
 
 const sessionSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
@@ -97,3 +98,4 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())`,
       return c.json({ data })
     },
   )
+  .route("/admin", adminRouter)
