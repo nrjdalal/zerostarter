@@ -1,7 +1,7 @@
 "use client"
 "use no memo"
 
-import { RiMoreLine, RiVerifiedBadgeFill } from "@remixicon/react"
+import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
@@ -9,8 +9,6 @@ import { toast } from "sonner"
 import { DataTableCellText } from "@/components/data-table/cell-text"
 import { DataTableColumnHeader } from "@/components/data-table/column-header"
 import { COLUMN_SIZES } from "@/components/data-table/column-sizes"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -54,13 +52,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     size: COLUMN_SIZES.console.users.name,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-2">
-        <Avatar size="sm">
-          {row.original.image && <AvatarImage src={row.original.image} alt="" />}
-          <AvatarFallback>{row.original.name.slice(0, 1).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <DataTableCellText className="font-medium">{row.original.name}</DataTableCellText>
-      </div>
+      <DataTableCellText className="font-medium">{row.original.name}</DataTableCellText>
     ),
     meta: { label: "Name" },
   },
@@ -69,15 +61,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     size: COLUMN_SIZES.console.users.email,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-1.5">
-        <DataTableCellText className="text-muted-foreground">
-          {row.original.email}
-        </DataTableCellText>
-        {row.original.emailVerified && (
-          <RiVerifiedBadgeFill aria-hidden className="text-success size-3.5 shrink-0" />
-        )}
-        <span className="sr-only">{row.original.emailVerified ? "verified" : "unverified"}</span>
-      </div>
+      <DataTableCellText className="text-muted-foreground">{row.original.email}</DataTableCellText>
     ),
     meta: { flex: true, label: "Email" },
   },
@@ -85,11 +69,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     accessorKey: "role",
     size: COLUMN_SIZES.console.users.role,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
-    cell: ({ row }) => (
-      <Badge variant={row.original.role === "admin" ? "default" : "outline"} className="capitalize">
-        {row.original.role}
-      </Badge>
-    ),
+    cell: ({ row }) => <span className="capitalize">{row.original.role}</span>,
     meta: { label: "Role" },
   },
   {
@@ -97,12 +77,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     size: COLUMN_SIZES.console.users.banned,
     enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
-    cell: ({ row }) =>
-      row.original.banned ? (
-        <Badge variant="destructive">Banned</Badge>
-      ) : (
-        <Badge variant="outline">Active</Badge>
-      ),
+    cell: ({ row }) => (row.original.banned ? "Banned" : "Active"),
     meta: { label: "Status" },
   },
   {

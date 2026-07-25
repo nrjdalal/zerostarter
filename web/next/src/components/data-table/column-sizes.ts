@@ -34,7 +34,7 @@ export const COLUMN_SIZES = {
       banned: global.badge,
       createdAt: global.date,
       email: global.email,
-      name: global.nameWithAvatar,
+      name: global.name,
       role: global.badge,
       select: global.select,
     },
