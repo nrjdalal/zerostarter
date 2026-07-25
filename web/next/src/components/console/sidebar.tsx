@@ -5,6 +5,7 @@ import {
   RiBookLine,
   RiDashboardLine,
   RiGroupLine,
+  RiShieldKeyholeLine,
   type RemixiconComponentType,
 } from "@remixicon/react"
 import Link from "next/link"
@@ -54,6 +55,18 @@ const navGroups: { items: ConsoleNavItem[]; label: string }[] = [
       },
     ],
     label: "Platform",
+  },
+  {
+    items: [
+      {
+        exact: false,
+        feature: "allowlist",
+        icon: RiShieldKeyholeLine,
+        title: "Allowlist",
+        url: "/console/allowlist",
+      },
+    ],
+    label: "Access",
   },
 ]
 

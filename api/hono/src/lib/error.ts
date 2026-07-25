@@ -10,6 +10,7 @@ import { z } from "zod"
 export const ERROR_CODES = [
   "AGENT_LOGIN_FAILED",
   "BAD_REQUEST",
+  "CONFLICT",
   "ERROR",
   "FORBIDDEN",
   "INTERNAL_SERVER_ERROR",

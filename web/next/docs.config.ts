@@ -78,6 +78,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/allowlist": {
+          title: "Allowlist",
+          description:
+            "Restrict who can create an account, by domain or by address, from the console.",
+        },
+      },
+      {
         "/docs/manage/authentication": {
           title: "Auth & Organizations",
           description:

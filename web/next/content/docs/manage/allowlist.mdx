@@ -1,0 +1,37 @@
+---
+slug: /docs/manage/allowlist
+title: Allowlist
+description: Restrict who can create an account, by domain or by address, from the console.
+---
+
+By default anyone who reaches your sign-in page can create an account. The allowlist narrows that to people you name: a whole domain (`@example.com`) or a single address (`ada@example.com`). It is the surface for an internal tool, a private beta, or a product sold to one company.
+
+Manage it at **Console > Access > Allowlist**, or turn it off entirely with the `allowlist` [feature flag](/docs/manage/features).
+
+## How rules are read
+
+- **An empty list admits everyone.** Enabling the feature is never an outage: the flag turns the surface on, and rules are what narrow it. The empty state says so on the page.
+- **A domain rule admits every address at that domain**, matched exactly. `@example.com` does not admit `@mail.example.com`, which needs its own rule, so a subdomain is never opened by accident.
+- **An address rule admits exactly one address.** Plus-addressing is not stripped, so a rule for `ada@example.com` does not admit `ada+test@example.com`, while a domain rule admits both.
+- **Case never matters.** Rules are normalized lowercase when saved, and matching lowercases the address, so one rule cannot be added twice in different cases.
+
+## What rules do not do
+
+Rules gate **account creation only**. They are checked once, when the account is made, so:
+
+- Removing a rule never evicts anyone. An account created while a rule existed keeps working after it is deleted.
+- Adding a rule never locks out an existing account, even one that matches nothing on the list.
+- Offboarding is a [role change or a ban](/docs/manage/authentication), not a list edit.
+
+That is deliberate: a list that could strand live users would make every edit dangerous.
+
+## Enforcement
+
+One hook on user creation, in `packages/auth`, which every sign-up path passes through, so email, GitHub, and Google are covered by the same rule with no per-provider wiring. A refused sign-up gets a readable message rather than a generic failure.
+
+Reading the list is a `member` power and changing it an `admin` one, per the [role ladder](/docs/manage/authentication). A member sees the rules with no add button and no row actions.
+
+## Next
+
+- [Authentication](/docs/manage/authentication): the role ladder that decides who may read and change this list.
+- [Data Tables](/docs/manage/data-tables): the module this page is built from.

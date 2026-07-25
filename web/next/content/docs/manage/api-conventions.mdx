@@ -45,6 +45,7 @@ The codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`: the single s
 | ----------------------- | -------- | ------------------------------------------------------------ |
 | `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`agents.ts`)                     |
 | `BAD_REQUEST`           | 400      | Malformed JSON / form-data body (Hono `HTTPException`)       |
+| `CONFLICT`              | 409      | The value already exists (e.g. an allowlist rule)            |
 | `ERROR`                 | (varies) | `HTTPException` whose status isn't mapped to a code          |
 | `FORBIDDEN`             | 403      | Insufficient permissions (e.g. `/headers` outside local/dev) |
 | `INTERNAL_SERVER_ERROR` | 500      | Unhandled server error                                       |

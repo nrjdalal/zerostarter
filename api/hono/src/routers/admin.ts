@@ -1,8 +1,8 @@
 import { sValidator } from "@hono/standard-validator"
 import type { Session } from "@packages/auth"
 import type { RoleChangeRefusal } from "@packages/auth/access"
-import { CONSOLE_ROLES, refuseRoleChange } from "@packages/auth/access"
-import { db, user } from "@packages/db"
+import { CONSOLE_ROLES, parseAllowlistRule, refuseRoleChange } from "@packages/auth/access"
+import { allowlist, db, user } from "@packages/db"
 import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
@@ -42,6 +42,30 @@ const ROLE_CHANGE_MESSAGES: Record<RoleChangeRefusal, string> = {
   self: "You cannot change your own role.",
   "unknown-role": "That is not a console role.",
 }
+
+const allowlistSchema = z.object({
+  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
+  createdBy: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  createdByName: z.string().nullable().meta({ example: "Ada Lovelace" }),
+  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  kind: z.enum(["domain", "email"]).meta({ example: "domain" }),
+  value: z.string().meta({ example: "@example.com" }),
+})
+
+const allowlistQuerySchema = z.object({
+  kind: z
+    .string()
+    .optional()
+    .transform((value) => (value ? [...new Set(value.split(","))] : []))
+    .pipe(z.array(z.enum(["domain", "email"])).max(2)),
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  perPage: z.coerce.number().int().min(1).max(100).default(10),
+  q: z.string().trim().max(254).optional(),
+})
+
+const allowlistCreateSchema = z.object({
+  value: z.string().trim().min(1).max(254),
+})
 
 const roleChangeSchema = z.object({
   role: z.enum(CONSOLE_ROLES),
@@ -228,5 +252,165 @@ const { data, error } = await unwrap(
           },
         },
       })
+    },
+  )
+  .get(
+    "/allowlist",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "List the rules deciding who may create an account. Readable by any console role; an empty list admits everyone.",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  data: z.object({
+                    rules: z.array(allowlistSchema),
+                    total: z.number().meta({ example: 3 }),
+                  }),
+                }),
+              ),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("query", allowlistQuerySchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const { kind, page, perPage, q } = c.req.valid("query")
+      const conditions = [
+        q ? ilike(allowlist.value, `%${escapeLike(q)}%`) : undefined,
+        kind.length ? or(...kind.map((value) => eq(allowlist.kind, value))) : undefined,
+      ].filter((condition) => condition !== undefined)
+      const where = conditions.length ? and(...conditions) : undefined
+
+      const [rows, total] = await Promise.all([
+        db
+          .select({
+            createdAt: allowlist.createdAt,
+            createdBy: allowlist.createdBy,
+            createdByName: user.name,
+            id: allowlist.id,
+            kind: allowlist.kind,
+            value: allowlist.value,
+          })
+          .from(allowlist)
+          .leftJoin(user, eq(user.id, allowlist.createdBy))
+          .where(where)
+          .orderBy(asc(allowlist.value))
+          .limit(perPage)
+          .offset((page - 1) * perPage),
+        db.$count(allowlist, where),
+      ])
+
+      const data = {
+        rules: rows.map((row) => ({
+          ...row,
+          createdAt: row.createdAt.toISOString(),
+          kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
+        })),
+        total,
+      }
+      return c.json({ data })
+    },
+  )
+  .post(
+    "/allowlist",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Add a rule. A leading @ makes it a domain rule, anything else must parse as an address; both are normalized lowercase.",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ data: z.object({ rule: allowlistSchema }) })),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    consoleWriteMiddleware,
+    sValidator("json", allowlistCreateSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const rule = parseAllowlistRule(c.req.valid("json").value)
+      if (!rule) {
+        throw new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          "Enter a domain like @example.com or a full email address.",
+        )
+      }
+      const [existing] = await db
+        .select({ id: allowlist.id })
+        .from(allowlist)
+        .where(eq(allowlist.value, rule.value))
+        .limit(1)
+      if (existing) {
+        throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+      }
+      const [created] = await db
+        .insert(allowlist)
+        .values({ createdBy: c.get("user").id, kind: rule.kind, value: rule.value })
+        .returning()
+      return c.json({
+        data: {
+          rule: {
+            ...created,
+            createdAt: created.createdAt.toISOString(),
+            createdByName: c.get("user").name,
+            kind: rule.kind,
+          },
+        },
+      })
+    },
+  )
+  .delete(
+    "/allowlist/:id",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Remove a rule. Removing the last one reopens sign-up to everyone; no existing account is affected either way.",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ data: z.object({ id: z.string() }) })),
+            },
+          },
+        },
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    consoleWriteMiddleware,
+    async (c) => {
+      const [deleted] = await db
+        .delete(allowlist)
+        .where(eq(allowlist.id, c.req.param("id")))
+        .returning({ id: allowlist.id })
+      if (!deleted) {
+        throw new ApiError(404, "NOT_FOUND", "Rule not found")
+      }
+      return c.json({ data: { id: deleted.id } })
     },
   )
