@@ -26,22 +26,22 @@ A page's table pieces colocate with its route (`app/(console)/console/(platform)
 
 ## Column widths
 
-Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), a semantic archetype map: pick by what the column holds, so the same kind of data is the same width in every table. Measured at the default cell padding and type scale, on an 8px grid.
+Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), a semantic archetype map: pick by what the column holds, so the same kind of data is the same width in every table. Measured at the default cell padding and type scale, on a 12px grid.
 
 | Archetype        | px  | Sized for                                       |
 | ---------------- | --- | ----------------------------------------------- |
 | `select`         | 48  | The row checkbox                                |
 | `icon`           | 48  | A single icon or indicator                      |
-| `actions`        | 56  | The icon-sm row-actions button                  |
+| `actions`        | 60  | The icon-sm row-actions button                  |
 | `id`             | 96  | Short codes; long ids truncate                  |
-| `number`         | 112 | Counts and amounts                              |
-| `badge`          | 112 | Role or status badges                           |
-| `date`           | 152 | "25 Jun 2026" plus the sort chevron             |
-| `datetime`       | 200 | Date plus time                                  |
-| `name`           | 200 | A plain text name                               |
+| `number`         | 108 | Counts and amounts                              |
+| `badge`          | 108 | Role or status badges                           |
+| `date`           | 144 | "25 Jun 2026" plus the sort chevron             |
+| `datetime`       | 192 | Date plus time                                  |
+| `name`           | 192 | A plain text name                               |
 | `nameWithAvatar` | 240 | A 24px avatar, gap, and name                    |
-| `identity`       | 280 | An `Item` identity cell: avatar plus name/email |
-| `email`          | 320 | A typical address; the usual `meta.flex` floor  |
+| `identity`       | 276 | An `Item` identity cell: avatar plus name/email |
+| `email`          | 324 | A typical address; the usual `meta.flex` floor  |
 
 Tune an archetype there, or add a new one, instead of writing ad-hoc numbers in a columns file.
 
