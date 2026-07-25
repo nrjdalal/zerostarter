@@ -73,8 +73,9 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     meta: { label: "Role" },
   },
   {
+    id: "status",
     accessorKey: "banned",
-    size: COLUMN_SIZES.console.users.banned,
+    size: COLUMN_SIZES.console.users.status,
     enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => (row.original.banned ? "Banned" : "Active"),

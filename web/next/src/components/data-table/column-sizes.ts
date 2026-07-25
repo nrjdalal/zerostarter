@@ -1,9 +1,7 @@
-// Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<area>.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file.
+// Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<area>.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file. Names follow what the column says (a column headed Status is status), never the backing field (banned).
 const global = {
   // the icon-sm row-actions button
   actions: 60,
-  // the admin plugin's Active/Banned status text
-  banned: 108,
   // "25 Jun 2026" plus the sort chevron
   date: 144,
   // date plus time
@@ -26,6 +24,8 @@ const global = {
   role: 108,
   // the row checkbox
   select: 48,
+  // a short state word like Active or Banned
+  status: 108,
 } as const
 
 export const COLUMN_SIZES = {
@@ -33,12 +33,12 @@ export const COLUMN_SIZES = {
   console: {
     users: {
       actions: global.actions,
-      banned: global.banned,
       createdAt: global.date,
       email: global.email,
       name: global.name,
       role: global.role,
       select: global.select,
+      status: global.status,
     },
   },
 } as const

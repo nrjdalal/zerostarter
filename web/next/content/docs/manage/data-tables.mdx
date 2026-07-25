@@ -26,7 +26,7 @@ A page's table pieces colocate with its route (`app/(console)/console/(platform)
 
 ## Column widths
 
-Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), structured in two levels: `global` holds the semantic archetypes (measured at the default cell padding and type scale, on a 12px grid), and each area.table block maps its column ids onto them, so a columns file reads `COLUMN_SIZES.console.users.email` and never carries a number of its own. A deliberate deviation is a one-off number in the table block, not a new ad-hoc size at the call site.
+Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), structured in two levels: `global` holds the semantic archetypes (measured at the default cell padding and type scale, on a 12px grid), and each area.table block maps its column ids onto them, so a columns file reads `COLUMN_SIZES.console.users.email` and never carries a number of its own. A deliberate deviation is a one-off number in the table block, not a new ad-hoc size at the call site. Names follow what the column says, never the backing field: the column headed Status keys as `status` (with `accessorKey: "banned"` underneath), not `banned`.
 
 | Archetype        | px  | Sized for                                       |
 | ---------------- | --- | ----------------------------------------------- |
@@ -36,7 +36,7 @@ Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), struct
 | `id`             | 96  | Short codes; long ids truncate                  |
 | `number`         | 108 | Counts and amounts                              |
 | `role`           | 108 | A short role token like Admin or User           |
-| `banned`         | 108 | The admin plugin's Active/Banned status text    |
+| `status`         | 108 | A short state word like Active or Banned        |
 | `date`           | 144 | "25 Jun 2026" plus the sort chevron             |
 | `datetime`       | 192 | Date plus time                                  |
 | `name`           | 192 | A plain text name                               |
