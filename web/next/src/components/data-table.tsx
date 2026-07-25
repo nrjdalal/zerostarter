@@ -316,6 +316,8 @@ export function useDataTable<TRow>({
     () =>
       new Set(
         managedColumns
+          // enableSorting: false columns are excluded, or a URL naming one would become real state that no header can show or clear
+          .filter((column) => column.enableSorting !== false)
           .map((column) =>
             column.id
               ? column.id
@@ -779,6 +781,8 @@ export function DataTableToolbar<TData>({
   const globalFilter = table.getState().globalFilter
   const search = typeof globalFilter === "string" ? globalFilter : ""
   const isFiltered = search !== "" || table.getState().columnFilters.length > 0
+  // The placeholder doubles as the accessible name, minus its trailing ellipsis: a screen reader would otherwise announce "Search users dot dot dot".
+  const searchLabel = searchPlaceholder.replace(/[.\u2026]+$/, "")
 
   return (
     <div className="flex items-center justify-between gap-2">
@@ -786,7 +790,7 @@ export function DataTableToolbar<TData>({
         {/* searchMaxLength belongs to whatever backs the table: pass the endpoint's own q cap so a long paste cannot flip it into the error state. */}
         <Input
           type="search"
-          aria-label={searchPlaceholder}
+          aria-label={searchLabel}
           placeholder={searchPlaceholder}
           value={search}
           onChange={(event) => table.setGlobalFilter(event.target.value)}

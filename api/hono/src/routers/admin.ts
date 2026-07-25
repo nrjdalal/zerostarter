@@ -109,6 +109,7 @@ const { data, error } = await unwrap(
       const search = q
         ? or(ilike(user.name, `%${escapeLike(q)}%`), ilike(user.email, `%${escapeLike(q)}%`))
         : undefined
+      // An unanchored ILIKE across two columns scans sequentially, on every batch as well as the count below; pg_trgm indexes are the fix once a table is large enough to feel it.
       // The role column defaults to "user", but rows created before the default may hold null; treat null as "user".
       const roleConditions = role.map((value) =>
         value === "user" ? or(eq(user.role, "user"), isNull(user.role)) : eq(user.role, value),
