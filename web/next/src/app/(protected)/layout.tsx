@@ -1,3 +1,4 @@
+import { roleAtLeast } from "@packages/auth/access"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -38,7 +39,10 @@ export default async function Layout({ children }: { children: React.ReactNode }
     <SidebarShell
       header={<OrgSwitcher />}
       footer={
-        <DashboardFooter user={session.user} canAccessConsole={session.user.role === "admin"} />
+        <DashboardFooter
+          user={session.user}
+          canAccessConsole={roleAtLeast(session.user.role, "member")}
+        />
       }
     >
       {children}

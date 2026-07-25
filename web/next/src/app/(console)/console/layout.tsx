@@ -22,18 +22,21 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const session = await assertConsoleAccess()
 
   return (
-    <SidebarShell
-      badge="Console"
-      homeHref="/console"
-      header={<ConsoleHeader />}
-      nav={<ConsoleNav docsGroups={resolveDocsNav("console")} />}
-      footer={
-        <SidebarMenu>
-          <SidebarUserMenu user={session.user} area="console" />
-        </SidebarMenu>
-      }
-    >
-      <ConsoleRoleProvider role={consoleRole(session.user.role)}>{children}</ConsoleRoleProvider>
-    </SidebarShell>
+    // Wraps the whole shell, not just children: the nav decides which groups to show from this role, and a slot rendered outside the provider would fall back to the default and hide them.
+    <ConsoleRoleProvider role={consoleRole(session.user.role)}>
+      <SidebarShell
+        badge="Console"
+        homeHref="/console"
+        header={<ConsoleHeader />}
+        nav={<ConsoleNav docsGroups={resolveDocsNav("console")} />}
+        footer={
+          <SidebarMenu>
+            <SidebarUserMenu user={session.user} area="console" />
+          </SidebarMenu>
+        }
+      >
+        {children}
+      </SidebarShell>
+    </ConsoleRoleProvider>
   )
 }

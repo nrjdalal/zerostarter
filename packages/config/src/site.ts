@@ -52,7 +52,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 - **Runtime & tooling:** Bun (runtime + package manager), Turborepo, tsdown (bundler for backend packages), Oxlint + Oxfmt (lint/format), TypeScript, Lefthook + Commitlint (git hooks).
 - **Frontend (\`web/next\`):** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, shadcn/ui on Base UI primitives, TanStack Query (data) with TanStack Form (forms), Remixicon, Fumadocs (docs), takumi-js (dynamic OG images), PostHog (analytics).
 - **Backend (\`api/hono\`):** Hono with end-to-end type-safe RPC, Zod + @hono/standard-validator, hono-rate-limiter with Arcjet IP detection, OpenAPI + Scalar reference.
-- **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (role-based access; \`role === "admin"\` gates \`/console\`) plugins.
+- **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (the console role ladder \`owner > admin > member > user\`; member and above reach \`/console\`) plugins.
 
 ## Conventions & Rules
 
