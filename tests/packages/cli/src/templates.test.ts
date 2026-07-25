@@ -30,6 +30,7 @@ test("siteTemplate emits the fork feature defaults (waitlist off)", () => {
 
 test("siteTemplate honors an explicit feature set", () => {
   const out = siteTemplate(brand, {
+    allowlist: false,
     apiDocs: false,
     blog: false,
     docs: true,

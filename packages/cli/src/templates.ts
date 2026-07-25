@@ -3,6 +3,7 @@ export interface Brand {
 }
 
 export type FeatureFlags = {
+  allowlist: boolean
   apiDocs: boolean
   blog: boolean
   docs: boolean
@@ -10,8 +11,9 @@ export type FeatureFlags = {
   waitlist: boolean
 }
 
-// A fresh fork's default surfaces: docs, blog, internal docs, and the API reference on; the waitlist off, so the home is a plain landing page. Any can be flipped later in the config.
+// A fresh fork's default surfaces: docs, blog, internal docs, and the API reference on; the waitlist off, so the home is a plain landing page, and the allowlist off, so anyone can sign up. Any can be flipped later in the config.
 export const DEFAULT_FEATURES: FeatureFlags = {
+  allowlist: false,
   apiDocs: true,
   blog: true,
   docs: true,
@@ -23,6 +25,7 @@ const featuresBlock = (
   features: FeatureFlags,
 ): string => `// Optional surfaces a fork enables or disables. Typed boolean (not \`as const\`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface. waitlist off makes the home a plain landing page.
 export const features = {
+  allowlist: ${features.allowlist},
   apiDocs: ${features.apiDocs},
   blog: ${features.blog},
   docs: ${features.docs},

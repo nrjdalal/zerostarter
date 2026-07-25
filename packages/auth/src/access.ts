@@ -42,3 +42,37 @@ export function refuseRoleChange(input: {
   if (input.targetIsLastOwner && next !== "owner") return "last-owner"
   return null
 }
+
+// ---------------------------------------------------------------------------
+// Allowlist: who may create an account. Rules never evict an existing one, so this is only ever asked at sign-up.
+
+export type AllowlistRule = { kind: "domain" | "email"; value: string }
+
+// A leading @ is a domain rule, anything else must look like an address. Normalizing here means one shape reaches the database, so matching never re-parses and a duplicate cannot hide behind different casing.
+export function parseAllowlistRule(input: string): AllowlistRule | null {
+  const value = input.trim().toLowerCase()
+  if (!value || /\s/.test(value)) return null
+  if (value.startsWith("@")) {
+    const domain = value.slice(1)
+    return isDomain(domain) ? { kind: "domain", value } : null
+  }
+  const at = value.indexOf("@")
+  if (at < 1 || at !== value.lastIndexOf("@")) return null
+  return isDomain(value.slice(at + 1)) ? { kind: "email", value } : null
+}
+
+function isDomain(domain: string): boolean {
+  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(domain)
+}
+
+// An empty list admits everyone: the feature flag is the on/off, and rules only narrow it, so enabling the surface is never an outage. A domain rule matches its domain exactly, which means a subdomain needs its own rule rather than being admitted silently.
+export function admitsEmail(email: string, rules: AllowlistRule[]): boolean {
+  if (rules.length === 0) return true
+  const address = email.trim().toLowerCase()
+  const at = address.lastIndexOf("@")
+  if (at < 1) return false
+  const domain = address.slice(at + 1)
+  return rules.some((rule) =>
+    rule.kind === "domain" ? rule.value === `@${domain}` : rule.value === address,
+  )
+}

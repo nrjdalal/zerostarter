@@ -1,5 +1,7 @@
+import { features } from "@packages/config/site"
 import {
   account,
+  allowlist,
   db,
   invitation,
   member,
@@ -13,6 +15,7 @@ import {
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { APIError } from "better-auth/api"
 import {
   admin as adminPlugin,
   openAPI as openAPIPlugin,
@@ -20,6 +23,7 @@ import {
 } from "better-auth/plugins"
 import { adminAc, defaultAc as consoleAc, userAc } from "better-auth/plugins/admin/access"
 
+import { admitsEmail, type AllowlistRule } from "@/access"
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
 // The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime. A runtime .localhost host (portless dev, injected after the build) overrides it so web and api share the cookie.
@@ -91,6 +95,24 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 300,
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Every sign-up path (email, GitHub, Google) creates a user, so one hook covers all three. An empty table admits everyone, and this only ever runs at creation, so no rule edit can strand an existing account.
+        before: async (creating) => {
+          if (!features.allowlist) return
+          const rules = await db
+            .select({ kind: allowlist.kind, value: allowlist.value })
+            .from(allowlist)
+          if (admitsEmail(creating.email, rules as AllowlistRule[])) return
+          throw new APIError("FORBIDDEN", {
+            code: "NOT_ALLOWED",
+            message: "That email address is not allowed to create an account here.",
+          })
+        },
+      },
     },
   },
   plugins: [
