@@ -13,7 +13,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 
 ## Planned
 
-- [Console Access: the role ladder and the allowlist](console-access.md) - a platform ladder (owner > admin > member > user, member read-only) plus an allowlist of domains and addresses gating account creation.
+- [Console Access: the role ladder and the allowlist](console-access.md) - full spec: a platform ladder (owner > admin > member > user, member read-only) plus an allowlist of domains and addresses gating account creation (#758).
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
 
 ## Backlog / ideas
