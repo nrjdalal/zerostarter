@@ -9,6 +9,7 @@ import {
   RiGlobalLine,
   RiGroupLine,
   RiHeartFill,
+  RiLayoutGridLine,
   RiLockLine,
   RiRobot2Line,
   RiRocketLine,
@@ -18,11 +19,14 @@ import {
 } from "@remixicon/react"
 import Image from "next/image"
 import Link from "next/link"
-import type { ReactNode } from "react"
+import { Fragment, type ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
 import { ApiStatus } from "@/components/marketing/api-status"
+import { AppShellDiagram } from "@/components/marketing/app-shell-diagram"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
+import { CodeCard } from "@/components/marketing/code-card"
+import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -150,40 +154,23 @@ const whyPoints = [
   },
 ]
 
-const shikiReset =
-  "[&_pre]:m-0! [&_pre]:overflow-visible! [&_pre]:bg-transparent! [&_pre]:p-0! [&_pre]:font-mono! [&_pre]:text-sm!"
-
-function CodeWindow({ label, html }: { label: string; html: string }) {
+function PrimaryActions({ className }: { className?: string }) {
   return (
-    <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left">
-      <div className="bg-card flex items-center gap-2 border-b px-4 py-2.5">
-        <span className="flex gap-1.5" aria-hidden>
-          <span className="bg-muted-foreground/25 size-3 rounded-full" />
-          <span className="bg-muted-foreground/25 size-3 rounded-full" />
-          <span className="bg-muted-foreground/25 size-3 rounded-full" />
-        </span>
-        <span className="text-muted-foreground ml-1.5 font-mono text-xs">{label}</span>
-      </div>
-      <div
-        className={cn("overflow-x-auto py-5", shikiReset, "[&_pre]:leading-relaxed!")}
-        dangerouslySetInnerHTML={{ __html: html }}
-        style={{ colorScheme: "light dark" }}
-      />
+    <div className={cn("flex items-center justify-center gap-3", className)}>
+      <Button
+        size="lg"
+        variant="secondary"
+        className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
+        render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+      >
+        <RiGithubFill className="size-5" />
+        GitHub
+      </Button>
+      <Button size="lg" className="group h-11 px-4 md:px-6" render={<Link href="/docs" />}>
+        Get Started
+        <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+      </Button>
     </div>
-  )
-}
-
-function CodeCard({ html }: { html: string }) {
-  return (
-    <div
-      className={cn(
-        "bg-background flex min-w-0 flex-col justify-center overflow-x-auto rounded-lg border py-5",
-        shikiReset,
-        "[&_pre]:leading-loose!",
-      )}
-      dangerouslySetInnerHTML={{ __html: html }}
-      style={{ colorScheme: "light dark" }}
-    />
   )
 }
 
@@ -194,6 +181,17 @@ function Eyebrow({ children }: { children: ReactNode }) {
       {children}
     </span>
   )
+}
+
+// Holds hyphenated compounds on one line from sm up, with real hyphens so find-in-page and copy-paste keep working; a U+2011 would hold the line but break both. Below sm they wrap, since a long compound at text-4xl overflows a 320px viewport. The separating space stays outside the span, or it turns non-breaking too and glues the compound to the next word.
+function NoBreakCompounds({ text }: { text: string }) {
+  const words = text.split(" ")
+  return words.map((word, index) => (
+    <Fragment key={`${word}-${index}`}>
+      {word.includes("-") ? <span className="sm:whitespace-nowrap">{word}</span> : word}
+      {index < words.length - 1 ? " " : ""}
+    </Fragment>
+  ))
 }
 
 export default async function Home() {
@@ -233,407 +231,387 @@ docker compose up --build`
   ])
 
   return (
-    <main className="relative isolate flex flex-col">
-      <MarketingBackdrops />
-      {/* Hero */}
-      <section aria-label="Hero" className="flex min-h-svh flex-col">
-        <div className="flex flex-1 flex-col justify-center px-4 py-24 text-center md:px-6">
-          <div>
-            <Link
-              href="/docs"
-              className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-8 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
-            >
-              <span className="bg-success size-1.5 rounded-full" aria-hidden />
-              Starter for Enterprise
-              <RiArrowRightSLine className="size-3.5" />
-            </Link>
-            <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
-              {/* non-breaking hyphens so "world-class" never splits across lines */}
-              {site.tagline.replaceAll("-", "‑")}
-            </h1>
-            <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
-              {site.description}
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <Button
-                role="link"
-                size="lg"
-                variant="secondary"
-                className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
-                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+    <>
+      <main className="relative isolate flex flex-col">
+        <MarketingBackdrops />
+        {/* Hero */}
+        <section aria-labelledby="hero-title" className="flex min-h-svh flex-col">
+          <div className="flex flex-1 flex-col justify-center px-4 py-24 text-center md:px-6">
+            <div>
+              <Link
+                href="/docs"
+                className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-6 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
               >
-                <RiGithubFill className="size-5" />
-                GitHub
-              </Button>
-              <Button
-                role="link"
-                size="lg"
-                className="group h-11 px-4 md:px-6"
-                render={<Link href="/docs" />}
+                <span className="bg-success size-1.5 rounded-full" aria-hidden />
+                Starter for Enterprise
+                <RiArrowRightSLine className="size-3.5" />
+              </Link>
+              {/* max-w-5xl is what lands the tagline on three lines at md and up */}
+              <h1
+                id="hero-title"
+                className="mx-auto max-w-5xl text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl"
               >
-                Get Started
-                <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            </div>
-            <div className="mx-auto mt-10 max-w-2xl">
-              <CodeWindow label="Quickstart" html={initHtml} />
-            </div>
-            <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-sm text-balance">
-              Powered by portless: named{" "}
-              <code className="text-foreground font-mono">.localhost</code> URLs that never collide
-              across worktrees and share one sign-in.
-            </p>
-            <div className="mt-10 flex justify-center">
-              <ApiStatus />
-            </div>
-          </div>
-        </div>
-
-        {/* Tech stack, pinned to the bottom of the hero */}
-        <div className="bg-sidebar relative overflow-hidden border-y py-6">
-          <div className="animate-marquee flex w-max gap-10 px-6">
-            {[...techStack, ...techStack].map((tech, index) => (
-              <div
-                key={`${tech.name}-${index}`}
-                className="text-muted-foreground flex items-center gap-2 whitespace-nowrap"
-              >
-                <span className="relative size-4 shrink-0">
-                  <Image
-                    src={tech.icon.light}
-                    alt={tech.name}
-                    fill
-                    sizes="1rem"
-                    className="block dark:hidden"
-                  />
-                  <Image
-                    src={tech.icon.dark}
-                    alt={tech.name}
-                    fill
-                    sizes="1rem"
-                    className="hidden dark:block"
-                  />
-                </span>
-                <span className="text-sm font-medium">{tech.name}</span>
+                <NoBreakCompounds text={site.tagline} />
+              </h1>
+              <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
+                {site.description}
+              </p>
+              <div className="mx-auto mt-8 max-w-2xl">
+                <CodeWindow label="Quickstart" html={initHtml} code={initCode} />
               </div>
-            ))}
-          </div>
-          <div className="from-sidebar pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
-          <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}.animate-marquee{animation:marquee 50s linear infinite;will-change:transform}`,
-            }}
-          />
-        </div>
-      </section>
-
-      {/* Type safety */}
-      <section aria-label="Type safety" className="px-4 py-24 text-center md:px-6">
-        <Eyebrow>Type safety</Eyebrow>
-        <h2 className="mx-auto text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-          One contract from database to UI
-        </h2>
-        <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg text-balance">
-          Hono RPC exposes your API as a single{" "}
-          <code className="text-foreground font-mono">AppType</code>, so the client infers every
-          request and response automatically. Rename a route and the frontend stops compiling. No
-          codegen. No duplicated types. No drift.
-        </p>
-        <div className="mx-auto mt-9 max-w-2xl">
-          <CodeWindow label="web/next/src/lib/api/client.ts" html={typescriptHtml} />
-        </div>
-      </section>
-
-      {/* Features bento */}
-      <section aria-label="What's wired" className="px-4 py-24 md:px-6">
-        <div className="mx-auto max-w-6xl">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            <Eyebrow>Infrastructure included</Eyebrow>
-            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-              Wired together, not just installed
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg text-balance">
-              The boring, critical pieces every serious SaaS needs are already connected and working
-              on first run. The dashboard and console ship as auth-gated shells, ready for your
-              product logic.
-            </p>
-          </div>
-          <div className="grid gap-3.5 sm:grid-cols-2">
-            {/* Agents, full-width row */}
-            <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
-              <RiRobot2Line
-                aria-hidden
-                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-              />
-              <div className="relative sm:-mr-4">
-                <RiRobot2Line className="text-muted-foreground size-5" />
-                <h3 className="mt-3.5 text-lg font-semibold">
-                  Agents operate the real app, behind auth
-                </h3>
-                <p className="text-muted-foreground mt-1.5 text-base">
-                  SKILL.md playbooks, AGENTS.md, and generated llms.txt give Claude Code, Cursor,
-                  and Copilot the repo-specific context they need. A dev-only login lets
-                  agent-browser drive the running app for real, no mocks and no fixtures.
-                </p>
-                <div className="mt-3.5 flex flex-wrap gap-2">
-                  {["SKILL.md", "llms.txt", "AGENTS.md"].map((chip) => (
-                    <span
-                      key={chip}
-                      className="text-muted-foreground bg-background rounded border px-2 py-1 font-mono text-xs"
-                    >
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <CodeCard html={agentHtml} />
-            </div>
-
-            {featureCards.slice(0, 2).map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-card relative overflow-hidden rounded-lg border p-6"
-              >
-                <feature.icon
-                  aria-hidden
-                  className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-                />
-                <div className="relative">
-                  <feature.icon className="text-muted-foreground size-5" />
-                  <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Deploy, full-width row */}
-            <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
-              <RiRocketLine
-                aria-hidden
-                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-              />
-              <div className="relative sm:-mr-4">
-                <RiRocketLine className="text-muted-foreground size-5" />
-                <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
-                <p className="text-muted-foreground mt-1.5 text-base">
-                  Web and API deploy as two apps sharing one PostgreSQL database, with production
-                  and Docker configs included from the first commit. On Vercel, the API runs
-                  migrations during deploy.
-                </p>
-                <div className="mt-3.5 flex flex-wrap gap-2">
-                  {(
-                    [
-                      {
-                        name: "Vercel",
-                        icon: {
-                          light: "/marketing/vercel-light.svg",
-                          dark: "/marketing/vercel-dark.svg",
-                        },
-                      },
-                      {
-                        name: "Docker",
-                        icon: { light: "/marketing/docker.svg", dark: "/marketing/docker.svg" },
-                      },
-                      {
-                        name: "PostgreSQL",
-                        icon: {
-                          light: "/marketing/postgresql.svg",
-                          dark: "/marketing/postgresql.svg",
-                        },
-                      },
-                    ] satisfies Tech[]
-                  ).map((tech) => (
-                    <span
-                      key={tech.name}
-                      className="text-muted-foreground bg-background inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs"
-                    >
-                      <span className="relative size-3 shrink-0">
-                        <Image
-                          src={tech.icon.light}
-                          alt=""
-                          fill
-                          sizes="0.75rem"
-                          className="block dark:hidden"
-                        />
-                        <Image
-                          src={tech.icon.dark}
-                          alt=""
-                          fill
-                          sizes="0.75rem"
-                          className="hidden dark:block"
-                        />
-                      </span>
-                      {tech.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <CodeCard html={deployHtml} />
-            </div>
-
-            {featureCards.slice(2).map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-card relative overflow-hidden rounded-lg border p-6"
-              >
-                <feature.icon
-                  aria-hidden
-                  className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-                />
-                <div className="relative">
-                  <feature.icon className="text-muted-foreground size-5" />
-                  <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* SEO & OG, full-width row */}
-            <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
-              <RiGlobalLine
-                aria-hidden
-                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-              />
-              <div className="relative sm:-mr-4">
-                <RiGlobalLine className="text-muted-foreground size-5" />
-                <h3 className="mt-3.5 text-lg font-semibold">Indexable and shareable by default</h3>
-                <p className="text-muted-foreground mt-1.5 text-base">
-                  takumi renders a unique social card for every page at request time, alongside a
-                  generated sitemap, robots, and metadata. The preview here is this page&apos;s own,
-                  rendered live.
-                </p>
-              </div>
-              <div className="relative overflow-hidden rounded-md border">
-                <Image
-                  src="/og/home"
-                  alt="Open Graph preview for this page"
-                  width={1200}
-                  height={630}
-                  unoptimized
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
-
-            {/* Docs, full-width row */}
-            <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
-              <RiBookOpenLine
-                aria-hidden
-                className="text-foreground/5 pointer-events-none absolute -bottom-8 left-5 size-32"
-              />
-              <div className="relative sm:-mr-4">
-                <RiBookOpenLine className="text-muted-foreground size-5" />
-                <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
-                <p className="text-muted-foreground mt-1.5 text-base">
-                  Fumadocs, full-text search, MDX content, and generated llms.txt make the project
-                  readable for developers, contributors, and coding agents.
-                </p>
-              </div>
-              <div className="relative flex flex-col gap-2 font-mono text-sm">
-                {[
-                  { route: "/docs.md", note: "docs/<path>.md" },
-                  { route: "/blog.md", note: "blog/<path>.md" },
-                  { route: "/llms.txt", note: "llms-full.txt" },
-                ].map((row) => (
-                  <a
-                    key={row.route}
-                    href={row.route}
-                    className="bg-background hover:bg-muted/50 flex justify-between rounded-md border px-3.5 py-2.5 transition-colors"
-                  >
-                    {row.route}
-                    <span className="text-muted-foreground">{row.note}</span>
-                  </a>
-                ))}
+              <PrimaryActions className="mt-6" />
+              <div className="mt-8 flex justify-center">
+                <ApiStatus />
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Why ZeroStarter */}
-      <section aria-label={`Why ${site.name}`} className="px-4 py-24 md:px-6">
-        <div className="mx-auto max-w-6xl">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            <Eyebrow>Why {site.name}</Eyebrow>
-            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-              Not another starter. A better default.
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg text-balance">
-              Most starters give you folders and dependencies. {site.name} gives you the decisions
-              already made and wired: one file rebrands the fork, one command re-baselines it on
-              upstream, and a canary-to-main pipeline versions and ships it. You inherit a way of
-              building, not just a pile of code.
-            </p>
-          </div>
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
-            {whyPoints.map((point) => (
-              <div key={point.title} className="flex gap-4">
-                <point.icon aria-hidden className="text-muted-foreground mt-0.5 size-6 shrink-0" />
-                <div>
-                  <h3 className="text-lg font-semibold">{point.title}</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">{point.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section aria-label="Call to action" className="px-4 py-24 md:px-6">
-        <div className="bg-card mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
-          <div className="mx-auto max-w-xl">
-            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-              Start at zero. Ship like you have done this before.
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg text-balance">
-              {site.name} is the foundation for building real SaaS products with speed, clarity, and
-              discipline: production-ready infrastructure, clean architecture, automated workflows,
-              and documentation both humans and agents can trust. It does not choose your payments
-              or email vendor; the parts that make your product yours stay yours.
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <Button
-                role="link"
-                size="lg"
-                variant="secondary"
-                className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
-                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
-              >
-                <RiGithubFill className="size-5" />
-                GitHub
-              </Button>
-              <Button
-                role="link"
-                size="lg"
-                className="group h-11 px-4 md:px-6"
-                render={<Link href="/docs" />}
-              >
-                Get Started
-                <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            </div>
-            <p className="text-muted-foreground mt-6 text-sm">
-              Open source. Use it freely, including for commercial products.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="bg-sidebar border-t">
-        <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">
-          <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" />
-          Made by{" "}
-          <a
-            href={site.social.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground font-medium transition-colors"
+          {/* Tech stack, pinned to the bottom of the hero */}
+          <div
+            tabIndex={0}
+            role="group"
+            aria-label="Technologies wired into the starter. Scrolling pauses while focused."
+            data-marquee
+            className="bg-sidebar focus-visible:ring-ring/50 relative overflow-hidden border-y py-6 outline-none focus-visible:ring-2"
           >
-            @nrjdalal
-          </a>
-        </p>
-      </div>
-    </main>
+            <div className="animate-marquee flex w-max gap-10 px-6">
+              {[...techStack, ...techStack].map((tech, index) => (
+                <div
+                  key={`${tech.name}-${index}`}
+                  className="text-muted-foreground flex items-center gap-2 whitespace-nowrap"
+                >
+                  <span className="relative size-4 shrink-0">
+                    <Image
+                      src={tech.icon.light}
+                      alt=""
+                      fill
+                      sizes="1rem"
+                      className="block dark:hidden"
+                    />
+                    <Image
+                      src={tech.icon.dark}
+                      alt=""
+                      fill
+                      sizes="1rem"
+                      className="hidden dark:block"
+                    />
+                  </span>
+                  <span className="text-sm font-medium">{tech.name}</span>
+                </div>
+              ))}
+            </div>
+            <div className="from-sidebar pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
+            <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `@media (prefers-reduced-motion: no-preference){@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}[data-marquee] .animate-marquee{animation:marquee 50s linear infinite;will-change:transform}[data-marquee]:hover .animate-marquee,[data-marquee]:focus-within .animate-marquee{animation-play-state:paused}}`,
+              }}
+            />
+          </div>
+        </section>
+
+        {/* Type safety */}
+        <section aria-labelledby="type-safety" className="px-4 py-24 text-center md:px-6">
+          <Eyebrow>Type safety</Eyebrow>
+          <h2
+            id="type-safety"
+            className="mx-auto text-3xl font-bold tracking-tight text-balance sm:text-4xl"
+          >
+            One contract from database to UI
+          </h2>
+          <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg text-balance">
+            Hono RPC exposes your API as a single{" "}
+            <code className="text-foreground font-mono">AppType</code>, so the client infers every
+            request and response automatically. Rename a route and the frontend stops compiling. No
+            codegen. No duplicated types. No drift.
+          </p>
+          <div className="mx-auto mt-9 max-w-2xl">
+            <CodeWindow
+              label="web/next/src/lib/api/client.ts"
+              html={typescriptHtml}
+              code={typescriptCode}
+            />
+          </div>
+        </section>
+
+        {/* Features bento */}
+        <section aria-labelledby="whats-wired" className="px-4 py-24 md:px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <Eyebrow>Infrastructure included</Eyebrow>
+              <h2
+                id="whats-wired"
+                className="text-3xl font-bold tracking-tight text-balance sm:text-4xl"
+              >
+                Wired together, not just installed
+              </h2>
+              <p className="text-muted-foreground mt-4 text-lg text-balance">
+                The boring, critical pieces every serious SaaS needs are already connected and
+                working on first run. The dashboard and console ship as auth-gated shells, ready for
+                your product logic.
+              </p>
+            </div>
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              {/* Agents, full-width row */}
+              <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+                <div className="relative sm:-mr-4">
+                  <RiRobot2Line className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">
+                    Agents operate the real app, behind auth
+                  </h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">
+                    SKILL.md playbooks, AGENTS.md, and generated llms.txt give Claude Code, Cursor,
+                    and Copilot the repo-specific context they need. A dev-only login lets
+                    agent-browser drive the running app for real, no mocks and no fixtures.
+                  </p>
+                  <div className="mt-3.5 flex flex-wrap gap-2">
+                    {["SKILL.md", "llms.txt", "AGENTS.md"].map((chip) => (
+                      <span
+                        key={chip}
+                        className="text-muted-foreground bg-background rounded border px-2 py-1 font-mono text-xs"
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <CodeCard html={agentHtml} label="Agent session" />
+              </div>
+
+              {featureCards.slice(0, 2).map((feature) => (
+                <div
+                  key={feature.title}
+                  className="bg-card relative overflow-hidden rounded-lg border p-6"
+                >
+                  <div className="relative">
+                    <feature.icon className="text-muted-foreground size-5" />
+                    <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
+                    <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Deploy, full-width row */}
+              <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+                <div className="relative sm:-mr-4">
+                  <RiRocketLine className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">
+                    Web and API deploy as two apps sharing one PostgreSQL database, with production
+                    and Docker configs included from the first commit. On Vercel, the API runs
+                    migrations during deploy.
+                  </p>
+                  <div className="mt-3.5 flex flex-wrap gap-2">
+                    {(
+                      [
+                        {
+                          name: "Vercel",
+                          icon: {
+                            light: "/marketing/vercel-light.svg",
+                            dark: "/marketing/vercel-dark.svg",
+                          },
+                        },
+                        {
+                          name: "Docker",
+                          icon: { light: "/marketing/docker.svg", dark: "/marketing/docker.svg" },
+                        },
+                        {
+                          name: "PostgreSQL",
+                          icon: {
+                            light: "/marketing/postgresql.svg",
+                            dark: "/marketing/postgresql.svg",
+                          },
+                        },
+                      ] satisfies Tech[]
+                    ).map((tech) => (
+                      <span
+                        key={tech.name}
+                        className="text-muted-foreground bg-background inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs"
+                      >
+                        <span className="relative size-3 shrink-0">
+                          <Image
+                            src={tech.icon.light}
+                            alt=""
+                            fill
+                            sizes="0.75rem"
+                            className="block dark:hidden"
+                          />
+                          <Image
+                            src={tech.icon.dark}
+                            alt=""
+                            fill
+                            sizes="0.75rem"
+                            className="hidden dark:block"
+                          />
+                        </span>
+                        {tech.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <CodeCard html={deployHtml} label="Deploy" />
+              </div>
+
+              {featureCards.slice(2).map((feature) => (
+                <div
+                  key={feature.title}
+                  className="bg-card relative overflow-hidden rounded-lg border p-6"
+                >
+                  <div className="relative">
+                    <feature.icon className="text-muted-foreground size-5" />
+                    <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
+                    <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* App shell, full-width row */}
+              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+                <div className="relative sm:-mr-4">
+                  <RiLayoutGridLine className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">The shell is already built</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">
+                    A collapsible sidebar, page header, user menu, and organization switcher ship
+                    wired to real sessions. <code className="font-mono">/dashboard</code> is
+                    auth-gated and <code className="font-mono">/console</code> is role-gated, so the
+                    only thing left to add is your product logic.
+                  </p>
+                </div>
+                <AppShellDiagram />
+              </div>
+
+              {/* SEO & OG, full-width row */}
+              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+                <div className="relative sm:-mr-4">
+                  <RiGlobalLine className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">
+                    Indexable and shareable by default
+                  </h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">
+                    takumi renders a unique social card for every page at request time, alongside a
+                    generated sitemap, robots, and metadata. The preview here is this page&apos;s
+                    own, rendered live.
+                  </p>
+                </div>
+                <div className="relative overflow-hidden rounded-md border">
+                  <Image
+                    src="/og/home"
+                    alt="Open Graph preview for this page"
+                    width={1200}
+                    height={630}
+                    unoptimized
+                    className="h-auto w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Docs, full-width row */}
+              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+                <div className="relative sm:-mr-4">
+                  <RiBookOpenLine className="text-muted-foreground size-5" />
+                  <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
+                  <p className="text-muted-foreground mt-1.5 text-base">
+                    Fumadocs, full-text search, MDX content, and generated llms.txt make the project
+                    readable for developers, contributors, and coding agents.
+                  </p>
+                </div>
+                <div className="relative flex flex-col gap-2 font-mono text-sm">
+                  {[
+                    { route: "/docs.md", note: "docs/<path>.md" },
+                    { route: "/blog.md", note: "blog/<path>.md" },
+                    { route: "/llms.txt", note: "llms-full.txt" },
+                  ].map((row) => (
+                    <a
+                      key={row.route}
+                      href={row.route}
+                      className="bg-background hover:bg-muted/50 flex justify-between rounded-md border px-3.5 py-2.5 transition-colors"
+                    >
+                      {row.route}
+                      <span className="text-muted-foreground">{row.note}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Why ZeroStarter */}
+        <section aria-labelledby="why" className="px-4 py-24 md:px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <Eyebrow>Why {site.name}</Eyebrow>
+              <h2 id="why" className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                Not another starter. A better default.
+              </h2>
+              <p className="text-muted-foreground mt-4 text-lg text-balance">
+                Most starters give you folders and dependencies. {site.name} gives you the decisions
+                already made and wired: one file rebrands the fork, one command re-baselines it on
+                upstream, and a canary-to-main pipeline versions and ships it. You inherit a way of
+                building, not just a pile of code.
+              </p>
+            </div>
+            <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
+              {whyPoints.map((point) => (
+                <div key={point.title} className="flex gap-4">
+                  <point.icon
+                    aria-hidden
+                    className="text-muted-foreground mt-0.5 size-6 shrink-0"
+                  />
+                  <div>
+                    <h3 className="text-lg font-semibold">{point.title}</h3>
+                    <p className="text-muted-foreground mt-1.5 text-base">{point.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section aria-labelledby="get-started" className="px-4 py-24 md:px-6">
+          <div className="bg-card mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
+            <div className="mx-auto max-w-xl">
+              <h2
+                id="get-started"
+                className="text-3xl font-bold tracking-tight text-balance sm:text-4xl"
+              >
+                Start at zero. Ship like you have done this before.
+              </h2>
+              <p className="text-muted-foreground mt-4 text-lg text-balance">
+                {site.name} is the foundation for building real SaaS products with speed, clarity,
+                and discipline: production-ready infrastructure, clean architecture, automated
+                workflows, and documentation both humans and agents can trust. It does not choose
+                your payments or email vendor; the parts that make your product yours stay yours.
+              </p>
+              <PrimaryActions className="mt-8" />
+              <p className="text-muted-foreground mt-6 text-sm">
+                Open source. Use it freely, including for commercial products.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+      <MarketingFooter />
+    </>
+  )
+}
+
+function MarketingFooter() {
+  return (
+    <footer className="bg-sidebar border-t">
+      <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">
+        <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" aria-hidden />
+        Made by{" "}
+        <a
+          href={site.social.x}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-foreground font-medium transition-colors"
+        >
+          @nrjdalal
+        </a>
+      </p>
+    </footer>
   )
 }
