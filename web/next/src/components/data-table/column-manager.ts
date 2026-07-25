@@ -7,14 +7,13 @@ const global = {
   actions: 12,
   // a typical address; the usual flex floor
   email: 48,
-  // a plain text name
-  name: 64,
   // the row checkbox
   select: 12,
 } as const
 
 export type ColumnConfig = {
   align?: "center" | "left" | "right"
+  extra?: number
   flex?: boolean
   width?: number
 }
@@ -25,7 +24,8 @@ export const COLUMN_MANAGER = {
   console: {
     users: {
       select: { align: "center", width: global.select },
-      name: { width: global.name },
+      // header title + 12rem
+      name: { extra: 48 },
       email: { flex: true, width: global.email },
       role: {},
       status: {},
@@ -35,20 +35,21 @@ export const COLUMN_MANAGER = {
   },
 } as const
 
-// A widthless column sizes as header title + this allowance, in spacing units (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset), snapped up to the 3-unit grid. SSR has no canvas, so callers fall back to AUTO_WIDTH_FALLBACK until mounted.
+// A widthless column sizes as header title + an allowance in spacing units, snapped up to the 3-unit grid: config.extra when set, else this default (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset). SSR has no canvas, so callers fall back to AUTO_WIDTH_FALLBACK until mounted.
 const AUTO_WIDTH_FALLBACK = 24
 const AUTO_WIDTH_EXTRA_UNITS = 10
 const measuredUnits = new Map<string, number>()
 
-// Header title width at the table's header font (text-sm font-medium), via pretext's canvas-backed metrics: pure arithmetic, no DOM layout, cached per label; px converts to spacing units at the default scale (1 unit = 4px).
-function autoWidthUnits(label: string): number | undefined {
+// Header title width at the table's header font (text-sm font-medium), via pretext's canvas-backed metrics: pure arithmetic, no DOM layout, cached per label and allowance; px converts to spacing units at the default scale (1 unit = 4px).
+function autoWidthUnits(label: string, extraUnits: number): number | undefined {
   if (typeof document === "undefined") return undefined
-  const cached = measuredUnits.get(label)
+  const key = `${extraUnits}:${label}`
+  const cached = measuredUnits.get(key)
   if (cached !== undefined) return cached
   const family = getComputedStyle(document.body).fontFamily
   const titlePx = measureNaturalWidth(prepareWithSegments(label, `500 14px ${family}`))
-  const units = Math.ceil((titlePx / 4 + AUTO_WIDTH_EXTRA_UNITS) / 3) * 3
-  measuredUnits.set(label, units)
+  const units = Math.ceil((titlePx / 4 + extraUnits) / 3) * 3
+  measuredUnits.set(key, units)
   return units
 }
 
@@ -67,7 +68,9 @@ export function applyColumnManager<TData extends RowData>(
     const config = id ? manager[id] : undefined
     if (!config || !id) return column
     const label = column.meta && column.meta.label ? column.meta.label : id
-    const measured = measure ? autoWidthUnits(label) : undefined
+    const measured = measure
+      ? autoWidthUnits(label, config.extra !== undefined ? config.extra : AUTO_WIDTH_EXTRA_UNITS)
+      : undefined
     const width =
       config.width !== undefined
         ? config.width
