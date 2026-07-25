@@ -3,6 +3,7 @@
 
 import { parseAllowlistRule } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import type { InferRequestType } from "hono/client"
 import * as React from "react"
 import { toast } from "sonner"
 
@@ -47,7 +48,19 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input"
 import { apiClient, unwrap } from "@/lib/api/client"
 
-const DEFAULT_SORTING = [{ desc: false, id: "value" }]
+const DEFAULT_SORT = { desc: true, id: "createdAt" }
+const DEFAULT_SORTING = [DEFAULT_SORT]
+
+// Column ids mapped to the endpoint's sort whitelist; satisfies makes a server-side rename a compile error here.
+type AllowlistSort = NonNullable<
+  InferRequestType<typeof apiClient.v1.admin.allowlist.$get>["query"]["sort"]
+>
+const SORT_FIELDS = {
+  createdAt: "createdAt",
+  createdByName: "createdByName",
+  kind: "kind",
+  value: "value",
+} as const satisfies Record<string, AllowlistSort>
 const KIND_OPTIONS = [
   { label: "Domain", value: "domain" },
   { label: "Email", value: "email" },
@@ -61,15 +74,22 @@ async function fetchRules({
   page,
   perPage,
   search,
+  sorting,
 }: DataTablePageInput): Promise<DataTablePage<AllowlistRuleRow>> {
   const kinds = filters.kind ? filters.kind.filter((kind) => KIND_VALUES.has(kind)) : []
+  const sort = sorting.length ? sorting[0] : DEFAULT_SORT
+  const sortId = Object.hasOwn(SORT_FIELDS, sort.id)
+    ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS]
+    : "createdAt"
   const { data, error } = await unwrap(
     apiClient.v1.admin.allowlist.$get({
       query: {
+        dir: sort.desc ? "desc" : "asc",
         kind: kinds.length ? kinds.join(",") : undefined,
         page: `${page}`,
         perPage: `${perPage}`,
         q: search ? search.slice(0, Q_MAX) : undefined,
+        sort: sortId,
       },
     }),
   )

@@ -51,7 +51,11 @@ const allowlistSchema = z.object({
   value: z.string().meta({ example: "@example.com" }),
 })
 
+// One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
+const ALLOWLIST_SORTS = ["createdAt", "createdByName", "kind", "value"] as const
+
 const allowlistQuerySchema = z.object({
+  dir: z.enum(["asc", "desc"]).default("desc"),
   kind: z
     .string()
     .optional()
@@ -60,7 +64,16 @@ const allowlistQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(10),
   q: z.string().trim().max(254).optional(),
+  sort: z.enum(ALLOWLIST_SORTS).default("createdAt"),
 })
+
+const allowlistSortColumns = {
+  createdAt: allowlist.createdAt,
+  // The author's name comes from the join, so sorting by it sorts what the column actually shows; a seeded rule has none and sorts last under both directions in Postgres' default NULL ordering.
+  createdByName: user.name,
+  kind: allowlist.kind,
+  value: allowlist.value,
+} satisfies Record<(typeof ALLOWLIST_SORTS)[number], unknown>
 
 const allowlistCreateSchema = z.object({
   value: z.string().trim().min(1).max(254),
@@ -286,7 +299,7 @@ const { data, error } = await unwrap(
       }
     }),
     async (c) => {
-      const { kind, page, perPage, q } = c.req.valid("query")
+      const { dir, kind, page, perPage, q, sort } = c.req.valid("query")
       const conditions = [
         q ? ilike(allowlist.value, `%${escapeLike(q)}%`) : undefined,
         kind.length ? or(...kind.map((value) => eq(allowlist.kind, value))) : undefined,
@@ -306,7 +319,10 @@ const { data, error } = await unwrap(
           .from(allowlist)
           .leftJoin(user, eq(user.id, allowlist.createdBy))
           .where(where)
-          .orderBy(asc(allowlist.value))
+          .orderBy(
+            dir === "asc" ? asc(allowlistSortColumns[sort]) : desc(allowlistSortColumns[sort]),
+            asc(allowlist.id),
+          )
           .limit(perPage)
           .offset((page - 1) * perPage),
         db.$count(allowlist, where),
