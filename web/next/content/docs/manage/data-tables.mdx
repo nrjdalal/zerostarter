@@ -26,7 +26,7 @@ A page's table pieces colocate with its route (`app/(console)/console/(platform)
 
 ## Column widths
 
-Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), structured in two levels: `global` holds the semantic archetypes (measured at the default cell padding and type scale, on a 12px grid), and each table block maps its column ids onto them, so a columns file reads `COLUMN_SIZES.users.email` and never carries a number of its own. A deliberate deviation is a one-off number in the table block, not a new ad-hoc size at the call site.
+Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), structured in two levels: `global` holds the semantic archetypes (measured at the default cell padding and type scale, on a 12px grid), and each area.table block maps its column ids onto them, so a columns file reads `COLUMN_SIZES.console.users.email` and never carries a number of its own. A deliberate deviation is a one-off number in the table block, not a new ad-hoc size at the call site.
 
 | Archetype        | px  | Sized for                                       |
 | ---------------- | --- | ----------------------------------------------- |

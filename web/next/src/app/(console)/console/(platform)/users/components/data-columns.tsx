@@ -31,7 +31,7 @@ export type ConsoleUser = InferResponseType<
 export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "select",
-    size: COLUMN_SIZES.users.select,
+    size: COLUMN_SIZES.console.users.select,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -51,7 +51,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "name",
-    size: COLUMN_SIZES.users.name,
+    size: COLUMN_SIZES.console.users.name,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
@@ -66,7 +66,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "email",
-    size: COLUMN_SIZES.users.email,
+    size: COLUMN_SIZES.console.users.email,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-1.5">
@@ -83,7 +83,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "role",
-    size: COLUMN_SIZES.users.role,
+    size: COLUMN_SIZES.console.users.role,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => (
       <Badge variant={row.original.role === "admin" ? "default" : "outline"} className="capitalize">
@@ -94,7 +94,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "banned",
-    size: COLUMN_SIZES.users.banned,
+    size: COLUMN_SIZES.console.users.banned,
     enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) =>
@@ -107,7 +107,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "createdAt",
-    size: COLUMN_SIZES.users.createdAt,
+    size: COLUMN_SIZES.console.users.createdAt,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
     cell: ({ row }) =>
       new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" }),
@@ -115,7 +115,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
-    size: COLUMN_SIZES.users.actions,
+    size: COLUMN_SIZES.console.users.actions,
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>

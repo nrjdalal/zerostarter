@@ -1,4 +1,4 @@
-// Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file.
+// Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<area>.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file.
 const global = {
   // the icon-sm row-actions button
   actions: 60,
@@ -28,13 +28,15 @@ const global = {
 
 export const COLUMN_SIZES = {
   global,
-  users: {
-    actions: global.actions,
-    banned: global.badge,
-    createdAt: global.date,
-    email: global.email,
-    name: global.nameWithAvatar,
-    role: global.badge,
-    select: global.select,
+  console: {
+    users: {
+      actions: global.actions,
+      banned: global.badge,
+      createdAt: global.date,
+      email: global.email,
+      name: global.nameWithAvatar,
+      role: global.badge,
+      select: global.select,
+    },
   },
 } as const
