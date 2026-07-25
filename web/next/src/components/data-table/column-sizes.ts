@@ -1,5 +1,5 @@
-// Semantic column-width archetypes, the single source for columnDef.size across every table: pick by what the column holds, not by eyeballing a number, so the same kind of data is the same width everywhere. Measured at the default cell padding and type scale, snapped to a 12px grid; tune an archetype here, or add a new one, instead of writing ad-hoc sizes in a columns file.
-export const COLUMN_SIZES = {
+// Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file.
+const global = {
   // the icon-sm row-actions button
   actions: 60,
   // role/status badges
@@ -24,4 +24,17 @@ export const COLUMN_SIZES = {
   number: 108,
   // the row checkbox
   select: 48,
+} as const
+
+export const COLUMN_SIZES = {
+  global,
+  users: {
+    actions: global.actions,
+    banned: global.badge,
+    createdAt: global.date,
+    email: global.email,
+    name: global.nameWithAvatar,
+    role: global.badge,
+    select: global.select,
+  },
 } as const
