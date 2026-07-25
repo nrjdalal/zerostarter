@@ -1,13 +1,19 @@
+import { ConsoleUsersTable } from "@/components/console/users-table"
 import { PageHeader } from "@/components/shell/page-header"
 import { PageShell } from "@/components/shell/page-shell"
+import { assertConsoleAccess } from "@/lib/auth/console"
 
-export default function Page() {
+export default async function Page() {
+  // The layout gates too, but layouts and pages render in parallel; a page exposing sensitive data must gate itself.
+  await assertConsoleAccess()
+
   return (
-    <PageShell>
+    <PageShell size="lg">
       <PageHeader
         title="Console"
-        description="Intentionally empty. Admin-gated; this is where your internal tooling begins."
+        description="Every user on the platform: server-driven search, sort, and pagination."
       />
+      <ConsoleUsersTable />
     </PageShell>
   )
 }
