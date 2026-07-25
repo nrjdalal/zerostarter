@@ -1,6 +1,7 @@
 "use client"
 "use no memo"
 
+import { CONSOLE_ROLES } from "@packages/auth/access"
 import type { InferRequestType } from "hono/client"
 
 import {
@@ -21,11 +22,12 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
 
-const ROLE_OPTIONS = [
-  { label: "Admin", value: "admin" },
-  { label: "User", value: "user" },
-]
-const ROLE_VALUES = new Set(ROLE_OPTIONS.map((option) => option.value))
+// Derived from the ladder rather than restated, so a new rung shows up in the facet instead of quietly missing from it.
+const ROLE_OPTIONS = CONSOLE_ROLES.map((value) => ({
+  label: `${value[0].toUpperCase()}${value.slice(1)}`,
+  value,
+}))
+const ROLE_VALUES = new Set<string>(CONSOLE_ROLES)
 // Mirrors the endpoint's q cap: the toolbar input caps typing and pasting, but a hand-written URL would otherwise 400 the table into an error state whose Retry replays it.
 const Q_MAX = 254
 

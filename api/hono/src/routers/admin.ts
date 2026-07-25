@@ -17,7 +17,6 @@ import {
 import { escapeLike } from "@/lib/sql"
 import { consoleReadMiddleware, consoleWriteMiddleware } from "@/middlewares"
 
-const ROLES = ["admin", "user"] as const
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
 const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
 
@@ -30,7 +29,7 @@ const usersQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => (value ? [...new Set(value.split(","))] : []))
-    .pipe(z.array(z.enum(ROLES)).max(ROLES.length)),
+    .pipe(z.array(z.enum(CONSOLE_ROLES)).max(CONSOLE_ROLES.length)),
   sort: z.enum(SORTS).default("createdAt"),
 })
 
