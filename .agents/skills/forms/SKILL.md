@@ -6,7 +6,12 @@ source: local
 
 # Forms
 
-Every form is `@tanstack/react-form` + zod rendered through the `Field` primitives, following the [shadcn TanStack Form guide](https://ui.shadcn.com/docs/forms/tanstack-form). This file records that shape plus the four things it does not cover, each of which has already produced a real bug here.
+Every form is `@tanstack/react-form` + zod rendered through the `Field` primitives. Two upstream sources describe this and they disagree in one place, so this file reconciles them:
+
+- [shadcn's TanStack Form guide](https://ui.shadcn.com/docs/forms/tanstack-form) owns the **composition**: `Field` / `FieldLabel` / `Input` / `FieldError`, `data-invalid` on the wrapper, `aria-invalid` on the control, `isTouched && !isValid`, a plain `form.handleSubmit()` with no `Subscribe`.
+- [TanStack's validation guide](https://tanstack.com/form/latest/docs/framework/react/guides/validation) owns the **validator wiring**. Its canonical zod example is `validators: { onChange: schema }`, and it states plainly that errors from different sources accumulate: *"Since `field.state.meta.errors` is an array, all the relevant errors at a given time are displayed."*
+
+Where they conflict, TanStack wins on the form API and shadcn wins on markup. The measured differences are recorded below.
 
 ## The shape
 
@@ -80,7 +85,8 @@ const form = useForm({
 ## Rules
 
 - **One validator source.** TanStack keeps one error per source, so registering the same schema on `onChange`, `onBlur` and `onSubmit` leaves a stale entry from the value at the last submit, and `FieldError` lists both. It hides while every source emits identical text and appears the moment two messages differ.
-- **Use `onChange`, not the guide's `onSubmit`.** With `onSubmit` alone a malformed value blocks submission without ever rendering a message: the field is never marked touched, so `isInvalid` stays false and the visitor clicks submit and sees nothing happen. Verified on this codebase.
+- **Use `onChange`.** It is TanStack's own canonical zod example, and it is the only single source that works here: with shadcn's `onSubmit` alone, a malformed value blocks submission without ever rendering a message, because the field is never marked touched, so `isInvalid` stays false and the visitor clicks submit and sees nothing happen. Dropping the `isTouched` guard does not rescue it. `onBlur` alone has the same hole for a field the visitor never focuses.
+- **Keep `isTouched && !isValid` even though it is a no-op here.** TanStack's examples use `!isValid` alone, and under `onChange` the two are identical: `isTouched` flips true on the first change, so both render the error after one character (measured). The guard costs nothing and is the difference between correct and silent if the validator ever moves to `onBlur` or `onSubmit`.
 - **Pass `field.state.meta.errors` straight through.** `FieldError` already dedupes by message and renders a list only for genuinely different ones. Do not slice, filter, or hand-pick an index; that hides real errors.
 - **Empty and malformed are different failures.** Give the schema one `error` function that separates them rather than one message for both, or a required field reads as a malformed one.
 - **Keep `z.string().trim()` in front of `z.email()`.** `z.email()` runs its format check before any trim, so a padded address is rejected outright. `z.email().trim()` does not fix it. No separate `.min(1)` is needed; the error function covers the empty case.
