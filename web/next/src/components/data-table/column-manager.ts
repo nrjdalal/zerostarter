@@ -35,19 +35,19 @@ export const COLUMN_MANAGER = {
   },
 } as const
 
-// Widths for label-measured columns land on the same 3-unit grid as the archetypes; the padding covers the cell inset plus the sort button's gap, icon, and inset. SSR has no canvas, so callers fall back to this width until mounted.
+// A widthless column sizes as header title + this allowance, in spacing units (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset), snapped up to the 3-unit grid. SSR has no canvas, so callers fall back to AUTO_WIDTH_FALLBACK until mounted.
 const AUTO_WIDTH_FALLBACK = 24
-const AUTO_WIDTH_PADDING_PX = 40
+const AUTO_WIDTH_EXTRA_UNITS = 10
 const measuredUnits = new Map<string, number>()
 
-// Min width from the header label at the table's header font (text-sm font-medium), via pretext's canvas-backed metrics: pure arithmetic, no DOM layout, cached per label.
+// Header title width at the table's header font (text-sm font-medium), via pretext's canvas-backed metrics: pure arithmetic, no DOM layout, cached per label; px converts to spacing units at the default scale (1 unit = 4px).
 function autoWidthUnits(label: string): number | undefined {
   if (typeof document === "undefined") return undefined
   const cached = measuredUnits.get(label)
   if (cached !== undefined) return cached
   const family = getComputedStyle(document.body).fontFamily
-  const width = measureNaturalWidth(prepareWithSegments(label, `500 14px ${family}`))
-  const units = Math.ceil((width + AUTO_WIDTH_PADDING_PX) / 12) * 3
+  const titlePx = measureNaturalWidth(prepareWithSegments(label, `500 14px ${family}`))
+  const units = Math.ceil((titlePx / 4 + AUTO_WIDTH_EXTRA_UNITS) / 3) * 3
   measuredUnits.set(label, units)
   return units
 }
