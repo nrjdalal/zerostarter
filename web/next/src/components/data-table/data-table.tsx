@@ -110,9 +110,11 @@ function DataTable<TData>({
     .find((column) => column.columnDef.meta && column.columnDef.meta.right)
   const columnLayout = (column: Column<TData, unknown>) => {
     const anchor = column === rightStart ? "ml-auto" : undefined
+    // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
+    const width = `calc(var(--spacing) * ${column.getSize()})`
     return column.columnDef.meta && column.columnDef.meta.flex
-      ? { className: cn("flex-1", anchor), style: { minWidth: column.getSize() } }
-      : { className: cn("shrink-0", anchor), style: { width: column.getSize() } }
+      ? { className: cn("flex-1", anchor), style: { minWidth: width } }
+      : { className: cn("shrink-0", anchor), style: { width } }
   }
 
   return (

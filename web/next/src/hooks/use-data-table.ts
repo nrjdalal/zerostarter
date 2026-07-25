@@ -101,6 +101,8 @@ export function useDataTable<TRow>({
     columns,
     data: rows,
     state: { columnFilters, globalFilter, rowSelection, sorting },
+    // Sizes are Tailwind spacing units; tanstack's default minSize of 20 is meant for pixels and would clamp small units, so drop the floor.
+    defaultColumn: { minSize: 0 },
     // Single-column sorting only: fetchPage sends one sort to the server, so shift-click multi-sort would silently drop the extra columns.
     enableMultiSort: false,
     enableRowSelection,
