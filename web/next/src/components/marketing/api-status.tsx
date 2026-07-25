@@ -131,7 +131,7 @@ export function ApiStatus() {
         variant="destructive"
         role="status"
         aria-label="API status"
-        className="border-destructive/20 animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
+        className="border-destructive/20 motion-safe:animate-in motion-safe:fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
       >
         <span className="bg-destructive size-2 shrink-0 rounded-full" />
         <span className="min-w-48 text-center whitespace-nowrap">Systems are facing issues</span>
@@ -144,7 +144,7 @@ export function ApiStatus() {
       variant="outline"
       role="status"
       aria-label="API status"
-      className="border-success/20 bg-success/10 text-success animate-in fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
+      className="border-success/20 bg-success/10 text-success motion-safe:animate-in motion-safe:fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
     >
       <span
         className={cn(

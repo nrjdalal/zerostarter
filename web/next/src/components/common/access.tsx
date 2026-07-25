@@ -25,7 +25,12 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
-  email: z.email({ error: "Please enter a valid email address." }),
+  // empty and malformed are separate failures, so each names its own problem
+  email: z
+    .string()
+    .trim()
+    .min(1, { error: "Enter your email address to continue." })
+    .pipe(z.email({ error: "That does not look like an email address. Check for a typo." })),
 })
 
 export function Access({ labelClassName }: { labelClassName?: string }) {
@@ -34,6 +39,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
   const [open, setOpen] = useState(false)
   // focus lands on the heading, not the first field: entering the dialog keeps the focus trap and the screen-reader announcement, while autofocusing the email input would pop the keyboard on mobile
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
@@ -69,6 +75,9 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       onSubmit: formSchema,
       onChange: formSchema,
       onBlur: formSchema,
+    },
+    onSubmitInvalid: () => {
+      if (emailRef.current) emailRef.current.focus()
     },
     onSubmit: async ({ value }) => {
       setLoader("email")
@@ -125,6 +134,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                         <Input
+                          ref={emailRef}
                           id={field.name}
                           type="email"
                           name={field.name}

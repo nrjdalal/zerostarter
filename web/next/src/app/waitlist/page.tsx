@@ -43,7 +43,7 @@ function WaitlistCount() {
   return (
     <div className="mt-10 flex h-7 items-center justify-center">
       {data && data.count > 0 && (
-        <div className="animate-in fade-in flex items-center gap-3 duration-500">
+        <div className="motion-safe:animate-in motion-safe:fade-in flex items-center gap-3 duration-500">
           <span className="text-muted-foreground text-sm">
             {data.count}+ people on the waitlist
           </span>
@@ -59,6 +59,7 @@ export default function WaitlistPage() {
   // holds the address that was accepted, so the confirmation can echo it back
   const [joined, setJoined] = useState<string | null>(null)
   const successRef = useRef<HTMLDivElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
   // the form unmounts on success, so focus would otherwise fall to <body>
@@ -89,6 +90,9 @@ export default function WaitlistPage() {
       onChange: formSchema,
       onBlur: formSchema,
     },
+    onSubmitInvalid: () => {
+      if (emailRef.current) emailRef.current.focus()
+    },
     onSubmit: ({ value }) => {
       // the API owns storage normalization (its schema trims and the insert lowercases); trimming here only keeps the echoed confirmation clean
       joinWaitlist.mutate({ ...value, email: value.email.trim() })
@@ -113,18 +117,29 @@ export default function WaitlistPage() {
               {"You're on the list. We'll be in touch at "}
               <span className="font-medium">{joined}</span>.
             </p>
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              onClick={() => {
-                setJoined(null)
-                form.reset()
-              }}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Not your email? Change it
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-x-1">
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={() => {
+                  setJoined(null)
+                  form.reset()
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Not your email? Change it
+              </Button>
+              <span className="text-muted-foreground text-sm">or</span>
+              <Button
+                variant="link"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+              >
+                browse the source
+              </Button>
+            </div>
           </div>
         ) : (
           <form
@@ -158,6 +173,7 @@ export default function WaitlistPage() {
                       Email
                     </FieldLabel>
                     <Input
+                      ref={emailRef}
                       id={field.name}
                       type="email"
                       name={field.name}

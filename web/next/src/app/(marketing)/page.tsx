@@ -28,6 +28,7 @@ import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { CodeCard } from "@/components/marketing/code-card"
 import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
@@ -153,6 +154,26 @@ const whyPoints = [
   },
 ]
 
+function PrimaryActions({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center justify-center gap-3", className)}>
+      <Button
+        size="lg"
+        variant="secondary"
+        className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
+        render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+      >
+        <RiGithubFill className="size-5" />
+        GitHub
+      </Button>
+      <Button size="lg" className="group h-11 px-4 md:px-6" render={<Link href="/docs" />}>
+        Get Started
+        <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
+      </Button>
+    </div>
+  )
+}
+
 function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <span className="bg-muted/50 text-muted-foreground mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm">
@@ -238,25 +259,7 @@ docker compose up --build`
               <div className="mx-auto mt-8 max-w-2xl">
                 <CodeWindow label="Quickstart" html={initHtml} code={initCode} />
               </div>
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
-                  render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
-                >
-                  <RiGithubFill className="size-5" />
-                  GitHub
-                </Button>
-                <Button
-                  size="lg"
-                  className="group h-11 px-4 md:px-6"
-                  render={<Link href="/docs" />}
-                >
-                  Get Started
-                  <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
-                </Button>
-              </div>
+              <PrimaryActions className="mt-6" />
               <div className="mt-8 flex justify-center">
                 <ApiStatus />
               </div>
@@ -581,25 +584,7 @@ docker compose up --build`
                 workflows, and documentation both humans and agents can trust. It does not choose
                 your payments or email vendor; the parts that make your product yours stay yours.
               </p>
-              <div className="mt-8 flex items-center justify-center gap-3">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
-                  render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
-                >
-                  <RiGithubFill className="size-5" />
-                  GitHub
-                </Button>
-                <Button
-                  size="lg"
-                  className="group h-11 px-4 md:px-6"
-                  render={<Link href="/docs" />}
-                >
-                  Get Started
-                  <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
-                </Button>
-              </div>
+              <PrimaryActions className="mt-8" />
               <p className="text-muted-foreground mt-6 text-sm">
                 Open source. Use it freely, including for commercial products.
               </p>
