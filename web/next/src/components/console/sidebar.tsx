@@ -23,7 +23,8 @@ import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 type ConsoleNavItem = {
-  exact: boolean
+  // omit for an exact match (isActive's own default); false also matches child paths
+  exact?: boolean
   feature?: keyof typeof features
   icon: RemixiconComponentType
   title: string

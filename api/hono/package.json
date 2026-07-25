@@ -14,7 +14,8 @@
     "check-types": "tsc --noEmit",
     "dev": "portless",
     "dev:app": "concurrently \"tsdown --watch\" \"bun ../../.github/scripts/portless.ts bun --hot src/index.ts\"",
-    "start": "bun bundle/index.mjs"
+    "start": "bun bundle/index.mjs",
+    "test": "bun test"
   },
   "dependencies": {
     "@arcjet/ip": "catalog:",

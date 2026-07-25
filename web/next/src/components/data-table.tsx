@@ -189,6 +189,9 @@ const parseAsSorting = createParser<SortingState>({
 
 const filterParser = parseAsArrayOf(parseAsString).withDefault([])
 
+// Module-scope so an omitted defaultSorting keeps a stable identity; a fresh [] per render would churn the sorting slice and re-fire every state-slice effect downstream.
+const EMPTY_SORTING: SortingState = []
+
 // Parser identities must be stable across renders (nuqs caches parsed values per parser); building these inline in the hook would defeat the cache and leave useSyncExternalStore reading one update behind.
 const baseParsers = {
   q: parseAsString.withDefault(""),
@@ -200,7 +203,10 @@ function resolveUpdater<T>(updater: Updater<T>, previous: T): T {
 }
 
 // URL-synced table state shaped for useReactTable: spread the returned state into `state` and the handlers into the matching onChange options. Filter ids share the query-string namespace, so keep them clear of q/sort.
-export function useDataTableState(filterIds: string[] = []) {
+export function useDataTableState(
+  filterIds: string[] = [],
+  defaultSorting: SortingState = EMPTY_SORTING,
+) {
   const filterKey = filterIds.join(",")
   const filterParsers = React.useMemo(() => {
     const parsers: Record<string, typeof filterParser> = {}
@@ -211,7 +217,8 @@ export function useDataTableState(filterIds: string[] = []) {
   const [base, setBase] = useQueryStates(baseParsers)
   const [filters, setFilters] = useQueryStates(filterParsers)
 
-  const sorting = base.sort
+  // With no sort in the URL the default applies as real table state, so the header chevron and aria-sort show it while the URL stays clean. Updaters resolve against this same value, so a functional updater is handed what the table actually rendered rather than an empty URL slice.
+  const sorting = base.sort.length ? base.sort : defaultSorting
   const globalFilter = base.q
   const columnFilters: ColumnFiltersState = React.useMemo(
     () =>
@@ -266,9 +273,6 @@ export type DataTablePage<TRow> = {
   total: number
 }
 
-// Module-scope so an omitted defaultSorting keeps a stable identity; a fresh [] per render would churn effectiveSorting and re-fire every state-slice effect downstream.
-const EMPTY_SORTING: SortingState = []
-
 // The generic server-driven table wiring. A page brings only what a generic hook cannot know (its columns, its fetcher, its filter ids, its column config) and spreads tableProps into DataTable. Client-side tables skip this and use useDataTableState directly.
 export function useDataTable<TRow>({
   batchSize = 25,
@@ -298,11 +302,8 @@ export function useDataTable<TRow>({
     onGlobalFilterChange,
     onSortingChange,
     sorting,
-  } = useDataTableState(filterIds)
+  } = useDataTableState(filterIds, defaultSorting)
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
-
-  // With no sort in the URL the default applies as real state, so the header chevron and aria-sort show it while the URL stays clean.
-  const effectiveSorting = sorting.length ? sorting : defaultSorting
 
   // Defer the search term so fast typing batches requests instead of firing one per keystroke.
   const search = React.useDeferredValue(globalFilter)
@@ -318,14 +319,14 @@ export function useDataTable<TRow>({
 
   // queryFn stays ahead of getNextPageParam: TS infers the page type in declaration order.
   const query = useInfiniteQuery({
-    queryKey: [queryKey, search, effectiveSorting, filters],
+    queryKey: [queryKey, search, sorting, filters],
     queryFn: ({ pageParam }) =>
       fetchPage({
         filters,
         page: pageParam,
         perPage: batchSize,
         search,
-        sorting: effectiveSorting,
+        sorting,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
@@ -362,7 +363,7 @@ export function useDataTable<TRow>({
   const table = useReactTable({
     columns: managedColumns,
     data: rows,
-    state: { columnFilters, globalFilter, rowSelection, sorting: effectiveSorting },
+    state: { columnFilters, globalFilter, rowSelection, sorting },
     // Sizes are Tailwind spacing units; tanstack's default minSize of 20 is meant for pixels and would clamp small units, so drop the floor.
     defaultColumn: { minSize: 0 },
     // Single-column sorting only: fetchPage sends one sort to the server, so shift-click multi-sort would silently drop the extra columns.
@@ -671,7 +672,7 @@ export function DataTableColumnHeader<TData, TValue>({
 // ---------------------------------------------------------------------------
 // Cell text: overflow behavior from the column config.
 
-// Text cells render through this so column widths never move with content. The mode comes from the column config's wrap flag through column meta: false truncates to one line with an ellipsis and reveals the full value in a tooltip only when actually cut (measured on hover/focus); true flows onto multiple lines and lets the self-measured virtual row grow.
+// Text cells render through this so column widths never move with content. The mode comes from the column config's wrap flag through column meta: false truncates to one line with an ellipsis and reveals the full value in a tooltip only when actually cut (measured on hover); true flows onto multiple lines and lets the self-measured virtual row grow. Truncation is CSS-only, so the full value stays in the DOM and assistive tech reads it whether or not the tooltip ever opens; the tooltip is a sighted-pointer convenience, which is why the trigger takes no tab stop (one per text cell would bury the table's real controls).
 export function DataTableCellText<TData, TValue>({
   children,
   className,
@@ -700,12 +701,7 @@ export function DataTableCellText<TData, TValue>({
     <Tooltip>
       <TooltipTrigger
         render={
-          <span
-            ref={ref}
-            onMouseEnter={measure}
-            onFocus={measure}
-            className={cn("min-w-0 truncate", className)}
-          />
+          <span ref={ref} onMouseEnter={measure} className={cn("min-w-0 truncate", className)} />
         }
       >
         {children}

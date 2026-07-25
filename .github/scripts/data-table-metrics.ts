@@ -8,6 +8,7 @@ import wawoff2 from "wawoff2"
 
 const WEB = path.resolve(import.meta.dir, "../../web/next")
 const FONT = path.join(WEB, "src/fonts/dm-sans-latin-wght-normal.woff2")
+// Mirrors what a header cell actually renders: Table's text-sm (14px) and TableHead's font-medium (500). Restyling either without updating these silently drifts every auto width.
 const HEADER_FONT_PX = 14
 const HEADER_FONT_WEIGHT = 500
 const OUT = path.resolve(import.meta.dir, "../../.generated/data-table-metrics.json")

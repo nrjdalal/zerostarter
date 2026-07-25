@@ -33,6 +33,7 @@ const ROLE_OPTIONS = [
   { label: "Admin", value: "admin" },
   { label: "User", value: "user" },
 ]
+const ROLE_VALUES = new Set(ROLE_OPTIONS.map((option) => option.value))
 
 // Column ids mapped to the endpoint's sort whitelist (status sorts by the backing banned flag); satisfies makes any server-side rename a compile error here.
 type UsersSort = NonNullable<
@@ -54,9 +55,12 @@ async function fetchUsers({
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ConsoleUser>> {
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
-  const sortId =
-    sort.id in SORT_FIELDS ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS] : "createdAt"
-  const roles = filters.role ? filters.role : []
+  // hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in SORT_FIELDS` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
+  const sortId = Object.hasOwn(SORT_FIELDS, sort.id)
+    ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS]
+    : "createdAt"
+  // Drop values the API's enum would reject, so a hand-written ?role=bogus degrades to an unfiltered list (which is what the facet UI shows, since it cannot select an unknown value) instead of 400ing the table into its error state.
+  const roles = filters.role ? filters.role.filter((role) => ROLE_VALUES.has(role)) : []
   const { data, error } = await unwrap(
     apiClient.v1.admin.users.$get({
       query: {

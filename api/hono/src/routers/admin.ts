@@ -12,6 +12,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { escapeLike } from "@/lib/sql"
 import { adminMiddleware } from "@/middlewares"
 
 const ROLES = ["admin", "user"] as const
@@ -53,8 +54,6 @@ const sortColumns = {
 } satisfies Record<(typeof SORTS)[number], unknown>
 
 // Escape LIKE wildcards so a search for "100%" matches literally.
-const escapeLike = (value: string) => value.replace(/[%_\\]/g, "\\$&")
-
 // Admin-only endpoints, mounted under /v1 behind authMiddleware; adminMiddleware layers the fresh role check on top.
 export const adminRouter = new Hono<{
   Variables: Session

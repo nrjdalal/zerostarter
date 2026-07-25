@@ -72,10 +72,7 @@ function isButtonPrimitive(el: { getTagNameNode(): { getText(): string } }) {
   return el.getTagNameNode().getText() === "ButtonPrimitive"
 }
 
-// checkbox.tsx: the indeterminate state. Base UI renders the indicator for checked OR indeterminate
-// but sets data-indeterminate (never data-checked), so the registry's check-only indicator paints a
-// partial selection as a check on an unfilled box, indistinguishable from checked. Fill the box on
-// data-indeterminate and swap the glyph to a minus.
+// checkbox.tsx: indeterminate. Base UI renders the indicator for checked OR indeterminate but sets data-indeterminate (never data-checked), so the registry's check-only indicator paints a partial selection as a check on an unfilled box; fill the box and swap the glyph to a minus.
 const INDETERMINATE_CLASSES =
   "data-indeterminate:border-primary data-indeterminate:bg-primary data-indeterminate:text-primary-foreground dark:data-indeterminate:bg-primary"
 const INDETERMINATE_ICON = "{props.indeterminate ? <RiSubtractLine /> : <RiCheckLine />}"

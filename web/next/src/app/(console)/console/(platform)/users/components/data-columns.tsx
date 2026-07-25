@@ -114,6 +114,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
+    // Undefined locale means the reader's own format. Safe because rows only ever render on the client (the query has no server prefetch, so SSR emits the spinner and no cells); prefetching rows into the server render would make this a hydration mismatch and force a pinned locale.
     cell: ({ column, row }) => (
       <DataTableCellText column={column}>
         {new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
