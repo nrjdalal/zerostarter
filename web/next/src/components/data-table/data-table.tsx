@@ -119,11 +119,12 @@ function DataTable<TData>({
   const columnLayout = (column: Column<TData, unknown>, index: number) => {
     const meta = column.columnDef.meta
     const anchor = column === rightStart ? "ml-auto" : undefined
+    // Centered columns drop the horizontal padding: the shadcn cell strips pr when it holds a checkbox, which would skew a padded center.
     const align =
       meta && meta.align === "right"
         ? "justify-end"
         : meta && meta.align === "center"
-          ? "justify-center"
+          ? "justify-center px-0"
           : undefined
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
