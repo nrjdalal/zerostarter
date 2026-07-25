@@ -8,6 +8,7 @@ import { toast } from "sonner"
 
 import { DataTableCellText } from "@/components/data-table/cell-text"
 import { DataTableColumnHeader } from "@/components/data-table/column-header"
+import { COLUMN_SIZES } from "@/components/data-table/column-sizes"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,7 +31,7 @@ export type ConsoleUser = InferResponseType<
 export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "select",
-    size: 48,
+    size: COLUMN_SIZES.select,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -50,7 +51,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "name",
-    size: 240,
+    size: COLUMN_SIZES.nameWithAvatar,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
@@ -65,7 +66,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "email",
-    size: 320,
+    size: COLUMN_SIZES.email,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => (
       <DataTableCellText className="text-muted-foreground">{row.original.email}</DataTableCellText>
@@ -74,7 +75,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "role",
-    size: 110,
+    size: COLUMN_SIZES.badge,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => (
       <Badge variant={row.original.role === "admin" ? "default" : "outline"} className="capitalize">
@@ -85,7 +86,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "createdAt",
-    size: 150,
+    size: COLUMN_SIZES.date,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
     cell: ({ row }) =>
       new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" }),
@@ -93,7 +94,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
-    size: 56,
+    size: COLUMN_SIZES.actions,
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>

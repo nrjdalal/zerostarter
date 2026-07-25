@@ -24,6 +24,27 @@ Two hooks carry the state:
 
 A page's table pieces colocate with its route (`app/(console)/console/(platform)/users/components/data-columns.tsx` is the reference): typed `ColumnDef<Row>[]`, headers rendered through `DataTableColumnHeader`, a `meta: { label }` per hideable column so the view-options menu reads "Joined" instead of `createdAt`, an explicit `size` per column (virtualized rows position absolutely, so widths must be declared), with widths as a stable contract so content can never shift the layout: fixed columns hold exactly their size, `meta: { flex: true }` marks the one column whose size becomes a floor while it absorbs leftover width, `meta: { right: true }` docks a trailing group to the right edge when no flex column exists, and text cells render through `DataTableCellText` to either truncate (tooltip reveals the full value only when cut) or wrap.
 
+## Column widths
+
+Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), a semantic archetype map: pick by what the column holds, so the same kind of data is the same width in every table. Measured at the default cell padding and type scale, on an 8px grid.
+
+| Archetype        | px  | Sized for                                       |
+| ---------------- | --- | ----------------------------------------------- |
+| `select`         | 48  | The row checkbox                                |
+| `icon`           | 48  | A single icon or indicator                      |
+| `actions`        | 56  | The icon-sm row-actions button                  |
+| `id`             | 96  | Short codes; long ids truncate                  |
+| `number`         | 112 | Counts and amounts                              |
+| `badge`          | 112 | Role or status badges                           |
+| `date`           | 152 | "25 Jun 2026" plus the sort chevron             |
+| `datetime`       | 200 | Date plus time                                  |
+| `name`           | 200 | A plain text name                               |
+| `nameWithAvatar` | 240 | A 24px avatar, gap, and name                    |
+| `identity`       | 280 | An `Item` identity cell: avatar plus name/email |
+| `email`          | 320 | A typical address; the usual `meta.flex` floor  |
+
+Tune an archetype there, or add a new one, instead of writing ad-hoc numbers in a columns file.
+
 ## Server-driven tables
 
 The console users table (`app/(console)/console/(platform)/users/components/data-table.tsx`) is the reference: sorting, search, and filters resolve on the API, and batches stream in on scroll. `useDataTable` bundles the [TanStack Query infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries) (`useInfiniteQuery`, `getNextPageParam` against the response total, `keepPreviousData`, a deferred search term), so the page is a fetcher plus composition:
