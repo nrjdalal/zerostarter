@@ -1,6 +1,8 @@
 "use client"
 "use no memo"
 
+import { isDevelopment } from "@packages/env"
+import { env } from "@packages/env/web-next"
 import {
   flexRender,
   type Column,
@@ -34,6 +36,11 @@ declare module "@tanstack/react-table" {
 
 // Estimated data-row height for the virtualizer's scrollbar math; rows self-measure after render.
 const ROW_ESTIMATE_PX = 45
+
+// next dev only (a build inlines production): alternating column tints make the column boxes visible while tuning widths in column-sizes.ts.
+const DEBUG_COLUMN_COLORS = isDevelopment(env.NEXT_PUBLIC_NODE_ENV)
+const debugColumnClass = (index: number) =>
+  DEBUG_COLUMN_COLORS ? (index % 2 ? "bg-destructive/10" : "bg-primary/10") : undefined
 
 interface DataTableProps<TData> {
   "aria-label": string
@@ -127,7 +134,7 @@ function DataTable<TData>({
           <TableHeader role="rowgroup" className="bg-background sticky top-0 z-10 grid">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} role="row" aria-rowindex={1} className="flex w-full">
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header, index) => (
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
@@ -135,6 +142,7 @@ function DataTable<TData>({
                     className={cn(
                       "flex items-center overflow-hidden",
                       columnLayout(header.column).className,
+                      debugColumnClass(index),
                     )}
                     style={columnLayout(header.column).style}
                     aria-sort={
@@ -172,13 +180,14 @@ function DataTable<TData>({
                     className="absolute flex w-full"
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell, index) => (
                       <TableCell
                         key={cell.id}
                         role="cell"
                         className={cn(
                           "flex items-center overflow-hidden",
                           columnLayout(cell.column).className,
+                          debugColumnClass(index),
                         )}
                         style={columnLayout(cell.column).style}
                       >
