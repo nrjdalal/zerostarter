@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
 
+import { UserRoleSelect } from "@/app/(console)/console/(platform)/users/components/role-select"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
@@ -44,7 +45,7 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
   // label + 9rem
   name: { extra: 36 },
   email: { extra: 48, flex: true },
-  role: { align: "center" },
+  role: { extra: 30 },
   status: { align: "center" },
   createdAt: { align: "right", extra: 18 },
   actions: { align: "center", width: 12 },
@@ -94,11 +95,8 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     accessorKey: "role",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
-    cell: ({ column, row }) => (
-      <DataTableCellText column={column} className="capitalize">
-        {row.original.role}
-      </DataTableCellText>
-    ),
+    // The platform role, not an organization membership role: this one decides console access.
+    cell: ({ row }) => <UserRoleSelect role={row.original.role} userId={row.original.id} />,
     meta: { label: "Role" },
   },
   {

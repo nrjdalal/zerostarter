@@ -1,5 +1,7 @@
 import { sValidator } from "@hono/standard-validator"
 import type { Session } from "@packages/auth"
+import type { RoleChangeRefusal } from "@packages/auth/access"
+import { CONSOLE_ROLES, refuseRoleChange } from "@packages/auth/access"
 import { db, user } from "@packages/db"
 import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
@@ -13,7 +15,7 @@ import {
   validationErrorResponses,
 } from "@/lib/error"
 import { escapeLike } from "@/lib/sql"
-import { consoleReadMiddleware } from "@/middlewares"
+import { consoleReadMiddleware, consoleWriteMiddleware } from "@/middlewares"
 
 const ROLES = ["admin", "user"] as const
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
@@ -30,6 +32,19 @@ const usersQuerySchema = z.object({
     .transform((value) => (value ? [...new Set(value.split(","))] : []))
     .pipe(z.array(z.enum(ROLES)).max(ROLES.length)),
   sort: z.enum(SORTS).default("createdAt"),
+})
+
+// Refusals reach the user, so each says what to do rather than that something was forbidden.
+const ROLE_CHANGE_MESSAGES: Record<RoleChangeRefusal, string> = {
+  "last-owner": "This is the last owner. Promote someone else to owner first.",
+  outranked: "You can only change people below your own role.",
+  "owner-only": "Only an owner can make someone an owner.",
+  self: "You cannot change your own role.",
+  "unknown-role": "That is not a console role.",
+}
+
+const roleChangeSchema = z.object({
+  role: z.enum(CONSOLE_ROLES),
 })
 
 const userSchema = z.object({
@@ -147,5 +162,71 @@ const { data, error } = await unwrap(
         })),
       }
       return c.json({ data })
+    },
+  )
+  .patch(
+    "/users/:id/role",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Change a user's console role. Refuses the changes that would lock an install out: your own role, a target at or above your rank, granting owner as a non-owner, and demoting the last owner.",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ data: z.object({ user: userSchema }) })),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    consoleWriteMiddleware,
+    sValidator("json", roleChangeSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const actor = c.get("user")
+      const targetId = c.req.param("id")
+      const { role: nextRole } = c.req.valid("json")
+
+      const [target] = await db.select().from(user).where(eq(user.id, targetId)).limit(1)
+      if (!target) {
+        throw new ApiError(404, "NOT_FOUND", "User not found")
+      }
+      // The one part of the decision that needs the database, so the guard itself stays pure.
+      const targetIsLastOwner =
+        target.role === "owner" && (await db.$count(user, eq(user.role, "owner"))) <= 1
+      const refusal = refuseRoleChange({
+        actorRole: actor.role,
+        isSelf: actor.id === target.id,
+        nextRole,
+        targetIsLastOwner,
+        targetRole: target.role,
+      })
+      if (refusal) {
+        throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal])
+      }
+
+      const [updated] = await db
+        .update(user)
+        .set({ role: nextRole })
+        .where(eq(user.id, targetId))
+        .returning()
+      return c.json({
+        data: {
+          user: {
+            ...updated,
+            banned: updated.banned ? true : false,
+            createdAt: updated.createdAt.toISOString(),
+            role: updated.role ? updated.role : "user",
+          },
+        },
+      })
     },
   )

@@ -18,6 +18,7 @@ import {
   openAPI as openAPIPlugin,
   organization as organizationPlugin,
 } from "better-auth/plugins"
+import { adminAc, defaultAc as consoleAc, userAc } from "better-auth/plugins/admin/access"
 
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
@@ -97,8 +98,31 @@ export const auth = betterAuth({
     organizationPlugin({
       teams: { enabled: true },
     }),
-    // adminRoles is the plugin's own gate on ban, impersonate and set-role; it does not gate our routes, and our gate does not stop these endpoints, so both are needed.
-    adminPlugin({ adminRoles: ["owner", "admin"] }),
+    // The plugin validates adminRoles against its own role table, so the ladder's rungs are declared here as well as ranked in @/access. owner inherits the admin statements plus impersonate-admins; member and user hold none, so the plugin's ban, impersonate and set-role endpoints refuse them. This is the plugin's gate on its own endpoints, separate from ours on our routes: both are needed, neither substitutes.
+    adminPlugin({
+      adminRoles: ["owner", "admin"],
+      roles: {
+        admin: adminAc,
+        member: userAc,
+        owner: consoleAc.newRole({
+          session: ["delete", "list", "revoke"],
+          user: [
+            "ban",
+            "create",
+            "delete",
+            "get",
+            "impersonate",
+            "impersonate-admins",
+            "list",
+            "set-email",
+            "set-password",
+            "set-role",
+            "update",
+          ],
+        }),
+        user: userAc,
+      },
+    }),
   ],
   socialProviders: {
     ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET

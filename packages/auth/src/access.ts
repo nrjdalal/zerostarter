@@ -15,3 +15,30 @@ export function consoleRole(role: string | null | undefined): ConsoleRole {
 export function roleAtLeast(role: string | null | undefined, minimum: ConsoleRole): boolean {
   return RANK[consoleRole(role)] >= RANK[minimum]
 }
+
+// Why a role change was refused, so the API can say it rather than returning a bare failure.
+export type RoleChangeRefusal = "last-owner" | "outranked" | "owner-only" | "self" | "unknown-role"
+
+// The rules that keep an install from locking itself out. Whether the target is the last owner is decided by the caller, which is the only part that needs the database, so this stays pure.
+export function refuseRoleChange(input: {
+  actorRole: string | null | undefined
+  isSelf: boolean
+  nextRole: string
+  targetIsLastOwner: boolean
+  targetRole: string | null | undefined
+}): RoleChangeRefusal | null {
+  const actor = consoleRole(input.actorRole)
+  const target = consoleRole(input.targetRole)
+  if (!Object.hasOwn(RANK, input.nextRole)) return "unknown-role"
+  const next = input.nextRole as ConsoleRole
+  // Demoting yourself out of the console is the likeliest accident, so it is refused before anything else.
+  if (input.isSelf) return "self"
+  if (next === "owner" && actor !== "owner") return "owner-only"
+  if (!roleAtLeast(actor, "admin")) return "outranked"
+  // An owner may act on anyone, peers included. Everyone else must stay strictly below their own rank on both sides, so two admins cannot demote each other and an admin cannot mint another admin.
+  if (actor !== "owner" && (RANK[target] >= RANK[actor] || RANK[next] >= RANK[actor])) {
+    return "outranked"
+  }
+  if (input.targetIsLastOwner && next !== "owner") return "last-owner"
+  return null
+}
