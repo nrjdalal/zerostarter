@@ -1,7 +1,10 @@
 "use client"
 "use no memo"
 
-import { usersColumns, type ConsoleUser } from "@/components/console/users-columns"
+import {
+  usersColumns,
+  type ConsoleUser,
+} from "@/app/(console)/console/(platform)/users/components/data-columns"
 import { DataTable } from "@/components/data-table/data-table"
 import { DataTableFacetedFilter } from "@/components/data-table/faceted-filter"
 import { DataTableToolbar } from "@/components/data-table/toolbar"
@@ -50,8 +53,8 @@ async function fetchUsers({
   return { rows: data.users, total: data.total }
 }
 
-// Server-driven users table for the console: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
-export function ConsoleUsersTable() {
+// Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
+export function UsersDataTable() {
   const { error, isError, refetch, table, tableProps } = useDataTable({
     columns: usersColumns,
     enableRowSelection: true,
