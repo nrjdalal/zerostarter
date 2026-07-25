@@ -23,7 +23,7 @@ export type AllowlistRuleRow = InferResponseType<
 export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   value: { extra: 48, flex: true },
   createdByName: { align: "right", extra: 24 },
-  kind: { align: "right", extra: 12 },
+  kind: { align: "right", extra: 8 },
   createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
 }
