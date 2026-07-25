@@ -22,14 +22,15 @@ import {
 
 const PAGE_SIZES = [10, 20, 30, 40, 50]
 
-// Page-size select, page position, and first/prev/next/last controls; shows the selection count only when the table wires row selection.
+// Page-size select, page position, and first/prev/next/last controls; shows the selection count only when the table renders a "select" column (tanstack injects a default onRowSelectionChange on every table, so the option cannot gate this).
 function DataTablePagination<TData>({ table }: { table: TableInstance<TData> }) {
   const pageSizeId = React.useId()
+  const selectable = table.getAllLeafColumns().some((column) => column.id === "select")
 
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="text-muted-foreground flex-1 text-sm">
-        {table.options.onRowSelectionChange
+        {selectable
           ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected`
           : null}
       </div>
