@@ -31,7 +31,6 @@ declare module "@tanstack/react-table" {
     align?: "center" | "left" | "right"
     flex?: boolean
     label?: string
-    right?: boolean
   }
 }
 
@@ -105,11 +104,8 @@ function DataTable<TData>({
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
 
-  // Flex columns absorb leftover width above their floor; fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells. In a run of consecutive flex columns only the last one grows (earlier ones hold their min width), so two growing neighbors cannot fight. In a table with no flex column, the first meta.right column takes ml-auto so it and everything after dock to the right edge.
+  // Flex columns absorb leftover width above their floor; fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells. In a run of consecutive flex columns only the last one grows (earlier ones hold their min width), so two growing neighbors cannot fight; everything after the last flex column sits docked at the right edge.
   const visibleColumns = table.getVisibleLeafColumns()
-  const rightStart = visibleColumns.find(
-    (column) => column.columnDef.meta && column.columnDef.meta.right,
-  )
   const flexAt = visibleColumns.map((column, index) => {
     const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
     const next = visibleColumns[index + 1]
@@ -118,7 +114,6 @@ function DataTable<TData>({
   })
   const columnLayout = (column: Column<TData, unknown>, index: number) => {
     const meta = column.columnDef.meta
-    const anchor = column === rightStart ? "ml-auto" : undefined
     // Centered columns drop the horizontal padding: the shadcn cell strips pr when it holds a checkbox, which would skew a padded center.
     const align =
       meta && meta.align === "right"
@@ -129,8 +124,8 @@ function DataTable<TData>({
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
     return flexAt[index]
-      ? { className: cn("flex-1", anchor, align), style: { minWidth: width } }
-      : { className: cn("shrink-0", anchor, align), style: { width } }
+      ? { className: cn("flex-1", align), style: { minWidth: width } }
+      : { className: cn("shrink-0", align), style: { width } }
   }
 
   return (
