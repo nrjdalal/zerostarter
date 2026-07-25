@@ -34,7 +34,8 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
-| Gate by role | `web/next/src/lib/auth/console.ts` gates the web admin console; the API's `middlewares/auth.ts` checks the session only (401), not role | - |
+| Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(platform)/users/`) | `design` skill |
+| Gate by role | `web/next/src/lib/auth/console.ts` gates the web admin console; the API's `middlewares/auth.ts` checks the session only (401), not role; `middlewares/admin.ts` adds the role check (403) for `/api/v1/admin/*` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 

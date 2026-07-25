@@ -133,6 +133,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/data-tables": {
+          title: "Data Tables",
+          description:
+            "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
+        },
+      },
+      {
         "/docs/manage/theming": {
           title: "Theming",
           description:
