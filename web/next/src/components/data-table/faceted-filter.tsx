@@ -1,4 +1,5 @@
 "use client"
+"use no memo"
 
 import { RiAddCircleLine, RiCheckLine, type RemixiconComponentType } from "@remixicon/react"
 import type { Column } from "@tanstack/react-table"

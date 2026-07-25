@@ -1,4 +1,5 @@
 "use client"
+"use no memo"
 
 import { RiArrowDownLine, RiArrowUpLine, RiExpandUpDownLine, RiEyeOffLine } from "@remixicon/react"
 import type { Column } from "@tanstack/react-table"

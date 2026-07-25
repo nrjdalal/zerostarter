@@ -1,4 +1,5 @@
 "use client"
+"use no memo"
 
 import { flexRender, type RowData, type Table as TableInstance } from "@tanstack/react-table"
 

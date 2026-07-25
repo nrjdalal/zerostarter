@@ -1,4 +1,5 @@
 "use client"
+"use no memo"
 
 import { RiEqualizerLine } from "@remixicon/react"
 import type { Table as TableInstance } from "@tanstack/react-table"

@@ -35,6 +35,14 @@ const parseAsSorting = createParser<SortingState>({
 
 const filterParser = parseAsArrayOf(parseAsString).withDefault([])
 
+// Parser identities must be stable across renders (nuqs caches parsed values per parser); building this inline in the hook would defeat the cache and leave useSyncExternalStore reading one update behind.
+const baseParsers = {
+  page: parseAsInteger.withDefault(1),
+  perPage: parseAsInteger.withDefault(10),
+  q: parseAsString.withDefault(""),
+  sort: parseAsSorting.withDefault([]),
+}
+
 function apply<T>(updater: Updater<T>, previous: T): T {
   return typeof updater === "function" ? (updater as (old: T) => T)(previous) : updater
 }
@@ -48,12 +56,7 @@ export function useDataTableState(filterIds: string[] = []) {
     return parsers
   }, [filterKey])
 
-  const [base, setBase] = useQueryStates({
-    page: parseAsInteger.withDefault(1),
-    perPage: parseAsInteger.withDefault(10),
-    q: parseAsString.withDefault(""),
-    sort: parseAsSorting.withDefault([]),
-  })
+  const [base, setBase] = useQueryStates(baseParsers)
   const [filters, setFilters] = useQueryStates(filterParsers)
 
   const pagination: PaginationState = {
