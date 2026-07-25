@@ -57,7 +57,9 @@ bunx zerostarter sync [dir]
 
 Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo and rolls back on failure.
 
-What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version. The overlaid skills in `.agents/skills/` are then rebranded to your project name (read from `package.json`), matching `init`, so a synced skill keeps your identity rather than the starter's.
+What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
+
+Skills in `.agents/skills/` follow their own provenance contract instead of the blanket overwrite: a skill takes the fresh upstream body (rebranded to your project name, read from `package.json`) only while its `source` points at the starter, its sync note is intact, and its body is unchanged since the last sync (checked against the stamped `synced-hash`). A skill you customized, whose note you removed, or whose `source` is `local`, a tool, or another repo stays exactly yours, and the sync summary names every skill it updated or left alone.
 
 ```bash
 # review before committing

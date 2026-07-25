@@ -12,7 +12,7 @@ import {
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg } from "@/pkg"
-import { reconcileForkSkillsFromRoot } from "@/skills"
+import { type SkillSyncResult, snapshotForkSkills, syncForkSkills } from "@/skills"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -57,6 +57,8 @@ export const sync = async (argv: string[]) => {
   const rootPkg = join(target, "package.json")
   // Snapshot every workspace manifest before the overlay overwrites them (web/next + api/hono carry the deps).
   const forkPkgs = new Map(findPackageJsons(target).map((p) => [p, readJson<Pkg>(p)]))
+  // Snapshot every skill too: the overlay re-adds upstream SKILL.md files, and the reconcile decides per skill, from this snapshot, whether the fork owns it.
+  const forkSkills = snapshotForkSkills(target)
 
   // Read the preserve directive before the overlay, so a fetch error aborts before mutating the fork.
   const preserve = parseForkLayout(await fetchGitpickignore()).preserve
@@ -65,6 +67,7 @@ export const sync = async (argv: string[]) => {
   }
 
   // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
+  let skills: SkillSyncResult = { added: [], kept: [], skipped: [], unverified: [], updated: [] }
   await withRollback(
     target,
     yellow("Sync failed; rolled the working tree back to your last commit."),
@@ -79,8 +82,8 @@ export const sync = async (argv: string[]) => {
         if (!exists(path)) continue
         writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
       }
-      // Rebrand the overlaid skills to the fork: the overlay re-added upstream SKILL.md files naming "zerostarter", so re-run init's reconcile, sourcing the fork name from the just-restored root package.json.
-      reconcileForkSkillsFromRoot(target)
+      // Reconcile the overlaid skills to the fork, honoring provenance: only note-intact, uncustomized upstream-sourced skills take the fresh body; everything else is restored from the pre-overlay snapshot.
+      skills = syncForkSkills(target, forkSkills)
       // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
       await gitRestore(target, preserve)
     },
@@ -93,8 +96,20 @@ export const sync = async (argv: string[]) => {
   note(
     [
       "Starter files were updated (edits overwritten); your content, public/marketing, and branding were preserved.",
+      skills.added.length > 0 && `Skills added from upstream: ${skills.added.join(", ")}`,
+      skills.updated.length > 0 && `Skills updated from upstream: ${skills.updated.join(", ")}`,
+      skills.unverified.length > 0 &&
+        yellow(
+          `Skills overwritten without a sync stamp (this sync adds one; recover any customization from the diff): ${skills.unverified.join(", ")}`,
+        ),
+      skills.skipped.length > 0 &&
+        `Skills left untouched (customized or sync note removed; the fork owns them): ${skills.skipped.join(", ")}`,
+      skills.kept.length > 0 &&
+        `Skills left untouched (local or vendored provenance): ${skills.kept.join(", ")}`,
       yellow(`Review the diff and commit: git -C ${target} status`),
-    ].join("\n"),
+    ]
+      .filter((line): line is string => Boolean(line))
+      .join("\n"),
     "Review the changes",
   )
   outro(orange("Synced to the latest ZeroStarter"))
