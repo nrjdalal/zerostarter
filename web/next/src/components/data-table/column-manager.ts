@@ -24,11 +24,11 @@ export const COLUMN_MANAGER = {
       select: { align: "center", width: global.select },
       // header title + 12rem
       name: { extra: 48 },
-      // floor of header title + 18 units, then grows
-      email: { extra: 18, flex: true },
+      // floor of header title + 60 units, then grows
+      email: { extra: 60, flex: true },
       role: {},
       status: {},
-      createdAt: {},
+      createdAt: { extra: 24 },
       actions: { align: "center", width: global.actions },
     } satisfies Record<string, ColumnConfig>,
   },
