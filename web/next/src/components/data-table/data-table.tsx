@@ -40,7 +40,7 @@ const ROW_ESTIMATE_PX = 45
 // next dev only (a build inlines production): alternating column tints make the column boxes visible while tuning widths in column-sizes.ts.
 const DEBUG_COLUMN_COLORS = isDevelopment(env.NEXT_PUBLIC_NODE_ENV)
 const debugColumnClass = (index: number) =>
-  DEBUG_COLUMN_COLORS ? (index % 2 ? "bg-destructive/10" : "bg-primary/10") : undefined
+  DEBUG_COLUMN_COLORS && index % 2 ? "bg-foreground/5" : undefined
 
 interface DataTableProps<TData> {
   "aria-label": string
