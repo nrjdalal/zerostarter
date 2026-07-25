@@ -28,11 +28,10 @@ A page's table pieces colocate with its route (`app/(console)/console/(platform)
 
 Layout comes from the column manager (`components/data-table/column-manager.ts`), in Tailwind spacing units (1 = `0.25rem`, so 12 = 48px at the default scale) rendered through `calc(var(--spacing) * n)`, so tables scale with the theme and user font-size. On a fixed column the size is exact (`width` + `shrink-0`); on the `meta.flex` column it is the floor (`min-width` + `flex-1`). The map is two levels: `global` holds the semantic archetypes (multiples of 3 units), and each area.table block maps its column ids onto a config `{ align?, extra?, flex?, width? }` (align defaults to left, flex to false), written in column order, passed to `useDataTable` as `manager` (client tables call `applyColumnManager` themselves). Omit `width` and the column sizes as header title + an allowance (`extra`, defaulting to 10 units), the title measured via [pretext](https://github.com/chenglou/pretext), canvas metrics without DOM layout, applied after mount so server and hydration renders stay identical (a 24-unit fallback holds until then). Columns files carry content only: header, cell, and `meta.label`; layout never appears at the call site. Multiple columns may set `flex`; in a run of consecutive flex columns only the last grows and earlier ones hold their width as a floor. Names follow what the column says, never the backing field: the column headed Status keys as `status` (with `accessorKey: "banned"` underneath), not `banned`.
 
-| Archetype | u   | Sized for                                      |
-| --------- | --- | ---------------------------------------------- |
-| `select`  | 12  | The row checkbox                               |
-| `actions` | 6   | The icon-sm row-actions button                 |
-| `email`   | 48  | A typical address; the usual `meta.flex` floor |
+| Archetype | u   | Sized for                      |
+| --------- | --- | ------------------------------ |
+| `select`  | 12  | The row checkbox               |
+| `actions` | 6   | The icon-sm row-actions button |
 
 Tune an archetype, add one when a new kind of column appears, or add a table block there; columns files never carry raw numbers, and the map carries no entry nothing consumes. In local dev, columns render with alternating tints so the boxes stay visible while you tune.
 

@@ -5,8 +5,6 @@ import type { ColumnDef, RowData } from "@tanstack/react-table"
 const global = {
   // the icon-sm row-actions button
   actions: 12,
-  // a typical address; the usual flex floor
-  email: 48,
   // the row checkbox
   select: 12,
 } as const
@@ -26,7 +24,8 @@ export const COLUMN_MANAGER = {
       select: { align: "center", width: global.select },
       // header title + 12rem
       name: { extra: 48 },
-      email: { flex: true, width: global.email },
+      // floor of header title + 18 units, then grows
+      email: { extra: 18, flex: true },
       role: {},
       status: {},
       createdAt: {},
