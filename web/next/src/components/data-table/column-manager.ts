@@ -26,9 +26,9 @@ export const COLUMN_MANAGER = {
       name: { extra: 48 },
       // floor of header title + 60 units, then grows
       email: { extra: 60, flex: true },
-      role: {},
-      status: {},
-      createdAt: { extra: 24 },
+      role: { align: "center" },
+      status: { align: "center" },
+      createdAt: { align: "right", extra: 24 },
       actions: { align: "center", width: global.actions },
     } satisfies Record<string, ColumnConfig>,
   },
