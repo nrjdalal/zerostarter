@@ -28,6 +28,57 @@ const isLocalProtocol = (v: string) =>
   v.startsWith("link:") ||
   v.startsWith("portal:")
 
+const PLAIN_VERSION = /^\d+(?:\.\d+){0,2}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
+
+// resolved by something other than a plain semver range: workspace:/npm:/git+ssh:, urls, github owner/repo
+const isNonRangeSpec = (v: string) => v.includes(":") || v.includes("/")
+
+const toCaretRange = (spec: string) => {
+  if (PLAIN_VERSION.test(spec)) return `^${spec}`
+  if (spec.startsWith("~") && PLAIN_VERSION.test(spec.slice(1))) return `^${spec.slice(1)}`
+  return null
+}
+
+const eachCatalog = (pkg: PackageJson): Record<string, JSONValue>[] => {
+  const catalogs: Record<string, JSONValue>[] = []
+
+  if (isPlainObject(pkg.catalog)) catalogs.push(pkg.catalog)
+  if (isPlainObject(pkg.catalogs)) {
+    for (const group of Object.values(pkg.catalogs)) {
+      if (isPlainObject(group)) catalogs.push(group)
+    }
+  }
+
+  return catalogs
+}
+
+type RangeRewrite = { name: string; from: string; to: string }
+
+const normalizeCatalogRanges = (pkg: PackageJson) => {
+  const rewritten: RangeRewrite[] = []
+  const manual: { name: string; spec: string }[] = []
+
+  for (const catalog of eachCatalog(pkg)) {
+    for (const [name, spec] of Object.entries(catalog)) {
+      if (typeof spec !== "string") continue
+      if (spec.startsWith("^") || isNonRangeSpec(spec)) continue
+
+      const caret = toCaretRange(spec)
+      if (caret) {
+        catalog[name] = caret
+        rewritten.push({ name, from: spec, to: caret })
+      } else {
+        manual.push({ name, spec })
+      }
+    }
+  }
+
+  rewritten.sort((a, b) => a.name.localeCompare(b.name))
+  manual.sort((a, b) => a.name.localeCompare(b.name))
+
+  return { rewritten, manual }
+}
+
 const sortObjectDeep = <T extends JSONValue>(value: T): T => {
   if (Array.isArray(value)) return value.map(sortObjectDeep) as T
   if (isPlainObject(value)) {
@@ -51,15 +102,8 @@ const writeJsonFileIfChanged = async (path: string, nextValue: unknown, prevRaw:
 const collectCatalogKeys = (pkg: PackageJson): Set<string> => {
   const keys = new Set<string>()
 
-  if (isPlainObject(pkg.catalog)) {
-    for (const k of Object.keys(pkg.catalog)) keys.add(k)
-  }
-
-  if (isPlainObject(pkg.catalogs)) {
-    for (const group of Object.values(pkg.catalogs)) {
-      if (!isPlainObject(group)) continue
-      for (const k of Object.keys(group)) keys.add(k)
-    }
+  for (const catalog of eachCatalog(pkg)) {
+    for (const k of Object.keys(catalog)) keys.add(k)
   }
 
   return keys
@@ -153,6 +197,10 @@ async function main() {
     rootMutated = true
   }
 
+  // after the auto-move, so a spec carried in from a workspace dep is normalized in the same run
+  const { rewritten, manual: manualRanges } = normalizeCatalogRanges(rootPkg)
+  if (rewritten.length) rootMutated = true
+
   if (rootMutated) {
     await writeJsonFileIfChanged(rootPkgPath, rootPkg, rootRaw)
   }
@@ -198,7 +246,27 @@ async function main() {
 
   const missingInCatalog = unsafeMissing.sort((a, b) => a.localeCompare(b))
 
-  if (!unusedCatalog.length && !missingInCatalog.length && safeToMove.size === 0) return
+  if (
+    !unusedCatalog.length &&
+    !missingInCatalog.length &&
+    safeToMove.size === 0 &&
+    !rewritten.length &&
+    !manualRanges.length
+  ) {
+    return
+  }
+
+  if (rewritten.length) {
+    console.log("[INFO] Normalized catalog ranges to caret:")
+    for (const { name, from, to } of rewritten) console.log(`- ${name}: ${from} -> ${to}`)
+    console.log("")
+  }
+
+  if (manualRanges.length) {
+    console.log("[INFO] Catalog ranges that are not caret and cannot be converted safely:")
+    for (const { name, spec } of manualRanges) console.log(`- ${name}@${spec}`)
+    console.log("")
+  }
 
   if (safeToMove.size) {
     console.log("[INFO] Auto-moved deps to catalog:")
