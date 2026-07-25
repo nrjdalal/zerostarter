@@ -91,7 +91,7 @@ export function applyColumnManager<TData extends RowData>(
       meta: {
         ...column.meta,
         align: config.align ? config.align : "left",
-        // auto marks widthless columns: when every capable column is hidden, the last visible auto grows so no dead space trails the row
+        // auto marks widthless columns: when every capable column is hidden, the visible autos share the growth so the table spreads without dead space
         auto: config.width === undefined,
         flex: flexCapable,
       },

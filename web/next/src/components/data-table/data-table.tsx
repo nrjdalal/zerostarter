@@ -103,15 +103,9 @@ function DataTable<TData>({
   const anyCapableVisible = visibleColumns.some(
     (column) => column.columnDef.meta && column.columnDef.meta.flex,
   )
-  // With every capable column hidden, the last visible widthless column grows instead, so no dead space trails the row; only explicitly sized columns never grow.
-  let fallbackGrower = -1
-  if (!anyCapableVisible) {
-    visibleColumns.forEach((column, index) => {
-      if (column.columnDef.meta && column.columnDef.meta.auto) fallbackGrower = index
-    })
-  }
+  // With every capable column hidden, the visible widthless columns share the growth above their floors, so the table spreads instead of bunching left or trailing dead space; only explicitly sized columns never grow.
   const flexAt = visibleColumns.map((column, index) => {
-    if (!anyCapableVisible) return index === fallbackGrower
+    if (!anyCapableVisible) return Boolean(column.columnDef.meta && column.columnDef.meta.auto)
     const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
     const next = visibleColumns[index + 1]
     const nextFlex = Boolean(next && next.columnDef.meta && next.columnDef.meta.flex)
