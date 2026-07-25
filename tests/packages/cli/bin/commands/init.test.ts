@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { init } from "../bin/commands/init"
+import { init } from "../../../../../packages/cli/bin/commands/init"
 
 // Run `init --dry-run` and capture the printed plan; `setup` can scaffold the dir first.
 const planFor = async (args: string[], setup?: (dir: string) => void): Promise<string> => {

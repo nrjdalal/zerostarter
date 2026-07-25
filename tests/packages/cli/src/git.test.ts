@@ -12,7 +12,7 @@ import {
   gitIsClean,
   gitResetHard,
   gitRestore,
-} from "@/git"
+} from "../../../../packages/cli/src/git"
 
 let dir: string
 const git = (...args: string[]) => execFileSync("git", args, { cwd: dir, encoding: "utf8" })

@@ -10,8 +10,11 @@
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/fontkit": "catalog:",
     "@types/node": "catalog:",
+    "fontkit": "catalog:",
     "tldts": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "wawoff2": "catalog:"
   }
 }

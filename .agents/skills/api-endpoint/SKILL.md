@@ -55,9 +55,10 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route. 429 and 500 are added globally in `index.ts`, so never per route.
+- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route, plus `...forbiddenErrorResponses` (403) for an admin route. 429 and 500 are added globally in `index.ts`, so never per route.
 - Mirror `waitlist.ts`'s `x-codeSamples` block so Scalar shows the `hono/client` usage (the template above omits it).
 - Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. A public route gets its own router.
+- Admin-only routes go in `routers/admin.ts`, mounted at `/admin` inside `v1.ts` behind `adminMiddleware` (stacked after `authMiddleware`). The middleware re-reads the session with `disableCookieCache: true` and 403s unless `user.role === "admin"`, so a revoked admin loses access on the next request; do not gate on the cached session's role. Reference: the users list route, which also shows the list-endpoint conventions (whitelisted `sort` union with nullable columns coalesced, `LIKE` wildcards escaped, an `asc(user.id)` tiebreaker, `page`/`perPage` batching with a `total` count for infinite scroll).
 
 ## 2. Wire it
 

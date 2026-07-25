@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test"
 
-import { bunInstallCommand, detectRunner, zerostarterCommand } from "@/runner"
+import {
+  bunInstallCommand,
+  detectRunner,
+  zerostarterCommand,
+} from "../../../../packages/cli/src/runner"
 
 test("detectRunner maps npm_config_user_agent to the invoking runner", () => {
   expect(detectRunner("bun/1.3.14 npm/? node/v24")).toBe("bunx")

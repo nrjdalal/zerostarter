@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { merge, mergePkg, type Pkg, unionArrays } from "@/pkg"
+import { merge, mergePkg, type Pkg, unionArrays } from "../../../../packages/cli/src/pkg"
 
 describe("merge", () => {
   test("later object wins on shared keys and both extras are kept", () => {

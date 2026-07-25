@@ -4,7 +4,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "collections/*": ["./.source/*"]
+      "collections/*": ["./.source/*"],
+      "generated/*": ["../../.generated/*"]
     },
     "plugins": [
       {

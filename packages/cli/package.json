@@ -32,8 +32,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "tsdown --watch",
-    "test": "bun test"
+    "dev": "tsdown --watch"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",

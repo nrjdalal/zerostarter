@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test"
 
-import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
+import {
+  cookieConfig,
+  localhostHost,
+  type ParsedHost,
+} from "../../../../../packages/auth/src/lib/utils"
 
 // A real tldts parse result (allowPrivateDomains), narrowed to the fields cookieConfig reads.
 const host = (h: Partial<ParsedHost>): ParsedHost => ({

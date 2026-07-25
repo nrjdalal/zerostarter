@@ -20,12 +20,13 @@
     "start": {
       "persistent": true,
       "cache": false
-    },
-    "test": {
-      "dependsOn": ["^build"]
     }
   },
-  "globalDependencies": [".env*"],
+  "globalDependencies": [
+    ".env*",
+    // build-time generators (font metrics, env derivation): a build cached before an edit here would ship their stale output
+    "packages/scripts/src/**"
+  ],
   "globalEnv": [
     // CI variables
     "SKIP_ENV_VALIDATION",
