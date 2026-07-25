@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils"
 // Column labels for the view-options dropdown live on columnDef.meta, so ids like "createdAt" can render as "Created"; flex marks the column that absorbs leftover width (virtualized rows need explicit sizes).
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
-    align?: "left" | "right"
+    align?: "center" | "left" | "right"
     flex?: boolean
     label?: string
     right?: boolean
@@ -119,12 +119,17 @@ function DataTable<TData>({
   const columnLayout = (column: Column<TData, unknown>, index: number) => {
     const meta = column.columnDef.meta
     const anchor = column === rightStart ? "ml-auto" : undefined
-    const alignEnd = meta && meta.align === "right" ? "justify-end" : undefined
+    const align =
+      meta && meta.align === "right"
+        ? "justify-end"
+        : meta && meta.align === "center"
+          ? "justify-center"
+          : undefined
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
     return flexAt[index]
-      ? { className: cn("flex-1", anchor, alignEnd), style: { minWidth: width } }
-      : { className: cn("shrink-0", anchor, alignEnd), style: { width } }
+      ? { className: cn("flex-1", anchor, align), style: { minWidth: width } }
+      : { className: cn("shrink-0", anchor, align), style: { width } }
   }
 
   return (

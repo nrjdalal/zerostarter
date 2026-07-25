@@ -7,6 +7,7 @@ import {
   usersColumns,
   type ConsoleUser,
 } from "@/app/(console)/console/(platform)/users/components/data-columns"
+import { COLUMN_MANAGER } from "@/components/data-table/column-manager"
 import { DataTable } from "@/components/data-table/data-table"
 import { DataTableFacetedFilter } from "@/components/data-table/faceted-filter"
 import { DataTableToolbar } from "@/components/data-table/toolbar"
@@ -66,6 +67,7 @@ export function UsersDataTable() {
     fetchPage: fetchUsers,
     filterIds: ["role"],
     getRowId: (row) => row.id,
+    manager: COLUMN_MANAGER.console.users,
     queryKey: "console-users",
   })
 

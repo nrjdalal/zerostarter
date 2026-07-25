@@ -100,9 +100,14 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
+  // Auto widths measure the header label with canvas metrics, so hold measurement until after mount: server and hydration renders share the fallback, then one settle applies the measured widths.
+  const [measureReady, setMeasureReady] = React.useState(false)
+  React.useEffect(() => {
+    setMeasureReady(true)
+  }, [])
   const managedColumns = React.useMemo(
-    () => (manager ? applyColumnManager(columns, manager) : columns),
-    [columns, manager],
+    () => (manager ? applyColumnManager(columns, manager, measureReady) : columns),
+    [columns, manager, measureReady],
   )
 
   const table = useReactTable({

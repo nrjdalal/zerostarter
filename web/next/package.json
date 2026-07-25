@@ -12,6 +12,7 @@
   "dependencies": {
     "@api/hono": "workspace:*",
     "@base-ui/react": "catalog:",
+    "@chenglou/pretext": "catalog:",
     "@packages/auth": "workspace:*",
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
