@@ -59,18 +59,12 @@ const scaffoldContent = (root: string, brand: Brand): void => {
   write(p(root, "README.md"), readmeTemplate(brand))
 }
 
-// Strip the dangling /hire entry the route excludes leave in the shared navbar, then fail loudly on drift.
+// Strip the dangling /hire entry the route excludes leave in the shared navbar, then fail loudly on drift. Runs on init and sync, so it must tolerate a fork that owns fork-excluded modules (web/next/src/lib/marketing/); the init-only strip invariant lives in assertMarketingStripped.
 export const fixDangling = (root: string): void => {
   const fontsPath = p(root, "web/next/src/lib/fonts.ts")
-  const marketingFontsPath = p(root, "web/next/src/lib/marketing/fonts.ts")
   const navPath = p(root, "web/next/src/components/common/navbar.tsx")
   removeMatch(navPath, HIRE_NAV)
-  // The author-only marketing fonts are wholesale fork-excluded (web/next/src/lib/marketing/ in .gitpickignore). If the module survived, that .gitpickignore path drifted; if the shared fonts.ts refers to fonts/marketing/, a marketing font leaked back into the file that ships to forks (whose woff2 dir does not).
-  if (exists(marketingFontsPath)) {
-    throw new Error(
-      "web/next/src/lib/marketing/fonts.ts survived the fork strip (add web/next/src/lib/marketing/ to .gitpickignore).",
-    )
-  }
+  // If the shared fonts.ts refers to fonts/marketing/, a marketing font leaked back into the file that ships to forks (whose woff2 dir does not).
   if (exists(fontsPath) && read(fontsPath).includes("fonts/marketing/")) {
     throw new Error(
       "fonts.ts references fonts/marketing/; author-only marketing fonts must live in the fork-excluded web/next/src/lib/marketing/, not the shared fonts.ts.",
@@ -79,6 +73,15 @@ export const fixDangling = (root: string): void => {
   if (exists(navPath) && /href:\s*["']\/hire["']/.test(read(navPath))) {
     throw new Error(
       "common/navbar.tsx still has the /hire entry after fixDangling (regex drift). Update packages/cli/src/convert.ts.",
+    )
+  }
+}
+
+// Init/reinit-only invariant: the fork strip must have removed the author-only marketing font module (web/next/src/lib/marketing/ in .gitpickignore); if it survived, that .gitpickignore path drifted. Never run on sync, where a fork legitimately owns the directory.
+export const assertMarketingStripped = (root: string): void => {
+  if (exists(p(root, "web/next/src/lib/marketing/fonts.ts"))) {
+    throw new Error(
+      "web/next/src/lib/marketing/fonts.ts survived the fork strip (add web/next/src/lib/marketing/ to .gitpickignore).",
     )
   }
 }
@@ -121,6 +124,7 @@ export const convertRepo = (
   removeForkExcludes(root)
   scaffoldContent(root, brand)
   fixDangling(root)
+  assertMarketingStripped(root)
   rebrand(root, brand, features)
   // Reconcile the inherited skills to the fork: rename the upstream identity, point source at it, and stamp the sync note.
   reconcileForkSkills(root, brand)
