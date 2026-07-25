@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository, a Bun monorepo: the `p
 
 ## Workflow
 
-- ALWAYS: Do every change in its own git worktree, never on the primary checked-out branch. Create it under `.claude/worktrees/` (repo-root relative, one directory per worktree; never `/tmp`, home, or a sibling of the repo), and merge the latest `canary` into the working branch before starting so the change builds on current main.
+- ALWAYS: Do every change in its own git worktree, never on the primary checked-out branch. Create it under `.claude/worktrees/` (repo-root relative, one directory per worktree; never `/tmp`, home, or a sibling of the repo), and fork its branch from the latest `canary`: fetch first, then branch from `origin/canary` (`git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary`), so the change builds on current main.
 - ALWAYS: Keep documentation in sync with every change. Whenever code, structure, conventions, or tooling change, update the matching docs in the same change (e.g. `web/next/content/docs/`, `README.md`, the `llms.txt`/`llms-full.txt` context routes, skill docs under `.agents/skills/` and `.claude/skills/`, and these agent guides `AGENTS.md`/`CLAUDE.md`). Docs must never drift. See the `doc-sync` skill.
 - ALWAYS: When code, a convention, a command, a path, or tooling changes, review the skills in `.agents/skills/` that touch it and update them in the same change, so every skill stays accurate and relevant. A skill that describes old behavior misleads every agent that loads it, which is worse than no skill. If a change makes a skill obsolete, remove it; if it reveals a gap, consider adding one.
 
