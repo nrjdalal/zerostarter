@@ -32,6 +32,7 @@ const usersQuerySchema = z.object({
 })
 
 const userSchema = z.object({
+  banned: z.boolean().meta({ example: false }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
@@ -117,6 +118,7 @@ const { data, error } = await unwrap(
       const [rows, total] = await Promise.all([
         db
           .select({
+            banned: user.banned,
             createdAt: user.createdAt,
             email: user.email,
             emailVerified: user.emailVerified,
@@ -138,6 +140,7 @@ const { data, error } = await unwrap(
         total,
         users: rows.map((row) => ({
           ...row,
+          banned: row.banned ? true : false,
           createdAt: row.createdAt.toISOString(),
           role: row.role ? row.role : "user",
         })),

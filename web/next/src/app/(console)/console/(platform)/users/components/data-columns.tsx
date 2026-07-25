@@ -1,7 +1,7 @@
 "use client"
 "use no memo"
 
-import { RiMoreLine } from "@remixicon/react"
+import { RiMoreLine, RiVerifiedBadgeFill } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
@@ -69,7 +69,15 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     size: COLUMN_SIZES.email,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => (
-      <DataTableCellText className="text-muted-foreground">{row.original.email}</DataTableCellText>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <DataTableCellText className="text-muted-foreground">
+          {row.original.email}
+        </DataTableCellText>
+        {row.original.emailVerified && (
+          <RiVerifiedBadgeFill aria-hidden className="text-success size-3.5 shrink-0" />
+        )}
+        <span className="sr-only">{row.original.emailVerified ? "verified" : "unverified"}</span>
+      </div>
     ),
     meta: { flex: true, label: "Email" },
   },
@@ -83,6 +91,19 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
       </Badge>
     ),
     meta: { label: "Role" },
+  },
+  {
+    accessorKey: "banned",
+    size: COLUMN_SIZES.badge,
+    enableSorting: false,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    cell: ({ row }) =>
+      row.original.banned ? (
+        <Badge variant="destructive">Banned</Badge>
+      ) : (
+        <Badge variant="outline">Active</Badge>
+      ),
+    meta: { label: "Status" },
   },
   {
     accessorKey: "createdAt",
