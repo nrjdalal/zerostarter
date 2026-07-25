@@ -26,17 +26,11 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ### `esbuild` → `^0.28.1`
 
-- **Advisory:** [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr) (high): missing binary integrity verification in esbuild's Deno module enables RCE via `NPM_CONFIG_REGISTRY`. Affects `esbuild >=0.17.0 <0.28.1`.
-- **Why an override:** the advisory reaches us transitively through `drizzle-kit` (`@packages/db`) and `fumadocs-mdx` (`@web/next`). `drizzle-kit@0.31.10` is the latest release and still pins `esbuild ^0.25.4`, so updating dependencies alone cannot lift the tree past the affected range. A single `overrides.esbuild` entry forces every transitive `esbuild` to `0.28.1`.
-- **Risk:** low. We install esbuild via Bun's npm registry path (platform binary as `optionalDependencies`), not the Deno module the advisory targets. The override only bumps a build-time bundler used by `drizzle-kit`/`fumadocs-mdx`.
-- **Exit criteria:** remove the override once `drizzle-kit` ships a release depending on `esbuild >=0.28.1`.
-
-### `fast-uri` → `^3.1.4`
-
-- **Advisory:** [GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx) (high): host confusion via a literal backslash authority delimiter. Affects `fast-uri >=3.0.0 <=3.1.3`.
-- **Why an override:** the affected `fast-uri@3.1.3` reaches us transitively through `@commitlint/cli` (`ajv`) and `shadcn`, neither of which pins a lifted range. `fast-uri@4.x` is a major that `ajv` does not accept, so the override stays in the `3.x` line at `3.1.4` (the patched release) rather than bumping a parent.
-- **Risk:** low. `fast-uri` is a build/lint-time URI parser used by `ajv` schema validation and the `shadcn` CLI, not shipped in the app runtime; `3.1.4` is a patch over `3.1.3`.
-- **Exit criteria:** remove the override once `ajv` (via `@commitlint/*`) and `shadcn` depend on `fast-uri >=3.1.4`.
+- **Advisory:** [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99) (moderate): esbuild's dev server answers any website's cross-origin request and returns the response. Affects `esbuild <=0.24.2`.
+- **Why an override:** `drizzle-kit@0.31.10` still reaches the legacy `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` chain, which pins `esbuild ~0.18.20`, so a fresh resolve pulls the affected copy back in alongside the patched one. A single `overrides.esbuild` entry collapses every transitive `esbuild` onto `0.28.1`. `fumadocs-mdx@15.2.0` now requires `^0.28.1` on its own and no longer needs the override; `drizzle-kit`'s own direct range (`^0.25.4`) is already clear too, so the `@esbuild-kit/*` chain is the only thing this still holds up.
+- **Risk:** low. It bumps a build-time bundler, and the dev server the advisory targets is never started here.
+- **Exit criteria:** remove the override once `drizzle-kit` drops the `@esbuild-kit/*` chain.
+- **Note:** this override previously cited [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr), which was **withdrawn on 2026-06-17** for naming the wrong package (the flaw was in esbuild's Deno distribution, not the npm one). Verified withdrawn: with the override removed, `bun audit` no longer reports it at any level. The override was kept for the live advisory above, not the withdrawn one.
 
 ### `postcss` → `^8.5.23`
 
@@ -52,9 +46,9 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 - **Risk:** low. It converges the transitive copy onto the exact version our own image pipeline (OG rendering, `compress-images.ts`) already uses.
 - **Exit criteria:** remove the override once `next` depends on `sharp >=0.35.0`.
 
-### `shell-quote` → `^1.10.0`
+## Retired overrides
 
-- **Advisory:** [GHSA-395f-4hp3-45gv](https://github.com/advisories/GHSA-395f-4hp3-45gv) (high): quadratic-complexity denial of service in `parse()` (CWE-407). Affects `shell-quote <=1.8.4`.
-- **Why an override:** `shell-quote@1.8.4` reaches us only through `concurrently` (`@api/hono` dev script), which at its latest release (`10.0.3`) still pins the affected range, so updating the parent cannot lift the tree.
-- **Risk:** low. `concurrently` is a dev-only process orchestrator that never runs in production, and it does not feed untrusted input to `shell-quote.parse()`.
-- **Exit criteria:** remove the override once `concurrently` depends on `shell-quote >=1.9.0`.
+Kept as a record so a returning advisory is recognised rather than re-investigated from scratch. Both were dropped once a fresh resolve satisfied their own exit criteria without help.
+
+- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both now resolve `fast-uri@3.1.4` on their own.
+- **`shell-quote` → `^1.10.0`** ([GHSA-395f-4hp3-45gv](https://github.com/advisories/GHSA-395f-4hp3-45gv), high). Held up for `concurrently`, which now resolves `shell-quote@1.9.0`, past the `<=1.8.4` affected range.
