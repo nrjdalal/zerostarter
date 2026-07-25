@@ -7,6 +7,7 @@ import { $, Glob } from "bun"
 //   bun .github/scripts/skills-manager.ts --check    fail on drift instead of writing (the pre-commit gate)
 //   bun .github/scripts/skills-manager.ts --outdated fetch each skill's source upstream and report drift
 // A skill's source is its provenance: a full github link it was inherited from (checked by --outdated), a bare tool name (vendored, re-run the tool), or local (authored here).
+// A synced skill also carries source-hash, the hash of the upstream body it was last synced from (stamped by bunx zerostarter); --outdated compares that against a fresh upstream fetch, since the sync transform (rebrand + sync note) guarantees the raw bodies never match in a fork.
 
 const ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.join(ROOT, ".agents/skills")
@@ -18,6 +19,7 @@ type Skill = {
   description: string
   summary: string
   source: string
+  sourceHash: string
   dir: string
   file: string
 }
@@ -62,6 +64,7 @@ async function readSkills(): Promise<Skill[]> {
       description: fm.description,
       summary: summaryOf(fm.description),
       source: fm.source,
+      sourceHash: fm["source-hash"] ?? "",
       dir: rel.split(/[/\\]/)[0]!,
       file,
     })
@@ -103,6 +106,13 @@ async function format(doc: string): Promise<string> {
   }
 }
 
+// Drift stamp shared with packages/cli/src/skills.ts (the sync writes it): 16 hex chars of sha256 over the LF-normalized, trimmed text; keep both implementations identical.
+const hashBody = (text: string): string =>
+  new Bun.CryptoHasher("sha256")
+    .update(text.replace(/\r\n/g, "\n").trim())
+    .digest("hex")
+    .slice(0, 16)
+
 async function outdated(): Promise<void> {
   const skills = await readSkills()
   for (const s of skills) {
@@ -128,7 +138,18 @@ async function outdated(): Promise<void> {
     const body = (t: string) => t.slice(t.indexOf("---", 3) + 3).trim()
     const ours = body(await Bun.file(s.file).text())
     const theirs = body(await res.text())
-    console.log(`  ${s.name}: ${ours === theirs ? "up to date" : "DIFFERS from upstream"}`)
+    if (ours === theirs) {
+      console.log(`  ${s.name}: up to date`)
+      continue
+    }
+    // In a fork the sync transform (rebrand + sync note) guarantees the raw bodies differ, so the real signal is the source-hash stamp: it changes only when upstream's body has.
+    if (s.sourceHash) {
+      console.log(
+        `  ${s.name}: ${hashBody(theirs) === s.sourceHash ? "up to date" : "OUTDATED (upstream changed since the last sync)"}`,
+      )
+      continue
+    }
+    console.log(`  ${s.name}: unverifiable (no source-hash stamp; bunx zerostarter sync adds one)`)
   }
 }
 
