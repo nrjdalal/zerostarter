@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils"
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: "center" | "left" | "right"
+    auto?: boolean
     flex?: boolean
     label?: string
   }
@@ -99,7 +100,18 @@ function DataTable<TData>({
 
   // Of the visible flex-capable columns (the manager marks capability, reaching back through widthless columns), only the last one grows; the rest hold their width, so hiding the growing column hands growth backward, two growing neighbors cannot fight, and everything after the growing column sits docked at the right edge. Fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells.
   const visibleColumns = table.getVisibleLeafColumns()
+  const anyCapableVisible = visibleColumns.some(
+    (column) => column.columnDef.meta && column.columnDef.meta.flex,
+  )
+  // With every capable column hidden, the last visible widthless column grows instead, so no dead space trails the row; only explicitly sized columns never grow.
+  let fallbackGrower = -1
+  if (!anyCapableVisible) {
+    visibleColumns.forEach((column, index) => {
+      if (column.columnDef.meta && column.columnDef.meta.auto) fallbackGrower = index
+    })
+  }
   const flexAt = visibleColumns.map((column, index) => {
+    if (!anyCapableVisible) return index === fallbackGrower
     const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
     const next = visibleColumns[index + 1]
     const nextFlex = Boolean(next && next.columnDef.meta && next.columnDef.meta.flex)
