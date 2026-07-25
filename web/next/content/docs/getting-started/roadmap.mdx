@@ -16,7 +16,7 @@ Available out of the box in a fresh scaffold:
 - **[Scalar API docs](/docs/getting-started/type-safe-api)**: an interactive reference at `/api/docs`, generated from the OpenAPI spec at `/api/openapi.json`.
 - **[Dynamic OG images](/docs/manage/seo)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.
 - **[llms.txt + llms-full.txt](/docs/manage/llms-txt)**: auto-generated AI context routes: the index and the full corpus.
-- **[SEO routes](/docs/manage/seo)**: `robots.ts`, `sitemap.ts`, and `rss.xml/route.ts` generate `robots.txt`, the sitemap, and the blog feed.
+- **[SEO routes](/docs/manage/seo)**: `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.
 - **[PostHog analytics](/docs/manage/analytics)**: product analytics, feature flags, and session replay. Optional; on only when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` are set.
 - **[Public waitlist](/docs/manage/database)**: a `/waitlist` page backed by `POST /api/waitlist` and the `waitlist` table; an optional [feature](/docs/manage/features) that becomes a fresh fork's home when enabled.
 - **[Configurable features](/docs/manage/features)**: turn the docs, blog, API reference, internal docs, or waitlist on or off per fork, from `init` flags or an interactive picker, and flip any of them later in config.

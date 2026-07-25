@@ -25,12 +25,18 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
-  // empty and malformed are separate failures, so each names its own problem
+  // string() is here for trim(): z.email() alone rejects a padded address before any trim runs. One error function covers both failures, so no separate min() is needed.
   email: z
     .string()
     .trim()
-    .min(1, { error: "Enter your email address to continue." })
-    .pipe(z.email({ error: "That does not look like an email address. Check for a typo." })),
+    .pipe(
+      z.email({
+        error: (issue) =>
+          String(issue.input ?? "").trim() === ""
+            ? "Enter your email address to continue."
+            : "That does not look like an email address. Check for a typo.",
+      }),
+    ),
 })
 
 export function Access({ labelClassName }: { labelClassName?: string }) {
@@ -71,11 +77,8 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
     defaultValues: {
       email: "",
     },
-    validators: {
-      onSubmit: formSchema,
-      onChange: formSchema,
-      onBlur: formSchema,
-    },
+    // one validator source on purpose: TanStack keeps an error per source, so adding onSubmit/onBlur leaves a stale entry from the previous value and FieldError lists both
+    validators: { onChange: formSchema },
     onSubmitInvalid: () => {
       if (emailRef.current) emailRef.current.focus()
     },

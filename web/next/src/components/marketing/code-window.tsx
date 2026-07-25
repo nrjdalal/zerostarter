@@ -2,6 +2,7 @@
 
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 import { ShikiRegion } from "@/components/marketing/shiki-region"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ function CopyButton({ code, label }: { code: string; label: string }) {
       setCopied(true)
     } catch {
       setCopied(false)
+      toast.error("Could not copy to clipboard")
     }
   }
 

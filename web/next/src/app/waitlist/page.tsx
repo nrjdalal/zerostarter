@@ -15,13 +15,19 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
-  // empty and malformed are separate failures, so each names its own problem
+  // string() is here for trim(): z.email() alone rejects a padded address before any trim runs. One error function covers both failures, so no separate min() is needed.
   email: z
     .string()
     .trim()
-    .min(1, { error: "Enter your email address to join." })
     .pipe(
-      z.email({ error: "That does not look like an email address. Check for a typo." }).max(254),
+      z
+        .email({
+          error: (issue) =>
+            String(issue.input ?? "").trim() === ""
+              ? "Enter your email address to join."
+              : "That does not look like an email address. Check for a typo.",
+        })
+        .max(254),
     ),
   // honeypot: unconstrained so it never blocks submission; the server silently drops bots
   subject: z.string(),
@@ -85,11 +91,8 @@ export default function WaitlistPage() {
   const form = useForm({
     // `subject` is a honeypot: humans never see it, bots fill it (dodges browser autofill)
     defaultValues: { email: "", subject: "" },
-    validators: {
-      onSubmit: formSchema,
-      onChange: formSchema,
-      onBlur: formSchema,
-    },
+    // one validator source on purpose: TanStack keeps an error per source, so adding onSubmit/onBlur leaves a stale entry from the previous value and FieldError lists both
+    validators: { onChange: formSchema },
     onSubmitInvalid: () => {
       if (emailRef.current) emailRef.current.focus()
     },
