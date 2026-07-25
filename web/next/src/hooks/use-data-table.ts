@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table"
 import * as React from "react"
 
+import { applyColumnManager, type ColumnConfig } from "@/components/data-table/column-manager"
 import { useDataTableState } from "@/hooks/use-data-table-state"
 
 export type DataTablePageInput = {
@@ -34,6 +35,7 @@ export function useDataTable<TRow>({
   fetchPage,
   filterIds = [],
   getRowId,
+  manager,
   queryKey,
 }: {
   batchSize?: number
@@ -42,6 +44,7 @@ export function useDataTable<TRow>({
   fetchPage: (input: DataTablePageInput) => Promise<DataTablePage<TRow>>
   filterIds?: string[]
   getRowId?: (row: TRow) => string
+  manager?: Record<string, ColumnConfig>
   queryKey: string
 }) {
   const {
@@ -97,8 +100,13 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
+  const managedColumns = React.useMemo(
+    () => (manager ? applyColumnManager(columns, manager) : columns),
+    [columns, manager],
+  )
+
   const table = useReactTable({
-    columns,
+    columns: managedColumns,
     data: rows,
     state: { columnFilters, globalFilter, rowSelection, sorting },
     // Sizes are Tailwind spacing units; tanstack's default minSize of 20 is meant for pixels and would clamp small units, so drop the floor.

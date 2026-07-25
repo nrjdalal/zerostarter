@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 import { DataTableCellText } from "@/components/data-table/cell-text"
 import { DataTableColumnHeader } from "@/components/data-table/column-header"
-import { COLUMN_SIZES } from "@/components/data-table/column-sizes"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -29,7 +28,6 @@ export type ConsoleUser = InferResponseType<
 export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "select",
-    size: COLUMN_SIZES.console.users.select,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -49,7 +47,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "name",
-    size: COLUMN_SIZES.console.users.name,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => (
       <DataTableCellText className="font-medium">{row.original.name}</DataTableCellText>
@@ -58,16 +55,14 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "email",
-    size: COLUMN_SIZES.console.users.email,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     cell: ({ row }) => (
       <DataTableCellText className="text-muted-foreground">{row.original.email}</DataTableCellText>
     ),
-    meta: { flex: true, label: "Email" },
+    meta: { label: "Email" },
   },
   {
     accessorKey: "role",
-    size: COLUMN_SIZES.console.users.role,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => (
       <DataTableCellText className="capitalize">{row.original.role}</DataTableCellText>
@@ -77,7 +72,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "status",
     accessorKey: "banned",
-    size: COLUMN_SIZES.console.users.status,
     enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => (
@@ -87,7 +81,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     accessorKey: "createdAt",
-    size: COLUMN_SIZES.console.users.createdAt,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
     cell: ({ row }) => (
       <DataTableCellText>
@@ -98,7 +91,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
-    size: COLUMN_SIZES.console.users.actions,
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>

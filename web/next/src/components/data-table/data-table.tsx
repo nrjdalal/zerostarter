@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils"
 // Column labels for the view-options dropdown live on columnDef.meta, so ids like "createdAt" can render as "Created"; flex marks the column that absorbs leftover width (virtualized rows need explicit sizes).
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
+    align?: "left" | "right"
     flex?: boolean
     label?: string
     right?: boolean
@@ -104,17 +105,26 @@ function DataTable<TData>({
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
 
-  // The one column marked meta.flex absorbs leftover width (its size acts as a floor); the rest hold their size, so on narrow viewports the row overflows into the region's horizontal scroll instead of crushing cells. In a table with no flex column, the first meta.right column takes ml-auto so it and everything after dock to the right edge.
-  const rightStart = table
-    .getVisibleLeafColumns()
-    .find((column) => column.columnDef.meta && column.columnDef.meta.right)
-  const columnLayout = (column: Column<TData, unknown>) => {
+  // Flex columns absorb leftover width above their floor; fixed columns hold their width, so narrow viewports overflow into the region's horizontal scroll instead of crushing cells. In a run of consecutive flex columns only the last one grows (earlier ones hold their min width), so two growing neighbors cannot fight. In a table with no flex column, the first meta.right column takes ml-auto so it and everything after dock to the right edge.
+  const visibleColumns = table.getVisibleLeafColumns()
+  const rightStart = visibleColumns.find(
+    (column) => column.columnDef.meta && column.columnDef.meta.right,
+  )
+  const flexAt = visibleColumns.map((column, index) => {
+    const flex = Boolean(column.columnDef.meta && column.columnDef.meta.flex)
+    const next = visibleColumns[index + 1]
+    const nextFlex = Boolean(next && next.columnDef.meta && next.columnDef.meta.flex)
+    return flex && !nextFlex
+  })
+  const columnLayout = (column: Column<TData, unknown>, index: number) => {
+    const meta = column.columnDef.meta
     const anchor = column === rightStart ? "ml-auto" : undefined
+    const alignEnd = meta && meta.align === "right" ? "justify-end" : undefined
     // Sizes are Tailwind spacing units; computing through the --spacing token keeps table widths on the same scale as every other width in the app.
     const width = `calc(var(--spacing) * ${column.getSize()})`
-    return column.columnDef.meta && column.columnDef.meta.flex
-      ? { className: cn("flex-1", anchor), style: { minWidth: width } }
-      : { className: cn("shrink-0", anchor), style: { width } }
+    return flexAt[index]
+      ? { className: cn("flex-1", anchor, alignEnd), style: { minWidth: width } }
+      : { className: cn("shrink-0", anchor, alignEnd), style: { width } }
   }
 
   return (
@@ -143,10 +153,10 @@ function DataTable<TData>({
                     role="columnheader"
                     className={cn(
                       "flex items-center overflow-hidden",
-                      columnLayout(header.column).className,
+                      columnLayout(header.column, index).className,
                       debugColumnClass(index),
                     )}
-                    style={columnLayout(header.column).style}
+                    style={columnLayout(header.column, index).style}
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -188,10 +198,10 @@ function DataTable<TData>({
                         role="cell"
                         className={cn(
                           "flex items-center overflow-hidden",
-                          columnLayout(cell.column).className,
+                          columnLayout(cell.column, index).className,
                           debugColumnClass(index),
                         )}
-                        style={columnLayout(cell.column).style}
+                        style={columnLayout(cell.column, index).style}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
