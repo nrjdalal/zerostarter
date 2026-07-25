@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && fumadocs-mdx && next build",
-    "check-types": "bun ../../.github/scripts/docs.ts && fumadocs-mdx && tsc --noEmit",
+    "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && next build",
+    "check-types": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsc --noEmit",
     "dev": "portless",
-    "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../.github/scripts/portless.ts next dev",
+    "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && bun ../../.github/scripts/portless.ts next dev",
     "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {
@@ -19,6 +19,8 @@
     "@shadcn/react": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-table": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
     "better-auth": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -33,6 +35,7 @@
     "nanoid": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
+    "nuqs": "catalog:",
     "posthog-js": "catalog:",
     "react": "catalog:",
     "react-day-picker": "catalog:",

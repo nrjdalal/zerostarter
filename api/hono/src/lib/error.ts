@@ -114,6 +114,11 @@ export const authErrorResponses: ResponsesWithResolver = {
   401: errorResponse("UNAUTHORIZED", "Unauthorized"),
 }
 
+// Add to routes behind adminMiddleware, the only thing that returns 403.
+export const forbiddenErrorResponses: ResponsesWithResolver = {
+  403: errorResponse("FORBIDDEN", "Forbidden"),
+}
+
 // Add to routes with a request validator, the only thing that returns 400; the 400 also carries the per-field issues.
 export const validationErrorResponses: ResponsesWithResolver = {
   400: {

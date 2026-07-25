@@ -3,9 +3,9 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { convertRepo, fixDangling } from "@/convert"
-import { exists, read, readJson, write } from "@/io"
-import { reconcileForkSkillsFromRoot } from "@/skills"
+import { convertRepo, fixDangling } from "../../../../packages/cli/src/convert"
+import { exists, read, readJson, write } from "../../../../packages/cli/src/io"
+import { reconcileForkSkillsFromRoot } from "../../../../packages/cli/src/skills"
 
 let dir: string
 beforeEach(() => {

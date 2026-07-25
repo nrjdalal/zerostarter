@@ -1,3 +1,19 @@
+## v0.1.13
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.12...v0.1.13)
+
+### 🚀 Enhancements
+
+- **marketing:** Design pass on the landing page ([#744](https://github.com/nrjdalal/zerostarter/pull/744))
+
+### 📖 Documentation
+
+- **plans:** Add the Icebox section and park the RSS feed decision ([#747](https://github.com/nrjdalal/zerostarter/pull/747))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.12
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.11...v0.1.12)

@@ -6,7 +6,7 @@ import {
   escapeFile,
   nanoSpawn,
   SubprocessError,
-} from "@/vendor/nano-spawn"
+} from "../../../../../packages/cli/src/vendor/nano-spawn"
 
 test("nanoSpawn captures stdout on success", async () => {
   const { stdout } = await nanoSpawn("node", ["-e", "process.stdout.write('hi')"], {

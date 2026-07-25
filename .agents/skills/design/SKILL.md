@@ -64,9 +64,22 @@ When a change establishes or alters a convention, update this file in the same c
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
 - **shadcn (`components/ui/*`):** customize only via `.github/scripts/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 
+## Data tables
+
+Every table uses the `components/data-table.tsx` family; do not hand-roll a `<Table>` with its own state. The full architecture and behaviors live in the `manage/data-tables` docs page; the sharp-edge rationale is commented in the module at each site it bites. The pure layout math (width measurement, the column-config fold, the slack rule) lives in `lib/data-table-layout.ts` and is unit-tested, so change it there and add a case rather than tweaking widths in the renderer.
+
+- Compose headless: the page owns the TanStack Table instance (`useDataTable` for server-driven, `useDataTableState` + row models for client-side) and renders `DataTableToolbar` + `DataTable`. Infinite scroll with virtualized rows everywhere; never numbered pagination.
+- Layout lives in a colocated `Record<string, ColumnConfig>` in the table's `data-columns.tsx`, written in column order; never put widths inline in column defs. Widths are Tailwind spacing units; omit `width` to size from the measured `meta.label` plus `extra` (default 10, snapped to the 3-unit grid), measured from build-time font metrics rather than at runtime.
+- One `flex: true` column grows; the capability reaches back to every column before it and the last visible capable column takes the slack. Keep a select column left-aligned so inherited growth reads as gap. No trailing spacer columns.
+- Prefer `extra` over an explicit `width` on a sortable column: the auto path reserves the allowance for the sort button, a fixed width reserves nothing and the header cell clips.
+- Column ids say what the column shows, not the backing field (`status` over `banned`), and `meta.label` is the single source for header text, measured width, and the view-options entry (`DataTableColumnHeader` takes no title prop). Cells are plain text via `DataTableCellText` (truncate + tooltip by default, `wrap: true` to fold); no badges in cells for now.
+- Sort UI is a plain label plus a bare icon-only sort button toggling asc/desc (icon before the label on right-aligned columns); hiding lives in `DataTableViewOptions`. Give the table a visible `defaultSorting`; tables are single-sort.
+- Any file that reads a `table`/`column` instance needs the `"use no memo"` directive, or the React Compiler freezes it one render behind.
+- A page hosting a full-height table passes `className="flex h-svh flex-col"` to `PageShell` and keeps `flex-1 min-h-0` on every wrapper down to the region; `min-h-svh` ancestors are not definite, so the flex chain would not fill.
+
 ## File and export naming
 
-- Components are grouped by domain folder (`common/`, `shell/`, `console/`, `dashboard/`, `docs/`, `blog/`, `marketing/`, `ui/`), with kebab-case file names. A single-component file's basename matches its export; a multi-export slot file is named `<area>/sidebar.tsx` (console, dashboard, docs) and its exports follow the sidebar-slot rule below. `docs/` holds one of each (`docs/sidebar.tsx` + `docs/copy-as-markdown.tsx`).
+- Components are grouped by domain folder (`common/`, `shell/`, `console/`, `dashboard/`, `docs/`, `blog/`, `marketing/`, `ui/`), with kebab-case file names. A single-component file's basename matches its export; a multi-export slot file is named `<area>/sidebar.tsx` (console, dashboard, docs) and its exports follow the sidebar-slot rule below. `docs/` holds one of each (`docs/sidebar.tsx` + `docs/copy-as-markdown.tsx`). A cross-domain family follows the shadcn single-module pattern as one top-level file whose exports share the family prefix: `data-table.tsx` exports `DataTable`, `DataTableToolbar`, `useDataTable`, and friends.
 - Sidebar slot exports follow one rule: domain-prefix the generic-role names (`Nav`, `Header`, `Footer`, `Search`) so they read unambiguously and never collide across areas (`console/sidebar.tsx` imports `DocsNav`). So `ConsoleNav`, `ConsoleHeader`, `DashboardFooter`, `DocsNav`, `DocsFooter`, `DocsSearch`. Leave a distinctive content name bare (`OrgSwitcher`, `CopyAsMarkdown`): a domain prefix on a self-explaining name is redundant.
 - `shell/` holds the shared app-shell chrome as two families, `Sidebar*` (`SidebarShell`, `SidebarAdaptive`, `SidebarFloatingTrigger`, `SidebarDropdownMenu`, `SidebarUserMenu`) and `Page*` (`PageShell`, `PageHeader`). "Shell" denotes structural layout scaffolding, not one specific component.
 

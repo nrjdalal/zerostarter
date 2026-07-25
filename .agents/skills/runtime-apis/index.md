@@ -1,7 +1,7 @@
 # Node API index
 
 Per-file inventory of every Node built-in used in the repo, for the [`runtime-apis`](SKILL.md) skill.
-Snapshot: 2026-07-17. Regenerate with the `rg "node:..."` command in `SKILL.md`.
+Snapshot: 2026-07-26. Regenerate with the `rg "node:..."` command in `SKILL.md`.
 
 The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:` (no `Bun.*`);
 **Bun** files may move a call to a `Bun.*` equivalent where one exists.
@@ -25,13 +25,14 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | `packages/cli/src/git.ts` | Node | `node:path` (join) |
 | `packages/cli/src/io.ts` | Node | `node:fs` (existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync); `node:path` (dirname, join) |
 | `packages/cli/src/vendor/nano-spawn.ts` | Node | `node:child_process` (spawn, SpawnOptions); `node:fs/promises` (access); `node:path` (delimiter, resolve) |
-| `packages/cli/test/convert.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
-| `packages/cli/test/db.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
-| `packages/cli/test/git.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
-| `packages/cli/test/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `packages/env/src/lib/utils.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
+| `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
+| `tests/packages/cli/src/convert.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
+| `tests/packages/cli/src/db.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
+| `tests/packages/cli/src/git.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
+| `tests/packages/cli/src/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `web/next/next.config.ts` | Node | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Node | `node:fs` (existsSync); `node:path` (join) |
 

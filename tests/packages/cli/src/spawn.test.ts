@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { ok, printError, run, runTail } from "@/spawn"
+import { ok, printError, run, runTail } from "../../../../packages/cli/src/spawn"
 
 // Capture everything written to a stream while `fn` runs, restoring it (and TTY shape) afterward.
 const captureStream = async (
