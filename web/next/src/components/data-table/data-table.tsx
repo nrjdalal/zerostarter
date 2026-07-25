@@ -28,6 +28,7 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     flex?: boolean
     label?: string
+    right?: boolean
   }
 }
 
@@ -96,11 +97,16 @@ function DataTable<TData>({
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
 
-  // The one column marked meta.flex absorbs leftover width (its size acts as a floor); the rest hold their size, so on narrow viewports the row overflows into the region's horizontal scroll instead of crushing cells.
-  const columnLayout = (column: Column<TData, unknown>) =>
-    column.columnDef.meta && column.columnDef.meta.flex
-      ? { className: "flex-1", style: { minWidth: column.getSize() } }
-      : { className: "shrink-0", style: { width: column.getSize() } }
+  // The one column marked meta.flex absorbs leftover width (its size acts as a floor); the rest hold their size, so on narrow viewports the row overflows into the region's horizontal scroll instead of crushing cells. In a table with no flex column, the first meta.right column takes ml-auto so it and everything after dock to the right edge.
+  const rightStart = table
+    .getVisibleLeafColumns()
+    .find((column) => column.columnDef.meta && column.columnDef.meta.right)
+  const columnLayout = (column: Column<TData, unknown>) => {
+    const anchor = column === rightStart ? "ml-auto" : undefined
+    return column.columnDef.meta && column.columnDef.meta.flex
+      ? { className: cn("flex-1", anchor), style: { minWidth: column.getSize() } }
+      : { className: cn("shrink-0", anchor), style: { width: column.getSize() } }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
