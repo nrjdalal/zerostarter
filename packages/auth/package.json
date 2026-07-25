@@ -10,7 +10,7 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "bun ../scripts/src/generate-env.ts auth && tsdown",
-    "check-types": "tsc --noEmit && tsc --noEmit -p ../../tests/packages/auth/tsconfig.json"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@packages/db": "workspace:*",

@@ -33,7 +33,6 @@ type ConsoleNavItem = {
 
 const navGroups: { items: ConsoleNavItem[]; label: string }[] = [
   {
-    label: "Getting Started",
     items: [
       {
         exact: false,
@@ -43,9 +42,9 @@ const navGroups: { items: ConsoleNavItem[]; label: string }[] = [
         url: "/console/docs",
       },
     ],
+    label: "Getting Started",
   },
   {
-    label: "Platform",
     items: [
       {
         exact: false,
@@ -54,6 +53,7 @@ const navGroups: { items: ConsoleNavItem[]; label: string }[] = [
         url: "/console/users",
       },
     ],
+    label: "Platform",
   },
 ]
 

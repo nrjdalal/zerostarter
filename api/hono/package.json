@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify",
     "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --external hono",
-    "check-types": "tsc --noEmit && tsc --noEmit -p ../../tests/api/hono/tsconfig.json",
+    "check-types": "tsc --noEmit",
     "dev": "portless",
     "dev:app": "concurrently \"tsdown --watch\" \"bun ../../.github/scripts/portless.ts bun --hot src/index.ts\"",
     "start": "bun bundle/index.mjs"

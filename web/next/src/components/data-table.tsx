@@ -93,7 +93,7 @@ export type ColumnConfig = {
 // A widthless column sizes as header title + an allowance in spacing units, snapped up to the 3-unit grid: config.extra when set, else this default (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset).
 const AUTO_WIDTH_EXTRA_UNITS = 10
 
-// The app header font (text-sm font-medium) as bundled data: per-character advances plus sparse kerning-pair deltas in px at 500 14px, generated at build by .github/scripts/data-table-metrics.ts, so any label measures the same on server and client and SSR ships final widths with no settle. The generator asserts this exact algorithm against real font shaping.
+// The app header font (text-sm font-medium) as bundled data: per-character advances plus sparse kerning-pair deltas in px at 500 14px, generated at build by packages/scripts/src/data-table-metrics.ts, so any label measures the same on server and client and SSR ships final widths with no settle. The generator asserts this exact algorithm against real font shaping.
 const fontMetrics: {
   advances: Record<string, number>
   average: number
@@ -139,8 +139,10 @@ export function applyColumnManager<TData extends RowData>(
     if (config && config.flex) lastFlex = index
   })
   return columns.map((column, index) => {
-    const { config, id } = configFor(column)
-    if (!config || !id) return column
+    const { config: entry, id } = configFor(column)
+    if (!id) return column
+    // An id with no entry takes the defaults rather than passing through: untouched, it would keep tanstack's size default of 150, which this renderer reads as 150 spacing units (600px).
+    const config = entry ? entry : {}
     const label = column.meta && column.meta.label ? column.meta.label : id
     const width =
       config.width !== undefined
@@ -722,10 +724,12 @@ export function DataTableCellText<TData, TValue>({
 // Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and the view-options toggle.
 export function DataTableToolbar<TData>({
   children,
+  searchMaxLength,
   searchPlaceholder = "Search...",
   table,
 }: {
   children?: React.ReactNode
+  searchMaxLength?: number
   searchPlaceholder?: string
   table: TableInstance<TData>
 }) {
@@ -736,14 +740,14 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex flex-1 items-center gap-2">
-        {/* maxLength mirrors the API convention's 254-char cap on q, so a long paste cannot flip the table into the error state. */}
+        {/* searchMaxLength belongs to whatever backs the table: pass the endpoint's own q cap so a long paste cannot flip it into the error state. */}
         <Input
           type="search"
           aria-label={searchPlaceholder}
           placeholder={searchPlaceholder}
           value={search}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
-          maxLength={254}
+          maxLength={searchMaxLength}
           className="w-40 lg:w-64"
         />
         {children}

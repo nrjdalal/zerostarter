@@ -94,7 +94,7 @@ export function UsersDataTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <DataTableToolbar table={table} searchPlaceholder="Search users...">
+      <DataTableToolbar table={table} searchMaxLength={Q_MAX} searchPlaceholder="Search users...">
         <DataTableFacetedFilter
           column={table.getColumn("role")}
           options={ROLE_OPTIONS}
