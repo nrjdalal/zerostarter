@@ -2,8 +2,8 @@
 "use no memo"
 
 import { usersColumns, type ConsoleUser } from "@/components/console/users-columns"
+import { DataTable } from "@/components/data-table/data-table"
 import { DataTableFacetedFilter } from "@/components/data-table/faceted-filter"
-import { DataTable } from "@/components/data-table/table"
 import { DataTableToolbar } from "@/components/data-table/toolbar"
 import { Button } from "@/components/ui/button"
 import {
