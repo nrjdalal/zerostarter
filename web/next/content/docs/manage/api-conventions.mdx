@@ -93,6 +93,10 @@ The limiter keys each request by user id, then API key, then IP, and gives authe
 
 `authMiddleware` (on `/api/v1/*`) reads the session from request headers via Better Auth, returns `401 UNAUTHORIZED` when there is none, and otherwise sets `session` and `user` on the context (typed by the `{ Variables: Session }` generic) for downstream handlers. It also swaps in the 2× per-user rate limiter.
 
+### Admin
+
+`adminMiddleware` (on `/api/v1/admin/*`, downstream of auth) returns `403 FORBIDDEN` unless the session user's `role` is `admin`, the same rule the `/console` gate uses. Routes behind it document the 403 by spreading `forbiddenErrorResponses` into their OpenAPI responses.
+
 ## Next
 
 - [The Type-Safe API](/docs/getting-started/type-safe-api): how these responses reach a fully-typed client.
