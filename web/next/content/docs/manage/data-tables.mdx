@@ -51,7 +51,7 @@ const { error, isError, refetch, table, tableProps } = useDataTable({
 
 ### Filling the viewport
 
-The table takes all available height below the page header. That needs a definite height at the top of the chain: the page passes `className="flex h-svh flex-col"` to `PageShell`, and everything between it and the region carries `flex-1 min-h-0` (the console page is the reference). Without a definite ancestor height the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
+The table takes all available height below the page header. That needs a definite height at the top of the chain: the page passes `className="flex h-svh flex-col"` to `PageShell`, and everything between it and the region carries `flex-1 min-h-0` (the console Users page is the reference). Without a definite ancestor height the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
 
 ## Client-side tables
 
