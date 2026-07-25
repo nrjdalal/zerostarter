@@ -1,3 +1,19 @@
+## v0.1.12
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.11...v0.1.12)
+
+### 🚀 Enhancements
+
+- **deps-manager:** Enforce caret ranges for catalog entries ([#745](https://github.com/nrjdalal/zerostarter/pull/745))
+
+### 🩹 Fixes
+
+- **scripts:** Make the skills-manager parser quote-aware ([#742](https://github.com/nrjdalal/zerostarter/pull/742))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.11
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.10...v0.1.11)
