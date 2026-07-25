@@ -1,4 +1,6 @@
 import { expect, test } from "bun:test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 import {
   agentsTemplate,
@@ -18,6 +20,34 @@ test("siteTemplate capitalizes the brand and leaks no upstream identity", () => 
   expect(out).toContain('name: "Acme"')
   expect(out).not.toContain("zerostarter")
   expect(out).not.toContain("nrjdalal")
+})
+
+// A key present in packages/config/src/site.ts but missing from siteTemplate ships a fork whose site.ts lacks it, so any shared component reading it throws at runtime and the fork fails check-types. The key list is READ FROM THE SOURCE CONFIG, not hand-written: a hard-coded list would still pass green for exactly the case this guards, a key added upstream and forgotten here.
+const topLevelKeys = (source: string): string[] => {
+  const body = source.slice(
+    source.indexOf("export const site = {") + "export const site = {".length,
+  )
+  const keys: string[] = []
+  let depth = 0
+  for (const line of body.split("\n")) {
+    if (depth === 0 && line.startsWith("}")) break
+    const match = depth === 0 ? line.match(/^ {2}([a-zA-Z][a-zA-Z0-9]*):/) : null
+    if (match) keys.push(match[1])
+    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length
+  }
+  return keys
+}
+
+test("siteTemplate emits every key the shared site config declares", () => {
+  const source = readFileSync(join(import.meta.dirname, "../../config/src/site.ts"), "utf8")
+  const declared = topLevelKeys(source)
+  // guards the parser itself: if it silently matched nothing the assertion below would be vacuous
+  expect(declared.length).toBeGreaterThan(5)
+  expect(declared).toContain("legal")
+
+  const out = siteTemplate(brand)
+  const emitted = topLevelKeys(out)
+  expect(declared.filter((key) => !emitted.includes(key))).toEqual([])
 })
 
 test("siteTemplate emits the fork feature defaults (waitlist off)", () => {
