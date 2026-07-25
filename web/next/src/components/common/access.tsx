@@ -5,7 +5,7 @@ import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -25,27 +25,13 @@ import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
 const formSchema = z.object({
-  // string() is here for trim(): z.email() runs its format check before any trim, so a padded address would be rejected. One error function separates the empty case from the malformed one.
-  email: z
-    .string()
-    .trim()
-    .pipe(
-      z.email({
-        error: (issue) =>
-          String(issue.input ?? "").trim() === ""
-            ? "Enter your email address to continue."
-            : "That does not look like an email address. Check for a typo.",
-      }),
-    ),
+  email: z.email({ error: "Please enter a valid email address." }),
 })
 
 export function Access({ labelClassName }: { labelClassName?: string }) {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
-  // focus enters the dialog so the trap and the screen-reader announcement work, but lands on the heading: autofocusing the first field pops the keyboard on mobile, which is what initialFocus={false} originally guarded against
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const emailRef = useRef<HTMLInputElement>(null)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
@@ -77,10 +63,10 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
     defaultValues: {
       email: "",
     },
-    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onBlur rather than onChange so a half-typed address is not called invalid mid-entry; submitting blurs the field, so the check still runs before the request.
-    validators: { onBlur: formSchema },
-    onSubmitInvalid: () => {
-      if (emailRef.current) emailRef.current.focus()
+    validators: {
+      onSubmit: formSchema,
+      onChange: formSchema,
+      onBlur: formSchema,
     },
     onSubmit: async ({ value }) => {
       setLoader("email")
@@ -104,7 +90,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       <DialogTrigger render={<Button className="w-24" variant="outline" />}>
         <span className={labelClassName}>Login</span>
       </DialogTrigger>
-      <DialogContent className="max-w-md" initialFocus={headingRef}>
+      <DialogContent className="max-w-md" initialFocus={false}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
         </DialogHeader>
@@ -116,9 +102,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
               </div>
               <span className="sr-only">{site.name}</span>
             </div>
-            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold outline-none">
-              Welcome to {site.name}
-            </h2>
+            <h1 className="text-xl font-semibold">Welcome to {site.name}</h1>
           </div>
           {magicLinkEnabled && (
             <form
@@ -137,24 +121,18 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                         <Input
-                          ref={emailRef}
                           id={field.name}
                           type="email"
                           name={field.name}
-                          autoComplete="email"
-                          inputMode="email"
                           className="focus:placeholder:opacity-0"
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
-                          aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                           placeholder="you@example.com"
                           disabled={loader === "email"}
                         />
-                        {isInvalid && (
-                          <FieldError id={`${field.name}-error`} errors={field.state.meta.errors} />
-                        )}
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
                       </Field>
                     )
                   }}
@@ -232,37 +210,11 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                   Continue with Google
                 </Button>
               )}
+              <div className="text-muted-foreground text-center text-xs text-balance">
+                By clicking continue, you agree to our Terms of Service and Privacy Policy.
+              </div>
             </div>
           )}
-          {/* site.legal is non-optional upstream, but a fork that syncs this component against a site.ts predating the key would crash without the first check */}
-          {(magicLinkEnabled || hasAlternatives) &&
-            site.legal &&
-            site.legal.terms &&
-            site.legal.privacy && (
-              <div className="text-muted-foreground text-center text-xs text-balance">
-                By clicking continue, you agree to our{" "}
-                <a
-                  href={site.legal.terms}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground underline underline-offset-4"
-                >
-                  Terms of Service
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>{" "}
-                and{" "}
-                <a
-                  href={site.legal.privacy}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground underline underline-offset-4"
-                >
-                  Privacy Policy
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-                .
-              </div>
-            )}
           {hasNoProviders &&
             (isPending ? (
               <div className="text-muted-foreground flex justify-center">

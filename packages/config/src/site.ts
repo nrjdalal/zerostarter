@@ -4,11 +4,6 @@ export const site = {
   description:
     "Modern, type-safe/RPC starter monorepo with foundations for building scalable SaaS products with clean architecture, automation, and great developer experience.",
   tagline: "Production-ready SaaS infrastructure with world-class human and agent DX",
-  // Legal pages a fork points at its own URLs. Left empty, the sign-in consent line is hidden rather than claiming agreement to documents that do not exist.
-  legal: {
-    privacy: "",
-    terms: "",
-  },
   social: {
     discord: "https://discord.gg/38FeAUmHSZ",
     github: "https://github.com/nrjdalal/zerostarter",

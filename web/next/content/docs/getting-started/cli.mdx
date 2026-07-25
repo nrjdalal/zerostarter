@@ -70,7 +70,7 @@ All three commands fetch with gitpick, which reads the repo's root `.gitpickigno
 
 ## Rebrand: one edit, whole system
 
-`init` and `reinit` regenerate `packages/config/src/site.ts` from the project name (the name, plus placeholder description, tagline, socials, and empty `legal.privacy` / `legal.terms` URLs for you to fill in; the sign-in consent line stays hidden until both are set), rename the root package to a slug, rebrand the [portless](/docs/getting-started/setup) dev-URL names to `<slug>` and `api.<slug>`, and strip the demo `/hire` nav entry. Every surface reads its identity from `@packages/config/site`, so that one file is your brand. The rebrand fails loudly rather than half-applying if the starter's shape has drifted (a missing `portless` block, a leaked marketing font), which keeps a fork from shipping a broken identity.
+`init` and `reinit` regenerate `packages/config/src/site.ts` from the project name (the name, plus placeholder description, tagline, and socials for you to fill in), rename the root package to a slug, rebrand the [portless](/docs/getting-started/setup) dev-URL names to `<slug>` and `api.<slug>`, and strip the demo `/hire` nav entry. Every surface reads its identity from `@packages/config/site`, so that one file is your brand. The rebrand fails loudly rather than half-applying if the starter's shape has drifted (a missing `portless` block, a leaked marketing font), which keeps a fork from shipping a broken identity.
 
 ## Publishing a fork
 

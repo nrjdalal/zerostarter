@@ -43,11 +43,6 @@ export const site = {
   name: "${display}",
   description: "${display} is just getting started. Tell its story here.",
   tagline: "Your tagline, ready when you are.",
-  // Legal pages this product points at. Left empty, the sign-in consent line is hidden rather than claiming agreement to documents that do not exist.
-  legal: {
-    privacy: "",
-    terms: "",
-  },
   social: {
     github: "",
     x: "",
