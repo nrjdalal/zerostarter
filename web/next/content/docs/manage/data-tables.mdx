@@ -8,17 +8,17 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 
 ## The exports
 
-| Export                                | Provides                                                                                                                                                                                                           |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DataTable`                           | The virtualized infinite-scroll region: sticky header, windowed rows, load-more on approach, a spinner while loading, an `Empty` fallback, an inline retry when a refresh fails, and a selection/total status line |
-| `DataTableCellText`                   | Text-cell overflow from the column config: truncate (one line, ellipsis, tooltip only when actually cut) or wrap (multi-line; the measured virtual row grows)                                                      |
-| `DataTableColumnHeader`               | A sortable header: a plain title with a bare sort icon toggling asc and desc (hiding lives in the view options)                                                                                                    |
-| `DataTableFacetedFilter`              | A multi-select value filter in a command palette, with per-value counts on client tables                                                                                                                           |
-| `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                                          |
-| `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                 |
-| `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                      |
-| `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly                                                                                                |
-| `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs                                                                                                                            |
+| Export                                | Provides                                                                                                                                                                                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataTable`                           | The virtualized infinite-scroll region: sticky header, windowed rows, load-more on approach, a spinner while loading, an `Empty` fallback, an inline retry when a refresh fails, and a selection/total status line                                                          |
+| `DataTableCellText`                   | Text-cell overflow from the column config: truncate (one line, ellipsis, tooltip only when actually cut) or wrap (multi-line; the measured virtual row grows)                                                                                                               |
+| `DataTableColumnHeader`               | A sortable header: a plain title with a bare sort icon toggling asc and desc (hiding lives in the view options)                                                                                                                                                             |
+| `DataTableFacetedFilter`              | A multi-select value filter in a command palette, with per-value counts on client tables                                                                                                                                                                                    |
+| `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                                                                                                   |
+| `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                                                                          |
+| `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                                                                               |
+| `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly. Takes the filter ids, a default sorting, and optionally the set of sortable column ids, which drops a URL sort naming a column the table does not have |
+| `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs                                                                                                                                                                                     |
 
 ## Column config
 
@@ -35,7 +35,7 @@ type ColumnConfig = {
 ```
 
 - Widths are Tailwind spacing units (1 = `0.25rem`, so 12 = 48px at the default scale) rendered through `calc(var(--spacing) * n)`, so tables ride the theme token and user font-size. On a fixed column the width is exact (`shrink-0`); on a flex column it is the floor (`min-width` + `flex-1`).
-- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`packages/scripts/src/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size into `.generated/data-table-metrics.json` (imported as `generated/*`), so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. It costs ~5KB gzipped on routes that render a table. Swapping the font (see [Fonts](/docs/manage/theming#fonts)) re-measures on the next run.
+- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`packages/scripts/src/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size into `.generated/data-table-metrics.json` (imported as `generated/*`), so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. It costs ~5KB gzipped, in whichever chunk imports the module: today that is the one route rendering a table, but importing any `data-table` export from a widely-shared module would pull the metrics along with it. Swapping the font (see [Fonts](/docs/manage/theming#fonts)) re-measures on the next run.
 - `meta.label` is the one source for a column's header text, its measured width, and its view-options entry, so the three can never desync.
 - Names follow what the column says, never the backing field: the column headed Status keys as `status` with `accessorKey: "banned"` underneath.
 - Numbers live in the config map, never inline in the defs. A column with no entry still gets the defaults (auto width from its label, left-aligned, fixed), so an unconfigured column can never inherit a stray pixel-minded size.
@@ -49,7 +49,7 @@ type ColumnConfig = {
 The console users table (`app/(console)/console/(platform)/users/components/`) is the reference: sorting, search, and filters resolve on the API, and 25-row batches stream in on scroll through [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries):
 
 ```tsx
-const { error, isError, refetch, table, tableProps } = useDataTable({
+const { table, tableProps } = useDataTable({
   columnConfig: usersColumnConfig,
   columns: usersColumns,
   defaultSorting: DEFAULT_SORTING,
@@ -60,12 +60,13 @@ const { error, isError, refetch, table, tableProps } = useDataTable({
   queryKey: "console-users",
 })
 
-<DataTableToolbar table={table} searchPlaceholder="Search users...">
+<DataTableToolbar table={table} searchMaxLength={254} searchPlaceholder="Search users...">
   <DataTableFacetedFilter column={table.getColumn("role")} options={ROLE_OPTIONS} title="Role" />
 </DataTableToolbar>
 <DataTable {...tableProps} aria-label="Users" />
 ```
 
+- `DataTable` owns its own failure state: a first load that errors renders the message with a Retry rather than "No results", so the snippet above needs no `empty`. Pass `empty` for the genuine zero-row case.
 - Selection covers loaded rows: under infinite scroll the header checkbox selects what has been fetched so far, so "12 of 25 row(s) selected" can sit next to a larger total. Pass the endpoint's own `q` cap as `searchMaxLength` on the toolbar so a long paste cannot fail the request.
 - `fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, total }`; the console maps column ids onto the endpoint's sort whitelist through a `satisfies`-checked record, so a server rename becomes a compile error, and the row type derives from `InferResponseType`.
 - `getNextPageParam` compares loaded rows against the response total and ends the list on a zero-row page, so a stale total cannot loop the load-more effect. `placeholderData: keepPreviousData` keeps rows on screen while a sort or filter refetches, and the search term passes through `useDeferredValue`.

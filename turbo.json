@@ -24,8 +24,8 @@
   },
   "globalDependencies": [
     ".env*",
-    // emits the font metrics that decide rendered column widths, so a build cached before an edit here would ship stale layout
-    "packages/scripts/src/data-table-metrics.ts"
+    // build-time generators (font metrics, env derivation): a build cached before an edit here would ship their stale output
+    "packages/scripts/src/**"
   ],
   "globalEnv": [
     // CI variables

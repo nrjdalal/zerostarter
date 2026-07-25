@@ -50,7 +50,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
@@ -208,6 +214,7 @@ function resolveUpdater<T>(updater: Updater<T>, previous: T): T {
 export function useDataTableState(
   filterIds: string[] = [],
   defaultSorting: SortingState = EMPTY_SORTING,
+  sortableIds?: Set<string>,
 ) {
   const filterKey = filterIds.join(",")
   const filterParsers = React.useMemo(() => {
@@ -219,8 +226,12 @@ export function useDataTableState(
   const [base, setBase] = useQueryStates(baseParsers)
   const [filters, setFilters] = useQueryStates(filterParsers)
 
-  // With no sort in the URL the default applies as real table state, so the header chevron and aria-sort show it while the URL stays clean. Updaters resolve against this same value, so a functional updater is handed what the table actually rendered rather than an empty URL slice.
-  const sorting = base.sort.length ? base.sort : defaultSorting
+  // A URL can name any column id, so drop the ones this table does not have before they become state: an unknown id would otherwise sort nothing, show no aria-sort, and still send its direction to the server. With nothing left the default applies as real table state, so the header chevron and aria-sort show it while the URL stays clean. Updaters resolve against this same value, so a functional updater is handed what the table actually rendered rather than an empty URL slice.
+  const urlSorting = React.useMemo(
+    () => (sortableIds ? base.sort.filter((entry) => sortableIds.has(entry.id)) : base.sort),
+    [base.sort, sortableIds],
+  )
+  const sorting = urlSorting.length ? urlSorting : defaultSorting
   const globalFilter = base.q
   const columnFilters: ColumnFiltersState = React.useMemo(
     () =>
@@ -297,6 +308,25 @@ export function useDataTable<TRow>({
   getRowId?: (row: TRow) => string
   queryKey: string
 }) {
+  const managedColumns = React.useMemo(
+    () => (columnConfig ? applyColumnManager(columns, columnConfig) : columns),
+    [columnConfig, columns],
+  )
+  const sortableIds = React.useMemo(
+    () =>
+      new Set(
+        managedColumns
+          .map((column) =>
+            column.id
+              ? column.id
+              : "accessorKey" in column
+                ? String(column.accessorKey)
+                : undefined,
+          )
+          .filter((id): id is string => id !== undefined),
+      ),
+    [managedColumns],
+  )
   const {
     columnFilters,
     globalFilter,
@@ -304,7 +334,7 @@ export function useDataTable<TRow>({
     onGlobalFilterChange,
     onSortingChange,
     sorting,
-  } = useDataTableState(filterIds, defaultSorting)
+  } = useDataTableState(filterIds, defaultSorting, sortableIds)
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
 
   // Defer the search term so fast typing batches requests instead of firing one per keystroke.
@@ -357,11 +387,6 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
-  const managedColumns = React.useMemo(
-    () => (columnConfig ? applyColumnManager(columns, columnConfig) : columns),
-    [columnConfig, columns],
-  )
-
   const table = useReactTable({
     columns: managedColumns,
     data: rows,
@@ -388,6 +413,7 @@ export function useDataTable<TRow>({
     table,
     tableProps: {
       hasMore: query.hasNextPage,
+      errorMessage: query.error ? query.error.message : undefined,
       isError: query.isError,
       isLoading: query.isPending,
       isLoadingMore: query.isFetchingNextPage,
@@ -409,6 +435,7 @@ const ROW_ESTIMATE_PX = 45
 export function DataTable<TData>({
   "aria-label": ariaLabel,
   empty,
+  errorMessage,
   hasMore = false,
   isError = false,
   isLoading = false,
@@ -420,6 +447,7 @@ export function DataTable<TData>({
 }: {
   "aria-label": string
   empty?: React.ReactNode
+  errorMessage?: string
   hasMore?: boolean
   isError?: boolean
   isLoading?: boolean
@@ -432,7 +460,7 @@ export function DataTable<TData>({
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   const rows = table.getRowModel().rows
-  const selectable = table.getAllLeafColumns().some((column) => column.id === "select")
+  const selectable = Boolean(table.options.enableRowSelection)
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
@@ -588,7 +616,22 @@ export function DataTable<TData>({
         )}
         {!isLoading &&
           rows.length === 0 &&
-          (empty ? (
+          // Error outranks both the consumer's empty and the default: a failed first load has no rows, and rendering "No results" for it would report an outage as an empty table with no way back.
+          (isError ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>Something went wrong</EmptyTitle>
+                {errorMessage && <EmptyDescription>{errorMessage}</EmptyDescription>}
+              </EmptyHeader>
+              {onRetry && (
+                <EmptyContent>
+                  <Button variant="outline" onClick={() => onRetry()}>
+                    Retry
+                  </Button>
+                </EmptyContent>
+              )}
+            </Empty>
+          ) : empty ? (
             empty
           ) : (
             <Empty>
@@ -867,13 +910,12 @@ export function DataTableFacetedFilter<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
-                      if (isSelected) {
-                        selectedValues.delete(option.value)
-                      } else {
-                        selectedValues.add(option.value)
-                      }
-                      const next = Array.from(selectedValues)
-                      column.setFilterValue(next.length ? next : undefined)
+                      // Read the live filter rather than mutating the set this render closed over, so rapid clicks do not depend on that set being shared.
+                      const current = column.getFilterValue()
+                      const next = new Set(Array.isArray(current) ? (current as string[]) : [])
+                      if (next.has(option.value)) next.delete(option.value)
+                      else next.add(option.value)
+                      column.setFilterValue(next.size ? Array.from(next) : undefined)
                     }}
                   >
                     <span

@@ -16,14 +16,6 @@ import {
   type DataTablePage,
   type DataTablePageInput,
 } from "@/components/data-table"
-import { Button } from "@/components/ui/button"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -81,7 +73,7 @@ async function fetchUsers({
 
 // Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
 export function UsersDataTable() {
-  const { error, isError, refetch, table, tableProps } = useDataTable({
+  const { table, tableProps } = useDataTable({
     columnConfig: usersColumnConfig,
     columns: usersColumns,
     defaultSorting: DEFAULT_SORTING,
@@ -101,25 +93,7 @@ export function UsersDataTable() {
           title="Role"
         />
       </DataTableToolbar>
-      <DataTable
-        {...tableProps}
-        aria-label="Users"
-        empty={
-          isError ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>Failed to load users</EmptyTitle>
-                <EmptyDescription>{error ? error.message : "Request failed"}</EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button variant="outline" onClick={() => refetch()}>
-                  Retry
-                </Button>
-              </EmptyContent>
-            </Empty>
-          ) : undefined
-        }
-      />
+      <DataTable {...tableProps} aria-label="Users" />
     </div>
   )
 }

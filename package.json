@@ -21,7 +21,7 @@
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
     "check-types:scripts": "tsgo -p .github/scripts/tsconfig.json",
-    "check-types:tests": "if [ -d tests ]; then tsgo -p tests/api/hono/tsconfig.json && tsgo -p tests/github/scripts/tsconfig.json && tsgo -p tests/packages/auth/tsconfig.json && tsgo -p tests/packages/cli/tsconfig.json; fi",
+    "check-types:tests": "if [ -d tests ]; then find tests -name tsconfig.json -print0 | xargs -0 -n1 tsgo -p; fi",
     "clean": "bash .github/scripts/clean.sh",
     "console:roles": "bun .github/scripts/console-roles.ts",
     "db:generate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit generate",

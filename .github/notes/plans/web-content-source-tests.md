@@ -11,7 +11,7 @@ When a web test harness lands (see the deferred cafe `web/next` test port), asse
 
 The same harness gap blocks the data table's pure functions, which decide rendered layout and were verified once by hand:
 
-- `measureLabelPx` / `autoWidthUnits` (`web/next/src/components/data-table.tsx`): the kerning-pair sum, the `average` fallback for an unmapped char, and the 3-unit snap. The generator already asserts its emitted metrics against real font shaping, so what is untested is the consumer, not the data.
+- `measureLabelPx` / `autoWidthUnits` (`web/next/src/components/data-table.tsx`): the kerning-pair sum, the `average` fallback for an unmapped char, and the 3-unit snap. These are pure and DOM-free, so a harness is not strictly what blocks them: they are untestable only because they sit in a module that imports React and the UI kit, and splitting a module to suit the test runner is a trade this repo has already declined once (see `shared-contracts-package.md`). The generator asserts its emitted metrics against real font shaping, so the data is covered even while the consumer is not.
 - `applyColumnManager`: flex reach-back (`index <= lastFlex`) and the `auto` flag on widthless columns.
 - The `flexAt` ownership rule in `DataTable`: last visible capable column grows, growth hands backward when that column hides, and a flex-less table spreads its `auto` columns. This reads correct and will regress silently.
 
