@@ -22,8 +22,8 @@ export type AllowlistRuleRow = InferResponseType<
 // This table's layout, colocated with its columns and written in column order. Rule floors wide and grows, since a domain and a full address differ a lot in length.
 export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   value: { extra: 48, flex: true },
-  createdByName: { extra: 24 },
-  kind: { extra: 12 },
+  createdByName: { align: "right", extra: 24 },
+  kind: { align: "right", extra: 12 },
   createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
 }

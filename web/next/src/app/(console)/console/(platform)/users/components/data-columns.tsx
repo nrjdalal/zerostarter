@@ -45,7 +45,7 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
   // label + 9rem
   name: { extra: 36 },
   email: { extra: 48, flex: true },
-  status: { align: "center" },
+  status: { align: "right" },
   role: { align: "right", extra: 18 },
   createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
