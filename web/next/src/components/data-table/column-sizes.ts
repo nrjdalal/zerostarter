@@ -2,8 +2,8 @@
 const global = {
   // the icon-sm row-actions button
   actions: 60,
-  // role/status badges
-  badge: 108,
+  // the admin plugin's Active/Banned status text
+  banned: 108,
   // "25 Jun 2026" plus the sort chevron
   date: 144,
   // date plus time
@@ -22,6 +22,8 @@ const global = {
   nameWithAvatar: 240,
   // counts and amounts
   number: 108,
+  // a short role token like Admin or User
+  role: 108,
   // the row checkbox
   select: 48,
 } as const
@@ -31,11 +33,11 @@ export const COLUMN_SIZES = {
   console: {
     users: {
       actions: global.actions,
-      banned: global.badge,
+      banned: global.banned,
       createdAt: global.date,
       email: global.email,
       name: global.name,
-      role: global.badge,
+      role: global.role,
       select: global.select,
     },
   },
