@@ -4,22 +4,10 @@ const global = {
   actions: 60,
   // "25 Jun 2026" plus the sort chevron
   date: 144,
-  // date plus time
-  datetime: 192,
   // a typical address; the usual meta.flex floor
   email: 324,
-  // a single icon or indicator
-  icon: 48,
-  // short codes; long ids truncate
-  id: 96,
-  // an Item identity cell: avatar plus stacked name and email
-  identity: 276,
   // a plain text name
   name: 192,
-  // a 24px avatar, gap, and name
-  nameWithAvatar: 240,
-  // counts and amounts
-  number: 108,
   // a short role token like Admin or User
   role: 108,
   // the row checkbox
