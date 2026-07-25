@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 
 import {
-  admitsEmail,
+  matchesAllowlist,
   CONSOLE_ROLES,
   consoleRole,
   parseAllowlistRule,
@@ -165,39 +165,39 @@ describe("parseAllowlistRule", () => {
   })
 })
 
-describe("admitsEmail", () => {
+describe("matchesAllowlist", () => {
   const domain = parseAllowlistRule("@example.com")!
   const address = parseAllowlistRule("ada@other.com")!
 
-  test("an empty list admits everyone, so enabling the feature is never an outage", () => {
-    expect(admitsEmail("anyone@anywhere.com", [])).toBe(true)
+  test("an empty list grants nothing, so a rule is always a deliberate grant", () => {
+    expect(matchesAllowlist("anyone@anywhere.com", [])).toBe(false)
   })
 
-  test("a domain rule admits every address at that domain", () => {
-    expect(admitsEmail("ada@example.com", [domain])).toBe(true)
-    expect(admitsEmail("grace+test@example.com", [domain])).toBe(true)
+  test("a domain rule covers every address at that domain", () => {
+    expect(matchesAllowlist("ada@example.com", [domain])).toBe(true)
+    expect(matchesAllowlist("grace+test@example.com", [domain])).toBe(true)
   })
 
-  test("a domain rule does not admit a subdomain, which needs its own rule", () => {
-    expect(admitsEmail("ada@mail.example.com", [domain])).toBe(false)
+  test("a domain rule does not cover a subdomain, which needs its own rule", () => {
+    expect(matchesAllowlist("ada@mail.example.com", [domain])).toBe(false)
   })
 
-  test("an address rule admits only that address", () => {
-    expect(admitsEmail("ada@other.com", [address])).toBe(true)
-    expect(admitsEmail("grace@other.com", [address])).toBe(false)
-    expect(admitsEmail("ada+test@other.com", [address])).toBe(false)
+  test("an address rule covers only that address", () => {
+    expect(matchesAllowlist("ada@other.com", [address])).toBe(true)
+    expect(matchesAllowlist("grace@other.com", [address])).toBe(false)
+    expect(matchesAllowlist("ada+test@other.com", [address])).toBe(false)
   })
 
   test("matching ignores case on both sides", () => {
-    expect(admitsEmail("ADA@Example.COM", [domain])).toBe(true)
-    expect(admitsEmail("Ada@Other.com", [address])).toBe(true)
+    expect(matchesAllowlist("ADA@Example.COM", [domain])).toBe(true)
+    expect(matchesAllowlist("Ada@Other.com", [address])).toBe(true)
   })
 
-  test("a non-matching address is refused when any rule exists", () => {
-    expect(admitsEmail("ada@nope.com", [domain, address])).toBe(false)
+  test("a non-matching address matches nothing", () => {
+    expect(matchesAllowlist("ada@nope.com", [domain, address])).toBe(false)
   })
 
-  test("a malformed address is never admitted while rules exist", () => {
-    expect(admitsEmail("not-an-email", [domain])).toBe(false)
+  test("a malformed address never matches", () => {
+    expect(matchesAllowlist("not-an-email", [domain])).toBe(false)
   })
 })

@@ -4,15 +4,17 @@ import { notFound } from "next/navigation"
 import { AllowlistDataTable } from "@/app/(console)/console/(access)/allowlist/components/data-table"
 import { PageHeader } from "@/components/shell/page-header"
 import { PageShell } from "@/components/shell/page-shell"
+import { assertConsoleAccess } from "@/lib/auth/console"
 
-// No role gate here on purpose: the layout 404s anyone below member, the API gates both reading and writing, and staying synchronous lets the shell paint instantly. h-svh makes the shell definite so the table fills the viewport and scrolls internally.
-export default function Page() {
+// Access surfaces are an admin concern, and the console layout only guarantees member, so this page asserts its own rung. h-svh makes the shell definite so the table fills the viewport and scrolls internally.
+export default async function Page() {
+  await assertConsoleAccess("admin")
   if (!features.allowlist) notFound()
   return (
     <PageShell size="lg" className="flex h-svh flex-col">
       <PageHeader
         title="Allowlist"
-        description="Who may create an account. With no rules, anyone can; add one and only matching addresses may join."
+        description="Who gets into the console. Anyone can sign up and use the dashboard; a rule here lifts matching people to member on their next sign-in."
       />
       <AllowlistDataTable />
     </PageShell>

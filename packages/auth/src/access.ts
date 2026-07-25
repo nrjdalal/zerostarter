@@ -44,7 +44,7 @@ export function refuseRoleChange(input: {
 }
 
 // ---------------------------------------------------------------------------
-// Allowlist: who may create an account. Rules never evict an existing one, so this is only ever asked at sign-up.
+// Allowlist: who gets console access. Anyone may sign up and use the dashboard; a rule is what lifts someone to the console's bottom rung.
 
 export type AllowlistRule = { kind: "domain" | "email"; value: string }
 
@@ -65,9 +65,9 @@ function isDomain(domain: string): boolean {
   return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(domain)
 }
 
-// An empty list admits everyone: the feature flag is the on/off, and rules only narrow it, so enabling the surface is never an outage. A domain rule matches its domain exactly, which means a subdomain needs its own rule rather than being admitted silently.
-export function admitsEmail(email: string, rules: AllowlistRule[]): boolean {
-  if (rules.length === 0) return true
+// An empty list grants nothing: a rule is a grant, so no rules means nobody is lifted, and adding the first one cannot accidentally hand the console to everyone. A domain rule matches its domain exactly, which means a subdomain needs its own rule rather than being covered silently.
+export function matchesAllowlist(email: string, rules: AllowlistRule[]): boolean {
+  if (rules.length === 0) return false
   const address = email.trim().toLowerCase()
   const at = address.lastIndexOf("@")
   if (at < 1) return false

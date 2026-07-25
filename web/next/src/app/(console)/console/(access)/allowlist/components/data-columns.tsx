@@ -28,9 +28,11 @@ export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   actions: { align: "center", width: 12 },
 }
 
-// Says who a rule admits, in the same words the add dialog previews.
+// Says who a rule lets in, in the same words the add dialog previews.
 export function describeRule(rule: { kind: string; value: string }) {
-  return rule.kind === "domain" ? `Anyone at ${rule.value.slice(1)}` : `Only ${rule.value}`
+  return rule.kind === "domain"
+    ? `Anyone at ${rule.value.slice(1)} gets console access`
+    : `${rule.value} gets console access`
 }
 
 export const allowlistColumns = (

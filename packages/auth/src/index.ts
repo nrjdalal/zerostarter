@@ -15,15 +15,15 @@ import {
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { APIError } from "better-auth/api"
 import {
   admin as adminPlugin,
   openAPI as openAPIPlugin,
   organization as organizationPlugin,
 } from "better-auth/plugins"
 import { adminAc, defaultAc as consoleAc, userAc } from "better-auth/plugins/admin/access"
+import { eq } from "drizzle-orm"
 
-import { admitsEmail, type AllowlistRule } from "@/access"
+import { matchesAllowlist, roleAtLeast, type AllowlistRule } from "@/access"
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
 // The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime. A runtime .localhost host (portless dev, injected after the build) overrides it so web and api share the cookie.
@@ -98,19 +98,24 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
-    user: {
+    session: {
       create: {
-        // Every sign-up path (email, GitHub, Google) creates a user, so one hook covers all three. An empty table admits everyone, and this only ever runs at creation, so no rule edit can strand an existing account.
-        before: async (creating) => {
+        // Signing up and using the dashboard is open to everyone; the allowlist is only about the console. On each sign-in a matching address is lifted to the console's bottom rung, so adding a domain covers colleagues who already have accounts rather than only future ones.
+        before: async (session) => {
           if (!features.allowlist) return
+          // Read through our own schema rather than the adapter: role is our column, added by the admin plugin, and not on Better Auth's base user type.
+          const [signingIn] = await db
+            .select({ email: user.email, id: user.id, role: user.role })
+            .from(user)
+            .where(eq(user.id, session.userId))
+            .limit(1)
+          // Never lowers anyone: an admin or owner keeps their rung, and a hand-granted role is untouched by a rule edit.
+          if (!signingIn || roleAtLeast(signingIn.role, "member")) return
           const rules = await db
             .select({ kind: allowlist.kind, value: allowlist.value })
             .from(allowlist)
-          if (admitsEmail(creating.email, rules as AllowlistRule[])) return
-          throw new APIError("FORBIDDEN", {
-            code: "NOT_ALLOWED",
-            message: "That email address is not allowed to create an account here.",
-          })
+          if (!matchesAllowlist(signingIn.email, rules as AllowlistRule[])) return
+          await db.update(user).set({ role: "member" }).where(eq(user.id, signingIn.id))
         },
       },
     },

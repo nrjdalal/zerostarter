@@ -1,4 +1,4 @@
-import { roleAtLeast } from "@packages/auth/access"
+import { roleAtLeast, type ConsoleRole } from "@packages/auth/access"
 import { notFound } from "next/navigation"
 
 import { auth } from "@/lib/auth"
@@ -12,10 +12,10 @@ export async function getConsoleSession() {
   return session
 }
 
-// Server-side guard for /console: notFound() (never a redirect) for users without access. Layouts and pages render in parallel, so any console page reading sensitive data must gate itself too.
-export async function assertConsoleAccess() {
+// Server-side guard for /console: notFound() (never a redirect) for anyone below the required rung. Layouts and pages render in parallel, so a page needing more than the layout's member must say so itself.
+export async function assertConsoleAccess(minimum: ConsoleRole = "member") {
   const session = await getConsoleSession()
-  if (!session) {
+  if (!session || !roleAtLeast(session.user.role, minimum)) {
     notFound()
   }
   return session

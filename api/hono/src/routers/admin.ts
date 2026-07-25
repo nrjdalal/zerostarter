@@ -15,7 +15,7 @@ import {
   validationErrorResponses,
 } from "@/lib/error"
 import { escapeLike } from "@/lib/sql"
-import { consoleReadMiddleware, consoleWriteMiddleware } from "@/middlewares"
+import { consoleAdminMiddleware } from "@/middlewares"
 
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
 const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
@@ -104,11 +104,11 @@ const sortColumns = {
   role: sql`coalesce(${user.role}, 'user')`,
 } satisfies Record<(typeof SORTS)[number], unknown>
 
-// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top, reading at member and writing at admin.
+// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Everything here serves the Access section, which is an admin concern, so the whole router requires admin rather than the console's lower rung.
 export const adminRouter = new Hono<{
   Variables: Session
 }>()
-  .use("/*", consoleReadMiddleware)
+  .use("/*", consoleAdminMiddleware)
   .get(
     "/users",
     describeRoute({
@@ -220,7 +220,6 @@ const { data, error } = await unwrap(
         ...forbiddenErrorResponses,
       },
     }),
-    consoleWriteMiddleware,
     sValidator("json", roleChangeSchema, (result) => {
       if (!result.success) {
         throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
@@ -359,7 +358,6 @@ const { data, error } = await unwrap(
         ...forbiddenErrorResponses,
       },
     }),
-    consoleWriteMiddleware,
     sValidator("json", allowlistCreateSchema, (result) => {
       if (!result.success) {
         throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
@@ -417,7 +415,6 @@ const { data, error } = await unwrap(
         ...forbiddenErrorResponses,
       },
     }),
-    consoleWriteMiddleware,
     async (c) => {
       const [deleted] = await db
         .delete(allowlist)

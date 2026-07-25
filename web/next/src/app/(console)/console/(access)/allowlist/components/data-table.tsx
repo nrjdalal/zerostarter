@@ -97,7 +97,7 @@ async function fetchRules({
   return { rows: data.rules, total: data.total }
 }
 
-// The rules deciding who may create an account. Reading is a member power, changing is an admin one, so the add and remove affordances are absent below that rung.
+// The rules granting console access. Reading is a member power, changing is an admin one, so the add and remove affordances are absent below that rung.
 export function AllowlistDataTable() {
   const { canWrite } = useConsoleRole()
   const queryClient = useQueryClient()
@@ -153,7 +153,8 @@ export function AllowlistDataTable() {
             <EmptyHeader>
               <EmptyTitle>No rules yet</EmptyTitle>
               <EmptyDescription>
-                Anyone can sign up. Add a rule to restrict who may create an account.
+                Nobody reaches the console from a rule. Add one to give a domain or an address
+                member access.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -167,8 +168,8 @@ export function AllowlistDataTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {pendingDelete?.value}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Existing accounts keep working. If this is the last rule, anyone will be able to sign
-              up again.
+              Anyone already promoted keeps their role; removing a rule only stops future grants.
+              Demote them from the Users table if that is what you want.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -233,7 +234,8 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
         <DialogHeader>
           <DialogTitle>Add a rule</DialogTitle>
           <DialogDescription>
-            A domain admits everyone at it, an address admits one person.
+            A domain covers everyone at it, an address covers one person. Both get member, the
+            read-only rung; promote further from the Users table.
           </DialogDescription>
         </DialogHeader>
         <FieldGroup>

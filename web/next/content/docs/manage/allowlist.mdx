@@ -1,37 +1,41 @@
 ---
 slug: /docs/manage/allowlist
 title: Allowlist
-description: Restrict who can create an account, by domain or by address, from the console.
+description: Grant console access by domain or address, without promoting people one at a time.
 ---
 
-By default anyone who reaches your sign-in page can create an account. The allowlist narrows that to people you name: a whole domain (`@example.com`) or a single address (`ada@example.com`). It is the surface for an internal tool, a private beta, or a product sold to one company.
+Signing up is open to everyone, and every signed-in person gets the dashboard. The console is the separate, staff-facing area, and the allowlist is how you say who reaches it: a whole domain (`@example.com`) or a single address (`ada@example.com`).
 
 Manage it at **Console > Access > Allowlist**, or turn it off entirely with the `allowlist` [feature flag](/docs/manage/features).
 
+## What a rule does
+
+A rule grants **member**, the console's bottom rung: its holder reads every console surface and changes nothing. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule can hand write access to a whole domain.
+
+The grant is applied **on sign-in**, not only at sign-up. Adding `@example.com` therefore covers colleagues who already have accounts, on their next sign-in, rather than only people who join later.
+
+It never lowers anyone. Someone already at admin or owner keeps their rung, and a role granted by hand is untouched by any rule.
+
 ## How rules are read
 
-- **An empty list admits everyone.** Enabling the feature is never an outage: the flag turns the surface on, and rules are what narrow it. The empty state says so on the page.
-- **A domain rule admits every address at that domain**, matched exactly. `@example.com` does not admit `@mail.example.com`, which needs its own rule, so a subdomain is never opened by accident.
-- **An address rule admits exactly one address.** Plus-addressing is not stripped, so a rule for `ada@example.com` does not admit `ada+test@example.com`, while a domain rule admits both.
-- **Case never matters.** Rules are normalized lowercase when saved, and matching lowercases the address, so one rule cannot be added twice in different cases.
+- **An empty list grants nothing.** A rule is a grant, so no rules means nobody is lifted, and adding your first one cannot hand the console to everyone by accident.
+- **A domain rule covers every address at that domain**, matched exactly. `@example.com` does not cover `@mail.example.com`, which needs its own rule.
+- **An address rule covers exactly one address.** Plus-addressing is not stripped, so a rule for `ada@example.com` does not cover `ada+test@example.com`, while a domain rule covers both.
+- **Case never matters.** Rules are normalized lowercase when saved, so one rule cannot be added twice in different cases.
 
-## What rules do not do
+## Removing a rule
 
-Rules gate **account creation only**. They are checked once, when the account is made, so:
+Removing a rule stops future grants and nothing else. Anyone already promoted keeps their role, because a list edit that could silently demote people would make every edit dangerous, and because the console cannot tell a rule-granted member from a hand-granted one.
 
-- Removing a rule never evicts anyone. An account created while a rule existed keeps working after it is deleted.
-- Adding a rule never locks out an existing account, even one that matches nothing on the list.
-- Offboarding is a [role change or a ban](/docs/manage/authentication), not a list edit.
-
-That is deliberate: a list that could strand live users would make every edit dangerous.
+To take console access away, demote the person in the Users table. Offboarding is a [role change or a ban](/docs/manage/authentication), never a list edit.
 
 ## Enforcement
 
-One hook on user creation, in `packages/auth`, which every sign-up path passes through, so email, GitHub, and Google are covered by the same rule with no per-provider wiring. A refused sign-up gets a readable message rather than a generic failure.
+One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring.
 
 Reading the list is a `member` power and changing it an `admin` one, per the [role ladder](/docs/manage/authentication). A member sees the rules with no add button and no row actions.
 
 ## Next
 
-- [Authentication](/docs/manage/authentication): the role ladder that decides who may read and change this list.
+- [Authentication](/docs/manage/authentication): the ladder a rule lifts people onto.
 - [Data Tables](/docs/manage/data-tables): the module this page is built from.

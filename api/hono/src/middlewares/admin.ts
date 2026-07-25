@@ -27,6 +27,5 @@ export function requireConsoleRole(minimum: ConsoleRole) {
   })
 }
 
-// Reading a console surface is a member power; changing anything is an admin power.
-export const consoleReadMiddleware = requireConsoleRole("member")
-export const consoleWriteMiddleware = requireConsoleRole("admin")
+// The Access section, and so every route serving it, is an admin concern. A surface meant for a member calls the factory with its own rung rather than reusing this.
+export const consoleAdminMiddleware = requireConsoleRole("admin")

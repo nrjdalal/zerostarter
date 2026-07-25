@@ -81,7 +81,7 @@ const docsConfig = {
         "/docs/manage/allowlist": {
           title: "Allowlist",
           description:
-            "Restrict who can create an account, by domain or by address, from the console.",
+            "Grant console access by domain or address, without promoting people one at a time.",
         },
       },
       {
