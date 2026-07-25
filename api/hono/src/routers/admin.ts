@@ -16,7 +16,7 @@ import { adminMiddleware } from "@/middlewares"
 
 const ROLES = ["admin", "user"] as const
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
-const SORTS = ["createdAt", "email", "name", "role"] as const
+const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
 
 const usersQuerySchema = z.object({
   dir: z.enum(["asc", "desc"]).default("desc"),
@@ -43,6 +43,8 @@ const userSchema = z.object({
 })
 
 const sortColumns = {
+  // status sorts by the backing flag; null means never banned
+  banned: sql`coalesce(${user.banned}, false)`,
   createdAt: user.createdAt,
   email: user.email,
   name: user.name,

@@ -72,7 +72,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   {
     id: "status",
     accessorKey: "banned",
-    enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => (
       <DataTableCellText>{row.original.banned ? "Banned" : "Active"}</DataTableCellText>

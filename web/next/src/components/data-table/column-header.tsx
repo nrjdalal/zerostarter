@@ -29,9 +29,13 @@ function DataTableColumnHeader<TData, TValue>({
     return <div className={className}>{title}</div>
   }
 
+  // The margin nudge lines the button label up with cell text on the aligned side; centered headers take none.
+  const align = column.columnDef.meta && column.columnDef.meta.align
+  const nudge = align === "right" ? "-mr-2.5" : align === "center" ? undefined : "-ml-2.5"
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" className={cn("-ml-2.5", className)} />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" className={cn(nudge, className)} />}>
         {title}
         {column.getIsSorted() === "desc" ? (
           <RiArrowDownLine />

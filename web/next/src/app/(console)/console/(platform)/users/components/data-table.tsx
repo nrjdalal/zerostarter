@@ -27,11 +27,17 @@ const ROLE_OPTIONS = [
   { label: "User", value: "user" },
 ]
 
-// Kept in lockstep with the endpoint's whitelist: satisfies makes any server-side rename a compile error here.
+// Column ids mapped to the endpoint's sort whitelist (status sorts by the backing banned flag); satisfies makes any server-side rename a compile error here.
 type UsersSort = NonNullable<
   InferRequestType<typeof apiClient.v1.admin.users.$get>["query"]["sort"]
 >
-const SORTS = ["createdAt", "email", "name", "role"] as const satisfies readonly UsersSort[]
+const SORT_FIELDS = {
+  createdAt: "createdAt",
+  email: "email",
+  name: "name",
+  role: "role",
+  status: "banned",
+} as const satisfies Record<string, UsersSort>
 
 async function fetchUsers({
   filters,
@@ -41,7 +47,8 @@ async function fetchUsers({
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ConsoleUser>> {
   const sort = sorting.length ? sorting[0] : { desc: true, id: "createdAt" }
-  const sortId = SORTS.includes(sort.id as UsersSort) ? (sort.id as UsersSort) : "createdAt"
+  const sortId =
+    sort.id in SORT_FIELDS ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS] : "createdAt"
   const roles = filters.role ? filters.role : []
   const { data, error } = await unwrap(
     apiClient.v1.admin.users.$get({
