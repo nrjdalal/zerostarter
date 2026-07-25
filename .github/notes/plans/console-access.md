@@ -119,9 +119,4 @@ Two questions are genuinely open and should be answered while building rather th
 
 ## Build order
 
-1. The access module and its tests: rank, guard, rule parsing, admission.
-2. The ladder wired through both gates, the plugin's `adminRoles`, the roles script vocabulary, and the owner bootstrap.
-3. The role-change endpoint and the Users table's role select.
-4. The allowlist table and migration, the create hook, and the feature flag.
-5. The allowlist API and its console page.
-6. Docs (authentication for the ladder, a page or section for the allowlist, api-conventions for the rank-parameterized middleware) and the `design`, `api-endpoint`, and `codebase-map` skills, in the same change.
+Broken into four vertical slices in [console-access-tickets.md](console-access-tickets.md), each demoable on its own. Documentation moves with the change that causes it rather than trailing at the end.
