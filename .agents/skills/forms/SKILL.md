@@ -34,7 +34,7 @@ const emailRef = useRef<HTMLInputElement>(null)
 
 const form = useForm({
   defaultValues: { email: "" },
-  validators: { onChange: formSchema },
+  validators: { onBlur: formSchema },
   onSubmitInvalid: () => {
     if (emailRef.current) emailRef.current.focus()
   },
@@ -85,8 +85,17 @@ const form = useForm({
 ## Rules
 
 - **One validator source.** TanStack keeps one error per source, so registering the same schema on `onChange`, `onBlur` and `onSubmit` leaves a stale entry from the value at the last submit, and `FieldError` lists both. It hides while every source emits identical text and appears the moment two messages differ.
-- **Use `onChange`.** It is TanStack's own canonical zod example, and it is the only single source that works here: with shadcn's `onSubmit` alone, a malformed value blocks submission without ever rendering a message, because the field is never marked touched, so `isInvalid` stays false and the visitor clicks submit and sees nothing happen. Dropping the `isTouched` guard does not rescue it. `onBlur` alone has the same hole for a field the visitor never focuses.
-- **Keep `isTouched && !isValid` even though it is a no-op here.** TanStack's examples use `!isValid` alone, and under `onChange` the two are identical: `isTouched` flips true on the first change, so both render the error after one character (measured). The guard costs nothing and is the difference between correct and silent if the validator ever moves to `onBlur` or `onSubmit`.
+- **Use `onBlur`.** Measured against the alternatives on this codebase:
+
+  | source | mid-typing | after blur | corrected, still focused | untouched empty submit |
+  |---|---|---|---|---|
+  | `onChange` | error after 1 character | error | clears | caught, 0 requests |
+  | **`onBlur`** | **quiet** | **error** | holds until blur or submit | **caught, 0 requests** |
+  | `onSubmit` | quiet | quiet | quiet | **blocked with no message** |
+  | `onBlur` + `onChange` | error after 1 character | error | **does not clear** | caught |
+
+  `onSubmit` alone fails silently: the field is never marked touched, so `isInvalid` stays false and the visitor clicks submit and nothing happens. The `onBlur` + `onChange` hybrid is the worst of both, nagging early and keeping a stale entry. `onBlur` is the only one that never calls a half-typed address invalid while still catching a never-focused empty field, because submitting blurs the field and runs the check before the request. Verified: correcting an errored value and clicking submit directly clears the error and submits.
+- **Keep `isTouched && !isValid`.** TanStack's examples use `!isValid` alone; shadcn adds the guard. Under `onChange` they are identical, since `isTouched` flips true on the first change. Under `onBlur` the guard is what stops an error rendering before the visitor has been anywhere near the field.
 - **Pass `field.state.meta.errors` straight through.** `FieldError` already dedupes by message and renders a list only for genuinely different ones. Do not slice, filter, or hand-pick an index; that hides real errors.
 - **Empty and malformed are different failures.** Give the schema one `error` function that separates them rather than one message for both, or a required field reads as a malformed one.
 - **Keep `z.string().trim()` in front of `z.email()`.** `z.email()` runs its format check before any trim, so a padded address is rejected outright. `z.email().trim()` does not fix it. No separate `.min(1)` is needed; the error function covers the empty case.
@@ -107,9 +116,11 @@ const form = useForm({
 
 Drive the real form in a browser; a type-check cannot see any of this. All four must hold:
 
-1. **On load:** no error before the visitor has touched anything.
-2. **Empty submit:** the required message, no network request, focus on the field.
-3. **Malformed submit:** the malformed message, alone, not a list.
-4. **Corrected value:** the message clears.
+1. **On load, and while typing:** no error before the visitor has left the field.
+2. **Empty submit, never focused:** the required message, no network request, focus on the field.
+3. **Malformed, after blur:** the malformed message, alone, not a list.
+4. **Corrected then submitted directly:** the message clears and the request goes.
+
+Stub the request when testing a real endpoint. This form's `.env` points at the shared database, so a valid-looking submission writes a production row.
 
 Then check `aria-describedby` points at the rendered error id, and that a success state takes focus and announces.

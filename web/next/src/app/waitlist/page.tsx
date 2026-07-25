@@ -91,8 +91,8 @@ export default function WaitlistPage() {
   const form = useForm({
     // `subject` is a honeypot: humans never see it, bots fill it (dodges browser autofill)
     defaultValues: { email: "", subject: "" },
-    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onChange rather than the guide's onSubmit, because with onSubmit alone a malformed value blocks submission without ever rendering a message.
-    validators: { onChange: formSchema },
+    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onBlur rather than onChange so a half-typed address is not called invalid mid-entry; submitting blurs the field, so the check still runs before the request.
+    validators: { onBlur: formSchema },
     onSubmitInvalid: () => {
       if (emailRef.current) emailRef.current.focus()
     },
