@@ -43,7 +43,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { apiClient, unwrap } from "@/lib/api/client"
 
@@ -113,13 +113,17 @@ export function AllowlistDataTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <DataTableToolbar table={table} searchMaxLength={Q_MAX} searchPlaceholder="Search rules...">
+      <DataTableToolbar
+        actions={canWrite ? <AddRuleDialog onAdded={refresh} /> : undefined}
+        table={table}
+        searchMaxLength={Q_MAX}
+        searchPlaceholder="Search rules..."
+      >
         <DataTableFacetedFilter
           column={table.getColumn("kind")}
           options={KIND_OPTIONS}
           title="Kind"
         />
-        {canWrite && <AddRuleDialog onAdded={refresh} />}
       </DataTableToolbar>
       <DataTable
         {...tableProps}
@@ -150,6 +154,7 @@ export function AllowlistDataTable() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
               disabled={remove.isPending}
               onClick={() => pendingDelete && remove.mutate(pendingDelete)}
             >
@@ -193,47 +198,50 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
         if (!next) setValue("")
       }}
     >
-      <DialogTrigger render={<Button variant="outline" />}>Add rule</DialogTrigger>
-      <DialogContent>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (parsed) create.mutate(value)
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Add a rule</DialogTitle>
-            <DialogDescription>
-              A domain admits everyone at it; an address admits one person.
-            </DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="allowlist-value">Domain or email address</FieldLabel>
-              <Input
-                id="allowlist-value"
-                autoComplete="off"
-                maxLength={Q_MAX}
-                placeholder="@example.com"
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-              />
-              <p className="text-muted-foreground text-sm">
-                {value.trim() === ""
-                  ? "For example @example.com, or ada@example.com."
-                  : parsed
-                    ? describeRule(parsed)
-                    : "Enter a domain like @example.com or a full email address."}
-              </p>
-            </Field>
-          </FieldGroup>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" type="button" />}>Cancel</DialogClose>
-            <Button type="submit" disabled={!parsed || create.isPending}>
-              Add rule
-            </Button>
-          </DialogFooter>
-        </form>
+      <DialogTrigger render={<Button />}>Add rule</DialogTrigger>
+      {/* The form IS the popup: DialogContent lays its children out and DialogFooter bleeds to the popup edges, so wrapping them in a form instead would collapse every gap and misalign that bleed. */}
+      <DialogContent
+        render={
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (parsed) create.mutate(value)
+            }}
+          />
+        }
+      >
+        <DialogHeader>
+          <DialogTitle>Add a rule</DialogTitle>
+          <DialogDescription>
+            A domain admits everyone at it, an address admits one person.
+          </DialogDescription>
+        </DialogHeader>
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="allowlist-value">Domain or email address</FieldLabel>
+            <Input
+              id="allowlist-value"
+              autoComplete="off"
+              maxLength={Q_MAX}
+              placeholder="@example.com"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+            />
+            <FieldDescription>
+              {value.trim() === ""
+                ? "For example @example.com, or ada@example.com."
+                : parsed
+                  ? describeRule(parsed)
+                  : "Enter a domain like @example.com or a full email address."}
+            </FieldDescription>
+          </Field>
+        </FieldGroup>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" type="button" />}>Cancel</DialogClose>
+          <Button type="submit" disabled={!parsed || create.isPending}>
+            Add rule
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

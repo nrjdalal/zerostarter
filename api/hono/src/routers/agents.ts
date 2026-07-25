@@ -50,8 +50,8 @@ export const agentsRouter = new Hono()
       }
     }
 
-    // The local-only agent is an internal account, so grant it the admin role (console access).
-    await db.update(userTable).set({ role: "admin" }).where(eq(userTable.id, user.id))
+    // The local-only agent is the install's own internal account, so it sits at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Reasserted on each sign-in so a demotion mid-session cannot strand it.
+    await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
 
     const session = await ctx.internalAdapter.createSession(user.id)
     const signed = `${session.token}.${await makeSignature(session.token, ctx.secret)}`

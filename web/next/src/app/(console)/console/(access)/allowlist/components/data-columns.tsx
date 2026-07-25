@@ -24,7 +24,7 @@ export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   value: { extra: 48, flex: true },
   kind: { extra: 12 },
   createdByName: { extra: 24 },
-  createdAt: { align: "right", extra: 18 },
+  createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
 }
 

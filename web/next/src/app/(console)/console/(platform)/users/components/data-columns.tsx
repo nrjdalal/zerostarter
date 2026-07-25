@@ -45,9 +45,9 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
   // label + 9rem
   name: { extra: 36 },
   email: { extra: 48, flex: true },
-  role: { extra: 30 },
   status: { align: "center" },
-  createdAt: { align: "right", extra: 18 },
+  role: { align: "right", extra: 18 },
+  createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
 }
 
@@ -93,13 +93,6 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     meta: { label: "Email" },
   },
   {
-    accessorKey: "role",
-    header: ({ column }) => <DataTableColumnHeader column={column} />,
-    // The platform role, not an organization membership role: this one decides console access.
-    cell: ({ row }) => <UserRoleSelect role={row.original.role} userId={row.original.id} />,
-    meta: { label: "Role" },
-  },
-  {
     id: "status",
     accessorKey: "banned",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
@@ -109,6 +102,13 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
       </DataTableCellText>
     ),
     meta: { label: "Status" },
+  },
+  {
+    accessorKey: "role",
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
+    // The platform role, not an organization membership role: this one decides console access.
+    cell: ({ row }) => <UserRoleSelect role={row.original.role} userId={row.original.id} />,
+    meta: { label: "Role" },
   },
   {
     accessorKey: "createdAt",

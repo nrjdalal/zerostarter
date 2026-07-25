@@ -663,13 +663,16 @@ export function DataTableCellText<TData, TValue>({
 // ---------------------------------------------------------------------------
 // Toolbar.
 
-// Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and the view-options toggle.
+// Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and on the right an actions slot beside the view-options toggle.
 export function DataTableToolbar<TData>({
+  actions,
   children,
   searchMaxLength,
   searchPlaceholder = "Search...",
   table,
 }: {
+  // Table-level actions (adding a row, exporting): they sit on the right beside the view options, away from the filters that narrow what is already there.
+  actions?: React.ReactNode
   children?: React.ReactNode
   searchMaxLength?: number
   searchPlaceholder?: string
@@ -708,7 +711,10 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <div className="flex items-center gap-2">
+        {actions}
+        <DataTableViewOptions table={table} />
+      </div>
     </div>
   )
 }
