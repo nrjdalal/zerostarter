@@ -31,12 +31,12 @@ Sizes come from `COLUMN_SIZES` (`components/data-table/column-sizes.ts`), in Tai
 | Archetype | u   | Sized for                                      |
 | --------- | --- | ---------------------------------------------- |
 | `select`  | 12  | The row checkbox                               |
-| `actions` | 12  | The icon-sm row-actions button                 |
+| `actions` | 6   | The icon-sm row-actions button                 |
 | `role`    | 12  | A short role token like Admin or User          |
 | `status`  | 12  | A short state word like Active or Banned       |
-| `date`    | 12  | A compact date; content truncates              |
-| `name`    | 48  | A plain text name                              |
-| `email`   | 81  | A typical address; the usual `meta.flex` floor |
+| `date`    | 18  | A compact date; content truncates              |
+| `name`    | 64  | A plain text name                              |
+| `email`   | 48  | A typical address; the usual `meta.flex` floor |
 
 Tune an archetype, add one when a new kind of column appears, or add a table block there; columns files never carry raw numbers, and the map carries no entry nothing consumes. In local dev, columns render with alternating tints so the boxes stay visible while you tune.
 
