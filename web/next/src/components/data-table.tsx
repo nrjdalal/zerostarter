@@ -1,7 +1,6 @@
 "use client"
 "use no memo"
 
-import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext"
 import {
   RiAddCircleLine,
   RiArrowDownLine,
@@ -31,6 +30,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { createParser, parseAsArrayOf, parseAsString, useQueryStates } from "nuqs"
 import * as React from "react"
 
+import rawFontMetrics from "@/components/data-table-metrics.json"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -90,38 +90,40 @@ export type ColumnConfig = {
   wrap?: boolean
 }
 
-// A widthless column sizes as header title + an allowance in spacing units, snapped up to the 3-unit grid: config.extra when set, else this default (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset). SSR has no canvas, so callers fall back to AUTO_WIDTH_FALLBACK until mounted.
-const AUTO_WIDTH_FALLBACK = 24
+// A widthless column sizes as header title + an allowance in spacing units, snapped up to the 3-unit grid: config.extra when set, else this default (10 = 2.5rem: the cell inset plus the sort button's gap, icon, and inset).
 const AUTO_WIDTH_EXTRA_UNITS = 10
-const measuredUnits = new Map<string, number>()
 
-// Header title width at the table's header font (text-sm font-medium), via pretext's canvas-backed metrics: pure arithmetic, no DOM layout, cached per label and allowance; px converts to spacing units at the default scale (1 unit = 4px).
-function autoWidthUnits(label: string, extraUnits: number): number | undefined {
-  if (typeof document === "undefined") return undefined
-  const key = `${extraUnits}:${label}`
-  const cached = measuredUnits.get(key)
-  if (cached !== undefined) return cached
-  const family = getComputedStyle(document.body).fontFamily
-  const titlePx = measureNaturalWidth(prepareWithSegments(label, `500 14px ${family}`))
-  const units = Math.ceil((titlePx / 4 + extraUnits) / 3) * 3
-  measuredUnits.set(key, units)
-  return units
+// The app header font (text-sm font-medium) as bundled data: per-character advances plus sparse kerning-pair deltas in px at 500 14px, generated at build by .github/scripts/data-table-metrics.ts, so any label measures the same on server and client and SSR ships final widths with no settle. The generator asserts this exact algorithm against real font shaping.
+const fontMetrics: {
+  advances: Record<string, number>
+  average: number
+  kerning: Record<string, number>
+} = rawFontMetrics
+
+function measureLabelPx(label: string): number {
+  let widthPx = 0
+  let previous = ""
+  for (const char of label) {
+    const advance = fontMetrics.advances[char]
+    widthPx += advance !== undefined ? advance : fontMetrics.average
+    if (previous) {
+      const pair = fontMetrics.kerning[previous + char]
+      if (pair !== undefined) widthPx += pair
+    }
+    previous = char
+  }
+  return widthPx
 }
 
-// Auto widths need canvas metrics, so measurement waits for mount: server and hydration renders share the fallback, then one settle applies the measured widths. useDataTable wires this in; a client-side table passes it as applyColumnManager's measure argument.
-export function useDataTableMeasure(): boolean {
-  const [ready, setReady] = React.useState(false)
-  React.useEffect(() => {
-    setReady(true)
-  }, [])
-  return ready
+// px converts to spacing units at the default scale (1 unit = 4px).
+function autoWidthUnits(label: string, extraUnits: number): number {
+  return Math.ceil((measureLabelPx(label) / 4 + extraUnits) / 3) * 3
 }
 
-// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta; columns without an entry pass through untouched. A widthless config measures its header label once measure flips true; it defaults to false so a render without useDataTableMeasure stays on the hydration-safe fallback. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
+// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta; columns without an entry pass through untouched. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
 export function applyColumnManager<TData extends RowData>(
   columns: ColumnDef<TData>[],
   columnConfig: Record<string, ColumnConfig>,
-  measure = false,
 ): ColumnDef<TData>[] {
   const configFor = (column: ColumnDef<TData>) => {
     const id = column.id
@@ -140,15 +142,10 @@ export function applyColumnManager<TData extends RowData>(
     const { config, id } = configFor(column)
     if (!config || !id) return column
     const label = column.meta && column.meta.label ? column.meta.label : id
-    const measured = measure
-      ? autoWidthUnits(label, config.extra !== undefined ? config.extra : AUTO_WIDTH_EXTRA_UNITS)
-      : undefined
     const width =
       config.width !== undefined
         ? config.width
-        : measured !== undefined
-          ? measured
-          : AUTO_WIDTH_FALLBACK
+        : autoWidthUnits(label, config.extra !== undefined ? config.extra : AUTO_WIDTH_EXTRA_UNITS)
     return {
       ...column,
       size: width,
@@ -357,10 +354,9 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
-  const measureReady = useDataTableMeasure()
   const managedColumns = React.useMemo(
-    () => (columnConfig ? applyColumnManager(columns, columnConfig, measureReady) : columns),
-    [columnConfig, columns, measureReady],
+    () => (columnConfig ? applyColumnManager(columns, columnConfig) : columns),
+    [columnConfig, columns],
   )
 
   const table = useReactTable({

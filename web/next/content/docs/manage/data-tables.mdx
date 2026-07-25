@@ -17,7 +17,6 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 | `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                                          |
 | `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                 |
 | `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                      |
-| `useDataTableMeasure`                 | Flips true after mount; pass it as `applyColumnManager`'s `measure` argument so header measurement waits out hydration (`useDataTable` wires it in)                                                                |
 | `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly                                                                                                |
 | `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs                                                                                                                            |
 
@@ -36,7 +35,7 @@ type ColumnConfig = {
 ```
 
 - Widths are Tailwind spacing units (1 = `0.25rem`, so 12 = 48px at the default scale) rendered through `calc(var(--spacing) * n)`, so tables ride the theme token and user font-size. On a fixed column the width is exact (`shrink-0`); on a flex column it is the floor (`min-width` + `flex-1`).
-- Omit `width` and the column sizes as header title + `extra`: the label measured via [pretext](https://github.com/chenglou/pretext) at the header font, canvas metrics without DOM layout, snapped up to the 3-unit grid and cached. Measurement applies after mount so server and hydration renders stay identical (a 24-unit fallback holds until then).
+- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`.github/scripts/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size, so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. Swapping the font (see [Fonts](/docs/manage/theming)) re-measures on the next run.
 - Names follow what the column says, never the backing field: the column headed Status keys as `status` with `accessorKey: "banned"` underneath.
 - Numbers live in the config map, never inline in the defs.
 
@@ -73,7 +72,7 @@ const { error, isError, refetch, table, tableProps } = useDataTable({
 
 ## Client-side tables
 
-For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager` with `useDataTableMeasure()` as its `measure` argument (it defaults to false, so a bare call stays on the hydration-safe fallback widths), `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the row models (`getSortedRowModel`, `getFilteredRowModel`, plus `getFacetedRowModel` + `getFacetedUniqueValues` for facet counts). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` and give faceted columns `filterFn: "arrIncludesSome"`.
+For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the row models (`getSortedRowModel`, `getFilteredRowModel`, plus `getFacetedRowModel` + `getFacetedUniqueValues` for facet counts). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` and give faceted columns `filterFn: "arrIncludesSome"`.
 
 ## Filling the viewport
 
