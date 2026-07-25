@@ -136,7 +136,7 @@ const docsConfig = {
         "/docs/manage/data-tables": {
           title: "Data Tables",
           description:
-            "The platform data-table family: TanStack Table composed the shadcn way, URL-synced state, and infinite scroll fed by useInfiniteQuery.",
+            "The platform data-table family: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
         },
       },
       {

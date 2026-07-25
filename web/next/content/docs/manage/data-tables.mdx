@@ -1,72 +1,71 @@
 ---
 slug: /docs/manage/data-tables
 title: Data Tables
-description: "The platform data-table family: TanStack Table composed the shadcn way, URL-synced state, and infinite scroll fed by useInfiniteQuery."
+description: "The platform data-table family: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery."
 ---
 
-Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/docs/components/base/data-table) recommends: there is no all-in-one `<DataTable data={...} />` prop machine. The page owns its [TanStack Table](https://tanstack.com/table) instance (`useReactTable`) and composes the pieces in `web/next/src/components/data-table/`, so every table keeps the full headless API while sharing one look and one set of behaviors. Every table scrolls infinitely inside its own region; there is no numbered pagination.
+Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/docs/components/base/data-table) recommends: there is no all-in-one `<DataTable data={...} />` prop machine. The page owns its [TanStack Table](https://tanstack.com/table) instance and composes the pieces in `web/next/src/components/data-table/`, so every table keeps the full headless API while sharing one look and one set of behaviors. Every table scrolls infinitely inside its own region with virtualized rows; there is no numbered pagination.
 
 ## The pieces
 
-| Component                | File                 | Renders                                                                                                                                                                  |
-| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DataTable`              | `table.tsx`          | The infinite-scroll region for your instance: sticky header, rows, a load-more sentinel, a spinner while loading, an `Empty` fallback, and a selection/total status line |
-| `DataTableColumnHeader`  | `column-header.tsx`  | A sortable header: asc/desc (and hide, when allowed) behind a ghost-button dropdown                                                                                      |
-| `DataTableFacetedFilter` | `faceted-filter.tsx` | A multi-select value filter in a command palette, with per-value counts on client tables                                                                                 |
-| `DataTableToolbar`       | `toolbar.tsx`        | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                |
-| `DataTableViewOptions`   | `view-options.tsx`   | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                       |
+| Component                | File                 | Renders                                                                                                                                                                                        |
+| ------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataTable`              | `table.tsx`          | The virtualized infinite-scroll region for your instance: sticky header, windowed rows, load-more on approach, a spinner while loading, an `Empty` fallback, and a selection/total status line |
+| `DataTableColumnHeader`  | `column-header.tsx`  | A sortable header: asc/desc (and hide, when allowed) behind a ghost-button dropdown                                                                                                            |
+| `DataTableFacetedFilter` | `faceted-filter.tsx` | A multi-select value filter in a command palette, with per-value counts on client tables                                                                                                       |
+| `DataTableToolbar`       | `toolbar.tsx`        | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                      |
+| `DataTableViewOptions`   | `view-options.tsx`   | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                             |
 
-Column definitions live next to the consumer (`components/console/users-columns.tsx` is the reference): typed `ColumnDef<Row>[]`, headers rendered through `DataTableColumnHeader`, and a `meta: { label }` per hideable column so the view-options menu reads "Joined" instead of `createdAt`.
+Two hooks carry the state:
 
-## URL state
+- **`useDataTable`** (`hooks/use-data-table.ts`): the whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance. A page brings only what a generic hook cannot know: its columns, its `fetchPage`, its filter ids.
+- **`useDataTableState`** (`hooks/use-data-table-state.ts`): just the URL state (`q`, `sort` as `column.asc`/`column.desc`, one array param per filter id via [nuqs](https://nuqs.dev)), pre-shaped for `useReactTable`. Client-side tables use this directly. There is no page state: any change resets the list.
 
-`useDataTableState` (`web/next/src/hooks/use-data-table-state.ts`) keeps the table state shareable and refresh-proof via [nuqs](https://nuqs.dev): `q` (search), `sort` (`column.asc`/`column.desc`), plus one array param per declared filter id (`role=admin,user`). It returns state and handlers shaped for `useReactTable`, so wiring is a spread. There is no page state: tables scroll infinitely, and any change to these values resets the list to a fresh first batch.
-
-```tsx
-const { sorting, globalFilter, columnFilters, ...handlers } = useDataTableState(["role"])
-```
-
-## Infinite scroll
-
-`DataTable` is the scroll container: a focusable, named region with a sticky header and a sentinel row near the bottom. When the sentinel enters view (200px early), it calls `onLoadMore`; the observer is recreated whenever a batch lands, so it keeps loading until the region fills or the list ends. Wire it to [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries), nothing hand-rolled:
-
-```tsx
-<DataTable
-  aria-label="Users"
-  table={table}
-  hasMore={query.hasNextPage}
-  isLoading={query.isPending}
-  isLoadingMore={query.isFetchingNextPage}
-  onLoadMore={() => query.fetchNextPage()}
-  total={total}
-/>
-```
-
-### Filling the viewport
-
-The table takes all available height below the page header. That needs a definite height at the top of the chain: the page passes `className="flex h-svh flex-col"` to `PageShell`, and everything between it and the region carries `flex-1 min-h-0` (the console page is the reference). Without a definite ancestor height the region grows with its content, the page scrolls instead of the table, and the always-visible sentinel loads every batch at once.
+Column definitions live next to the consumer (`components/console/users-columns.tsx` is the reference): typed `ColumnDef<Row>[]`, headers rendered through `DataTableColumnHeader`, a `meta: { label }` per hideable column so the view-options menu reads "Joined" instead of `createdAt`, an explicit `size` per column (virtualized rows position absolutely, so widths must be declared), and `meta: { flex: true }` on the one column that absorbs leftover width.
 
 ## Server-driven tables
 
-The console users table (`components/console/users-table.tsx`) is the reference for tables backed by an API. Sorting, search, and filters resolve on the server; batches stream in on scroll:
+The console users table (`components/console/users-table.tsx`) is the reference: sorting, search, and filters resolve on the API, and batches stream in on scroll. `useDataTable` bundles the [TanStack Query infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries) (`useInfiniteQuery`, `getNextPageParam` against the response total, `keepPreviousData`, a deferred search term), so the page is a fetcher plus composition:
 
-- `useInfiniteQuery` with `initialPageParam: 1` and a `getNextPageParam` that compares loaded rows against the response `total`; rows render from `pages.flatMap()`.
-- `manualSorting` and `manualFiltering` on the table; the search term passes through `useDeferredValue` so fast typing batches requests, and `placeholderData: keepPreviousData` keeps rows on screen while a sort or filter refetches.
-- The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns, escapes `LIKE` wildcards in the search, filters roles, and pages with `page`/`perPage` (the client's batch size). It is gated by `adminMiddleware` (see [API Conventions](/docs/manage/api-conventions)).
+```tsx
+const { error, isError, refetch, table, tableProps } = useDataTable({
+  columns: usersColumns,
+  enableRowSelection: true,
+  fetchPage: fetchUsers, // (input: DataTablePageInput) => Promise<DataTablePage<Row>>
+  filterIds: ["role"],
+  getRowId: (row) => row.id,
+  queryKey: "console-users",
+})
+
+<DataTableToolbar table={table} searchPlaceholder="Search users...">
+  <DataTableFacetedFilter column={table.getColumn("role")} options={ROLE_OPTIONS} title="Role" />
+</DataTableToolbar>
+<DataTable {...tableProps} aria-label="Users" />
+```
+
+`fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, total }`; the console maps it onto `GET /api/v1/admin/users`, whitelisting the sort column. The endpoint (`api/hono/src/routers/admin.ts`) escapes `LIKE` wildcards in the search, filters roles, pages with `page`/`perPage`, and is gated by `adminMiddleware` (see [API Conventions](/docs/manage/api-conventions)).
+
+## Virtualized infinite scroll
+
+`DataTable` follows [TanStack Table's virtualized-infinite-scrolling example](https://tanstack.com/table/v8/docs/framework/react/examples/virtualized-infinite-scrolling): the region is the scroll container, rows render as a [TanStack Virtual](https://tanstack.com/virtual) window (absolutely positioned inside a `tbody` sized to `getTotalSize()`, self-measured, `overscan: 5`), and `onLoadMore` fires within 500px of the bottom, on scroll and after every batch, so a not-yet-full region keeps loading. Semantic table tags stay but flip to grid/flex display, which is why columns declare explicit sizes. Sorting, search, or filter changes scroll back to the top.
+
+### Filling the viewport
+
+The table takes all available height below the page header. That needs a definite height at the top of the chain: the page passes `className="flex h-svh flex-col"` to `PageShell`, and everything between it and the region carries `flex-1 min-h-0` (the console page is the reference). Without a definite ancestor height the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
 
 ## Client-side tables
 
-For a payload that fits in the browser, drop the `manual*` flags and add the row models instead: `getSortedRowModel`, `getFilteredRowModel`, and (for facet counts) `getFacetedRowModel` + `getFacetedUniqueValues`. All rows render at once and the region simply scrolls; skip `onLoadMore` entirely. Set `globalFilterFn: "includesString"` so the toolbar search matches across columns, and give faceted columns `filterFn: "arrIncludesSome"`. The same `useDataTableState` hook drives both modes.
+For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState` plus the row models (`getSortedRowModel`, `getFilteredRowModel`, and for facet counts `getFacetedRowModel` + `getFacetedUniqueValues`). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` so the toolbar search matches across columns, and give faceted columns `filterFn: "arrIncludesSome"`.
 
 <Callout type="warn" title="TanStack Table v8 and the React Compiler">
 
-`useReactTable` mutates one stable table instance during render, so compiler-memoized components comparing the instance identity never see sorting, selection, or row updates. Every component that reads a `table` or `column` instance carries the `"use no memo"` directive; keep it on new consumers or the table freezes one render behind.
+`useReactTable` mutates one stable table instance during render, so compiler-memoized components comparing the instance identity never see sorting, selection, or row updates. Every file that reads a `table` or `column` instance (including `useDataTable`) carries the `"use no memo"` directive; keep it on new consumers or the table freezes one render behind.
 
 </Callout>
 
 ## Accessibility
 
-`DataTable`'s scroll region is named and focusable (`role="region"`, `tabIndex={0}`) so keyboard users can scroll it, the header stays sticky while scrolling, and sorted headers set `aria-sort`. The toolbar search is labeled and the sentinel row is `aria-hidden`.
+`DataTable`'s scroll region is named and focusable (`role="region"`, `tabIndex={0}`) so keyboard users can scroll it, the header stays sticky while scrolling, and sorted headers set `aria-sort`. The toolbar search is labeled.
 
 ## Next
 
