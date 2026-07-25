@@ -1,4 +1,5 @@
 import { auth } from "@packages/auth"
+import { roleAtLeast } from "@packages/auth/access"
 import { site } from "@packages/config/site"
 import { db, user as userTable } from "@packages/db"
 import { env } from "@packages/env/api-hono"
@@ -28,6 +29,15 @@ export const agentsRouter = new Hono()
     const ctx = await auth.$context
     const existing = await ctx.internalAdapter.findUserByEmail(AGENT_EMAIL)
 
+    // role is our column (added by the admin plugin) and not on Better Auth's base user type, so read it through our own schema.
+    const [existingRow] = existing
+      ? await db
+          .select({ role: userTable.role })
+          .from(userTable)
+          .where(eq(userTable.id, existing.user.id))
+          .limit(1)
+      : []
+    const existingRole = existingRow ? existingRow.role : null
     let user
     if (existing) {
       user = await ctx.internalAdapter.updateUserByEmail(AGENT_EMAIL, {
@@ -50,8 +60,10 @@ export const agentsRouter = new Hono()
       }
     }
 
-    // The local-only agent is the install's own internal account, so it sits at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Reasserted on each sign-in so a demotion mid-session cannot strand it.
-    await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
+    // The local-only agent is the install's own internal account, so it starts at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Only ever raised, never lowered, and only from below member: demoting the agent by hand is how you test what a lower rung sees, and reasserting owner on every sign-in would undo that the moment you signed back in.
+    if (!roleAtLeast(existingRole, "member")) {
+      await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
+    }
 
     const session = await ctx.internalAdapter.createSession(user.id)
     const signed = `${session.token}.${await makeSignature(session.token, ctx.secret)}`
