@@ -4,11 +4,10 @@ import { features, site } from "@packages/config/site"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -16,7 +15,20 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const formSchema = z.object({
-  email: z.email({ error: "Please enter a valid email address." }).max(254),
+  // string() is here for trim(): z.email() runs its format check before any trim, so a padded address would be rejected. One error function separates the empty case from the malformed one.
+  email: z
+    .string()
+    .trim()
+    .pipe(
+      z
+        .email({
+          error: (issue) =>
+            String(issue.input ?? "").trim() === ""
+              ? "Enter your email address to join."
+              : "That does not look like an email address. Check for a typo.",
+        })
+        .max(254),
+    ),
   // honeypot: unconstrained so it never blocks submission; the server silently drops bots
   subject: z.string(),
 })
@@ -37,18 +49,7 @@ function WaitlistCount() {
   return (
     <div className="mt-10 flex h-7 items-center justify-center">
       {data && data.count > 0 && (
-        <div className="animate-in fade-in flex items-center gap-3 duration-500">
-          <AvatarGroup>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-2 text-xs text-white">A</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-3 text-xs text-white">B</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-chart-4 text-xs text-white">C</AvatarFallback>
-            </Avatar>
-          </AvatarGroup>
+        <div className="motion-safe:animate-in motion-safe:fade-in flex items-center gap-3 duration-500">
           <span className="text-muted-foreground text-sm">
             {data.count}+ people on the waitlist
           </span>
@@ -61,16 +62,25 @@ function WaitlistCount() {
 export default function WaitlistPage() {
   if (!features.waitlist) notFound()
 
-  const [joined, setJoined] = useState(false)
+  // holds the accepted address so the confirmation can echo it back
+  const [joined, setJoined] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+
+  // the form unmounts on success, so focus would otherwise fall to <body>
+  useEffect(() => {
+    if (joined && successRef.current) successRef.current.focus()
+  }, [joined])
   const queryClient = useQueryClient()
 
   const joinWaitlist = useMutation({
     mutationFn: async (value: { email: string; subject: string }) => {
       const { error } = await unwrap(apiClient.waitlist.$post({ json: value }))
       if (error) throw new Error(error.message)
+      return value.email
     },
-    onSuccess: () => {
-      setJoined(true)
+    onSuccess: (email) => {
+      setJoined(email)
       queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
     },
     onError: (error) => {
@@ -81,13 +91,14 @@ export default function WaitlistPage() {
   const form = useForm({
     // `subject` is a honeypot: humans never see it, bots fill it (dodges browser autofill)
     defaultValues: { email: "", subject: "" },
-    validators: {
-      onSubmit: formSchema,
-      onChange: formSchema,
-      onBlur: formSchema,
+    // One validator source: TanStack keeps an error per source, so registering the same schema on several leaves a stale entry from the previous value and FieldError lists both. onBlur rather than onChange so a half-typed address is not called invalid mid-entry; submitting blurs the field, so the check still runs before the request.
+    validators: { onBlur: formSchema },
+    onSubmitInvalid: () => {
+      if (emailRef.current) emailRef.current.focus()
     },
     onSubmit: ({ value }) => {
-      joinWaitlist.mutate(value)
+      // the API owns storage normalization (its schema trims, the insert lowercases); trimming here only keeps the echoed confirmation clean
+      joinWaitlist.mutate({ ...value, email: value.email.trim() })
     },
   })
 
@@ -99,8 +110,39 @@ export default function WaitlistPage() {
 
         {joined ? (
           // matches the single-row form height so submitting never shifts the layout (sm+); on mobile the form stacks
-          <div className="text-success flex min-h-12 w-full items-center justify-center text-lg">
-            {"You're on the list. We'll be in touch soon."}
+          <div
+            ref={successRef}
+            role="status"
+            tabIndex={-1}
+            className="flex min-h-12 w-full flex-col items-center justify-center gap-1 outline-none"
+          >
+            <p className="text-success text-lg">
+              {"You're on the list. We'll be in touch at "}
+              <span className="font-medium">{joined}</span>.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-1">
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={() => {
+                  setJoined(null)
+                  form.reset()
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Not your email? Change it
+              </Button>
+              <span className="text-muted-foreground text-sm">or</span>
+              <Button
+                variant="link"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+              >
+                browse the source
+              </Button>
+            </div>
           </div>
         ) : (
           <form
@@ -134,19 +176,24 @@ export default function WaitlistPage() {
                       Email
                     </FieldLabel>
                     <Input
+                      ref={emailRef}
                       id={field.name}
                       type="email"
                       name={field.name}
+                      autoComplete="email"
+                      inputMode="email"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
+                      aria-describedby={isInvalid ? `${field.name}-error` : undefined}
                       placeholder="you@example.com"
                       className="h-12 px-4 text-center text-base sm:text-left"
                       disabled={joinWaitlist.isPending}
                     />
                     {isInvalid && (
                       <FieldError
+                        id={`${field.name}-error`}
                         className="mt-1 text-center sm:absolute sm:top-full sm:left-0 sm:text-left"
                         errors={field.state.meta.errors}
                       />
@@ -161,7 +208,8 @@ export default function WaitlistPage() {
               className="h-12 w-full px-6 text-base sm:w-auto"
               disabled={joinWaitlist.isPending}
             >
-              {joinWaitlist.isPending ? <Spinner /> : "Join the waitlist"}
+              {joinWaitlist.isPending && <Spinner />}
+              Join the waitlist
             </Button>
           </form>
         )}
