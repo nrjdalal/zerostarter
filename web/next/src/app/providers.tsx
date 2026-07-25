@@ -4,6 +4,7 @@ import { isProduction } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { useState } from "react"
 import { Toaster } from "sonner"
 
@@ -14,7 +15,7 @@ export function OuterProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <NuqsAdapter>{children}</NuqsAdapter>
       {!isProduction(env.NEXT_PUBLIC_NODE_ENV) && <DevTools />}
     </QueryClientProvider>
   )
