@@ -10,7 +10,7 @@ export const revalidate = 60
 
 const blog = contentSource("blog")
 
-// Minimal XML escaping: titles and descriptions are author-written prose, so only the five predefined entities can appear.
+// Minimal XML escaping for every interpolated value, prose and URL alike: only the five predefined entities can appear in either.
 function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")

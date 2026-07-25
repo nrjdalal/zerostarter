@@ -221,29 +221,32 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
               )}
             </div>
           )}
-          {site.legal.terms && site.legal.privacy && (
-            <div className="text-muted-foreground text-center text-xs text-balance">
-              By clicking continue, you agree to our{" "}
-              <a
-                href={site.legal.terms}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground underline underline-offset-4"
-              >
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a
-                href={site.legal.privacy}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground underline underline-offset-4"
-              >
-                Privacy Policy
-              </a>
-              .
-            </div>
-          )}
+          {(magicLinkEnabled || hasAlternatives) &&
+            site.legal &&
+            site.legal.terms &&
+            site.legal.privacy && (
+              <div className="text-muted-foreground text-center text-xs text-balance">
+                By clicking continue, you agree to our{" "}
+                <a
+                  href={site.legal.terms}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground underline underline-offset-4"
+                >
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  href={site.legal.privacy}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground underline underline-offset-4"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </div>
+            )}
           {hasNoProviders &&
             (isPending ? (
               <div className="text-muted-foreground flex justify-center">

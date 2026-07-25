@@ -267,7 +267,7 @@ docker compose up --build`
           <div
             tabIndex={0}
             role="group"
-            aria-label="Technologies wired into the starter"
+            aria-label="Technologies wired into the starter. Scrolling pauses while focused."
             data-marquee
             className="bg-sidebar focus-visible:ring-ring/50 relative overflow-hidden border-y py-6 outline-none focus-visible:ring-2"
           >

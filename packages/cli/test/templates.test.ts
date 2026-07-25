@@ -20,6 +20,25 @@ test("siteTemplate capitalizes the brand and leaks no upstream identity", () => 
   expect(out).not.toContain("nrjdalal")
 })
 
+// A key present in packages/config/src/site.ts but missing here ships a fork whose site.ts lacks it, so any shared component reading it throws at runtime and the fork fails check-types.
+test("siteTemplate emits every key the shared site config declares", () => {
+  const out = siteTemplate(brand)
+  for (const key of [
+    "agent:",
+    "apiReferenceDescription:",
+    "description:",
+    "legal:",
+    "llmsFullPreamble:",
+    "name:",
+    "social:",
+    "tagline:",
+  ]) {
+    expect(out).toContain(key)
+  }
+  expect(out).toContain("privacy:")
+  expect(out).toContain("terms:")
+})
+
 test("siteTemplate emits the fork feature defaults (waitlist off)", () => {
   const out = siteTemplate(brand)
   expect(out).toContain("export const features")
