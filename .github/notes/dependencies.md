@@ -24,14 +24,6 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Active overrides
 
-### `esbuild` → `^0.28.1`
-
-- **Advisory:** [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99) (moderate): esbuild's dev server answers any website's cross-origin request and returns the response. Affects `esbuild <=0.24.2`.
-- **Why an override:** `drizzle-kit@0.31.10` still reaches the legacy `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` chain, which pins `esbuild ~0.18.20`, so a fresh resolve pulls the affected copy back in alongside the patched one. A single `overrides.esbuild` entry collapses every transitive `esbuild` onto `0.28.1`. `fumadocs-mdx@15.2.0` now requires `^0.28.1` on its own and no longer needs the override; `drizzle-kit`'s own direct range (`^0.25.4`) is already clear too, so the `@esbuild-kit/*` chain is the only thing this still holds up.
-- **Risk:** low. It bumps a build-time bundler, and the dev server the advisory targets is never started here.
-- **Exit criteria:** remove the override once `drizzle-kit` drops the `@esbuild-kit/*` chain.
-- **Note:** this override previously cited [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr), which was **withdrawn on 2026-06-17** for naming the wrong package (the flaw was in esbuild's Deno distribution, not the npm one). Verified withdrawn: with the override removed, `bun audit` no longer reports it at any level. The override was kept for the live advisory above, not the withdrawn one.
-
 ### `postcss` → `^8.5.23`
 
 - **Advisory:** [GHSA-6g55-p6wh-862q](https://github.com/advisories/GHSA-6g55-p6wh-862q) and [GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849) (high): arbitrary `.map` file read and path traversal via an attacker-controlled `sourceMappingURL` in CSS comments. Affects `postcss <=8.5.11`.
@@ -48,7 +40,13 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Retired overrides
 
-Kept as a record so a returning advisory is recognised rather than re-investigated from scratch. Both were dropped once a fresh resolve satisfied their own exit criteria without help.
+Kept as a record so a returning advisory is recognised rather than re-investigated from scratch.
 
-- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both now resolve `fast-uri@3.1.4` on their own.
+- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both now resolve `fast-uri@3.1.4` on their own, meeting the recorded exit criterion.
 - **`shell-quote` → `^1.10.0`** ([GHSA-395f-4hp3-45gv](https://github.com/advisories/GHSA-395f-4hp3-45gv), high). Held up for `concurrently`, which now resolves `shell-quote@1.9.0`, past the `<=1.8.4` affected range.
+- **`esbuild` → `^0.28.1`**. Retired by decision, not because a parent caught up, so this one is an accepted exposure rather than a resolved one.
+  - It was added for [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr) (high), **withdrawn on 2026-06-17** for naming the wrong package: the flaw was in esbuild's Deno distribution, not the npm one. Verified withdrawn, `bun audit` no longer reports it at any level with the override gone.
+  - What removing it costs: `drizzle-kit@0.31.10` still reaches the legacy `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` chain, which pins `esbuild ~0.18.20`, so the tree carries `0.18.20` beside the patched `0.25.12` and `0.28.1`. That copy is in range for [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99) (**moderate**): esbuild's dev server answers any website's cross-origin request and returns the response. Affects `esbuild <=0.24.2`.
+  - **Why that is acceptable:** the affected surface is `esbuild serve`, which nothing here starts. `drizzle-kit` uses the loader to read `drizzle.config.ts`, and `bun run dev` serves through Next and Hono. The advisory is moderate, so `bun audit --audit-level high` (the pre-push gate) stays green.
+  - **Reinstate the override** if anything in the repo starts running esbuild's own dev server, or if this advisory is ever re-rated high.
+  - `fumadocs-mdx@15.2.0` requires `^0.28.1` on its own and never needed the override; `drizzle-kit`'s direct range (`^0.25.4`) is clear too. The `@esbuild-kit/*` chain was the only thing it still held up.
