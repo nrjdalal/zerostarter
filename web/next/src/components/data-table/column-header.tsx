@@ -1,21 +1,13 @@
 "use client"
 "use no memo"
 
-import { RiArrowDownLine, RiArrowUpLine, RiExpandUpDownLine, RiEyeOffLine } from "@remixicon/react"
+import { RiArrowDownLine, RiArrowUpLine, RiExpandUpDownLine } from "@remixicon/react"
 import type { Column } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
-// Sortable column header: a ghost-button dropdown with asc/desc (and hide when the column allows it). Falls back to a plain label for non-sortable columns.
+// Sortable column header: a ghost button toggling asc and desc on click (hiding lives in the view options). Falls back to a plain label for non-sortable columns.
 function DataTableColumnHeader<TData, TValue>({
   className,
   column,
@@ -42,36 +34,15 @@ function DataTableColumnHeader<TData, TValue>({
     )
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" className={cn(nudge, className)} />}>
-        {align === "right" ? icon : null}
-        {title}
-        {align === "right" ? null : icon}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-            <RiArrowUpLine />
-            Asc
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-            <RiArrowDownLine />
-            Desc
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        {column.getCanHide() && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
-                <RiEyeOffLine />
-                Hide
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      className={cn(nudge, className)}
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {align === "right" ? icon : null}
+      {title}
+      {align === "right" ? null : icon}
+    </Button>
   )
 }
 
