@@ -132,7 +132,10 @@ function DataTable<TData>({
                     key={header.id}
                     colSpan={header.colSpan}
                     role="columnheader"
-                    className={cn("flex items-center", columnLayout(header.column).className)}
+                    className={cn(
+                      "flex items-center overflow-hidden",
+                      columnLayout(header.column).className,
+                    )}
                     style={columnLayout(header.column).style}
                     aria-sort={
                       header.column.getIsSorted() === "asc"

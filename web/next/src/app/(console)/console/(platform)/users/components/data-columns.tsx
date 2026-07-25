@@ -69,7 +69,9 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     accessorKey: "role",
     size: COLUMN_SIZES.console.users.role,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
-    cell: ({ row }) => <span className="capitalize">{row.original.role}</span>,
+    cell: ({ row }) => (
+      <DataTableCellText className="capitalize">{row.original.role}</DataTableCellText>
+    ),
     meta: { label: "Role" },
   },
   {
@@ -78,15 +80,20 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     size: COLUMN_SIZES.console.users.status,
     enableSorting: false,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
-    cell: ({ row }) => (row.original.banned ? "Banned" : "Active"),
+    cell: ({ row }) => (
+      <DataTableCellText>{row.original.banned ? "Banned" : "Active"}</DataTableCellText>
+    ),
     meta: { label: "Status" },
   },
   {
     accessorKey: "createdAt",
     size: COLUMN_SIZES.console.users.createdAt,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
-    cell: ({ row }) =>
-      new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" }),
+    cell: ({ row }) => (
+      <DataTableCellText>
+        {new Date(row.original.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+      </DataTableCellText>
+    ),
     meta: { label: "Joined" },
   },
   {

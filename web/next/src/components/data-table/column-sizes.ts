@@ -1,19 +1,19 @@
 // Column widths, the single source for columnDef.size across every table. "global" holds the semantic archetypes, measured at the default cell padding and type scale and snapped to a 12px grid; each table block maps its column ids onto them (or a deliberate one-off number), so a columns file reads COLUMN_SIZES.<area>.<table>.<columnId> and tuning stays here, never ad-hoc in a columns file. Names follow what the column says (a column headed Status is status), never the backing field (banned).
 const global = {
   // the icon-sm row-actions button
-  actions: 60,
-  // "25 Jun 2026" plus the sort chevron
-  date: 144,
+  actions: 48,
+  // a compact date; content truncates
+  date: 48,
   // a typical address; the usual meta.flex floor
   email: 324,
   // a plain text name
   name: 192,
   // a short role token like Admin or User
-  role: 108,
+  role: 48,
   // the row checkbox
   select: 48,
   // a short state word like Active or Banned
-  status: 108,
+  status: 48,
 } as const
 
 export const COLUMN_SIZES = {
