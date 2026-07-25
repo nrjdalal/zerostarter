@@ -37,15 +37,15 @@ async function copyText(value: string, message: string) {
   }
 }
 
-// This table's layout, colocated with its columns and written in column order. Widthless columns size from their header title; email floors at header + 60 units and grows; select stays left so its box reads as the gap when it inherits growth.
+// This table's layout, colocated with its columns and written in column order. Widthless columns size from their header title; email floors at header + 48 units and grows; select stays left so its box reads as the gap when it inherits growth.
 export const usersColumnConfig: Record<string, ColumnConfig> = {
   select: { width: 12 },
-  // header title + 12rem
-  name: { extra: 48 },
-  email: { extra: 60, flex: true },
+  // header title + 9rem
+  name: { extra: 36 },
+  email: { extra: 48, flex: true },
   role: { align: "center" },
   status: { align: "center" },
-  createdAt: { align: "right", extra: 24 },
+  createdAt: { align: "right", extra: 18 },
   actions: { align: "center", width: 12 },
 }
 

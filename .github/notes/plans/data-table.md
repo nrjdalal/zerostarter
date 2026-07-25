@@ -58,7 +58,7 @@ type ColumnConfig = {
 - Omit `width` and the column sizes as header title + `extra`: the `meta.label` measured via pretext (`measureNaturalWidth(prepareWithSegments(label, "500 14px " + body font))`), px converted at 4px/unit, snapped up to the 3-unit grid, cached per label+allowance. Measurement runs post-mount only (SSR has no canvas): server and hydration renders share a 24-unit fallback, then one settle applies measured widths, avoiding hydration mismatch.
 - Names follow what the column says, never the backing field: the column headed Status keys as `status` with `accessorKey: "banned"` underneath.
 - Numbers live in the config map, never inline in the defs; no shared `global` archetypes for now (add exported family constants only if genuine cross-table reuse appears).
-- The users config converged to: `select { width: 12 }`, `name { extra: 48 }` (header + 12rem), `email { extra: 60, flex: true }`, `role { align: "center" }`, `status { align: "center" }`, `createdAt { align: "right", extra: 24 }`, `actions { align: "center", width: 12 }`. Role and status center; select stays left deliberately (see slack model).
+- The users config converged to: `select { width: 12 }`, `name { extra: 36 }` (header + 9rem), `email { extra: 48, flex: true }`, `role { align: "center" }`, `status { align: "center" }`, `createdAt { align: "right", extra: 18 }`, `actions { align: "center", width: 12 }`. Role and status center; select stays left deliberately (see slack model).
 - `applyColumnManager(columns, columnConfig, measure)` folds the map into defs by column id (`id`, else `accessorKey`), setting `size` and `meta { align, flex, wrap }`; `useDataTable` applies it via its `columnConfig` option, client tables call it directly.
 
 ## Slack model (who grows)
