@@ -86,7 +86,7 @@ https://your-web.vercel.app/api/auth/callback/google
 
 ## The admin role and /console
 
-`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else keeps the default `user` role and gets a `notFound()`. There is no env allow-list: the role _is_ the source of truth. The same plugin adds ban columns (`banned`, `banReason`, `banExpires`) to `user` and lets an admin impersonate another user, recording who did it in `session.impersonatedBy`.
+`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else keeps the default `user` role and gets a `notFound()`. There is no env allow-list: the role _is_ the source of truth. The same plugin adds ban columns (`banned`, `banReason`, `banExpires`) to `user` and lets an admin impersonate another user, recording who did it in `session.impersonatedBy`. The API side of the same gate is `adminMiddleware` on `/api/v1/admin/*` (see [API Conventions](/docs/manage/api-conventions)); both re-read the session past the cookie cache, so revoking an admin takes effect on their next request, and both feed console surfaces like the [users data table](/docs/manage/data-tables).
 
 Bootstrap the first admin from the CLI:
 
