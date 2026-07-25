@@ -108,11 +108,20 @@ function autoWidthUnits(label: string, extraUnits: number): number | undefined {
   return units
 }
 
-// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta; columns without an entry pass through untouched. A widthless config measures its header label once measure flips true (after mount, keeping server and hydration renders identical). Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
+// Auto widths need canvas metrics, so measurement waits for mount: server and hydration renders share the fallback, then one settle applies the measured widths. useDataTable wires this in; a client-side table passes it as applyColumnManager's measure argument.
+export function useDataTableMeasure(): boolean {
+  const [ready, setReady] = React.useState(false)
+  React.useEffect(() => {
+    setReady(true)
+  }, [])
+  return ready
+}
+
+// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta; columns without an entry pass through untouched. A widthless config measures its header label once measure flips true; it defaults to false so a render without useDataTableMeasure stays on the hydration-safe fallback. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
 export function applyColumnManager<TData extends RowData>(
   columns: ColumnDef<TData>[],
   columnConfig: Record<string, ColumnConfig>,
-  measure = true,
+  measure = false,
 ): ColumnDef<TData>[] {
   const configFor = (column: ColumnDef<TData>) => {
     const id = column.id
@@ -260,12 +269,15 @@ export type DataTablePage<TRow> = {
   total: number
 }
 
+// Module-scope so an omitted defaultSorting keeps a stable identity; a fresh [] per render would churn effectiveSorting and re-fire every state-slice effect downstream.
+const EMPTY_SORTING: SortingState = []
+
 // The generic server-driven table wiring. A page brings only what a generic hook cannot know (its columns, its fetcher, its filter ids, its column config) and spreads tableProps into DataTable. Client-side tables skip this and use useDataTableState directly.
 export function useDataTable<TRow>({
   batchSize = 25,
   columnConfig,
   columns,
-  defaultSorting = [],
+  defaultSorting = EMPTY_SORTING,
   enableRowSelection = false,
   fetchPage,
   filterIds = [],
@@ -345,11 +357,7 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
-  // Auto widths measure the header label with canvas metrics, so hold measurement until after mount: server and hydration renders share the fallback, then one settle applies the measured widths.
-  const [measureReady, setMeasureReady] = React.useState(false)
-  React.useEffect(() => {
-    setMeasureReady(true)
-  }, [])
+  const measureReady = useDataTableMeasure()
   const managedColumns = React.useMemo(
     () => (columnConfig ? applyColumnManager(columns, columnConfig, measureReady) : columns),
     [columnConfig, columns, measureReady],

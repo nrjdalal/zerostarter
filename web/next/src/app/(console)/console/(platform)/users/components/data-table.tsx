@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/empty"
 import { apiClient, unwrap } from "@/lib/api/client"
 
-const DEFAULT_SORTING = [{ desc: true, id: "createdAt" }]
+const DEFAULT_SORT = { desc: true, id: "createdAt" }
+const DEFAULT_SORTING = [DEFAULT_SORT]
 
 const ROLE_OPTIONS = [
   { label: "Admin", value: "admin" },
@@ -52,7 +53,7 @@ async function fetchUsers({
   search,
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ConsoleUser>> {
-  const sort = sorting.length ? sorting[0] : { desc: true, id: "createdAt" }
+  const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const sortId =
     sort.id in SORT_FIELDS ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS] : "createdAt"
   const roles = filters.role ? filters.role : []

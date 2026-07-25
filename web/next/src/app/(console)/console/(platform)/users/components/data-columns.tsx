@@ -28,6 +28,15 @@ export type ConsoleUser = InferResponseType<
   typeof apiClient.v1.admin.users.$get
 >["data"]["users"][number]
 
+async function copyText(value: string, message: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+    toast.success(message)
+  } catch {
+    toast.error("Copy failed")
+  }
+}
+
 // This table's layout, colocated with its columns and written in column order. Widthless columns size from their header title; email floors at header + 60 units and grows; select stays left so its box reads as the gap when it inherits growth.
 export const usersColumnConfig: Record<string, ColumnConfig> = {
   select: { width: 12 },
@@ -46,7 +55,8 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
-        checked={table.getIsAllPageRowsSelected() || table.getIsSomePageRowsSelected()}
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={table.getIsSomePageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
@@ -122,28 +132,10 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
         <DropdownMenuContent align="end">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(row.original.id)
-                  toast.success("User ID copied")
-                } catch {
-                  toast.error("Copy failed")
-                }
-              }}
-            >
+            <DropdownMenuItem onClick={() => copyText(row.original.id, "User ID copied")}>
               Copy user ID
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(row.original.email)
-                  toast.success("Email copied")
-                } catch {
-                  toast.error("Copy failed")
-                }
-              }}
-            >
+            <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
               Copy email
             </DropdownMenuItem>
           </DropdownMenuGroup>

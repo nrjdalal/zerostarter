@@ -23,11 +23,11 @@ import type { NavGroup } from "@/lib/docs"
 import { isActive } from "@/lib/utils"
 
 type ConsoleNavItem = {
-  title: string
-  url: string
-  icon: RemixiconComponentType
   exact: boolean
   feature?: keyof typeof features
+  icon: RemixiconComponentType
+  title: string
+  url: string
 }
 
 const navGroups: { label: string; items: ConsoleNavItem[] }[] = [
@@ -35,11 +35,11 @@ const navGroups: { label: string; items: ConsoleNavItem[] }[] = [
     label: "Getting Started",
     items: [
       {
-        title: "Documentation",
-        url: "/console/docs",
-        icon: RiBookLine,
         exact: false,
         feature: "internalDocs",
+        icon: RiBookLine,
+        title: "Documentation",
+        url: "/console/docs",
       },
     ],
   },
@@ -47,10 +47,10 @@ const navGroups: { label: string; items: ConsoleNavItem[] }[] = [
     label: "Platform",
     items: [
       {
+        exact: false,
+        icon: RiGroupLine,
         title: "Users",
         url: "/console/users",
-        icon: RiGroupLine,
-        exact: false,
       },
     ],
   },
@@ -71,7 +71,7 @@ export function ConsoleHeader() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              isActive={isActive(pathname, "/console", { exact: true })}
+              isActive={isActive(pathname, "/console")}
               tooltip="Dashboard"
               className="data-active:font-normal"
               render={<Link href="/console" onClick={close} />}

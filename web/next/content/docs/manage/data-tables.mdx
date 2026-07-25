@@ -17,6 +17,7 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 | `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                                          |
 | `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                 |
 | `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                      |
+| `useDataTableMeasure`                 | Flips true after mount; pass it as `applyColumnManager`'s `measure` argument so header measurement waits out hydration (`useDataTable` wires it in)                                                                |
 | `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly                                                                                                |
 | `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs                                                                                                                            |
 
@@ -72,7 +73,7 @@ const { error, isError, refetch, table, tableProps } = useDataTable({
 
 ## Client-side tables
 
-For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the row models (`getSortedRowModel`, `getFilteredRowModel`, plus `getFacetedRowModel` + `getFacetedUniqueValues` for facet counts). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` and give faceted columns `filterFn: "arrIncludesSome"`.
+For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager` with `useDataTableMeasure()` as its `measure` argument (it defaults to false, so a bare call stays on the hydration-safe fallback widths), `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the row models (`getSortedRowModel`, `getFilteredRowModel`, plus `getFacetedRowModel` + `getFacetedUniqueValues` for facet counts). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` and give faceted columns `filterFn: "arrIncludesSome"`.
 
 ## Filling the viewport
 
