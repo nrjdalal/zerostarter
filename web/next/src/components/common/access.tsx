@@ -5,7 +5,7 @@ import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -32,6 +32,8 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
+  // focus lands on the heading, not the first field: entering the dialog keeps the focus trap and the screen-reader announcement, while autofocusing the email input would pop the keyboard on mobile
+  const headingRef = useRef<HTMLHeadingElement>(null)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
@@ -90,7 +92,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       <DialogTrigger render={<Button className="w-24" variant="outline" />}>
         <span className={labelClassName}>Login</span>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" initialFocus={headingRef}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
         </DialogHeader>
@@ -102,7 +104,9 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
               </div>
               <span className="sr-only">{site.name}</span>
             </div>
-            <h2 className="text-xl font-semibold">Welcome to {site.name}</h2>
+            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold outline-none">
+              Welcome to {site.name}
+            </h2>
           </div>
           {magicLinkEnabled && (
             <form
@@ -136,10 +140,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                           disabled={loader === "email"}
                         />
                         {isInvalid && (
-                          <FieldError
-                            id={`${field.name}-error`}
-                            errors={field.state.meta.errors.slice(0, 1)}
-                          />
+                          <FieldError id={`${field.name}-error`} errors={field.state.meta.errors} />
                         )}
                       </Field>
                     )

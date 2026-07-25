@@ -176,7 +176,7 @@ export default function WaitlistPage() {
                       <FieldError
                         id={`${field.name}-error`}
                         className="mt-1 text-center sm:absolute sm:top-full sm:left-0 sm:text-left"
-                        errors={field.state.meta.errors.slice(0, 1)}
+                        errors={field.state.meta.errors}
                       />
                     )}
                   </Field>

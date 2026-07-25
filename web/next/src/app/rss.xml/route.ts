@@ -61,6 +61,6 @@ ${items}
 `
 
   return new Response(xml, {
-    headers: { "content-type": "application/rss+xml; charset=utf-8" },
+    headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
   })
 }
