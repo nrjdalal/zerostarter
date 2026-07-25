@@ -1,13 +1,14 @@
+import { roleAtLeast } from "@packages/auth/access"
 import { notFound } from "next/navigation"
 
 import { auth } from "@/lib/auth"
 
-// Single source of truth for console access: the user's `admin` role (Better Auth Admin plugin). Shared by the layout guard and the gated search route so the rule can't drift.
+// Single source of truth for console access: the platform role ladder (Better Auth Admin plugin's `role` column), read through the shared rank predicate. Member and above may look; the API decides what they may change. Shared by the layout guard and the gated search route so the rule can't drift.
 export async function getConsoleSession() {
   // Bypass the session cookie cache so a grant/revoke takes effect on the next request rather than after the cache window.
   const session = await auth.api.getSession({ disableCookieCache: true })
   // banned as well as role: Better Auth's banUser deletes sessions, but a ban written straight to the database would otherwise still open the console onto an API that 403s every request.
-  if (!session || session.user.role !== "admin" || session.user.banned) return null
+  if (!session || !roleAtLeast(session.user.role, "member") || session.user.banned) return null
   return session
 }
 

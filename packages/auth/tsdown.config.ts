@@ -31,6 +31,8 @@ if (existsSync(generatedPath)) {
 
 export default definePackageConfig({
   name: "@packages/auth",
+  // access.ts is its own entry so the web can import the rank predicate without pulling the auth instance, which reaches the database driver and does not resolve in a Next build.
+  entry: ["src/index.ts", "src/access.ts"],
   env,
   getSafeEnv,
   define: { __DERIVED_TLDTS__: JSON.stringify(breakdown) },

@@ -84,17 +84,34 @@ https://your-web.vercel.app/api/auth/callback/google
 
 </Callout>
 
-## The admin role and /console
+## The console role ladder
 
-`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else keeps the default `user` role and gets a `notFound()`. There is no env allow-list: the role _is_ the source of truth. The same plugin adds ban columns (`banned`, `banReason`, `banExpires`) to `user` and lets an admin impersonate another user, recording who did it in `session.impersonatedBy`. The API side of the same gate is `adminMiddleware` on `/api/v1/admin/*` (see [API Conventions](/docs/manage/api-conventions)); both re-read the session past the cookie cache, so revoking an admin takes effect on their next request, and both feed console surfaces like the [users data table](/docs/manage/data-tables).
+`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). There is no env allow-list: the role _is_ the source of truth.
 
-Bootstrap the first admin from the CLI:
+| Role     | Console | Can change                         |
+| -------- | ------- | ---------------------------------- |
+| `owner`  | yes     | everything, including other owners |
+| `admin`  | yes     | everything except granting owner   |
+| `member` | yes     | nothing, the console is read-only  |
+| `user`   | no      | n/a                                |
+
+`member` is the rung that makes the ladder worth having: someone can answer a question about an account without also being able to ban it. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
+
+Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above to the pages, `notFound()`ing everyone else so the console is never advertised. The API's console middleware reads at `member` and writes at `admin` (see [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a demotion or a ban takes effect on the next request, and both also refuse a banned user, which covers a ban written straight to the database rather than through the plugin.
+
+The plugin has its own separate gate: `adminRoles: ["owner", "admin"]` decides who may use its ban, impersonate, and set-role endpoints. Setting it does not gate our routes and gating our routes does not stop those endpoints, so both are configured.
+
+Bootstrap the first owner from the CLI, which is also how a fresh install gets its first way in:
 
 ```bash
-bun run console:roles grant you@example.com   # also: revoke <email>, list
+bun run console:roles grant you@example.com owner   # role defaults to admin; also: revoke <email>, list
 ```
 
-The guard reads the session with the cookie cache disabled, so a grant or revoke takes effect on the very next request.
+<Callout type="info" title="Platform roles are not organization roles">
+
+The ladder above lives on `user.role` and governs this install. Organizations have their own per-membership roles on `member.role` (`owner`, `admin`, `member`), which govern one organization and nothing else. The words overlap; the systems never read each other.
+
+</Callout>
 
 ## Organizations and teams
 

@@ -97,7 +97,8 @@ export const auth = betterAuth({
     organizationPlugin({
       teams: { enabled: true },
     }),
-    adminPlugin(),
+    // adminRoles is the plugin's own gate on ban, impersonate and set-role; it does not gate our routes, and our gate does not stop these endpoints, so both are needed.
+    adminPlugin({ adminRoles: ["owner", "admin"] }),
   ],
   socialProviders: {
     ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET

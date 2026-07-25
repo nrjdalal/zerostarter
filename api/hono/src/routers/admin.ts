@@ -13,7 +13,7 @@ import {
   validationErrorResponses,
 } from "@/lib/error"
 import { escapeLike } from "@/lib/sql"
-import { adminMiddleware } from "@/middlewares"
+import { consoleReadMiddleware } from "@/middlewares"
 
 const ROLES = ["admin", "user"] as const
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
@@ -53,11 +53,11 @@ const sortColumns = {
   role: sql`coalesce(${user.role}, 'user')`,
 } satisfies Record<(typeof SORTS)[number], unknown>
 
-// Admin-only endpoints, mounted under /v1 behind authMiddleware; adminMiddleware layers the fresh role check on top.
+// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top, reading at member and writing at admin.
 export const adminRouter = new Hono<{
   Variables: Session
 }>()
-  .use("/*", adminMiddleware)
+  .use("/*", consoleReadMiddleware)
   .get(
     "/users",
     describeRoute({

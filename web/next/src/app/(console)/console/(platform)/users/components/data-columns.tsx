@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
 
+import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
   DataTableColumnHeader,
@@ -124,25 +125,30 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
-          <span className="sr-only">Open menu</span>
-          <RiMoreLine />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => copyText(row.original.id, "User ID copied")}>
-              Copy user ID
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
-              Copy email
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    // Absent rather than disabled for a member: a control that exists only to refuse invites the attempt. The API enforces the same line regardless.
+    cell: ({ row }) => {
+      const { canWrite } = useConsoleRole()
+      if (!canWrite) return null
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+            <span className="sr-only">Open menu</span>
+            <RiMoreLine />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => copyText(row.original.id, "User ID copied")}>
+                Copy user ID
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
+                Copy email
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
     enableHiding: false,
     enableSorting: false,
   },

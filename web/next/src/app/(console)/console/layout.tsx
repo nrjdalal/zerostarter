@@ -1,5 +1,7 @@
+import { consoleRole } from "@packages/auth/access"
 import type { Metadata } from "next"
 
+import { ConsoleRoleProvider } from "@/components/console/role"
 import { ConsoleHeader, ConsoleNav } from "@/components/console/sidebar"
 import { SidebarShell } from "@/components/shell/sidebar-shell"
 import { SidebarUserMenu } from "@/components/shell/sidebar-user-menu"
@@ -31,7 +33,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         </SidebarMenu>
       }
     >
-      {children}
+      <ConsoleRoleProvider role={consoleRole(session.user.role)}>{children}</ConsoleRoleProvider>
     </SidebarShell>
   )
 }
