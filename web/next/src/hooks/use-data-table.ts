@@ -31,6 +31,7 @@ export type DataTablePage<TRow> = {
 export function useDataTable<TRow>({
   batchSize = 25,
   columns,
+  defaultSorting = [],
   enableRowSelection = false,
   fetchPage,
   filterIds = [],
@@ -40,6 +41,7 @@ export function useDataTable<TRow>({
 }: {
   batchSize?: number
   columns: ColumnDef<TRow>[]
+  defaultSorting?: SortingState
   enableRowSelection?: boolean
   fetchPage: (input: DataTablePageInput) => Promise<DataTablePage<TRow>>
   filterIds?: string[]
@@ -57,6 +59,9 @@ export function useDataTable<TRow>({
   } = useDataTableState(filterIds)
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
 
+  // With no sort in the URL the default applies as real state, so the header chevron and aria-sort show it while the URL stays clean.
+  const effectiveSorting = sorting.length ? sorting : defaultSorting
+
   // Defer the search term so fast typing batches requests instead of firing one per keystroke.
   const search = React.useDeferredValue(globalFilter)
   const filters = React.useMemo(() => {
@@ -70,9 +75,15 @@ export function useDataTable<TRow>({
   }, [columnFilters])
 
   const query = useInfiniteQuery({
-    queryKey: [queryKey, search, sorting, filters],
+    queryKey: [queryKey, search, effectiveSorting, filters],
     queryFn: ({ pageParam }) =>
-      fetchPage({ filters, page: pageParam, perPage: batchSize, search, sorting }),
+      fetchPage({
+        filters,
+        page: pageParam,
+        perPage: batchSize,
+        search,
+        sorting: effectiveSorting,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       // A zero-row page ends the list unconditionally: without this, a stale total (rows deleted mid-scroll) would keep hasNextPage true and the load-more effect firing forever.
@@ -113,7 +124,7 @@ export function useDataTable<TRow>({
   const table = useReactTable({
     columns: managedColumns,
     data: rows,
-    state: { columnFilters, globalFilter, rowSelection, sorting },
+    state: { columnFilters, globalFilter, rowSelection, sorting: effectiveSorting },
     // Sizes are Tailwind spacing units; tanstack's default minSize of 20 is meant for pixels and would clamp small units, so drop the floor.
     defaultColumn: { minSize: 0 },
     // Single-column sorting only: fetchPage sends one sort to the server, so shift-click multi-sort would silently drop the extra columns.

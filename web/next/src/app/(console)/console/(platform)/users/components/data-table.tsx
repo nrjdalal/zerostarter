@@ -22,6 +22,8 @@ import {
 import { useDataTable, type DataTablePage, type DataTablePageInput } from "@/hooks/use-data-table"
 import { apiClient, unwrap } from "@/lib/api/client"
 
+const DEFAULT_SORTING = [{ desc: true, id: "createdAt" }]
+
 const ROLE_OPTIONS = [
   { label: "Admin", value: "admin" },
   { label: "User", value: "user" },
@@ -70,6 +72,7 @@ async function fetchUsers({
 export function UsersDataTable() {
   const { error, isError, refetch, table, tableProps } = useDataTable({
     columns: usersColumns,
+    defaultSorting: DEFAULT_SORTING,
     enableRowSelection: true,
     fetchPage: fetchUsers,
     filterIds: ["role"],
