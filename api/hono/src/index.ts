@@ -35,7 +35,7 @@ app.use(
   cors({
     origin: env.HONO_TRUSTED_ORIGINS,
     allowHeaders: ["content-type", "authorization"],
-    allowMethods: ["GET", "OPTIONS", "POST", "PUT"],
+    allowMethods: ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"],
     exposeHeaders: ["content-length"],
     maxAge: 600,
     credentials: true,
@@ -163,10 +163,13 @@ socket.addEventListener("message", (event) => {
           description: site.apiReferenceDescription,
         },
       },
-      // Always-reachable errors (429/500) on every GET/POST; routes add 400/401 in their own responses. Add PUT/DELETE here if such routes appear.
+      // Always-reachable errors (429/500) on every method the API serves; routes add 400/401 in their own responses. Add a method here the day a route starts using it, or its responses ship undocumented.
       defaultOptions: {
+        DELETE: { responses: globalErrorResponses },
         GET: { responses: globalErrorResponses },
+        PATCH: { responses: globalErrorResponses },
         POST: { responses: globalErrorResponses },
+        PUT: { responses: globalErrorResponses },
       },
     }),
   )
@@ -174,6 +177,7 @@ socket.addEventListener("message", (event) => {
   .get("/docs", apiReference)
 
 export type AppType = typeof routes
+export type { BatchAnswer, BatchOutcome, BatchRefusalCode } from "@/lib/batch"
 export type { ErrorCode } from "@/lib/error"
 
 // Bun.serve() shape locally and self-hosted, Node http.Server on Vercel; see @/lib/server.

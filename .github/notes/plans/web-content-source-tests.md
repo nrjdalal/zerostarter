@@ -13,4 +13,6 @@ The data table's layout math is no longer part of this gap: `measureLabelPx`, `a
 
 What still needs a harness is anything that has to render: the `DataTable` region itself (virtualization, the load-more effect, the error and empty branches), `DataTableCellText`'s truncation measurement, and the toolbar and faceted-filter interactions. Those are verified in a browser today.
 
+`web/next/src/lib/api/bulk.ts` needed no harness and is covered in `tests/web/next/src/lib/api/`: it is pure, and it now backs every multi-row action in the console (PR #758).
+
 Api-side helpers are reachable only once they sit outside a router (importing one boots the db client and Better Auth, which throws on CI's dummy secret): `lib/sql.ts` is tested under `tests/api/hono/src/lib/`, while the router's own validation schema is not, since a file per schema is fragmentation the test runner does not justify. See `shared-contracts-package.md`.

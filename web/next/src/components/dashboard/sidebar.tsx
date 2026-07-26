@@ -6,7 +6,6 @@ import { useForm } from "@tanstack/react-form"
 import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useState } from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
@@ -29,6 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Spinner } from "@/components/ui/spinner"
+import { toast } from "@/components/ui/toast"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 import { slugify } from "@/lib/utils"
@@ -82,7 +82,10 @@ export function OrgSwitcher() {
         })
 
         if (result.error) {
-          toast.error(result.error.message || "Failed to create organization")
+          toast.add({
+            title: result.error.message || "Failed to create organization",
+            type: "error",
+          })
           return
         }
 
@@ -93,7 +96,7 @@ export function OrgSwitcher() {
           refetchActiveOrg()
           setCreateDialogOpen(false)
           form.reset()
-          toast.success("Organization created!")
+          toast.add({ title: "Organization created!", type: "success" })
         }
       } finally {
         setIsOrgTransitioning(false)
@@ -109,7 +112,7 @@ export function OrgSwitcher() {
       await Promise.all([refetchOrgs(), refetchActiveOrg()])
     } catch (error) {
       console.error("Failed to set active organization", error)
-      toast.error("Failed to switch organization")
+      toast.add({ title: "Failed to switch organization", type: "error" })
     } finally {
       setIsOrgTransitioning(false)
     }

@@ -15,6 +15,20 @@
       "when": 1782038910452,
       "tag": "0001_waitlist",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785063692301,
+      "tag": "0002_allowlist",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785074357611,
+      "tag": "0003_console",
+      "breakpoints": true
     }
   ]
 }

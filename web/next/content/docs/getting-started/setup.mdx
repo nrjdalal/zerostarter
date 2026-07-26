@@ -61,7 +61,7 @@ Turborepo starts both apps together through [portless](https://portless.sh), whi
 
 ## Sign in
 
-A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. `init` already set `AGENT_SIGNIN_ENABLED=true` in your local `.env`, so the dev-only **Login (agents)** button is ready in the sign-in dialog: click it (or use one `curl`) to mint a real, admin-role session locally with no OAuth round-trip. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. `init` already set `AGENT_SIGNIN_ENABLED=true` in your local `.env`, so the dev-only **Login (agents)** button is ready in the sign-in dialog: click it (or use one `curl`) to mint a real session locally with no OAuth round-trip, an `owner` the first time it creates the account. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
 
 When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
 

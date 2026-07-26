@@ -36,7 +36,7 @@ magicLink({
 
 `sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
 
-**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
+**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent`, made an `owner` on the sign-in that creates the account and left at whatever rung it holds after that, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
 <Callout type="warn" title="Configure at least one method before shipping">
 
@@ -84,17 +84,55 @@ https://your-web.vercel.app/api/auth/callback/google
 
 </Callout>
 
-## The admin role and /console
+## The console role ladder
 
-`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). The guard in `web/next/src/lib/auth/console.ts` grants access only when `user.role === "admin"`; everyone else keeps the default `user` role and gets a `notFound()`. There is no env allow-list: the role _is_ the source of truth. The same plugin adds ban columns (`banned`, `banReason`, `banExpires`) to `user` and lets an admin impersonate another user, recording who did it in `session.impersonatedBy`. The API side of the same gate is `adminMiddleware` on `/api/v1/admin/*` (see [API Conventions](/docs/manage/api-conventions)); both re-read the session past the cookie cache, so revoking an admin takes effect on their next request, and both feed console surfaces like the [users data table](/docs/manage/data-tables).
+`/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). There is no env allow-list: the role _is_ the source of truth.
 
-Bootstrap the first admin from the CLI:
+| Rung     | Reaches                   | May change                                          |
+| -------- | ------------------------- | --------------------------------------------------- |
+| `owner`  | the whole console         | anyone, including another owner, but not themselves |
+| `admin`  | the whole console         | anyone below admin: not a peer, not an owner        |
+| `member` | the console, minus Access | nothing                                             |
+| `user`   | nothing                   | n/a                                                 |
 
-```bash
-bun run console:roles grant you@example.com   # also: revoke <email>, list
+`member` opens the console and reads what is in it, which in the starter is the internal docs, and reaches nothing under Access. It is the rung the [allowlist](/docs/manage/allowlist) grants and the one a fork builds its own read-only surfaces on; Access itself is deliberately admin and above, so no rule can hand a whole domain sight of who your users are. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
+
+Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above to the console, `notFound()`ing everyone else so it is never advertised, and a page needing more says so itself (the Access pages assert `admin`). The API's console router requires `admin` throughout (see [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a demotion or a ban takes effect on the next request, and both also refuse a banned user, which covers a ban written straight to the database without the session sweep the console's own ban performs.
+
+The plugin's own endpoints are switched off rather than gated. Better Auth mounts `/api/auth/admin/*` and authorizes it purely on access-control statements, with no notion of rank, of the actor's position relative to the target, or of the last owner. Left at the plugin's stock `adminAc`, one request to `set-role` promotes an admin to owner and every rule above becomes a comment, which is exactly what it did before this was closed. So every rung is declared with no statements and the console's own routes own all of it. The plugin still supplies what nothing else does: the `role`, `banned`, `banReason` and `banExpires` columns, and the session check that refuses a banned user.
+
+**Every plugin-side power is off as a result**, not only the ones the console replaced. `set-role`, `ban-user` and `unban-user` come back as our own routes with the rank rule attached. The rest refuse every rung: `create-user`, `get-user`, `list-users`, `update-user` (the plugin's path for changing a name or email), `set-user-password`, `remove-user`, `list-user-sessions`, `revoke-user-session`, `revoke-user-sessions`, `impersonate-user` and `stop-impersonating`, so impersonation is off; `session.impersonatedBy` still exists on the row, and the allowlist grant skips an impersonated session so acting as someone cannot quietly change their rung.
+
+A fork that wants any of these back widens one statement at a time, on the understanding that the ladder does not constrain them. Impersonation for owners, for example:
+
+```ts
+// packages/auth/src/index.ts
+import { defaultAc } from "better-auth/plugins/admin/access"
+
+owner: defaultAc.newRole({ user: ["impersonate", "impersonate-admins"] }),
 ```
 
-The guard reads the session with the cookie cache disabled, so a grant or revoke takes effect on the very next request.
+A fork already shipping UI on `authClient.admin.*` should expect 403s from it until it does that.
+
+### Changing a role, banning an account
+
+Both live at **Console > Access > Users**, on a row or across a selection, and both are refused for your own account and for anyone at or above your rank, so no admin can act sideways or upward. Granting owner is owner-only, and the last owner cannot be demoted. The guard is one pure function per decision in `@packages/auth/access`, unit-tested and asked again by the API on every request, so what the table hides is never all that stops it.
+
+Every one of these writes leaves a line in [Console > History > Activity](/docs/manage/activity), inside the same transaction as the change, because `user.role` is overwritten in place and otherwise nothing would record that it used to say something else.
+
+A ban deletes the person's sessions as well as flagging the account, so they are signed out everywhere rather than staying in until each gate next re-reads the flag. An unban clears the flag, the reason and any expiry, and touches nothing else: their role is untouched, so it restores exactly the access they had. Because the guard runs per account, a selection is partly refusable by design and the result says so (`3 banned, 1 refused`) instead of reporting the batch as done.
+
+Bootstrap the first owner from the CLI, which is also how a fresh install gets its first way in:
+
+```bash
+bun run console:roles grant you@example.com owner   # defaults to owner while the install has none, else admin; also: revoke <email>, list
+```
+
+<Callout type="info" title="Platform roles are not organization roles">
+
+The ladder above lives on `user.role` and governs this install. Organizations have their own per-membership roles on `member.role` (`owner`, `admin`, `member`), which govern one organization and nothing else. The words overlap; the systems never read each other.
+
+</Callout>
 
 ## Organizations and teams
 
@@ -114,6 +152,8 @@ await authClient.organization.setActive({ organizationId: "..." })
 
 Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, while on a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share, the client routes sign-in same-origin through the web's `/api` proxy so the cookie stays host-only and first-party to the web (see [Deploy on Vercel](/docs/deployment/vercel)), and a bare or apex host stays host-only. Local portless dev is the exception to the build-time rule: the api re-derives the scope at runtime from the `.localhost` subdomain portless injects, so the web and api hosts share one `Domain` cookie; a bare `localhost` (as under Docker) stays host-only across ports. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
 
+Three reads deliberately skip that cache: the console page gate, the API's console middleware, and the dashboard layout. The first two are correctness, since a demotion or a ban has to land on the next request rather than at the end of a window. The third is the Console cross-link, and the direction that matters is promotion: on a cached read someone you just lifted to `member` cannot see the console for up to five minutes, even though `/console` already admits them, and that link is how they would find it. The cost is a session lookup per dashboard render, on the API side of a round trip that happens anyway.
+
 Reading the session is one call on either side:
 
 ```ts
@@ -130,6 +170,7 @@ The `(protected)` layout (`web/next/src/app/(protected)/layout.tsx`) redirects u
 
 ## Next
 
+- [Activity](/docs/manage/activity): the trail every role change and ban writes.
 - [Database](/docs/manage/database): the auth and organization tables, and how to add your own.
 - [Environment Variables](/docs/manage/environment): the OAuth pairs and `BETTER_AUTH_SECRET`.
 - [Working with Agents](/docs/getting-started/working-with-agents): the local agent sign-in in context.

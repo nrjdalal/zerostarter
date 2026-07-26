@@ -111,3 +111,26 @@ export function growingColumnIds(
   })
   return growing
 }
+
+// Maps a table's column id onto the endpoint's sort whitelist. hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in fields` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
+export function resolveSort<TFields extends Record<string, string>>(
+  fields: TFields,
+  id: string,
+  fallback: TFields[keyof TFields],
+): TFields[keyof TFields] {
+  return Object.hasOwn(fields, id) ? fields[id as keyof TFields] : fallback
+}
+
+// Facet options from the values an endpoint accepts, so a filter cannot offer a value the API would reject or miss one it would take.
+// The values of a facet the endpoint would accept, dropping the rest, so a hand-written ?role=bogus degrades to an unfiltered list instead of 400ing the table into its error state. Written once here now that all three console tables want it.
+export function acceptedFacet<T extends string>(
+  selected: string[] | undefined,
+  allowed: readonly T[],
+): T[] {
+  if (!selected) return []
+  return selected.filter((value): value is T => allowed.some((option) => option === value))
+}
+
+export function facetOptions<T extends string>(values: readonly T[]) {
+  return values.map((value) => ({ label: `${value[0].toUpperCase()}${value.slice(1)}`, value }))
+}

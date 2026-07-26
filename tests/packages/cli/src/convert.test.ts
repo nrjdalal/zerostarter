@@ -195,6 +195,7 @@ describe("convertRepo (in-place)", () => {
       dir,
       { name: "acme" },
       {
+        allowlist: false,
         apiDocs: true,
         blog: false,
         docs: true,

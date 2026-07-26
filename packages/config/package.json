@@ -9,12 +9,16 @@
   ],
   "type": "module",
   "exports": {
-    "./tsconfig.json": "./tsconfig.json",
-    "./tsdown": "./tsdown.ts",
+    "./console": {
+      "types": "./dist/console.d.mts",
+      "default": "./dist/console.mjs"
+    },
     "./site": {
       "types": "./dist/site.d.mts",
       "default": "./dist/site.mjs"
-    }
+    },
+    "./tsconfig.json": "./tsconfig.json",
+    "./tsdown": "./tsdown.ts"
   },
   "scripts": {
     "build": "tsdown",

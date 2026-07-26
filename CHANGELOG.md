@@ -1,3 +1,19 @@
+## v0.1.14
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.13...v0.1.14)
+
+### 🚀 Enhancements
+
+- **web:** The platform data table ([#754](https://github.com/nrjdalal/zerostarter/pull/754))
+
+### 🩹 Fixes
+
+- **ci:** Run the centralized suite from the repo root ([#757](https://github.com/nrjdalal/zerostarter/pull/757))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.13
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.12...v0.1.13)

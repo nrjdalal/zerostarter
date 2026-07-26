@@ -12,15 +12,17 @@ export function definePackageConfig(options: {
   getSafeEnv: (env: Record<string, unknown>, name?: string) => unknown
   define?: Record<string, string>
   deps?: BundleDeps
+  // The entry list for a package that ships more than one, replacing rather than adding to the default, so a caller listing extras restates src/index.ts too.
+  entry?: string[]
 }) {
-  const { name, env, getSafeEnv, define, deps } = options
+  const { name, env, getSafeEnv, define, deps, entry } = options
 
   return [
     defineConfig({
       ...(define ? { define } : {}),
       ...(deps ? { deps } : {}),
       dts: { tsgo: true },
-      entry: ["src/index.ts"],
+      entry: entry ?? ["src/index.ts"],
       hooks: {
         "build:prepare": () => {
           getSafeEnv(env, name)
