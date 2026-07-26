@@ -29,11 +29,11 @@ A list route answers with its collection and four flat fields beside it:
 ```json
 {
   "data": {
-    "users": [{ "id": "u_1", "email": "ada@example.com" }],
+    "users": [{ "banned": false, "email": "ada@example.com", "id": "u_1" }],
+    "hasNextPage": true,
     "page": 2,
     "perPage": 25,
-    "total": 42,
-    "hasNextPage": true
+    "total": 42
   }
 }
 ```
@@ -42,7 +42,7 @@ A list route answers with its collection and four flat fields beside it:
 
 Flat siblings rather than a nested object, which is what Django REST Framework and Laravel answer with and what a reader expects. Stripe and GitHub go further and omit the total, because on a large table counting is the expensive half; these tables are staff sized, the console shows the count, so it stays.
 
-The fields are in reading order, not alphabetical: which page, how big, how many, is there more.
+Every key in a documented response runs A→Z, `id` among them rather than hoisted, so one rule covers every shape and a reader never has to learn a second.
 
 Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row if rows shift between requests. A keyset cursor is the fix and is tracked in the Icebox; the shape above is additive, so a `nextCursor` can join it without moving anything.
 

@@ -28,12 +28,11 @@ export type BatchOutcome = { id: string } & (
   | { code: BatchRefusalCode; message: string; ok: false }
 )
 
-// id leads both variants, so a row reads the same whichever way it went. See the ordering note in AGENTS.md: the identifier first, then A to Z.
 export const batchOutcomeSchema = z.discriminatedUnion("ok", [
   z.object({ id: z.string(), ok: z.literal(true) }),
   z.object({
-    id: z.string(),
     code: z.enum(BATCH_REFUSAL_CODES),
+    id: z.string(),
     message: z.string(),
     ok: z.literal(false),
   }),
@@ -47,8 +46,8 @@ export const batchResponseSchema = z.object({
 export const uniqueIds = (ids: string[]) => [...new Set(ids)]
 
 export const refused = (id: string, code: BatchRefusalCode, message: string): BatchOutcome => ({
-  id,
   code,
+  id,
   message,
   ok: false,
 })
