@@ -88,10 +88,10 @@ const BAN_MESSAGES: Record<BanRefusal, string> = {
 }
 
 const allowlistSchema = z.object({
+  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   actor: z.string().nullable().meta({ example: "ada@example.com" }),
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
@@ -125,12 +125,12 @@ const allowlistSortColumns = {
 } satisfies Record<(typeof ALLOWLIST_SORTS)[number], unknown>
 
 const activitySchema = z.object({
+  id: z.string().meta({ example: "9f1c2a44-7b3e-4d21-9d64-2a1b0c8e7f55" }),
   // The stored code, not z.enum(ACTIVITY_ACTIONS): a fork that adds a verb, or a row written before one was removed, still has to come back as what it is. The query side stays enumerated, since filtering by a verb nothing writes is a client bug.
   action: z.string().meta({ example: "role.change" }),
   actor: z.string().meta({ example: "ada@example.com" }),
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  id: z.string().meta({ example: "9f1c2a44-7b3e-4d21-9d64-2a1b0c8e7f55" }),
   summary: z.string().meta({ example: "Changed ada@example.com from member to admin" }),
 })
 
@@ -176,11 +176,11 @@ const asUserResponse = (row: {
 })
 
 const userSchema = z.object({
+  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   banned: z.boolean().meta({ example: false }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   // Optional rather than nullable-and-always-present: only the list joins the sessions subquery for it, so a reader that does not ask for it gets no key rather than a null asserting never-seen.
   lastActive: z

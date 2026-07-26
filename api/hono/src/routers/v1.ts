@@ -8,9 +8,9 @@ import { authMiddleware } from "@/middlewares"
 import { adminRouter } from "@/routers/admin"
 
 const sessionSchema = z.object({
+  id: z.string().meta({ example: "6kpGKXeJAKfB4MERWrfdyFdKd1ZB0Czo" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   expiresAt: z.string().meta({ format: "date-time", example: "2026-01-28T13:06:25.712Z" }),
-  id: z.string().meta({ example: "6kpGKXeJAKfB4MERWrfdyFdKd1ZB0Czo" }),
   ipAddress: z.string().nullable().meta({ example: "202.9.121.21" }),
   token: z.string().meta({ example: "Ds8MdODZSgu57rbR8hzapFlcv6IwoIgD" }),
   updatedAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
@@ -19,10 +19,10 @@ const sessionSchema = z.object({
 })
 
 const userSchema = z.object({
+  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   name: z.string().meta({ example: "John Doe" }),
   updatedAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
