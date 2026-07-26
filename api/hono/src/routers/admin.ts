@@ -75,13 +75,24 @@ const BAN_MESSAGES: Record<BanRefusal, string> = {
 }
 
 const allowlistSchema = z.object({
-  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   actor: z.string().nullable().meta({ example: "ada@example.com" }),
+  actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
+
+// Last activity is the newest session touch per person, grouped once and joined rather than correlated per row. A ban deletes their sessions and a sign-out removes one, so plenty of people have none, which is why the list's order is explicit about NULLs.
+// Built at module scope so the sort map below can name the column instead of quoting the alias: renaming it is then a type error rather than a query that sorts by nothing.
+const activityByUser = db
+  .select({
+    lastActive: sql<Date | null>`max(${session.updatedAt})`.as("last_active"),
+    userId: session.userId,
+  })
+  .from(session)
+  .groupBy(session.userId)
+  .as("session_activity")
 
 // One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
 const ALLOWLIST_SORTS = ["actor", "createdAt", "kind", "value"] as const
@@ -93,15 +104,16 @@ const allowlistQuerySchema = z.object({
 })
 
 const allowlistSortColumns = {
-  createdAt: allowlist.createdAt,
   // Resolved the same way the row renders, so sorting sorts what you see. A seeded rule has neither side, which is why the order below is explicit about NULLs.
   actor: sql`coalesce(${user.email}, ${allowlist.actor})`,
+  createdAt: allowlist.createdAt,
   kind: allowlist.kind,
   value: allowlist.value,
 } satisfies Record<(typeof ALLOWLIST_SORTS)[number], unknown>
 
 const activitySchema = z.object({
-  action: z.enum(ACTIVITY_ACTIONS).meta({ example: "role.change" }),
+  // The stored code, not z.enum(ACTIVITY_ACTIONS): a fork that adds a verb, or a row written before one was removed, still has to come back as what it is. The query side stays enumerated, since filtering by a verb nothing writes is a client bug.
+  action: z.string().meta({ example: "role.change" }),
   actor: z.string().meta({ example: "ada@example.com" }),
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
@@ -154,20 +166,25 @@ const asUserResponse = (row: {
   ...row,
   banned: row.banned ? true : false,
   createdAt: row.createdAt.toISOString(),
-  lastActive: row.lastActive ? row.lastActive.toISOString() : null,
+  // Absent when the caller never asked for it, null only when the account genuinely has no session.
+  ...(row.lastActive === undefined
+    ? {}
+    : { lastActive: row.lastActive ? row.lastActive.toISOString() : null }),
   role: consoleRole(row.role),
 })
 
 const userSchema = z.object({
   banned: z.boolean().meta({ example: false }),
-  lastActive: z
-    .string()
-    .nullable()
-    .meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  // Optional rather than nullable-and-always-present: the list joins the sessions subquery for it, the two PATCH routes do not, and null there would assert never-seen rather than not-asked-for.
+  lastActive: z
+    .string()
+    .nullable()
+    .optional()
+    .meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   name: z.string().meta({ example: "John Doe" }),
   role: z.enum(CONSOLE_ROLES).meta({ example: "user" }),
@@ -178,8 +195,7 @@ const sortColumns = {
   banned: sql`coalesce(${user.banned}, false)`,
   createdAt: user.createdAt,
   email: user.email,
-  // From the sessions subquery below. Null for anyone with none, which a ban or a sign-out leaves behind, so the order says so explicitly.
-  lastActive: sql`last_active`,
+  lastActive: activityByUser.lastActive,
   name: user.name,
   // By rank, not alphabetically: the whole point of the ladder is that it is an ordering, so owner leads and user trails. Derived from CONSOLE_ROLES, and an unrecognized value scores with the rung it displays as.
   role: sql.raw(
@@ -257,16 +273,6 @@ const { data, error } = await unwrap(
           : eq(user.role, value),
       )
       const where = and(search, roleConditions.length ? or(...roleConditions) : undefined)
-
-      // Last activity is the newest session touch per person, grouped once and joined rather than correlated per row. A ban deletes their sessions and a sign-out removes one, so plenty of people have none, which is why the order below is explicit about NULLs.
-      const activityByUser = db
-        .select({
-          lastActive: sql<Date | null>`max(${session.updatedAt})`.as("last_active"),
-          userId: session.userId,
-        })
-        .from(session)
-        .groupBy(session.userId)
-        .as("session_activity")
 
       const [rows, total] = await Promise.all([
         db
@@ -517,9 +523,6 @@ const { data, error } = await unwrap(
       return c.json({ data: { user: asUserResponse(updated) } })
     },
   )
-  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
-  .use("/allowlist", requireFeature("allowlist"))
-  .use("/allowlist/*", requireFeature("allowlist"))
   .get(
     "/activity",
     describeRoute({
@@ -605,11 +608,9 @@ const { data, error } = await unwrap(
 
       return c.json({
         data: {
+          // The action travels as it was stored. Coercing an unrecognised verb into one of ours would put a row in the trail claiming a change that never happened, and a trail that invents entries is worse than one with a code the reader has to look up. The UI falls back to the code when it has no label for it.
           events: rows.map((row) => ({
             ...row,
-            action: ACTIVITY_ACTIONS.some((known) => known === row.action)
-              ? (row.action as (typeof ACTIVITY_ACTIONS)[number])
-              : "role.change",
             createdAt: row.createdAt.toISOString(),
           })),
           total: counted[0] ? counted[0].value : 0,
@@ -617,6 +618,9 @@ const { data, error } = await unwrap(
       })
     },
   )
+  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
+  .use("/allowlist", requireFeature("allowlist"))
+  .use("/allowlist/*", requireFeature("allowlist"))
   .get(
     "/allowlist",
     describeRoute({

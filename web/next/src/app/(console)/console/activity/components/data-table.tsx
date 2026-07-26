@@ -18,15 +18,13 @@ import {
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { activityJson } from "@/lib/activity"
+import { actionOptions, activityJson } from "@/lib/activity"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
-import { facetOptions } from "@/lib/data-table-layout"
 
 // Newest first, and the only order the log is read in.
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
-const ACTION_OPTIONS = facetOptions(ACTIVITY_ACTIONS)
 const Q_MAX = 254
 
 async function fetchActivity({
@@ -79,7 +77,7 @@ export function ActivityDataTable() {
       >
         <DataTableFacetedFilter
           column={table.getColumn("action")}
-          options={ACTION_OPTIONS}
+          options={actionOptions}
           title="Action"
         />
       </DataTableToolbar>

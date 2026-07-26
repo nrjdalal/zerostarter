@@ -12,15 +12,15 @@ Every path that changes who gets in appends a line to the `activity` table, and 
 
 Five fields, flat on purpose:
 
-| Field       | Holds                                                                                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------------------- |
-| `action`    | what happened, one of a small union: `role.change`, `user.ban`, `user.unban`, `allowlist.add`, `allowlist.remove` |
-| `actor`     | who did it, as text                                                                                               |
-| `actorId`   | the acting account, when there was one                                                                            |
-| `createdAt` | when                                                                                                              |
-| `summary`   | the one line the table shows, already written for a reader                                                        |
+| Field       | Holds                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| `action`    | what happened: `role.change`, `user.ban`, `user.unban`, `allowlist.add`, `allowlist.remove` |
+| `actor`     | who did it, as text                                                                         |
+| `actorId`   | the acting account, when there was one                                                      |
+| `createdAt` | when                                                                                        |
+| `summary`   | the one line the table shows, already written for a reader                                  |
 
-The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code.
+The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one: a trail that invents entries is worse than one with a code you have to look up.
 
 `summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. A role change reads `ada@example.com, member to admin`; the change is in the sentence.
 
@@ -59,7 +59,7 @@ Two things are deliberately **not** recorded: reads, and everything outside the 
 // 1. add the verb to ACTIVITY_ACTIONS in packages/config/src/console.ts
 // 2. label it in ACTION_LABELS in web/next/src/lib/activity.ts
 // 3. record it inside the transaction doing the work
-import { recordActivity } from "@packages/db/console"
+import { recordActivity } from "@packages/db"
 
 await db.transaction(async (tx) => {
   await tx.update(project).set({ archived: true }).where(eq(project.id, id))

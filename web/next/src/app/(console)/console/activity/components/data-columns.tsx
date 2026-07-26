@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ACTION_LABELS, activityJson } from "@/lib/activity"
+import { actionLabel, activityJson } from "@/lib/activity"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
 import { relativeTime } from "@/lib/time"
@@ -55,7 +55,7 @@ export const activityColumns: ColumnDef<ActivityEvent>[] = [
     accessorKey: "action",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
-      <DataTableCellText column={column}>{ACTION_LABELS[row.original.action]}</DataTableCellText>
+      <DataTableCellText column={column}>{actionLabel(row.original.action)}</DataTableCellText>
     ),
     enableSorting: false,
     meta: { label: "Action" },
