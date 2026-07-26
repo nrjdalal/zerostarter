@@ -95,7 +95,7 @@ const docsConfig = {
         "/docs/manage/activity": {
           title: "Activity",
           description:
-            "A readable trail of every console write: who changed a role, banned an account, or edited the allowlist.",
+            "A readable trail of every console write: who changed a role, banned an account, edited the allowlist, or removed a signup.",
         },
       },
       {

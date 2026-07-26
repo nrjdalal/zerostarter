@@ -7,6 +7,7 @@ export const ACTION_LABELS: Record<ActivityAction, string> = {
   "role.change": "Set role",
   "user.ban": "Banned",
   "user.unban": "Unbanned",
+  "waitlist.remove": "Removed signup",
 }
 
 // How an action reads, falling back to the stored code. A row keeps whatever verb was written, so a label may not exist for it: a fork's own verb, or one retired after rows already carried it. Showing the code is honest, and inventing a label is not.

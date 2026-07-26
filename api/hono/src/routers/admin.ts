@@ -22,6 +22,8 @@ import {
   session,
   unbanSummary,
   user,
+  waitlist,
+  waitlistRemoveSummary,
   type ActivityEvent,
 } from "@packages/db"
 import { and, asc, desc, eq, ilike, inArray, isNull, notInArray, or, sql } from "drizzle-orm"
@@ -136,6 +138,27 @@ const activitySchema = z.object({
 })
 
 const allowlistBatchSchema = batchInput({})
+
+const waitlistBatchSchema = batchInput({})
+
+const waitlistSchema = z.object({
+  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
+  email: z.string().meta({ example: "ada@example.com" }),
+  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+})
+
+// One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
+const WAITLIST_SORTS = ["createdAt", "email"] as const
+
+const waitlistQuerySchema = z.object({
+  ...listQueryShape,
+  sort: z.enum(WAITLIST_SORTS).default("createdAt"),
+})
+
+const waitlistSortColumns = {
+  createdAt: waitlist.createdAt,
+  email: waitlist.email,
+} satisfies Record<(typeof WAITLIST_SORTS)[number], unknown>
 
 const roleBatchSchema = batchInput({ role: z.enum(CONSOLE_ROLES) })
 
@@ -890,6 +913,146 @@ const { data, error } = await unwrap(
           (id): BatchOutcome =>
             byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Rule not found"),
         )
+      })
+      return c.json({ data: { results } })
+    },
+  )
+  // The waitlist is a public signup list rather than an access decision, so it sits behind its own flag: with the surface off, these routes 404 like the page and the nav entry do.
+  .use("/waitlist", requireFeature("waitlist"))
+  .get(
+    "/waitlist",
+    describeRoute({
+      tags: ["Admin"],
+      description: "Who has asked to be told when this launches, newest first.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.waitlist.$get({ query: { page: "1", perPage: "25" } }),
+)`,
+          },
+        ],
+      } as object),
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  data: z.object({
+                    signups: z.array(waitlistSchema),
+                    ...pagingFields,
+                  }),
+                }),
+              ),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("query", waitlistQuerySchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const { dir, page, perPage, q, sort } = c.req.valid("query")
+      const where = q ? ilike(waitlist.email, `%${escapeLike(q)}%`) : undefined
+
+      const [rows, counted] = await Promise.all([
+        db
+          .select({
+            createdAt: waitlist.createdAt,
+            email: waitlist.email,
+            id: waitlist.id,
+          })
+          .from(waitlist)
+          .where(where)
+          .orderBy(
+            sql`${waitlistSortColumns[sort]} ${sql.raw(dir === "asc" ? "asc" : "desc")}`,
+            asc(waitlist.id),
+          )
+          .limit(perPage)
+          .offset((page - 1) * perPage),
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(waitlist)
+          .where(where),
+      ])
+
+      const data = {
+        signups: rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() })),
+        ...paging({ page, perPage, total: countedTotal(counted) }),
+      }
+      return c.json({ data })
+    },
+  )
+  .delete(
+    "/waitlist",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Remove a set of signups in one transaction. A signup that is already gone comes back as its own not-found outcome rather than failing the request.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json: { ids } }))`,
+          },
+        ],
+      } as object),
+      responses: {
+        200: {
+          description: "OK",
+          content: { "application/json": { schema: resolver(batchResponseSchema) } },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("json", waitlistBatchSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const actor = c.get("user")
+      const targets = uniqueIds(c.req.valid("json").ids)
+
+      const results = await db.transaction(async (tx) => {
+        // Deleted in one statement, then read back to say which ids were there: the rows are gone after this, so the address only survives in the records written below.
+        const removed = await tx
+          .delete(waitlist)
+          .where(inArray(waitlist.id, targets))
+          .returning({ email: waitlist.email, id: waitlist.id })
+        const byId = new Map(removed.map((row) => [row.id, row]))
+        await recordActivity(
+          tx,
+          removed.map((row) => ({
+            action: "waitlist.remove" as const,
+            actor,
+            summary: waitlistRemoveSummary(row.email),
+          })),
+        )
+        const outcomes = new Map<string, BatchOutcome>(
+          targets.map((id) => [
+            id,
+            byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Signup not found"),
+          ]),
+        )
+        return answerFor(targets, outcomes)
       })
       return c.json({ data: { results } })
     },

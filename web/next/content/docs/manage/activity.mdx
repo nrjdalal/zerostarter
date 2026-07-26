@@ -1,38 +1,39 @@
 ---
 slug: /docs/manage/activity
 title: Activity
-description: "A readable trail of every console write: who changed a role, banned an account, or edited the allowlist."
+description: "A readable trail of every console write: who changed a role, banned an account, edited the allowlist, or removed a signup."
 ---
 
 The console's writes all overwrite something. A role change replaces `user.role`, a ban flips a flag, and removing an allowlist rule deletes the row that recorded who added it. Without a trail, the state tells you what is true now and nothing about how it got that way.
 
-Every path that changes who gets in appends a line to the `activity` table, and **Console > History > Activity** reads it back, `admin` and above like the changes themselves.
+Every path that changes who gets in, and every console write that destroys a row, appends a line to the `activity` table, and **Console > History > Activity** reads it back, `admin` and above like the changes themselves.
 
 ## What a line holds
 
 Five fields, flat on purpose:
 
-| Field       | Holds                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------- |
-| `action`    | what happened: `role.change`, `user.ban`, `user.unban`, `allowlist.add`, `allowlist.remove` |
-| `actor`     | who did it, as text                                                                         |
-| `actorId`   | the acting account, when there was one                                                      |
-| `createdAt` | when                                                                                        |
-| `summary`   | the sentence the table shows, already written for a reader                                  |
+| Field       | Holds                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------- |
+| `action`    | what happened: `role.change`, `user.ban`, `user.unban`, `allowlist.add`, `allowlist.remove`, `waitlist.remove` |
+| `actor`     | who did it, as text                                                                                            |
+| `actorId`   | the acting account, when there was one                                                                         |
+| `createdAt` | when                                                                                                           |
+| `summary`   | the sentence the table shows, already written for a reader                                                     |
 
 The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one: a trail that invents entries is worse than one with a code you have to look up.
 
 `summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. Each one is a sentence that stands on its own, because the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
 
-| Action       | Summary                                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Set role     | `Changed ada@example.com from member to admin`                                                                                                                      |
-| Set role     | `Set ada@example.com to member` (had no rung yet)                                                                                                                   |
-| Set role     | `Confirmed ada@example.com at member` (set to the rung it already had: the rung does not move, but `role_set_at` is stamped, which is the decision worth recording) |
-| Banned       | `Banned katherine@example.com, ending their sessions`                                                                                                               |
-| Unbanned     | `Unbanned katherine@example.com`                                                                                                                                    |
-| Added rule   | `Added @example.com to the allowlist`                                                                                                                               |
-| Removed rule | `Removed @example.com from the allowlist`                                                                                                                           |
+| Action         | Summary                                                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Set role       | `Changed ada@example.com from member to admin`                                                                                                                      |
+| Set role       | `Set ada@example.com to member` (had no rung yet)                                                                                                                   |
+| Set role       | `Confirmed ada@example.com at member` (set to the rung it already had: the rung does not move, but `role_set_at` is stamped, which is the decision worth recording) |
+| Banned         | `Banned katherine@example.com, ending their sessions`                                                                                                               |
+| Unbanned       | `Unbanned katherine@example.com`                                                                                                                                    |
+| Added rule     | `Added @example.com to the allowlist`                                                                                                                               |
+| Removed rule   | `Removed @example.com from the allowlist`                                                                                                                           |
+| Removed signup | `Removed ada@example.com from the waitlist`                                                                                                                         |
 
 Every one of these sentences is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant all word an event the same way, and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences inline and a test compares the two files, failing if either side is reworded alone.
 
@@ -67,7 +68,7 @@ An event and the change it describes **share a transaction**. So an event always
 
 The one exception is the [allowlist sign-in grant](/docs/manage/allowlist), which is best effort, because it sits on the sign-in path and must never stop anyone signing in. A failure there is logged and skipped, and the account is lifted on their next sign-in, recorded then.
 
-Two things are deliberately **not** recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers who gets in, not what your product does. A feature of your own that wants a trail calls the same writer:
+Two things are deliberately **not** recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers what the console did, not what your product does. Removing a waitlist signup is recorded for the same reason a removed allowlist rule is: the row is gone afterwards, so the record is the only place the address survives. A feature of your own that wants a trail calls the same writer:
 
 ```ts
 // 1. add the verb to ACTIVITY_ACTIONS in packages/config/src/console.ts
