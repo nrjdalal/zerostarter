@@ -61,7 +61,7 @@ export const agentsRouter = new Hono()
           .where(eq(userTable.id, user.id))
         await recordActivity(tx, {
           action: "role.change",
-          actor: { email: "Agent sign-in" },
+          actor: { label: "Agent sign-in" },
           summary: roleChangeSummary(AGENT_EMAIL, null, "owner"),
         })
       })

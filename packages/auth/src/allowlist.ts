@@ -2,7 +2,7 @@ import { features } from "@packages/config/site"
 import { allowlist, db, recordActivity, roleChangeSummary, user } from "@packages/db"
 import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
-import { ALLOWLIST_KINDS, matchesAllowlist, roleAtLeast, type AllowlistRule } from "@/access"
+import { ALLOWLIST_KINDS, findAllowlistRule, roleAtLeast, type AllowlistRule } from "@/access"
 
 // Signing up and using the dashboard is open to everyone; the allowlist is only about the console. A matching address is lifted to the console's bottom rung on sign-in, so adding a domain covers colleagues who already have accounts rather than only future ones.
 // Best effort on purpose: this sits on the sign-in path, so a database failure must not stop anyone signing in. A missed grant is repaired by the next sign-in.
@@ -30,7 +30,7 @@ export async function grantConsoleAccessOnSignIn(session: {
     if (!signingIn || signingIn.roleSetAt || roleAtLeast(signingIn.role, "member")) return
     // A rule matches an address, so the address has to be proven. Every provider shipped here verifies it, and a fork that adds one which does not will see grants stop rather than hand the console to anyone who can type the domain: a loud silence beats a silent escalation.
     if (!signingIn.emailVerified) return
-    // Only the two rows that could match, not the table: this runs for every ordinary sign-in and the allowlist has no bound. Values are stored normalized, which is what makes an exact match correct; matchesAllowlist still decides, so the semantics stay in the tested seam.
+    // Only the two rows that could match, not the table: this runs for every ordinary sign-in and the allowlist has no bound. Values are stored normalized, which is what makes an exact match correct; findAllowlistRule still decides, so the semantics stay in the tested seam.
     const address = signingIn.email.trim().toLowerCase()
     const at = address.lastIndexOf("@")
     if (at < 1) return
@@ -41,9 +41,9 @@ export async function grantConsoleAccessOnSignIn(session: {
     const rules = candidates.filter((rule): rule is AllowlistRule =>
       ALLOWLIST_KINDS.some((kind) => kind === rule.kind),
     )
-    if (!matchesAllowlist(signingIn.email, rules)) return
-    // Which rule did it, so the activity row can name the policy rather than a person: nobody acted here.
-    const matched = rules.find((rule) => rule.value === address || rule.value === address.slice(at))
+    // The rule that grants it, so the activity row can name the policy rather than a person: nobody acted here. Asked of the tested seam, which also decides which rule wins when an address and a domain rule both cover someone.
+    const matched = findAllowlistRule(signingIn.email, rules)
+    if (!matched) return
     await db.transaction(async (tx) => {
       // Conditional on both the rung and the marker read above, so two sign-ins racing each other grant once between them.
       const [granted] = await tx
@@ -61,7 +61,7 @@ export async function grantConsoleAccessOnSignIn(session: {
       if (!granted) return
       await recordActivity(tx, {
         action: "role.change",
-        actor: { email: `Allowlist rule ${matched ? matched.value : signingIn.email}` },
+        actor: { label: `Allowlist rule ${matched.value}` },
         summary: roleChangeSummary(granted.email, signingIn.role, "member"),
       })
     })

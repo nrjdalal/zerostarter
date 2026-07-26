@@ -85,14 +85,14 @@ const allowlistSchema = z.object({
 
 // Last activity is the newest session touch per person, grouped once and joined rather than correlated per row. A ban deletes their sessions and a sign-out removes one, so plenty of people have none, which is why the list's order is explicit about NULLs.
 // Built at module scope so the sort map below can name the column instead of quoting the alias: renaming it is then a type error rather than a query that sorts by nothing.
-const activityByUser = db
+const lastActiveByUser = db
   .select({
     lastActive: sql<Date | null>`max(${session.updatedAt})`.as("last_active"),
     userId: session.userId,
   })
   .from(session)
   .groupBy(session.userId)
-  .as("session_activity")
+  .as("last_active_by_user")
 
 // One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
 const ALLOWLIST_SORTS = ["actor", "createdAt", "kind", "value"] as const
@@ -179,13 +179,13 @@ const userSchema = z.object({
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   // Optional rather than nullable-and-always-present: the list joins the sessions subquery for it, the two PATCH routes do not, and null there would assert never-seen rather than not-asked-for.
   lastActive: z
     .string()
     .nullable()
     .optional()
     .meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   name: z.string().meta({ example: "John Doe" }),
   role: z.enum(CONSOLE_ROLES).meta({ example: "user" }),
 })
@@ -195,7 +195,7 @@ const sortColumns = {
   banned: sql`coalesce(${user.banned}, false)`,
   createdAt: user.createdAt,
   email: user.email,
-  lastActive: activityByUser.lastActive,
+  lastActive: lastActiveByUser.lastActive,
   name: user.name,
   // By rank, not alphabetically: the whole point of the ladder is that it is an ordering, so owner leads and user trails. Derived from CONSOLE_ROLES, and an unrecognized value scores with the rung it displays as.
   role: sql.raw(
@@ -283,12 +283,12 @@ const { data, error } = await unwrap(
             emailVerified: user.emailVerified,
             id: user.id,
             image: user.image,
-            lastActive: activityByUser.lastActive,
+            lastActive: lastActiveByUser.lastActive,
             name: user.name,
             role: user.role,
           })
           .from(user)
-          .leftJoin(activityByUser, eq(activityByUser.userId, user.id))
+          .leftJoin(lastActiveByUser, eq(lastActiveByUser.userId, user.id))
           .where(where)
           .orderBy(
             sql`${sortColumns[sort]} ${sql.raw(dir === "asc" ? "asc" : "desc")} nulls last`,
@@ -400,7 +400,7 @@ const { data, error } = await unwrap(
         // In the transaction, so the change and the record of it stand or fall together.
         await recordActivity(tx, {
           action: "role.change",
-          actor: { email: actor.email, id: actor.id },
+          actor,
           summary: roleChangeSummary(row.email, target.role, nextRole),
         })
         return row
@@ -515,7 +515,7 @@ const { data, error } = await unwrap(
         }
         await recordActivity(tx, {
           action: banned ? "user.ban" : "user.unban",
-          actor: { email: actor.email, id: actor.id },
+          actor,
           summary: row.email,
         })
         return row
@@ -679,10 +679,10 @@ const { data, error } = await unwrap(
       const [rows, counted] = await Promise.all([
         db
           .select({
-            createdAt: allowlist.createdAt,
-            actorId: allowlist.actorId,
             // The author's current email when the account is still there, else the email stored when the rule was added. Null only for a rule nobody created.
             actor: sql<string | null>`coalesce(${user.email}, ${allowlist.actor})`,
+            actorId: allowlist.actorId,
+            createdAt: allowlist.createdAt,
             id: allowlist.id,
             kind: allowlist.kind,
             value: allowlist.value,
@@ -773,18 +773,18 @@ const { data, error } = await unwrap(
         throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
       }
       // The check above races another admin adding the same rule, so the constraint is the authority and its violation is translated rather than surfacing as a 500.
-      const author = { email: c.get("user").email, id: c.get("user").id }
+      const actor = c.get("user")
       let created
       try {
         created = await db.transaction(async (tx) => {
           const [row] = await tx
             .insert(allowlist)
-            .values({ actor: author.email, actorId: author.id, value: rule.value })
+            .values({ actor: actor.email, actorId: actor.id, value: rule.value })
             .returning()
           if (!row) return undefined
           await recordActivity(tx, {
             action: "allowlist.add",
-            actor: author,
+            actor,
             summary: row.value,
           })
           return row
@@ -858,7 +858,7 @@ const { data, error } = await unwrap(
         // The rule is gone after this, so the record is the only place its value survives.
         await recordActivity(tx, {
           action: "allowlist.remove",
-          actor: { email: actor.email, id: actor.id },
+          actor,
           summary: row.value,
         })
         return row
