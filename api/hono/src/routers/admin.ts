@@ -45,7 +45,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { paging, pagingFields } from "@/lib/paging"
+import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
@@ -632,7 +632,7 @@ const { data, error } = await unwrap(
             ...row,
             createdAt: row.createdAt.toISOString(),
           })),
-          ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
+          ...paging({ page, perPage, total: countedTotal(counted) }),
         },
       })
     },
@@ -729,7 +729,7 @@ const { data, error } = await unwrap(
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
+        ...paging({ page, perPage, total: countedTotal(counted) }),
       }
       return c.json({ data })
     },
@@ -819,9 +819,9 @@ const { data, error } = await unwrap(
       }
       return c.json({
         data: {
-          // Built key by key rather than spread: a spread keeps the row's own insertion order, so re-assigning a key after it changes that key's value and not its place, and the reply would not come back in the order the schema above documents.
+          // Built key by key: the inserted row arrives in the table's column order, and a spread would carry that order into the reply, since re-assigning a key afterwards changes its value and not its position. Every other mapper here spreads safely only because its own select lists columns A to Z.
           rule: {
-            actor: c.get("user").email,
+            actor: actor.email,
             actorId: created.actorId,
             createdAt: created.createdAt.toISOString(),
             id: created.id,

@@ -105,7 +105,7 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())`,
       },
     }),
     (c) => {
-      // Same reason as the session above: the user object carries role, banned, banReason and banExpires, which belong to the console's routes rather than this one.
+      // Same reason as the session above: the object carries the console's own columns, which this route does not document.
       const user = c.get("user")
       const data = {
         createdAt: user.createdAt,
