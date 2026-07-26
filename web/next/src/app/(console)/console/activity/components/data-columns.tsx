@@ -48,6 +48,7 @@ export const activityColumns: ColumnDef<ActivityEvent>[] = [
         {row.original.actor}
       </DataTableCellText>
     ),
+    enableSorting: false,
     meta: { label: "Actor" },
   },
   {
@@ -56,6 +57,7 @@ export const activityColumns: ColumnDef<ActivityEvent>[] = [
     cell: ({ column, row }) => (
       <DataTableCellText column={column}>{ACTION_LABELS[row.original.action]}</DataTableCellText>
     ),
+    enableSorting: false,
     meta: { label: "Action" },
   },
   {
@@ -66,8 +68,10 @@ export const activityColumns: ColumnDef<ActivityEvent>[] = [
         {row.original.summary}
       </DataTableCellText>
     ),
+    enableSorting: false,
     meta: { label: "What" },
   },
+  // Time is the only sortable column, because it is the only sort the route offers: a log's one axis is when. Leaving the other headers sortable would have offered three controls that flip the time direction and nothing else.
   {
     accessorKey: "createdAt",
     header: ({ column }) => <DataTableColumnHeader column={column} />,

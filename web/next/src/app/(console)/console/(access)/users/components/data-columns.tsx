@@ -114,7 +114,8 @@ export const usersColumns = (
         {row.original.lastActive ? relativeTime(row.original.lastActive, new Date()) : "-"}
       </DataTableCellText>
     ),
-    meta: { label: "Active" },
+    // "Last active" rather than "Active", because Status renders the word Active in the cell two columns left and one table should not say it twice meaning two different things.
+    meta: { label: "Last active" },
   },
   {
     id: "actions",
