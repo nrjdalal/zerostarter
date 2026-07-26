@@ -25,7 +25,7 @@ The active organization and team ride on the session row itself as `session.acti
 
 ## Roles
 
-An org has three roles from Better Auth's defaults: `owner`, `admin`, and `member`. Whoever creates an org becomes its `owner`; everyone else joins as `member` unless an invitation names a different role. These live on `member.role` and are entirely separate from the user-level `role` column that gates [`/console`](/docs/manage/authentication#the-admin-role-and-console), which is a platform-admin flag, not an org role. Teams are flat: `teamMember` has no role column, so membership is the only distinction inside a team.
+An org has three roles from Better Auth's defaults: `owner`, `admin`, and `member`. Whoever creates an org becomes its `owner`; everyone else joins as `member` unless an invitation names a different role. These live on `member.role` and are entirely separate from the user-level `role` column that gates [`/console`](/docs/manage/authentication#the-console-role-ladder), which is a platform-wide rung, not an org role. Teams are flat: `teamMember` has no role column, so membership is the only distinction inside a team.
 
 ## Reading the current context
 

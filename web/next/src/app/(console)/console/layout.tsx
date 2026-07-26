@@ -23,7 +23,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
 
   return (
     // Wraps the whole shell, not just children: the nav decides which groups to show from this role, and a slot rendered outside the provider would fall back to the default and hide them.
-    <ConsoleRoleProvider role={consoleRole(session.user.role)}>
+    <ConsoleRoleProvider id={session.user.id} role={consoleRole(session.user.role)}>
       <SidebarShell
         badge="Console"
         homeHref="/console"

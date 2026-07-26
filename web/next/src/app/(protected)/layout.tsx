@@ -8,7 +8,8 @@ import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  const session = await auth.api.getSession()
+  // Past the cookie cache, like the console's own gate: the Console link is drawn from the same role the gate honours, so a cached read makes the two disagree for the cache window. A demoted person keeps a link that 404s, and someone the allowlist just lifted does not get one until it expires. Costs a session lookup on the API, not an extra round trip, since this read already goes there.
+  const session = await auth.api.getSession({ disableCookieCache: true })
 
   if (!session?.user) redirect("/")
 

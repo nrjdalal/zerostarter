@@ -46,7 +46,7 @@ import {
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { describeBulk, runBulk } from "@/lib/api/bulk"
+import { bulkSucceeded, describeBulk, runBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -69,6 +69,8 @@ const KIND_OPTIONS = [
 const KIND_VALUES = new Set(KIND_OPTIONS.map((option) => option.value))
 // Mirrors the endpoint's q cap so a hand-written URL cannot 400 the table.
 const Q_MAX = 254
+// The endpoint's own cap on a rule value. The same number as Q_MAX today and deliberately its own constant: one bounds a search term, the other an email address.
+const RULE_MAX = 254
 
 async function fetchRules({
   filters,
@@ -140,7 +142,8 @@ export function AllowlistDataTable() {
       if (fromSelection) table.resetRowSelection()
       if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
       else if (outcome.done === rules.length && rules.length === 1) toast.success("Rule removed")
-      else toast.success(describeBulk(outcome, "removed"))
+      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, "removed"))
+      else toast.warning(describeBulk(outcome, "removed"))
       refresh()
     },
   })
@@ -201,11 +204,14 @@ export function AllowlistDataTable() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={remove.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={remove.isPending}
-              onClick={() => pendingDelete && remove.mutate(pendingDelete)}
+              onClick={(event) => {
+                event.preventDefault()
+                if (pendingDelete) remove.mutate(pendingDelete)
+              }}
             >
               Remove
             </AlertDialogAction>
@@ -273,7 +279,7 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
             <Input
               id="allowlist-value"
               autoComplete="off"
-              maxLength={Q_MAX}
+              maxLength={RULE_MAX}
               placeholder="@example.com"
               value={value}
               onChange={(event) => setValue(event.target.value)}

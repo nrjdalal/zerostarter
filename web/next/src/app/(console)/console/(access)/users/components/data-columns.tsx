@@ -109,7 +109,13 @@ export const usersColumns = (
     accessorKey: "role",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
     // The platform role, not an organization membership role: this one decides console access.
-    cell: ({ row }) => <UserRoleSelect role={row.original.role} userId={row.original.id} />,
+    cell: ({ row }) => (
+      <UserRoleSelect
+        email={row.original.email}
+        role={row.original.role}
+        userId={row.original.id}
+      />
+    ),
     meta: { label: "Role" },
   },
   {

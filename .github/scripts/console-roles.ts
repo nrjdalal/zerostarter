@@ -17,13 +17,17 @@ if (!url) {
 
 const sql = new SQL(url)
 
-// Rank order, matching the ladder in @packages/auth; `user` is the absence of console access and is what revoke sets.
-const CONSOLE_ROLES = ["owner", "admin", "member"]
+// The ladder's grantable rungs, in rank order. `user` is the absence of console access and is what revoke sets, so it is not offered as a grant.
+// Restated rather than imported from @packages/auth/access, which is the one place the ordering belongs: this runs from the repo root, and giving @packages/scripts a dependency on @packages/auth would be a build cycle, since @packages/auth's own build runs generate-env out of @packages/scripts. Everything below derives from this array, so the order is written once here; keep it in step with CONSOLE_ROLES if a rung is ever added.
+const GRANTABLE = ["owner", "admin", "member"]
+// The same list and the same order for the database, derived rather than spelled out again. Interpolated as SQL text rather than bound, which is safe only because GRANTABLE is this literal array and never user input.
+const RANK_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")
+const RANK_CASE = GRANTABLE.map((role, index) => `WHEN '${role}' THEN ${index}`).join(" ")
 
 if (action === "list") {
   const rows = (await sql`SELECT email, name, role FROM "user"
-    WHERE role IN ('owner', 'admin', 'member')
-    ORDER BY CASE role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, email`) as {
+    WHERE role IN (${sql.unsafe(RANK_LIST)})
+    ORDER BY CASE role ${sql.unsafe(RANK_CASE)} ELSE ${GRANTABLE.length} END, email`) as {
     email: string
     name: string
     role: string
@@ -47,8 +51,8 @@ const [{ count: owners }] = (await sql`SELECT count(*)::int AS count FROM "user"
   WHERE role = 'owner'`) as [{ count: number }]
 const fallback = owners === 0 ? "owner" : "admin"
 const granted = (process.argv[4] ?? fallback).trim().toLowerCase()
-if (action === "grant" && !CONSOLE_ROLES.includes(granted)) {
-  console.error(`role must be one of ${CONSOLE_ROLES.join(", ")}`)
+if (action === "grant" && !GRANTABLE.includes(granted)) {
+  console.error(`role must be one of ${GRANTABLE.join(", ")}`)
   process.exit(1)
 }
 if (action === "grant" && owners === 0 && granted !== "owner") {

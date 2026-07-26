@@ -259,7 +259,8 @@ const { data, error } = await unwrap(
       const targetId = c.req.param("id")
       const { role: nextRole } = c.req.valid("json")
 
-      // Counting owners and then updating in a second statement is not enough: two admins each demoting one of the last two owners both read two, both pass, and the install ends with none. Locking the owner rows first makes the second request wait, then re-read what the first committed and refuse.
+      // Counting owners and then updating in a second statement is not enough: two admins each demoting one of the last two owners both read two, both pass, and the install ends with none. Locking the owner rows first makes the second request wait, then re-read what the first committed and refuse. Every role change queues behind that lock, not only the ones touching an owner, which is the right trade at the scale a console operates at.
+      // The count includes banned owners, which cannot strand an install: banning an owner already takes another owner, and that one stays active.
       const updated = await db.transaction(async (tx) => {
         const owners = await tx
           .select({ id: user.id })
@@ -323,6 +324,7 @@ const { data, error } = await unwrap(
         ...authErrorResponses,
         ...forbiddenErrorResponses,
         ...notFoundErrorResponses,
+        ...conflictErrorResponses,
       },
     }),
     sValidator("json", statusChangeSchema, (result) => {
@@ -349,13 +351,23 @@ const { data, error } = await unwrap(
       }
 
       // Unbanning clears the reason and any expiry too, so a later ban cannot inherit the last one's terms.
+      // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision. Cheaper than the role route's lock, and enough here, because the invariant is about this one row.
       const [updated] = await db
         .update(user)
         .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
-        .where(eq(user.id, targetId))
+        .where(
+          and(
+            eq(user.id, targetId),
+            target.role === null ? isNull(user.role) : eq(user.role, target.role),
+          ),
+        )
         .returning(RETURNED_USER)
       if (!updated) {
-        throw new ApiError(404, "NOT_FOUND", "User not found")
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "This account changed while you were acting on it. Try again.",
+        )
       }
       // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route already owns the rank rule the plugin has no notion of.
       if (banned) {

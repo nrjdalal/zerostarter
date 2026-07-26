@@ -36,7 +36,7 @@ magicLink({
 
 `sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
 
-**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent` with the `admin` role, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
+**Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent`, made an `owner` on the sign-in that creates the account and left at whatever rung it holds after that, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
 <Callout type="warn" title="Configure at least one method before shipping">
 

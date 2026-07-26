@@ -12,7 +12,7 @@ import {
   usersColumns,
   type ConsoleUser,
 } from "@/app/(console)/console/(access)/users/components/data-columns"
-import { useConsoleRole } from "@/components/console/role"
+import { grantableRoles, useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
@@ -38,7 +38,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { describeBulk, runBulk } from "@/lib/api/bulk"
+import { bulkSucceeded, describeBulk, runBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -97,7 +97,7 @@ async function fetchUsers({
 
 // Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
 export function UsersDataTable() {
-  const { canWrite } = useConsoleRole()
+  const { canWrite, role: viewerRole, viewerId } = useConsoleRole()
   const queryClient = useQueryClient()
   const [pendingRole, setPendingRole] = React.useState<ConsoleRole | null>(null)
   // Rows and intent travel together, so the row menu and the selection bar open the same confirm and run the same mutation.
@@ -123,6 +123,12 @@ export function UsersDataTable() {
   })
 
   const selected = table.getSelectedRowModel().rows.map((row) => row.original)
+  // What this viewer could grant at all, asked against the lowest rung: an admin sees member and user, an owner sees everything. Which of the selected rows accept it is still the API's call.
+  const grantable = grantableRoles({
+    targetId: "",
+    targetRole: "user",
+    viewer: { id: viewerId, role: viewerRole },
+  })
 
   // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
@@ -137,7 +143,8 @@ export function UsersDataTable() {
       setPendingRole(null)
       table.resetRowSelection()
       if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
-      else toast.success(describeBulk(outcome, "changed"))
+      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, "changed"))
+      else toast.warning(describeBulk(outcome, "changed"))
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -167,7 +174,8 @@ export function UsersDataTable() {
       const verb = banned ? "banned" : "unbanned"
       // Nothing got through, so the reason is the whole story and reads better as the error it is.
       if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
-      else toast.success(describeBulk(outcome, verb))
+      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, verb))
+      else toast.warning(describeBulk(outcome, verb))
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -189,7 +197,7 @@ export function UsersDataTable() {
             <>
               {selected.some((row) => !row.banned) && (
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   onClick={() =>
                     setPendingStatus({
                       banned: true,
@@ -220,7 +228,7 @@ export function UsersDataTable() {
                   Set role
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
-                  {CONSOLE_ROLES.map((role) => (
+                  {grantable.map((role) => (
                     <DropdownMenuItem
                       key={role}
                       className="capitalize"

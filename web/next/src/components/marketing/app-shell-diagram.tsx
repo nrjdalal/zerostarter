@@ -3,8 +3,8 @@ import { RiLockLine } from "@remixicon/react"
 // An authored abstraction of the shipped shell, not a screenshot. Every route and gate below exists: /dashboard is auth-gated, /console and /console/docs are role-gated. Decorative for AT; the prose beside it carries the same facts.
 const rows = [
   { label: "/dashboard", note: "session" },
-  { label: "/console", note: "admin", gated: true },
-  { label: "/console/docs", note: "admin", gated: true },
+  { label: "/console", note: "member+", gated: true },
+  { label: "/console/docs", note: "member+", gated: true },
 ]
 
 export function AppShellDiagram() {

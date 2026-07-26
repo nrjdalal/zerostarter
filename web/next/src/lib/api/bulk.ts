@@ -44,6 +44,9 @@ export async function runBulk<T>(
   return outcome
 }
 
+// Whether the outcome is something to celebrate. A refusal is the system working, so it stays a success; a failure is not, and reading "2 removed, 1 failed" in green overstates it on a surface that otherwise keeps the two apart.
+export const bulkSucceeded = (outcome: BulkOutcome) => outcome.failed === 0
+
 // The one sentence a toast needs: what happened, in the caller's own verb, with refused and failed named separately.
 export function describeBulk(outcome: BulkOutcome, verb: string): string {
   const parts = [`${outcome.done} ${verb}`]

@@ -1,11 +1,11 @@
 "use client"
 
-import { CONSOLE_ROLES, type ConsoleRole } from "@packages/auth/access"
+import { type ConsoleRole } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as React from "react"
 import { toast } from "sonner"
 
-import { useConsoleRole } from "@/components/console/role"
+import { grantableRoles, useConsoleRole } from "@/components/console/role"
 import {
   Select,
   SelectContent,
@@ -16,8 +16,16 @@ import {
 import { apiClient, unwrap } from "@/lib/api/client"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
-export function UserRoleSelect({ role, userId }: { role: string; userId: string }) {
-  const { canWrite } = useConsoleRole()
+export function UserRoleSelect({
+  email,
+  role,
+  userId,
+}: {
+  email: string
+  role: string
+  userId: string
+}) {
+  const { canWrite, role: viewerRole, viewerId } = useConsoleRole()
   const queryClient = useQueryClient()
   const [pending, setPending] = React.useState<string | null>(null)
 
@@ -36,14 +44,21 @@ export function UserRoleSelect({ role, userId }: { role: string; userId: string 
       setPending(null)
       toast.error(error.message)
     },
-    onSuccess: (data) => {
-      setPending(null)
+    onSuccess: async (data) => {
       toast.success(`Role changed to ${data.user.role}`)
-      queryClient.invalidateQueries({ queryKey: ["console-users"] })
+      // Held until the refetch settles: clearing first would snap the trigger back to the stale role for a beat, which reads as the change failing.
+      await queryClient.invalidateQueries({ queryKey: ["console-users"] })
+      setPending(null)
     },
   })
 
-  if (!canWrite) return <span className="capitalize">{role}</span>
+  const options = grantableRoles({
+    targetId: userId,
+    targetRole: role,
+    viewer: { id: viewerId, role: viewerRole },
+  })
+  // Your own row, and anyone you do not outrank, can only ever produce a refusal, so it reads as what it is rather than as a control.
+  if (!canWrite || options.length === 0) return <span className="capitalize">{role}</span>
 
   return (
     <Select
@@ -54,11 +69,16 @@ export function UserRoleSelect({ role, userId }: { role: string; userId: string 
         mutation.mutate(next as ConsoleRole)
       }}
     >
-      <SelectTrigger size="sm" className="capitalize" disabled={mutation.isPending}>
+      <SelectTrigger
+        size="sm"
+        aria-label={`Role for ${email}`}
+        className="capitalize"
+        disabled={mutation.isPending}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {CONSOLE_ROLES.map((value) => (
+        {options.map((value) => (
           <SelectItem key={value} value={value} className="capitalize">
             {value}
           </SelectItem>
