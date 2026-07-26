@@ -46,7 +46,7 @@ Restart the same way after changing `@packages/*` exports the API consumes: they
 
 ## Agent login
 
-Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no admin-minting route.
+Sign in as `LocalAgent` (local only, trusted Origin required). The route is gated on `AGENT_SIGNIN_ENABLED`: set it to `true` in `.env` first, or the route 404s. It is off by default, so a fresh clone and any deploy expose no session-minting route.
 
 ```bash
 WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)

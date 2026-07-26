@@ -32,7 +32,7 @@ export type AllowlistRuleRow = InferResponseType<
 // This table's layout, colocated with its columns and written in column order. Rule floors wide and grows, since a domain and a full address differ a lot in length.
 export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   select: { width: 12 },
-  value: { extra: 48, flex: true },
+  rule: { extra: 48, flex: true },
   createdByName: { align: "right", extra: 24 },
   kind: { align: "right", extra: 8 },
   createdAt: { align: "right", extra: 15 },
@@ -79,6 +79,7 @@ export const allowlistColumns = (
     enableSorting: false,
   },
   {
+    id: "rule",
     accessorKey: "value",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (

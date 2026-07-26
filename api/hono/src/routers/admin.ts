@@ -483,12 +483,14 @@ const { data, error } = await unwrap(
     async (c) => {
       const { dir, kind, page, perPage, q, sort } = c.req.valid("query")
       const conditions = [
-        q ? ilike(allowlist.value, `%${escapeLike(q)}%`) : undefined,
+        q
+          ? or(ilike(allowlist.value, `%${escapeLike(q)}%`), ilike(user.name, `%${escapeLike(q)}%`))
+          : undefined,
         kind.length ? or(...kind.map((value) => eq(allowlist.kind, value))) : undefined,
       ].filter((condition) => condition !== undefined)
       const where = conditions.length ? and(...conditions) : undefined
 
-      const [rows, total] = await Promise.all([
+      const [rows, counted] = await Promise.all([
         db
           .select({
             createdAt: allowlist.createdAt,
@@ -507,7 +509,12 @@ const { data, error } = await unwrap(
           )
           .limit(perPage)
           .offset((page - 1) * perPage),
-        db.$count(allowlist, where),
+        // Counted over the same join, not db.$count: the search reaches the author's name, which only exists once user is joined.
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(allowlist)
+          .leftJoin(user, eq(user.id, allowlist.createdBy))
+          .where(where),
       ])
 
       const data = {
@@ -516,7 +523,7 @@ const { data, error } = await unwrap(
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        total,
+        total: counted[0] ? counted[0].value : 0,
       }
       return c.json({ data })
     },
@@ -591,7 +598,8 @@ const { data, error } = await unwrap(
         throw error
       }
       if (!created) {
-        throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
+        // Not a duplicate: the insert above either returns its row, throws, or the constraint path caught it. Reporting this as a conflict would name a cause that cannot be the cause.
+        throw new ApiError(500, "INTERNAL_SERVER_ERROR", "The rule could not be saved.")
       }
       return c.json({
         data: {

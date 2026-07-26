@@ -3,7 +3,7 @@
 - Status: backlog
 - Links: PR #758 review
 
-The access rules are pure functions with 43 unit tests, and that is most of the safety. What has none is the seam where those functions meet a query, which is exactly where this section's load-bearing behaviour lives:
+The access rules are pure functions with 42 unit tests, and that is most of the safety. What has none is the seam where those functions meet a query, which is exactly where this section's load-bearing behaviour lives:
 
 - **The last-owner race.** `SELECT id FROM "user" WHERE role = 'owner' FOR UPDATE` inside the transaction is what stops two admins each demoting one of the last two owners. Nothing catches its removal: the guard's own tests keep passing, because the guard is handed a count it trusts.
 - **The status route's compare-and-set.** Banning quals on the rung the guard read, so a promotion landing mid-request makes the write find nothing rather than act on a stale decision. Delete the qual and every test still passes.

@@ -14,12 +14,13 @@ Drizzle is not a query builder wrapped around SQL strings. Because the schema is
 
 ## The schema
 
-Two files under `packages/db/src/schema/`, both re-exported from `index.ts`:
+Three files under `packages/db/src/schema/`, all re-exported from `index.ts`:
 
 - **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds.
+- **`allowlist.ts`**: the `allowlist` table behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores.
 - **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page.
 
-Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column.
+Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column. `allowlist.createdBy` is the exception on both counts: it is `SET NULL`, because deleting the admin who added a rule must not delete the rule, and it carries no index, because nothing queries by it and the table holds a hand-typed list.
 
 ## The generate → migrate loop
 

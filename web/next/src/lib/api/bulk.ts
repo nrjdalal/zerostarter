@@ -1,10 +1,6 @@
 import { toast } from "sonner"
 
-// Applies a one-row-at-a-time endpoint across a selection.
-//
-// Capped rather than Promise.all over everything: each call re-reads the session past the cookie cache, which is a round trip from the web to the API, and each one counts against the per-user rate limit. A hundred selected rows would otherwise open a hundred concurrent requests and rate-limit themselves into failures the person then reads as refusals.
-//
-// Refused and failed are kept apart for the same reason. A guard saying no is the system working; a 429 or a dropped connection is not, and reporting both as "refused" tells someone their permissions are wrong when the network was.
+// How many of a selection's rows are in flight at once. Each call re-reads the session past the cookie cache, a round trip from the web to the API, and each one counts against the per-user rate limit, so a hundred selected rows would otherwise rate-limit themselves into failures the person reads as refusals.
 const CONCURRENCY = 5
 
 export type BulkOutcome = {
@@ -14,6 +10,7 @@ export type BulkOutcome = {
   refused: number
 }
 
+// Applies a one-row-at-a-time endpoint across a selection, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
 export async function runBulk<T>(
   items: T[],
   call: (item: T) => Promise<{ code: string; message: string } | null>,
@@ -49,7 +46,7 @@ export async function runBulk<T>(
 }
 
 // Whether the outcome is something to celebrate. A refusal is the system working, so it stays a success; a failure is not, and reading "2 removed, 1 failed" in green overstates it on a surface that otherwise keeps the two apart.
-export const bulkSucceeded = (outcome: BulkOutcome) => outcome.failed === 0
+const bulkSucceeded = (outcome: BulkOutcome) => outcome.failed === 0
 
 // The one sentence a toast needs: what happened, in the caller's own verb, with refused and failed named separately.
 export function describeBulk(outcome: BulkOutcome, verb: string): string {

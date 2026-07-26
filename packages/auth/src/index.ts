@@ -23,7 +23,13 @@ import {
 import { userAc } from "better-auth/plugins/admin/access"
 import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
-import { matchesAllowlist, roleAtLeast, type AllowlistRule } from "@/access"
+import {
+  ACCESS_ROLE,
+  CONSOLE_ROLES,
+  matchesAllowlist,
+  roleAtLeast,
+  type AllowlistRule,
+} from "@/access"
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
 // The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime. A runtime .localhost host (portless dev, injected after the build) overrides it so web and api share the cookie.
@@ -123,7 +129,7 @@ export const auth = betterAuth({
               .select({ kind: allowlist.kind, value: allowlist.value })
               .from(allowlist)
               .where(inArray(allowlist.value, [address, address.slice(at)]))
-            // kind is a text column, so narrow rather than cast: a row with anything else in it is not a rule this understands.
+            // kind is a generated column, so it holds one of two values; this narrows the text type to the union rather than casting.
             const rules = candidates.filter(
               (rule): rule is AllowlistRule => rule.kind === "domain" || rule.kind === "email",
             )
@@ -149,13 +155,9 @@ export const auth = betterAuth({
     // Every rung holds no statements, which is deliberate and load-bearing. The plugin mounts its own endpoints at /api/auth/admin/*, and its middleware authorizes on these statements alone: it has no notion of rank, of who the actor is relative to the target, or of the last owner. Hand an admin the stock adminAc and one request to /api/auth/admin/set-role makes them an owner, bans an owner, or resets an owner's password, and every rule in @/access becomes a comment. Verified: it did exactly that before this was narrowed.
     // So the console's own routes own all of it, guarded by refuseRoleChange and refuseBan, and the plugin keeps only what nothing else provides: the role, banned, banReason and banExpires columns, and the session check that refuses a banned user. A fork that wants the plugin's endpoints should widen one statement at a time and accept that the ladder does not constrain them.
     adminPlugin({
-      adminRoles: ["owner", "admin"],
-      roles: {
-        admin: userAc,
-        member: userAc,
-        owner: userAc,
-        user: userAc,
-      },
+      // Derived, not restated: the rungs the plugin treats as admin are the rungs the ladder admits to Access, and every rung is declared so the plugin's own validation passes.
+      adminRoles: CONSOLE_ROLES.filter((role) => roleAtLeast(role, ACCESS_ROLE)),
+      roles: Object.fromEntries(CONSOLE_ROLES.map((role) => [role, userAc])),
     }),
   ],
   socialProviders: {

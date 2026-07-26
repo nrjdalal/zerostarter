@@ -16,29 +16,35 @@ export function roleAtLeast(role: string | null | undefined, minimum: ConsoleRol
   return RANK[consoleRole(role)] >= RANK[minimum]
 }
 
+// The rung that may change who reaches the console. Named once because six surfaces assert it: the API middleware, the Access layout, both Access pages, the nav group, and the write flag every console control reads.
+export const ACCESS_ROLE: ConsoleRole = "admin"
+
+// The comparison the header warns about, written once. Every rule asking whether an actor may act on a target asks here.
+function outranks(actor: ConsoleRole, target: ConsoleRole): boolean {
+  return actor === "owner" || RANK[actor] > RANK[target]
+}
+
+// Who is acting and on whom, the pair every guard below needs.
+export type ActorTarget = {
+  actorRole: string | null | undefined
+  isSelf: boolean
+  targetRole: string | null | undefined
+}
+
 // Why a ban or unban was refused. No last-owner case: banning yourself is already refused, so an owner can only ban an owner while another owner (the actor) remains.
 export type BanRefusal = "outranked" | "self"
 
 // The same rank rule as a role change, minus the parts that are about roles. Unbanning is guarded identically, so nobody can lift a ban they could not have applied.
-export function refuseBan(input: {
-  actorRole: string | null | undefined
-  isSelf: boolean
-  targetRole: string | null | undefined
-}): BanRefusal | null {
+export function refuseBan(input: ActorTarget): BanRefusal | null {
   const actor = consoleRole(input.actorRole)
-  const target = consoleRole(input.targetRole)
   if (input.isSelf) return "self"
   if (!roleAtLeast(actor, "admin")) return "outranked"
-  if (actor !== "owner" && RANK[target] >= RANK[actor]) return "outranked"
+  if (!outranks(actor, consoleRole(input.targetRole))) return "outranked"
   return null
 }
 
 // The rungs this actor could grant this target, from the same guard the API asks, so a menu can never offer what the server would refuse. targetIsLastOwner is unknowable to a caller without the database, so a demotion the database refuses can still be offered: that one is a real refusal rather than a control that could never work.
-export function grantableRoles(input: {
-  actorRole: string | null | undefined
-  isSelf: boolean
-  targetRole: string | null | undefined
-}): ConsoleRole[] {
+export function grantableRoles(input: ActorTarget): ConsoleRole[] {
   return CONSOLE_ROLES.filter(
     (nextRole) =>
       refuseRoleChange({
@@ -55,13 +61,9 @@ export function grantableRoles(input: {
 export type RoleChangeRefusal = "last-owner" | "outranked" | "owner-only" | "self" | "unknown-role"
 
 // The rules that keep an install from locking itself out. Whether the target is the last owner is decided by the caller, which is the only part that needs the database, so this stays pure.
-export function refuseRoleChange(input: {
-  actorRole: string | null | undefined
-  isSelf: boolean
-  nextRole: string
-  targetIsLastOwner: boolean
-  targetRole: string | null | undefined
-}): RoleChangeRefusal | null {
+export function refuseRoleChange(
+  input: ActorTarget & { nextRole: string; targetIsLastOwner: boolean },
+): RoleChangeRefusal | null {
   const actor = consoleRole(input.actorRole)
   const target = consoleRole(input.targetRole)
   if (!Object.hasOwn(RANK, input.nextRole)) return "unknown-role"
@@ -71,10 +73,8 @@ export function refuseRoleChange(input: {
   // Rank before the owner-only rule, so someone with no business changing roles at all is told they are outranked rather than being handed the narrower reason as though the rung were the only thing in their way.
   if (!roleAtLeast(actor, "admin")) return "outranked"
   if (next === "owner" && actor !== "owner") return "owner-only"
-  // An owner may act on anyone, peers included. Everyone else must stay strictly below their own rank on both sides, so two admins cannot demote each other and an admin cannot mint another admin.
-  if (actor !== "owner" && (RANK[target] >= RANK[actor] || RANK[next] >= RANK[actor])) {
-    return "outranked"
-  }
+  // Both sides: an admin can neither act on a peer nor mint one.
+  if (!outranks(actor, target) || !outranks(actor, next)) return "outranked"
   if (input.targetIsLastOwner && next !== "owner") return "last-owner"
   return null
 }

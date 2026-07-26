@@ -1,6 +1,6 @@
 "use client"
 
-import { roleAtLeast, type ConsoleRole } from "@packages/auth/access"
+import { ACCESS_ROLE, roleAtLeast, type ConsoleRole } from "@packages/auth/access"
 import * as React from "react"
 
 // The viewer's platform role and id, read once on the server by the console layout and handed to client surfaces so a member's mutating controls are never rendered, and so a control whose every outcome is a refusal is not drawn at all. It decides what to draw, never what is permitted: every gate is enforced again on the API, which is the only place that matters.
@@ -24,5 +24,5 @@ export function ConsoleRoleProvider({
 
 export function useConsoleRole() {
   const viewer = React.use(ConsoleRoleContext)
-  return { canWrite: roleAtLeast(viewer.role, "admin"), role: viewer.role, viewerId: viewer.id }
+  return { canWrite: roleAtLeast(viewer.role, ACCESS_ROLE), role: viewer.role, viewerId: viewer.id }
 }

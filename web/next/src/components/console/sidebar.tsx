@@ -1,6 +1,6 @@
 "use client"
 
-import { roleAtLeast, type ConsoleRole } from "@packages/auth/access"
+import { ACCESS_ROLE, roleAtLeast, type ConsoleRole } from "@packages/auth/access"
 import { features } from "@packages/config/site"
 import {
   RiBookLine,
@@ -65,7 +65,7 @@ const navGroups: { items: ConsoleNavItem[]; label: string; minRole?: ConsoleRole
     ],
     label: "Access",
     // Who may reach the console and what they may do there is an admin concern; a member's console is the shell and the docs. Hiding is cosmetic, so both pages and the API enforce the same line.
-    minRole: "admin",
+    minRole: ACCESS_ROLE,
   },
 ]
 

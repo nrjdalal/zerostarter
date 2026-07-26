@@ -1,7 +1,7 @@
 import type { Session } from "@packages/auth"
 import { auth } from "@packages/auth"
 import type { ConsoleRole } from "@packages/auth/access"
-import { roleAtLeast } from "@packages/auth/access"
+import { ACCESS_ROLE, roleAtLeast } from "@packages/auth/access"
 import { createMiddleware } from "hono/factory"
 
 import { ApiError } from "@/lib/error"
@@ -28,4 +28,4 @@ export function requireConsoleRole(minimum: ConsoleRole) {
 }
 
 // The Access section, and so every route serving it, is an admin concern. A surface meant for a member calls the factory with its own rung rather than reusing this.
-export const consoleAdminMiddleware = requireConsoleRole("admin")
+export const consoleAdminMiddleware = requireConsoleRole(ACCESS_ROLE)

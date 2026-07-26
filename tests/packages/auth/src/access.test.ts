@@ -62,6 +62,15 @@ describe("roleAtLeast", () => {
     expect(roleAtLeast("user", "admin")).toBe(false)
   })
 
+  test("every ordered pair answers by rank, so no rung is left unstated", () => {
+    for (const [index, role] of CONSOLE_ROLES.entries()) {
+      for (const [otherIndex, minimum] of CONSOLE_ROLES.entries()) {
+        // CONSOLE_ROLES runs highest first, so a lower index is the higher rung.
+        expect(roleAtLeast(role, minimum)).toBe(index <= otherIndex)
+      }
+    }
+  })
+
   test("an unknown or missing role can never satisfy a console rung", () => {
     for (const role of [null, undefined, "constructor", "superuser"]) {
       expect(roleAtLeast(role, "member")).toBe(false)

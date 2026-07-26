@@ -581,7 +581,7 @@ export function DataTable<TData>({
         <div className="text-muted-foreground flex items-center justify-between text-sm">
           <div>
             {selectable
-              ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected`
+              ? `${selectedCount} of ${table.getFilteredRowModel().rows.length} row(s) selected`
               : null}
           </div>
           {typeof total === "number" && !isLoading && (

@@ -12,7 +12,7 @@ PostgreSQL with Drizzle ORM. Schema lives in `packages/db/src/schema/`, migratio
 
 - A new table gets its own `packages/db/src/schema/<name>.ts`, then an export from `index.ts`: `export * from "@/schema/<name>"`. Miss that export and the table never reaches a migration.
 - For examples, read `auth.ts` (tables, relations, indexes) and `waitlist.ts` (a minimal non-auth table).
-- Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column. Use `onDelete: "set null"` instead when the row outlives the reference and the column is only provenance, as `allowlist.createdBy` does: deleting the admin who added a rule must not delete the rule.
+- Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column. Both bend for the same kind of column: use `onDelete: "set null"` when the row outlives the reference and the column is only provenance, and skip the index when nothing queries by it and the table is small enough that the delete-time scan is free. `allowlist.createdBy` is both (deleting the admin who added a rule must not delete the rule, and only the FK sweep ever reads the column). Index a FK the moment something filters, joins or sorts by it.
 
 ## 2. Generate and review
 

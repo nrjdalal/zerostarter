@@ -45,6 +45,7 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 
 Raised but undecided: real concerns with no agreed next action and no confident verdict. They sit here rather than in the backlog (which implies a plan) or closed (which loses the context), and leave only by being decided. Mirrored as checkboxes on the standing Icebox issue (#707).
 
+- [Gating who may create an account](signup-gating.md) - the Access spec's other half, retired when the allowlist became a console grant; a second list, a fork-edited predicate, or nothing at all (#758).
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
 - [No trail for console role changes](console-role-audit.md) - roles are overwritten in place with no record of who granted what; probably an audit-log concern wider than roles (#758 review).
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
