@@ -101,13 +101,14 @@ async function fetchRules({
 export function AllowlistDataTable() {
   const { canWrite } = useConsoleRole()
   const queryClient = useQueryClient()
-  const [pendingDelete, setPendingDelete] = React.useState<AllowlistRuleRow | null>(null)
+  const [pendingDelete, setPendingDelete] = React.useState<AllowlistRuleRow[] | null>(null)
 
-  const columns = React.useMemo(() => allowlistColumns(setPendingDelete), [])
+  const columns = React.useMemo(() => allowlistColumns((rule) => setPendingDelete([rule])), [])
   const { table, tableProps } = useDataTable({
     columnConfig: allowlistColumnConfig,
     columns,
     defaultSorting: DEFAULT_SORTING,
+    enableRowSelection: true,
     fetchPage: fetchRules,
     filterIds: ["kind"],
     getRowId: (row) => row.id,
@@ -115,18 +116,34 @@ export function AllowlistDataTable() {
   })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["console-allowlist"] })
+  const selected = table.getSelectedRowModel().rows.map((row) => row.original)
 
+  // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({
-    mutationFn: async (rule: AllowlistRuleRow) => {
-      const { error } = await unwrap(
-        apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: rule.id } }),
+    mutationFn: async (rules: AllowlistRuleRow[]) => {
+      const results = await Promise.all(
+        rules.map(async (rule) => {
+          const { error } = await unwrap(
+            apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: rule.id } }),
+          )
+          return error ? error.message : null
+        }),
       )
-      if (error) throw new Error(error.message)
+      const failures = results.filter((message) => message !== null)
+      if (failures.length === results.length) throw new Error(failures[0])
+      return { failed: failures.length, removed: results.length - failures.length }
     },
     onError: (error) => toast.error(error.message),
-    onSuccess: () => {
+    onSuccess: ({ failed, removed }) => {
       setPendingDelete(null)
-      toast.success("Rule removed")
+      table.resetRowSelection()
+      toast.success(
+        failed
+          ? `${removed} removed, ${failed} failed`
+          : removed === 1
+            ? "Rule removed"
+            : `${removed} rules removed`,
+      )
       refresh()
     },
   })
@@ -134,7 +151,18 @@ export function AllowlistDataTable() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DataTableToolbar
-        actions={canWrite ? <AddRuleDialog onAdded={refresh} /> : undefined}
+        actions={
+          canWrite ? (
+            <>
+              {selected.length > 0 && (
+                <Button variant="outline" onClick={() => setPendingDelete(selected)}>
+                  Remove {selected.length}
+                </Button>
+              )}
+              <AddRuleDialog onAdded={refresh} />
+            </>
+          ) : undefined
+        }
         table={table}
         searchMaxLength={Q_MAX}
         searchPlaceholder="Search rules..."
@@ -166,7 +194,11 @@ export function AllowlistDataTable() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove {pendingDelete?.value}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {pendingDelete && pendingDelete.length === 1
+                ? `Remove ${pendingDelete[0].value}?`
+                : `Remove ${pendingDelete ? pendingDelete.length : 0} rules?`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Anyone already promoted keeps their role; removing a rule only stops future grants.
               Demote them from the Users table if that is what you want.

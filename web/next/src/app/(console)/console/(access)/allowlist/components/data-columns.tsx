@@ -1,9 +1,10 @@
 "use client"
 "use no memo"
 
-import { RiDeleteBinLine } from "@remixicon/react"
+import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
+import { toast } from "sonner"
 
 import { useConsoleRole } from "@/components/console/role"
 import {
@@ -12,6 +13,15 @@ import {
   type ColumnConfig,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
 
 // Row shape inferred from GET /api/v1/admin/allowlist, so the endpoint cannot drift from these columns.
@@ -21,11 +31,21 @@ export type AllowlistRuleRow = InferResponseType<
 
 // This table's layout, colocated with its columns and written in column order. Rule floors wide and grows, since a domain and a full address differ a lot in length.
 export const allowlistColumnConfig: Record<string, ColumnConfig> = {
+  select: { width: 12 },
   value: { extra: 48, flex: true },
   createdByName: { align: "right", extra: 24 },
   kind: { align: "right", extra: 8 },
   createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
+}
+
+async function copyValue(value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+    toast.success("Rule copied")
+  } catch {
+    toast.error("Copy failed")
+  }
 }
 
 // Says who a rule lets in, in the same words the add dialog previews.
@@ -38,6 +58,26 @@ export function describeRule(rule: { kind: string; value: string }) {
 export const allowlistColumns = (
   onDelete: (rule: AllowlistRuleRow) => void,
 ): ColumnDef<AllowlistRuleRow>[] => [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Select all"
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={table.getIsSomePageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={`Select ${row.original.value}`}
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableHiding: false,
+    enableSorting: false,
+  },
   {
     accessorKey: "value",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
@@ -85,14 +125,23 @@ export const allowlistColumns = (
       const { canWrite } = useConsoleRole()
       if (!canWrite) return null
       return (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`Remove ${row.original.value}`}
-          onClick={() => onDelete(row.original)}
-        >
-          <RiDeleteBinLine />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+            <span className="sr-only">Open menu</span>
+            <RiMoreLine />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => copyValue(row.original.value)}>
+                Copy rule
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={() => onDelete(row.original)}>
+                Remove
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
     enableHiding: false,
