@@ -45,6 +45,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { paging, pagingSchema } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
@@ -303,8 +304,8 @@ const { data, error } = await unwrap(
       ])
 
       const data = {
-        total,
         users: rows.map(asUserResponse),
+        ...paging({ page, perPage, total }),
       }
       return c.json({ data })
     },
@@ -567,7 +568,7 @@ const { data, error } = await unwrap(
             "application/json": {
               schema: resolver(
                 z.object({
-                  data: z.object({ events: z.array(activitySchema), total: z.number() }),
+                  data: z.object({ events: z.array(activitySchema), ...pagingSchema }),
                 }),
               ),
             },
@@ -631,7 +632,7 @@ const { data, error } = await unwrap(
             ...row,
             createdAt: row.createdAt.toISOString(),
           })),
-          total: counted[0] ? counted[0].value : 0,
+          ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
         },
       })
     },
@@ -666,7 +667,7 @@ const { data, error } = await unwrap(
                 z.object({
                   data: z.object({
                     rules: z.array(allowlistSchema),
-                    total: z.number().meta({ example: 3 }),
+                    ...pagingSchema,
                   }),
                 }),
               ),
@@ -728,7 +729,7 @@ const { data, error } = await unwrap(
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        total: counted[0] ? counted[0].value : 0,
+        ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
       }
       return c.json({ data })
     },

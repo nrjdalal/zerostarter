@@ -190,7 +190,9 @@ export type DataTablePageInput = {
 
 export type DataTablePage<TRow> = {
   rows: TRow[]
+  page: number
   total: number
+  hasNextPage: boolean
 }
 
 // The select column, so a second table cannot ship a third variant of it. label names the row for a screen reader, which is the part that had already drifted.
@@ -294,12 +296,8 @@ export function useDataTable<TRow>({
         sorting,
       }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      // A zero-row page ends the list unconditionally: without this, a stale total (rows deleted mid-scroll) would keep hasNextPage true and the load-more effect firing forever.
-      if (lastPage.rows.length === 0) return undefined
-      const loaded = allPages.reduce((count, page) => count + page.rows.length, 0)
-      return loaded < lastPage.total ? allPages.length + 1 : undefined
-    },
+    // The server says whether another page exists, so nothing here has to infer it from how many rows have accumulated against a total that may have moved.
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.page + 1 : undefined),
     placeholderData: keepPreviousData,
   })
 

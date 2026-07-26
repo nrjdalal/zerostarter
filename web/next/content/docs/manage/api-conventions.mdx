@@ -22,6 +22,30 @@ Failure:
 
 Handlers return the success side directly with `return c.json({ data })`. They never build the error side by hand. Instead they **throw**, and one handler shapes every failure.
 
+## Paging a list
+
+A list route answers with its collection and four flat fields beside it:
+
+```json
+{
+  "data": {
+    "users": [{ "id": "u_1", "email": "ada@example.com" }],
+    "page": 2,
+    "perPage": 25,
+    "total": 42,
+    "hasNextPage": true
+  }
+}
+```
+
+`page` and `perPage` echo what was asked, `total` counts every matching row, and **`hasNextPage` is the end signal**. The server computes it, rather than leaving the caller to compare what it has loaded against `total`: rows deleted mid-scroll move the total under an infinite list, and a client inferring from a stale one keeps asking for a page that no longer exists.
+
+Flat siblings rather than a nested object, which is what Django REST Framework and Laravel answer with and what a reader expects. Stripe and GitHub go further and omit the total, because on a large table counting is the expensive half; these tables are staff sized, the console shows the count, so it stays.
+
+The fields are in reading order, not alphabetical: which page, how big, how many, is there more.
+
+Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row if rows shift between requests. A keyset cursor is the fix and is tracked in the Icebox; the shape above is additive, so a `nextCursor` can join it without moving anything.
+
 ## Acting on a set
 
 The console's writes act on rows the caller picked: banning a selection, changing a role across it, removing several rules. **Ids travel in the body, never in the path**, and a single row is simply a set of one:
