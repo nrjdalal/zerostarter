@@ -36,21 +36,22 @@ export function UserRoleSelect({
 
   const mutation = useMutation({
     mutationFn: async (next: ConsoleRole) => {
+      // A set of one. The route answers per id, so a guard saying no about this account arrives as an outcome rather than an error, and is raised here so the mutation's own error path shows it.
       const { data, error } = await unwrap(
-        apiClient.v1.admin.users[":id"].role.$patch({
-          json: { role: next },
-          param: { id: userId },
-        }),
+        apiClient.v1.admin.users.role.$patch({ json: { ids: [userId], role: next } }),
       )
       if (error) throw new Error(error.message)
-      return data
+      const [result] = data.results
+      if (!result) throw new Error("The account was not changed.")
+      if (!result.ok) throw new Error(result.message)
+      return next
     },
     onError: (error) => {
       setPending(null)
       toast.add({ title: error.message, type: "error" })
     },
-    onSuccess: async (data) => {
-      toast.add({ title: `Role changed to ${data.user.role}`, type: "success" })
+    onSuccess: async (changed) => {
+      toast.add({ title: `Changed ${email} to ${changed}`, type: "success" })
       // Held until the refetch settles: clearing first would snap the trigger back to the stale role for a beat, which reads as the change failing.
       await queryClient.invalidateQueries({ queryKey: ["console-users"] })
       setPending(null)

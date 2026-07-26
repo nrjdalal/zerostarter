@@ -98,7 +98,7 @@ import { batchInput, batchResponseSchema, refused, uniqueIds, type BatchOutcome 
 const inputSchema = batchInput({ banned: z.boolean() })   // adds a capped, non-empty ids array
 ```
 
-- **Ids go in the body**, and only for set routes. A single-resource route keeps `/:id`, which is what names the thing being changed.
+- **Ids go in the body, never in the path.** A path parameter names a resource; a set the caller assembled is not one. A single row is a set of one, so there is no second route beside the set route, and no second copy of the guard, transaction and outcome shape to keep in step.
 - **Answer 200 with a per-id outcome** (`batchResponseSchema`), never 207: the envelope is uniform, and a `2xx` reads the same to `unwrap` either way. An `{ error }` from a set route still means nothing happened.
 - **Refuse per row, throw for the request.** A guard saying no about one target is `refused(id, "FORBIDDEN", message)` pushed onto the results; a bad body or a failed gate is still `throw new ApiError(...)`.
 - **One transaction for the set**, and run the ids through `uniqueIds` so a repeat cannot be acted on twice.

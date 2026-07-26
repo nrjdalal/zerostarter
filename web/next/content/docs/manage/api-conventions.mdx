@@ -24,7 +24,7 @@ Handlers return the success side directly with `return c.json({ data })`. They n
 
 ## Acting on a set
 
-Some routes act on rows the caller picked rather than on one resource: banning a selection, changing a role across it, removing several rules. Those take their ids in the **body**, and only those:
+The console's writes act on rows the caller picked: banning a selection, changing a role across it, removing several rules. **Ids travel in the body, never in the path**, and a single row is simply a set of one:
 
 ```
 PATCH  /api/v1/admin/users/role     { ids: string[], role }
@@ -32,7 +32,9 @@ PATCH  /api/v1/admin/users/status   { ids: string[], banned }
 DELETE /api/v1/admin/allowlist      { ids: string[] }
 ```
 
-The single-resource routes keep their path parameter (`/users/:id/role`), because that is what names the thing being changed. A set is not a resource, so it has no id to put there.
+There is no `/users/:id/role` beside these. A path parameter names a resource, and what these routes change is not a resource but a set the caller assembled, so putting one id in the path would only be right when the set happens to hold one. Two routes per action, one for a row and one for a set, would also mean two copies of the same guard, transaction and outcome shape, which is how the two drift apart.
+
+Changing one row therefore sends `{ ids: [id] }` and reads the first outcome. The row menu in the console does exactly that.
 
 Every guard in this API runs per target, which means a batch can legitimately change three accounts and refuse two. That cannot answer with one `{ data }` or one `{ error }`, so **each id carries its own outcome inside `{ data }`**:
 
@@ -49,6 +51,8 @@ Every guard in this API runs per target, which means a batch can legitimately ch
 ```
 
 An `{ error }` from one of these still means what it means everywhere else: **nothing happened**. The request was refused as a whole (not signed in, not an admin, malformed body, more than `MAX_BATCH` ids), so there are no per-row outcomes to report.
+
+That is the trade a caller acting on one row accepts: a guard refusing that row is a 200 with `ok: false` rather than a 403, so the client raises it from the outcome instead of the envelope.
 
 Three things follow from that shape:
 
