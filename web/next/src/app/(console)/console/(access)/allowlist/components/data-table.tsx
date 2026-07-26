@@ -6,7 +6,6 @@ import { useForm } from "@tanstack/react-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
 import * as React from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import {
@@ -41,6 +40,7 @@ import { Input } from "@/components/ui/input"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
+import { toast } from "@/lib/toast"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]

@@ -5,7 +5,6 @@ import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
 import { useState } from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar"
@@ -14,6 +13,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
+import { toast } from "@/lib/toast"
 
 const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }).max(254),

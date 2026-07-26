@@ -6,7 +6,6 @@ import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -23,6 +22,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
+import { toast } from "@/lib/toast"
 
 const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }),
@@ -178,7 +178,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       callbackURL: `${config.app.url}/dashboard`,
                     })
                     if (res.error) {
-                      toast.error(res.error.message)
+                      toast.error(res.error.message || "Could not sign in with GitHub")
                       setLoader(null)
                     }
                   }}
@@ -200,7 +200,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       callbackURL: `${config.app.url}/dashboard`,
                     })
                     if (res.error) {
-                      toast.error(res.error.message)
+                      toast.error(res.error.message || "Could not sign in with Google")
                       setLoader(null)
                     }
                   }}

@@ -13,13 +13,13 @@ import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { SidebarMenuItem } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth/client"
+import { toast } from "@/lib/toast"
 
 function getInitials(name: string) {
   const words = name.trim().split(/\s+/)
