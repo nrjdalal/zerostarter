@@ -350,6 +350,7 @@ export function DataTable<TData>({
   isLoadingMore = false,
   onLoadMore,
   onRetry,
+  selectionActions,
   table,
   total,
 }: {
@@ -362,6 +363,8 @@ export function DataTable<TData>({
   isLoadingMore?: boolean
   onLoadMore?: () => void
   onRetry?: () => void
+  // What can be done to the selected rows. Rendered in a bar that floats in over the bottom of the table while anything is selected, next to the rows it acts on rather than up in the toolbar with the filters.
+  selectionActions?: React.ReactNode
   table: TableInstance<TData>
   total?: number
 }) {
@@ -425,8 +428,10 @@ export function DataTable<TData>({
       : { className: cn("shrink-0", align), style: { width } }
   }
 
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2">
+    <div className="relative flex min-h-0 flex-1 flex-col gap-2">
       <div
         ref={containerRef}
         role="region"
@@ -555,6 +560,20 @@ export function DataTable<TData>({
           </div>
         )}
       </div>
+      {selectionActions && selectedCount > 0 && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-10 z-20 flex justify-center">
+          <div
+            role="toolbar"
+            aria-label={`Actions for ${selectedCount} selected`}
+            className="bg-popover animate-in fade-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-1 rounded-md border p-1 shadow-md"
+          >
+            {selectionActions}
+            <Button variant="ghost" onClick={() => table.resetRowSelection()}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
       {(selectable || typeof total === "number") && (
         <div className="text-muted-foreground flex items-center justify-between text-sm">
           <div>

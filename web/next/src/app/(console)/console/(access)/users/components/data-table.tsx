@@ -1,14 +1,18 @@
 "use client"
 "use no memo"
 
-import { CONSOLE_ROLES } from "@packages/auth/access"
+import { CONSOLE_ROLES, type ConsoleRole } from "@packages/auth/access"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
+import * as React from "react"
+import { toast } from "sonner"
 
 import {
   usersColumnConfig,
   usersColumns,
   type ConsoleUser,
 } from "@/app/(console)/console/(access)/users/components/data-columns"
+import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
@@ -17,6 +21,23 @@ import {
   type DataTablePage,
   type DataTablePageInput,
 } from "@/components/data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -75,6 +96,9 @@ async function fetchUsers({
 
 // Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
 export function UsersDataTable() {
+  const { canWrite } = useConsoleRole()
+  const queryClient = useQueryClient()
+  const [pendingRole, setPendingRole] = React.useState<ConsoleRole | null>(null)
   const { table, tableProps } = useDataTable({
     columnConfig: usersColumnConfig,
     columns: usersColumns,
@@ -86,6 +110,35 @@ export function UsersDataTable() {
     queryKey: "console-users",
   })
 
+  const selected = table.getSelectedRowModel().rows.map((row) => row.original)
+
+  // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
+  const setRole = useMutation({
+    mutationFn: async (role: ConsoleRole) => {
+      const results = await Promise.all(
+        selected.map(async (row) => {
+          const { error } = await unwrap(
+            apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
+          )
+          return error ? error.message : null
+        }),
+      )
+      const refused = results.filter((message) => message !== null)
+      if (refused.length === results.length) throw new Error(refused[0])
+      return { changed: results.length - refused.length, refused: refused.length }
+    },
+    onError: (error) => {
+      setPendingRole(null)
+      toast.error(error.message)
+    },
+    onSuccess: ({ changed, refused }) => {
+      setPendingRole(null)
+      table.resetRowSelection()
+      toast.success(refused ? `${changed} changed, ${refused} refused` : `${changed} changed`)
+      queryClient.invalidateQueries({ queryKey: ["console-users"] })
+    },
+  })
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DataTableToolbar table={table} searchMaxLength={Q_MAX} searchPlaceholder="Search users...">
@@ -95,7 +148,61 @@ export function UsersDataTable() {
           title="Role"
         />
       </DataTableToolbar>
-      <DataTable {...tableProps} aria-label="Users" />
+      <DataTable
+        {...tableProps}
+        aria-label="Users"
+        selectionActions={
+          canWrite ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" />}>
+                Set role
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                {CONSOLE_ROLES.map((role) => (
+                  <DropdownMenuItem
+                    key={role}
+                    className="capitalize"
+                    onClick={() => setPendingRole(role)}
+                  >
+                    {role}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : undefined
+        }
+      />
+      <AlertDialog
+        open={pendingRole !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRole(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Set {selected.length} {selected.length === 1 ? "person" : "people"} to{" "}
+              <span className="capitalize">{pendingRole}</span>?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Anyone the console refuses to change, such as you or an account you do not outrank,
+              keeps their current role.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={setRole.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={setRole.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                if (pendingRole) setRole.mutate(pendingRole)
+              }}
+            >
+              Set role
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

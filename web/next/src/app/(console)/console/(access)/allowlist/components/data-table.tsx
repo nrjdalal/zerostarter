@@ -151,18 +151,7 @@ export function AllowlistDataTable() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DataTableToolbar
-        actions={
-          canWrite ? (
-            <>
-              {selected.length > 0 && (
-                <Button variant="outline" onClick={() => setPendingDelete(selected)}>
-                  Remove {selected.length}
-                </Button>
-              )}
-              <AddRuleDialog onAdded={refresh} />
-            </>
-          ) : undefined
-        }
+        actions={canWrite ? <AddRuleDialog onAdded={refresh} /> : undefined}
         table={table}
         searchMaxLength={Q_MAX}
         searchPlaceholder="Search rules..."
@@ -176,6 +165,13 @@ export function AllowlistDataTable() {
       <DataTable
         {...tableProps}
         aria-label="Allowlist"
+        selectionActions={
+          canWrite ? (
+            <Button variant="destructive" onClick={() => setPendingDelete(selected)}>
+              Remove
+            </Button>
+          ) : undefined
+        }
         empty={
           <Empty>
             <EmptyHeader>
