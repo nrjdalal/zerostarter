@@ -1,5 +1,5 @@
 {
-  "id": "542afcff-57e4-4775-899a-041e17afbfd1",
+  "id": "e05cc4e3-da07-464d-93af-8b22b9963e75",
   "prevId": "534c5aa7-591a-416e-88a1-d7b2b9f96022",
   "version": "7",
   "dialect": "postgresql",
@@ -779,6 +779,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'user'"
+        },
+        "role_set_at": {
+          "name": "role_set_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "banned": {
           "name": "banned",

@@ -19,15 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1785053571896,
+      "when": 1785063391351,
       "tag": "0002_allowlist",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1785062536839,
-      "tag": "0003_role_set_at",
       "breakpoints": true
     }
   ]
