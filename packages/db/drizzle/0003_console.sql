@@ -7,16 +7,11 @@ CREATE TABLE "activity" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "allowlist" (
-	"id" text PRIMARY KEY NOT NULL,
-	"actor_id" text,
-	"actor" text,
-	"value" text NOT NULL,
-	"kind" text GENERATED ALWAYS AS (case when "value" like '@%' then 'domain' else 'email' end) STORED NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "allowlist_value_unique" UNIQUE("value")
-);
+ALTER TABLE "allowlist" RENAME COLUMN "created_by" TO "actor_id";--> statement-breakpoint
+ALTER TABLE "allowlist" DROP CONSTRAINT "allowlist_created_by_user_id_fk";
 --> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "role_set_at" timestamp;--> statement-breakpoint
+DROP INDEX "user_role_idx";--> statement-breakpoint
+ALTER TABLE "allowlist" ADD COLUMN "actor" text;--> statement-breakpoint
+UPDATE "allowlist" SET "actor" = "user"."email" FROM "user" WHERE "user"."id" = "allowlist"."actor_id";--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "allowlist" ADD CONSTRAINT "allowlist_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
