@@ -4,9 +4,9 @@ import { ACCESS_ROLE, roleAtLeast, type ConsoleRole } from "@packages/auth/acces
 import { features } from "@packages/config/site"
 import {
   RiBookLine,
-  RiHistoryLine,
   RiDashboardLine,
   RiGroupLine,
+  RiHistoryLine,
   RiShieldKeyholeLine,
   type RemixiconComponentType,
 } from "@remixicon/react"

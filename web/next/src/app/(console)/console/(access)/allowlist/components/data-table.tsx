@@ -55,8 +55,8 @@ type AllowlistSort = NonNullable<
   InferRequestType<typeof apiClient.v1.admin.allowlist.$get>["query"]["sort"]
 >
 const SORT_FIELDS = {
-  createdAt: "createdAt",
   actor: "actor",
+  createdAt: "createdAt",
   kind: "kind",
   value: "value",
 } as const satisfies Record<string, AllowlistSort>

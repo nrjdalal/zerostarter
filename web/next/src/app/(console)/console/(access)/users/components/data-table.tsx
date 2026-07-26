@@ -32,8 +32,7 @@ import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { facetOptions, resolveSort } from "@/lib/data-table-layout"
 
-// Who has been around lately, rather than who signed up lately: the console is usually opened to find someone active.
-const DEFAULT_SORT = { desc: true, id: "lastActive" }
+const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
 
 // Derived from the ladder rather than restated, so a new rung shows up in the facet instead of quietly missing from it.
@@ -48,8 +47,8 @@ type UsersSort = NonNullable<
 >
 const SORT_FIELDS = {
   createdAt: "createdAt",
-  lastActive: "lastActive",
   email: "email",
+  lastActive: "lastActive",
   name: "name",
   role: "role",
   status: "banned",
