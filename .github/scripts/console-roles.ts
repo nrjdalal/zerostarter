@@ -17,8 +17,8 @@ if (!url) {
 
 const sql = new SQL(url)
 
-// The ladder's grantable rungs, in rank order. `user` is the absence of console access and is what revoke sets, so it is not offered as a grant.
-// Restated rather than imported from @packages/auth/access, which is the one place the ordering belongs: this runs from the repo root, and giving @packages/scripts a dependency on @packages/auth would be a build cycle, since @packages/auth's own build runs generate-env out of @packages/scripts. Everything below derives from this array, so the order is written once here; keep it in step with CONSOLE_ROLES if a rung is ever added.
+// The ladder's grantable rungs, in rank order; `user` is the absence of console access, which is what revoke sets.
+// Restated rather than imported from @packages/auth/access, because a @packages/scripts dependency on @packages/auth is a build cycle. tests/github/scripts/console-roles.test.ts holds this copy to the real one.
 const GRANTABLE = ["owner", "admin", "member"]
 // The same list and the same order for the database, derived rather than spelled out again. Interpolated as SQL text rather than bound, which is safe only because GRANTABLE is this literal array and never user input.
 const GRANTABLE_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")

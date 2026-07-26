@@ -1,7 +1,6 @@
 "use client"
 "use no memo"
 
-import type { AllowlistRule } from "@packages/auth/access"
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
@@ -9,11 +8,11 @@ import type { InferResponseType } from "hono/client"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
+  selectColumn,
   DataTableColumnHeader,
   type ColumnConfig,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,36 +39,10 @@ export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   actions: { align: "center", width: 12 },
 }
 
-// Says who a rule lets in, in the same words the add dialog previews.
-export function describeRule(rule: AllowlistRule) {
-  return rule.kind === "domain"
-    ? `Anyone at ${rule.value.slice(1)} gets console access`
-    : `${rule.value} gets console access`
-}
-
 export const allowlistColumns = (
   onDelete: (rule: AllowlistRuleRow) => void,
 ): ColumnDef<AllowlistRuleRow>[] => [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        aria-label="Select all"
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={table.getIsSomePageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label={`Select ${row.original.value}`}
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
-    enableHiding: false,
-    enableSorting: false,
-  },
+  selectColumn((row) => row.value),
   {
     id: "rule",
     accessorKey: "value",

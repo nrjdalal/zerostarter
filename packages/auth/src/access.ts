@@ -5,7 +5,10 @@ export const CONSOLE_ROLES = ["owner", "admin", "member", "user"] as const
 
 export type ConsoleRole = (typeof CONSOLE_ROLES)[number]
 
-const RANK: Record<ConsoleRole, number> = { admin: 2, member: 1, owner: 3, user: 0 }
+// Derived from the array above, so the ordering really does live in one place: the last rung scores 0 and every step up adds one.
+const RANK = Object.fromEntries(
+  CONSOLE_ROLES.map((role, index) => [role, CONSOLE_ROLES.length - 1 - index]),
+) as Record<ConsoleRole, number>
 
 // hasOwn, not `in`: a crafted "constructor" would otherwise resolve through the prototype chain. Anything unrecognized (null, a legacy value) reads as the lowest rung, so an unknown role can never grant access.
 export function consoleRole(role: string | null | undefined): ConsoleRole {
@@ -14,6 +17,14 @@ export function consoleRole(role: string | null | undefined): ConsoleRole {
 
 export function roleAtLeast(role: string | null | undefined, minimum: ConsoleRole): boolean {
   return RANK[consoleRole(role)] >= RANK[minimum]
+}
+
+// Console access is the rung and the ban together. A ban written straight to the database leaves the rung intact, so anything drawing on the rung alone opens a door the gates refuse: that is how the dashboard came to draw a Console link for a banned account.
+export function reachesConsole(
+  user: { banned?: boolean | null; role?: string | null },
+  minimum: ConsoleRole = "member",
+): boolean {
+  return roleAtLeast(user.role, minimum) && !user.banned
 }
 
 // The rung that may change who reaches the console. Named once because six surfaces assert it: the API middleware, the Access layout, both Access pages, the nav group, and the write flag every console control reads.
@@ -81,7 +92,12 @@ export function refuseRoleChange(
 
 // Allowlist: who gets console access. Anyone may sign up and use the dashboard; a rule is what lifts someone to the console's bottom rung.
 
-export type AllowlistRule = { kind: "domain" | "email"; value: string }
+// The kinds a rule can be, in one place: the column's type, both zod enums and the console's facet all derive from it.
+export const ALLOWLIST_KINDS = ["domain", "email"] as const
+
+export type AllowlistKind = (typeof ALLOWLIST_KINDS)[number]
+
+export type AllowlistRule = { kind: AllowlistKind; value: string }
 
 // A leading @ is a domain rule, anything else must look like an address. Normalizing here means one shape reaches the database, so matching never re-parses and a duplicate cannot hide behind different casing.
 export function parseAllowlistRule(input: string): AllowlistRule | null {

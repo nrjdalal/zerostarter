@@ -1,7 +1,5 @@
-import { features } from "@packages/config/site"
 import {
   account,
-  allowlist,
   db,
   invitation,
   member,
@@ -21,15 +19,9 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 import { userAc } from "better-auth/plugins/admin/access"
-import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
-import {
-  ACCESS_ROLE,
-  CONSOLE_ROLES,
-  matchesAllowlist,
-  roleAtLeast,
-  type AllowlistRule,
-} from "@/access"
+import { ACCESS_ROLE, CONSOLE_ROLES, roleAtLeast } from "@/access"
+import { grantConsoleAccessOnSignIn } from "@/allowlist"
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
 
 // The app host's tldts breakdown, inlined at build by @packages/scripts/src/generate-env.ts (see tsdown.config.ts define), so no Public Suffix List ships at runtime. A runtime .localhost host (portless dev, injected after the build) overrides it so web and api share the cookie.
@@ -104,60 +96,7 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
-    session: {
-      create: {
-        // Signing up and using the dashboard is open to everyone; the allowlist is only about the console. On each sign-in a matching address is lifted to the console's bottom rung, so adding a domain covers colleagues who already have accounts rather than only future ones.
-        before: async (session) => {
-          if (!features.allowlist) return
-          // An impersonation session is an admin acting as someone, not that person signing in, and a grant made from it would outlive the impersonation.
-          if (session.impersonatedBy) return
-          // Best effort on purpose: this sits on the sign-in path, so a database hiccup here must not stop anyone signing in. A missed grant is repaired by the next sign-in; a thrown error would lock every account out of the app.
-          try {
-            // Read through our own schema rather than the adapter: role is our column, added by the admin plugin, and not on Better Auth's base user type.
-            const [signingIn] = await db
-              .select({
-                email: user.email,
-                grantedAt: user.allowlistGrantedAt,
-                id: user.id,
-                role: user.role,
-              })
-              .from(user)
-              .where(eq(user.id, session.userId))
-              .limit(1)
-            // Never lowers anyone: an admin or owner keeps their rung, and a hand-granted role is untouched by a rule edit.
-            if (!signingIn || roleAtLeast(signingIn.role, "member")) return
-            // Once per person, ever. Re-granting on every sign-in would make a demotion revert the next time they signed in, so the offboarding the console offers would silently undo itself for anyone a rule still matches.
-            if (signingIn.grantedAt) return
-            // Only the two rows that could possibly match, not the table: this runs on the sign-in path for every ordinary account, and the allowlist has no bound. Values are normalized lowercase when written, which is what makes an exact match correct here; matchesAllowlist still decides, so the parsing and matching semantics stay in the tested seam.
-            const address = signingIn.email.trim().toLowerCase()
-            const at = address.lastIndexOf("@")
-            if (at < 1) return
-            const candidates = await db
-              .select({ kind: allowlist.kind, value: allowlist.value })
-              .from(allowlist)
-              .where(inArray(allowlist.value, [address, address.slice(at)]))
-            // kind is a generated column, so it holds one of two values; this narrows the text type to the union rather than casting.
-            const rules = candidates.filter(
-              (rule): rule is AllowlistRule => rule.kind === "domain" || rule.kind === "email",
-            )
-            if (!matchesAllowlist(signingIn.email, rules)) return
-            // Conditional on both the rung and the marker read above still holding, so two sign-ins racing each other grant once between them, not twice.
-            await db
-              .update(user)
-              .set({ allowlistGrantedAt: new Date(), role: "member" })
-              .where(
-                and(
-                  eq(user.id, signingIn.id),
-                  isNull(user.allowlistGrantedAt),
-                  or(isNull(user.role), eq(user.role, "user")),
-                ),
-              )
-          } catch (error) {
-            console.error("allowlist grant failed during sign-in:", error)
-          }
-        },
-      },
-    },
+    session: { create: { before: grantConsoleAccessOnSignIn } },
   },
   plugins: [
     openAPIPlugin(),

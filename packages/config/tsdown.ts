@@ -12,7 +12,7 @@ export function definePackageConfig(options: {
   getSafeEnv: (env: Record<string, unknown>, name?: string) => unknown
   define?: Record<string, string>
   deps?: BundleDeps
-  // Extra entries for a package that ships a subpath export; the default single entry covers the rest.
+  // The entry list for a package that ships more than one, replacing rather than adding to the default, so a caller listing extras restates src/index.ts too.
   entry?: string[]
 }) {
   const { name, env, getSafeEnv, define, deps, entry } = options

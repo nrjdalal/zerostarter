@@ -1,4 +1,4 @@
-import { roleAtLeast, type ConsoleRole } from "@packages/auth/access"
+import { reachesConsole, type ConsoleRole } from "@packages/auth/access"
 import { notFound } from "next/navigation"
 import { cache } from "react"
 
@@ -10,14 +10,14 @@ export const getConsoleSession = cache(async () => {
   // Bypass the session cookie cache so a grant/revoke takes effect on the next request rather than after the cache window.
   const session = await auth.api.getSession({ disableCookieCache: true })
   // banned as well as role: a ban deletes the person's sessions, but one written straight to the database would otherwise still open the console onto an API that 403s every request.
-  if (!session || !roleAtLeast(session.user.role, "member") || session.user.banned) return null
+  if (!session || !reachesConsole(session.user)) return null
   return session
 })
 
 // Server-side guard for /console: notFound() (never a redirect) for anyone below the required rung. Layouts and pages render in parallel, so a page needing more than the layout's member must say so itself.
 export async function assertConsoleAccess(minimum: ConsoleRole = "member") {
   const session = await getConsoleSession()
-  if (!session || !roleAtLeast(session.user.role, minimum)) {
+  if (!session || !reachesConsole(session.user, minimum)) {
     notFound()
   }
   return session

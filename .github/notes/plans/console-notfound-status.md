@@ -1,4 +1,4 @@
-# Console not-found returns HTTP 200 (soft 404)
+# Console not-found status and the anonymous white flash
 
 - Status: backlog
 - Links: PR #691 review; PR #758 review
@@ -17,4 +17,4 @@ Two exits, both rejected for now. Rendering the not-found from the layout instea
 
 Scope check: it is one white paint, for someone with no console access typing a gated address directly, on a noindex area. Every console path still answers identically at every rung, so nothing is enumerable either way.
 
-Low severity: the correct not-found UI shows (no content leaks), and `/console` is `robots: noindex` and admin-gated, so there is no SEO cost. The only practical downside is that a programmatic client cannot distinguish missing-vs-ok by status on console routes. A real fix is framework-rooted (decide existence before the force-dynamic stream, e.g. in middleware or a segment that can set the status pre-stream); not worth that surgery for a noindex admin area.
+Low severity: the correct not-found UI shows (no content leaks), and `/console` is `robots: noindex` and gated at member and above, so there is no SEO cost. The only practical downside is that a programmatic client cannot distinguish missing-vs-ok by status on console routes. A real fix is framework-rooted (decide existence before the force-dynamic stream, e.g. in middleware or a segment that can set the status pre-stream); not worth that surgery for a noindex, gated area.

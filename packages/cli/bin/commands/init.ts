@@ -25,7 +25,7 @@ import {
   withSpinner,
 } from "./_prompt"
 
-// The optional surfaces init can toggle, their CLI flags (--<flag> / --no-<flag>), and prompt labels. Alphabetical, to match the config's features export. Kept in lockstep with @packages/config/site's `features` by test/features-consistency.test.ts.
+// The optional surfaces init can toggle, their CLI flags (--<flag> / --no-<flag>), and prompt labels. Alphabetical, to match the config's features export. Kept in lockstep with @packages/config/site's `features` by tests/packages/cli/features-consistency.test.ts.
 export const FEATURE_DEFS = [
   { value: "allowlist", flag: "allowlist", label: "Allowlist (grant console access by domain)" },
   { value: "apiDocs", flag: "api-docs", label: "API docs" },

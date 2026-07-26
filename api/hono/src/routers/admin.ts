@@ -2,6 +2,7 @@ import { sValidator } from "@hono/standard-validator"
 import type { Session } from "@packages/auth"
 import type { BanRefusal, RoleChangeRefusal } from "@packages/auth/access"
 import {
+  ALLOWLIST_KINDS,
   CONSOLE_ROLES,
   parseAllowlistRule,
   refuseBan,
@@ -59,7 +60,7 @@ const allowlistSchema = z.object({
   createdBy: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdByName: z.string().nullable().meta({ example: "Ada Lovelace" }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
-  kind: z.enum(["domain", "email"]).meta({ example: "domain" }),
+  kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
 
@@ -72,7 +73,7 @@ const allowlistQuerySchema = z.object({
     .string()
     .optional()
     .transform((value) => (value ? [...new Set(value.split(","))] : []))
-    .pipe(z.array(z.enum(["domain", "email"])).max(2)),
+    .pipe(z.array(z.enum(ALLOWLIST_KINDS)).max(ALLOWLIST_KINDS.length)),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(10),
   q: z.string().trim().max(254).optional(),
@@ -81,7 +82,7 @@ const allowlistQuerySchema = z.object({
 
 const allowlistSortColumns = {
   createdAt: allowlist.createdAt,
-  // The author's name comes from the join, so sorting by it sorts what the column actually shows; a seeded rule has none and sorts last under both directions in Postgres' default NULL ordering.
+  // The author's name comes from the join, so sorting by it sorts what the column actually shows. A seeded rule has none, which is why the order below is explicit about NULLs.
   createdByName: user.name,
   kind: allowlist.kind,
   value: allowlist.value,
@@ -137,7 +138,7 @@ const userSchema = z.object({
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
   name: z.string().meta({ example: "John Doe" }),
-  role: z.string().meta({ example: "user" }),
+  role: z.enum(CONSOLE_ROLES).meta({ example: "user" }),
 })
 
 const sortColumns = {
@@ -288,8 +289,7 @@ const { data, error } = await unwrap(
       const targetId = c.req.param("id")
       const { role: nextRole } = c.req.valid("json")
 
-      // Counting owners and then updating in a second statement is not enough: two admins each demoting one of the last two owners both read two, both pass, and the install ends with none. Locking the owner rows first makes the second request wait, then re-read what the first committed and refuse. Every role change queues behind that lock, not only the ones touching an owner, which is the right trade at the scale a console operates at.
-      // The count includes banned owners, which cannot strand an install: banning an owner already takes another owner, and that one stays active.
+      // Locking the owner rows first, because a count in one statement and an update in another lets two admins each demote one of the last two owners: both read two and both commit. The second waits here, then re-reads what the first committed. Every role change queues behind it, which is the right trade at console scale.
       const updated = await db.transaction(async (tx) => {
         const owners = await tx
           .select({ id: user.id })
@@ -388,7 +388,7 @@ const { data, error } = await unwrap(
 
       // Unbanning clears the reason and any expiry too, so a later ban cannot inherit the last one's terms.
       // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision. Cheaper than the role route's lock, and enough here, because the invariant is about this one row.
-      // Both writes or neither: a ban that flagged the row and then failed to clear the sessions would answer 500 while leaving the person signed in everywhere, which is the one outcome this route promises cannot happen.
+      // Both writes or neither: a flagged row whose session sweep failed would leave the person signed in everywhere behind a 500.
       const updated = await db.transaction(async (tx) => {
         // Only an owner can ban an owner, so sequentially one always remains. Concurrently two of them can ban each other, both pass, and the install has none. Locking the owner rows makes the second wait and count what the first committed, the same serialization the role route needs for the same reason.
         if (banned && target.role === "owner") {
@@ -503,8 +503,9 @@ const { data, error } = await unwrap(
           .from(allowlist)
           .leftJoin(user, eq(user.id, allowlist.createdBy))
           .where(where)
+          // NULLS LAST spelled out, because Postgres defaults to NULLS FIRST on DESC, which would put the rules nobody is named for at the top of a Z-to-A sort.
           .orderBy(
-            dir === "asc" ? asc(allowlistSortColumns[sort]) : desc(allowlistSortColumns[sort]),
+            sql`${allowlistSortColumns[sort]} ${sql.raw(dir === "asc" ? "asc" : "desc")} nulls last`,
             asc(allowlist.id),
           )
           .limit(perPage)

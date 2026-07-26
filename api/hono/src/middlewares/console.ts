@@ -1,7 +1,7 @@
 import type { Session } from "@packages/auth"
 import { auth } from "@packages/auth"
 import type { ConsoleRole } from "@packages/auth/access"
-import { ACCESS_ROLE, roleAtLeast } from "@packages/auth/access"
+import { ACCESS_ROLE, reachesConsole } from "@packages/auth/access"
 import { createMiddleware } from "hono/factory"
 
 import { ApiError } from "@/lib/error"
@@ -17,7 +17,7 @@ export function requireConsoleRole(minimum: ConsoleRole) {
     if (!session) {
       throw new ApiError(401, "UNAUTHORIZED", "Unauthorized")
     }
-    if (!roleAtLeast(session.user.role, minimum) || session.user.banned) {
+    if (!reachesConsole(session.user, minimum)) {
       throw new ApiError(403, "FORBIDDEN", "Console access required")
     }
     // Hand the uncached session to downstream handlers.

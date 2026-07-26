@@ -111,3 +111,12 @@ export function growingColumnIds(
   })
   return growing
 }
+
+// Maps a table's column id onto the endpoint's sort whitelist. hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in fields` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
+export function resolveSort<TFields extends Record<string, string>>(
+  fields: TFields,
+  id: string,
+  fallback: TFields[keyof TFields],
+): TFields[keyof TFields] {
+  return Object.hasOwn(fields, id) ? fields[id as keyof TFields] : fallback
+}

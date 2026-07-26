@@ -52,7 +52,7 @@ export const agentsRouter = new Hono()
       }
     }
 
-    // The local-only agent is the install's own internal account, so the sign-in that creates it starts it at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Only that first sign-in sets it. Afterwards the role stands as it is, because demoting the agent by hand is how you test what a lower rung sees, and any re-grant would undo that the moment you signed back in. Use `bun run console:roles grant agent@local.host owner` to put it back.
+    // Owner only on the sign-in that creates the account, so demoting the agent by hand to test a lower rung is not undone the next time you sign in. `console:roles grant agent@local.host owner` puts it back.
     if (created) {
       await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
     }

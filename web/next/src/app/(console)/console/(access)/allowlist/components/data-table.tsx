@@ -1,7 +1,12 @@
 "use client"
 "use no memo"
 
-import { parseAllowlistRule } from "@packages/auth/access"
+import {
+  ALLOWLIST_KINDS,
+  parseAllowlistRule,
+  type AllowlistKind,
+  type AllowlistRule,
+} from "@packages/auth/access"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
@@ -12,29 +17,18 @@ import { z } from "zod"
 import {
   allowlistColumnConfig,
   allowlistColumns,
-  describeRule,
   type AllowlistRuleRow,
 } from "@/app/(console)/console/(access)/allowlist/components/data-columns"
+import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
   DataTableToolbar,
-  resolveSort,
   useDataTable,
   type DataTablePage,
   type DataTablePageInput,
 } from "@/components/data-table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,6 +45,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
+import { resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -65,11 +60,11 @@ const SORT_FIELDS = {
   kind: "kind",
   value: "value",
 } as const satisfies Record<string, AllowlistSort>
-const KIND_OPTIONS = [
-  { label: "Domain", value: "domain" },
-  { label: "Email", value: "email" },
-]
-const KIND_VALUES = new Set(KIND_OPTIONS.map((option) => option.value))
+// Derived from the shared list rather than restated, the same argument the users table makes for its role facet.
+const KIND_OPTIONS = ALLOWLIST_KINDS.map((value) => ({
+  label: `${value[0].toUpperCase()}${value.slice(1)}`,
+  value,
+}))
 // Mirrors the endpoint's q cap so a hand-written URL cannot 400 the table.
 const Q_MAX = 254
 // The endpoint's own cap on a rule value. The same number as Q_MAX today and deliberately its own constant: one bounds a search term, the other an email address.
@@ -91,7 +86,12 @@ async function fetchRules({
   search,
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<AllowlistRuleRow>> {
-  const kinds = filters.kind ? filters.kind.filter((kind) => KIND_VALUES.has(kind)) : []
+  // Drop values the API's enum would reject, so a hand-written ?kind=bogus degrades to an unfiltered list instead of 400ing the table into its error state.
+  const kinds = filters.kind
+    ? filters.kind.filter((kind): kind is AllowlistKind =>
+        ALLOWLIST_KINDS.some((allowed) => allowed === kind),
+      )
+    : []
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
   const { data, error } = await unwrap(
@@ -108,6 +108,13 @@ async function fetchRules({
   )
   if (error) throw new Error(error.message)
   return { rows: data.rules, total: data.total }
+}
+
+// Says who a rule lets in, in the same words the add dialog previews.
+function describeRule(rule: AllowlistRule) {
+  return rule.kind === "domain"
+    ? `Anyone at ${rule.value.slice(1)} gets console access`
+    : `${rule.value} gets console access`
 }
 
 // The rules granting console access. The whole Access group is admin and above, on the page, in the nav and on every route behind it, so canWrite is true for anyone who can see this table; the affordances still ask, because a control that exists only to refuse invites the attempt.
@@ -195,37 +202,20 @@ export function AllowlistDataTable() {
           </Empty>
         }
       />
-      <AlertDialog
+      <ConfirmDialog
+        action="Remove"
+        variant="destructive"
         open={pendingDelete !== null}
+        pending={remove.isPending}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {pendingDelete && pendingDelete.rules.length === 1
-                ? `Remove ${pendingDelete.rules[0].value}?`
-                : `Remove ${pendingDelete ? pendingDelete.rules.length : 0} rules?`}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Anyone already promoted keeps their role; removing a rule only stops future grants.
-              Demote them from the Users table if that is what you want.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={remove.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={(event) => {
-                event.preventDefault()
-                if (pendingDelete) remove.mutate(pendingDelete)
-              }}
-            >
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={() => pendingDelete && remove.mutate(pendingDelete)}
+        title={
+          pendingDelete && pendingDelete.rules.length === 1
+            ? `Remove ${pendingDelete.rules[0].value}?`
+            : `Remove ${pendingDelete ? pendingDelete.rules.length : 0} rules?`
+        }
+        description="Anyone already promoted keeps their role; removing a rule only stops future grants. Demote them from the Users table if that is what you want."
+      />
     </div>
   )
 }

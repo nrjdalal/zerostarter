@@ -84,7 +84,7 @@ packages/<name>/
 }
 ```
 
-Add one `exports` entry per `entry` file. `tsdown.config.ts` uses the shared helper, which validates env in `build:prepare`, emits tsgo dts, and minifies:
+Add one `exports` entry per `entry` file. `tsdown.config.ts` uses the shared helper, which validates env in `build:prepare`, emits tsgo dts, and minifies: A package that ships more than one entry lists them all in `definePackageConfig({ entry: [...] })`, `src/index.ts` included, because the option replaces the default rather than extending it; `@packages/auth` is the worked example, with `src/access.ts` as a second entry so the web can import the pure rules without the auth runtime.
 
 ```ts
 import { definePackageConfig } from "@packages/config/tsdown"

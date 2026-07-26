@@ -29,7 +29,7 @@ if (existsSync(generatedPath)) {
   )
 }
 
-// @packages/config is a devDependency on purpose, not by oversight. tsdown externalizes dependencies and inlines everything else, so `features` is read at build time and baked into dist rather than resolved at runtime: the built artifact genuinely has no runtime dependency on it. Turbo's ^build covers devDependencies, so a change to site.ts still rebuilds this. Moving it to dependencies would make the dist import it instead, which has to resolve inside the pruned Docker image and the Vercel bundle, so do not move it without checking both.
+// @packages/config stays a devDependency on purpose: tsdown inlines it, so the built dist has no runtime dependency to resolve. Moving it to dependencies makes dist import it at runtime, which then has to resolve inside the pruned Docker image and the Vercel bundle.
 export default definePackageConfig({
   name: "@packages/auth",
   // access.ts is its own entry so the web can import the rank predicate without pulling the auth instance, which reaches the database driver and does not resolve in a Next build.

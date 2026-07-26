@@ -5,6 +5,7 @@ import {
   autoWidthUnits,
   growingColumnIds,
   measureLabelPx,
+  resolveSort,
   type ColumnConfig,
 } from "../../../../../web/next/src/lib/data-table-layout"
 
@@ -143,5 +144,26 @@ describe("growingColumnIds", () => {
         ]),
       ).size,
     ).toBe(0)
+  })
+})
+
+describe("resolveSort", () => {
+  const FIELDS = { createdAt: "createdAt", rule: "value", status: "banned" } as const
+
+  test("maps a column id onto the endpoint's field", () => {
+    expect(resolveSort(FIELDS, "rule", "createdAt")).toBe("value")
+    expect(resolveSort(FIELDS, "status", "createdAt")).toBe("banned")
+  })
+
+  test("falls back for an id the endpoint does not accept", () => {
+    expect(resolveSort(FIELDS, "nonsense", "createdAt")).toBe("createdAt")
+    expect(resolveSort(FIELDS, "", "createdAt")).toBe("createdAt")
+  })
+
+  test("does not resolve a crafted id through the prototype chain", () => {
+    // `"constructor" in FIELDS` is true, so `in` would send Object itself as the sort and park the table on the API's 400.
+    for (const crafted of ["constructor", "toString", "__proto__", "hasOwnProperty"]) {
+      expect(resolveSort(FIELDS, crafted, "createdAt")).toBe("createdAt")
+    }
   })
 })

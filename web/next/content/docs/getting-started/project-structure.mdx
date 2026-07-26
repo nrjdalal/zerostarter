@@ -48,8 +48,8 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 
 ## The packages
 
-- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
-- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `/console` is gated by the [role ladder](/docs/manage/authentication#the-console-role-ladder) in `src/access.ts`, a second subpath export (`@packages/auth/access`) so the web can read the rules without pulling the auth runtime. Exports session types.
+- **`db`**: Drizzle schema under `src/schema/` (`allowlist.ts`, `auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
 - **`scripts`**: build-only Bun tooling (e.g. the tldts breakdown baked into `auth`, and the client split signal `web/next`'s `next.config` inlines). It runs during a build and writes to the gitignored repo-root `.generated/`, never bundled or imported at runtime.

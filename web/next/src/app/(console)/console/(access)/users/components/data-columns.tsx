@@ -10,11 +10,11 @@ import { UserRoleSelect } from "@/app/(console)/console/(access)/users/component
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
+  selectColumn,
   DataTableColumnHeader,
   type ColumnConfig,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,26 +46,7 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
 export const usersColumns = (
   onSetStatus: (users: ConsoleUser[], banned: boolean) => void,
 ): ColumnDef<ConsoleUser>[] => [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        aria-label="Select all"
-        checked={table.getIsAllPageRowsSelected()}
-        indeterminate={table.getIsSomePageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label="Select row"
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
-    enableHiding: false,
-    enableSorting: false,
-  },
+  selectColumn((row) => row.email),
   {
     accessorKey: "name",
     header: ({ column }) => <DataTableColumnHeader column={column} />,

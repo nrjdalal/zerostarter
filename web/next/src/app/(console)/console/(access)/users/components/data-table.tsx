@@ -11,26 +11,16 @@ import {
   usersColumns,
   type ConsoleUser,
 } from "@/app/(console)/console/(access)/users/components/data-columns"
+import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
   DataTableToolbar,
-  resolveSort,
   useDataTable,
   type DataTablePage,
   type DataTablePageInput,
 } from "@/components/data-table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -40,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
+import { resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -237,76 +228,47 @@ export function UsersDataTable() {
           ) : undefined
         }
       />
-      <AlertDialog
+      <ConfirmDialog
+        action={pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}
+        variant={pendingStatus && pendingStatus.banned ? "destructive" : "default"}
         open={pendingStatus !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingStatus(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}{" "}
-              {pendingStatus && pendingStatus.users.length === 1
-                ? pendingStatus.users[0].email
-                : `${pendingStatus ? pendingStatus.users.length : 0} people`}
-              ?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {pendingStatus && pendingStatus.banned
-                ? "Signed out everywhere, and cannot sign back in until you unban them."
-                : "They can sign in again. Their role is unchanged, so this restores exactly the access they had."}
-              {pendingStatus && pendingStatus.users.length > 1
-                ? " Anyone you do not outrank is left as they are."
-                : null}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={setStatus.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant={pendingStatus && pendingStatus.banned ? "destructive" : "default"}
-              disabled={setStatus.isPending}
-              onClick={(event) => {
-                event.preventDefault()
-                if (pendingStatus) setStatus.mutate(pendingStatus)
-              }}
-            >
-              {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog
+        pending={setStatus.isPending}
+        onOpenChange={(open) => !open && setPendingStatus(null)}
+        onConfirm={() => pendingStatus && setStatus.mutate(pendingStatus)}
+        title={
+          <>
+            {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}{" "}
+            {pendingStatus && pendingStatus.users.length === 1
+              ? pendingStatus.users[0].email
+              : `${pendingStatus ? pendingStatus.users.length : 0} people`}
+            ?
+          </>
+        }
+        description={
+          <>
+            {pendingStatus && pendingStatus.banned
+              ? "Signed out everywhere, and cannot sign back in until you unban them."
+              : "They can sign in again. Their role is unchanged, so this restores exactly the access they had."}
+            {pendingStatus && pendingStatus.users.length > 1
+              ? " Anyone you do not outrank is left as they are."
+              : null}
+          </>
+        }
+      />
+      <ConfirmDialog
+        action="Set role"
         open={pendingRole !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingRole(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Set {selected.length} {selected.length === 1 ? "person" : "people"} to{" "}
-              <span className="capitalize">{pendingRole}</span>?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Anyone the console refuses to change, such as you or an account you do not outrank,
-              keeps their current role.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={setRole.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={setRole.isPending}
-              onClick={(event) => {
-                event.preventDefault()
-                if (pendingRole) setRole.mutate(pendingRole)
-              }}
-            >
-              Set role
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        pending={setRole.isPending}
+        onOpenChange={(open) => !open && setPendingRole(null)}
+        onConfirm={() => pendingRole && setRole.mutate(pendingRole)}
+        title={
+          <>
+            Set {selected.length} {selected.length === 1 ? "person" : "people"} to{" "}
+            <span className="capitalize">{pendingRole}</span>?
+          </>
+        }
+        description="Anyone the console refuses to change, such as you or an account you do not outrank, keeps their current role."
+      />
     </div>
   )
 }
