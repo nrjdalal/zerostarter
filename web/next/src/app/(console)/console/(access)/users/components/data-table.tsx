@@ -32,7 +32,7 @@ import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
-// Who has been around lately, rather than who signed up lately: the console is usually opened to find someone active. Costs a max(session.updated_at) group-by on every load, which is unindexed for now.
+// Who has been around lately, rather than who signed up lately: the console is usually opened to find someone active. The sessions group-by behind it is paid on every load either way, since the column shows on every row; what this costs is ordering by that aggregate instead of an indexed column on user. Left unindexed until there are row counts worth reading.
 const DEFAULT_SORT = { desc: true, id: "lastActive" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
 

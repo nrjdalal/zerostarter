@@ -6,7 +6,7 @@ import type { Transaction } from "@/types"
 // Who acted: a person, who has an account and is recognised by their email, or something that is not a person and says what it was. Two shapes rather than one email field, because three of the callers here are a matching rule, a bootstrap and a CLI, and calling those an email made the type say something untrue about them.
 export type ActivityActor = { email: string; id: string } | { label: string }
 
-// Every summary is written here, so the console, the CLI and the sign-in grant all read the same, and so the wording is one edit rather than six.
+// Every summary is written here, so the console routes and the sign-in grant all read the same and the wording is one edit. The exception is .github/scripts/console-roles.ts, which cannot import this package from the repo root and so restates the three rung sentences; tests/github/scripts/console-roles.test.ts fails if the two drift apart.
 // Each one is a sentence that stands on its own: the Action column is a filter, not the only thing telling you what happened, and a line pasted somewhere else has no column beside it at all.
 // A null from is an account that had no rung at all.
 // A rung set to what it already was is not refused anywhere, and it still stamps role_set_at, which is the record that stops a later allowlist rule lifting the account. So it is worth a line, just not one claiming a change: it says the rung was decided, which is what actually happened.
