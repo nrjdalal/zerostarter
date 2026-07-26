@@ -247,6 +247,22 @@ const { data, error } = await unwrap(
       tags: ["Admin"],
       description:
         "Change a user's console role. Refuses the changes that would lock an install out: your own role, a target at or above your rank, granting owner as a non-owner, and demoting the last owner.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.users[":id"].role.$patch({
+    json: { role: "member" },
+    param: { id: userId },
+  }),
+)`,
+          },
+        ],
+      } as object),
       responses: {
         200: {
           description: "OK",
@@ -315,6 +331,22 @@ const { data, error } = await unwrap(
       tags: ["Admin"],
       description:
         "Ban or unban a user. Refuses your own account and anyone at or above your rank. A ban ends the person's sessions as well as flagging the account; an unban clears the flag, the reason and any expiry.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.users[":id"].status.$patch({
+    json: { banned: true },
+    param: { id: userId },
+  }),
+)`,
+          },
+        ],
+      } as object),
       responses: {
         200: {
           description: "OK",
@@ -409,6 +441,19 @@ const { data, error } = await unwrap(
       tags: ["Admin"],
       description:
         "List the rules granting console access. Admin and above; an empty list grants nothing.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist.$get({ query: { page: "1", perPage: "10" } }),
+)`,
+          },
+        ],
+      } as object),
       responses: {
         200: {
           description: "OK",
@@ -482,6 +527,19 @@ const { data, error } = await unwrap(
       tags: ["Admin"],
       description:
         "Add a rule granting console access. A leading @ makes it a domain rule, anything else must parse as an address; both are normalized lowercase.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist.$post({ json: { value: "@example.com" } }),
+)`,
+          },
+        ],
+      } as object),
       responses: {
         200: {
           description: "OK",
@@ -552,6 +610,19 @@ const { data, error } = await unwrap(
       tags: ["Admin"],
       description:
         "Remove a rule. Anyone already granted keeps their role; removing a rule only stops future grants.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: ruleId } }),
+)`,
+          },
+        ],
+      } as object),
       responses: {
         200: {
           description: "OK",
