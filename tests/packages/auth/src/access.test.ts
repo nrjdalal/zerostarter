@@ -94,6 +94,11 @@ describe("refuseRoleChange", () => {
     expect(change({ actorRole: "admin", nextRole: "owner" })).toBe("owner-only")
   })
 
+  test("below admin the answer is outranked, not the narrower owner-only", () => {
+    expect(change({ actorRole: "member", nextRole: "owner" })).toBe("outranked")
+    expect(change({ actorRole: "user", nextRole: "owner" })).toBe("outranked")
+  })
+
   test("an admin cannot act on a peer or above", () => {
     expect(change({ actorRole: "admin", targetRole: "admin" })).toBe("outranked")
     expect(change({ actorRole: "admin", targetRole: "owner", nextRole: "user" })).toBe("outranked")

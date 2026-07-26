@@ -352,27 +352,31 @@ const { data, error } = await unwrap(
 
       // Unbanning clears the reason and any expiry too, so a later ban cannot inherit the last one's terms.
       // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision. Cheaper than the role route's lock, and enough here, because the invariant is about this one row.
-      const [updated] = await db
-        .update(user)
-        .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
-        .where(
-          and(
-            eq(user.id, targetId),
-            target.role === null ? isNull(user.role) : eq(user.role, target.role),
-          ),
-        )
-        .returning(RETURNED_USER)
-      if (!updated) {
-        throw new ApiError(
-          409,
-          "CONFLICT",
-          "This account changed while you were acting on it. Try again.",
-        )
-      }
-      // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route already owns the rank rule the plugin has no notion of.
-      if (banned) {
-        await db.delete(session).where(eq(session.userId, targetId))
-      }
+      // Both writes or neither: a ban that flagged the row and then failed to clear the sessions would answer 500 while leaving the person signed in everywhere, which is the one outcome this route promises cannot happen.
+      const updated = await db.transaction(async (tx) => {
+        const [row] = await tx
+          .update(user)
+          .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
+          .where(
+            and(
+              eq(user.id, targetId),
+              target.role === null ? isNull(user.role) : eq(user.role, target.role),
+            ),
+          )
+          .returning(RETURNED_USER)
+        if (!row) {
+          throw new ApiError(
+            409,
+            "CONFLICT",
+            "This account changed while you were acting on it. Try again.",
+          )
+        }
+        // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route already owns the rank rule the plugin has no notion of.
+        if (banned) {
+          await tx.delete(session).where(eq(session.userId, targetId))
+        }
+        return row
+      })
       return c.json({
         data: {
           user: {
@@ -454,7 +458,8 @@ const { data, error } = await unwrap(
         rules: rows.map((row) => ({
           ...row,
           createdAt: row.createdAt.toISOString(),
-          kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
+          // Read off the value rather than trusted from the column, so the list can never show a rule as covering something the sign-in hook reads differently. The check constraint makes them agree anyway; this makes it true by construction.
+          kind: row.value.startsWith("@") ? ("domain" as const) : ("email" as const),
         })),
         total,
       }

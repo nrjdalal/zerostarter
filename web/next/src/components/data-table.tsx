@@ -563,7 +563,8 @@ export function DataTable<TData>({
       {selectionActions && selectedCount > 0 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-10 z-20 flex justify-center">
           <div
-            role="toolbar"
+            // A group, not a toolbar: role="toolbar" promises roving tabindex and arrow-key navigation, and a handful of buttons that tab normally is the honest shape.
+            role="group"
             aria-label={`Actions for ${selectedCount} selected`}
             className="bg-popover animate-in fade-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-1 rounded-md border p-1 shadow-md"
           >

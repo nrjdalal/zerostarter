@@ -50,8 +50,9 @@ export function refuseRoleChange(input: {
   const next = input.nextRole as ConsoleRole
   // Demoting yourself out of the console is the likeliest accident, so it is refused before anything else.
   if (input.isSelf) return "self"
-  if (next === "owner" && actor !== "owner") return "owner-only"
+  // Rank before the owner-only rule, so someone with no business changing roles at all is told they are outranked rather than being handed the narrower reason as though the rung were the only thing in their way.
   if (!roleAtLeast(actor, "admin")) return "outranked"
+  if (next === "owner" && actor !== "owner") return "owner-only"
   // An owner may act on anyone, peers included. Everyone else must stay strictly below their own rank on both sides, so two admins cannot demote each other and an admin cannot mint another admin.
   if (actor !== "owner" && (RANK[target] >= RANK[actor] || RANK[next] >= RANK[actor])) {
     return "outranked"

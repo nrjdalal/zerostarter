@@ -101,7 +101,16 @@ Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and abo
 
 The plugin's own endpoints are switched off rather than gated. Better Auth mounts `/api/auth/admin/*` and authorizes it purely on access-control statements, with no notion of rank, of the actor's position relative to the target, or of the last owner. Left at the plugin's stock `adminAc`, one request to `set-role` promotes an admin to owner and every rule above becomes a comment, which is exactly what it did before this was closed. So every rung is declared with no statements and the console's own routes own all of it. The plugin still supplies what nothing else does: the `role`, `banned`, `banReason` and `banExpires` columns, and the session check that refuses a banned user.
 
-A fork that wants those endpoints back should widen one statement at a time, on the understanding that the ladder does not constrain them.
+**Impersonation is off as a result.** It was only ever reachable through those endpoints, so `/api/auth/admin/impersonate-user` now refuses every rung; `session.impersonatedBy` still exists on the row, and the allowlist grant skips an impersonated session so acting as someone cannot quietly change their rung.
+
+A fork that wants any of these back widens one statement at a time, on the understanding that the ladder does not constrain them. Impersonation for owners, for example:
+
+```ts
+// packages/auth/src/index.ts
+owner: consoleAc.newRole({ user: ["impersonate", "impersonate-admins"] }),
+```
+
+A fork already shipping UI on `authClient.admin.*` should expect 403s from it until it does that.
 
 ### Changing a role, banning an account
 
@@ -138,6 +147,8 @@ await authClient.organization.setActive({ organizationId: "..." })
 ## Sessions and cookies
 
 Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown: a subdomain of a shareable parent gets a cross-subdomain `Domain` cookie, while on a public hosting suffix (`*.vercel.app` and the like) where siblings cannot share, the client routes sign-in same-origin through the web's `/api` proxy so the cookie stays host-only and first-party to the web (see [Deploy on Vercel](/docs/deployment/vercel)), and a bare or apex host stays host-only. Local portless dev is the exception to the build-time rule: the api re-derives the scope at runtime from the `.localhost` subdomain portless injects, so the web and api hosts share one `Domain` cookie; a bare `localhost` (as under Docker) stays host-only across ports. Better Auth caches the session in a cookie for `maxAge: 300` (~5 minutes), so a role change made elsewhere can lag by that much unless the session is revoked.
+
+Three reads deliberately skip that cache: the console page gate, the API's console middleware, and the dashboard layout. The first two are correctness (a demotion or a ban has to land on the next request, not at the end of a window). The third is the dashboard's Console cross-link, which is drawn from the same rung the gate honours: on the cached read a demoted person kept a link that 404s, and someone the allowlist had just lifted had none. It costs a session lookup per dashboard render, on the API side of a round trip that happens anyway. A fork that would rather have the cache back can drop `disableCookieCache` in `(protected)/layout.tsx` and accept a link that is up to five minutes out of date in both directions.
 
 Reading the session is one call on either side:
 

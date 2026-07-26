@@ -122,7 +122,8 @@ export function UsersDataTable() {
     queryKey: "console-users",
   })
 
-  const selected = table.getSelectedRowModel().rows.map((row) => row.original)
+  // The same model the selection bar counts, so what it says and what the action touches cannot drift apart on a client-filtered table.
+  const selected = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
   // What this viewer could grant at all, asked against the lowest rung: an admin sees member and user, an owner sees everything. Which of the selected rows accept it is still the API's call.
   const grantable = grantableRoles({
     targetId: "",

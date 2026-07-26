@@ -44,10 +44,16 @@ describe("runBulk", () => {
     })
   })
 
-  test("keeps the first message, which is what a caller shows when nothing got through", async () => {
+  test("keeps one message to show when nothing got through", async () => {
+    // Which one is whichever failure lands first, and with work in flight that is not ordered; what matters is that a caller always has a real reason to show rather than none.
     const outcome = await runBulk([1, 2], async (item) =>
       item === 1 ? forbidden : { code: "FORBIDDEN", message: "second" },
     )
+    expect([forbidden.message, "second"]).toContain(outcome.firstMessage as string)
+  })
+
+  test("a single failure's message is the one kept, with nothing to race it", async () => {
+    const outcome = await runBulk([1], async () => forbidden)
     expect(outcome.firstMessage).toBe(forbidden.message)
   })
 

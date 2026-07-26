@@ -125,7 +125,8 @@ export function AllowlistDataTable() {
   })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["console-allowlist"] })
-  const selected = table.getSelectedRowModel().rows.map((row) => row.original)
+  // The same model the selection bar counts, so what it says and what the action touches cannot drift apart on a client-filtered table.
+  const selected = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
 
   // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({

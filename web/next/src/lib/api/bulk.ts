@@ -17,11 +17,13 @@ export async function runBulk<T>(
   call: (item: T) => Promise<{ code: string; message: string } | null>,
 ): Promise<BulkOutcome> {
   const outcome: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
-  const queue = [...items]
+  // An index cursor rather than shifting a queue and testing for undefined, which would stop early on a list that legitimately contains one.
+  let cursor = 0
   const worker = async () => {
     for (;;) {
-      const item = queue.shift()
-      if (item === undefined) return
+      const index = cursor++
+      if (index >= items.length) return
+      const item = items[index]
       let error: { code: string; message: string } | null
       try {
         error = await call(item)

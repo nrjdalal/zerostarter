@@ -61,6 +61,17 @@ if (action === "grant" && owners === 0 && granted !== "owner") {
   )
 }
 
+// Revoking is the way out of the console, and it can take the last owner with it. That state is only recoverable from this script, so it says so on the way out as well as on the way in.
+if (action === "revoke" && owners === 1) {
+  const [current] = (await sql`SELECT role FROM "user"
+    WHERE lower(email) = ${email}`) as [{ role: string | null }?]
+  if (current && current.role === "owner") {
+    console.warn(
+      "note: this is the last owner. Nobody left can grant owner from the console, only this script.",
+    )
+  }
+}
+
 const role = action === "grant" ? granted : "user"
 const rows =
   (await sql`UPDATE "user" SET role = ${role} WHERE lower(email) = ${email} RETURNING email, role`) as {
