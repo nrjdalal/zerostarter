@@ -1,82 +1,74 @@
 import { describe, expect, test } from "bun:test"
 
-import { describeBulk, runBulk } from "../../../../../../web/next/src/lib/api/bulk"
+import {
+  describeBulk,
+  foldBatch,
+  type BatchResult,
+} from "../../../../../../web/next/src/lib/api/bulk"
 
-const forbidden = { code: "FORBIDDEN", message: "You can only ban people below your own role." }
-const rateLimited = { code: "TOO_MANY_REQUESTS", message: "Too many requests" }
+const ok = (id: string): BatchResult => ({ id, ok: true })
+const no = (id: string, code: string, message: string): BatchResult => ({
+  code,
+  id,
+  message,
+  ok: false,
+})
+const answered = (results: BatchResult[]) => ({ data: { results }, error: null })
 
-describe("runBulk", () => {
-  test("counts what got through", async () => {
-    const outcome = await runBulk([1, 2, 3], async () => null)
-    expect(outcome).toEqual({ done: 3, failed: 0, firstMessage: null, refused: 0 })
-  })
-
-  test("calls once per item, and every item exactly once", async () => {
-    const seen: number[] = []
-    const items = Array.from({ length: 23 }, (_, index) => index)
-    await runBulk(items, async (item) => {
-      seen.push(item)
-      return null
-    })
-    expect(seen.sort((a, b) => a - b)).toEqual(items)
-  })
-
-  test("keeps a guard refusal apart from a failure, since one is the system working", async () => {
-    const outcome = await runBulk([1, 2, 3, 4], async (item) => {
-      if (item === 1) return forbidden
-      if (item === 2) return rateLimited
-      return null
-    })
-    expect(outcome.done).toBe(2)
-    expect(outcome.refused).toBe(1)
-    expect(outcome.failed).toBe(1)
-  })
-
-  test("reads a thrown error as a failure, not a refusal", async () => {
-    const outcome = await runBulk([1], async () => {
-      throw new Error("Network request failed")
-    })
-    expect(outcome).toEqual({
-      done: 0,
-      failed: 1,
-      firstMessage: "Network request failed",
+describe("foldBatch", () => {
+  test("counts what got through", () => {
+    expect(foldBatch(["a", "b", "c"], answered([ok("a"), ok("b"), ok("c")]))).toEqual({
+      done: 3,
+      failed: 0,
+      firstMessage: null,
       refused: 0,
     })
   })
 
-  test("keeps one message to show when nothing got through", async () => {
-    // Which one is whichever failure lands first, and with work in flight that is not ordered; what matters is that a caller always has a real reason to show rather than none.
-    const outcome = await runBulk([1, 2], async (item) =>
-      item === 1 ? forbidden : { code: "FORBIDDEN", message: "second" },
+  test("keeps a guard refusal apart from a failure, since one is the system working", () => {
+    const outcome = foldBatch(
+      ["a", "b", "c"],
+      answered([
+        ok("a"),
+        no("b", "FORBIDDEN", "You cannot ban an owner."),
+        no("c", "CONFLICT", "Raced."),
+      ]),
     )
-    expect([forbidden.message, "second"]).toContain(outcome.firstMessage as string)
+    expect(outcome.done).toBe(1)
+    expect(outcome.refused).toBe(1)
+    expect(outcome.failed).toBe(1)
   })
 
-  test("a single failure's message is the one kept, with nothing to race it", async () => {
-    const outcome = await runBulk([1], async () => forbidden)
-    expect(outcome.firstMessage).toBe(forbidden.message)
+  test("a row that vanished is a failure, not a refusal: nobody told this person no", () => {
+    const outcome = foldBatch(["a"], answered([no("a", "NOT_FOUND", "Rule not found")]))
+    expect(outcome.failed).toBe(1)
+    expect(outcome.refused).toBe(0)
   })
 
-  test("never runs more than the cap at once", async () => {
-    let live = 0
-    let peak = 0
-    await runBulk(
-      Array.from({ length: 40 }, (_, index) => index),
-      async () => {
-        live += 1
-        peak = Math.max(peak, live)
-        await Promise.resolve()
-        live -= 1
-        return null
-      },
+  test("keeps the first message there is to show", () => {
+    const outcome = foldBatch(
+      ["a", "b"],
+      answered([no("a", "FORBIDDEN", "first"), no("b", "CONFLICT", "second")]),
     )
-    // Both bounds: the upper one is the cap, and the lower one is what shows the work actually overlaps. Without it this passes at a concurrency of one.
-    expect(peak).toBeGreaterThan(1)
-    expect(peak).toBeLessThanOrEqual(5)
+    expect(outcome.firstMessage).toBe("first")
   })
 
-  test("an empty selection does nothing rather than hanging on idle workers", async () => {
-    expect(await runBulk([], async () => null)).toEqual({
+  test("a refused request means none of it happened, so every id failed", () => {
+    // One request now carries the whole selection: a 429 or a dead connection is not a partial result.
+    const outcome = foldBatch(["a", "b", "c"], {
+      data: null,
+      error: { code: "TOO_MANY_REQUESTS", message: "Slow down." },
+    })
+    expect(outcome).toEqual({ done: 0, failed: 3, firstMessage: "Slow down.", refused: 0 })
+  })
+
+  test("says something even when the failure carried no message", () => {
+    const outcome = foldBatch(["a"], { data: null, error: null })
+    expect(outcome.firstMessage).toBe("Request failed")
+  })
+
+  test("an empty selection folds to nothing rather than throwing", () => {
+    expect(foldBatch([], answered([]))).toEqual({
       done: 0,
       failed: 0,
       firstMessage: null,

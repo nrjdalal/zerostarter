@@ -88,6 +88,24 @@ const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 
 A client component reading REST data uses TanStack Query (see `components/common/access.tsx`).
 
+## A route that acts on a set
+
+When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape:
+
+```ts
+import { batchInput, batchResponseSchema, refused, uniqueIds, type BatchOutcome } from "@/lib/batch"
+
+const inputSchema = batchInput({ banned: z.boolean() })   // adds a capped, non-empty ids array
+```
+
+- **Ids go in the body**, and only for set routes. A single-resource route keeps `/:id`, which is what names the thing being changed.
+- **Answer 200 with a per-id outcome** (`batchResponseSchema`), never 207: the envelope is uniform, and a `2xx` reads the same to `unwrap` either way. An `{ error }` from a set route still means nothing happened.
+- **Refuse per row, throw for the request.** A guard saying no about one target is `refused(id, "FORBIDDEN", message)` pushed onto the results; a bad body or a failed gate is still `throw new ApiError(...)`.
+- **One transaction for the set**, and run the ids through `uniqueIds` so a repeat cannot be acted on twice.
+- **Guards that count** (the last owner, for example) must count once under the lock and stay in step as the loop writes, since a set can hold several rows the single-row guard would each judge in isolation.
+
+The web folds the outcomes back into counts with `foldBatch` in `web/next/src/lib/api/bulk.ts`; `describeBulk` and `toastBulk` already work off those counts. See [API Conventions](https://zerostarter.dev/docs/manage/api-conventions) for the contract itself.
+
 ## WebSocket routes
 
 For a live server-to-client stream instead of polling, upgrade a `GET` with `upgradeWebSocket` (`api/hono/src/index.ts`). The socket owner differs by host: on Bun (local, Docker) it is `hono/bun` with the shared `websocket` handler next to `fetch` in the `Bun.serve()` export; on Vercel it is the Node adapter (`@hono/node-server` + `ws`) exporting the http server, since Vercel Functions cannot run `Bun.serve()`. That host branching (adapter + server export) lives in `@/lib/server`, picked at boot from `process.env.VERCEL`, so a new WS route just imports `upgradeWebSocket` from there and registers. `/api/health/ws` is the reference: a snapshot on connect, then a heartbeat every 5s.

@@ -22,6 +22,42 @@ Failure:
 
 Handlers return the success side directly with `return c.json({ data })`. They never build the error side by hand. Instead they **throw**, and one handler shapes every failure.
 
+## Acting on a set
+
+Some routes act on rows the caller picked rather than on one resource: banning a selection, changing a role across it, removing several rules. Those take their ids in the **body**, and only those:
+
+```
+PATCH  /api/v1/admin/users/role     { ids: string[], role }
+PATCH  /api/v1/admin/users/status   { ids: string[], banned }
+DELETE /api/v1/admin/allowlist      { ids: string[] }
+```
+
+The single-resource routes keep their path parameter (`/users/:id/role`), because that is what names the thing being changed. A set is not a resource, so it has no id to put there.
+
+Every guard in this API runs per target, which means a batch can legitimately change three accounts and refuse two. That cannot answer with one `{ data }` or one `{ error }`, so **each id carries its own outcome inside `{ data }`**:
+
+```json
+{
+  "data": {
+    "results": [
+      { "id": "a", "ok": true },
+      { "id": "b", "ok": false, "code": "FORBIDDEN", "message": "You cannot ban an owner." },
+      { "id": "c", "ok": false, "code": "NOT_FOUND", "message": "Account not found." }
+    ]
+  }
+}
+```
+
+An `{ error }` from one of these still means what it means everywhere else: **nothing happened**. The request was refused as a whole (not signed in, not an admin, malformed body, more than `MAX_BATCH` ids), so there are no per-row outcomes to report.
+
+Three things follow from that shape:
+
+- **The status stays 200.** 207 Multi-Status describes exactly this, and it was considered and dropped: it is still `2xx`, so `unwrap` on the web treats it identically to 200, while every route's response set, the error map and the docs gain a status nothing else uses. The information lives in the body either way.
+- **A refusal code is narrower than an error code.** A row can be `FORBIDDEN`, `NOT_FOUND` or `CONFLICT`; anything else is a whole-request failure the envelope already covers.
+- **`ids` is capped** at `MAX_BATCH` (100), the way `perPage` is, so one request cannot hold a transaction open over the whole table. Ids are deduplicated and answered in the order asked.
+
+The whole set runs in **one transaction**, which is the point: another admin's batch cannot interleave with it, and one request pays one session read and one rate-limit unit instead of one per row.
+
 ## Errors are thrown, shaped in one place
 
 A route signals failure by throwing:

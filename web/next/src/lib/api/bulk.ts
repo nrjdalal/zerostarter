@@ -1,7 +1,10 @@
 import { toast } from "@/components/ui/toast"
 
-// How many of a selection's rows are in flight at once. Each call re-reads the session past the cookie cache, a round trip from the web to the API, and each one counts against the per-user rate limit, so a hundred selected rows would otherwise rate-limit themselves into failures the person reads as refusals.
-const CONCURRENCY = 5
+// A per-id outcome from a set route, the shape api/hono/src/lib/batch.ts returns.
+export type BatchResult = { id: string } & (
+  | { ok: true }
+  | { code: string; message: string; ok: false }
+)
 
 export type BulkOutcome = {
   done: number
@@ -10,38 +13,34 @@ export type BulkOutcome = {
   refused: number
 }
 
-// Applies a one-row-at-a-time endpoint across a selection, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
-export async function runBulk<T>(
-  items: T[],
-  call: (item: T) => Promise<{ code: string; message: string } | null>,
-): Promise<BulkOutcome> {
-  const outcome: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
-  // An index cursor rather than shifting a queue and testing for undefined, which would stop early on a list that legitimately contains one.
-  let cursor = 0
-  const worker = async () => {
-    for (;;) {
-      const index = cursor++
-      if (index >= items.length) return
-      const item = items[index]
-      let error: { code: string; message: string } | null
-      try {
-        error = await call(item)
-      } catch (thrown) {
-        error = {
-          code: "NETWORK",
-          message: thrown instanceof Error ? thrown.message : "Request failed",
-        }
-      }
-      if (!error) {
-        outcome.done += 1
-        continue
-      }
-      if (error.code === "FORBIDDEN") outcome.refused += 1
-      else outcome.failed += 1
-      if (!outcome.firstMessage) outcome.firstMessage = error.message
+// Folds what a set route answered into the counts a toast reads, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
+// The request-level error is the other half of the same job. One request now carries the whole selection, so a 429 or a dead connection means none of it happened, and every id is a failure rather than one line of a partial result.
+export function foldBatch(
+  ids: string[],
+  result: {
+    data: { results: BatchResult[] } | null
+    error: { code: string; message: string } | null
+  },
+): BulkOutcome {
+  if (!result.data) {
+    return {
+      done: 0,
+      failed: ids.length,
+      firstMessage: result.error ? result.error.message : "Request failed",
+      refused: 0,
     }
   }
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, items.length) }, worker))
+  const outcome: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
+  for (const row of result.data.results) {
+    if (row.ok) {
+      outcome.done += 1
+      continue
+    }
+    // Only a guard refusal is a refusal. A rule that vanished or a row that raced another admin is a failure, because neither is this person being told no.
+    if (row.code === "FORBIDDEN") outcome.refused += 1
+    else outcome.failed += 1
+    if (!outcome.firstMessage) outcome.firstMessage = row.message
+  }
   return outcome
 }
 

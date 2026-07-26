@@ -38,7 +38,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import { runBulk, toastBulk } from "@/lib/api/bulk"
+import { foldBatch, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
@@ -133,12 +133,12 @@ export function AllowlistDataTable() {
   // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({
     mutationFn: async ({ rules }: { fromSelection: boolean; rules: AllowlistRuleRow[] }) =>
-      runBulk(rules, async (rule) => {
-        const { error } = await unwrap(
-          apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: rule.id } }),
-        )
-        return error
-      }),
+      foldBatch(
+        rules.map((rule) => rule.id),
+        await unwrap(
+          apiClient.v1.admin.allowlist.$delete({ json: { ids: rules.map((rule) => rule.id) } }),
+        ),
+      ),
     onSuccess: (outcome, { fromSelection }) => {
       setPendingDelete(null)
       // Only what the selection bar started clears the selection: a row-menu removal has nothing to do with the rows someone has staged for a batch.
