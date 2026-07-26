@@ -1,3 +1,31 @@
+## v0.1.15
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.14...v0.1.15)
+
+### 🚀 Enhancements
+
+- **console:** The Access section, role ladder and allowlist ([#758](https://github.com/nrjdalal/zerostarter/pull/758))
+- **console:** Record what the console does, and show it at Activity ([#762](https://github.com/nrjdalal/zerostarter/pull/762))
+- **console:** Summaries that read as sentences, and Last active first ([#763](https://github.com/nrjdalal/zerostarter/pull/763))
+- **api:** Act on a set in one request, ids in the body only ([#767](https://github.com/nrjdalal/zerostarter/pull/767))
+
+### 🩹 Fixes
+
+- **dashboard:** Read the session fresh so a promotion shows the console ([#761](https://github.com/nrjdalal/zerostarter/pull/761))
+- **console:** Name the account when a toast is about one account ([#766](https://github.com/nrjdalal/zerostarter/pull/766))
+
+### 💅 Refactors
+
+- **web:** Raise toasts through the component's own manager ([#765](https://github.com/nrjdalal/zerostarter/pull/765))
+
+### 🏡 Chore
+
+- **ui:** Sync shadcn, and move toasts onto its Base UI component ([#764](https://github.com/nrjdalal/zerostarter/pull/764))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.14
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.13...v0.1.14)

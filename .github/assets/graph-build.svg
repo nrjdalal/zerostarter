@@ -12,13 +12,13 @@
 <g id="node1" class="node">
 <title>@api/hono</title>
 <ellipse fill="none" stroke="#3b82f6" cx="523.3" cy="-378" rx="96.91" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="523.3" y="-373.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@api/hono (1.45 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="523.3" y="-373.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@api/hono (1.46 MB)</text>
 </g>
 <!-- @packages/auth -->
 <g id="node2" class="node">
 <title>@packages/auth</title>
 <ellipse fill="none" stroke="#3b82f6" cx="254.3" cy="-306" rx="116.2" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="254.3" y="-301.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/auth (2.70 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="254.3" y="-301.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/auth (5.72 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/auth -->
 <g id="edge1" class="edge">
@@ -42,7 +42,7 @@
 <g id="node4" class="node">
 <title>@packages/db</title>
 <ellipse fill="none" stroke="#3b82f6" cx="573.3" cy="-234" rx="109.23" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="573.3" y="-229.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/db (5.78 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="573.3" y="-229.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/db (7.07 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/db -->
 <g id="edge3" class="edge">
@@ -138,7 +138,7 @@
 <g id="node8" class="node">
 <title>@web/next</title>
 <ellipse fill="none" stroke="#3b82f6" cx="398.3" cy="-450" rx="103.34" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (77.04 MB)</text>
+<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (80.77 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge15" class="edge">
