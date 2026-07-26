@@ -1,7 +1,7 @@
 "use client"
 "use no memo"
 
-import { ACTIVITY_ACTIONS, type ActivityAction } from "@packages/config/console"
+import { ACTIVITY_ACTIONS } from "@packages/config/console"
 
 import {
   activityColumnConfig,
@@ -21,6 +21,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { actionOptions, activityJson } from "@/lib/activity"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
+import { acceptedFacet } from "@/lib/data-table-layout"
 
 // Newest first, and the only order the log is read in.
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -34,11 +35,7 @@ async function fetchActivity({
   search,
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ActivityEvent>> {
-  const actions = filters.action
-    ? filters.action.filter((value): value is ActivityAction =>
-        ACTIVITY_ACTIONS.some((known) => known === value),
-      )
-    : []
+  const actions = acceptedFacet(filters.action, ACTIVITY_ACTIONS)
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const { data, error } = await unwrap(
     apiClient.v1.admin.activity.$get({
@@ -61,8 +58,8 @@ export function ActivityDataTable() {
     columnConfig: activityColumnConfig,
     columns: activityColumns,
     defaultSorting: DEFAULT_SORTING,
-    fetchPage: fetchActivity,
     enableRowSelection: true,
+    fetchPage: fetchActivity,
     filterIds: ["action"],
     getRowId: (row) => row.id,
     queryKey: "console-activity",

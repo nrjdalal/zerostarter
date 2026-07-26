@@ -1,12 +1,7 @@
 "use client"
 "use no memo"
 
-import {
-  ALLOWLIST_KINDS,
-  parseAllowlistRule,
-  type AllowlistKind,
-  type AllowlistRule,
-} from "@packages/auth/access"
+import { ALLOWLIST_KINDS, parseAllowlistRule, type AllowlistRule } from "@packages/auth/access"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
@@ -45,7 +40,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { facetOptions, resolveSort } from "@/lib/data-table-layout"
+import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -83,12 +78,7 @@ async function fetchRules({
   search,
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<AllowlistRuleRow>> {
-  // Drop values the API's enum would reject, so a hand-written ?kind=bogus degrades to an unfiltered list instead of 400ing the table into its error state.
-  const kinds = filters.kind
-    ? filters.kind.filter((kind): kind is AllowlistKind =>
-        ALLOWLIST_KINDS.some((allowed) => allowed === kind),
-      )
-    : []
+  const kinds = acceptedFacet(filters.kind, ALLOWLIST_KINDS)
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
   const { data, error } = await unwrap(
