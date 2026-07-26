@@ -2,10 +2,12 @@
 "use no memo"
 
 import { parseAllowlistRule } from "@packages/auth/access"
+import { useForm } from "@tanstack/react-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
 import * as React from "react"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import {
   allowlistColumnConfig,
@@ -44,9 +46,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { bulkSucceeded, describeBulk, runBulk } from "@/lib/api/bulk"
+import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -71,6 +73,15 @@ const KIND_VALUES = new Set(KIND_OPTIONS.map((option) => option.value))
 const Q_MAX = 254
 // The endpoint's own cap on a rule value. The same number as Q_MAX today and deliberately its own constant: one bounds a search term, the other an email address.
 const RULE_MAX = 254
+
+const formSchema = z.object({
+  value: z
+    .string()
+    .max(RULE_MAX)
+    .refine((input) => parseAllowlistRule(input) !== null, {
+      message: "Enter a domain like @example.com or a full email address.",
+    }),
+})
 
 async function fetchRules({
   filters,
@@ -137,14 +148,11 @@ export function AllowlistDataTable() {
         )
         return error
       }),
-    onSuccess: (outcome, { fromSelection, rules }) => {
+    onSuccess: (outcome, { fromSelection }) => {
       setPendingDelete(null)
       // Only what the selection bar started clears the selection: a row-menu removal has nothing to do with the rows someone has staged for a batch.
       if (fromSelection) table.resetRowSelection()
-      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
-      else if (outcome.done === rules.length && rules.length === 1) toast.success("Rule removed")
-      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, "removed"))
-      else toast.warning(describeBulk(outcome, "removed"))
+      toastBulk(outcome, "removed", "Rule removed")
       refresh()
     },
   })
@@ -226,8 +234,6 @@ export function AllowlistDataTable() {
 // One field, because a rule is one string. The preview says who it will admit before it is added.
 function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
-  const parsed = parseAllowlistRule(value)
 
   const create = useMutation({
     mutationFn: async (input: string) => {
@@ -240,10 +246,20 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
     onError: (error) => toast.error(error.message),
     onSuccess: (data) => {
       setOpen(false)
-      setValue("")
+      form.reset()
       toast.success(`${data.rule.value} added`)
       onAdded()
     },
+  })
+
+  // The schema is parseAllowlistRule itself, so the field accepts exactly what the API will: one rule, written once, checked on both sides of the request.
+  const form = useForm({
+    defaultValues: { value: "" },
+    onSubmit: async ({ value }) => {
+      const rule = parseAllowlistRule(value.value)
+      if (rule) await create.mutateAsync(rule.value)
+    },
+    validators: { onChange: formSchema, onSubmit: formSchema },
   })
 
   return (
@@ -251,7 +267,7 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (!next) setValue("")
+        if (!next) form.reset()
       }}
     >
       <DialogTrigger render={<Button />}>Add rule</DialogTrigger>
@@ -261,8 +277,7 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
           <form
             onSubmit={(event) => {
               event.preventDefault()
-              // The parsed value, not the raw input: the preview and the enabled state are both about parsed, so submitting anything else would send something the person was never shown.
-              if (parsed) create.mutate(parsed.value)
+              form.handleSubmit()
             }}
           />
         }
@@ -275,28 +290,42 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
           </DialogDescription>
         </DialogHeader>
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="allowlist-value">Domain or email address</FieldLabel>
-            <Input
-              id="allowlist-value"
-              autoComplete="off"
-              maxLength={RULE_MAX}
-              placeholder="@example.com"
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-            />
-            <FieldDescription>
-              {value.trim() === ""
-                ? "For example @example.com, or ada@example.com."
-                : parsed
-                  ? describeRule(parsed)
-                  : "Enter a domain like @example.com or a full email address."}
-            </FieldDescription>
-          </Field>
+          <form.Field name="value">
+            {(field) => {
+              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+              const parsed = parseAllowlistRule(field.state.value)
+              return (
+                <Field data-invalid={isInvalid}>
+                  <FieldLabel htmlFor={field.name}>Domain or email address</FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    autoComplete="off"
+                    maxLength={RULE_MAX}
+                    placeholder="@example.com"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    aria-invalid={isInvalid}
+                    disabled={create.isPending}
+                  />
+                  {isInvalid ? (
+                    <FieldError errors={field.state.meta.errors} />
+                  ) : (
+                    <FieldDescription>
+                      {parsed
+                        ? describeRule(parsed)
+                        : "For example @example.com, or ada@example.com."}
+                    </FieldDescription>
+                  )}
+                </Field>
+              )
+            }}
+          </form.Field>
         </FieldGroup>
         <DialogFooter>
           <DialogClose render={<Button variant="outline" type="button" />}>Cancel</DialogClose>
-          <Button type="submit" disabled={!parsed || create.isPending}>
+          <Button type="submit" disabled={create.isPending}>
             Add rule
           </Button>
         </DialogFooter>

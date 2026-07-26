@@ -49,7 +49,7 @@ The codes are the `ErrorCode` union in `api/hono/src/lib/error.ts`: the single s
 | `ERROR`                 | (varies) | `HTTPException` whose status isn't mapped to a code          |
 | `FORBIDDEN`             | 403      | Insufficient permissions (e.g. `/headers` outside local/dev) |
 | `INTERNAL_SERVER_ERROR` | 500      | Unhandled server error                                       |
-| `NOT_FOUND`             | 404      | Route does not exist                                         |
+| `NOT_FOUND`             | 404      | The route or the addressed resource does not exist           |
 | `TOO_MANY_REQUESTS`     | 429      | Rate limit exceeded                                          |
 | `UNAUTHORIZED`          | 401      | Missing or invalid session                                   |
 | `VALIDATION_ERROR`      | 400      | Zod schema validation failed                                 |

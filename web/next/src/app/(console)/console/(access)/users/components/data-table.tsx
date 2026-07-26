@@ -1,18 +1,17 @@
 "use client"
 "use no memo"
 
-import { CONSOLE_ROLES, type ConsoleRole } from "@packages/auth/access"
+import { CONSOLE_ROLES, grantableRoles, refuseBan, type ConsoleRole } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
 import * as React from "react"
-import { toast } from "sonner"
 
 import {
   usersColumnConfig,
   usersColumns,
   type ConsoleUser,
 } from "@/app/(console)/console/(access)/users/components/data-columns"
-import { grantableRoles, useConsoleRole } from "@/components/console/role"
+import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
@@ -38,7 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { bulkSucceeded, describeBulk, runBulk } from "@/lib/api/bulk"
+import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -125,11 +124,13 @@ export function UsersDataTable() {
   // The same model the selection bar counts, so what it says and what the action touches cannot drift apart on a client-filtered table.
   const selected = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
   // What this viewer could grant at all, asked against the lowest rung: an admin sees member and user, an owner sees everything. Which of the selected rows accept it is still the API's call.
-  const grantable = grantableRoles({
-    targetId: "",
-    targetRole: "user",
-    viewer: { id: viewerId, role: viewerRole },
-  })
+  const grantable = grantableRoles({ actorRole: viewerRole, isSelf: false, targetRole: "user" })
+  // Ban asks the same guard the API asks, per row, so an admin sees no Ban on an owner or on their own account rather than a button whose only outcome is a refusal.
+  const bannable = selected.filter(
+    (row) =>
+      refuseBan({ actorRole: viewerRole, isSelf: row.id === viewerId, targetRole: row.role }) ===
+      null,
+  )
 
   // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
@@ -143,9 +144,7 @@ export function UsersDataTable() {
     onSuccess: (outcome) => {
       setPendingRole(null)
       table.resetRowSelection()
-      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
-      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, "changed"))
-      else toast.warning(describeBulk(outcome, "changed"))
+      toastBulk(outcome, "changed")
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -174,9 +173,7 @@ export function UsersDataTable() {
       if (fromSelection) table.resetRowSelection()
       const verb = banned ? "banned" : "unbanned"
       // Nothing got through, so the reason is the whole story and reads better as the error it is.
-      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
-      else if (bulkSucceeded(outcome)) toast.success(describeBulk(outcome, verb))
-      else toast.warning(describeBulk(outcome, verb))
+      toastBulk(outcome, verb)
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -196,28 +193,28 @@ export function UsersDataTable() {
         selectionActions={
           canWrite ? (
             <>
-              {selected.some((row) => !row.banned) && (
+              {bannable.some((row) => !row.banned) && (
                 <Button
                   variant="destructive"
                   onClick={() =>
                     setPendingStatus({
                       banned: true,
                       fromSelection: true,
-                      users: selected.filter((row) => !row.banned),
+                      users: bannable.filter((row) => !row.banned),
                     })
                   }
                 >
                   Ban
                 </Button>
               )}
-              {selected.some((row) => row.banned) && (
+              {bannable.some((row) => row.banned) && (
                 <Button
                   variant="ghost"
                   onClick={() =>
                     setPendingStatus({
                       banned: false,
                       fromSelection: true,
-                      users: selected.filter((row) => row.banned),
+                      users: bannable.filter((row) => row.banned),
                     })
                   }
                 >

@@ -14,7 +14,7 @@ Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/doc
 | `DataTableCellText`                   | Text-cell overflow from the column config: truncate (one line, ellipsis, tooltip only when actually cut) or wrap (multi-line; the measured virtual row grows)                                                                                                               |
 | `DataTableColumnHeader`               | A sortable header: a plain title with a bare sort icon toggling asc and desc (hiding lives in the view options)                                                                                                                                                             |
 | `DataTableFacetedFilter`              | A multi-select value filter in a command palette, with per-value counts on client tables                                                                                                                                                                                    |
-| `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, and column visibility                                                                                                                                                                                   |
+| `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, column visibility, and an `actions` slot for table-level actions like adding a row                                                                                                                      |
 | `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                                                                          |
 | `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, and the manual-mode table instance                                                                                                                                                               |
 | `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly. Takes the filter ids, a default sorting, and optionally the set of sortable column ids, which drops a URL sort naming a column the table does not have |
@@ -47,7 +47,7 @@ type ColumnConfig = {
 
 ## Server-driven tables
 
-The console users table (`app/(console)/console/(platform)/users/components/`) is the reference: sorting, search, and filters resolve on the API, and 25-row batches stream in on scroll through [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries):
+The console users table (`app/(console)/console/(access)/users/components/`) is the reference: sorting, search, and filters resolve on the API, and 25-row batches stream in on scroll through [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries):
 
 ```tsx
 const { table, tableProps } = useDataTable({

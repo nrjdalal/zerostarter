@@ -95,7 +95,7 @@ https://your-web.vercel.app/api/auth/callback/google
 | `member` | yes     | nothing, the console is read-only  |
 | `user`   | no      | n/a                                |
 
-`member` is the rung that makes the ladder worth having: someone can answer a question about an account without also being able to ban it. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
+`member` opens the console and reads what is in it, which in the starter is the internal docs, and reaches nothing under Access. It is the rung the allowlist grants and the one a fork builds its own read-only surfaces on; Access itself is deliberately admin and above, so no rule can hand a whole domain sight of who your users are. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
 
 Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above to the console, `notFound()`ing everyone else so it is never advertised, and a page needing more says so itself (the Access pages assert `admin`). The API's console router requires `admin` throughout (see [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a demotion or a ban takes effect on the next request, and both also refuse a banned user, which covers a ban written straight to the database without the session sweep the console's own ban performs.
 
@@ -107,7 +107,9 @@ A fork that wants any of these back widens one statement at a time, on the under
 
 ```ts
 // packages/auth/src/index.ts
-owner: consoleAc.newRole({ user: ["impersonate", "impersonate-admins"] }),
+import { defaultAc } from "better-auth/plugins/admin/access"
+
+owner: defaultAc.newRole({ user: ["impersonate", "impersonate-admins"] }),
 ```
 
 A fork already shipping UI on `authClient.admin.*` should expect 403s from it until it does that.

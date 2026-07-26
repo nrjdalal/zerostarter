@@ -28,7 +28,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
 - **Authorization**: a console at `/console` on a four-rung role ladder (`owner > admin > member > user`), with an allowlist that grants access by domain or address
 - **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count; an optional surface that, when enabled, becomes a fresh fork's home
-- **Configurable Features**: toggle the docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
+- **Configurable Features**: toggle the allowlist, docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
@@ -118,7 +118,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run db:generate`             | Generate Drizzle migrations from the schema |
 | `bun run db:migrate`              | Apply pending migrations                    |
 | `bun run db:studio`               | Open Drizzle Studio                         |
-| `bun run console:roles`           | Grant, revoke, or list admin console access |
+| `bun run console:roles`           | Grant, revoke, or list console access       |
 | `bun run shadcn:update`           | Update shadcn/ui components                 |
 
 📖 **[All scripts →](https://zerostarter.dev/docs/getting-started/scripts)**

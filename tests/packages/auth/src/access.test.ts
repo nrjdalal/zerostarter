@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test"
 import {
   CONSOLE_ROLES,
   consoleRole,
+  grantableRoles,
   matchesAllowlist,
   parseAllowlistRule,
   refuseBan,
@@ -123,6 +124,52 @@ describe("refuseRoleChange", () => {
   test("an unrecognized next role is refused before anything else is considered", () => {
     expect(change({ nextRole: "superuser" })).toBe("unknown-role")
     expect(change({ nextRole: "constructor" })).toBe("unknown-role")
+  })
+})
+
+describe("grantableRoles", () => {
+  const offered = (over: Partial<Parameters<typeof grantableRoles>[0]> = {}) =>
+    grantableRoles({ actorRole: "admin", isSelf: false, targetRole: "user", ...over })
+
+  test("an owner may grant every rung", () => {
+    expect(offered({ actorRole: "owner" })).toEqual([...CONSOLE_ROLES])
+  })
+
+  test("an admin may grant only below its own rank", () => {
+    expect(offered()).toEqual(["member", "user"])
+  })
+
+  test("an admin is offered nothing for a peer or above", () => {
+    expect(offered({ targetRole: "admin" })).toEqual([])
+    expect(offered({ targetRole: "owner" })).toEqual([])
+  })
+
+  test("nobody is offered anything for their own row", () => {
+    expect(offered({ isSelf: true })).toEqual([])
+    expect(offered({ actorRole: "owner", isSelf: true })).toEqual([])
+  })
+
+  test("below admin nothing is offered at all", () => {
+    expect(offered({ actorRole: "member" })).toEqual([])
+    expect(offered({ actorRole: "user" })).toEqual([])
+  })
+
+  test("every rung it offers is one the guard would accept", () => {
+    for (const actorRole of CONSOLE_ROLES) {
+      for (const targetRole of CONSOLE_ROLES) {
+        for (const nextRole of offered({ actorRole, targetRole })) {
+          expect(
+            refuseRoleChange({
+              actorRole,
+              isSelf: false,
+              nextRole,
+              targetIsLastOwner: false,
+              targetRole,
+            }),
+          ).toBeNull()
+        }
+      }
+    }
   })
 })
 

@@ -1,11 +1,11 @@
 "use client"
 
-import { type ConsoleRole } from "@packages/auth/access"
+import { grantableRoles, type ConsoleRole } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import * as React from "react"
 import { toast } from "sonner"
 
-import { grantableRoles, useConsoleRole } from "@/components/console/role"
+import { useConsoleRole } from "@/components/console/role"
 import {
   Select,
   SelectContent,
@@ -53,9 +53,9 @@ export function UserRoleSelect({
   })
 
   const options = grantableRoles({
-    targetId: userId,
+    actorRole: viewerRole,
+    isSelf: viewerId === userId,
     targetRole: role,
-    viewer: { id: viewerId, role: viewerRole },
   })
   // Your own row, and anyone you do not outrank, can only ever produce a refusal, so it reads as what it is rather than as a control.
   if (!canWrite || options.length === 0) return <span className="capitalize">{role}</span>

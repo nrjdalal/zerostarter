@@ -12,7 +12,7 @@ PostgreSQL with Drizzle ORM. Schema lives in `packages/db/src/schema/`, migratio
 
 - A new table gets its own `packages/db/src/schema/<name>.ts`, then an export from `index.ts`: `export * from "@/schema/<name>"`. Miss that export and the table never reaches a migration.
 - For examples, read `auth.ts` (tables, relations, indexes) and `waitlist.ts` (a minimal non-auth table).
-- Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column.
+- Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column. Use `onDelete: "set null"` instead when the row outlives the reference and the column is only provenance, as `allowlist.createdBy` does: deleting the admin who added a rule must not delete the rule.
 
 ## 2. Generate and review
 

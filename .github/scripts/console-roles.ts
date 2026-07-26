@@ -21,12 +21,12 @@ const sql = new SQL(url)
 // Restated rather than imported from @packages/auth/access, which is the one place the ordering belongs: this runs from the repo root, and giving @packages/scripts a dependency on @packages/auth would be a build cycle, since @packages/auth's own build runs generate-env out of @packages/scripts. Everything below derives from this array, so the order is written once here; keep it in step with CONSOLE_ROLES if a rung is ever added.
 const GRANTABLE = ["owner", "admin", "member"]
 // The same list and the same order for the database, derived rather than spelled out again. Interpolated as SQL text rather than bound, which is safe only because GRANTABLE is this literal array and never user input.
-const RANK_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")
+const GRANTABLE_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")
 const RANK_CASE = GRANTABLE.map((role, index) => `WHEN '${role}' THEN ${index}`).join(" ")
 
 if (action === "list") {
   const rows = (await sql`SELECT email, name, role FROM "user"
-    WHERE role IN (${sql.unsafe(RANK_LIST)})
+    WHERE role IN (${sql.unsafe(GRANTABLE_LIST)})
     ORDER BY CASE role ${sql.unsafe(RANK_CASE)} ELSE ${GRANTABLE.length} END, email`) as {
     email: string
     name: string

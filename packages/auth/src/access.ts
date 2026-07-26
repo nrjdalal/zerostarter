@@ -33,6 +33,24 @@ export function refuseBan(input: {
   return null
 }
 
+// The rungs this actor could grant this target, from the same guard the API asks, so a menu can never offer what the server would refuse. targetIsLastOwner is unknowable to a caller without the database, so a demotion the database refuses can still be offered: that one is a real refusal rather than a control that could never work.
+export function grantableRoles(input: {
+  actorRole: string | null | undefined
+  isSelf: boolean
+  targetRole: string | null | undefined
+}): ConsoleRole[] {
+  return CONSOLE_ROLES.filter(
+    (nextRole) =>
+      refuseRoleChange({
+        actorRole: input.actorRole,
+        isSelf: input.isSelf,
+        nextRole,
+        targetIsLastOwner: false,
+        targetRole: input.targetRole,
+      }) === null,
+  )
+}
+
 // Why a role change was refused, so the API can say it rather than returning a bare failure.
 export type RoleChangeRefusal = "last-owner" | "outranked" | "owner-only" | "self" | "unknown-role"
 
@@ -61,7 +79,6 @@ export function refuseRoleChange(input: {
   return null
 }
 
-// ---------------------------------------------------------------------------
 // Allowlist: who gets console access. Anyone may sign up and use the dashboard; a rule is what lifts someone to the console's bottom rung.
 
 export type AllowlistRule = { kind: "domain" | "email"; value: string }

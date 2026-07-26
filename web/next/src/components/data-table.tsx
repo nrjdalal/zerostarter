@@ -400,6 +400,7 @@ export function DataTable<TData>({
 
   // Back to the top whenever sorting, search, or filters reshape the list; these state slices keep stable identities between changes, so they work as deps directly. The virtualizer instance is stable and deliberately not a dep.
   const { columnFilters, globalFilter, sorting } = table.getState()
+  const filtering = Boolean(globalFilter) || columnFilters.length > 0
   React.useEffect(() => {
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
@@ -535,7 +536,8 @@ export function DataTable<TData>({
                 </EmptyContent>
               )}
             </Empty>
-          ) : empty ? (
+          ) : empty && !filtering ? (
+            // The consumer's empty says what the table is for when it holds nothing. A search or filter that matches nothing is a different fact, and saying "no rules yet" over a filtered result states the opposite of the truth.
             empty
           ) : (
             <Empty>

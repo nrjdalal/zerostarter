@@ -1,6 +1,7 @@
 "use client"
 "use no memo"
 
+import { refuseBan } from "@packages/auth/access"
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
@@ -133,8 +134,15 @@ export const usersColumns = (
     id: "actions",
     // Defence in depth: this page is admin-gated, so canWrite is always true here today. Kept so the table stays correct if a lower rung is ever let in, since a control that exists only to refuse invites the attempt.
     cell: ({ row }) => {
-      const { canWrite } = useConsoleRole()
+      const { canWrite, role: viewerRole, viewerId } = useConsoleRole()
       if (!canWrite) return null
+      // The same guard the API asks: an owner's row, and your own, offer no ban rather than one that can only be refused.
+      const canBan =
+        refuseBan({
+          actorRole: viewerRole,
+          isSelf: row.original.id === viewerId,
+          targetRole: row.original.role,
+        }) === null
       return (
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
@@ -150,18 +158,19 @@ export const usersColumns = (
               <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
                 Copy email
               </DropdownMenuItem>
-              {row.original.banned ? (
-                <DropdownMenuItem onClick={() => onSetStatus([row.original], false)}>
-                  Unban
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onSetStatus([row.original], true)}
-                >
-                  Ban
-                </DropdownMenuItem>
-              )}
+              {canBan &&
+                (row.original.banned ? (
+                  <DropdownMenuItem onClick={() => onSetStatus([row.original], false)}>
+                    Unban
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onSetStatus([row.original], true)}
+                  >
+                    Ban
+                  </DropdownMenuItem>
+                ))}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

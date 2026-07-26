@@ -55,7 +55,7 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route, plus `...forbiddenErrorResponses` (403) for an admin route. 429 and 500 are added globally in `index.ts`, so never per route.
+- Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route, `...forbiddenErrorResponses` (403) for an admin route, `...notFoundErrorResponses` (404) for one addressing a row by id, and `...conflictErrorResponses` (409) for one that can lose a race to a unique constraint or to a concurrent edit. 429 and 500 are added globally in `index.ts`, so never per route.
 - Mirror `waitlist.ts`'s `x-codeSamples` block so Scalar shows the `hono/client` usage (the template above omits it).
 - Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. A public route gets its own router.
 - Console routes go in `routers/admin.ts`, mounted at `/admin` inside `v1.ts` behind the console gate (stacked after `authMiddleware`). Everything there serves the Access section, so the router mounts `consoleAdminMiddleware` and requires admin throughout. That middleware is one instance of `requireConsoleRole(minimum)`, the factory to call if a surface ever wants a lower rung. It re-reads the session with `disableCookieCache: true` and also refuses a banned user, so a demotion or ban lands on the next request; never gate on the cached session's role.

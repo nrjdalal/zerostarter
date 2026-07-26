@@ -1,3 +1,5 @@
+import { toast } from "sonner"
+
 // Applies a one-row-at-a-time endpoint across a selection.
 //
 // Capped rather than Promise.all over everything: each call re-reads the session past the cookie cache, which is a round trip from the web to the API, and each one counts against the per-user rate limit. A hundred selected rows would otherwise open a hundred concurrent requests and rate-limit themselves into failures the person then reads as refusals.
@@ -55,4 +57,14 @@ export function describeBulk(outcome: BulkOutcome, verb: string): string {
   if (outcome.refused) parts.push(`${outcome.refused} refused`)
   if (outcome.failed) parts.push(`${outcome.failed} failed`)
   return parts.join(", ")
+}
+
+// The toast every bulk caller was writing by hand: the reason on its own when nothing got through, a warning when part of it failed, a success otherwise.
+export function toastBulk(outcome: BulkOutcome, verb: string, singular?: string) {
+  if (!outcome.done && outcome.firstMessage) return toast.error(outcome.firstMessage)
+  if (singular && outcome.done === 1 && !outcome.failed && !outcome.refused) {
+    return toast.success(singular)
+  }
+  const message = describeBulk(outcome, verb)
+  return bulkSucceeded(outcome) ? toast.success(message) : toast.warning(message)
 }

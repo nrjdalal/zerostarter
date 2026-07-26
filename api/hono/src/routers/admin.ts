@@ -111,6 +111,24 @@ const RETURNED_USER = {
   role: user.role,
 }
 
+const alreadyListed = (value: string) => `${value} is already on the list.`
+
+const asUserResponse = (row: {
+  banned: boolean | null
+  createdAt: Date
+  email: string
+  emailVerified: boolean
+  id: string
+  image: string | null
+  name: string
+  role: string | null
+}) => ({
+  ...row,
+  banned: row.banned ? true : false,
+  createdAt: row.createdAt.toISOString(),
+  role: row.role ? row.role : "user",
+})
+
 const userSchema = z.object({
   banned: z.boolean().meta({ example: false }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
@@ -218,12 +236,7 @@ const { data, error } = await unwrap(
 
       const data = {
         total,
-        users: rows.map((row) => ({
-          ...row,
-          banned: row.banned ? true : false,
-          createdAt: row.createdAt.toISOString(),
-          role: row.role ? row.role : "user",
-        })),
+        users: rows.map(asUserResponse),
       }
       return c.json({ data })
     },
@@ -293,16 +306,7 @@ const { data, error } = await unwrap(
         }
         return row
       })
-      return c.json({
-        data: {
-          user: {
-            ...updated,
-            banned: updated.banned ? true : false,
-            createdAt: updated.createdAt.toISOString(),
-            role: updated.role ? updated.role : "user",
-          },
-        },
-      })
+      return c.json({ data: { user: asUserResponse(updated) } })
     },
   )
   .patch(
@@ -354,6 +358,22 @@ const { data, error } = await unwrap(
       // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision. Cheaper than the role route's lock, and enough here, because the invariant is about this one row.
       // Both writes or neither: a ban that flagged the row and then failed to clear the sessions would answer 500 while leaving the person signed in everywhere, which is the one outcome this route promises cannot happen.
       const updated = await db.transaction(async (tx) => {
+        // Only an owner can ban an owner, so sequentially one always remains. Concurrently two of them can ban each other, both pass, and the install has none. Locking the owner rows makes the second wait and count what the first committed, the same serialization the role route needs for the same reason.
+        if (banned && target.role === "owner") {
+          const owners = await tx
+            .select({ banned: user.banned, id: user.id })
+            .from(user)
+            .where(eq(user.role, "owner"))
+            .for("update")
+          const active = owners.filter((owner) => owner.id !== targetId && !owner.banned)
+          if (active.length === 0) {
+            throw new ApiError(
+              403,
+              "FORBIDDEN",
+              "This is the last owner who can still sign in. Promote someone else to owner first.",
+            )
+          }
+        }
         const [row] = await tx
           .update(user)
           .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
@@ -377,16 +397,7 @@ const { data, error } = await unwrap(
         }
         return row
       })
-      return c.json({
-        data: {
-          user: {
-            ...updated,
-            banned: updated.banned ? true : false,
-            createdAt: updated.createdAt.toISOString(),
-            role: updated.role ? updated.role : "user",
-          },
-        },
-      })
+      return c.json({ data: { user: asUserResponse(updated) } })
     },
   )
   // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
@@ -506,7 +517,7 @@ const { data, error } = await unwrap(
         .where(eq(allowlist.value, rule.value))
         .limit(1)
       if (existing) {
-        throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+        throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
       }
       // The check above races another admin adding the same rule, so the constraint is the authority and its violation is translated rather than surfacing as a 500.
       let created
@@ -517,12 +528,12 @@ const { data, error } = await unwrap(
           .returning()
       } catch (error) {
         if (isUniqueViolation(error)) {
-          throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+          throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
         }
         throw error
       }
       if (!created) {
-        throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+        throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
       }
       return c.json({
         data: {
