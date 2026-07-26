@@ -24,6 +24,8 @@ The table renders `createdAt` as a relative time (`5 min. ago`), and `action` th
 
 `summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. A role change reads `ada@example.com, member to admin`; the change is in the sentence.
 
+The trade that buys is worth knowing: only the **actor** has an id, so only the actor follows a rename. The person a line was about is frozen in the text as they were addressed at the time, and if they later change their address, an old line names the old one. That is the right way round for a trail, which is meant to say what was true when it was written, but it means `summary` is not a way to look a target up. If you need that, the place to add it is a `target_id` beside the text, the same pairing `actor` and `actorId` already use.
+
 ## Who the actor is
 
 `actor` and `actorId` are a pair, and both are load-bearing.
