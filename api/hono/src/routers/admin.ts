@@ -8,7 +8,7 @@ import {
   refuseRoleChange,
 } from "@packages/auth/access"
 import { allowlist, db, session, user } from "@packages/db"
-import { and, asc, desc, eq, gt, ilike, isNull, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
@@ -259,37 +259,35 @@ const { data, error } = await unwrap(
       const targetId = c.req.param("id")
       const { role: nextRole } = c.req.valid("json")
 
-      const [target] = await db.select().from(user).where(eq(user.id, targetId)).limit(1)
-      if (!target) {
-        throw new ApiError(404, "NOT_FOUND", "User not found")
-      }
-      // The one part of the decision that needs the database, so the guard itself stays pure. Rechecked inside the UPDATE below, since two admins demoting the two remaining owners at once would both pass this read.
-      const targetIsLastOwner =
-        target.role === "owner" && (await db.$count(user, eq(user.role, "owner"))) <= 1
-      const refusal = refuseRoleChange({
-        actorRole: actor.role,
-        isSelf: actor.id === target.id,
-        nextRole,
-        targetIsLastOwner,
-        targetRole: target.role,
+      // Counting owners and then updating in a second statement is not enough: two admins each demoting one of the last two owners both read two, both pass, and the install ends with none. Locking the owner rows first makes the second request wait, then re-read what the first committed and refuse.
+      const updated = await db.transaction(async (tx) => {
+        const owners = await tx
+          .select({ id: user.id })
+          .from(user)
+          .where(eq(user.role, "owner"))
+          .for("update")
+        const [target] = await tx.select().from(user).where(eq(user.id, targetId)).limit(1)
+        if (!target) {
+          throw new ApiError(404, "NOT_FOUND", "User not found")
+        }
+        const refusal = refuseRoleChange({
+          actorRole: actor.role,
+          isSelf: actor.id === target.id,
+          nextRole,
+          // The one part of the decision that needs the database, so the guard itself stays pure.
+          targetIsLastOwner: target.role === "owner" && owners.length <= 1,
+          targetRole: target.role,
+        })
+        if (refusal) {
+          throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal])
+        }
+        const [row] = await tx
+          .update(user)
+          .set({ role: nextRole })
+          .where(eq(user.id, targetId))
+          .returning()
+        return row
       })
-      if (refusal) {
-        throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal])
-      }
-
-      const [updated] = await db
-        .update(user)
-        .set({ role: nextRole })
-        .where(
-          // Demoting an owner only lands while another owner remains, evaluated by the database rather than by the read above, so concurrent demotions cannot leave an install with none.
-          target.role === "owner" && nextRole !== "owner"
-            ? and(eq(user.id, targetId), gt(db.$count(user, eq(user.role, "owner")), 1))
-            : eq(user.id, targetId),
-        )
-        .returning()
-      if (!updated) {
-        throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES["last-owner"])
-      }
       return c.json({
         data: {
           user: {

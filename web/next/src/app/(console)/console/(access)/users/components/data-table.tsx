@@ -102,10 +102,12 @@ export function UsersDataTable() {
   // Rows and intent travel together, so the row menu and the selection bar open the same confirm and run the same mutation.
   const [pendingStatus, setPendingStatus] = React.useState<{
     banned: boolean
+    fromSelection: boolean
     users: ConsoleUser[]
   } | null>(null)
   const columns = React.useMemo(
-    () => usersColumns((users, banned) => setPendingStatus({ banned, users })),
+    () =>
+      usersColumns((users, banned) => setPendingStatus({ banned, fromSelection: false, users })),
     [],
   )
   const { table, tableProps } = useDataTable({
@@ -149,7 +151,14 @@ export function UsersDataTable() {
   })
 
   const setStatus = useMutation({
-    mutationFn: async ({ banned, users }: { banned: boolean; users: ConsoleUser[] }) => {
+    mutationFn: async ({
+      banned,
+      users,
+    }: {
+      banned: boolean
+      fromSelection: boolean
+      users: ConsoleUser[]
+    }) => {
       const results = await Promise.all(
         users.map(async (row) => {
           const { error } = await unwrap(
@@ -169,9 +178,10 @@ export function UsersDataTable() {
       setPendingStatus(null)
       toast.error(error.message)
     },
-    onSuccess: ({ done, refused }, { banned }) => {
+    onSuccess: ({ done, refused }, { banned, fromSelection }) => {
       setPendingStatus(null)
-      table.resetRowSelection()
+      // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
+      if (fromSelection) table.resetRowSelection()
       const verb = banned ? "banned" : "unbanned"
       toast.success(refused ? `${done} ${verb}, ${refused} refused` : `${done} ${verb}`)
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
@@ -197,7 +207,11 @@ export function UsersDataTable() {
                 <Button
                   variant="ghost"
                   onClick={() =>
-                    setPendingStatus({ banned: true, users: selected.filter((row) => !row.banned) })
+                    setPendingStatus({
+                      banned: true,
+                      fromSelection: true,
+                      users: selected.filter((row) => !row.banned),
+                    })
                   }
                 >
                   Ban
@@ -207,7 +221,11 @@ export function UsersDataTable() {
                 <Button
                   variant="ghost"
                   onClick={() =>
-                    setPendingStatus({ banned: false, users: selected.filter((row) => row.banned) })
+                    setPendingStatus({
+                      banned: false,
+                      fromSelection: true,
+                      users: selected.filter((row) => row.banned),
+                    })
                   }
                 >
                   Unban

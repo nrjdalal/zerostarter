@@ -21,7 +21,7 @@ import {
   organization as organizationPlugin,
 } from "better-auth/plugins"
 import { adminAc, defaultAc as consoleAc, userAc } from "better-auth/plugins/admin/access"
-import { eq } from "drizzle-orm"
+import { and, eq, isNull, or } from "drizzle-orm"
 
 import { matchesAllowlist, roleAtLeast, type AllowlistRule } from "@/access"
 import { cookieConfig, localhostHost, type ParsedHost } from "@/lib/utils"
@@ -117,7 +117,11 @@ export const auth = betterAuth({
               .select({ kind: allowlist.kind, value: allowlist.value })
               .from(allowlist)
             if (!matchesAllowlist(signingIn.email, rules as AllowlistRule[])) return
-            await db.update(user).set({ role: "member" }).where(eq(user.id, signingIn.id))
+            // Conditional on the rung read above still holding: a promotion landing between that read and this write would otherwise be undone by a sign-in that happened to race it.
+            await db
+              .update(user)
+              .set({ role: "member" })
+              .where(and(eq(user.id, signingIn.id), or(isNull(user.role), eq(user.role, "user"))))
           } catch (error) {
             console.error("allowlist grant failed during sign-in:", error)
           }

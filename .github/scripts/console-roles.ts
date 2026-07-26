@@ -42,7 +42,7 @@ if ((action !== "grant" && action !== "revoke") || !email) {
   process.exit(1)
 }
 
-const granted = process.argv[4] ?? "admin"
+const granted = (process.argv[4] ?? "admin").trim().toLowerCase()
 if (action === "grant" && !CONSOLE_ROLES.includes(granted)) {
   console.error(`role must be one of ${CONSOLE_ROLES.join(", ")}`)
   process.exit(1)

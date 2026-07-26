@@ -1,5 +1,4 @@
 import { auth } from "@packages/auth"
-import { roleAtLeast } from "@packages/auth/access"
 import { site } from "@packages/config/site"
 import { db, user as userTable } from "@packages/db"
 import { env } from "@packages/env/api-hono"
@@ -29,15 +28,7 @@ export const agentsRouter = new Hono()
     const ctx = await auth.$context
     const existing = await ctx.internalAdapter.findUserByEmail(AGENT_EMAIL)
 
-    // role is our column (added by the admin plugin) and not on Better Auth's base user type, so read it through our own schema.
-    const [existingRow] = existing
-      ? await db
-          .select({ role: userTable.role })
-          .from(userTable)
-          .where(eq(userTable.id, existing.user.id))
-          .limit(1)
-      : []
-    const existingRole = existingRow ? existingRow.role : null
+    let created = false
     let user
     if (existing) {
       user = await ctx.internalAdapter.updateUserByEmail(AGENT_EMAIL, {
@@ -52,6 +43,7 @@ export const agentsRouter = new Hono()
           name: AGENT_NAME,
           emailVerified: true,
         })
+        created = true
       } catch (err) {
         console.error("POST /api/agents/sign-in-as createUser failed:", err)
         const raced = await ctx.internalAdapter.findUserByEmail(AGENT_EMAIL)
@@ -60,8 +52,8 @@ export const agentsRouter = new Hono()
       }
     }
 
-    // The local-only agent is the install's own internal account, so it starts at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Only ever raised, never lowered, and only from below member: demoting the agent by hand is how you test what a lower rung sees, and reasserting owner on every sign-in would undo that the moment you signed back in.
-    if (!roleAtLeast(existingRole, "member")) {
+    // The local-only agent is the install's own internal account, so the sign-in that creates it starts it at the top of the ladder: an agent driving the console needs to exercise every rung, including the owner-only ones. Only that first sign-in sets it. Afterwards the role stands as it is, because demoting the agent by hand is how you test what a lower rung sees, and any re-grant would undo that the moment you signed back in. Use `bun run console:roles grant agent@local.host owner` to put it back.
+    if (created) {
       await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
     }
 

@@ -5,7 +5,9 @@
 
 A `notFound()` inside the `(console)` area renders the not-found UI but returns HTTP 200, not 404. Cause: `console/layout.tsx` is `export const dynamic = "force-dynamic"` (so the admin gate runs on every request), and Next.js commits the 200 status line before a page-level `notFound()` fires mid-stream.
 
-Pre-existing, not introduced by the feature flags: a genuinely missing slug (`/console/docs/does-not-exist`) returns 200 with every feature on, and the old console docs page already called `notFound()` for missing slugs. Note the asymmetry: a URL matching no route at all (`/console/nope`) still returns a real router-level 404, and the layout-level auth `notFound()` also returns 404 (it fires before streaming starts); only a page-level `notFound()` degrades to 200.
+Pre-existing, not introduced by the feature flags: a genuinely missing slug (`/console/docs/does-not-exist`) returns 200 with every feature on, and the old console docs page already called `notFound()` for missing slugs. It is page-level `notFound()` specifically that degrades; the layout-level auth `notFound()` still returns a real 404, because it fires before streaming starts.
+
+Since #758 that covers every unknown console path too. The `[...unmatched]` catch-all exists so a forbidden page and a nonexistent one cannot be told apart, and the cost of matching a route instead of missing one is that `/console/nope` now answers 200 like the rest rather than a router-level 404. That is the trade taken deliberately: identical answers at every rung matter more here than the status line on a noindex area.
 
 ## The anonymous white flash (PR #758)
 

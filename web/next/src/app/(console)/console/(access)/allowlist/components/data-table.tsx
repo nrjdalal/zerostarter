@@ -101,9 +101,15 @@ async function fetchRules({
 export function AllowlistDataTable() {
   const { canWrite } = useConsoleRole()
   const queryClient = useQueryClient()
-  const [pendingDelete, setPendingDelete] = React.useState<AllowlistRuleRow[] | null>(null)
+  const [pendingDelete, setPendingDelete] = React.useState<{
+    fromSelection: boolean
+    rules: AllowlistRuleRow[]
+  } | null>(null)
 
-  const columns = React.useMemo(() => allowlistColumns((rule) => setPendingDelete([rule])), [])
+  const columns = React.useMemo(
+    () => allowlistColumns((rule) => setPendingDelete({ fromSelection: false, rules: [rule] })),
+    [],
+  )
   const { table, tableProps } = useDataTable({
     columnConfig: allowlistColumnConfig,
     columns,
@@ -120,7 +126,7 @@ export function AllowlistDataTable() {
 
   // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({
-    mutationFn: async (rules: AllowlistRuleRow[]) => {
+    mutationFn: async ({ rules }: { fromSelection: boolean; rules: AllowlistRuleRow[] }) => {
       const results = await Promise.all(
         rules.map(async (rule) => {
           const { error } = await unwrap(
@@ -134,9 +140,10 @@ export function AllowlistDataTable() {
       return { failed: failures.length, removed: results.length - failures.length }
     },
     onError: (error) => toast.error(error.message),
-    onSuccess: ({ failed, removed }) => {
+    onSuccess: ({ failed, removed }, { fromSelection }) => {
       setPendingDelete(null)
-      table.resetRowSelection()
+      // Only what the selection bar started clears the selection: a row-menu removal has nothing to do with the rows someone has staged for a batch.
+      if (fromSelection) table.resetRowSelection()
       toast.success(
         failed
           ? `${removed} removed, ${failed} failed`
@@ -167,7 +174,10 @@ export function AllowlistDataTable() {
         aria-label="Allowlist"
         selectionActions={
           canWrite ? (
-            <Button variant="destructive" onClick={() => setPendingDelete(selected)}>
+            <Button
+              variant="destructive"
+              onClick={() => setPendingDelete({ fromSelection: true, rules: selected })}
+            >
               Remove
             </Button>
           ) : undefined
@@ -191,9 +201,9 @@ export function AllowlistDataTable() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingDelete && pendingDelete.length === 1
-                ? `Remove ${pendingDelete[0].value}?`
-                : `Remove ${pendingDelete ? pendingDelete.length : 0} rules?`}
+              {pendingDelete && pendingDelete.rules.length === 1
+                ? `Remove ${pendingDelete.rules[0].value}?`
+                : `Remove ${pendingDelete ? pendingDelete.rules.length : 0} rules?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               Anyone already promoted keeps their role; removing a rule only stops future grants.
@@ -254,7 +264,8 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
           <form
             onSubmit={(event) => {
               event.preventDefault()
-              if (parsed) create.mutate(value)
+              // The parsed value, not the raw input: the preview and the enabled state are both about parsed, so submitting anything else would send something the person was never shown.
+              if (parsed) create.mutate(parsed.value)
             }}
           />
         }
