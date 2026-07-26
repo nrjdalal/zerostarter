@@ -6,7 +6,6 @@
     "dist"
   ],
   "type": "module",
-  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",

@@ -38,6 +38,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { describeBulk, runBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -125,27 +126,18 @@ export function UsersDataTable() {
 
   // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
-    mutationFn: async (role: ConsoleRole) => {
-      const results = await Promise.all(
-        selected.map(async (row) => {
-          const { error } = await unwrap(
-            apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
-          )
-          return error ? error.message : null
-        }),
-      )
-      const refused = results.filter((message) => message !== null)
-      if (refused.length === results.length) throw new Error(refused[0])
-      return { changed: results.length - refused.length, refused: refused.length }
-    },
-    onError: (error) => {
-      setPendingRole(null)
-      toast.error(error.message)
-    },
-    onSuccess: ({ changed, refused }) => {
+    mutationFn: async (role: ConsoleRole) =>
+      runBulk(selected, async (row) => {
+        const { error } = await unwrap(
+          apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
+        )
+        return error
+      }),
+    onSuccess: (outcome) => {
       setPendingRole(null)
       table.resetRowSelection()
-      toast.success(refused ? `${changed} changed, ${refused} refused` : `${changed} changed`)
+      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
+      else toast.success(describeBulk(outcome, "changed"))
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -158,32 +150,24 @@ export function UsersDataTable() {
       banned: boolean
       fromSelection: boolean
       users: ConsoleUser[]
-    }) => {
-      const results = await Promise.all(
-        users.map(async (row) => {
-          const { error } = await unwrap(
-            apiClient.v1.admin.users[":id"].status.$patch({
-              json: { banned },
-              param: { id: row.id },
-            }),
-          )
-          return error ? error.message : null
-        }),
-      )
-      const refused = results.filter((message) => message !== null)
-      if (refused.length === results.length) throw new Error(refused[0])
-      return { done: results.length - refused.length, refused: refused.length }
-    },
-    onError: (error) => {
-      setPendingStatus(null)
-      toast.error(error.message)
-    },
-    onSuccess: ({ done, refused }, { banned, fromSelection }) => {
+    }) =>
+      runBulk(users, async (row) => {
+        const { error } = await unwrap(
+          apiClient.v1.admin.users[":id"].status.$patch({
+            json: { banned },
+            param: { id: row.id },
+          }),
+        )
+        return error
+      }),
+    onSuccess: (outcome, { banned, fromSelection }) => {
       setPendingStatus(null)
       // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
       if (fromSelection) table.resetRowSelection()
       const verb = banned ? "banned" : "unbanned"
-      toast.success(refused ? `${done} ${verb}, ${refused} refused` : `${done} ${verb}`)
+      // Nothing got through, so the reason is the whole story and reads better as the error it is.
+      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
+      else toast.success(describeBulk(outcome, verb))
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })

@@ -21,8 +21,8 @@ import {
   notFoundErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { escapeLike } from "@/lib/sql"
-import { consoleAdminMiddleware } from "@/middlewares"
+import { escapeLike, isUniqueViolation } from "@/lib/sql"
+import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
 const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
@@ -52,18 +52,6 @@ const ROLE_CHANGE_MESSAGES: Record<RoleChangeRefusal, string> = {
 const BAN_MESSAGES: Record<BanRefusal, string> = {
   outranked: "You can only ban people below your own role.",
   self: "You cannot ban yourself.",
-}
-
-// Postgres signals a unique-constraint violation as 23505; drizzle surfaces the driver error as the cause.
-function isUniqueViolation(error: unknown): boolean {
-  const candidates = [error, error instanceof Error ? error.cause : undefined]
-  return candidates.some(
-    (candidate) =>
-      typeof candidate === "object" &&
-      candidate !== null &&
-      "code" in candidate &&
-      (candidate as { code?: unknown }).code === "23505",
-  )
 }
 
 const allowlistSchema = z.object({
@@ -110,6 +98,18 @@ const roleChangeSchema = z.object({
 const statusChangeSchema = z.object({
   banned: z.boolean(),
 })
+
+// The columns userSchema documents, so both PATCH handlers return exactly what their contract says instead of spreading the row and shipping banReason, banExpires and updatedAt as an undocumented payload.
+const RETURNED_USER = {
+  banned: user.banned,
+  createdAt: user.createdAt,
+  email: user.email,
+  emailVerified: user.emailVerified,
+  id: user.id,
+  image: user.image,
+  name: user.name,
+  role: user.role,
+}
 
 const userSchema = z.object({
   banned: z.boolean().meta({ example: false }),
@@ -285,7 +285,11 @@ const { data, error } = await unwrap(
           .update(user)
           .set({ role: nextRole })
           .where(eq(user.id, targetId))
-          .returning()
+          .returning(RETURNED_USER)
+        // Only owner rows are locked above, so a target below that rung can still be deleted between the read and this write.
+        if (!row) {
+          throw new ApiError(404, "NOT_FOUND", "User not found")
+        }
         return row
       })
       return c.json({
@@ -349,7 +353,7 @@ const { data, error } = await unwrap(
         .update(user)
         .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
         .where(eq(user.id, targetId))
-        .returning()
+        .returning(RETURNED_USER)
       if (!updated) {
         throw new ApiError(404, "NOT_FOUND", "User not found")
       }
@@ -369,6 +373,9 @@ const { data, error } = await unwrap(
       })
     },
   )
+  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
+  .use("/allowlist", requireFeature("allowlist"))
+  .use("/allowlist/*", requireFeature("allowlist"))
   .get(
     "/allowlist",
     describeRoute({

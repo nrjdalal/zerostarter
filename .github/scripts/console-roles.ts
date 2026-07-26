@@ -2,7 +2,7 @@ import { SQL } from "bun"
 
 // Manage console access by setting the user's platform `role` (Better Auth Admin plugin).
 // Usage: bun run console:roles <grant|revoke|list> [email] [role]
-//   grant <email> [role]  set the role: owner, admin or member (default admin). This is also how the first owner is created on a fresh install.
+//   grant <email> [role]  set the role: owner, admin or member. Defaults to admin, or to owner when the install has none yet, which is how a fresh install gets its first way in.
 //   revoke <email>        set role = user (no console)
 //   list                  show everyone with console access, by role
 
@@ -42,10 +42,19 @@ if ((action !== "grant" && action !== "revoke") || !email) {
   process.exit(1)
 }
 
-const granted = (process.argv[4] ?? "admin").trim().toLowerCase()
+// An install with no owner is a trap: an admin cannot grant owner (owner-only), cannot act on a peer (outranked), and cannot unban another admin, so the only way back in is this script. When no owner exists yet, an unqualified grant makes one rather than quietly creating that state.
+const [{ count: owners }] = (await sql`SELECT count(*)::int AS count FROM "user"
+  WHERE role = 'owner'`) as [{ count: number }]
+const fallback = owners === 0 ? "owner" : "admin"
+const granted = (process.argv[4] ?? fallback).trim().toLowerCase()
 if (action === "grant" && !CONSOLE_ROLES.includes(granted)) {
   console.error(`role must be one of ${CONSOLE_ROLES.join(", ")}`)
   process.exit(1)
+}
+if (action === "grant" && owners === 0 && granted !== "owner") {
+  console.warn(
+    `note: this install has no owner, and ${granted} cannot create one. Run with 'owner' to make the first.`,
+  )
 }
 
 const role = action === "grant" ? granted : "user"

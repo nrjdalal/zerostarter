@@ -46,6 +46,7 @@ import {
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { describeBulk, runBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -97,7 +98,7 @@ async function fetchRules({
   return { rows: data.rules, total: data.total }
 }
 
-// The rules granting console access. Reading is a member power, changing is an admin one, so the add and remove affordances are absent below that rung.
+// The rules granting console access. The whole Access group is admin and above, on the page, in the nav and on every route behind it, so canWrite is true for anyone who can see this table; the affordances still ask, because a control that exists only to refuse invites the attempt.
 export function AllowlistDataTable() {
   const { canWrite } = useConsoleRole()
   const queryClient = useQueryClient()
@@ -126,31 +127,20 @@ export function AllowlistDataTable() {
 
   // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({
-    mutationFn: async ({ rules }: { fromSelection: boolean; rules: AllowlistRuleRow[] }) => {
-      const results = await Promise.all(
-        rules.map(async (rule) => {
-          const { error } = await unwrap(
-            apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: rule.id } }),
-          )
-          return error ? error.message : null
-        }),
-      )
-      const failures = results.filter((message) => message !== null)
-      if (failures.length === results.length) throw new Error(failures[0])
-      return { failed: failures.length, removed: results.length - failures.length }
-    },
-    onError: (error) => toast.error(error.message),
-    onSuccess: ({ failed, removed }, { fromSelection }) => {
+    mutationFn: async ({ rules }: { fromSelection: boolean; rules: AllowlistRuleRow[] }) =>
+      runBulk(rules, async (rule) => {
+        const { error } = await unwrap(
+          apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: rule.id } }),
+        )
+        return error
+      }),
+    onSuccess: (outcome, { fromSelection, rules }) => {
       setPendingDelete(null)
       // Only what the selection bar started clears the selection: a row-menu removal has nothing to do with the rows someone has staged for a batch.
       if (fromSelection) table.resetRowSelection()
-      toast.success(
-        failed
-          ? `${removed} removed, ${failed} failed`
-          : removed === 1
-            ? "Rule removed"
-            : `${removed} rules removed`,
-      )
+      if (!outcome.done && outcome.firstMessage) toast.error(outcome.firstMessage)
+      else if (outcome.done === rules.length && rules.length === 1) toast.success("Rule removed")
+      else toast.success(describeBulk(outcome, "removed"))
       refresh()
     },
   })
