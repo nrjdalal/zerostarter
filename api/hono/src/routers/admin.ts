@@ -819,12 +819,15 @@ const { data, error } = await unwrap(
       }
       return c.json({
         data: {
+          // Built key by key rather than spread: a spread keeps the row's own insertion order, so re-assigning a key after it changes that key's value and not its place, and the reply would not come back in the order the schema above documents.
           rule: {
-            ...created,
             actor: c.get("user").email,
+            actorId: created.actorId,
             createdAt: created.createdAt.toISOString(),
+            id: created.id,
             // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
             kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
+            value: created.value,
           },
         },
       })
