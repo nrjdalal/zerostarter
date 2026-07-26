@@ -115,12 +115,19 @@ export const auth = betterAuth({
           try {
             // Read through our own schema rather than the adapter: role is our column, added by the admin plugin, and not on Better Auth's base user type.
             const [signingIn] = await db
-              .select({ email: user.email, id: user.id, role: user.role })
+              .select({
+                email: user.email,
+                grantedAt: user.allowlistGrantedAt,
+                id: user.id,
+                role: user.role,
+              })
               .from(user)
               .where(eq(user.id, session.userId))
               .limit(1)
             // Never lowers anyone: an admin or owner keeps their rung, and a hand-granted role is untouched by a rule edit.
             if (!signingIn || roleAtLeast(signingIn.role, "member")) return
+            // Once per person, ever. Re-granting on every sign-in would make a demotion revert the next time they signed in, so the offboarding the console offers would silently undo itself for anyone a rule still matches.
+            if (signingIn.grantedAt) return
             // Only the two rows that could possibly match, not the table: this runs on the sign-in path for every ordinary account, and the allowlist has no bound. Values are normalized lowercase when written, which is what makes an exact match correct here; matchesAllowlist still decides, so the parsing and matching semantics stay in the tested seam.
             const address = signingIn.email.trim().toLowerCase()
             const at = address.lastIndexOf("@")
@@ -134,11 +141,17 @@ export const auth = betterAuth({
               (rule): rule is AllowlistRule => rule.kind === "domain" || rule.kind === "email",
             )
             if (!matchesAllowlist(signingIn.email, rules)) return
-            // Conditional on the rung read above still holding: a promotion landing between that read and this write would otherwise be undone by a sign-in that happened to race it.
+            // Conditional on both the rung and the marker read above still holding, so two sign-ins racing each other grant once between them, not twice.
             await db
               .update(user)
-              .set({ role: "member" })
-              .where(and(eq(user.id, signingIn.id), or(isNull(user.role), eq(user.role, "user"))))
+              .set({ allowlistGrantedAt: new Date(), role: "member" })
+              .where(
+                and(
+                  eq(user.id, signingIn.id),
+                  isNull(user.allowlistGrantedAt),
+                  or(isNull(user.role), eq(user.role, "user")),
+                ),
+              )
           } catch (error) {
             console.error("allowlist grant failed during sign-in:", error)
           }

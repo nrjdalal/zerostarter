@@ -12,7 +12,7 @@ Manage it at **Console > Access > Allowlist**, or turn it off entirely with the 
 
 A rule grants **member**, the console's bottom rung: its holder reads every console surface and changes nothing. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule can hand write access to a whole domain.
 
-The grant is applied **on sign-in**, not only at sign-up. Adding `@example.com` therefore covers colleagues who already have accounts, on their next sign-in, rather than only people who join later.
+The grant is applied **on sign-in**, not only at sign-up, so adding `@example.com` covers colleagues who already have accounts, on their next sign-in, rather than only people who join later. It happens **once per person, ever**: the account is stamped when it is lifted, and no later sign-in lifts it again. That is what makes a demotion stick, and it is why the console can tell a rule-granted member from a hand-granted one.
 
 It never lowers anyone. Someone already at admin or owner keeps their rung, and a role granted by hand is untouched by any rule.
 
@@ -25,13 +25,13 @@ It never lowers anyone. Someone already at admin or owner keeps their rung, and 
 
 ## Removing a rule
 
-Remove one rule from its row menu, or select several and remove them together. Either way, removing a rule stops future grants and nothing else. Anyone already promoted keeps their role, because a list edit that could silently demote people would make every edit dangerous, and because the console cannot tell a rule-granted member from a hand-granted one.
+Remove one rule from its row menu, or select several and remove them together. Either way, removing a rule stops future grants and nothing else. Anyone already promoted keeps their role, because a list edit that could silently demote a room full of people would make every edit dangerous.
 
-To take console access away, demote the person in the Users table. Offboarding is a [role change or a ban](/docs/manage/authentication), never a list edit.
+To take console access away, demote the person in the Users table, in either order and whether or not a rule still matches them: the grant already happened, so it will not happen again. Offboarding is a [role change or a ban](/docs/manage/authentication), never a list edit.
 
 ## Enforcement
 
-One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring. The grant is best effort: a database failure there is logged and skipped rather than thrown, because that hook sits on the sign-in path and must never stop anyone signing in. A missed grant is applied by the next sign-in.
+One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring. It writes `user.allowlist_granted_at` alongside the rung, and skips anyone already carrying it, so the lift is once per account and a later demotion is the last word. The grant is best effort: a database failure there is logged and skipped rather than thrown, because that hook sits on the sign-in path and must never stop anyone signing in. A missed grant is applied by the next sign-in.
 
 <Callout type="warn" title="A rule trusts the email on the account">
 

@@ -5,7 +5,6 @@ import { refuseBan } from "@packages/auth/access"
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
-import { toast } from "sonner"
 
 import { UserRoleSelect } from "@/app/(console)/console/(access)/users/components/role-select"
 import { useConsoleRole } from "@/components/console/role"
@@ -25,20 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
+import { copyToClipboard } from "@/lib/clipboard"
 
 // Row shape inferred from GET /api/v1/admin/users, so the endpoint cannot drift from these columns.
 export type ConsoleUser = InferResponseType<
   typeof apiClient.v1.admin.users.$get
 >["data"]["users"][number]
-
-async function copyText(value: string, message: string) {
-  try {
-    await navigator.clipboard.writeText(value)
-    toast.success(message)
-  } catch {
-    toast.error("Copy failed")
-  }
-}
 
 // This table's layout, colocated with its columns and written in column order. Widthless columns size from their meta.label (the string the header renders); email floors at label + 48 units and grows; select stays left so its box reads as the gap when it inherits growth.
 export const usersColumnConfig: Record<string, ColumnConfig> = {
@@ -110,8 +101,9 @@ export const usersColumns = (
     accessorKey: "role",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
     // The platform role, not an organization membership role: this one decides console access.
-    cell: ({ row }) => (
+    cell: ({ column, row }) => (
       <UserRoleSelect
+        column={column}
         email={row.original.email}
         role={row.original.role}
         userId={row.original.id}
@@ -152,10 +144,10 @@ export const usersColumns = (
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => copyText(row.original.id, "User ID copied")}>
+              <DropdownMenuItem onClick={() => copyToClipboard(row.original.id, "User ID copied")}>
                 Copy user ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
+              <DropdownMenuItem onClick={() => copyToClipboard(row.original.email, "Email copied")}>
                 Copy email
               </DropdownMenuItem>
               {canBan &&

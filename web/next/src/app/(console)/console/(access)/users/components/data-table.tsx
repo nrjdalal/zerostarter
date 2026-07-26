@@ -16,6 +16,7 @@ import {
   DataTable,
   DataTableFacetedFilter,
   DataTableToolbar,
+  resolveSort,
   useDataTable,
   type DataTablePage,
   type DataTablePageInput,
@@ -72,10 +73,7 @@ async function fetchUsers({
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ConsoleUser>> {
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
-  // hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in SORT_FIELDS` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
-  const sortId = Object.hasOwn(SORT_FIELDS, sort.id)
-    ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS]
-    : "createdAt"
+  const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
   // Drop values the API's enum would reject, so a hand-written ?role=bogus degrades to an unfiltered list (which is what the facet UI shows, since it cannot select an unknown value) instead of 400ing the table into its error state.
   const roles = filters.role ? filters.role.filter((role) => ROLE_VALUES.has(role)) : []
   const { data, error } = await unwrap(
@@ -171,9 +169,7 @@ export function UsersDataTable() {
       setPendingStatus(null)
       // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
       if (fromSelection) table.resetRowSelection()
-      const verb = banned ? "banned" : "unbanned"
-      // Nothing got through, so the reason is the whole story and reads better as the error it is.
-      toastBulk(outcome, verb)
+      toastBulk(outcome, banned ? "banned" : "unbanned")
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })

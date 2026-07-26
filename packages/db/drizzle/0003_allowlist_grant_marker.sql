@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "allowlist_granted_at" timestamp;

@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { describeBulk, runBulk } from "../../../../../../web/next/src/lib/api/bulk"
 
 const forbidden = { code: "FORBIDDEN", message: "You can only ban people below your own role." }
-const rateLimited = { code: "RATE_LIMITED", message: "Too many requests" }
+const rateLimited = { code: "TOO_MANY_REQUESTS", message: "Too many requests" }
 
 describe("runBulk", () => {
   test("counts what got through", async () => {
@@ -70,6 +70,8 @@ describe("runBulk", () => {
         return null
       },
     )
+    // Both bounds: the upper one is the cap, and the lower one is what shows the work actually overlaps. Without it this passes at a concurrency of one.
+    expect(peak).toBeGreaterThan(1)
     expect(peak).toBeLessThanOrEqual(5)
   })
 

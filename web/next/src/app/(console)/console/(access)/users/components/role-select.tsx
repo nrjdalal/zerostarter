@@ -2,10 +2,13 @@
 
 import { grantableRoles, type ConsoleRole } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import type { Column } from "@tanstack/react-table"
 import * as React from "react"
 import { toast } from "sonner"
 
+import type { ConsoleUser } from "@/app/(console)/console/(access)/users/components/data-columns"
 import { useConsoleRole } from "@/components/console/role"
+import { DataTableCellText } from "@/components/data-table"
 import {
   Select,
   SelectContent,
@@ -17,10 +20,12 @@ import { apiClient, unwrap } from "@/lib/api/client"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
 export function UserRoleSelect({
+  column,
   email,
   role,
   userId,
 }: {
+  column: Column<ConsoleUser, unknown>
   email: string
   role: string
   userId: string
@@ -57,16 +62,24 @@ export function UserRoleSelect({
     isSelf: viewerId === userId,
     targetRole: role,
   })
-  // Your own row, and anyone you do not outrank, can only ever produce a refusal, so it reads as what it is rather than as a control.
-  if (!canWrite || options.length === 0) return <span className="capitalize">{role}</span>
+  // Your own row, and anyone you do not outrank, can only ever produce a refusal, so it reads as what it is rather than as a control. Still a table cell, so it keeps the family's truncation and tooltip.
+  if (!canWrite || options.length === 0) {
+    return (
+      <DataTableCellText column={column} className="capitalize">
+        {role}
+      </DataTableCellText>
+    )
+  }
 
   return (
     <Select
       value={pending ? pending : role}
       onValueChange={(next) => {
-        if (typeof next !== "string" || next === role) return
-        setPending(next)
-        mutation.mutate(next as ConsoleRole)
+        // Matched against what this viewer was offered rather than cast: the value arrives as a string, and coercing an unrecognized one would send a rung nobody picked.
+        const picked = options.find((option) => option === next)
+        if (!picked || picked === role) return
+        setPending(picked)
+        mutation.mutate(picked)
       }}
     >
       <SelectTrigger

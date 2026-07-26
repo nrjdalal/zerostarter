@@ -6,7 +6,7 @@ import { SQL } from "bun"
 //   revoke <email>        set role = user (no console)
 //   list                  show everyone with console access, by role
 
-const [action, emailArg] = process.argv.slice(2)
+const [action, emailArg, roleArg] = process.argv.slice(2)
 const email = emailArg?.trim().toLowerCase()
 
 const url = process.env.POSTGRES_URL
@@ -50,7 +50,7 @@ if ((action !== "grant" && action !== "revoke") || !email) {
 const [{ count: owners }] = (await sql`SELECT count(*)::int AS count FROM "user"
   WHERE role = 'owner'`) as [{ count: number }]
 const fallback = owners === 0 ? "owner" : "admin"
-const granted = (process.argv[4] ?? fallback).trim().toLowerCase()
+const granted = (roleArg ?? fallback).trim().toLowerCase()
 if (action === "grant" && !GRANTABLE.includes(granted)) {
   console.error(`role must be one of ${GRANTABLE.join(", ")}`)
   process.exit(1)

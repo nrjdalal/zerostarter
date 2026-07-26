@@ -1,10 +1,10 @@
 "use client"
 "use no memo"
 
+import type { AllowlistRule } from "@packages/auth/access"
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
-import { toast } from "sonner"
 
 import { useConsoleRole } from "@/components/console/role"
 import {
@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
+import { copyToClipboard } from "@/lib/clipboard"
 
 // Row shape inferred from GET /api/v1/admin/allowlist, so the endpoint cannot drift from these columns.
 export type AllowlistRuleRow = InferResponseType<
@@ -39,17 +40,8 @@ export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   actions: { align: "center", width: 12 },
 }
 
-async function copyValue(value: string) {
-  try {
-    await navigator.clipboard.writeText(value)
-    toast.success("Rule copied")
-  } catch {
-    toast.error("Copy failed")
-  }
-}
-
 // Says who a rule lets in, in the same words the add dialog previews.
-export function describeRule(rule: { kind: string; value: string }) {
+export function describeRule(rule: AllowlistRule) {
   return rule.kind === "domain"
     ? `Anyone at ${rule.value.slice(1)} gets console access`
     : `${rule.value} gets console access`
@@ -134,7 +126,7 @@ export const allowlistColumns = (
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => copyValue(row.original.value)}>
+              <DropdownMenuItem onClick={() => copyToClipboard(row.original.value, "Rule copied")}>
                 Copy rule
               </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onClick={() => onDelete(row.original)}>

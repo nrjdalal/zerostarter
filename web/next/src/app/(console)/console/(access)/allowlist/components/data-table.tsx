@@ -20,6 +20,7 @@ import {
   DataTable,
   DataTableFacetedFilter,
   DataTableToolbar,
+  resolveSort,
   useDataTable,
   type DataTablePage,
   type DataTablePageInput,
@@ -92,10 +93,7 @@ async function fetchRules({
 }: DataTablePageInput): Promise<DataTablePage<AllowlistRuleRow>> {
   const kinds = filters.kind ? filters.kind.filter((kind) => KIND_VALUES.has(kind)) : []
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
-  // hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in SORT_FIELDS` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
-  const sortId = Object.hasOwn(SORT_FIELDS, sort.id)
-    ? SORT_FIELDS[sort.id as keyof typeof SORT_FIELDS]
-    : "createdAt"
+  const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
   const { data, error } = await unwrap(
     apiClient.v1.admin.allowlist.$get({
       query: {

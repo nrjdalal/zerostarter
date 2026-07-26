@@ -193,6 +193,15 @@ export type DataTablePage<TRow> = {
 }
 
 // The generic server-driven table wiring. A page brings only what a generic hook cannot know (its columns, its fetcher, its filter ids, its column config) and spreads tableProps into DataTable. Client-side tables skip this and use useDataTableState directly.
+// Maps a table's column id onto the endpoint's sort whitelist. hasOwn, not `in`: the URL parser accepts any id, and `"constructor" in fields` is true through the prototype chain, so `in` would send Object itself as the sort and park the table on the API's 400.
+export function resolveSort<TFields extends Record<string, string>>(
+  fields: TFields,
+  id: string,
+  fallback: TFields[keyof TFields],
+): TFields[keyof TFields] {
+  return Object.hasOwn(fields, id) ? fields[id as keyof TFields] : fallback
+}
+
 export function useDataTable<TRow>({
   batchSize = 25,
   columnConfig,
