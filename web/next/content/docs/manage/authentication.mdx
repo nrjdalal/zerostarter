@@ -97,9 +97,15 @@ https://your-web.vercel.app/api/auth/callback/google
 
 `member` is the rung that makes the ladder worth having: someone can answer a question about an account without also being able to ban it. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
 
-Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above to the console, `notFound()`ing everyone else so it is never advertised, and a page needing more says so itself (the Access pages assert `admin`). The API's console router requires `admin` throughout (see [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a demotion or a ban takes effect on the next request, and both also refuse a banned user, which covers a ban written straight to the database rather than through the plugin.
+Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above to the console, `notFound()`ing everyone else so it is never advertised, and a page needing more says so itself (the Access pages assert `admin`). The API's console router requires `admin` throughout (see [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a demotion or a ban takes effect on the next request, and both also refuse a banned user, which covers a ban written straight to the database without the session sweep the console's own ban performs.
 
 The plugin has its own separate gate: `adminRoles: ["owner", "admin"]` decides who may use its ban, impersonate, and set-role endpoints. Setting it does not gate our routes and gating our routes does not stop those endpoints, so both are configured.
+
+### Changing a role, banning an account
+
+Both live at **Console > Access > Users**, on a row or across a selection, and both are refused for your own account and for anyone at or above your rank, so no admin can act sideways or upward. Granting owner is owner-only, and the last owner cannot be demoted. The guard is one pure function per decision in `@packages/auth/access`, unit-tested and asked again by the API on every request, so what the table hides is never all that stops it.
+
+A ban deletes the person's sessions as well as flagging the account, so they are signed out everywhere rather than staying in until each gate next re-reads the flag. An unban clears the flag, the reason and any expiry, and touches nothing else: their role is untouched, so it restores exactly the access they had. Because the guard runs per account, a selection is partly refusable by design and the result says so (`3 banned, 1 refused`) instead of reporting the batch as done.
 
 Bootstrap the first owner from the CLI, which is also how a fresh install gets its first way in:
 

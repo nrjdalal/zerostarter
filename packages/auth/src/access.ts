@@ -16,6 +16,23 @@ export function roleAtLeast(role: string | null | undefined, minimum: ConsoleRol
   return RANK[consoleRole(role)] >= RANK[minimum]
 }
 
+// Why a ban or unban was refused. No last-owner case: banning yourself is already refused, so an owner can only ban an owner while another owner (the actor) remains.
+export type BanRefusal = "outranked" | "self"
+
+// The same rank rule as a role change, minus the parts that are about roles. Unbanning is guarded identically, so nobody can lift a ban they could not have applied.
+export function refuseBan(input: {
+  actorRole: string | null | undefined
+  isSelf: boolean
+  targetRole: string | null | undefined
+}): BanRefusal | null {
+  const actor = consoleRole(input.actorRole)
+  const target = consoleRole(input.targetRole)
+  if (input.isSelf) return "self"
+  if (!roleAtLeast(actor, "admin")) return "outranked"
+  if (actor !== "owner" && RANK[target] >= RANK[actor]) return "outranked"
+  return null
+}
+
 // Why a role change was refused, so the API can say it rather than returning a bare failure.
 export type RoleChangeRefusal = "last-owner" | "outranked" | "owner-only" | "self" | "unknown-role"
 

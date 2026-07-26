@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth"
 export const getConsoleSession = cache(async () => {
   // Bypass the session cookie cache so a grant/revoke takes effect on the next request rather than after the cache window.
   const session = await auth.api.getSession({ disableCookieCache: true })
-  // banned as well as role: Better Auth's banUser deletes sessions, but a ban written straight to the database would otherwise still open the console onto an API that 403s every request.
+  // banned as well as role: a ban deletes the person's sessions, but one written straight to the database would otherwise still open the console onto an API that 403s every request.
   if (!session || !roleAtLeast(session.user.role, "member") || session.user.banned) return null
   return session
 })

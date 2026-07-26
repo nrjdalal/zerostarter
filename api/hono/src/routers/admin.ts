@@ -1,8 +1,13 @@
 import { sValidator } from "@hono/standard-validator"
 import type { Session } from "@packages/auth"
-import type { RoleChangeRefusal } from "@packages/auth/access"
-import { CONSOLE_ROLES, parseAllowlistRule, refuseRoleChange } from "@packages/auth/access"
-import { allowlist, db, user } from "@packages/db"
+import type { BanRefusal, RoleChangeRefusal } from "@packages/auth/access"
+import {
+  CONSOLE_ROLES,
+  parseAllowlistRule,
+  refuseBan,
+  refuseRoleChange,
+} from "@packages/auth/access"
+import { allowlist, db, session, user } from "@packages/db"
 import { and, asc, desc, eq, gt, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
@@ -42,6 +47,11 @@ const ROLE_CHANGE_MESSAGES: Record<RoleChangeRefusal, string> = {
   "owner-only": "Only an owner can make someone an owner.",
   self: "You cannot change your own role.",
   "unknown-role": "That is not a console role.",
+}
+
+const BAN_MESSAGES: Record<BanRefusal, string> = {
+  outranked: "You can only ban people below your own role.",
+  self: "You cannot ban yourself.",
 }
 
 // Postgres signals a unique-constraint violation as 23505; drizzle surfaces the driver error as the cause.
@@ -95,6 +105,10 @@ const allowlistCreateSchema = z.object({
 
 const roleChangeSchema = z.object({
   role: z.enum(CONSOLE_ROLES),
+})
+
+const statusChangeSchema = z.object({
+  banned: z.boolean(),
 })
 
 const userSchema = z.object({
@@ -275,6 +289,75 @@ const { data, error } = await unwrap(
         .returning()
       if (!updated) {
         throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES["last-owner"])
+      }
+      return c.json({
+        data: {
+          user: {
+            ...updated,
+            banned: updated.banned ? true : false,
+            createdAt: updated.createdAt.toISOString(),
+            role: updated.role ? updated.role : "user",
+          },
+        },
+      })
+    },
+  )
+  .patch(
+    "/users/:id/status",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Ban or unban a user. Refuses your own account and anyone at or above your rank. A ban ends the person's sessions as well as flagging the account; an unban clears the flag, the reason and any expiry.",
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(z.object({ data: z.object({ user: userSchema }) })),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+        ...notFoundErrorResponses,
+      },
+    }),
+    sValidator("json", statusChangeSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const actor = c.get("user")
+      const targetId = c.req.param("id")
+      const { banned } = c.req.valid("json")
+
+      const [target] = await db.select().from(user).where(eq(user.id, targetId)).limit(1)
+      if (!target) {
+        throw new ApiError(404, "NOT_FOUND", "User not found")
+      }
+      const refusal = refuseBan({
+        actorRole: actor.role,
+        isSelf: actor.id === target.id,
+        targetRole: target.role,
+      })
+      if (refusal) {
+        throw new ApiError(403, "FORBIDDEN", BAN_MESSAGES[refusal])
+      }
+
+      // Unbanning clears the reason and any expiry too, so a later ban cannot inherit the last one's terms.
+      const [updated] = await db
+        .update(user)
+        .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
+        .where(eq(user.id, targetId))
+        .returning()
+      if (!updated) {
+        throw new ApiError(404, "NOT_FOUND", "User not found")
+      }
+      // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route already owns the rank rule the plugin has no notion of.
+      if (banned) {
+        await db.delete(session).where(eq(session.userId, targetId))
       }
       return c.json({
         data: {

@@ -51,7 +51,9 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
   actions: { align: "center", width: 12 },
 }
 
-export const usersColumns: ColumnDef<ConsoleUser>[] = [
+export const usersColumns = (
+  onSetStatus: (users: ConsoleUser[], banned: boolean) => void,
+): ColumnDef<ConsoleUser>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -142,6 +144,18 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
               <DropdownMenuItem onClick={() => copyText(row.original.email, "Email copied")}>
                 Copy email
               </DropdownMenuItem>
+              {row.original.banned ? (
+                <DropdownMenuItem onClick={() => onSetStatus([row.original], false)}>
+                  Unban
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onSetStatus([row.original], true)}
+                >
+                  Ban
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

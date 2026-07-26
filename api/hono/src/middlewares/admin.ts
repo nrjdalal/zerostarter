@@ -7,7 +7,7 @@ import { createMiddleware } from "hono/factory"
 import { ApiError } from "@/lib/error"
 
 // Gate for console routes, mirroring the console page gate's rule and its freshness: re-read the session with the cookie cache bypassed so a grant, a demotion or a ban takes effect on the next request, not after the cache window. Mount downstream of authMiddleware, which already 401s anonymous requests off the cached read.
-// Better Auth's banUser deletes the user's sessions, so the uncached read alone ejects a banned admin (with the cache they would keep access for the rest of the window); banned is still checked here so a ban applied straight to the database, bypassing the plugin, cannot leave a live session privileged.
+// A ban deletes the person's sessions, so the uncached read alone ejects a banned admin (with the cache they would keep access for the rest of the window); banned is still checked here so a ban written straight to the database, without that sweep, cannot leave a live session privileged.
 export function requireConsoleRole(minimum: ConsoleRole) {
   return createMiddleware<{ Variables: Session }>(async (c, next) => {
     const session = await auth.api.getSession({

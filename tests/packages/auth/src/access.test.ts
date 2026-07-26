@@ -5,6 +5,7 @@ import {
   consoleRole,
   matchesAllowlist,
   parseAllowlistRule,
+  refuseBan,
   refuseRoleChange,
   roleAtLeast,
 } from "../../../../packages/auth/src/access"
@@ -117,6 +118,43 @@ describe("refuseRoleChange", () => {
   test("an unrecognized next role is refused before anything else is considered", () => {
     expect(change({ nextRole: "superuser" })).toBe("unknown-role")
     expect(change({ nextRole: "constructor" })).toBe("unknown-role")
+  })
+})
+
+describe("refuseBan", () => {
+  const ban = (over: Partial<Parameters<typeof refuseBan>[0]> = {}) =>
+    refuseBan({ actorRole: "admin", isSelf: false, targetRole: "user", ...over })
+
+  test("an admin bans below its own rank", () => {
+    expect(ban()).toBeNull()
+    expect(ban({ targetRole: "member" })).toBeNull()
+  })
+
+  test("nobody bans themselves", () => {
+    expect(ban({ isSelf: true })).toBe("self")
+    expect(ban({ actorRole: "owner", isSelf: true })).toBe("self")
+  })
+
+  test("an admin cannot ban a peer or above", () => {
+    expect(ban({ targetRole: "admin" })).toBe("outranked")
+    expect(ban({ targetRole: "owner" })).toBe("outranked")
+  })
+
+  test("an owner bans any other account, including a peer owner", () => {
+    for (const role of CONSOLE_ROLES) {
+      expect(ban({ actorRole: "owner", targetRole: role })).toBeNull()
+    }
+  })
+
+  test("nobody below admin bans anyone", () => {
+    expect(ban({ actorRole: "member" })).toBe("outranked")
+    expect(ban({ actorRole: "user" })).toBe("outranked")
+    expect(ban({ actorRole: "constructor" })).toBe("outranked")
+  })
+
+  test("an unrecognized target role is treated as the lowest rung, not as an escape", () => {
+    expect(ban({ targetRole: "superuser" })).toBeNull()
+    expect(ban({ actorRole: "member", targetRole: "superuser" })).toBe("outranked")
   })
 })
 

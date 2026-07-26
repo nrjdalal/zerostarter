@@ -99,9 +99,18 @@ export function UsersDataTable() {
   const { canWrite } = useConsoleRole()
   const queryClient = useQueryClient()
   const [pendingRole, setPendingRole] = React.useState<ConsoleRole | null>(null)
+  // Rows and intent travel together, so the row menu and the selection bar open the same confirm and run the same mutation.
+  const [pendingStatus, setPendingStatus] = React.useState<{
+    banned: boolean
+    users: ConsoleUser[]
+  } | null>(null)
+  const columns = React.useMemo(
+    () => usersColumns((users, banned) => setPendingStatus({ banned, users })),
+    [],
+  )
   const { table, tableProps } = useDataTable({
     columnConfig: usersColumnConfig,
-    columns: usersColumns,
+    columns,
     defaultSorting: DEFAULT_SORTING,
     enableRowSelection: true,
     fetchPage: fetchUsers,
@@ -139,6 +148,36 @@ export function UsersDataTable() {
     },
   })
 
+  const setStatus = useMutation({
+    mutationFn: async ({ banned, users }: { banned: boolean; users: ConsoleUser[] }) => {
+      const results = await Promise.all(
+        users.map(async (row) => {
+          const { error } = await unwrap(
+            apiClient.v1.admin.users[":id"].status.$patch({
+              json: { banned },
+              param: { id: row.id },
+            }),
+          )
+          return error ? error.message : null
+        }),
+      )
+      const refused = results.filter((message) => message !== null)
+      if (refused.length === results.length) throw new Error(refused[0])
+      return { done: results.length - refused.length, refused: refused.length }
+    },
+    onError: (error) => {
+      setPendingStatus(null)
+      toast.error(error.message)
+    },
+    onSuccess: ({ done, refused }, { banned }) => {
+      setPendingStatus(null)
+      table.resetRowSelection()
+      const verb = banned ? "banned" : "unbanned"
+      toast.success(refused ? `${done} ${verb}, ${refused} refused` : `${done} ${verb}`)
+      queryClient.invalidateQueries({ queryKey: ["console-users"] })
+    },
+  })
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DataTableToolbar table={table} searchMaxLength={Q_MAX} searchPlaceholder="Search users...">
@@ -153,25 +192,86 @@ export function UsersDataTable() {
         aria-label="Users"
         selectionActions={
           canWrite ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" />}>
-                Set role
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center">
-                {CONSOLE_ROLES.map((role) => (
-                  <DropdownMenuItem
-                    key={role}
-                    className="capitalize"
-                    onClick={() => setPendingRole(role)}
-                  >
-                    {role}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              {selected.some((row) => !row.banned) && (
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    setPendingStatus({ banned: true, users: selected.filter((row) => !row.banned) })
+                  }
+                >
+                  Ban
+                </Button>
+              )}
+              {selected.some((row) => row.banned) && (
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    setPendingStatus({ banned: false, users: selected.filter((row) => row.banned) })
+                  }
+                >
+                  Unban
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" />}>
+                  Set role
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center">
+                  {CONSOLE_ROLES.map((role) => (
+                    <DropdownMenuItem
+                      key={role}
+                      className="capitalize"
+                      onClick={() => setPendingRole(role)}
+                    >
+                      {role}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : undefined
         }
       />
+      <AlertDialog
+        open={pendingStatus !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingStatus(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}{" "}
+              {pendingStatus && pendingStatus.users.length === 1
+                ? pendingStatus.users[0].email
+                : `${pendingStatus ? pendingStatus.users.length : 0} people`}
+              ?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingStatus && pendingStatus.banned
+                ? "Signed out everywhere, and cannot sign back in until you unban them."
+                : "They can sign in again. Their role is unchanged, so this restores exactly the access they had."}
+              {pendingStatus && pendingStatus.users.length > 1
+                ? " Anyone you do not outrank is left as they are."
+                : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={setStatus.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={pendingStatus && pendingStatus.banned ? "destructive" : "default"}
+              disabled={setStatus.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                if (pendingStatus) setStatus.mutate(pendingStatus)
+              }}
+            >
+              {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog
         open={pendingRole !== null}
         onOpenChange={(open) => {
