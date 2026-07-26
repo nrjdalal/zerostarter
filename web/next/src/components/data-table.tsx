@@ -190,9 +190,9 @@ export type DataTablePageInput = {
 
 export type DataTablePage<TRow> = {
   rows: TRow[]
+  hasNextPage: boolean
   page: number
   total: number
-  hasNextPage: boolean
 }
 
 // The select column, so a second table cannot ship a third variant of it. label names the row for a screen reader, which is the part that had already drifted.

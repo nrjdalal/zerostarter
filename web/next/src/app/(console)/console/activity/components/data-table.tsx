@@ -49,7 +49,7 @@ async function fetchActivity({
     }),
   )
   if (error) throw new Error(error.message)
-  return { rows: data.events, page: data.page, total: data.total, hasNextPage: data.hasNextPage }
+  return { rows: data.events, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
 // Server-driven activity list: search and the action filter resolve on the API, batches stream in on scroll.

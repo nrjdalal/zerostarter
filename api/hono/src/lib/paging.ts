@@ -1,14 +1,14 @@
 import { z } from "zod"
 
-// What every list route answers alongside its rows. Flat siblings rather than a nested bag, which is what Django REST Framework and Laravel do and what a reader expects; Stripe and GitHub go further and omit the total, because counting is the expensive half on a large table. These tables are staff sized, so the count is cheap and the console shows it.
-export const pagingSchema = {
+// The fields every list answers alongside its collection. API Conventions carries the argument for the shape.
+export const pagingFields = {
   hasNextPage: z.boolean().meta({ example: true }),
   page: z.number().meta({ example: 2 }),
   perPage: z.number().meta({ example: 25 }),
   total: z.number().meta({ example: 42 }),
 }
 
-// The end signal, computed where the numbers are known rather than inferred by the caller from how many rows it has accumulated. That inference needs a guard against a stale total, since rows deleted mid-scroll would otherwise keep asking for a page that no longer exists.
+// The end signal, computed where the numbers are known rather than left to a caller counting what it has loaded against a total that can move underneath it.
 export const paging = (input: { page: number; perPage: number; total: number }) => ({
   hasNextPage: input.page * input.perPage < input.total,
   page: input.page,

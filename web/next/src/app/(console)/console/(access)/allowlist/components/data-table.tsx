@@ -94,7 +94,7 @@ async function fetchRules({
     }),
   )
   if (error) throw new Error(error.message)
-  return { rows: data.rules, page: data.page, total: data.total, hasNextPage: data.hasNextPage }
+  return { rows: data.rules, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
 // Says who a rule lets in, in the same words the add dialog previews.

@@ -78,7 +78,7 @@ async function fetchUsers({
     }),
   )
   if (error) throw new Error(error.message)
-  return { rows: data.users, page: data.page, total: data.total, hasNextPage: data.hasNextPage }
+  return { rows: data.users, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
 // Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.

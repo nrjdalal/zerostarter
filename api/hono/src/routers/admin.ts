@@ -45,7 +45,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { paging, pagingSchema } from "@/lib/paging"
+import { paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
@@ -238,8 +238,8 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
-                    ...pagingSchema,
                     users: z.array(userSchema),
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -304,8 +304,8 @@ const { data, error } = await unwrap(
       ])
 
       const data = {
-        ...paging({ page, perPage, total }),
         users: rows.map(asUserResponse),
+        ...paging({ page, perPage, total }),
       }
       return c.json({ data })
     },
@@ -568,7 +568,7 @@ const { data, error } = await unwrap(
             "application/json": {
               schema: resolver(
                 z.object({
-                  data: z.object({ events: z.array(activitySchema), ...pagingSchema }),
+                  data: z.object({ events: z.array(activitySchema), ...pagingFields }),
                 }),
               ),
             },
@@ -666,11 +666,8 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
-                    hasNextPage: pagingSchema.hasNextPage,
-                    page: pagingSchema.page,
-                    perPage: pagingSchema.perPage,
                     rules: z.array(allowlistSchema),
-                    total: pagingSchema.total,
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -726,17 +723,13 @@ const { data, error } = await unwrap(
           .where(where),
       ])
 
-      const paged = paging({ page, perPage, total: counted[0] ? counted[0].value : 0 })
       const data = {
-        hasNextPage: paged.hasNextPage,
-        page: paged.page,
-        perPage: paged.perPage,
         rules: rows.map((row) => ({
           ...row,
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        total: paged.total,
+        ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
       }
       return c.json({ data })
     },
@@ -828,8 +821,8 @@ const { data, error } = await unwrap(
         data: {
           rule: {
             ...created,
-            createdAt: created.createdAt.toISOString(),
             actor: c.get("user").email,
+            createdAt: created.createdAt.toISOString(),
             // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
             kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
           },

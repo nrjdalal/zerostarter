@@ -29,11 +29,11 @@ A list route answers with its collection and four flat fields beside it:
 ```json
 {
   "data": {
+    "users": [{ "banned": false, "email": "ada@example.com", "id": "u_1" }],
     "hasNextPage": true,
     "page": 2,
     "perPage": 25,
-    "total": 42,
-    "users": [{ "banned": false, "email": "ada@example.com", "id": "u_1" }]
+    "total": 42
   }
 }
 ```
@@ -42,9 +42,9 @@ A list route answers with its collection and four flat fields beside it:
 
 Flat siblings rather than a nested object, which is what Django REST Framework and Laravel answer with and what a reader expects. Stripe and GitHub go further and omit the total, because on a large table counting is the expensive half; these tables are staff sized, the console shows the count, so it stays.
 
-Every key in a documented response runs A→Z, `id` among them rather than hoisted, so one rule covers every shape and a reader never has to learn a second.
+Keys are ordered by relevance first, then A→Z. Here the collection is what the response is about, so it leads and the paging fields sort after it, which keeps the envelope looking the same on every list. A row's own fields are plain A→Z, `id` among them.
 
-Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row if rows shift between requests. A keyset cursor is the fix and is tracked in the Icebox; the shape above is additive, so a `nextCursor` can join it without moving anything.
+Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row if rows shift between requests. A keyset cursor is the fix, and the shape above is additive, so a `nextCursor` can join it without moving anything.
 
 ## Acting on a set
 
