@@ -384,7 +384,9 @@ const { data, error } = await unwrap(
           }
           const [row] = await tx
             .update(user)
+            // Stamped so the allowlist treats this rung as decided: without it, demoting someone a rule still matches would be undone by their next sign-in.
             .set({ role: nextRole, roleSetAt: new Date() })
+            // The rung read above is part of the qual, which makes this a compare-and-set: a change landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing and the row is reported as raced rather than acted on.
             .where(
               and(
                 eq(user.id, id),
@@ -413,7 +415,12 @@ const { data, error } = await unwrap(
           outcomes.set(id, { id, ok: true })
         }
         await recordActivity(tx, records)
-        return targets.map((id) => outcomes.get(id) as BatchOutcome)
+        // Every branch above sets an outcome; the fallback is here so one that forgets cannot put null in the results and throw in the reader.
+        return targets.map(
+          (id) =>
+            outcomes.get(id) ??
+            refused(id, "CONFLICT", "This account changed while you were acting on it. Try again."),
+        )
       })
       return c.json({ data: { results } })
     },
@@ -460,18 +467,17 @@ const { data, error } = await unwrap(
       const results = await db.transaction(async (tx) => {
         const rows = await tx.select().from(user).where(inArray(user.id, targets))
         const byId = new Map(rows.map((row) => [row.id, row]))
+        // Locked whenever the set writes an owner row, not only when it bans one. An unban writes owner rows too, and a transaction that writes them without holding this lock can deadlock against one that takes it: this select acquires in scan order while the loop below takes its rows in id order, so the two orders can cross. Taking it first in every transaction that touches an owner makes "owner set, then targets ascending" a single order everything follows.
+        const owners = rows.some((row) => row.role === "owner")
+          ? await tx
+              .select({ banned: user.banned, id: user.id })
+              .from(user)
+              .where(eq(user.role, "owner"))
+              .for("update")
+          : []
         // Owners who can still sign in, counted under the lock and kept in step as the loop bans, for the same reason the role route counts: banning two of the three in one set must not pass both guards on one stale count.
-        // Unbanned only, where the role route counts every owner: a banned owner cannot sign in to grant anyone else, so they do not keep the install reachable, while a banned owner is still an owner for the purposes of who outranks whom.
-        let active =
-          banned && rows.some((row) => row.role === "owner")
-            ? (
-                await tx
-                  .select({ banned: user.banned, id: user.id })
-                  .from(user)
-                  .where(eq(user.role, "owner"))
-                  .for("update")
-              ).filter((owner) => !owner.banned).length
-            : 0
+        // Unbanned only, where the role route counts every owner: a banned owner cannot sign in to grant anyone else, so they do not keep the install reachable, while a banned owner still outranks an admin.
+        let active = owners.filter((owner) => !owner.banned).length
 
         const outcomes = new Map<string, BatchOutcome>()
         const records: {
@@ -509,7 +515,10 @@ const { data, error } = await unwrap(
           }
           const [row] = await tx
             .update(user)
+            // Both directions clear the expiry and the reason: the plugin auto-unbans once banExpires is in the past, so a ban that left a stale one would undo itself on the next session check.
             .set({ banExpires: null, banned, banReason: null })
+            // The rung is the qual, so a promotion landing between the read and this write means the guard weighed the wrong rank and the row is reported as raced.
+            // banned is deliberately not in the qual. Racing this row is last-write-wins, and every outcome of that is the later intent: two bans are idempotent, and a ban losing to an unban leaves the person unbanned with their sessions already swept, which is what an unban means. In the qual, a repeated ban would answer CONFLICT instead of success.
             .where(
               and(
                 eq(user.id, id),
@@ -530,6 +539,7 @@ const { data, error } = await unwrap(
           }
           if (banned) {
             swept.push(id)
+            // target.banned comes from the read above the lock, so a ban landing in between could drift this count. It cannot matter today: the actor is refused their own account, so a signed-in owner always remains, which is the same reason the zero-owner case is unreachable at all.
             if (target.role === "owner" && !target.banned) active -= 1
           }
           records.push({
@@ -539,12 +549,18 @@ const { data, error } = await unwrap(
           })
           outcomes.set(id, { id, ok: true })
         }
+        // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route owns the rank rule the plugin has no notion of.
         // One sweep and one insert for the whole set, rather than two statements per row inside the transaction holding the owner lock.
         if (swept.length > 0) {
           await tx.delete(session).where(inArray(session.userId, swept))
         }
         await recordActivity(tx, records)
-        return targets.map((id) => outcomes.get(id) as BatchOutcome)
+        // Every branch above sets an outcome; the fallback is here so one that forgets cannot put null in the results and throw in the reader.
+        return targets.map(
+          (id) =>
+            outcomes.get(id) ??
+            refused(id, "CONFLICT", "This account changed while you were acting on it. Try again."),
+        )
       })
       return c.json({ data: { results } })
     },
@@ -644,9 +660,8 @@ const { data, error } = await unwrap(
       })
     },
   )
-  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
+  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows.
   .use("/allowlist", requireFeature("allowlist"))
-  .use("/allowlist/*", requireFeature("allowlist"))
   .get(
     "/allowlist",
     describeRoute({

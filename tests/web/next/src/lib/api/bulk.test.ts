@@ -1,21 +1,17 @@
 import { describe, expect, test } from "bun:test"
 
+import type { BatchOutcome, BatchRefusalCode } from "../../../../../../api/hono/src/lib/batch"
 import { MAX_BATCH } from "../../../../../../packages/config/src/console"
-import {
-  describeBulk,
-  foldBatch,
-  runBatched,
-  type BatchResult,
-} from "../../../../../../web/next/src/lib/api/bulk"
+import { describeBulk, foldBatch, runBatched } from "../../../../../../web/next/src/lib/api/bulk"
 
-const ok = (id: string): BatchResult => ({ id, ok: true })
-const no = (id: string, code: string, message: string): BatchResult => ({
+const ok = (id: string): BatchOutcome => ({ id, ok: true })
+const no = (id: string, code: BatchRefusalCode, message: string): BatchOutcome => ({
   code,
   id,
   message,
   ok: false,
 })
-const answered = (results: BatchResult[]) => ({ data: { results }, error: null })
+const answered = (results: BatchOutcome[]) => ({ data: { results }, error: null })
 
 describe("foldBatch", () => {
   test("counts what got through", () => {
@@ -99,6 +95,23 @@ describe("runBatched", () => {
       return { data: { results: slice.map((id) => ({ id, ok: true as const })) }, error: null }
     })
     expect(calls).toBe(1)
+  })
+
+  test("stops once the request itself is refused, and counts the rest as untried", async () => {
+    // A 429 is about the request, not the rows, so the chunks after it would be refused the same way. Sending them spends the rate limit hardest exactly when it has run out.
+    let calls = 0
+    const ids = Array.from({ length: MAX_BATCH * 3 }, (_, index) => `id${index}`)
+    const outcome = await runBatched(ids, async () => {
+      calls += 1
+      return { data: null, error: { code: "TOO_MANY_REQUESTS", message: "Slow down." } }
+    })
+    expect(calls).toBe(1)
+    expect(outcome).toEqual({
+      done: 0,
+      failed: ids.length,
+      firstMessage: "Slow down.",
+      refused: 0,
+    })
   })
 
   test("adds up what every chunk did, and keeps the first message there was", async () => {

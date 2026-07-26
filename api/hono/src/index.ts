@@ -177,6 +177,7 @@ socket.addEventListener("message", (event) => {
   .get("/docs", apiReference)
 
 export type AppType = typeof routes
+export type { BatchOutcome, BatchRefusalCode } from "@/lib/batch"
 export type { ErrorCode } from "@/lib/error"
 
 // Bun.serve() shape locally and self-hosted, Node http.Server on Vercel; see @/lib/server.

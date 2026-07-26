@@ -1,12 +1,7 @@
+import type { BatchOutcome } from "@api/hono"
 import { MAX_BATCH } from "@packages/config/console"
 
 import { toast } from "@/components/ui/toast"
-
-// A per-id outcome from a set route, the shape api/hono/src/lib/batch.ts returns.
-export type BatchResult = { id: string } & (
-  | { ok: true }
-  | { code: string; message: string; ok: false }
-)
 
 export type BulkOutcome = {
   done: number
@@ -20,7 +15,7 @@ export type BulkOutcome = {
 export function foldBatch(
   ids: string[],
   result: {
-    data: { results: BatchResult[] } | null
+    data: { results: BatchOutcome[] } | null
     error: { code: string; message: string } | null
   },
 ): BulkOutcome {
@@ -52,18 +47,24 @@ export function foldBatch(
 export async function runBatched(
   ids: string[],
   call: (slice: string[]) => Promise<{
-    data: { results: BatchResult[] } | null
+    data: { results: BatchOutcome[] } | null
     error: { code: string; message: string } | null
   }>,
 ): Promise<BulkOutcome> {
   const total: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
   for (let at = 0; at < ids.length; at += MAX_BATCH) {
     const slice = ids.slice(at, at + MAX_BATCH)
-    const outcome = foldBatch(slice, await call(slice))
+    const result = await call(slice)
+    const outcome = foldBatch(slice, result)
     total.done += outcome.done
     total.failed += outcome.failed
     total.refused += outcome.refused
     if (!total.firstMessage) total.firstMessage = outcome.firstMessage
+    // A refused request is about the request, not the rows in it, so the next chunk would be refused the same way. Sending nine more doomed requests spends the rate limit hardest exactly when it has run out, so the rest are counted as untried rather than attempted.
+    if (!result.data) {
+      total.failed += ids.length - (at + slice.length)
+      break
+    }
   }
   return total
 }

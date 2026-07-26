@@ -1,8 +1,5 @@
-import { z } from "zod"
-
-// Re-exported so a route reads its own contract from one import.
-export { MAX_BATCH } from "@packages/config/console"
 import { MAX_BATCH } from "@packages/config/console"
+import { z } from "zod"
 
 // A batch acts on rows the caller picked, and every guard in this API runs per target, so three changing and two refusing is the designed answer rather than a partial failure to paper over.
 // That is why a batch keeps the ordinary envelope instead of reaching for 207. The request either was not allowed at all, which is the usual { error } from the gate, or it ran and every row carries its own outcome inside { data }. 207 is still 2xx, so unwrap() on the web would treat it identically to 200 while the error map, the response sets and the docs all gained a status nothing else uses.
