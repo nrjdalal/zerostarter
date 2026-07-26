@@ -142,10 +142,15 @@ export function UsersDataTable() {
         changeable.map((row) => row.id),
         (ids) => unwrap(apiClient.v1.admin.users.role.$patch({ json: { ids, role } })),
       ),
-    onSuccess: (outcome) => {
+    onSuccess: (outcome, role) => {
       setPendingRole(null)
       table.resetRowSelection()
-      toastBulk(outcome, "changed")
+      // Named when it was one account, counted when it was a batch: "1 changed" reads like a report about someone you were looking at by name.
+      toastBulk(
+        outcome,
+        "changed",
+        changeable[0] ? `Changed ${changeable[0].email} to ${role}` : undefined,
+      )
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -168,11 +173,15 @@ export function UsersDataTable() {
         users.map((row) => row.id),
         (ids) => unwrap(apiClient.v1.admin.users.status.$patch({ json: { banned, ids } })),
       ),
-    onSuccess: (outcome, { banned, fromSelection }) => {
+    onSuccess: (outcome, { banned, fromSelection, users }) => {
       setPendingStatus(null)
       // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
       if (fromSelection) table.resetRowSelection()
-      toastBulk(outcome, banned ? "banned" : "unbanned")
+      toastBulk(
+        outcome,
+        banned ? "banned" : "unbanned",
+        users[0] ? `${banned ? "Banned" : "Unbanned"} ${users[0].email}` : undefined,
+      )
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })

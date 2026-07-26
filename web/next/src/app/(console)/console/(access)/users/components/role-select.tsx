@@ -51,6 +51,7 @@ export function UserRoleSelect({
       toast.add({ title: error.message, type: "error" })
     },
     onSuccess: async (changed) => {
+      // Says who, like every other line this table raises, so the toast still means something after you have scrolled away from the row.
       toast.add({ title: `Changed ${email} to ${changed}`, type: "success" })
       // Held until the refetch settles: clearing first would snap the trigger back to the stale role for a beat, which reads as the change failing.
       await queryClient.invalidateQueries({ queryKey: ["console-users"] })
