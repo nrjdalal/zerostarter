@@ -4,7 +4,6 @@ import { grantableRoles, type ConsoleRole } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Column } from "@tanstack/react-table"
 import * as React from "react"
-import { toast } from "sonner"
 
 import type { ConsoleUser } from "@/app/(console)/console/(access)/users/components/data-columns"
 import { useConsoleRole } from "@/components/console/role"
@@ -17,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { apiClient, unwrap } from "@/lib/api/client"
+import { toast } from "@/lib/toast"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
 export function UserRoleSelect({

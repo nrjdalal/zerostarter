@@ -2,10 +2,10 @@
 
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { toast } from "@/lib/toast"
 
 interface CopyAsMarkdownProps {
   url: string

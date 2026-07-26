@@ -1,4 +1,4 @@
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 // How many of a selection's rows are in flight at once. Each call re-reads the session past the cookie cache, a round trip from the web to the API, and each one counts against the per-user rate limit, so a hundred selected rows would otherwise rate-limit themselves into failures the person reads as refusals.
 const CONCURRENCY = 5

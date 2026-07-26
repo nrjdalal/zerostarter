@@ -6,7 +6,6 @@ import { useForm } from "@tanstack/react-form"
 import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useState } from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
@@ -31,6 +30,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
+import { toast } from "@/lib/toast"
 import { slugify } from "@/lib/utils"
 
 type Organization = {
