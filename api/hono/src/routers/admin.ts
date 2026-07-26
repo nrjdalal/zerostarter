@@ -9,7 +9,16 @@ import {
   refuseBan,
   refuseRoleChange,
 } from "@packages/auth/access"
-import { allowlist, db, session, user } from "@packages/db"
+import { ACTIVITY_ACTIONS } from "@packages/config/console"
+import {
+  activity,
+  allowlist,
+  db,
+  recordActivity,
+  roleChangeSummary,
+  session,
+  user,
+} from "@packages/db"
 import { and, asc, desc, eq, ilike, isNull, notInArray, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
@@ -43,7 +52,7 @@ const facetSchema = <T extends readonly [string, ...string[]]>(values: T) =>
     .pipe(z.array(z.enum(values)).max(values.length))
 
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
-const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
+const SORTS = ["banned", "createdAt", "email", "lastActive", "name", "role"] as const
 
 const usersQuerySchema = z.object({
   ...listQueryShape,
@@ -67,15 +76,15 @@ const BAN_MESSAGES: Record<BanRefusal, string> = {
 
 const allowlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  createdBy: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
-  createdByName: z.string().nullable().meta({ example: "Ada Lovelace" }),
+  actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  actor: z.string().nullable().meta({ example: "ada@example.com" }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
 
 // One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
-const ALLOWLIST_SORTS = ["createdAt", "createdByName", "kind", "value"] as const
+const ALLOWLIST_SORTS = ["actor", "createdAt", "kind", "value"] as const
 
 const allowlistQuerySchema = z.object({
   ...listQueryShape,
@@ -85,11 +94,25 @@ const allowlistQuerySchema = z.object({
 
 const allowlistSortColumns = {
   createdAt: allowlist.createdAt,
-  // The author's name comes from the join, so sorting by it sorts what the column actually shows. A seeded rule has none, which is why the order below is explicit about NULLs.
-  createdByName: user.name,
+  // Resolved the same way the row renders, so sorting sorts what you see. A seeded rule has neither side, which is why the order below is explicit about NULLs.
+  actor: sql`coalesce(${user.email}, ${allowlist.actor})`,
   kind: allowlist.kind,
   value: allowlist.value,
 } satisfies Record<(typeof ALLOWLIST_SORTS)[number], unknown>
+
+const activitySchema = z.object({
+  action: z.enum(ACTIVITY_ACTIONS).meta({ example: "role.change" }),
+  actor: z.string().meta({ example: "ada@example.com" }),
+  actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
+  id: z.string().meta({ example: "9f1c2a44-7b3e-4d21-9d64-2a1b0c8e7f55" }),
+  summary: z.string().meta({ example: "ada@example.com, member to admin" }),
+})
+
+const activityQuerySchema = z.object({
+  ...listQueryShape,
+  action: facetSchema(ACTIVITY_ACTIONS),
+})
 
 const allowlistCreateSchema = z.object({
   value: z.string().trim().min(1).max(254),
@@ -124,17 +147,23 @@ const asUserResponse = (row: {
   emailVerified: boolean
   id: string
   image: string | null
+  lastActive?: Date | null
   name: string
   role: string | null
 }) => ({
   ...row,
   banned: row.banned ? true : false,
   createdAt: row.createdAt.toISOString(),
+  lastActive: row.lastActive ? row.lastActive.toISOString() : null,
   role: consoleRole(row.role),
 })
 
 const userSchema = z.object({
   banned: z.boolean().meta({ example: false }),
+  lastActive: z
+    .string()
+    .nullable()
+    .meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   createdAt: z.string().meta({ format: "date-time", example: "2025-12-17T14:33:40.317Z" }),
   email: z.string().meta({ example: "user@example.com" }),
   emailVerified: z.boolean().meta({ example: true }),
@@ -149,6 +178,8 @@ const sortColumns = {
   banned: sql`coalesce(${user.banned}, false)`,
   createdAt: user.createdAt,
   email: user.email,
+  // From the sessions subquery below. Null for anyone with none, which a ban or a sign-out leaves behind, so the order says so explicitly.
+  lastActive: sql`last_active`,
   name: user.name,
   // By rank, not alphabetically: the whole point of the ladder is that it is an ordering, so owner leads and user trails. Derived from CONSOLE_ROLES, and an unrecognized value scores with the rung it displays as.
   role: sql.raw(
@@ -227,6 +258,16 @@ const { data, error } = await unwrap(
       )
       const where = and(search, roleConditions.length ? or(...roleConditions) : undefined)
 
+      // Last activity is the newest session touch per person, grouped once and joined rather than correlated per row. A ban deletes their sessions and a sign-out removes one, so plenty of people have none, which is why the order below is explicit about NULLs.
+      const activityByUser = db
+        .select({
+          lastActive: sql<Date | null>`max(${session.updatedAt})`.as("last_active"),
+          userId: session.userId,
+        })
+        .from(session)
+        .groupBy(session.userId)
+        .as("session_activity")
+
       const [rows, total] = await Promise.all([
         db
           .select({
@@ -236,12 +277,17 @@ const { data, error } = await unwrap(
             emailVerified: user.emailVerified,
             id: user.id,
             image: user.image,
+            lastActive: activityByUser.lastActive,
             name: user.name,
             role: user.role,
           })
           .from(user)
+          .leftJoin(activityByUser, eq(activityByUser.userId, user.id))
           .where(where)
-          .orderBy(dir === "asc" ? asc(sortColumns[sort]) : desc(sortColumns[sort]), asc(user.id))
+          .orderBy(
+            sql`${sortColumns[sort]} ${sql.raw(dir === "asc" ? "asc" : "desc")} nulls last`,
+            asc(user.id),
+          )
           .limit(perPage)
           .offset((page - 1) * perPage),
         // Runs per batch, cheap at starter scale; for large tables return it only on page 1 or back the ILIKE with a pg_trgm index.
@@ -345,6 +391,12 @@ const { data, error } = await unwrap(
             "This account changed while you were acting on it. Try again.",
           )
         }
+        // In the transaction, so the change and the record of it stand or fall together.
+        await recordActivity(tx, {
+          action: "role.change",
+          actor: { email: actor.email, id: actor.id },
+          summary: roleChangeSummary(row.email, target.role, nextRole),
+        })
         return row
       })
       return c.json({ data: { user: asUserResponse(updated) } })
@@ -455,6 +507,11 @@ const { data, error } = await unwrap(
         if (banned) {
           await tx.delete(session).where(eq(session.userId, targetId))
         }
+        await recordActivity(tx, {
+          action: banned ? "user.ban" : "user.unban",
+          actor: { email: actor.email, id: actor.id },
+          summary: row.email,
+        })
         return row
       })
       return c.json({ data: { user: asUserResponse(updated) } })
@@ -463,6 +520,103 @@ const { data, error } = await unwrap(
   // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
   .use("/allowlist", requireFeature("allowlist"))
   .use("/allowlist/*", requireFeature("allowlist"))
+  .get(
+    "/activity",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "What the console did and who did it, newest first. Append only, so the list never shows an edited row.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.activity.$get({ query: { page: "1", perPage: "25" } }),
+)`,
+          },
+        ],
+      } as object),
+      responses: {
+        200: {
+          description: "OK",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  data: z.object({ events: z.array(activitySchema), total: z.number() }),
+                }),
+              ),
+            },
+          },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("query", activityQuerySchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const { action, dir, page, perPage, q } = c.req.valid("query")
+      const search = q
+        ? or(
+            ilike(activity.summary, `%${escapeLike(q)}%`),
+            ilike(activity.actor, `%${escapeLike(q)}%`),
+            ilike(user.email, `%${escapeLike(q)}%`),
+          )
+        : undefined
+      const where = and(
+        search,
+        action.length ? or(...action.map((value) => eq(activity.action, value))) : undefined,
+      )
+
+      const [rows, counted] = await Promise.all([
+        db
+          .select({
+            action: activity.action,
+            // The actor's current email when the account is still there, else what was stored when they acted.
+            actor: sql<string>`coalesce(${user.email}, ${activity.actor})`,
+            actorId: activity.actorId,
+            createdAt: activity.createdAt,
+            id: activity.id,
+            summary: activity.summary,
+          })
+          .from(activity)
+          .leftJoin(user, eq(user.id, activity.actorId))
+          .where(where)
+          .orderBy(
+            dir === "asc" ? asc(activity.createdAt) : desc(activity.createdAt),
+            asc(activity.id),
+          )
+          .limit(perPage)
+          .offset((page - 1) * perPage),
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(activity)
+          .leftJoin(user, eq(user.id, activity.actorId))
+          .where(where),
+      ])
+
+      return c.json({
+        data: {
+          events: rows.map((row) => ({
+            ...row,
+            action: ACTIVITY_ACTIONS.some((known) => known === row.action)
+              ? (row.action as (typeof ACTIVITY_ACTIONS)[number])
+              : "role.change",
+            createdAt: row.createdAt.toISOString(),
+          })),
+          total: counted[0] ? counted[0].value : 0,
+        },
+      })
+    },
+  )
   .get(
     "/allowlist",
     describeRoute({
@@ -522,14 +676,15 @@ const { data, error } = await unwrap(
         db
           .select({
             createdAt: allowlist.createdAt,
-            createdBy: allowlist.createdBy,
-            createdByName: user.name,
+            actorId: allowlist.actorId,
+            // The author's current email when the account is still there, else the email stored when the rule was added. Null only for a rule nobody created.
+            actor: sql<string | null>`coalesce(${user.email}, ${allowlist.actor})`,
             id: allowlist.id,
             kind: allowlist.kind,
             value: allowlist.value,
           })
           .from(allowlist)
-          .leftJoin(user, eq(user.id, allowlist.createdBy))
+          .leftJoin(user, eq(user.id, allowlist.actorId))
           .where(where)
           // NULLS LAST spelled out, because Postgres defaults to NULLS FIRST on DESC, which would put the rules nobody is named for at the top of a Z-to-A sort.
           .orderBy(
@@ -542,7 +697,7 @@ const { data, error } = await unwrap(
         db
           .select({ value: sql<number>`count(*)::int` })
           .from(allowlist)
-          .leftJoin(user, eq(user.id, allowlist.createdBy))
+          .leftJoin(user, eq(user.id, allowlist.actorId))
           .where(where),
       ])
 
@@ -614,12 +769,22 @@ const { data, error } = await unwrap(
         throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
       }
       // The check above races another admin adding the same rule, so the constraint is the authority and its violation is translated rather than surfacing as a 500.
+      const author = { email: c.get("user").email, id: c.get("user").id }
       let created
       try {
-        ;[created] = await db
-          .insert(allowlist)
-          .values({ createdBy: c.get("user").id, value: rule.value })
-          .returning()
+        created = await db.transaction(async (tx) => {
+          const [row] = await tx
+            .insert(allowlist)
+            .values({ actor: author.email, actorId: author.id, value: rule.value })
+            .returning()
+          if (!row) return undefined
+          await recordActivity(tx, {
+            action: "allowlist.add",
+            actor: author,
+            summary: row.value,
+          })
+          return row
+        })
       } catch (error) {
         if (isUniqueViolation(error)) {
           throw new ApiError(409, "CONFLICT", alreadyListed(rule.value))
@@ -635,7 +800,7 @@ const { data, error } = await unwrap(
           rule: {
             ...created,
             createdAt: created.createdAt.toISOString(),
-            createdByName: c.get("user").name,
+            actor: c.get("user").email,
             // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
             kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
           },
@@ -677,13 +842,23 @@ const { data, error } = await unwrap(
       },
     }),
     async (c) => {
-      const [deleted] = await db
-        .delete(allowlist)
-        .where(eq(allowlist.id, c.req.param("id")))
-        .returning({ id: allowlist.id })
-      if (!deleted) {
-        throw new ApiError(404, "NOT_FOUND", "Rule not found")
-      }
+      const actor = c.get("user")
+      const deleted = await db.transaction(async (tx) => {
+        const [row] = await tx
+          .delete(allowlist)
+          .where(eq(allowlist.id, c.req.param("id")))
+          .returning({ id: allowlist.id, value: allowlist.value })
+        if (!row) {
+          throw new ApiError(404, "NOT_FOUND", "Rule not found")
+        }
+        // The rule is gone after this, so the record is the only place its value survives.
+        await recordActivity(tx, {
+          action: "allowlist.remove",
+          actor: { email: actor.email, id: actor.id },
+          summary: row.value,
+        })
+        return row
+      })
       return c.json({ data: { id: deleted.id } })
     },
   )

@@ -8,9 +8,15 @@ source: local
 
 PostgreSQL with Drizzle ORM. Schema lives in `packages/db/src/schema/`, migrations in `packages/db/drizzle/`. Schema, SQL, and snapshot travel together in one PR.
 
+## 0. Show the schema and wait
+
+**Never generate or apply a migration before the user has seen the schema and said go.** Post the table or the altered columns, name the choices that are hard to reverse (nullability, what a null means, foreign keys and their delete behaviour, indexes, whether anything is derived or generated, retention), and stop there.
+
+Two reasons this is a hard stop rather than a courtesy. A shape is cheap to argue about and expensive to change once rows exist, so the review has to happen before the write. And `canary` and production share one database, so applying reaches production the moment it runs, not when the release ships.
+
 ## 1. Edit the schema
 
-- A new table gets its own `packages/db/src/schema/<name>.ts`, then an export from `index.ts`: `export * from "@/schema/<name>"`. Miss that export and the table never reaches a migration.
+- Schema files group by concern, not one per table: `auth.ts` holds the Better Auth tables, `console.ts` the ones the console owns. A new table joins the file for its concern, or starts a new one when it is a new concern, and that file needs an export from `index.ts`: `export * from "@/schema/<name>"`. Miss that export and the table never reaches a migration.
 - For examples, read `auth.ts` (tables, relations, indexes) and `waitlist.ts` (a minimal non-auth table).
 - Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column. Both bend for the same kind of column: use `onDelete: "set null"` when the row outlives the reference and the column is only provenance, and skip the index when nothing queries by it and the table is small enough that the delete-time scan is free. `allowlist.createdBy` is both: deleting the admin who added a rule must not delete the rule, and although the list joins, searches and sorts through it, every one of those drives off `user`'s primary key rather than this column, so an index here would serve only the delete-time sweep on a table holding a hand-typed list. Index a FK when a query narrows on the column itself, or when the table is large enough for the sweep to matter.
 

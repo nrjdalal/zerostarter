@@ -4,6 +4,7 @@ import { ACCESS_ROLE, roleAtLeast, type ConsoleRole } from "@packages/auth/acces
 import { features } from "@packages/config/site"
 import {
   RiBookLine,
+  RiHistoryLine,
   RiDashboardLine,
   RiGroupLine,
   RiShieldKeyholeLine,
@@ -65,6 +66,19 @@ const navGroups: { items: ConsoleNavItem[]; label: string; minRole?: ConsoleRole
     ],
     label: "Access",
     // Who may reach the console and what they may do there is an admin concern; a member's console is the shell and the docs. Hiding is cosmetic, so both pages and the API enforce the same line.
+    minRole: ACCESS_ROLE,
+  },
+  {
+    items: [
+      {
+        exact: false,
+        icon: RiHistoryLine,
+        title: "Activity",
+        url: "/console/activity",
+      },
+    ],
+    label: "History",
+    // Names who changed whose account, so it sits behind the same rung as the changes themselves.
     minRole: ACCESS_ROLE,
   },
 ]

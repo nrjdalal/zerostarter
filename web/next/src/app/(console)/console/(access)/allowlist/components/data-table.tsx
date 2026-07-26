@@ -56,7 +56,7 @@ type AllowlistSort = NonNullable<
 >
 const SORT_FIELDS = {
   createdAt: "createdAt",
-  createdByName: "createdByName",
+  actor: "actor",
   kind: "kind",
   value: "value",
 } as const satisfies Record<string, AllowlistSort>

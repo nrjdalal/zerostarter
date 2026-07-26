@@ -1,5 +1,5 @@
 import { features } from "@packages/config/site"
-import { allowlist, db, user } from "@packages/db"
+import { allowlist, db, recordActivity, roleChangeSummary, user } from "@packages/db"
 import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
 import { ALLOWLIST_KINDS, matchesAllowlist, roleAtLeast, type AllowlistRule } from "@/access"
@@ -42,17 +42,29 @@ export async function grantConsoleAccessOnSignIn(session: {
       ALLOWLIST_KINDS.some((kind) => kind === rule.kind),
     )
     if (!matchesAllowlist(signingIn.email, rules)) return
-    // Conditional on both the rung and the marker read above, so two sign-ins racing each other grant once between them.
-    await db
-      .update(user)
-      .set({ role: "member", roleSetAt: new Date() })
-      .where(
-        and(
-          eq(user.id, signingIn.id),
-          isNull(user.roleSetAt),
-          or(isNull(user.role), eq(user.role, "user")),
-        ),
-      )
+    // Which rule did it, so the activity row can name the policy rather than a person: nobody acted here.
+    const matched = rules.find((rule) => rule.value === address || rule.value === address.slice(at))
+    await db.transaction(async (tx) => {
+      // Conditional on both the rung and the marker read above, so two sign-ins racing each other grant once between them.
+      const [granted] = await tx
+        .update(user)
+        .set({ role: "member", roleSetAt: new Date() })
+        .where(
+          and(
+            eq(user.id, signingIn.id),
+            isNull(user.roleSetAt),
+            or(isNull(user.role), eq(user.role, "user")),
+          ),
+        )
+        .returning({ email: user.email })
+      // Nothing to record when the qual matched nothing, which is the racing sign-in that lost.
+      if (!granted) return
+      await recordActivity(tx, {
+        action: "role.change",
+        actor: { email: `Allowlist rule ${matched ? matched.value : signingIn.email}` },
+        summary: roleChangeSummary(granted.email, signingIn.role, "member"),
+      })
+    })
   } catch (error) {
     console.error("allowlist grant failed during sign-in:", error)
   }

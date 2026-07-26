@@ -32,7 +32,8 @@ import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { facetOptions, resolveSort } from "@/lib/data-table-layout"
 
-const DEFAULT_SORT = { desc: true, id: "createdAt" }
+// Who has been around lately, rather than who signed up lately: the console is usually opened to find someone active.
+const DEFAULT_SORT = { desc: true, id: "lastActive" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
 
 // Derived from the ladder rather than restated, so a new rung shows up in the facet instead of quietly missing from it.
@@ -47,6 +48,7 @@ type UsersSort = NonNullable<
 >
 const SORT_FIELDS = {
   createdAt: "createdAt",
+  lastActive: "lastActive",
   email: "email",
   name: "name",
   role: "role",
@@ -61,7 +63,7 @@ async function fetchUsers({
   sorting,
 }: DataTablePageInput): Promise<DataTablePage<ConsoleUser>> {
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
-  const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
+  const sortId = resolveSort(SORT_FIELDS, sort.id, "lastActive")
   // Drop values the API's enum would reject, so a hand-written ?role=bogus degrades to an unfiltered list (which is what the facet UI shows, since it cannot select an unknown value) instead of 400ing the table into its error state.
   const roles = filters.role ? filters.role.filter((role) => ROLE_VALUES.has(role)) : []
   const { data, error } = await unwrap(
