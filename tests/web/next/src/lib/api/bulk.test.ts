@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test"
 
+import { MAX_BATCH } from "../../../../../../packages/config/src/console"
 import {
   describeBulk,
   foldBatch,
+  runBatched,
   type BatchResult,
 } from "../../../../../../web/next/src/lib/api/bulk"
 
@@ -73,6 +75,53 @@ describe("foldBatch", () => {
       failed: 0,
       firstMessage: null,
       refused: 0,
+    })
+  })
+})
+
+describe("runBatched", () => {
+  test("splits a selection at the cap the route enforces", async () => {
+    // The tables load more as you scroll and select-all takes every loaded row, so a selection can outgrow one request. Before this split, the route rejected the whole thing as invalid input and the action silently did nothing.
+    const sent: number[] = []
+    const ids = Array.from({ length: MAX_BATCH * 2 + 7 }, (_, index) => `id${index}`)
+    const outcome = await runBatched(ids, async (slice) => {
+      sent.push(slice.length)
+      return { data: { results: slice.map((id) => ({ id, ok: true as const })) }, error: null }
+    })
+    expect(sent).toEqual([MAX_BATCH, MAX_BATCH, 7])
+    expect(outcome.done).toBe(ids.length)
+  })
+
+  test("sends one request when the selection fits", async () => {
+    let calls = 0
+    await runBatched(["a", "b"], async (slice) => {
+      calls += 1
+      return { data: { results: slice.map((id) => ({ id, ok: true as const })) }, error: null }
+    })
+    expect(calls).toBe(1)
+  })
+
+  test("adds up what every chunk did, and keeps the first message there was", async () => {
+    const ids = Array.from({ length: MAX_BATCH + 2 }, (_, index) => `id${index}`)
+    const outcome = await runBatched(ids, async (slice) =>
+      slice.length === MAX_BATCH
+        ? {
+            data: {
+              results: slice.map((id, index) =>
+                index === 0
+                  ? { code: "FORBIDDEN", id, message: "first", ok: false as const }
+                  : { id, ok: true as const },
+              ),
+            },
+            error: null,
+          }
+        : { data: null, error: { code: "NETWORK_ERROR", message: "second" } },
+    )
+    expect(outcome).toEqual({
+      done: MAX_BATCH - 1,
+      failed: 2,
+      firstMessage: "first",
+      refused: 1,
     })
   })
 })

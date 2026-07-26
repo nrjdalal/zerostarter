@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { foldBatch, toastBulk } from "@/lib/api/bulk"
+import { runBatched, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
@@ -135,16 +135,12 @@ export function UsersDataTable() {
       null,
   )
 
-  // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
+  // The guard is per target, so a batch is partly refusable by design: one call for the set, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
     mutationFn: async (role: ConsoleRole) =>
-      foldBatch(
+      runBatched(
         changeable.map((row) => row.id),
-        await unwrap(
-          apiClient.v1.admin.users.role.$patch({
-            json: { ids: changeable.map((row) => row.id), role },
-          }),
-        ),
+        (ids) => unwrap(apiClient.v1.admin.users.role.$patch({ json: { ids, role } })),
       ),
     onSuccess: (outcome) => {
       setPendingRole(null)
@@ -168,13 +164,9 @@ export function UsersDataTable() {
       fromSelection: boolean
       users: ConsoleUser[]
     }) =>
-      foldBatch(
+      runBatched(
         users.map((row) => row.id),
-        await unwrap(
-          apiClient.v1.admin.users.status.$patch({
-            json: { banned, ids: users.map((row) => row.id) },
-          }),
-        ),
+        (ids) => unwrap(apiClient.v1.admin.users.status.$patch({ json: { banned, ids } })),
       ),
     onSuccess: (outcome, { banned, fromSelection }) => {
       setPendingStatus(null)

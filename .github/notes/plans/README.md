@@ -27,7 +27,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
 - [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
 - [OpenAPI: the WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664; subsumed by api-envelope-typed-endpoint, but shippable on its own as the smaller fix.
-- [Batch the console's bulk writes](api-batch-writes.md) - one request per selected row spends most of a 120/min budget on one click, and the fan-out serializes at the owner lock anyway; the blocker is deciding what a partial success looks like in the envelope (#759).
+- [Batch the console's bulk writes](api-batch-writes.md) - built in PR #767: three set routes taking ids in the body, answering per-id outcomes inside the normal envelope, with the per-row routes removed rather than kept beside them (#759).
 - [An API route harness](api-route-test-harness.md) - the last-owner FOR UPDATE, the ban compare-and-set and the sign-in grant hook are only checked by hand; a mock cannot tell you whether a lock blocks (PR #758 review).
 - [Unit-test the pure web seams](web-content-source-tests.md) - the contentSource gate and the data-table layout math; needs a web test harness first (PR #691, #754 reviews).
 - [Console not-found status and the anonymous white flash](console-notfound-status.md) - a layout-thrown notFound cannot unwind into an already-streaming parent: console 404s soft-200, and an anonymous visit paints white before hydrating; middleware is the real fix (PR #691, #758 reviews).

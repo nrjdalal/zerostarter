@@ -26,12 +26,20 @@ export const allowlistRemoveSummary = (value: string) => `Removed ${value} from 
 // Takes the caller's transaction, not a database handle, so the record shares the fate of the change it describes: an event always means the change happened, and a change cannot happen unrecorded. Passing the connection instead would make that a convention; this makes it the only thing that compiles.
 export async function recordActivity(
   tx: Transaction,
-  event: { action: ActivityAction; actor: ActivityActor; summary: string },
+  event:
+    | { action: ActivityAction; actor: ActivityActor; summary: string }
+    | { action: ActivityAction; actor: ActivityActor; summary: string }[],
 ) {
-  await tx.insert(activity).values({
-    action: event.action,
-    actor: "label" in event.actor ? event.actor.label : event.actor.email,
-    actorId: "label" in event.actor ? null : event.actor.id,
-    summary: event.summary,
-  })
+  const events = Array.isArray(event) ? event : [event]
+  // Nothing to say is not an insert. A set route can end with every row refused, and an empty VALUES list is a syntax error rather than a no-op.
+  if (events.length === 0) return
+  // One statement for a set: a hundred-row ban would otherwise spend a hundred round trips inside the transaction that holds the owner lock, and every other console write waits on that window.
+  await tx.insert(activity).values(
+    events.map((entry) => ({
+      action: entry.action,
+      actor: "label" in entry.actor ? entry.actor.label : entry.actor.email,
+      actorId: "label" in entry.actor ? null : entry.actor.id,
+      summary: entry.summary,
+    })),
+  )
 }

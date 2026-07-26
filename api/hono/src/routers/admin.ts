@@ -318,9 +318,11 @@ const { data, error } = await unwrap(
       ...({
         "x-codeSamples": [
           {
-            lang: "TypeScript",
-            label: "apiClient",
-            source: `const { data, error } = await unwrap(
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
   apiClient.v1.admin.users.role.$patch({ json: { ids, role: "member" } }),
 )`,
           },
@@ -360,11 +362,13 @@ const { data, error } = await unwrap(
             ).length
           : 0
 
-        const outcomes: BatchOutcome[] = []
-        for (const id of targets) {
+        const outcomes = new Map<string, BatchOutcome>()
+        const records: { action: "role.change"; actor: typeof actor; summary: string }[] = []
+        // Written in id order, answered in the order asked. Two admins acting on overlapping selections take the same row locks in the same sequence, so they queue instead of deadlocking.
+        for (const id of [...targets].sort()) {
           const target = byId.get(id)
           if (!target) {
-            outcomes.push(refused(id, "NOT_FOUND", "User not found"))
+            outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
             continue
           }
           const refusal = refuseRoleChange({
@@ -375,7 +379,7 @@ const { data, error } = await unwrap(
             targetRole: target.role,
           })
           if (refusal) {
-            outcomes.push(refused(id, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal]))
+            outcomes.set(id, refused(id, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal]))
             continue
           }
           const [row] = await tx
@@ -389,7 +393,8 @@ const { data, error } = await unwrap(
             )
             .returning(RETURNED_USER)
           if (!row) {
-            outcomes.push(
+            outcomes.set(
+              id,
               refused(
                 id,
                 "CONFLICT",
@@ -400,14 +405,15 @@ const { data, error } = await unwrap(
           }
           if (target.role === "owner" && nextRole !== "owner") owners -= 1
           if (target.role !== "owner" && nextRole === "owner") owners += 1
-          await recordActivity(tx, {
+          records.push({
             action: "role.change",
             actor,
             summary: roleChangeSummary(row.email, target.role, nextRole),
           })
-          outcomes.push({ id, ok: true })
+          outcomes.set(id, { id, ok: true })
         }
-        return outcomes
+        await recordActivity(tx, records)
+        return targets.map((id) => outcomes.get(id) as BatchOutcome)
       })
       return c.json({ data: { results } })
     },
@@ -421,9 +427,11 @@ const { data, error } = await unwrap(
       ...({
         "x-codeSamples": [
           {
-            lang: "TypeScript",
-            label: "apiClient",
-            source: `const { data, error } = await unwrap(
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
   apiClient.v1.admin.users.status.$patch({ json: { banned: true, ids } }),
 )`,
           },
@@ -453,6 +461,7 @@ const { data, error } = await unwrap(
         const rows = await tx.select().from(user).where(inArray(user.id, targets))
         const byId = new Map(rows.map((row) => [row.id, row]))
         // Owners who can still sign in, counted under the lock and kept in step as the loop bans, for the same reason the role route counts: banning two of the three in one set must not pass both guards on one stale count.
+        // Unbanned only, where the role route counts every owner: a banned owner cannot sign in to grant anyone else, so they do not keep the install reachable, while a banned owner is still an owner for the purposes of who outranks whom.
         let active =
           banned && rows.some((row) => row.role === "owner")
             ? (
@@ -464,11 +473,18 @@ const { data, error } = await unwrap(
               ).filter((owner) => !owner.banned).length
             : 0
 
-        const outcomes: BatchOutcome[] = []
-        for (const id of targets) {
+        const outcomes = new Map<string, BatchOutcome>()
+        const records: {
+          action: "user.ban" | "user.unban"
+          actor: typeof actor
+          summary: string
+        }[] = []
+        const swept: string[] = []
+        // Written in id order, answered in the order asked, so two admins acting on overlapping selections queue on the same row locks instead of deadlocking on opposite orders.
+        for (const id of [...targets].sort()) {
           const target = byId.get(id)
           if (!target) {
-            outcomes.push(refused(id, "NOT_FOUND", "User not found"))
+            outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
             continue
           }
           const refusal = refuseBan({
@@ -477,11 +493,12 @@ const { data, error } = await unwrap(
             targetRole: target.role,
           })
           if (refusal) {
-            outcomes.push(refused(id, "FORBIDDEN", BAN_MESSAGES[refusal]))
+            outcomes.set(id, refused(id, "FORBIDDEN", BAN_MESSAGES[refusal]))
             continue
           }
           if (banned && target.role === "owner" && !target.banned && active <= 1) {
-            outcomes.push(
+            outcomes.set(
+              id,
               refused(
                 id,
                 "FORBIDDEN",
@@ -501,7 +518,8 @@ const { data, error } = await unwrap(
             )
             .returning(RETURNED_USER)
           if (!row) {
-            outcomes.push(
+            outcomes.set(
+              id,
               refused(
                 id,
                 "CONFLICT",
@@ -511,17 +529,22 @@ const { data, error } = await unwrap(
             continue
           }
           if (banned) {
-            await tx.delete(session).where(eq(session.userId, id))
+            swept.push(id)
             if (target.role === "owner" && !target.banned) active -= 1
           }
-          await recordActivity(tx, {
+          records.push({
             action: banned ? "user.ban" : "user.unban",
             actor,
             summary: banned ? banSummary(row.email) : unbanSummary(row.email),
           })
-          outcomes.push({ id, ok: true })
+          outcomes.set(id, { id, ok: true })
         }
-        return outcomes
+        // One sweep and one insert for the whole set, rather than two statements per row inside the transaction holding the owner lock.
+        if (swept.length > 0) {
+          await tx.delete(session).where(inArray(session.userId, swept))
+        }
+        await recordActivity(tx, records)
+        return targets.map((id) => outcomes.get(id) as BatchOutcome)
       })
       return c.json({ data: { results } })
     },
@@ -824,9 +847,11 @@ const { data, error } = await unwrap(
       ...({
         "x-codeSamples": [
           {
-            lang: "TypeScript",
-            label: "apiClient",
-            source: `const { data, error } = await unwrap(
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
   apiClient.v1.admin.allowlist.$delete({ json: { ids } }),
 )`,
           },
@@ -858,13 +883,14 @@ const { data, error } = await unwrap(
           .where(inArray(allowlist.id, targets))
           .returning({ id: allowlist.id, value: allowlist.value })
         const byId = new Map(removed.map((row) => [row.id, row]))
-        for (const row of removed) {
-          await recordActivity(tx, {
-            action: "allowlist.remove",
+        await recordActivity(
+          tx,
+          removed.map((row) => ({
+            action: "allowlist.remove" as const,
             actor,
             summary: allowlistRemoveSummary(row.value),
-          })
-        }
+          })),
+        )
         return targets.map(
           (id): BatchOutcome =>
             byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Rule not found"),

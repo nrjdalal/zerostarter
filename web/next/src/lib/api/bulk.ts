@@ -1,3 +1,5 @@
+import { MAX_BATCH } from "@packages/config/console"
+
 import { toast } from "@/components/ui/toast"
 
 // A per-id outcome from a set route, the shape api/hono/src/lib/batch.ts returns.
@@ -42,6 +44,28 @@ export function foldBatch(
     if (!outcome.firstMessage) outcome.firstMessage = row.message
   }
   return outcome
+}
+
+// Runs a selection through a set route, splitting it at the cap the route enforces.
+// The tables load more as you scroll and select-all takes every loaded row, so a selection can outgrow one request. Splitting here keeps that working: without it the whole action is rejected as invalid input, which reads as nothing happening for the exact selections the set routes exist to serve.
+// Sequential, not concurrent: the point of a set route is that one intent costs one request at a time, and a chunked selection should not spend the rate limit or the lock window any faster than one.
+export async function runBatched(
+  ids: string[],
+  call: (slice: string[]) => Promise<{
+    data: { results: BatchResult[] } | null
+    error: { code: string; message: string } | null
+  }>,
+): Promise<BulkOutcome> {
+  const total: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
+  for (let at = 0; at < ids.length; at += MAX_BATCH) {
+    const slice = ids.slice(at, at + MAX_BATCH)
+    const outcome = foldBatch(slice, await call(slice))
+    total.done += outcome.done
+    total.failed += outcome.failed
+    total.refused += outcome.refused
+    if (!total.firstMessage) total.firstMessage = outcome.firstMessage
+  }
+  return total
 }
 
 // The one sentence a toast needs: what happened, in the caller's own verb, with refused and failed named separately.
