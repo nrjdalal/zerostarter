@@ -25,8 +25,11 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
 - [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
+- [OpenAPI: the WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664; subsumed by api-envelope-typed-endpoint, but shippable on its own as the smaller fix.
+- [Batch the console's bulk writes](api-batch-writes.md) - one request per selected row spends most of a 120/min budget on one click, and the fan-out serializes at the owner lock anyway; the blocker is deciding what a partial success looks like in the envelope (#759).
+- [An API route harness](api-route-test-harness.md) - the last-owner FOR UPDATE, the ban compare-and-set and the sign-in grant hook are only checked by hand; a mock cannot tell you whether a lock blocks (PR #758 review).
 - [Unit-test the pure web seams](web-content-source-tests.md) - the contentSource gate and the data-table layout math; needs a web test harness first (PR #691, #754 reviews).
-- [Console not-found returns HTTP 200](console-notfound-status.md) - pre-existing force-dynamic soft-404, admin-only, low severity (PR #691 review).
+- [Console not-found status and the anonymous white flash](console-notfound-status.md) - a layout-thrown notFound cannot unwind into an already-streaming parent: console 404s soft-200, and an anonymous visit paints white before hydrating; middleware is the real fix (PR #691, #758 reviews).
 - [Derive BlogPostMeta from the blog zod schema](blog-meta-from-schema.md) - carved out of content-source-consolidation; a decouple-vs-derive tradeoff, not a mechanical rename (PR #691 review).
 
 ### Architecture deepenings (2026-07-12 review, deep-module lens)
@@ -43,6 +46,8 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 
 Raised but undecided: real concerns with no agreed next action and no confident verdict. They sit here rather than in the backlog (which implies a plan) or closed (which loses the context), and leave only by being decided. Mirrored as checkboxes on the standing Icebox issue (#707).
 
+- [Gating who may create an account](signup-gating.md) - the Access spec's other half, retired when the allowlist became a console grant; a second list, a fork-edited predicate, or nothing at all (#758).
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
+- [No trail for console role changes](console-role-audit.md) - roles are overwritten in place with no record of who granted what; probably an audit-log concern wider than roles (#758 review).
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
 - [Data table offset pagination](data-table-offset-pagination.md) - batches can skip or repeat a row mid-scroll, and a repeat aliases selection; keyset is the fix but moves the contract (#754 review).

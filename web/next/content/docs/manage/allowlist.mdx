@@ -1,0 +1,49 @@
+---
+slug: /docs/manage/allowlist
+title: Allowlist
+description: Grant console access by domain or address, without promoting people one at a time.
+---
+
+Signing up is open to everyone, and every signed-in person gets the dashboard. The console is the separate, staff-facing area, and the allowlist is how you say who reaches it: a whole domain (`@example.com`) or a single address (`ada@example.com`).
+
+Manage it at **Console > Access > Allowlist**. A fresh fork ships with the `allowlist` [feature flag](/docs/manage/features) **off**, so console access is granted one person at a time until you turn it on; with it off the page 404s, the nav drops it, and the sign-in hook does nothing.
+
+## What a rule does
+
+A rule grants **member**, the console's bottom rung: its holder opens the console and changes nothing. Member reaches what the starter puts there, which is the internal docs, and nothing under Access. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule hands a whole domain either write access or sight of your users.
+
+The grant is applied **on sign-in**, not only at sign-up, so adding `@example.com` covers colleagues who already have accounts, on their next sign-in, rather than only people who join later. It happens **once per account**: `user.role_set_at` records that a rung was decided, by a rule or by a person, and the hook only ever lifts an account carrying no such record. So a rule reaches someone nobody has ruled on, and never overrules an admin.
+
+It never lowers anyone. Someone already at admin or owner keeps their rung, and a role granted by hand is untouched by any rule.
+
+## How rules are read
+
+- **An empty list grants nothing.** A rule is a grant, so no rules means nobody is lifted, and adding your first one cannot hand the console to everyone by accident.
+- **A domain rule covers every address at that domain**, matched exactly. `@example.com` does not cover `@mail.example.com`, which needs its own rule.
+- **An address rule covers exactly one address.** Plus-addressing is not stripped, so a rule for `ada@example.com` does not cover `ada+test@example.com`, while a domain rule covers both.
+- **Case never matters.** Rules are normalized lowercase when saved, so one rule cannot be added twice in different cases.
+
+## Removing a rule
+
+Remove one rule from its row menu, or select several and remove them together. Either way, removing a rule stops future grants and nothing else. Anyone already promoted keeps their role, because a list edit that could silently demote a room full of people would make every edit dangerous.
+
+To take console access away, demote the person in the Users table, in either order and whether or not a rule still matches them: the demotion is itself a decision, so no later sign-in undoes it. That holds for a rung a rule granted and for one granted by hand.
+
+The one exception is an upgrade. `role_set_at` starts empty on every existing row, and an empty record reads as "nobody has decided yet", so an account you revoked to `user` **before** this shipped can be lifted once by a matching rule. There is no way to tell those apart in old data, which is the whole reason the column exists. If it matters on your install, re-run `bun run console:roles revoke <email>` after upgrading: it stamps the record, and the demotion is final from then on. Offboarding is a [role change or a ban](/docs/manage/authentication), never a list edit.
+
+## Enforcement
+
+One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring. It writes `user.role_set_at` alongside the rung and skips anyone already carrying it. Every other path that sets a rung stamps it too, so a demotion from the Users table or from `console:roles` is the last word. The grant is best effort: a database failure there is logged and skipped rather than thrown, because that hook sits on the sign-in path and must never stop anyone signing in. A missed grant is applied by the next sign-in.
+
+<Callout type="info" title="A rule needs a verified address">
+
+Matching is by address, so a rule is only as strong as the proof behind that address, and the hook requires `emailVerified` before it grants anything. The shipped sign-in methods all set it: OAuth comes from the provider, magic link proves possession. A fork that adds email and password without `requireEmailVerification` therefore sees rules quietly stop granting, rather than turning a domain rule into self-service console access for anyone who can claim an address there.
+
+</Callout>
+
+The Access section is an admin concern: reading and changing the list both require `admin`, enforced in the nav, on the page, and on every route behind it. A `member` does not see this page at all.
+
+## Next
+
+- [Authentication](/docs/manage/authentication): the ladder a rule lifts people onto.
+- [Data Tables](/docs/manage/data-tables): the module this page is built from.

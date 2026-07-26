@@ -29,8 +29,11 @@ if (existsSync(generatedPath)) {
   )
 }
 
+// @packages/config stays a devDependency on purpose: tsdown inlines it, so the built dist has no runtime dependency to resolve. Moving it to dependencies makes dist import it at runtime, which then has to resolve inside the pruned Docker image and the Vercel bundle.
 export default definePackageConfig({
   name: "@packages/auth",
+  // access.ts is its own entry so the web can import the rank predicate without pulling the auth instance, which reaches the database driver and does not resolve in a Next build.
+  entry: ["src/access.ts", "src/index.ts"],
   env,
   getSafeEnv,
   define: { __DERIVED_TLDTS__: JSON.stringify(breakdown) },

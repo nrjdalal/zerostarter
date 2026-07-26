@@ -31,6 +31,7 @@ import * as React from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Command,
   CommandEmpty,
@@ -192,6 +193,30 @@ export type DataTablePage<TRow> = {
   total: number
 }
 
+// The select column, so a second table cannot ship a third variant of it. label names the row for a screen reader, which is the part that had already drifted.
+export function selectColumn<TData>(label: (row: TData) => string): ColumnDef<TData> {
+  return {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Select all"
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={table.getIsSomePageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={`Select ${label(row.original)}`}
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableHiding: false,
+    enableSorting: false,
+  }
+}
+
 // The generic server-driven table wiring. A page brings only what a generic hook cannot know (its columns, its fetcher, its filter ids, its column config) and spreads tableProps into DataTable. Client-side tables skip this and use useDataTableState directly.
 export function useDataTable<TRow>({
   batchSize = 25,
@@ -318,6 +343,8 @@ export function useDataTable<TRow>({
     error: query.error,
     isError: query.isError,
     refetch: query.refetch,
+    // The filtered model, so what the selection bar counts and what an action touches cannot drift apart on a client-filtered table.
+    selected: table.getFilteredSelectedRowModel().rows.map((row) => row.original),
     table,
     tableProps: {
       hasMore: query.hasNextPage,
@@ -350,6 +377,7 @@ export function DataTable<TData>({
   isLoadingMore = false,
   onLoadMore,
   onRetry,
+  selectionActions,
   table,
   total,
 }: {
@@ -362,6 +390,8 @@ export function DataTable<TData>({
   isLoadingMore?: boolean
   onLoadMore?: () => void
   onRetry?: () => void
+  // What can be done to the selected rows. Rendered in a bar that floats in over the bottom of the table while anything is selected, next to the rows it acts on rather than up in the toolbar with the filters.
+  selectionActions?: React.ReactNode
   table: TableInstance<TData>
   total?: number
 }) {
@@ -397,6 +427,7 @@ export function DataTable<TData>({
 
   // Back to the top whenever sorting, search, or filters reshape the list; these state slices keep stable identities between changes, so they work as deps directly. The virtualizer instance is stable and deliberately not a dep.
   const { columnFilters, globalFilter, sorting } = table.getState()
+  const filtering = Boolean(globalFilter) || columnFilters.length > 0
   React.useEffect(() => {
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
   }, [columnFilters, globalFilter, sorting])
@@ -425,15 +456,21 @@ export function DataTable<TData>({
       : { className: cn("shrink-0", align), style: { width } }
   }
 
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2">
+    <div className="relative flex min-h-0 flex-1 flex-col gap-2">
       <div
         ref={containerRef}
         role="region"
         aria-label={ariaLabel}
         tabIndex={0}
         onScroll={(event) => loadMoreOnBottomReached(event.currentTarget)}
-        className="focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible"
+        className={cn(
+          "focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible",
+          // Room to scroll the last rows clear of the floating bar, which otherwise sits over them for as long as anything is selected.
+          selectionActions && selectedCount > 0 && "pb-14",
+        )}
       >
         {/* Grid/flex display strips the implicit table semantics, so every structural role is restated explicitly, and the virtualized DOM undercounts rows, so aria-rowcount reports the full set. */}
         <Table
@@ -530,7 +567,8 @@ export function DataTable<TData>({
                 </EmptyContent>
               )}
             </Empty>
-          ) : empty ? (
+          ) : empty && !filtering ? (
+            // The consumer's empty says what the table is for when it holds nothing. A search or filter that matches nothing is a different fact, and saying "no rules yet" over a filtered result states the opposite of the truth.
             empty
           ) : (
             <Empty>
@@ -555,11 +593,26 @@ export function DataTable<TData>({
           </div>
         )}
       </div>
+      {selectionActions && selectedCount > 0 && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-10 z-20 flex justify-center">
+          <div
+            // A group, not a toolbar: role="toolbar" promises roving tabindex and arrow-key navigation, and a handful of buttons that tab normally is the honest shape.
+            role="group"
+            aria-label={`Actions for ${selectedCount} selected`}
+            className="bg-popover animate-in fade-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-1 rounded-md border p-1 shadow-md"
+          >
+            {selectionActions}
+            <Button variant="ghost" onClick={() => table.resetRowSelection()}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
       {(selectable || typeof total === "number") && (
         <div className="text-muted-foreground flex items-center justify-between text-sm">
           <div>
             {selectable
-              ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected`
+              ? `${selectedCount} of ${table.getFilteredRowModel().rows.length} row(s) selected`
               : null}
           </div>
           {typeof total === "number" && !isLoading && (
@@ -663,13 +716,16 @@ export function DataTableCellText<TData, TValue>({
 // ---------------------------------------------------------------------------
 // Toolbar.
 
-// Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and the view-options toggle.
+// Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and on the right the view-options toggle followed by an actions slot.
 export function DataTableToolbar<TData>({
+  actions,
   children,
   searchMaxLength,
   searchPlaceholder = "Search...",
   table,
 }: {
+  // Table-level actions (adding a row, exporting): they end the toolbar, past the view options, away from the filters that narrow what is already there.
+  actions?: React.ReactNode
   children?: React.ReactNode
   searchMaxLength?: number
   searchPlaceholder?: string
@@ -708,7 +764,10 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <div className="flex items-center gap-2">
+        <DataTableViewOptions table={table} />
+        {actions}
+      </div>
     </div>
   )
 }

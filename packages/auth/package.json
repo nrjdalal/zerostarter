@@ -6,8 +6,16 @@
     "dist"
   ],
   "type": "module",
-  "types": "./dist/index.d.mts",
-  "exports": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./access": {
+      "types": "./dist/access.d.mts",
+      "default": "./dist/access.mjs"
+    }
+  },
   "scripts": {
     "build": "bun ../scripts/src/generate-env.ts auth && tsdown",
     "check-types": "tsc --noEmit"
@@ -15,7 +23,8 @@
   "dependencies": {
     "@packages/db": "workspace:*",
     "@packages/env": "workspace:*",
-    "better-auth": "catalog:"
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",

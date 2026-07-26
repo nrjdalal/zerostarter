@@ -53,7 +53,7 @@ The changelog, version bump, tag, and GitHub release are automated: you don't ru
 
 ## Console
 
-- `bun run console:roles <grant|revoke|list> [email]`: set a user's role to gate `/console` (the Better Auth `admin` plugin). `grant` makes them a console admin, `revoke` returns them to `user`, `list` shows the current admins.
+- `bun run console:roles <grant|revoke|list> [email] [role]`: set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder). `grant` takes `owner`, `admin` or `member`, defaulting to `admin`, or to `owner` while the install has none, which is how a fresh install gets its first way in. `revoke` returns them to `user`, and `list` shows everyone with console access.
 
 ## Runs automatically
 

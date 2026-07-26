@@ -32,7 +32,7 @@ export const site = {
 
 A Bun + Turborepo monorepo with two deployable apps and four shared packages:
 - \`api/hono/\` - backend API (Hono). Routers live in \`src/routers/\` and are served under \`/api\`: \`/api/v1\` (app API), \`/api/auth\` (Better Auth handler), \`/api/agents\` (local-only dev sign-in), \`/api/waitlist\` (public waitlist signup + count), \`/api/docs\` (Scalar reference).
-- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(protected)\` (auth-gated dashboard) and \`(console)\` (admin console). Docs and blog are MDX under \`content/\`.
+- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(protected)\` (auth-gated dashboard) and \`(console)\` (staff console, member and above). Docs and blog are MDX under \`content/\`.
 - \`packages/auth/\` - the Better Auth instance (shared server config + plugins).
 - \`packages/db/\` - Drizzle ORM schema + client (PostgreSQL via Bun's SQL driver).
 - \`packages/env/\` - type-safe environment variables (t3-oss/env + Zod); one validated entrypoint per consumer.
@@ -52,7 +52,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 - **Runtime & tooling:** Bun (runtime + package manager), Turborepo, tsdown (bundler for backend packages), Oxlint + Oxfmt (lint/format), TypeScript, Lefthook + Commitlint (git hooks).
 - **Frontend (\`web/next\`):** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, shadcn/ui on Base UI primitives, TanStack Query (data) with TanStack Form (forms), Remixicon, Fumadocs (docs), takumi-js (dynamic OG images), PostHog (analytics).
 - **Backend (\`api/hono\`):** Hono with end-to-end type-safe RPC, Zod + @hono/standard-validator, hono-rate-limiter with Arcjet IP detection, OpenAPI + Scalar reference.
-- **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (role-based access; \`role === "admin"\` gates \`/console\`) plugins.
+- **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (the console role ladder \`owner > admin > member > user\`; member and above reach \`/console\`) plugins.
 
 ## Conventions & Rules
 
@@ -76,6 +76,7 @@ export type Site = typeof site
 
 // Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. waitlist off makes the home a plain landing page.
 export const features = {
+  allowlist: true,
   apiDocs: true,
   blog: true,
   docs: true,

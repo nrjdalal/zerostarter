@@ -26,9 +26,9 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Type-Safe RPC**: [Hono Client](https://hono.dev/docs/guides/rpc) for end-to-end types from the backend to the frontend
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
 - **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
-- **Authorization**: a role-gated admin console at `/console`, backed by the Better Auth admin plugin
+- **Authorization**: a console at `/console` on a four-rung role ladder (`owner > admin > member > user`), with an allowlist that grants access by domain or address
 - **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count; an optional surface that, when enabled, becomes a fresh fork's home
-- **Configurable Features**: toggle the docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
+- **Configurable Features**: toggle the allowlist, docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
@@ -46,7 +46,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 ├── api/
 │   └── hono/      # Backend API (Hono): /api/agents, /api/auth, /api/docs, /api/v1, /api/waitlist
 ├── web/
-│   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
+│   └── next/      # Frontend (Next.js App Router): dashboard, staff console, docs, blog
 └── packages/
     ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client
@@ -118,7 +118,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run db:generate`             | Generate Drizzle migrations from the schema |
 | `bun run db:migrate`              | Apply pending migrations                    |
 | `bun run db:studio`               | Open Drizzle Studio                         |
-| `bun run console:roles`           | Grant, revoke, or list admin console access |
+| `bun run console:roles`           | Grant, revoke, or list console access       |
 | `bun run shadcn:update`           | Update shadcn/ui components                 |
 
 📖 **[All scripts →](https://zerostarter.dev/docs/getting-started/scripts)**

@@ -85,6 +85,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/allowlist": {
+          title: "Allowlist",
+          description:
+            "Grant console access by domain or address, without promoting people one at a time.",
+        },
+      },
+      {
         "/docs/manage/organizations": {
           title: "Organizations & Teams",
           description:

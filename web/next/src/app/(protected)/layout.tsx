@@ -1,3 +1,4 @@
+import { reachesConsole } from "@packages/auth/access"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -7,6 +8,7 @@ import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
+  // Cached, unlike the console's own gate. This runs for every signed-in person on every dashboard render, and the only thing it decides beyond the redirect is whether the Console cross-link is drawn: a ban already deletes the sessions, so the worst staleness is a demoted person seeing a link that 404s for the rest of the cache window. That is not worth a session lookup per render for the whole user base.
   const session = await auth.api.getSession()
 
   if (!session?.user) redirect("/")
@@ -38,7 +40,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
     <SidebarShell
       header={<OrgSwitcher />}
       footer={
-        <DashboardFooter user={session.user} canAccessConsole={session.user.role === "admin"} />
+        <DashboardFooter user={session.user} canAccessConsole={reachesConsole(session.user)} />
       }
     >
       {children}
