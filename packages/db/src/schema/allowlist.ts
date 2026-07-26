@@ -2,7 +2,7 @@ import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 import { user } from "@/schema/auth"
 
-// Who may create an account: each row is a domain rule ("@example.com") or a single address. An empty table admits everyone, so the feature flag is the on/off and rows only narrow it. Rules gate creation alone and never evict an existing account.
+// Who reaches the console: each row is a domain rule ("@example.com") or a single address, and a matching person is lifted to member on their next sign-in. An empty table grants nothing, so a rule is always a deliberate grant, and removing one stops future grants without demoting anyone.
 export const allowlist = pgTable(
   "allowlist",
   {

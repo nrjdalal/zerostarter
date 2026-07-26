@@ -6,7 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 import { toast } from "sonner"
 
-import { UserRoleSelect } from "@/app/(console)/console/(platform)/users/components/role-select"
+import { UserRoleSelect } from "@/app/(console)/console/(access)/users/components/role-select"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
@@ -123,7 +123,7 @@ export const usersColumns: ColumnDef<ConsoleUser>[] = [
   },
   {
     id: "actions",
-    // Absent rather than disabled for a member: a control that exists only to refuse invites the attempt. The API enforces the same line regardless.
+    // Defence in depth: this page is admin-gated, so canWrite is always true here today. Kept so the table stays correct if a lower rung is ever let in, since a control that exists only to refuse invites the attempt.
     cell: ({ row }) => {
       const { canWrite } = useConsoleRole()
       if (!canWrite) return null

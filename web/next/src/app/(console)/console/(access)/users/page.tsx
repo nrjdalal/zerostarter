@@ -1,4 +1,4 @@
-import { UsersDataTable } from "@/app/(console)/console/(platform)/users/components/data-table"
+import { UsersDataTable } from "@/app/(console)/console/(access)/users/components/data-table"
 import { PageHeader } from "@/components/shell/page-header"
 import { PageShell } from "@/components/shell/page-shell"
 import { assertConsoleAccess } from "@/lib/auth/console"

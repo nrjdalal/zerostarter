@@ -78,17 +78,17 @@ const docsConfig = {
         },
       },
       {
-        "/docs/manage/allowlist": {
-          title: "Allowlist",
-          description:
-            "Grant console access by domain or address, without promoting people one at a time.",
-        },
-      },
-      {
         "/docs/manage/authentication": {
           title: "Auth & Organizations",
           description:
             "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
+        },
+      },
+      {
+        "/docs/manage/allowlist": {
+          title: "Allowlist",
+          description:
+            "Grant console access by domain or address, without promoting people one at a time.",
         },
       },
       {

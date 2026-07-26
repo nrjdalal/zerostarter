@@ -3,7 +3,7 @@ import type { Session } from "@packages/auth"
 import type { RoleChangeRefusal } from "@packages/auth/access"
 import { CONSOLE_ROLES, parseAllowlistRule, refuseRoleChange } from "@packages/auth/access"
 import { allowlist, db, user } from "@packages/db"
-import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gt, ilike, isNull, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
@@ -11,7 +11,9 @@ import { z } from "zod"
 import {
   ApiError,
   authErrorResponses,
+  conflictErrorResponses,
   forbiddenErrorResponses,
+  notFoundErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
 import { escapeLike } from "@/lib/sql"
@@ -40,6 +42,18 @@ const ROLE_CHANGE_MESSAGES: Record<RoleChangeRefusal, string> = {
   "owner-only": "Only an owner can make someone an owner.",
   self: "You cannot change your own role.",
   "unknown-role": "That is not a console role.",
+}
+
+// Postgres signals a unique-constraint violation as 23505; drizzle surfaces the driver error as the cause.
+function isUniqueViolation(error: unknown): boolean {
+  const candidates = [error, error instanceof Error ? error.cause : undefined]
+  return candidates.some(
+    (candidate) =>
+      typeof candidate === "object" &&
+      candidate !== null &&
+      "code" in candidate &&
+      (candidate as { code?: unknown }).code === "23505",
+  )
 }
 
 const allowlistSchema = z.object({
@@ -218,6 +232,7 @@ const { data, error } = await unwrap(
         ...validationErrorResponses,
         ...authErrorResponses,
         ...forbiddenErrorResponses,
+        ...notFoundErrorResponses,
       },
     }),
     sValidator("json", roleChangeSchema, (result) => {
@@ -234,7 +249,7 @@ const { data, error } = await unwrap(
       if (!target) {
         throw new ApiError(404, "NOT_FOUND", "User not found")
       }
-      // The one part of the decision that needs the database, so the guard itself stays pure.
+      // The one part of the decision that needs the database, so the guard itself stays pure. Rechecked inside the UPDATE below, since two admins demoting the two remaining owners at once would both pass this read.
       const targetIsLastOwner =
         target.role === "owner" && (await db.$count(user, eq(user.role, "owner"))) <= 1
       const refusal = refuseRoleChange({
@@ -251,8 +266,16 @@ const { data, error } = await unwrap(
       const [updated] = await db
         .update(user)
         .set({ role: nextRole })
-        .where(eq(user.id, targetId))
+        .where(
+          // Demoting an owner only lands while another owner remains, evaluated by the database rather than by the read above, so concurrent demotions cannot leave an install with none.
+          target.role === "owner" && nextRole !== "owner"
+            ? and(eq(user.id, targetId), gt(db.$count(user, eq(user.role, "owner")), 1))
+            : eq(user.id, targetId),
+        )
         .returning()
+      if (!updated) {
+        throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES["last-owner"])
+      }
       return c.json({
         data: {
           user: {
@@ -270,7 +293,7 @@ const { data, error } = await unwrap(
     describeRoute({
       tags: ["Admin"],
       description:
-        "List the rules deciding who may create an account. Readable by any console role; an empty list admits everyone.",
+        "List the rules granting console access. Admin and above; an empty list grants nothing.",
       responses: {
         200: {
           description: "OK",
@@ -343,7 +366,7 @@ const { data, error } = await unwrap(
     describeRoute({
       tags: ["Admin"],
       description:
-        "Add a rule. A leading @ makes it a domain rule, anything else must parse as an address; both are normalized lowercase.",
+        "Add a rule granting console access. A leading @ makes it a domain rule, anything else must parse as an address; both are normalized lowercase.",
       responses: {
         200: {
           description: "OK",
@@ -356,6 +379,7 @@ const { data, error } = await unwrap(
         ...validationErrorResponses,
         ...authErrorResponses,
         ...forbiddenErrorResponses,
+        ...conflictErrorResponses,
       },
     }),
     sValidator("json", allowlistCreateSchema, (result) => {
@@ -380,10 +404,22 @@ const { data, error } = await unwrap(
       if (existing) {
         throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
       }
-      const [created] = await db
-        .insert(allowlist)
-        .values({ createdBy: c.get("user").id, kind: rule.kind, value: rule.value })
-        .returning()
+      // The check above races another admin adding the same rule, so the constraint is the authority and its violation is translated rather than surfacing as a 500.
+      let created
+      try {
+        ;[created] = await db
+          .insert(allowlist)
+          .values({ createdBy: c.get("user").id, kind: rule.kind, value: rule.value })
+          .returning()
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+        }
+        throw error
+      }
+      if (!created) {
+        throw new ApiError(409, "CONFLICT", `${rule.value} is already on the list.`)
+      }
       return c.json({
         data: {
           rule: {
@@ -401,7 +437,7 @@ const { data, error } = await unwrap(
     describeRoute({
       tags: ["Admin"],
       description:
-        "Remove a rule. Removing the last one reopens sign-up to everyone; no existing account is affected either way.",
+        "Remove a rule. Anyone already granted keeps their role; removing a rule only stops future grants.",
       responses: {
         200: {
           description: "OK",
@@ -413,6 +449,7 @@ const { data, error } = await unwrap(
         },
         ...authErrorResponses,
         ...forbiddenErrorResponses,
+        ...notFoundErrorResponses,
       },
     }),
     async (c) => {

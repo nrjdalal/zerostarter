@@ -80,7 +80,7 @@ export const allowlistColumns = (
   },
   {
     id: "actions",
-    // Absent rather than disabled for a member, matching the users table.
+    // Defence in depth, as on the users table: the page is admin-gated, so this branch does not fire today.
     cell: ({ row }) => {
       const { canWrite } = useConsoleRole()
       if (!canWrite) return null

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test"
 
 import {
-  matchesAllowlist,
   CONSOLE_ROLES,
   consoleRole,
+  matchesAllowlist,
   parseAllowlistRule,
   refuseRoleChange,
   roleAtLeast,

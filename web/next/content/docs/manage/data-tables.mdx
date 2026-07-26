@@ -72,7 +72,7 @@ const { table, tableProps } = useDataTable({
 - `fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, total }`; the console maps column ids onto the endpoint's sort whitelist through a `satisfies`-checked record, so a server rename becomes a compile error, and the row type derives from `InferResponseType`.
 - `getNextPageParam` compares loaded rows against the response total and ends the list on a zero-row page, so a stale total cannot loop the load-more effect. `placeholderData: keepPreviousData` keeps rows on screen while a sort or filter refetches, and the search term passes through `useDeferredValue`.
 - `defaultSorting` applies as real table state when the URL carries no sort, so the header chevron and `aria-sort` show it while the URL stays clean. Tables sort by one column, so a hand-written multi-sort URL clamps to its first entry.
-- The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns (nullable ones coalesced so rows group with the labels they display), escapes `LIKE` wildcards, filters roles with null-as-"user", adds an id tiebreaker against page-boundary drift, and sits behind `adminMiddleware` (see [API Conventions](/docs/manage/api-conventions)).
+- The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns (nullable ones coalesced so rows group with the labels they display), escapes `LIKE` wildcards, filters roles with null-as-"user", adds an id tiebreaker against page-boundary drift, and sits behind the console gate (see [API Conventions](/docs/manage/api-conventions)).
 
 ## Client-side tables
 

@@ -31,9 +31,15 @@ To take console access away, demote the person in the Users table. Offboarding i
 
 ## Enforcement
 
-One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring.
+One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring. The grant is best effort: a database failure there is logged and skipped rather than thrown, because that hook sits on the sign-in path and must never stop anyone signing in. A missed grant is applied by the next sign-in.
 
-Reading the list is a `member` power and changing it an `admin` one, per the [role ladder](/docs/manage/authentication). A member sees the rules with no add button and no row actions.
+<Callout type="warn" title="A rule trusts the email on the account">
+
+Matching is by address, so the allowlist is only as strong as the proof behind that address. The default sign-in methods verify it: OAuth comes from the provider, magic link proves possession. A fork that enables email and password without `requireEmailVerification` turns a domain rule into self-service console access, since anyone could claim an address at that domain.
+
+</Callout>
+
+The Access section is an admin concern: reading and changing the list both require `admin`, enforced in the nav, on the page, and on every route behind it. A `member` does not see this page at all.
 
 ## Next
 

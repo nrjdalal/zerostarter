@@ -35,10 +35,10 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env` | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
-| Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(platform)/users/`) | `design` skill |
+| Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |
 | Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test` | - |
 | Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package | - |
-| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/admin.ts` reads at member and writes at admin | - |
+| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/admin.ts` requires admin for the whole console router via `requireConsoleRole` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 

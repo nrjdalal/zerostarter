@@ -105,6 +105,8 @@ export function ConsoleHeader() {
 }
 
 export function ConsoleNav({ docsGroups }: { docsGroups: NavGroup[] }) {
+  // Read before any early return below: React.use tolerates a conditional call, but this reads as a hook and the first useState added inside it would break a docs -> users navigation.
+  const { role } = useConsoleRole()
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
   const close = () => {
@@ -117,7 +119,6 @@ export function ConsoleNav({ docsGroups }: { docsGroups: NavGroup[] }) {
   }
 
   // Drop items whose feature is off, and a whole group with them when nothing is left.
-  const { role } = useConsoleRole()
   const groups = navGroups
     .filter((group) => !group.minRole || roleAtLeast(role, group.minRole))
     .map((group) => ({

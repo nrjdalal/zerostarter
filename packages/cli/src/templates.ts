@@ -11,7 +11,7 @@ export type FeatureFlags = {
   waitlist: boolean
 }
 
-// A fresh fork's default surfaces: docs, blog, internal docs, and the API reference on; the waitlist off, so the home is a plain landing page, and the allowlist off, so anyone can sign up. Any can be flipped later in the config.
+// A fresh fork's default surfaces: docs, blog, internal docs, and the API reference on; the waitlist off, so the home is a plain landing page, and the allowlist off, so console access is granted per person. Any can be flipped later in the config.
 export const DEFAULT_FEATURES: FeatureFlags = {
   allowlist: false,
   apiDocs: true,

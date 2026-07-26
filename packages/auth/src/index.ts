@@ -103,19 +103,24 @@ export const auth = betterAuth({
         // Signing up and using the dashboard is open to everyone; the allowlist is only about the console. On each sign-in a matching address is lifted to the console's bottom rung, so adding a domain covers colleagues who already have accounts rather than only future ones.
         before: async (session) => {
           if (!features.allowlist) return
-          // Read through our own schema rather than the adapter: role is our column, added by the admin plugin, and not on Better Auth's base user type.
-          const [signingIn] = await db
-            .select({ email: user.email, id: user.id, role: user.role })
-            .from(user)
-            .where(eq(user.id, session.userId))
-            .limit(1)
-          // Never lowers anyone: an admin or owner keeps their rung, and a hand-granted role is untouched by a rule edit.
-          if (!signingIn || roleAtLeast(signingIn.role, "member")) return
-          const rules = await db
-            .select({ kind: allowlist.kind, value: allowlist.value })
-            .from(allowlist)
-          if (!matchesAllowlist(signingIn.email, rules as AllowlistRule[])) return
-          await db.update(user).set({ role: "member" }).where(eq(user.id, signingIn.id))
+          // Best effort on purpose: this sits on the sign-in path, so a database hiccup here must not stop anyone signing in. A missed grant is repaired by the next sign-in; a thrown error would lock every account out of the app.
+          try {
+            // Read through our own schema rather than the adapter: role is our column, added by the admin plugin, and not on Better Auth's base user type.
+            const [signingIn] = await db
+              .select({ email: user.email, id: user.id, role: user.role })
+              .from(user)
+              .where(eq(user.id, session.userId))
+              .limit(1)
+            // Never lowers anyone: an admin or owner keeps their rung, and a hand-granted role is untouched by a rule edit.
+            if (!signingIn || roleAtLeast(signingIn.role, "member")) return
+            const rules = await db
+              .select({ kind: allowlist.kind, value: allowlist.value })
+              .from(allowlist)
+            if (!matchesAllowlist(signingIn.email, rules as AllowlistRule[])) return
+            await db.update(user).set({ role: "member" }).where(eq(user.id, signingIn.id))
+          } catch (error) {
+            console.error("allowlist grant failed during sign-in:", error)
+          }
         },
       },
     },

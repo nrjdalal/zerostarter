@@ -8,7 +8,7 @@ import {
   usersColumnConfig,
   usersColumns,
   type ConsoleUser,
-} from "@/app/(console)/console/(platform)/users/components/data-columns"
+} from "@/app/(console)/console/(access)/users/components/data-columns"
 import {
   DataTable,
   DataTableFacetedFilter,
