@@ -6,11 +6,11 @@ description: Grant console access by domain or address, without promoting people
 
 Signing up is open to everyone, and every signed-in person gets the dashboard. The console is the separate, staff-facing area, and the allowlist is how you say who reaches it: a whole domain (`@example.com`) or a single address (`ada@example.com`).
 
-Manage it at **Console > Access > Allowlist**, or turn it off entirely with the `allowlist` [feature flag](/docs/manage/features).
+Manage it at **Console > Access > Allowlist**. A fresh fork ships with the `allowlist` [feature flag](/docs/manage/features) **off**, so console access is granted one person at a time until you turn it on; with it off the page 404s, the nav drops it, and the sign-in hook does nothing.
 
 ## What a rule does
 
-A rule grants **member**, the console's bottom rung: its holder reads every console surface and changes nothing. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule can hand write access to a whole domain.
+A rule grants **member**, the console's bottom rung: its holder opens the console and changes nothing. Member reaches what the starter puts there, which is the internal docs, and nothing under Access. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule hands a whole domain either write access or sight of your users.
 
 The grant is applied **on sign-in**, not only at sign-up, so adding `@example.com` covers colleagues who already have accounts, on their next sign-in, rather than only people who join later. It happens **once per account**: `user.role_set_at` records that a rung was decided, by a rule or by a person, and the hook only ever lifts an account carrying no such record. So a rule reaches someone nobody has ruled on, and never overrules an admin.
 

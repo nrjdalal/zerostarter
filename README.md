@@ -46,7 +46,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 ├── api/
 │   └── hono/      # Backend API (Hono): /api/agents, /api/auth, /api/docs, /api/v1, /api/waitlist
 ├── web/
-│   └── next/      # Frontend (Next.js App Router): dashboard, admin console, docs, blog
+│   └── next/      # Frontend (Next.js App Router): dashboard, staff console, docs, blog
 └── packages/
     ├── auth/      # Better Auth instance (OAuth, organizations, teams, admin)
     ├── db/        # Drizzle ORM schema and PostgreSQL client

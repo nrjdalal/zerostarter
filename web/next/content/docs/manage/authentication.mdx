@@ -88,12 +88,12 @@ https://your-web.vercel.app/api/auth/callback/google
 
 `/console` is the privileged area, gated by a single `role` column on the `user` table (added by the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin)). There is no env allow-list: the role _is_ the source of truth.
 
-| Role     | Console | Can change                         |
-| -------- | ------- | ---------------------------------- |
-| `owner`  | yes     | everything, including other owners |
-| `admin`  | yes     | everything except granting owner   |
-| `member` | yes     | nothing, the console is read-only  |
-| `user`   | no      | n/a                                |
+| Rung     | Reaches                   | May change                                          |
+| -------- | ------------------------- | --------------------------------------------------- |
+| `owner`  | the whole console         | anyone, including another owner, but not themselves |
+| `admin`  | the whole console         | anyone below admin: not a peer, not an owner        |
+| `member` | the console, minus Access | nothing                                             |
+| `user`   | nothing                   | n/a                                                 |
 
 `member` opens the console and reads what is in it, which in the starter is the internal docs, and reaches nothing under Access. It is the rung the [allowlist](/docs/manage/allowlist) grants and the one a fork builds its own read-only surfaces on; Access itself is deliberately admin and above, so no rule can hand a whole domain sight of who your users are. Every gate asks the shared `roleAtLeast` predicate in `@packages/auth` rather than comparing strings, and that predicate is the only place the ordering is written. Anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
 
