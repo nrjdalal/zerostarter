@@ -18,15 +18,15 @@ export async function grantConsoleAccessOnSignIn(session: {
     const [signingIn] = await db
       .select({
         email: user.email,
-        grantedAt: user.allowlistGrantedAt,
         id: user.id,
         role: user.role,
+        roleSetAt: user.roleSetAt,
       })
       .from(user)
       .where(eq(user.id, session.userId))
       .limit(1)
-    // Never lowers anyone, and lifts each account once: re-granting every sign-in would make a demotion revert the next time they signed in.
-    if (!signingIn || signingIn.grantedAt || roleAtLeast(signingIn.role, "member")) return
+    // Only an account nobody has decided about. roleSetAt is stamped by every deliberate rung change, by a rule or by a person, so a demotion is never undone by the next sign-in and a rule never overrules an admin.
+    if (!signingIn || signingIn.roleSetAt || roleAtLeast(signingIn.role, "member")) return
     // Only the two rows that could match, not the table: this runs for every ordinary sign-in and the allowlist has no bound. Values are stored normalized, which is what makes an exact match correct; matchesAllowlist still decides, so the semantics stay in the tested seam.
     const address = signingIn.email.trim().toLowerCase()
     const at = address.lastIndexOf("@")
@@ -42,11 +42,11 @@ export async function grantConsoleAccessOnSignIn(session: {
     // Conditional on both the rung and the marker read above, so two sign-ins racing each other grant once between them.
     await db
       .update(user)
-      .set({ allowlistGrantedAt: new Date(), role: "member" })
+      .set({ role: "member", roleSetAt: new Date() })
       .where(
         and(
           eq(user.id, signingIn.id),
-          isNull(user.allowlistGrantedAt),
+          isNull(user.roleSetAt),
           or(isNull(user.role), eq(user.role, "user")),
         ),
       )

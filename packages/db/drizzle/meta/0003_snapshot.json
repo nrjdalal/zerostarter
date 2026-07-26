@@ -1,5 +1,5 @@
 {
-  "id": "d47090d8-98cd-4093-a780-4a11d236f432",
+  "id": "66b2863c-cc56-459a-a527-358075af9911",
   "prevId": "542afcff-57e4-4775-899a-041e17afbfd1",
   "version": "7",
   "dialect": "postgresql",
@@ -780,8 +780,8 @@
           "notNull": false,
           "default": "'user'"
         },
-        "allowlist_granted_at": {
-          "name": "allowlist_granted_at",
+        "role_set_at": {
+          "name": "role_set_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false

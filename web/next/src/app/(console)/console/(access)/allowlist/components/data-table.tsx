@@ -45,7 +45,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { resolveSort } from "@/lib/data-table-layout"
+import { facetOptions, resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -61,10 +61,7 @@ const SORT_FIELDS = {
   value: "value",
 } as const satisfies Record<string, AllowlistSort>
 // Derived from the shared list rather than restated, the same argument the users table makes for its role facet.
-const KIND_OPTIONS = ALLOWLIST_KINDS.map((value) => ({
-  label: `${value[0].toUpperCase()}${value.slice(1)}`,
-  value,
-}))
+const KIND_OPTIONS = facetOptions(ALLOWLIST_KINDS)
 // Mirrors the endpoint's q cap so a hand-written URL cannot 400 the table.
 const Q_MAX = 254
 // The endpoint's own cap on a rule value. The same number as Q_MAX today and deliberately its own constant: one bounds a search term, the other an email address.
@@ -130,7 +127,7 @@ export function AllowlistDataTable() {
     () => allowlistColumns((rule) => setPendingDelete({ fromSelection: false, rules: [rule] })),
     [],
   )
-  const { table, tableProps } = useDataTable({
+  const { selected, table, tableProps } = useDataTable({
     columnConfig: allowlistColumnConfig,
     columns,
     defaultSorting: DEFAULT_SORTING,
@@ -142,8 +139,6 @@ export function AllowlistDataTable() {
   })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["console-allowlist"] })
-  // The same model the selection bar counts, so what it says and what the action touches cannot drift apart on a client-filtered table.
-  const selected = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
 
   // Deleting is per rule on the API; a selection fans out and reports what actually happened rather than claiming success for the whole batch.
   const remove = useMutation({

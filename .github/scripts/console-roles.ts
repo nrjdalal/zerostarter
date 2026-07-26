@@ -18,7 +18,7 @@ if (!url) {
 const sql = new SQL(url)
 
 // The ladder's grantable rungs, in rank order; `user` is the absence of console access, which is what revoke sets.
-// Restated rather than imported from @packages/auth/access, because a @packages/scripts dependency on @packages/auth is a build cycle. tests/github/scripts/console-roles.test.ts holds this copy to the real one.
+// Restated rather than imported from @packages/auth/access, because this runs from the repo root, where @packages/auth does not resolve. tests/github/scripts/console-roles.test.ts holds this copy to the real one.
 const GRANTABLE = ["owner", "admin", "member"]
 // The same list and the same order for the database, derived rather than spelled out again. Interpolated as SQL text rather than bound, which is safe only because GRANTABLE is this literal array and never user input.
 const GRANTABLE_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")
@@ -73,11 +73,11 @@ if (action === "revoke" && owners === 1) {
 }
 
 const role = action === "grant" ? granted : "user"
-const rows =
-  (await sql`UPDATE "user" SET role = ${role} WHERE lower(email) = ${email} RETURNING email, role`) as {
-    email: string
-    role: string
-  }[]
+const rows = (await sql`UPDATE "user" SET role = ${role}, role_set_at = now()
+    WHERE lower(email) = ${email} RETURNING email, role`) as {
+  email: string
+  role: string
+}[]
 
 if (rows.length === 0) {
   console.error(`No user found with email ${email}`)

@@ -1,4 +1,4 @@
-// Platform access decisions as pure functions: no database, no request, no auth instance, so both apps import them and tests exercise them directly (importing the auth instance throws under CI's dummy secret). Rank ordering lives here alone; a second comparison written inline is how a lower rung quietly gains a power.
+// Platform access decisions as pure functions: no database, no request, no auth instance, so both apps import them and tests exercise them directly. Rank ordering lives here alone, because a second comparison written inline is how a lower rung quietly gains a power.
 
 // Ordered by rank, not alphabetically: the ladder is the meaning. Distinct from the organization plugin's per-membership roles, which share three of these words and govern nothing here.
 export const CONSOLE_ROLES = ["owner", "admin", "member", "user"] as const
@@ -19,7 +19,7 @@ export function roleAtLeast(role: string | null | undefined, minimum: ConsoleRol
   return RANK[consoleRole(role)] >= RANK[minimum]
 }
 
-// Console access is the rung and the ban together. A ban written straight to the database leaves the rung intact, so anything drawing on the rung alone opens a door the gates refuse: that is how the dashboard came to draw a Console link for a banned account.
+// The rung and the ban together. A ban written straight to the database leaves the rung intact, so anything asking the rung alone opens a door the gates refuse.
 export function reachesConsole(
   user: { banned?: boolean | null; role?: string | null },
   minimum: ConsoleRole = "member",
@@ -27,7 +27,7 @@ export function reachesConsole(
   return roleAtLeast(user.role, minimum) && !user.banned
 }
 
-// The rung that may change who reaches the console. Named once because six surfaces assert it: the API middleware, the Access layout, both Access pages, the nav group, and the write flag every console control reads.
+// The rung that may change who reaches the console, named once because six surfaces assert it.
 export const ACCESS_ROLE: ConsoleRole = "admin"
 
 // The comparison the header warns about, written once. Every rule asking whether an actor may act on a target asks here.
@@ -54,7 +54,7 @@ export function refuseBan(input: ActorTarget): BanRefusal | null {
   return null
 }
 
-// The rungs this actor could grant this target, from the same guard the API asks, so a menu can never offer what the server would refuse. targetIsLastOwner is unknowable to a caller without the database, so a demotion the database refuses can still be offered: that one is a real refusal rather than a control that could never work.
+// The rungs this actor could grant this target, from the same guard the API asks, so a menu cannot offer what the server would refuse. targetIsLastOwner is unknowable without the database, so a demotion it refuses can still be offered.
 export function grantableRoles(input: ActorTarget): ConsoleRole[] {
   return CONSOLE_ROLES.filter(
     (nextRole) =>
@@ -99,7 +99,7 @@ export type AllowlistKind = (typeof ALLOWLIST_KINDS)[number]
 
 export type AllowlistRule = { kind: AllowlistKind; value: string }
 
-// A leading @ is a domain rule, anything else must look like an address. Normalizing here means one shape reaches the database, so matching never re-parses and a duplicate cannot hide behind different casing.
+// A leading @ is a domain rule, anything else must look like an address. Normalizing here means one shape reaches the database, so a duplicate cannot hide behind different casing.
 export function parseAllowlistRule(input: string): AllowlistRule | null {
   const value = input.trim().toLowerCase()
   if (!value || /\s/.test(value)) return null

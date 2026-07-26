@@ -54,7 +54,10 @@ export const agentsRouter = new Hono()
 
     // Owner only on the sign-in that creates the account, so demoting the agent by hand to test a lower rung is not undone the next time you sign in. `console:roles grant agent@local.host owner` puts it back.
     if (created) {
-      await db.update(userTable).set({ role: "owner" }).where(eq(userTable.id, user.id))
+      await db
+        .update(userTable)
+        .set({ role: "owner", roleSetAt: new Date() })
+        .where(eq(userTable.id, user.id))
     }
 
     const session = await ctx.internalAdapter.createSession(user.id)

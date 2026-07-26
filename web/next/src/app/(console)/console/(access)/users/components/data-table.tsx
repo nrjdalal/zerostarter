@@ -30,16 +30,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { resolveSort } from "@/lib/data-table-layout"
+import { facetOptions, resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
 
 // Derived from the ladder rather than restated, so a new rung shows up in the facet instead of quietly missing from it.
-const ROLE_OPTIONS = CONSOLE_ROLES.map((value) => ({
-  label: `${value[0].toUpperCase()}${value.slice(1)}`,
-  value,
-}))
+const ROLE_OPTIONS = facetOptions(CONSOLE_ROLES)
 const ROLE_VALUES = new Set<string>(CONSOLE_ROLES)
 // Mirrors the endpoint's q cap: the toolbar input caps typing and pasting, but a hand-written URL would otherwise 400 the table into an error state whose Retry replays it.
 const Q_MAX = 254
@@ -99,7 +96,7 @@ export function UsersDataTable() {
       usersColumns((users, banned) => setPendingStatus({ banned, fromSelection: false, users })),
     [],
   )
-  const { table, tableProps } = useDataTable({
+  const { selected, table, tableProps } = useDataTable({
     columnConfig: usersColumnConfig,
     columns,
     defaultSorting: DEFAULT_SORTING,
@@ -110,10 +107,26 @@ export function UsersDataTable() {
     queryKey: "console-users",
   })
 
-  // The same model the selection bar counts, so what it says and what the action touches cannot drift apart on a client-filtered table.
-  const selected = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
-  // What this viewer could grant at all, asked against the lowest rung: an admin sees member and user, an owner sees everything. Which of the selected rows accept it is still the API's call.
-  const grantable = grantableRoles({ actorRole: viewerRole, isSelf: false, targetRole: "user" })
+  // Asked per row, like Ban: selecting only your own account or people you do not outrank offers no Set role at all, rather than a menu whose every pick is refused.
+  const changeable = selected.filter(
+    (row) =>
+      grantableRoles({
+        actorRole: viewerRole,
+        isSelf: row.id === viewerId,
+        targetRole: row.role,
+      }).length > 0,
+  )
+  const grantable = [
+    ...new Set(
+      changeable.flatMap((row) =>
+        grantableRoles({
+          actorRole: viewerRole,
+          isSelf: row.id === viewerId,
+          targetRole: row.role,
+        }),
+      ),
+    ),
+  ]
   // Ban asks the same guard the API asks, per row, so an admin sees no Ban on an owner or on their own account rather than a button whose only outcome is a refusal.
   const bannable = selected.filter(
     (row) =>
@@ -124,7 +137,7 @@ export function UsersDataTable() {
   // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
     mutationFn: async (role: ConsoleRole) =>
-      runBulk(selected, async (row) => {
+      runBulk(changeable, async (row) => {
         const { error } = await unwrap(
           apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
         )
@@ -208,22 +221,24 @@ export function UsersDataTable() {
                   Unban
                 </Button>
               )}
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="outline" />}>
-                  Set role
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
-                  {grantable.map((role) => (
-                    <DropdownMenuItem
-                      key={role}
-                      className="capitalize"
-                      onClick={() => setPendingRole(role)}
-                    >
-                      {role}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {changeable.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="outline" />}>
+                    Set role
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center">
+                    {grantable.map((role) => (
+                      <DropdownMenuItem
+                        key={role}
+                        className="capitalize"
+                        onClick={() => setPendingRole(role)}
+                      >
+                        {role}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </>
           ) : undefined
         }
@@ -263,7 +278,7 @@ export function UsersDataTable() {
         onConfirm={() => pendingRole && setRole.mutate(pendingRole)}
         title={
           <>
-            Set {selected.length} {selected.length === 1 ? "person" : "people"} to{" "}
+            Set {changeable.length} {changeable.length === 1 ? "person" : "people"} to{" "}
             <span className="capitalize">{pendingRole}</span>?
           </>
         }

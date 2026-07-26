@@ -4,6 +4,7 @@ import type { BanRefusal, RoleChangeRefusal } from "@packages/auth/access"
 import {
   ALLOWLIST_KINDS,
   CONSOLE_ROLES,
+  consoleRole,
   parseAllowlistRule,
   refuseBan,
   refuseRoleChange,
@@ -25,19 +26,28 @@ import {
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
-// Single source for the sortable columns: the schema enum and the column map both derive from it.
-const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
-
-const usersQuerySchema = z.object({
+// What every list endpoint here takes, so a cap stated once cannot drift between two routes. Each route adds its own sort enum and facets.
+const listQueryShape = {
   dir: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(10),
   q: z.string().trim().max(254).optional(),
-  role: z
+}
+
+// A comma-separated facet, deduped and held to the values the endpoint accepts, so a hand-written query degrades to unfiltered rather than 400ing the table.
+const facetSchema = <T extends readonly [string, ...string[]]>(values: T) =>
+  z
     .string()
     .optional()
     .transform((value) => (value ? [...new Set(value.split(","))] : []))
-    .pipe(z.array(z.enum(CONSOLE_ROLES)).max(CONSOLE_ROLES.length)),
+    .pipe(z.array(z.enum(values)).max(values.length))
+
+// Single source for the sortable columns: the schema enum and the column map both derive from it.
+const SORTS = ["banned", "createdAt", "email", "name", "role"] as const
+
+const usersQuerySchema = z.object({
+  ...listQueryShape,
+  role: facetSchema(CONSOLE_ROLES),
   sort: z.enum(SORTS).default("createdAt"),
 })
 
@@ -68,15 +78,8 @@ const allowlistSchema = z.object({
 const ALLOWLIST_SORTS = ["createdAt", "createdByName", "kind", "value"] as const
 
 const allowlistQuerySchema = z.object({
-  dir: z.enum(["asc", "desc"]).default("desc"),
-  kind: z
-    .string()
-    .optional()
-    .transform((value) => (value ? [...new Set(value.split(","))] : []))
-    .pipe(z.array(z.enum(ALLOWLIST_KINDS)).max(ALLOWLIST_KINDS.length)),
-  page: z.coerce.number().int().min(1).max(10000).default(1),
-  perPage: z.coerce.number().int().min(1).max(100).default(10),
-  q: z.string().trim().max(254).optional(),
+  ...listQueryShape,
+  kind: facetSchema(ALLOWLIST_KINDS),
   sort: z.enum(ALLOWLIST_SORTS).default("createdAt"),
 })
 
@@ -127,7 +130,7 @@ const asUserResponse = (row: {
   ...row,
   banned: row.banned ? true : false,
   createdAt: row.createdAt.toISOString(),
-  role: row.role ? row.role : "user",
+  role: consoleRole(row.role),
 })
 
 const userSchema = z.object({
@@ -313,7 +316,8 @@ const { data, error } = await unwrap(
         }
         const [row] = await tx
           .update(user)
-          .set({ role: nextRole })
+          // Stamped so the allowlist treats this rung as decided: without it, demoting someone a rule still matches would be undone by their next sign-in.
+          .set({ role: nextRole, roleSetAt: new Date() })
           .where(eq(user.id, targetId))
           .returning(RETURNED_USER)
         // Only owner rows are locked above, so a target below that rung can still be deleted between the read and this write.

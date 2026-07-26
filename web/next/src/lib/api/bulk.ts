@@ -45,9 +45,6 @@ export async function runBulk<T>(
   return outcome
 }
 
-// Whether the outcome is something to celebrate. A refusal is the system working, so it stays a success; a failure is not, and reading "2 removed, 1 failed" in green overstates it on a surface that otherwise keeps the two apart.
-const bulkSucceeded = (outcome: BulkOutcome) => outcome.failed === 0
-
 // The one sentence a toast needs: what happened, in the caller's own verb, with refused and failed named separately.
 export function describeBulk(outcome: BulkOutcome, verb: string): string {
   const parts = [`${outcome.done} ${verb}`]
@@ -63,5 +60,6 @@ export function toastBulk(outcome: BulkOutcome, verb: string, singular?: string)
     return toast.success(singular)
   }
   const message = describeBulk(outcome, verb)
-  return bulkSucceeded(outcome) ? toast.success(message) : toast.warning(message)
+  // A refusal is the system working, so it stays a success; a failure is not, and green over "2 removed, 1 failed" overstates it.
+  return outcome.failed === 0 ? toast.success(message) : toast.warning(message)
 }

@@ -120,3 +120,8 @@ export function resolveSort<TFields extends Record<string, string>>(
 ): TFields[keyof TFields] {
   return Object.hasOwn(fields, id) ? fields[id as keyof TFields] : fallback
 }
+
+// Facet options from the values an endpoint accepts, so a filter cannot offer a value the API would reject or miss one it would take.
+export function facetOptions<T extends string>(values: readonly T[]) {
+  return values.map((value) => ({ label: `${value[0].toUpperCase()}${value.slice(1)}`, value }))
+}
