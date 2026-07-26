@@ -84,9 +84,13 @@ const rows = await sql.begin(async (tx) => {
     role: string
   }[]
   if (updated.length > 0) {
-    const summary = before?.role
-      ? `${updated[0].email}, ${before.role} to ${role}`
-      : `${updated[0].email}, to ${role}`
+    // Three cases, worded exactly as packages/db/src/console.ts words them.
+    const summary =
+      before?.role === role
+        ? `Confirmed ${updated[0].email} at ${role}`
+        : before?.role
+          ? `Changed ${updated[0].email} from ${before.role} to ${role}`
+          : `Set ${updated[0].email} to ${role}`
     await tx`INSERT INTO activity (id, actor, action, summary)
       VALUES (gen_random_uuid()::text, ${"console:roles"}, ${"role.change"}, ${summary})`
   }

@@ -18,11 +18,23 @@ Five fields, flat on purpose:
 | `actor`     | who did it, as text                                                                         |
 | `actorId`   | the acting account, when there was one                                                      |
 | `createdAt` | when                                                                                        |
-| `summary`   | the one line the table shows, already written for a reader                                  |
+| `summary`   | the sentence the table shows, already written for a reader                                  |
 
 The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one: a trail that invents entries is worse than one with a code you have to look up.
 
-`summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. A role change reads `ada@example.com, member to admin`; the change is in the sentence.
+`summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. Each one is a sentence that stands on its own, because the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
+
+| Action       | Summary                                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Set role     | `Changed ada@example.com from member to admin`                                                                               |
+| Set role     | `Set ada@example.com to member` (had no rung yet)                                                                            |
+| Set role     | `Confirmed ada@example.com at member` (set to the rung it already had, which changes nothing but still records the decision) |
+| Banned       | `Banned katherine@example.com, ending their sessions`                                                                        |
+| Unbanned     | `Unbanned katherine@example.com`                                                                                             |
+| Added rule   | `Added @example.com to the allowlist`                                                                                        |
+| Removed rule | `Removed @example.com from the allowlist`                                                                                    |
+
+All six are written in one place, `packages/db/src/console.ts`, so the console, the CLI and the sign-in grant word the same event the same way and rewording one is a single edit.
 
 The trade that buys is worth knowing: only the **actor** has an id, so only the actor follows a rename. The person a line was about is frozen in the text as they were addressed at the time, and if they later change their address, an old line names the old one. That is the right way round for a trail, which is meant to say what was true when it was written, but it means `summary` is not a way to look a target up. If you need that, the place to add it is a `target_id` beside the text, the same pairing `actor` and `actorId` already use.
 
@@ -60,7 +72,8 @@ Two things are deliberately **not** recorded: reads, and everything outside the 
 ```ts
 // 1. add the verb to ACTIVITY_ACTIONS in packages/config/src/console.ts
 // 2. label it in ACTION_LABELS in web/next/src/lib/activity.ts
-// 3. record it inside the transaction doing the work
+// 3. write its summary beside the others in packages/db/src/console.ts
+// 4. record it inside the transaction doing the work
 import { recordActivity } from "@packages/db"
 
 await db.transaction(async (tx) => {

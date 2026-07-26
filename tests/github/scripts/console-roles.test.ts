@@ -40,11 +40,23 @@ describe("console-roles", () => {
     const shapes = (text: string) =>
       [...text.matchAll(/`([^`]*\$\{[^`]*)`/g)]
         .map((match) => match[1].replace(/\$\{[^}]*\}/g, "%s"))
-        .filter((shape) => shape.includes("%s, "))
+        // Sentences, not the script's SQL: a statement is multi-line and shouts its verb.
+        .filter((shape) => !shape.includes("\n") && !/^[A-Z]+ /.test(shape) && shape.includes("%s"))
     const writer = shapes(writerSource)
-    expect(writer).toEqual(["%s, %s to %s", "%s, to %s"])
-    // Containment, not equality: the script's other templates are its SQL.
-    expect(shapes(source)).toEqual(expect.arrayContaining(writer))
+    // Every summary the app writes lives in that one file, and these two are the rung change.
+    expect(writer).toEqual([
+      "Confirmed %s at %s",
+      "Changed %s from %s to %s",
+      "Set %s to %s",
+      "Banned %s, ending their sessions",
+      "Unbanned %s",
+      "Added %s to the allowlist",
+      "Removed %s from the allowlist",
+    ])
+    // Containment, because the script also has its own console output, and it only ever writes the two rung sentences.
+    expect(shapes(source)).toEqual(
+      expect.arrayContaining(["Confirmed %s at %s", "Changed %s from %s to %s", "Set %s to %s"]),
+    )
   })
 
   test("the rung change and its line commit together", () => {

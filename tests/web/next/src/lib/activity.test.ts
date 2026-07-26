@@ -8,7 +8,7 @@ const event = {
   actorId: "d2Tuq5r0MjmFIHkpCyV7dfKptTVsFxLk",
   createdAt: "2026-07-26T12:00:00.000Z",
   id: "9f1c2a44-7b3e-4d21-9d64-2a1b0c8e7f55",
-  summary: "ada@example.com, member to admin",
+  summary: "Changed ada@example.com from member to admin",
 }
 
 describe("activityJson", () => {
