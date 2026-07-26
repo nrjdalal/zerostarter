@@ -18,6 +18,7 @@ export async function grantConsoleAccessOnSignIn(session: {
     const [signingIn] = await db
       .select({
         email: user.email,
+        emailVerified: user.emailVerified,
         id: user.id,
         role: user.role,
         roleSetAt: user.roleSetAt,
@@ -27,6 +28,8 @@ export async function grantConsoleAccessOnSignIn(session: {
       .limit(1)
     // Only an account nobody has decided about. roleSetAt is stamped by every deliberate rung change, by a rule or by a person, so a demotion is never undone by the next sign-in and a rule never overrules an admin.
     if (!signingIn || signingIn.roleSetAt || roleAtLeast(signingIn.role, "member")) return
+    // A rule matches an address, so the address has to be proven. Every provider shipped here verifies it, and a fork that adds one which does not will see grants stop rather than hand the console to anyone who can type the domain: a loud silence beats a silent escalation.
+    if (!signingIn.emailVerified) return
     // Only the two rows that could match, not the table: this runs for every ordinary sign-in and the allowlist has no bound. Values are stored normalized, which is what makes an exact match correct; matchesAllowlist still decides, so the semantics stay in the tested seam.
     const address = signingIn.email.trim().toLowerCase()
     const at = address.lastIndexOf("@")

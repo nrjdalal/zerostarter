@@ -169,6 +169,7 @@ socket.addEventListener("message", (event) => {
         GET: { responses: globalErrorResponses },
         PATCH: { responses: globalErrorResponses },
         POST: { responses: globalErrorResponses },
+        PUT: { responses: globalErrorResponses },
       },
     }),
   )

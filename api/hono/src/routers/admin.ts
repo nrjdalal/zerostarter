@@ -411,8 +411,8 @@ const { data, error } = await unwrap(
         throw new ApiError(403, "FORBIDDEN", BAN_MESSAGES[refusal])
       }
 
-      // Unbanning clears the reason and any expiry too, so a later ban cannot inherit the last one's terms.
-      // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision. Cheaper than the role route's lock, and enough here, because the invariant is about this one row.
+      // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision.
+      // banned is deliberately not in the qual. Racing this row is last-write-wins, and every outcome of that is the later intent: two bans are idempotent, and a ban losing to an unban leaves the person unbanned with their sessions already swept, which is what an unban means. In the qual, a repeated ban would answer 409 instead of success.
       // Both writes or neither: a flagged row whose session sweep failed would leave the person signed in everywhere behind a 500.
       const updated = await db.transaction(async (tx) => {
         // Only an owner can ban an owner, so sequentially one always remains. Concurrently two of them can ban each other, both pass, and the install has none. Locking the owner rows makes the second wait and count what the first committed, the same serialization the role route needs for the same reason.
@@ -434,10 +434,8 @@ const { data, error } = await unwrap(
         const [row] = await tx
           .update(user)
           .set(
-            // Both directions clear the expiry: the plugin auto-unbans once banExpires is in the past, so a ban that left a stale one would undo itself on the next session check.
-            banned
-              ? { banExpires: null, banned: true, banReason: null }
-              : { banExpires: null, banned: false, banReason: null },
+            // Both directions clear the expiry and the reason: the plugin auto-unbans once banExpires is in the past, so a ban that left a stale one would undo itself on the next session check.
+            { banExpires: null, banned, banReason: null },
           )
           .where(
             and(

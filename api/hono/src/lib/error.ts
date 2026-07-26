@@ -114,20 +114,16 @@ export const globalErrorResponses: ResponsesWithResolver = {
 export const authErrorResponses: ResponsesWithResolver = {
   401: errorResponse("UNAUTHORIZED", "Unauthorized"),
 }
-
+export const conflictErrorResponses: ResponsesWithResolver = {
+  409: errorResponse("CONFLICT", "The value already exists"),
+}
 // Add to routes behind the console gate, the only thing that returns 403.
 export const forbiddenErrorResponses: ResponsesWithResolver = {
   403: errorResponse("FORBIDDEN", "Forbidden"),
 }
-
 export const notFoundErrorResponses: ResponsesWithResolver = {
   404: errorResponse("NOT_FOUND", "Not found"),
 }
-
-export const conflictErrorResponses: ResponsesWithResolver = {
-  409: errorResponse("CONFLICT", "The value already exists"),
-}
-
 // Add to routes with a request validator, the only thing that returns 400; the 400 also carries the per-field issues.
 export const validationErrorResponses: ResponsesWithResolver = {
   400: {

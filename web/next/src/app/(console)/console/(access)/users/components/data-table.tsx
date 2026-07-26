@@ -151,6 +151,11 @@ export function UsersDataTable() {
     },
   })
 
+  // The last intent, kept so the labels hold while the dialog animates closed: pendingStatus goes null on close, and reading it directly would flip Ban to Unban for a frame on the way out.
+  const lastStatus = React.useRef(pendingStatus)
+  if (pendingStatus) lastStatus.current = pendingStatus
+  const shownStatus = pendingStatus ?? lastStatus.current
+
   const setStatus = useMutation({
     mutationFn: async ({
       banned,
@@ -244,27 +249,27 @@ export function UsersDataTable() {
         }
       />
       <ConfirmDialog
-        action={pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}
-        variant={pendingStatus && pendingStatus.banned ? "destructive" : "default"}
+        action={shownStatus && shownStatus.banned ? "Ban" : "Unban"}
+        variant={shownStatus && shownStatus.banned ? "destructive" : "default"}
         open={pendingStatus !== null}
         pending={setStatus.isPending}
         onOpenChange={(open) => !open && setPendingStatus(null)}
         onConfirm={() => pendingStatus && setStatus.mutate(pendingStatus)}
         title={
           <>
-            {pendingStatus && pendingStatus.banned ? "Ban" : "Unban"}{" "}
-            {pendingStatus && pendingStatus.users.length === 1
-              ? pendingStatus.users[0].email
-              : `${pendingStatus ? pendingStatus.users.length : 0} people`}
+            {shownStatus && shownStatus.banned ? "Ban" : "Unban"}{" "}
+            {shownStatus && shownStatus.users.length === 1
+              ? shownStatus.users[0].email
+              : `${shownStatus ? shownStatus.users.length : 0} people`}
             ?
           </>
         }
         description={
           <>
-            {pendingStatus && pendingStatus.banned
+            {shownStatus && shownStatus.banned
               ? "Signed out everywhere, and cannot sign back in until you unban them."
               : "They can sign in again. Their role is unchanged, so this restores exactly the access they had."}
-            {pendingStatus && pendingStatus.users.length > 1
+            {shownStatus && shownStatus.users.length > 1
               ? " Anyone you do not outrank is left as they are."
               : null}
           </>
