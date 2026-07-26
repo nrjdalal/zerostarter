@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { toast } from "@/lib/toast"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
 export function UserRoleSelect({
@@ -47,10 +47,10 @@ export function UserRoleSelect({
     },
     onError: (error) => {
       setPending(null)
-      toast.error(error.message)
+      toast.add({ title: error.message, type: "error" })
     },
     onSuccess: async (data) => {
-      toast.success(`Role changed to ${data.user.role}`)
+      toast.add({ title: `Role changed to ${data.user.role}`, type: "success" })
       // Held until the refetch settles: clearing first would snap the trigger back to the stale role for a beat, which reads as the change failing.
       await queryClient.invalidateQueries({ queryKey: ["console-users"] })
       setPending(null)

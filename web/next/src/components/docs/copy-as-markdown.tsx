@@ -4,8 +4,8 @@ import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/toast"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { toast } from "@/lib/toast"
 
 interface CopyAsMarkdownProps {
   url: string
@@ -36,7 +36,7 @@ export function CopyAsMarkdown({ url }: CopyAsMarkdownProps) {
       }, 2000)
     } catch (error) {
       console.error("Failed to copy markdown:", error)
-      toast.error("Failed to copy markdown")
+      toast.add({ title: "Failed to copy markdown", type: "error" })
     } finally {
       setIsLoading(false)
     }
