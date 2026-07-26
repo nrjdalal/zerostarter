@@ -1,5 +1,5 @@
 {
-  "id": "8a214e8f-b4fd-459f-b460-26fa7d5248d5",
+  "id": "542afcff-57e4-4775-899a-041e17afbfd1",
   "prevId": "534c5aa7-591a-416e-88a1-d7b2b9f96022",
   "version": "7",
   "dialect": "postgresql",
@@ -24,7 +24,11 @@
           "name": "kind",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "generated": {
+            "as": "case when \"value\" like '@%' then 'domain' else 'email' end",
+            "type": "stored"
+          }
         },
         "created_at": {
           "name": "created_at",
@@ -40,23 +44,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "allowlist_createdBy_idx": {
-          "name": "allowlist_createdBy_idx",
-          "columns": [
-            {
-              "expression": "created_by",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "allowlist_created_by_user_id_fk": {
           "name": "allowlist_created_by_user_id_fk",

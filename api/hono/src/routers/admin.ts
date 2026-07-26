@@ -458,8 +458,7 @@ const { data, error } = await unwrap(
         rules: rows.map((row) => ({
           ...row,
           createdAt: row.createdAt.toISOString(),
-          // Read off the value rather than trusted from the column, so the list can never show a rule as covering something the sign-in hook reads differently. The check constraint makes them agree anyway; this makes it true by construction.
-          kind: row.value.startsWith("@") ? ("domain" as const) : ("email" as const),
+          kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
         total,
       }
@@ -514,7 +513,7 @@ const { data, error } = await unwrap(
       try {
         ;[created] = await db
           .insert(allowlist)
-          .values({ createdBy: c.get("user").id, kind: rule.kind, value: rule.value })
+          .values({ createdBy: c.get("user").id, value: rule.value })
           .returning()
       } catch (error) {
         if (isUniqueViolation(error)) {
@@ -531,7 +530,6 @@ const { data, error } = await unwrap(
             ...created,
             createdAt: created.createdAt.toISOString(),
             createdByName: c.get("user").name,
-            kind: rule.kind,
           },
         },
       })

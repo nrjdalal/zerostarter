@@ -19,15 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1785016243147,
-      "tag": "0002_small_mole_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1785052251287,
-      "tag": "0003_faithful_eternals",
+      "when": 1785053571896,
+      "tag": "0002_allowlist",
       "breakpoints": true
     }
   ]

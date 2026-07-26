@@ -1,1 +1,0 @@
-ALTER TABLE "allowlist" ADD CONSTRAINT "allowlist_kind_check" CHECK ("allowlist"."kind" in ('domain', 'email'));
