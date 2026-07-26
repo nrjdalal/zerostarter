@@ -60,7 +60,7 @@ export const exampleRouter = new Hono().post(
 - Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. A public route gets its own router.
 - Console routes go in `routers/admin.ts`, mounted at `/admin` inside `v1.ts` behind the console gate (stacked after `authMiddleware`). Everything there serves the Access section, so the router mounts `consoleAdminMiddleware` and requires admin throughout. That middleware is one instance of `requireConsoleRole(minimum)`, the factory to call if a surface ever wants a lower rung. It re-reads the session with `disableCookieCache: true` and also refuses a banned user, so a demotion or ban lands on the next request; never gate on the cached session's role.
 - A route the browser calls with a method other than GET or POST needs that method in the `cors()` `allowMethods` list in `index.ts`, and in the OpenAPI `defaultOptions` beside it, or the preflight fails and the request never leaves the page while its 429 and 500 go undocumented. curl will not catch the preflight.
-- Reference for a list endpoint: the users list route in `routers/admin.ts` (whitelisted `sort` union with nullable columns coalesced, `LIKE` wildcards escaped, an `asc(user.id)` tiebreaker, `page`/`perPage` batching with a `total` count for infinite scroll, and an explicit NULLS LAST where a sortable column is nullable).
+- Reference for a list endpoint: the users list route in `routers/admin.ts` (whitelisted `sort` union with nullable columns coalesced, `LIKE` wildcards escaped, an `asc(user.id)` tiebreaker, `page`/`perPage` batching answered with `pagingFields`, and an explicit NULLS LAST where a sortable column is nullable).
 
 ## 2. Wire it
 
@@ -88,6 +88,10 @@ const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 
 A client component reading REST data uses TanStack Query (see `components/common/access.tsx`).
 
+## A route that returns a list
+
+Spread `pagingFields` into the response schema and `paging({ page, perPage, total })` into the payload, both from `api/hono/src/lib/paging.ts`, so every list answers the same four fields beside its collection and the end signal is computed once. The collection is named for what it holds (`users`, `events`, `rules`), not `data` or `items`, and comes first, with the paging fields sorted after it: relevance, then A→Z, as AGENTS.md states it.
+
 ## A route that acts on a set
 
 When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape:
@@ -111,6 +115,8 @@ Two rules the routes depend on and a reader will not guess:
 
 - **Write in sorted id order.** The ids are client-supplied, so two admins acting on overlapping selections in opposite orders would deadlock. Answer in the order asked (`answerFor`), write in sorted order.
 - **Take a guard's lock whenever the set writes a row it covers**, not only when the guard is about to refuse. The owner lock is the live example: an unban writes owner rows too, and a transaction that writes them without holding the lock can cross orders with one that takes it.
+
+Both helpers are unit-tested from `tests/api/hono/src/lib/`. A test there can import a module that imports `zod`, but cannot import `zod` itself, so pin the parts that do not need it and leave a route's own extra fields to the route.
 
 On the web, `runBatched` in `web/next/src/lib/api/bulk.ts` sends the selection, splitting it at `MAX_BATCH` (from `@packages/config/console`, shared so both sides read one number) and folding each answer with `foldBatch`; `describeBulk` and `toastBulk` work off the resulting counts. See [API Conventions](https://zerostarter.dev/docs/manage/api-conventions) for the contract itself.
 
