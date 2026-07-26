@@ -69,7 +69,7 @@ export const activityColumns: ColumnDef<ActivityEvent>[] = [
       </DataTableCellText>
     ),
     enableSorting: false,
-    meta: { label: "What" },
+    meta: { label: "Summary" },
   },
   // Time is the only sortable column, because it is the only sort the route offers: a log's one axis is when. Leaving the other headers sortable would have offered three controls that flip the time direction and nothing else.
   {

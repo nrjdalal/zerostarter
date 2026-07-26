@@ -13,10 +13,14 @@ import { ACTIVITY_ACTIONS } from "@packages/config/console"
 import {
   activity,
   allowlist,
+  allowlistAddSummary,
+  allowlistRemoveSummary,
+  banSummary,
   db,
   recordActivity,
   roleChangeSummary,
   session,
+  unbanSummary,
   user,
 } from "@packages/db"
 import { and, asc, desc, eq, ilike, isNull, notInArray, or, sql } from "drizzle-orm"
@@ -118,7 +122,7 @@ const activitySchema = z.object({
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   id: z.string().meta({ example: "9f1c2a44-7b3e-4d21-9d64-2a1b0c8e7f55" }),
-  summary: z.string().meta({ example: "ada@example.com, member to admin" }),
+  summary: z.string().meta({ example: "Changed ada@example.com from member to admin" }),
 })
 
 const activityQuerySchema = z.object({
@@ -516,7 +520,7 @@ const { data, error } = await unwrap(
         await recordActivity(tx, {
           action: banned ? "user.ban" : "user.unban",
           actor,
-          summary: row.email,
+          summary: banned ? banSummary(row.email) : unbanSummary(row.email),
         })
         return row
       })
@@ -785,7 +789,7 @@ const { data, error } = await unwrap(
           await recordActivity(tx, {
             action: "allowlist.add",
             actor,
-            summary: row.value,
+            summary: allowlistAddSummary(row.value),
           })
           return row
         })
@@ -859,7 +863,7 @@ const { data, error } = await unwrap(
         await recordActivity(tx, {
           action: "allowlist.remove",
           actor,
-          summary: row.value,
+          summary: allowlistRemoveSummary(row.value),
         })
         return row
       })

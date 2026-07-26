@@ -40,11 +40,14 @@ describe("console-roles", () => {
     const shapes = (text: string) =>
       [...text.matchAll(/`([^`]*\$\{[^`]*)`/g)]
         .map((match) => match[1].replace(/\$\{[^}]*\}/g, "%s"))
-        .filter((shape) => shape.includes("%s, "))
-    const writer = shapes(writerSource)
-    expect(writer).toEqual(["%s, %s to %s", "%s, to %s"])
-    // Containment, not equality: the script's other templates are its SQL.
-    expect(shapes(source)).toEqual(expect.arrayContaining(writer))
+        // Sentences, not the script's SQL: a statement is multi-line and shouts its verb.
+        .filter((shape) => !shape.includes("\n") && !/^[A-Z]+ /.test(shape) && shape.includes("%s"))
+    // The three sentences the script restates, pinned as literals so a rewording on either side fails the test.
+    // Containment on both sides, not equality: the script also has its own console output, and the writer owns sentences for bans and rule edits that the script never writes. Equality here meant adding any unrelated sentence to the writer broke this test.
+    // What each sentence reads as is tested against the functions themselves in tests/packages/db/src/console.test.ts; this is only the drift guard between the two files.
+    const rungSentences = ["Confirmed %s at %s", "Changed %s from %s to %s", "Set %s to %s"]
+    expect(shapes(writerSource)).toEqual(expect.arrayContaining(rungSentences))
+    expect(shapes(source)).toEqual(expect.arrayContaining(rungSentences))
   })
 
   test("the rung change and its line commit together", () => {

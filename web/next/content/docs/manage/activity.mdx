@@ -18,11 +18,23 @@ Five fields, flat on purpose:
 | `actor`     | who did it, as text                                                                         |
 | `actorId`   | the acting account, when there was one                                                      |
 | `createdAt` | when                                                                                        |
-| `summary`   | the one line the table shows, already written for a reader                                  |
+| `summary`   | the sentence the table shows, already written for a reader                                  |
 
 The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one: a trail that invents entries is worse than one with a code you have to look up.
 
-`summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. A role change reads `ada@example.com, member to admin`; the change is in the sentence.
+`summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. Each one is a sentence that stands on its own, because the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
+
+| Action       | Summary                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Set role     | `Changed ada@example.com from member to admin`                                                                                                                      |
+| Set role     | `Set ada@example.com to member` (had no rung yet)                                                                                                                   |
+| Set role     | `Confirmed ada@example.com at member` (set to the rung it already had: the rung does not move, but `role_set_at` is stamped, which is the decision worth recording) |
+| Banned       | `Banned katherine@example.com, ending their sessions`                                                                                                               |
+| Unbanned     | `Unbanned katherine@example.com`                                                                                                                                    |
+| Added rule   | `Added @example.com to the allowlist`                                                                                                                               |
+| Removed rule | `Removed @example.com from the allowlist`                                                                                                                           |
+
+Every one of these sentences is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant all word an event the same way, and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences inline and a test compares the two files, failing if either side is reworded alone.
 
 The trade that buys is worth knowing: only the **actor** has an id, so only the actor follows a rename. The person a line was about is frozen in the text as they were addressed at the time, and if they later change their address, an old line names the old one. That is the right way round for a trail, which is meant to say what was true when it was written, but it means `summary` is not a way to look a target up. If you need that, the place to add it is a `target_id` beside the text, the same pairing `actor` and `actorId` already use.
 
@@ -60,20 +72,22 @@ Two things are deliberately **not** recorded: reads, and everything outside the 
 ```ts
 // 1. add the verb to ACTIVITY_ACTIONS in packages/config/src/console.ts
 // 2. label it in ACTION_LABELS in web/next/src/lib/activity.ts
-// 3. record it inside the transaction doing the work
-import { recordActivity } from "@packages/db"
+// 3. write its sentence beside the others in packages/db/src/console.ts:
+//      export const projectArchiveSummary = (name: string) => `Archived ${name}`
+// 4. record it inside the transaction doing the work
+import { projectArchiveSummary, recordActivity } from "@packages/db"
 
 await db.transaction(async (tx) => {
   await tx.update(project).set({ archived: true }).where(eq(project.id, id))
   await recordActivity(tx, {
     action: "project.archive",
     actor: { email: session.user.email, id: session.user.id },
-    summary: `${name} archived`,
+    summary: projectArchiveSummary(name),
   })
 })
 ```
 
-The writer takes the transaction as its **first argument** rather than reaching for a connection itself. That is what makes the guarantee above true rather than aspirational: there is no way to call it outside the transaction doing the work. Steps 1 and 2 are not optional bookkeeping: the action union is what the label map is keyed on, so a verb without a label is a compile error rather than a blank cell in the table.
+The writer takes the transaction as its **first argument** rather than reaching for a connection itself. That is what makes the guarantee above true rather than aspirational: there is no way to call it outside the transaction doing the work. Steps 1 and 2 are not optional bookkeeping: the action union is what the label map is keyed on, so a verb without a label is a compile error rather than a blank cell in the table. Step 3 is a convention rather than a rule, and the reason to follow it is that the sentence is the thing a reader reads: keeping them together is what lets you see whether a new one sounds like the rest.
 
 ## Reading it
 
