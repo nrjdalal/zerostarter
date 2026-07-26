@@ -45,6 +45,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
@@ -237,8 +238,8 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
-                    total: z.number().meta({ example: 42 }),
                     users: z.array(userSchema),
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -303,8 +304,8 @@ const { data, error } = await unwrap(
       ])
 
       const data = {
-        total,
         users: rows.map(asUserResponse),
+        ...paging({ page, perPage, total }),
       }
       return c.json({ data })
     },
@@ -567,7 +568,7 @@ const { data, error } = await unwrap(
             "application/json": {
               schema: resolver(
                 z.object({
-                  data: z.object({ events: z.array(activitySchema), total: z.number() }),
+                  data: z.object({ events: z.array(activitySchema), ...pagingFields }),
                 }),
               ),
             },
@@ -631,7 +632,7 @@ const { data, error } = await unwrap(
             ...row,
             createdAt: row.createdAt.toISOString(),
           })),
-          total: counted[0] ? counted[0].value : 0,
+          ...paging({ page, perPage, total: countedTotal(counted) }),
         },
       })
     },
@@ -666,7 +667,7 @@ const { data, error } = await unwrap(
                 z.object({
                   data: z.object({
                     rules: z.array(allowlistSchema),
-                    total: z.number().meta({ example: 3 }),
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -728,7 +729,7 @@ const { data, error } = await unwrap(
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        total: counted[0] ? counted[0].value : 0,
+        ...paging({ page, perPage, total: countedTotal(counted) }),
       }
       return c.json({ data })
     },
@@ -818,12 +819,15 @@ const { data, error } = await unwrap(
       }
       return c.json({
         data: {
+          // Built key by key: the inserted row arrives in the table's column order, and a spread would carry that order into the reply, since re-assigning a key afterwards changes its value and not its position. Every other mapper here spreads safely only because its own select lists columns A to Z.
           rule: {
-            ...created,
+            actor: actor.email,
+            actorId: created.actorId,
             createdAt: created.createdAt.toISOString(),
-            actor: c.get("user").email,
+            id: created.id,
             // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
             kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
+            value: created.value,
           },
         },
       })
