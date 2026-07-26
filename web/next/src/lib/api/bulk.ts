@@ -1,7 +1,7 @@
-import { toast } from "@/components/ui/toast"
+import type { BatchAnswer, BatchOutcome } from "@api/hono"
+import { MAX_BATCH } from "@packages/config/console"
 
-// How many of a selection's rows are in flight at once. Each call re-reads the session past the cookie cache, a round trip from the web to the API, and each one counts against the per-user rate limit, so a hundred selected rows would otherwise rate-limit themselves into failures the person reads as refusals.
-const CONCURRENCY = 5
+import { toast } from "@/components/ui/toast"
 
 export type BulkOutcome = {
   done: number
@@ -10,39 +10,57 @@ export type BulkOutcome = {
   refused: number
 }
 
-// Applies a one-row-at-a-time endpoint across a selection, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
-export async function runBulk<T>(
-  items: T[],
-  call: (item: T) => Promise<{ code: string; message: string } | null>,
-): Promise<BulkOutcome> {
-  const outcome: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
-  // An index cursor rather than shifting a queue and testing for undefined, which would stop early on a list that legitimately contains one.
-  let cursor = 0
-  const worker = async () => {
-    for (;;) {
-      const index = cursor++
-      if (index >= items.length) return
-      const item = items[index]
-      let error: { code: string; message: string } | null
-      try {
-        error = await call(item)
-      } catch (thrown) {
-        error = {
-          code: "NETWORK",
-          message: thrown instanceof Error ? thrown.message : "Request failed",
-        }
-      }
-      if (!error) {
-        outcome.done += 1
-        continue
-      }
-      if (error.code === "FORBIDDEN") outcome.refused += 1
-      else outcome.failed += 1
-      if (!outcome.firstMessage) outcome.firstMessage = error.message
+// Folds what a set route answered into the counts a toast reads, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
+// The request-level error is the other half of the same job. One request now carries the whole selection, so a 429 or a dead connection means none of it happened, and every id is a failure rather than one line of a partial result.
+export function foldBatch(attempted: number, result: BatchAnswer): BulkOutcome {
+  if (!result.data) {
+    return {
+      done: 0,
+      failed: attempted,
+      firstMessage: result.error ? result.error.message : "Request failed",
+      refused: 0,
     }
   }
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, items.length) }, worker))
+  const outcome: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
+  for (const row of result.data.results) {
+    if (row.ok) {
+      outcome.done += 1
+      continue
+    }
+    // Only a guard refusal is a refusal. A rule that vanished or a row that raced another admin is a failure, because neither is this person being told no.
+    if (row.code === "FORBIDDEN") outcome.refused += 1
+    else outcome.failed += 1
+    if (!outcome.firstMessage) outcome.firstMessage = row.message
+  }
   return outcome
+}
+
+// Runs a selection through a set route, splitting it at the cap the route enforces.
+// The tables load more as you scroll and select-all takes every loaded row, so a selection can outgrow one request. Splitting here keeps that working: without it the whole action is rejected as invalid input, which reads as nothing happening for the exact selections the set routes exist to serve.
+// Sequential, not concurrent: the point of a set route is that one intent costs one request at a time, and a chunked selection should not spend the rate limit or the lock window any faster than one.
+export async function runBatched(
+  ids: string[],
+  call: (slice: string[]) => Promise<{
+    data: { results: BatchOutcome[] } | null
+    error: { code: string; message: string } | null
+  }>,
+): Promise<BulkOutcome> {
+  const total: BulkOutcome = { done: 0, failed: 0, firstMessage: null, refused: 0 }
+  for (let at = 0; at < ids.length; at += MAX_BATCH) {
+    const slice = ids.slice(at, at + MAX_BATCH)
+    const result = await call(slice)
+    const outcome = foldBatch(slice.length, result)
+    total.done += outcome.done
+    total.failed += outcome.failed
+    total.refused += outcome.refused
+    if (!total.firstMessage) total.firstMessage = outcome.firstMessage
+    // A refused request is about the request, not the rows in it, so the next chunk would be refused the same way. Sending nine more doomed requests spends the rate limit hardest exactly when it has run out, so the rest are counted as untried rather than attempted.
+    if (!result.data) {
+      total.failed += ids.length - (at + slice.length)
+      break
+    }
+  }
+  return total
 }
 
 // The one sentence a toast needs: what happened, in the caller's own verb, with refused and failed named separately.

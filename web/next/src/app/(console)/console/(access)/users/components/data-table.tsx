@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { runBulk, toastBulk } from "@/lib/api/bulk"
+import { runBatched, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
@@ -135,15 +135,13 @@ export function UsersDataTable() {
       null,
   )
 
-  // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
+  // The guard is per target, so a batch is partly refusable by design: one call for the set, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
     mutationFn: async (role: ConsoleRole) =>
-      runBulk(changeable, async (row) => {
-        const { error } = await unwrap(
-          apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
-        )
-        return error
-      }),
+      runBatched(
+        changeable.map((row) => row.id),
+        (ids) => unwrap(apiClient.v1.admin.users.role.$patch({ json: { ids, role } })),
+      ),
     onSuccess: (outcome, role) => {
       setPendingRole(null)
       table.resetRowSelection()
@@ -171,15 +169,10 @@ export function UsersDataTable() {
       fromSelection: boolean
       users: ConsoleUser[]
     }) =>
-      runBulk(users, async (row) => {
-        const { error } = await unwrap(
-          apiClient.v1.admin.users[":id"].status.$patch({
-            json: { banned },
-            param: { id: row.id },
-          }),
-        )
-        return error
-      }),
+      runBatched(
+        users.map((row) => row.id),
+        (ids) => unwrap(apiClient.v1.admin.users.status.$patch({ json: { banned, ids } })),
+      ),
     onSuccess: (outcome, { banned, fromSelection, users }) => {
       setPendingStatus(null)
       // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
