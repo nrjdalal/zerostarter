@@ -37,10 +37,10 @@ import {
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/toast"
 import { runBulk, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
-import { toast } from "@/lib/toast"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -217,11 +217,11 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
       if (error) throw new Error(error.message)
       return data
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => toast.add({ title: error.message, type: "error" }),
     onSuccess: (data) => {
       setOpen(false)
       form.reset()
-      toast.success(`${data.rule.value} added`)
+      toast.add({ title: `${data.rule.value} added`, type: "success" })
       onAdded()
     },
   })

@@ -1,4 +1,4 @@
-import { toast } from "@/lib/toast"
+import { toast } from "@/components/ui/toast"
 
 // How many of a selection's rows are in flight at once. Each call re-reads the session past the cookie cache, a round trip from the web to the API, and each one counts against the per-user rate limit, so a hundred selected rows would otherwise rate-limit themselves into failures the person reads as refusals.
 const CONCURRENCY = 5
@@ -55,11 +55,14 @@ export function describeBulk(outcome: BulkOutcome, verb: string): string {
 
 // The toast every bulk caller was writing by hand: the reason on its own when nothing got through, a warning when part of it failed, a success otherwise.
 export function toastBulk(outcome: BulkOutcome, verb: string, singular?: string) {
-  if (!outcome.done && outcome.firstMessage) return toast.error(outcome.firstMessage)
+  if (!outcome.done && outcome.firstMessage)
+    return toast.add({ title: outcome.firstMessage, type: "error" })
   if (singular && outcome.done === 1 && !outcome.failed && !outcome.refused) {
-    return toast.success(singular)
+    return toast.add({ title: singular, type: "success" })
   }
   const message = describeBulk(outcome, verb)
   // A refusal is the system working, so it stays a success; a failure is not, and green over "2 removed, 1 failed" overstates it.
-  return outcome.failed === 0 ? toast.success(message) : toast.warning(message)
+  return outcome.failed === 0
+    ? toast.add({ title: message, type: "success" })
+    : toast.add({ title: message, type: "warning" })
 }

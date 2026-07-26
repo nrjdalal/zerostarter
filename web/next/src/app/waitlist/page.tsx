@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { toast } from "@/components/ui/toast"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { toast } from "@/lib/toast"
 
 const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }).max(254),
@@ -74,7 +74,7 @@ export default function WaitlistPage() {
       queryClient.invalidateQueries({ queryKey: ["waitlist-count"] })
     },
     onError: (error) => {
-      toast.error(error.message)
+      toast.add({ title: error.message, type: "error" })
     },
   })
 
