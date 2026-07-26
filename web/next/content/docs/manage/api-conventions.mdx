@@ -29,11 +29,11 @@ A list route answers with its collection and four flat fields beside it:
 ```json
 {
   "data": {
-    "users": [{ "banned": false, "email": "ada@example.com", "id": "u_1" }],
     "hasNextPage": true,
     "page": 2,
     "perPage": 25,
-    "total": 42
+    "total": 42,
+    "users": [{ "banned": false, "email": "ada@example.com", "id": "u_1" }]
   }
 }
 ```
@@ -67,8 +67,8 @@ Every guard in this API runs per target, which means a batch can legitimately ch
   "data": {
     "results": [
       { "id": "a", "ok": true },
-      { "id": "b", "ok": false, "code": "FORBIDDEN", "message": "You cannot ban an owner." },
-      { "id": "c", "ok": false, "code": "NOT_FOUND", "message": "User not found" }
+      { "code": "FORBIDDEN", "id": "b", "message": "You cannot ban an owner.", "ok": false },
+      { "code": "NOT_FOUND", "id": "c", "message": "User not found", "ok": false }
     ]
   }
 }
@@ -138,8 +138,8 @@ The `extra` payload (here `issues`) rides through `ApiError` into the envelope, 
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Invalid email address",
-    "issues": [{ "path": ["email"], "message": "Invalid email address" }]
+    "issues": [{ "message": "Invalid email address", "path": ["email"] }],
+    "message": "Invalid email address"
   }
 }
 ```

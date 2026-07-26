@@ -238,7 +238,7 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
-                    total: z.number().meta({ example: 42 }),
+                    ...pagingSchema,
                     users: z.array(userSchema),
                   }),
                 }),
@@ -304,8 +304,8 @@ const { data, error } = await unwrap(
       ])
 
       const data = {
-        users: rows.map(asUserResponse),
         ...paging({ page, perPage, total }),
+        users: rows.map(asUserResponse),
       }
       return c.json({ data })
     },
@@ -666,8 +666,11 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
+                    hasNextPage: pagingSchema.hasNextPage,
+                    page: pagingSchema.page,
+                    perPage: pagingSchema.perPage,
                     rules: z.array(allowlistSchema),
-                    ...pagingSchema,
+                    total: pagingSchema.total,
                   }),
                 }),
               ),
@@ -723,13 +726,17 @@ const { data, error } = await unwrap(
           .where(where),
       ])
 
+      const paged = paging({ page, perPage, total: counted[0] ? counted[0].value : 0 })
       const data = {
+        hasNextPage: paged.hasNextPage,
+        page: paged.page,
+        perPage: paged.perPage,
         rules: rows.map((row) => ({
           ...row,
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        ...paging({ page, perPage, total: counted[0] ? counted[0].value : 0 }),
+        total: paged.total,
       }
       return c.json({ data })
     },
