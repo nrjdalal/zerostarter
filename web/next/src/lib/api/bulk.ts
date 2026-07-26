@@ -1,4 +1,4 @@
-import type { BatchOutcome } from "@api/hono"
+import type { BatchAnswer, BatchOutcome } from "@api/hono"
 import { MAX_BATCH } from "@packages/config/console"
 
 import { toast } from "@/components/ui/toast"
@@ -12,17 +12,11 @@ export type BulkOutcome = {
 
 // Folds what a set route answered into the counts a toast reads, keeping a guard refusal apart from a failure: a guard saying no is the system working, a 429 or a dropped connection is not, and reporting both as refused tells someone their permissions are wrong when the network was.
 // The request-level error is the other half of the same job. One request now carries the whole selection, so a 429 or a dead connection means none of it happened, and every id is a failure rather than one line of a partial result.
-export function foldBatch(
-  ids: string[],
-  result: {
-    data: { results: BatchOutcome[] } | null
-    error: { code: string; message: string } | null
-  },
-): BulkOutcome {
+export function foldBatch(attempted: number, result: BatchAnswer): BulkOutcome {
   if (!result.data) {
     return {
       done: 0,
-      failed: ids.length,
+      failed: attempted,
       firstMessage: result.error ? result.error.message : "Request failed",
       refused: 0,
     }
@@ -55,7 +49,7 @@ export async function runBatched(
   for (let at = 0; at < ids.length; at += MAX_BATCH) {
     const slice = ids.slice(at, at + MAX_BATCH)
     const result = await call(slice)
-    const outcome = foldBatch(slice, result)
+    const outcome = foldBatch(slice.length, result)
     total.done += outcome.done
     total.failed += outcome.failed
     total.refused += outcome.refused

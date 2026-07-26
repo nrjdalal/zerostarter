@@ -24,12 +24,9 @@ export const allowlistAddSummary = (value: string) => `Added ${value} to the all
 export const allowlistRemoveSummary = (value: string) => `Removed ${value} from the allowlist`
 
 // Takes the caller's transaction, not a database handle, so the record shares the fate of the change it describes: an event always means the change happened, and a change cannot happen unrecorded. Passing the connection instead would make that a convention; this makes it the only thing that compiles.
-export async function recordActivity(
-  tx: Transaction,
-  event:
-    | { action: ActivityAction; actor: ActivityActor; summary: string }
-    | { action: ActivityAction; actor: ActivityActor; summary: string }[],
-) {
+export type ActivityEvent = { action: ActivityAction; actor: ActivityActor; summary: string }
+
+export async function recordActivity(tx: Transaction, event: ActivityEvent | ActivityEvent[]) {
   const events = Array.isArray(event) ? event : [event]
   // Nothing to say is not an insert. A set route can end with every row refused, and an empty VALUES list is a syntax error rather than a no-op.
   if (events.length === 0) return

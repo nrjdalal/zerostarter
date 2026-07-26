@@ -15,7 +15,7 @@ const answered = (results: BatchOutcome[]) => ({ data: { results }, error: null 
 
 describe("foldBatch", () => {
   test("counts what got through", () => {
-    expect(foldBatch(["a", "b", "c"], answered([ok("a"), ok("b"), ok("c")]))).toEqual({
+    expect(foldBatch(3, answered([ok("a"), ok("b"), ok("c")]))).toEqual({
       done: 3,
       failed: 0,
       firstMessage: null,
@@ -25,7 +25,7 @@ describe("foldBatch", () => {
 
   test("keeps a guard refusal apart from a failure, since one is the system working", () => {
     const outcome = foldBatch(
-      ["a", "b", "c"],
+      3,
       answered([
         ok("a"),
         no("b", "FORBIDDEN", "You cannot ban an owner."),
@@ -38,14 +38,14 @@ describe("foldBatch", () => {
   })
 
   test("a row that vanished is a failure, not a refusal: nobody told this person no", () => {
-    const outcome = foldBatch(["a"], answered([no("a", "NOT_FOUND", "Rule not found")]))
+    const outcome = foldBatch(1, answered([no("a", "NOT_FOUND", "Rule not found")]))
     expect(outcome.failed).toBe(1)
     expect(outcome.refused).toBe(0)
   })
 
   test("keeps the first message there is to show", () => {
     const outcome = foldBatch(
-      ["a", "b"],
+      2,
       answered([no("a", "FORBIDDEN", "first"), no("b", "CONFLICT", "second")]),
     )
     expect(outcome.firstMessage).toBe("first")
@@ -53,7 +53,7 @@ describe("foldBatch", () => {
 
   test("a refused request means none of it happened, so every id failed", () => {
     // One request now carries the whole selection: a 429 or a dead connection is not a partial result.
-    const outcome = foldBatch(["a", "b", "c"], {
+    const outcome = foldBatch(3, {
       data: null,
       error: { code: "TOO_MANY_REQUESTS", message: "Slow down." },
     })
@@ -61,12 +61,12 @@ describe("foldBatch", () => {
   })
 
   test("says something even when the failure carried no message", () => {
-    const outcome = foldBatch(["a"], { data: null, error: null })
+    const outcome = foldBatch(1, { data: null, error: null })
     expect(outcome.firstMessage).toBe("Request failed")
   })
 
   test("an empty selection folds to nothing rather than throwing", () => {
-    expect(foldBatch([], answered([]))).toEqual({
+    expect(foldBatch(0, answered([]))).toEqual({
       done: 0,
       failed: 0,
       firstMessage: null,

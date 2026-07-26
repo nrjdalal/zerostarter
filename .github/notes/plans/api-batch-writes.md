@@ -31,8 +31,10 @@ The cap lives in `@packages/config/console` rather than only in the route, becau
 
 Partial refusal is by design: the rank guard runs per target, so a batch can legitimately change three accounts and refuse two. A batch therefore cannot answer with one `{ data }` or one `{ error }`. It needs a per-id outcome, which is the 207 Multi-Status shape and the one place this API's uniform envelope does not stretch.
 
-That makes this a contract change rather than a refactor, and the reason it is not folded into #758. What a partial success looks like has to be decided and written into `manage/api-conventions`, the `api-endpoint` skill and the envelope typing in `api/hono/src/lib/error.ts` before any route moves.
+That makes this a contract change rather than a refactor, and the reason it is not folded into #758. What a partial success looks like has to be decided and written into `manage/api-conventions` and the `api-endpoint` skill before any route moves.
+
+`lib/error.ts` was named as a third place to write it, and shipped untouched: the decision was to add no status and no error code, so the envelope is unchanged. What the codes needed instead was a link rather than an addition, and `BATCH_REFUSAL_CODES` is now `satisfies readonly ErrorCode[]`, so a refusal code that is not part of the API's vocabulary is a compile error.
 
 ## Client
 
-`runBulk` shrinks to one call plus a fold, and the concurrency cap goes with the fan-out. `describeBulk`, `bulkSucceeded` and `toastBulk` are untouched, since they already work off counts; the unit tests move with `runBulk`.
+`runBulk` is replaced by `runBatched`, which sends the selection in cap-sized requests and folds the per-id answers into the counts `describeBulk` and `toastBulk` already read. Its unit tests move with it.

@@ -60,7 +60,9 @@ Three things follow from that shape:
 - **A refusal code is narrower than an error code.** A row can be `FORBIDDEN`, `NOT_FOUND` or `CONFLICT`; anything else is a whole-request failure the envelope already covers.
 - **`ids` is capped** at `MAX_BATCH` (100), the way `perPage` is, so one request cannot hold a transaction open over the whole table. Ids are deduplicated and answered in the order asked.
 
-The whole set runs in **one transaction**, which is the point: another admin's batch cannot interleave with it, and one request pays one session read and one rate-limit unit instead of one per row.
+A request runs as **one transaction**, which is the point: another admin's batch cannot interleave with the ids in it, and one request pays one session read and one rate-limit unit instead of one per row.
+
+A selection larger than `MAX_BATCH` is split by the client into that many requests, run one after another, because the console's tables load more as you scroll and select-all takes every loaded row. So the guarantee is per request, not per selection: 250 selected rows are three transactions, and another admin's write can land between them. The alternative was rejecting the selection outright, which is what a cap alone does, and that fails the exact action the routes exist for.
 
 ## Errors are thrown, shaped in one place
 

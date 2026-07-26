@@ -22,13 +22,22 @@ import {
   session,
   unbanSummary,
   user,
+  type ActivityEvent,
 } from "@packages/db"
 import { and, asc, desc, eq, ilike, inArray, isNull, notInArray, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
-import { batchInput, batchResponseSchema, refused, uniqueIds, type BatchOutcome } from "@/lib/batch"
+import {
+  answerFor,
+  batchInput,
+  batchResponseSchema,
+  raced,
+  refused,
+  uniqueIds,
+  type BatchOutcome,
+} from "@/lib/batch"
 import {
   ApiError,
   authErrorResponses,
@@ -125,11 +134,11 @@ const activitySchema = z.object({
   summary: z.string().meta({ example: "Changed ada@example.com from member to admin" }),
 })
 
+const allowlistBatchSchema = batchInput({})
+
 const roleBatchSchema = batchInput({ role: z.enum(CONSOLE_ROLES) })
 
 const statusBatchSchema = batchInput({ banned: z.boolean() })
-
-const allowlistBatchSchema = batchInput({})
 
 const activityQuerySchema = z.object({
   ...listQueryShape,
@@ -140,17 +149,8 @@ const allowlistCreateSchema = z.object({
   value: z.string().trim().min(1).max(254),
 })
 
-// The columns userSchema documents, so a write returns exactly what its contract says instead of spreading the row and shipping banReason, banExpires and updatedAt as an undocumented payload.
-const RETURNED_USER = {
-  banned: user.banned,
-  createdAt: user.createdAt,
-  email: user.email,
-  emailVerified: user.emailVerified,
-  id: user.id,
-  image: user.image,
-  name: user.name,
-  role: user.role,
-}
+// What a set route reads back from a write: the email, to word the record of what happened. A set answers with outcomes rather than rows, so returning the documented user shape would be breadth nothing consumes.
+const WRITTEN_ROW = { email: user.email }
 
 const alreadyListed = (value: string) => `${value} is already on the list.`
 
@@ -182,7 +182,7 @@ const userSchema = z.object({
   emailVerified: z.boolean().meta({ example: true }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
-  // Optional rather than nullable-and-always-present: the list joins the sessions subquery for it, the two PATCH routes do not, and null there would assert never-seen rather than not-asked-for.
+  // Optional rather than nullable-and-always-present: only the list joins the sessions subquery for it, so a reader that does not ask for it gets no key rather than a null asserting never-seen.
   lastActive: z
     .string()
     .nullable()
@@ -363,7 +363,7 @@ const { data, error } = await unwrap(
           : 0
 
         const outcomes = new Map<string, BatchOutcome>()
-        const records: { action: "role.change"; actor: typeof actor; summary: string }[] = []
+        const records: ActivityEvent[] = []
         // Written in id order, answered in the order asked. Two admins acting on overlapping selections take the same row locks in the same sequence, so they queue instead of deadlocking.
         for (const id of [...targets].sort()) {
           const target = byId.get(id)
@@ -393,16 +393,9 @@ const { data, error } = await unwrap(
                 target.role === null ? isNull(user.role) : eq(user.role, target.role),
               ),
             )
-            .returning(RETURNED_USER)
+            .returning(WRITTEN_ROW)
           if (!row) {
-            outcomes.set(
-              id,
-              refused(
-                id,
-                "CONFLICT",
-                "This account changed while you were acting on it. Try again.",
-              ),
-            )
+            outcomes.set(id, raced(id))
             continue
           }
           if (target.role === "owner" && nextRole !== "owner") owners -= 1
@@ -415,12 +408,7 @@ const { data, error } = await unwrap(
           outcomes.set(id, { id, ok: true })
         }
         await recordActivity(tx, records)
-        // Every branch above sets an outcome; the fallback is here so one that forgets cannot put null in the results and throw in the reader.
-        return targets.map(
-          (id) =>
-            outcomes.get(id) ??
-            refused(id, "CONFLICT", "This account changed while you were acting on it. Try again."),
-        )
+        return answerFor(targets, outcomes)
       })
       return c.json({ data: { results } })
     },
@@ -525,16 +513,9 @@ const { data, error } = await unwrap(
                 target.role === null ? isNull(user.role) : eq(user.role, target.role),
               ),
             )
-            .returning(RETURNED_USER)
+            .returning(WRITTEN_ROW)
           if (!row) {
-            outcomes.set(
-              id,
-              refused(
-                id,
-                "CONFLICT",
-                "This account changed while you were acting on it. Try again.",
-              ),
-            )
+            outcomes.set(id, raced(id))
             continue
           }
           if (banned) {
@@ -555,12 +536,7 @@ const { data, error } = await unwrap(
           await tx.delete(session).where(inArray(session.userId, swept))
         }
         await recordActivity(tx, records)
-        // Every branch above sets an outcome; the fallback is here so one that forgets cannot put null in the results and throw in the reader.
-        return targets.map(
-          (id) =>
-            outcomes.get(id) ??
-            refused(id, "CONFLICT", "This account changed while you were acting on it. Try again."),
-        )
+        return answerFor(targets, outcomes)
       })
       return c.json({ data: { results } })
     },

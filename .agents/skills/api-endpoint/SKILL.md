@@ -104,7 +104,15 @@ const inputSchema = batchInput({ banned: z.boolean() })   // adds a capped, non-
 - **One transaction for the set**, and run the ids through `uniqueIds` so a repeat cannot be acted on twice.
 - **Guards that count** (the last owner, for example) must count once under the lock and stay in step as the loop writes, since a set can hold several rows the single-row guard would each judge in isolation.
 
-The web folds the outcomes back into counts with `foldBatch` in `web/next/src/lib/api/bulk.ts`; `describeBulk` and `toastBulk` already work off those counts. See [API Conventions](https://zerostarter.dev/docs/manage/api-conventions) for the contract itself.
+- **Drop the by-id error responses.** A set route has no `notFoundErrorResponses` or `conflictErrorResponses`: those arrive per row inside `{ data }`, so listing them in `responses` would document statuses the route never returns.
+- **Record once for the set.** `recordActivity` takes an array, so collect the events in the loop and insert them in one statement after it, rather than one insert per row inside the transaction.
+
+Two rules the routes depend on and a reader will not guess:
+
+- **Write in sorted id order.** The ids are client-supplied, so two admins acting on overlapping selections in opposite orders would deadlock. Answer in the order asked (`answerFor`), write in sorted order.
+- **Take a guard's lock whenever the set writes a row it covers**, not only when the guard is about to refuse. The owner lock is the live example: an unban writes owner rows too, and a transaction that writes them without holding the lock can cross orders with one that takes it.
+
+On the web, `runBatched` in `web/next/src/lib/api/bulk.ts` sends the selection, splitting it at `MAX_BATCH` (from `@packages/config/console`, shared so both sides read one number) and folding each answer with `foldBatch`; `describeBulk` and `toastBulk` work off the resulting counts. See [API Conventions](https://zerostarter.dev/docs/manage/api-conventions) for the contract itself.
 
 ## WebSocket routes
 
