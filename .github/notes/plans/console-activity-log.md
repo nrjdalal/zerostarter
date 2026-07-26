@@ -21,6 +21,10 @@ Deliberately not feature-flagged: a flag on a log means silent gaps in it.
 
 As above, with three changes the shape argument produced. It is named `activity`, not `audit_log`, because an audit log promises completeness, retention and tamper-evidence that this does not provide. The event is flat (`actor`, `action`, `summary`, `createdAt`) with a prose summary rather than a target type and a before/after payload, so a row is readable at a glance. And both console tables share `schema/console.ts`, with `allowlist` gaining the same `actorId`/`actor` pair, which also fixed a rule whose deleted author rendered as "Seeded".
 
+## Dropped along the way
+
+`user_role_idx` is gone, and `0003_console.sql` carries the `DROP INDEX`. It was added in #758 on review advice without being asked for, and removing it was a deliberate call: the console's tables are hand-sized, the role facet and role sort read a four-value column where a scan beats an index read, and the same call defers every index on `activity` for the same reason. It rides in this migration because the schema edit and the migration have to agree, not because the activity log needed it. Reversing it is one `CREATE INDEX`, which is why it was allowed to ride: unlike the column rename beside it, nothing about it is one-way.
+
 ## Left open
 
 Retention. The table grows without bound and nothing prunes it; the docs say so and leave the policy to the install.
