@@ -466,7 +466,11 @@ export function DataTable<TData>({
         aria-label={ariaLabel}
         tabIndex={0}
         onScroll={(event) => loadMoreOnBottomReached(event.currentTarget)}
-        className="focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible"
+        className={cn(
+          "focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible",
+          // Room to scroll the last rows clear of the floating bar, which otherwise sits over them for as long as anything is selected.
+          selectionActions && selectedCount > 0 && "pb-14",
+        )}
       >
         {/* Grid/flex display strips the implicit table semantics, so every structural role is restated explicitly, and the virtualized DOM undercounts rows, so aria-rowcount reports the full set. */}
         <Table

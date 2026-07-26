@@ -10,7 +10,7 @@ import {
   refuseRoleChange,
 } from "@packages/auth/access"
 import { allowlist, db, session, user } from "@packages/db"
-import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, ilike, isNull, notInArray, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
@@ -150,8 +150,10 @@ const sortColumns = {
   createdAt: user.createdAt,
   email: user.email,
   name: user.name,
-  // sort null-role rows with the "user" label they display as, instead of nulls splitting the group
-  role: sql`coalesce(${user.role}, 'user')`,
+  // By rank, not alphabetically: the whole point of the ladder is that it is an ordering, so owner leads and user trails. Derived from CONSOLE_ROLES, and an unrecognized value scores with the rung it displays as.
+  role: sql.raw(
+    `case "user"."role" ${CONSOLE_ROLES.map((role, index) => `when '${role}' then ${index}`).join(" ")} else ${CONSOLE_ROLES.length - 1} end`,
+  ),
 } satisfies Record<(typeof SORTS)[number], unknown>
 
 // Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Everything here serves the Access section, which is an admin concern, so the whole router requires admin rather than the console's lower rung.
@@ -211,9 +213,17 @@ const { data, error } = await unwrap(
         ? or(ilike(user.name, `%${escapeLike(q)}%`), ilike(user.email, `%${escapeLike(q)}%`))
         : undefined
       // An unanchored ILIKE across two columns scans sequentially, on every batch as well as the count below; pg_trgm indexes are the fix once a table is large enough to feel it.
-      // The role column defaults to "user", but rows created before the default may hold null; treat null as "user".
+      // "user" collects null and anything unrecognized as well, because that is the rung consoleRole displays them as; otherwise a legacy value would render as user and be reachable from no filter.
       const roleConditions = role.map((value) =>
-        value === "user" ? or(eq(user.role, "user"), isNull(user.role)) : eq(user.role, value),
+        value === "user"
+          ? or(
+              isNull(user.role),
+              notInArray(
+                user.role,
+                CONSOLE_ROLES.filter((rung) => rung !== "user"),
+              ),
+            )
+          : eq(user.role, value),
       )
       const where = and(search, roleConditions.length ? or(...roleConditions) : undefined)
 
@@ -280,6 +290,7 @@ const { data, error } = await unwrap(
         ...authErrorResponses,
         ...forbiddenErrorResponses,
         ...notFoundErrorResponses,
+        ...conflictErrorResponses,
       },
     }),
     sValidator("json", roleChangeSchema, (result) => {
@@ -292,23 +303,25 @@ const { data, error } = await unwrap(
       const targetId = c.req.param("id")
       const { role: nextRole } = c.req.valid("json")
 
-      // Locking the owner rows first, because a count in one statement and an update in another lets two admins each demote one of the last two owners: both read two and both commit. The second waits here, then re-reads what the first committed. Every role change queues behind it, which is the right trade at console scale.
       const updated = await db.transaction(async (tx) => {
-        const owners = await tx
-          .select({ id: user.id })
-          .from(user)
-          .where(eq(user.role, "owner"))
-          .for("update")
         const [target] = await tx.select().from(user).where(eq(user.id, targetId)).limit(1)
         if (!target) {
           throw new ApiError(404, "NOT_FOUND", "User not found")
+        }
+        // Only a demotion can reduce the owner count, so only that takes the lock. Everything else is protected by the compare-and-set below: a target promoted to owner between this read and that write makes the write match nothing rather than demote an owner unlocked.
+        let owners = 0
+        if (target.role === "owner") {
+          // Counting under the lock, because a count in one statement and an update in another lets two admins each demote one of the last two owners: both read two and both commit. The second waits here, then counts what the first left.
+          owners = (
+            await tx.select({ id: user.id }).from(user).where(eq(user.role, "owner")).for("update")
+          ).length
         }
         const refusal = refuseRoleChange({
           actorRole: actor.role,
           isSelf: actor.id === target.id,
           nextRole,
           // The one part of the decision that needs the database, so the guard itself stays pure.
-          targetIsLastOwner: target.role === "owner" && owners.length <= 1,
+          targetIsLastOwner: target.role === "owner" && owners <= 1,
           targetRole: target.role,
         })
         if (refusal) {
@@ -318,11 +331,19 @@ const { data, error } = await unwrap(
           .update(user)
           // Stamped so the allowlist treats this rung as decided: without it, demoting someone a rule still matches would be undone by their next sign-in.
           .set({ role: nextRole, roleSetAt: new Date() })
-          .where(eq(user.id, targetId))
+          .where(
+            and(
+              eq(user.id, targetId),
+              target.role === null ? isNull(user.role) : eq(user.role, target.role),
+            ),
+          )
           .returning(RETURNED_USER)
-        // Only owner rows are locked above, so a target below that rung can still be deleted between the read and this write.
         if (!row) {
-          throw new ApiError(404, "NOT_FOUND", "User not found")
+          throw new ApiError(
+            409,
+            "CONFLICT",
+            "This account changed while you were acting on it. Try again.",
+          )
         }
         return row
       })
@@ -412,7 +433,12 @@ const { data, error } = await unwrap(
         }
         const [row] = await tx
           .update(user)
-          .set(banned ? { banned: true } : { banExpires: null, banned: false, banReason: null })
+          .set(
+            // Both directions clear the expiry: the plugin auto-unbans once banExpires is in the past, so a ban that left a stale one would undo itself on the next session check.
+            banned
+              ? { banExpires: null, banned: true, banReason: null }
+              : { banExpires: null, banned: false, banReason: null },
+          )
           .where(
             and(
               eq(user.id, targetId),
@@ -612,6 +638,8 @@ const { data, error } = await unwrap(
             ...created,
             createdAt: created.createdAt.toISOString(),
             createdByName: c.get("user").name,
+            // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
+            kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
           },
         },
       })

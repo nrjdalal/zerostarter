@@ -8,8 +8,8 @@ import { auth } from "@/lib/auth"
 import { config } from "@/lib/config"
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  // Past the cookie cache, like the console's own gate: the Console link is drawn from the same role the gate honours, so a cached read makes the two disagree for the cache window. A demoted person keeps a link that 404s, and someone the allowlist just lifted does not get one until it expires. Costs a session lookup on the API, not an extra round trip, since this read already goes there.
-  const session = await auth.api.getSession({ disableCookieCache: true })
+  // Cached, unlike the console's own gate. This runs for every signed-in person on every dashboard render, and the only thing it decides beyond the redirect is whether the Console cross-link is drawn: a ban already deletes the sessions, so the worst staleness is a demoted person seeing a link that 404s for the rest of the cache window. That is not worth a session lookup per render for the whole user base.
+  const session = await auth.api.getSession()
 
   if (!session?.user) redirect("/")
 

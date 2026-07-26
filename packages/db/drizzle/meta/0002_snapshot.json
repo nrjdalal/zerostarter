@@ -1,5 +1,5 @@
 {
-  "id": "e05cc4e3-da07-464d-93af-8b22b9963e75",
+  "id": "a938e44a-6b72-4e15-b414-7f965f4702ca",
   "prevId": "534c5aa7-591a-416e-88a1-d7b2b9f96022",
   "version": "7",
   "dialect": "postgresql",
@@ -819,7 +819,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user_role_idx": {
+          "name": "user_role_idx",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
