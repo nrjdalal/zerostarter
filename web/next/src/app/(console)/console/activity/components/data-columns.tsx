@@ -1,7 +1,6 @@
 "use client"
 "use no memo"
 
-import type { ActivityAction } from "@packages/config/console"
 import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"

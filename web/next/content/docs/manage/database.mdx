@@ -14,13 +14,13 @@ Drizzle is not a query builder wrapped around SQL strings. Because the schema is
 
 ## The schema
 
-Three files under `packages/db/src/schema/`, all re-exported from `index.ts`:
+Three files under `packages/db/src/schema/`, all re-exported from `index.ts`. Files group by **concern, not by table**, so a table joins the file its neighbours are in rather than getting one of its own:
 
 - **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds.
-- **`allowlist.ts`**: the `allowlist` table behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores.
+- **`console.ts`**, the console's own two tables: `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores, and `activity` behind [Console > History](/docs/manage/activity), the trail of who changed what. They share a file because they are one concern, the same way the nine auth tables do.
 - **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page.
 
-Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column. `allowlist.createdBy` is the exception on both counts: it is `SET NULL`, because deleting the admin who added a rule must not delete the rule, and it carries no index, because nothing queries by it and the table holds a hand-typed list.
+Conventions across the schema: `text` primary keys, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, `CASCADE` on foreign-key deletes, and an index on every foreign-key column. The `console.ts` tables are the exception on both counts. Their `actor_id` is `SET NULL`, because deleting the admin who added a rule must not delete the rule, nor the history they made; and neither table carries an index beyond its primary key, because at console sizes the sequential scan wins and an index guessed in advance is one to maintain for nothing. Each also stores an `actor` text alongside the id, so a row stays readable once the id is null, and can name an actor that was never an account (a matching rule, or a script run from a terminal).
 
 ## The generate → migrate loop
 

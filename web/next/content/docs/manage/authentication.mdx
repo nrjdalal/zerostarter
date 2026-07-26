@@ -118,6 +118,8 @@ A fork already shipping UI on `authClient.admin.*` should expect 403s from it un
 
 Both live at **Console > Access > Users**, on a row or across a selection, and both are refused for your own account and for anyone at or above your rank, so no admin can act sideways or upward. Granting owner is owner-only, and the last owner cannot be demoted. The guard is one pure function per decision in `@packages/auth/access`, unit-tested and asked again by the API on every request, so what the table hides is never all that stops it.
 
+Every one of these writes leaves a line in [Console > History > Activity](/docs/manage/activity), inside the same transaction as the change, because `user.role` is overwritten in place and otherwise nothing would record that it used to say something else.
+
 A ban deletes the person's sessions as well as flagging the account, so they are signed out everywhere rather than staying in until each gate next re-reads the flag. An unban clears the flag, the reason and any expiry, and touches nothing else: their role is untouched, so it restores exactly the access they had. Because the guard runs per account, a selection is partly refusable by design and the result says so (`3 banned, 1 refused`) instead of reporting the batch as done.
 
 Bootstrap the first owner from the CLI, which is also how a fresh install gets its first way in:
@@ -168,6 +170,7 @@ The `(protected)` layout (`web/next/src/app/(protected)/layout.tsx`) redirects u
 
 ## Next
 
+- [Activity](/docs/manage/activity): the trail every role change and ban writes.
 - [Database](/docs/manage/database): the auth and organization tables, and how to add your own.
 - [Environment Variables](/docs/manage/environment): the OAuth pairs and `BETTER_AUTH_SECRET`.
 - [Working with Agents](/docs/getting-started/working-with-agents): the local agent sign-in in context.

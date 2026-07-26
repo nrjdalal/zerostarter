@@ -22,6 +22,30 @@ describe("activityJson", () => {
     expect(JSON.parse(activityJson([]))).toEqual([])
   })
 
+  test("reads in the order the row is saying it, ids last", () => {
+    // Deliberately not alphabetical: actorId would land between actor and createdAt and summary would fall to the end.
+    expect(Object.keys(JSON.parse(activityJson([event]))[0])).toEqual([
+      "actor",
+      "action",
+      "summary",
+      "createdAt",
+      "actorId",
+      "id",
+    ])
+  })
+
+  test("pins that order whatever order the fields arrive in", () => {
+    const shuffled = {
+      summary: event.summary,
+      id: event.id,
+      actor: event.actor,
+      createdAt: event.createdAt,
+      action: event.action,
+      actorId: event.actorId,
+    }
+    expect(activityJson([shuffled])).toEqual(activityJson([event]))
+  })
+
   test("carries the absolute time, not the relative one the table renders", () => {
     expect(activityJson([event])).toContain("2026-07-26T12:00:00.000Z")
     expect(activityJson([event])).not.toContain("ago")
