@@ -33,7 +33,7 @@ export type AllowlistRuleRow = InferResponseType<
 export const allowlistColumnConfig: Record<string, ColumnConfig> = {
   select: { width: 12 },
   rule: { extra: 48, flex: true },
-  createdByName: { align: "right", extra: 24 },
+  actor: { align: "right", extra: 24 },
   kind: { align: "right", extra: 8 },
   createdAt: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
@@ -55,11 +55,11 @@ export const allowlistColumns = (
     meta: { label: "Rule" },
   },
   {
-    accessorKey: "createdByName",
+    accessorKey: "actor",
     header: ({ column }) => <DataTableColumnHeader column={column} />,
     cell: ({ column, row }) => (
       <DataTableCellText column={column} className="text-muted-foreground">
-        {row.original.createdByName ?? "Seeded"}
+        {row.original.actor ?? "Seeded"}
       </DataTableCellText>
     ),
     meta: { label: "Added by" },

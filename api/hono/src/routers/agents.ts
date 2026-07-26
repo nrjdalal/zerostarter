@@ -1,6 +1,6 @@
 import { auth } from "@packages/auth"
 import { site } from "@packages/config/site"
-import { db, user as userTable } from "@packages/db"
+import { db, recordActivity, roleChangeSummary, user as userTable } from "@packages/db"
 import { env } from "@packages/env/api-hono"
 import { makeSignature } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
@@ -54,10 +54,17 @@ export const agentsRouter = new Hono()
 
     // Owner only on the sign-in that creates the account, so demoting the agent by hand to test a lower rung is not undone the next time you sign in. `console:roles grant agent@local.host owner` puts it back.
     if (created) {
-      await db
-        .update(userTable)
-        .set({ role: "owner", roleSetAt: new Date() })
-        .where(eq(userTable.id, user.id))
+      await db.transaction(async (tx) => {
+        await tx
+          .update(userTable)
+          .set({ role: "owner", roleSetAt: new Date() })
+          .where(eq(userTable.id, user.id))
+        await recordActivity(tx, {
+          action: "role.change",
+          actor: { label: "Agent sign-in" },
+          summary: roleChangeSummary(AGENT_EMAIL, null, "owner"),
+        })
+      })
     }
 
     const session = await ctx.internalAdapter.createSession(user.id)

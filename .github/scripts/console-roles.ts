@@ -73,11 +73,25 @@ if (action === "revoke" && owners === 1) {
 }
 
 const role = action === "grant" ? granted : "user"
-const rows = (await sql`UPDATE "user" SET role = ${role}, role_set_at = now()
-    WHERE lower(email) = ${email} RETURNING email, role`) as {
-  email: string
-  role: string
-}[]
+// One transaction, like every other path that changes a rung: the rung and the line recording it commit together, so this script cannot be the one place a change happens unrecorded. Written by hand rather than through recordActivity because this runs from the repo root, where @packages/db does not resolve, so keep the shape in step with packages/db/src/console.ts.
+// The read is inside it too, and locks the row, so the from-rung the line reports is the one the update actually replaced.
+const rows = await sql.begin(async (tx) => {
+  const [before] = (await tx`SELECT role FROM "user"
+      WHERE lower(email) = ${email} FOR UPDATE`) as [{ role: string | null }?]
+  const updated = (await tx`UPDATE "user" SET role = ${role}, role_set_at = now()
+      WHERE lower(email) = ${email} RETURNING email, role`) as {
+    email: string
+    role: string
+  }[]
+  if (updated.length > 0) {
+    const summary = before?.role
+      ? `${updated[0].email}, ${before.role} to ${role}`
+      : `${updated[0].email}, to ${role}`
+    await tx`INSERT INTO activity (id, actor, action, summary)
+      VALUES (gen_random_uuid()::text, ${"console:roles"}, ${"role.change"}, ${summary})`
+  }
+  return updated
+})
 
 if (rows.length === 0) {
   console.error(`No user found with email ${email}`)

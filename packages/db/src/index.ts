@@ -1,11 +1,9 @@
 import { env } from "@packages/env/db"
 import { SQL } from "bun"
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql"
 import { drizzle } from "drizzle-orm/bun-sql"
 
 import * as schema from "@/schema"
-
-type Database = BunSQLDatabase<typeof schema>
+import type { Database } from "@/types"
 
 declare global {
   var db: Database
@@ -36,4 +34,6 @@ if (env.NODE_ENV === "production") {
 }
 
 export { db }
+export * from "@/console"
 export * from "@/schema"
+export type * from "@/types"

@@ -11,7 +11,7 @@ A lot of ZeroStarter is already wired and working. The integrations further down
 Available out of the box in a fresh scaffold:
 
 - **[Better Auth organizations](/docs/manage/authentication)**: multi-tenant orgs and teams, member roles, and invitations, with the backing tables.
-- **[A role ladder + gated `/console`](/docs/getting-started/scripts#console)**: `owner > admin > member > user` on `user.role`, gating the route server-side; manage it from Console > Access, or with `bun run console:roles`.
+- **[A role ladder + gated `/console`](/docs/getting-started/scripts#console)**: `owner > admin > member > user` on `user.role`, gating the route server-side; manage it from Console > Access, or with `bun run console:roles`, with every change recorded in [Console > History > Activity](/docs/manage/activity).
 - **Rate limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com), per-user when authenticated and per-IP otherwise, tuned via `HONO_RATE_LIMIT`.
 - **[Scalar API docs](/docs/getting-started/type-safe-api)**: an interactive reference at `/api/docs`, generated from the OpenAPI spec at `/api/openapi.json`.
 - **[Dynamic OG images](/docs/manage/seo)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.

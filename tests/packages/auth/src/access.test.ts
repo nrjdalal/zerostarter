@@ -4,6 +4,7 @@ import {
   CONSOLE_ROLES,
   consoleRole,
   grantableRoles,
+  findAllowlistRule,
   matchesAllowlist,
   parseAllowlistRule,
   refuseBan,
@@ -261,6 +262,33 @@ describe("parseAllowlistRule", () => {
     ]) {
       expect(parseAllowlistRule(input)).toBeNull()
     }
+  })
+})
+
+describe("findAllowlistRule", () => {
+  const domain = parseAllowlistRule("@example.com")!
+  const exact = parseAllowlistRule("ada@example.com")!
+
+  test("names the rule that granted, which is what the activity line says", () => {
+    const found = findAllowlistRule("ada@example.com", [domain])
+    expect(found ? found.value : undefined).toBe("@example.com")
+  })
+
+  test("prefers the address rule when a domain rule covers the same person", () => {
+    // Both cover ada@example.com. Without a stated preference this was whichever row the database returned first, so the line naming the policy was arbitrary.
+    for (const rules of [
+      [domain, exact],
+      [exact, domain],
+    ]) {
+      const found = findAllowlistRule("ada@example.com", rules)
+      expect(found ? found.value : undefined).toBe("ada@example.com")
+    }
+  })
+
+  test("returns nothing when no rule covers the address", () => {
+    expect(findAllowlistRule("ada@nope.com", [domain, exact])).toBeUndefined()
+    expect(findAllowlistRule("ada@example.com", [])).toBeUndefined()
+    expect(findAllowlistRule("not-an-email", [domain])).toBeUndefined()
   })
 })
 

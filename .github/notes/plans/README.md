@@ -9,6 +9,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## In progress
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
+- [A console activity log](console-activity-log.md) - one typed log for every console write, admin-gated at Console > History > Activity; built in PR #762, awaiting review. Retention and indexes deliberately left to the install.
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
 
 ## Planned
@@ -48,6 +49,5 @@ Raised but undecided: real concerns with no agreed next action and no confident 
 
 - [Gating who may create an account](signup-gating.md) - the Access spec's other half, retired when the allowlist became a console grant; a second list, a fork-edited predicate, or nothing at all (#758).
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
-- [No trail for console role changes](console-role-audit.md) - roles are overwritten in place with no record of who granted what; probably an audit-log concern wider than roles (#758 review).
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
 - [Data table offset pagination](data-table-offset-pagination.md) - batches can skip or repeat a row mid-scroll, and a repeat aliases selection; keyset is the fix but moves the contract (#754 review).

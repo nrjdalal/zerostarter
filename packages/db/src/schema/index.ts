@@ -1,3 +1,3 @@
-export * from "@/schema/allowlist"
 export * from "@/schema/auth"
+export * from "@/schema/console"
 export * from "@/schema/waitlist"

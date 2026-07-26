@@ -1,10 +1,14 @@
 import { describe, expect, test } from "bun:test"
 
 import { CONSOLE_ROLES } from "../../../packages/auth/src/access"
+import { ACTIVITY_ACTIONS } from "../../../packages/config/src/console"
 
 // The script cannot import the ladder: it runs from the repo root, and giving @packages/scripts a dependency on @packages/auth is a build cycle. So it restates the grantable rungs, and this is what keeps the restatement honest.
 const source = await Bun.file(
   new URL("../../../.github/scripts/console-roles.ts", import.meta.url),
+).text()
+const writerSource = await Bun.file(
+  new URL("../../../packages/db/src/console.ts", import.meta.url),
 ).text()
 
 describe("console-roles", () => {
@@ -20,5 +24,34 @@ describe("console-roles", () => {
   test("revoke sets the rung the ladder reads as no console access", () => {
     expect(source).toContain('action === "grant" ? granted : "user"')
     expect(CONSOLE_ROLES).toContain("user")
+  })
+
+  // It restates the activity write for the same reason it restates the rungs, so the same kind of guard applies: an action nothing else writes, or a summary shaped differently from every other role change, would leave the trail inconsistent with no compile error to say so.
+  test("the action it records is one the rest of the app knows", () => {
+    const match = source.match(/INSERT INTO activity[\s\S]*?VALUES[\s\S]*?\}/)
+    expect(match).not.toBeNull()
+    expect(source).toContain('${"role.change"}')
+    expect(ACTIVITY_ACTIONS).toContain("role.change")
+  })
+
+  test("its summary is shaped exactly like the one the console writes", () => {
+    // Compared as source, not by calling roleChangeSummary: importing @packages/db here would pull its @/ paths into this slice's program, and the fix for that is not to bend a shared tsconfig around a test.
+    // Both are reduced to their shape, so different variable names on the same sentence still match and a reordered or repunctuated one does not.
+    const shapes = (text: string) =>
+      [...text.matchAll(/`([^`]*\$\{[^`]*)`/g)]
+        .map((match) => match[1].replace(/\$\{[^}]*\}/g, "%s"))
+        .filter((shape) => shape.includes("%s, "))
+    const writer = shapes(writerSource)
+    expect(writer).toEqual(["%s, %s to %s", "%s, to %s"])
+    // Containment, not equality: the script's other templates are its SQL.
+    expect(shapes(source)).toEqual(expect.arrayContaining(writer))
+  })
+
+  test("the rung change and its line commit together", () => {
+    // The whole point of the trail: this script must not be the one path where a change can happen unrecorded.
+    expect(source).toContain("await sql.begin(")
+    const body = source.slice(source.indexOf("await sql.begin("))
+    expect(body).toContain("INSERT INTO activity")
+    expect(body).toContain("FOR UPDATE")
   })
 })

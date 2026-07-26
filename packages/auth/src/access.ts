@@ -116,14 +116,23 @@ function isDomain(domain: string): boolean {
   return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(domain)
 }
 
-// An empty list grants nothing: a rule is a grant, so no rules means nobody is lifted, and adding the first one cannot accidentally hand the console to everyone. A domain rule matches its domain exactly, which means a subdomain needs its own rule rather than being covered silently.
-export function matchesAllowlist(email: string, rules: AllowlistRule[]): boolean {
-  if (rules.length === 0) return false
+// Which rule grants an address, or undefined for none. An empty list grants nothing: a rule is a grant, so no rules means nobody is lifted, and adding the first one cannot accidentally hand the console to everyone. A domain rule matches its domain exactly, which means a subdomain needs its own rule rather than being covered silently.
+// An address rule and a domain rule can both cover the same person. The address rule is the specific one, so it is the one returned, which is what stops the caller naming whichever row the database happened to return first.
+export function findAllowlistRule(
+  email: string,
+  rules: AllowlistRule[],
+): AllowlistRule | undefined {
   const address = email.trim().toLowerCase()
   const at = address.lastIndexOf("@")
-  if (at < 1) return false
+  if (at < 1) return undefined
   const domain = address.slice(at + 1)
-  return rules.some((rule) =>
-    rule.kind === "domain" ? rule.value === `@${domain}` : rule.value === address,
-  )
+  const covers = (rule: AllowlistRule) =>
+    rule.kind === "domain" ? rule.value === `@${domain}` : rule.value === address
+  const exact = rules.find((rule) => rule.kind === "email" && covers(rule))
+  if (exact) return exact
+  return rules.find(covers)
+}
+
+export function matchesAllowlist(email: string, rules: AllowlistRule[]): boolean {
+  return findAllowlistRule(email, rules) !== undefined
 }

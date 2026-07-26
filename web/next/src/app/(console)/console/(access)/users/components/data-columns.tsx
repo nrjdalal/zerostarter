@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
+import { relativeTime } from "@/lib/time"
 
 // Row shape inferred from GET /api/v1/admin/users, so the endpoint cannot drift from these columns.
 export type ConsoleUser = InferResponseType<
@@ -40,6 +41,7 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
   status: { align: "right" },
   role: { align: "right", extra: 18 },
   createdAt: { align: "right", extra: 15 },
+  lastActive: { align: "right", extra: 15 },
   actions: { align: "center", width: 12 },
 }
 
@@ -102,6 +104,18 @@ export const usersColumns = (
       </DataTableCellText>
     ),
     meta: { label: "Joined" },
+  },
+  {
+    accessorKey: "lastActive",
+    header: ({ column }) => <DataTableColumnHeader column={column} />,
+    // Never signed in, or signed out, or banned: all three leave no session, and a dash says so rather than inventing a time.
+    cell: ({ column, row }) => (
+      <DataTableCellText column={column} className="text-muted-foreground">
+        {row.original.lastActive ? relativeTime(row.original.lastActive, new Date()) : "-"}
+      </DataTableCellText>
+    ),
+    // "Last active" rather than "Active", because Status renders the word Active in the cell two columns left and one table should not say it twice meaning two different things.
+    meta: { label: "Last active" },
   },
   {
     id: "actions",
