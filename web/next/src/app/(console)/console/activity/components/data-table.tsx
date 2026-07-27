@@ -85,11 +85,9 @@ export function ActivityDataTable() {
           <Button
             variant="outline"
             onClick={() => {
-              // Oldest first, whatever order the table is sorted in: a log read anywhere else reads forwards.
-              const events = [...selected].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
               copyToClipboard(
-                activityJson(events),
-                events.length === 1 ? "Event copied" : `${events.length} events copied`,
+                activityJson(selected),
+                selected.length === 1 ? "Event copied" : `${selected.length} events copied`,
               )
               table.resetRowSelection()
             }}
@@ -102,7 +100,8 @@ export function ActivityDataTable() {
             <EmptyHeader>
               <EmptyTitle>Nothing yet</EmptyTitle>
               <EmptyDescription>
-                Changing a role, banning an account or editing the allowlist records a line here.
+                Changing a role, banning an account, editing the allowlist or removing a signup
+                records a line here.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

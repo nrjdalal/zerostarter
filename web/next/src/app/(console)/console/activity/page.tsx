@@ -12,7 +12,7 @@ export default async function Page() {
     <PageShell size="lg" className="flex h-svh flex-col">
       <PageHeader
         title="Activity"
-        description="Every change the console has made to who gets in, newest first. Nothing here is ever edited or removed."
+        description="Every change the console has made, newest first. Nothing here is ever edited or removed."
       />
       <ActivityDataTable />
     </PageShell>

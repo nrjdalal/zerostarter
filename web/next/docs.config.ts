@@ -95,7 +95,7 @@ const docsConfig = {
         "/docs/manage/activity": {
           title: "Activity",
           description:
-            "A readable trail of every console write: who changed a role, banned an account, or edited the allowlist.",
+            "A readable trail of every console write: who changed a role, banned an account, edited the allowlist, or removed a signup.",
         },
       },
       {
@@ -166,6 +166,13 @@ const docsConfig = {
           description:
             "Author docs and blog posts in MDX, with full-text search and draft/publish built in.",
           label: "Content (Blog & Docs)",
+        },
+      },
+      {
+        "/docs/manage/waitlist": {
+          title: "Waitlist",
+          description:
+            "Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.",
         },
       },
       {

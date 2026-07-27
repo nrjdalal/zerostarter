@@ -7,6 +7,7 @@ export const ACTION_LABELS: Record<ActivityAction, string> = {
   "role.change": "Set role",
   "user.ban": "Banned",
   "user.unban": "Unbanned",
+  "waitlist.remove": "Removed signup",
 }
 
 // How an action reads, falling back to the stored code. A row keeps whatever verb was written, so a label may not exist for it: a fork's own verb, or one retired after rows already carried it. Showing the code is honest, and inventing a label is not.
@@ -25,6 +26,7 @@ export const actionOptions = ACTIVITY_ACTIONS.map((value) => ({
 // The action stays its stored code rather than its label for the same reason: a copy carries the fact, and ACTION_LABELS is how the fact is displayed.
 // Always an array, even for one row, so anything reading it never has to branch on the shape.
 // Fields are rebuilt in reading order rather than passed through, which is the same relevance-before-alphabetical trade the API's paged payloads make: alphabetical wedges actorId between actor and createdAt and leaves summary last, so the sentence the row is saying arrives out of order. Written this way a row reads who did what, to what, and when, then carries the two ids for whatever is on the other end of the paste. It also pins the order, so it no longer follows whatever order the API happened to select in.
+// Oldest first, whatever order the table is sorted in: a log read anywhere else reads forwards. Sorted here rather than by the caller, so the ordering lives with the format, like waitlistEmails.
 export function activityJson<
   T extends {
     action: string
@@ -35,13 +37,15 @@ export function activityJson<
     summary: string
   },
 >(events: T[]) {
-  const ordered = events.map((event) => ({
-    actor: event.actor,
-    action: event.action,
-    summary: event.summary,
-    createdAt: event.createdAt,
-    actorId: event.actorId,
-    id: event.id,
-  }))
+  const ordered = [...events]
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((event) => ({
+      actor: event.actor,
+      action: event.action,
+      summary: event.summary,
+      createdAt: event.createdAt,
+      actorId: event.actorId,
+      id: event.id,
+    }))
   return JSON.stringify(ordered, null, 2)
 }

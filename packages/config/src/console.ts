@@ -6,6 +6,7 @@ export const ACTIVITY_ACTIONS = [
   "role.change",
   "user.ban",
   "user.unban",
+  "waitlist.remove",
 ] as const
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number]
