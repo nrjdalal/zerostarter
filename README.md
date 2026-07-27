@@ -27,7 +27,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) and migrations
 - **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
 - **Authorization**: a console at `/console` on a four-rung role ladder (`owner > admin > member > user`), with an allowlist that grants access by domain or address, and an activity trail of every change the console makes
-- **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count; an optional surface that, when enabled, becomes a fresh fork's home
+- **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count, read back at Console > Waitlist > Signups; an optional surface that, when enabled, becomes a fresh fork's home
 - **Configurable Features**: toggle the allowlist, docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms

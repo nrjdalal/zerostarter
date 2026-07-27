@@ -85,11 +85,9 @@ export function ActivityDataTable() {
           <Button
             variant="outline"
             onClick={() => {
-              // Oldest first, whatever order the table is sorted in: a log read anywhere else reads forwards.
-              const events = [...selected].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
               copyToClipboard(
-                activityJson(events),
-                events.length === 1 ? "Event copied" : `${events.length} events copied`,
+                activityJson(selected),
+                selected.length === 1 ? "Event copied" : `${selected.length} events copied`,
               )
               table.resetRowSelection()
             }}
