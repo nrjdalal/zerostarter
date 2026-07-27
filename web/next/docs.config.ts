@@ -99,13 +99,6 @@ const docsConfig = {
         },
       },
       {
-        "/docs/manage/waitlist": {
-          title: "Waitlist",
-          description:
-            "Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.",
-        },
-      },
-      {
         "/docs/manage/organizations": {
           title: "Organizations & Teams",
           description:
@@ -173,6 +166,13 @@ const docsConfig = {
           description:
             "Author docs and blog posts in MDX, with full-text search and draft/publish built in.",
           label: "Content (Blog & Docs)",
+        },
+      },
+      {
+        "/docs/manage/waitlist": {
+          title: "Waitlist",
+          description:
+            "Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.",
         },
       },
       {

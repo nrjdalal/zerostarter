@@ -139,7 +139,7 @@ const activitySchema = z.object({
 
 const waitlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  email: z.string().meta({ example: "ada@example.com" }),
+  email: z.string().meta({ format: "email", example: "ada@example.com" }),
   id: z.string().meta({ example: "b81d5e3a-92c4-4f17-8ad6-1e70c3f92a4b" }),
 })
 
@@ -229,7 +229,7 @@ const sortColumns = {
   ),
 } satisfies Record<(typeof SORTS)[number], unknown>
 
-// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Everything here serves the Access section, which is an admin concern, so the whole router requires admin rather than the console's lower rung.
+// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Every route here is a console surface for admins, whether that is who reaches the console, the rules that let them, the trail of those changes, or the waitlist, so the whole router requires admin rather than the console's lower rung.
 export const adminRouter = new Hono<{
   Variables: Session
 }>()
@@ -662,6 +662,7 @@ const { data, error } = await unwrap(
   )
   // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows.
   .use("/allowlist", requireFeature("allowlist"))
+  .use("/allowlist/*", requireFeature("allowlist"))
   .get(
     "/allowlist",
     describeRoute({
@@ -918,7 +919,7 @@ const { data, error } = await unwrap(
     },
   )
   // The waitlist is a public signup list rather than an access decision, so it sits behind its own flag: with the surface off, these routes 404 like the page and the nav entry do.
-  // Both paths are listed for the same reason the allowlist lists both: a Hono wildcard does not match the bare segment, and a sub-path added later would otherwise be ungated with nothing pointing at the omission.
+  // Both paths are listed, like the allowlist above: a Hono wildcard does not match the bare segment, so the bare route needs its own line, and without the wildcard a sub-path added later would be ungated with nothing pointing at the omission.
   .use("/waitlist", requireFeature("waitlist"))
   .use("/waitlist/*", requireFeature("waitlist"))
   .get(

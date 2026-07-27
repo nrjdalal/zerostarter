@@ -12,6 +12,9 @@ The public `/waitlist` page takes an address and reports an approximate count, r
 
 - **Search** by address, and sort by address or by when they signed up. Newest first by default, because the question is usually who arrived since you last looked.
 - **Copy** a selection. The addresses come back one per line, oldest first, because a copy here exists to be pasted into whatever sends the mail. Not JSON: field names would only be in the way, which is the opposite of [Activity](/docs/manage/activity), whose rows go into a ticket where the field names carry the meaning.
+
+  A selection covers **the rows that have loaded**, not the whole list. The table loads as you scroll, so select-all after two batches selects fifty signups out of however many there are, and the toast says fifty. That is fine for reaching the people who signed up this week and wrong for a mailout: for the whole list, page through `GET /api/v1/admin/waitlist` rather than scrolling the table until it ends.
+
 - **Remove** a signup, one row or a selection. It is deleted, they can sign up again, and the removal is recorded in Activity, because the row is gone afterwards and the record is the only place the address survives.
 
 <Callout type="warn" title="Removing does not erase the address">
@@ -28,7 +31,9 @@ There is no way to add a signup from the console. The list is what the public fo
 
 Every other console list is the size of your staff. A waitlist is the one that plausibly holds six figures, and this page is built like the others: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it.
 
-That is fine for thousands and slow for hundreds of thousands. When it stops feeling instant, the two fixes are independent: a `pg_trgm` GIN index on `waitlist.email` makes the search use an index, and keyset paging replaces the offset. Neither is worth doing before your own numbers ask for it. See [Database](/docs/manage/database).
+The one that bites first is neither: every batch runs its own `count(*)` beside the rows, because the table shows a total and paging needs one. Scrolling ten batches counts the whole table ten times.
+
+That is all fine for thousands and slow for hundreds of thousands. Three independent fixes when your own numbers ask for them, and not before: a `pg_trgm` GIN index on `waitlist.email` so the search uses an index, keyset paging instead of the offset, and counting only on the first page. See [Database](/docs/manage/database).
 
 ## The flag takes the whole surface
 

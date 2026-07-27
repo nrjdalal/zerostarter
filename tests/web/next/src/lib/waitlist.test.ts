@@ -18,7 +18,9 @@ describe("waitlistEmails", () => {
   })
 
   test("carries no field names, unlike the activity copy", () => {
-    expect(waitlistEmails(signups)).not.toContain("email")
+    // Asserted against the JSON key, not the word: an address at email@example.com would pass a laxer check by luck.
+    expect(waitlistEmails(signups)).not.toContain('"email":')
+    expect(() => JSON.parse(waitlistEmails(signups))).toThrow()
   })
 
   test("an empty selection copies nothing rather than a stray newline", () => {
