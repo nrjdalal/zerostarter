@@ -7,6 +7,7 @@ import {
   RiDashboardLine,
   RiGroupLine,
   RiHistoryLine,
+  RiMailLine,
   RiShieldKeyholeLine,
   type RemixiconComponentType,
 } from "@remixicon/react"
@@ -66,6 +67,20 @@ const navGroups: { items: ConsoleNavItem[]; label: string; minRole?: ConsoleRole
     ],
     label: "Access",
     // Who may reach the console and what they may do there is an admin concern; a member's console is the shell and the docs. Hiding is cosmetic, so both pages and the API enforce the same line.
+    minRole: ACCESS_ROLE,
+  },
+  {
+    items: [
+      {
+        exact: false,
+        feature: "waitlist",
+        icon: RiMailLine,
+        title: "Signups",
+        url: "/console/waitlist",
+      },
+    ],
+    label: "Waitlist",
+    // Addresses of people who asked to be told, so it sits behind the same rung as the pages that show a member's address. Its own group rather than a third Access item: nobody listed here has access to anything.
     minRole: ACCESS_ROLE,
   },
   {

@@ -46,6 +46,13 @@ describe("activityJson", () => {
     expect(activityJson([shuffled])).toEqual(activityJson([event]))
   })
 
+  test("orders oldest first, whatever order the table handed it", () => {
+    // A log read anywhere else reads forwards, and the caller should not have to remember that.
+    const older = { ...event, createdAt: "2026-07-25T12:00:00.000Z", id: "older" }
+    const rows = JSON.parse(activityJson([event, older]))
+    expect(rows.map((row: { id: string }) => row.id)).toEqual(["older", event.id])
+  })
+
   test("carries the absolute time, not the relative one the table renders", () => {
     expect(activityJson([event])).toContain("2026-07-26T12:00:00.000Z")
     expect(activityJson([event])).not.toContain("ago")

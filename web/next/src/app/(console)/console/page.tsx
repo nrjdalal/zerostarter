@@ -6,7 +6,7 @@ export default function Page() {
     <PageShell>
       <PageHeader
         title="Console"
-        description="Intentionally minimal. Access surfaces live in the sidebar for admins and owners; a member sees the docs."
+        description="Intentionally minimal. Admin surfaces live in the sidebar for admins and owners; a member sees the docs."
       />
     </PageShell>
   )

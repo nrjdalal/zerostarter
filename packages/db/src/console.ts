@@ -23,6 +23,8 @@ export const allowlistAddSummary = (value: string) => `Added ${value} to the all
 
 export const allowlistRemoveSummary = (value: string) => `Removed ${value} from the allowlist`
 
+export const waitlistRemoveSummary = (email: string) => `Removed ${email} from the waitlist`
+
 // Takes the caller's transaction, not a database handle, so the record shares the fate of the change it describes: an event always means the change happened, and a change cannot happen unrecorded. Passing the connection instead would make that a convention; this makes it the only thing that compiles.
 export type ActivityEvent = { action: ActivityAction; actor: ActivityActor; summary: string }
 
