@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { waitlistEmails } from "../../../../../../../../../web/next/src/app/(console)/console/waitlist/components/data-table"
+import { waitlistEmails } from "../../../../../web/next/src/lib/waitlist"
 
 describe("waitlistEmails", () => {
   const signups = [

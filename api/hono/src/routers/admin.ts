@@ -94,7 +94,7 @@ const allowlistSchema = z.object({
   actor: z.string().nullable().meta({ example: "ada@example.com" }),
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  id: z.string().meta({ example: "3f7a1c92-0b64-4e5d-9a13-5c2f8e6d4b70" }),
   kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
@@ -142,7 +142,7 @@ const allowlistBatchSchema = batchInput({})
 const waitlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   email: z.string().meta({ example: "ada@example.com" }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  id: z.string().meta({ example: "b81d5e3a-92c4-4f17-8ad6-1e70c3f92a4b" }),
 })
 
 // One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.

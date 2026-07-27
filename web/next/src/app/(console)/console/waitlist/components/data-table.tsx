@@ -25,6 +25,7 @@ import { runBatched, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
 import { resolveSort } from "@/lib/data-table-layout"
+import { waitlistEmails } from "@/lib/waitlist"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
 const DEFAULT_SORTING = [DEFAULT_SORT]
@@ -61,14 +62,6 @@ async function fetchSignups({
   )
   if (error) throw new Error(error.message)
   return { rows: data.signups, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
-}
-
-// One address per line, in the order they signed up, because what a copy is for here is pasting into whatever sends the mail. Not JSON: nothing downstream of a mail composer wants field names.
-export function waitlistEmails(signups: { createdAt: string; email: string }[]) {
-  return [...signups]
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((signup) => signup.email)
-    .join("\n")
 }
 
 // Who has asked to be told. The whole page is admin and above, so canWrite is true for anyone who can see this table; the affordances still ask, because a control that exists only to refuse invites the attempt.
@@ -120,7 +113,7 @@ export function WaitlistDataTable() {
       />
       <DataTable
         {...tableProps}
-        aria-label="Waitlist"
+        aria-label="Signups"
         selectionActions={
           <>
             <Button
