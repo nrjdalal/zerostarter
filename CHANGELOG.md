@@ -1,3 +1,15 @@
+## v0.1.17
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.16...v0.1.17)
+
+### 🚀 Enhancements
+
+- **console:** The waitlist, at Console > Waitlist ([#770](https://github.com/nrjdalal/zerostarter/pull/770))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.16
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.15...v0.1.16)
