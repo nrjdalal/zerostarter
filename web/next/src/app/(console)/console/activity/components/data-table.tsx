@@ -102,7 +102,8 @@ export function ActivityDataTable() {
             <EmptyHeader>
               <EmptyTitle>Nothing yet</EmptyTitle>
               <EmptyDescription>
-                Changing a role, banning an account or editing the allowlist records a line here.
+                Changing a role, banning an account, editing the allowlist or removing a signup
+                records a line here.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

@@ -5,6 +5,7 @@ import { RiMoreLine } from "@remixicon/react"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 
+import { useConsoleRole } from "@/components/console/role"
 import {
   DataTableCellText,
   DataTableColumnHeader,
@@ -62,29 +63,31 @@ export const waitlistColumns = (
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon-sm" aria-label="Open menu">
-              <RiMoreLine />
-            </Button>
-          }
-        />
-        <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => copyToClipboard(row.original.email, "Email copied")}>
-              Copy email
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onClick={() => onRemove(row.original)}>
-              Remove
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    // Defence in depth, as on the allowlist table: the page is admin-gated, so this branch does not fire today.
+    cell: ({ row }) => {
+      const { canWrite } = useConsoleRole()
+      if (!canWrite) return null
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+            <span className="sr-only">Open menu</span>
+            <RiMoreLine />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => copyToClipboard(row.original.email, "Email copied")}>
+                Copy email
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={() => onRemove(row.original)}>
+                Remove
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
+    enableHiding: false,
     enableSorting: false,
-    meta: { label: "Actions" },
   },
 ]

@@ -1,0 +1,29 @@
+---
+slug: /docs/manage/waitlist
+title: Waitlist
+description: Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.
+---
+
+The public `/waitlist` page takes an address and reports an approximate count, rounded down in steps of five once it passes a threshold. That is all a visitor sees, deliberately: an exact number tells a competitor how you are doing, and tells an early signup they are one of four.
+
+**Console > Waitlist > Signups** is the other half, and the only place the addresses themselves are readable. It is `admin` and above, like every console page that shows an address.
+
+## What you can do with it
+
+- **Search** by address, and sort by address or by when they signed up. Newest first by default, because the question is usually who arrived since you last looked.
+- **Copy** a selection. The addresses come back one per line, oldest first, because a copy here exists to be pasted into whatever sends the mail. Not JSON: field names would only be in the way, which is the opposite of [Activity](/docs/manage/activity), whose rows go into a ticket where the field names carry the meaning.
+- **Remove** a signup, one row or a selection. It is deleted, they can sign up again, and the removal is recorded in Activity, because the row is gone afterwards and the record is the only place the address survives.
+
+There is no way to add a signup from the console. The list is what the public form collected; typing an address in by hand would make it something else.
+
+## The flag takes the whole surface
+
+`waitlist` in `packages/config/src/site.ts` governs the public page, its API, and the console surface together. With it off, `/waitlist`, `/api/waitlist` and `/console/waitlist` all 404, the nav drops the group, and a fresh fork's home becomes a plain landing page. See [Features](/docs/manage/features).
+
+The table survives the flag being off. Dropping it would be a migration, and a fork that turns the waitlist back on should find its signups where it left them.
+
+## Next
+
+- [Features](/docs/manage/features): the flag, and what the other ones cover.
+- [Activity](/docs/manage/activity): where a removal is recorded.
+- [Data Tables](/docs/manage/data-tables): the module this page is built from.

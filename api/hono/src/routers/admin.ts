@@ -139,8 +139,6 @@ const activitySchema = z.object({
 
 const allowlistBatchSchema = batchInput({})
 
-const waitlistBatchSchema = batchInput({})
-
 const waitlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   email: z.string().meta({ example: "ada@example.com" }),
@@ -163,6 +161,8 @@ const waitlistSortColumns = {
 const roleBatchSchema = batchInput({ role: z.enum(CONSOLE_ROLES) })
 
 const statusBatchSchema = batchInput({ banned: z.boolean() })
+
+const waitlistBatchSchema = batchInput({})
 
 const activityQuerySchema = z.object({
   ...listQueryShape,
@@ -1046,13 +1046,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
             summary: waitlistRemoveSummary(row.email),
           })),
         )
-        const outcomes = new Map<string, BatchOutcome>(
-          targets.map((id) => [
-            id,
+        return targets.map(
+          (id): BatchOutcome =>
             byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Signup not found"),
-          ]),
         )
-        return answerFor(targets, outcomes)
       })
       return c.json({ data: { results } })
     },

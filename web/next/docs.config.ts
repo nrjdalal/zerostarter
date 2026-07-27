@@ -99,6 +99,13 @@ const docsConfig = {
         },
       },
       {
+        "/docs/manage/waitlist": {
+          title: "Waitlist",
+          description:
+            "Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.",
+        },
+      },
+      {
         "/docs/manage/organizations": {
           title: "Organizations & Teams",
           description:
