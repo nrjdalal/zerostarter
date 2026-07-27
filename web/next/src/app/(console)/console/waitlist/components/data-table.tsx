@@ -99,7 +99,8 @@ export function WaitlistDataTable() {
       setPendingDelete(null)
       // Only what the selection bar started clears the selection: a row-menu removal has nothing to do with the rows someone has staged for a batch.
       if (fromSelection) table.resetRowSelection()
-      toastBulk(outcome, "removed", signups[0] ? `Removed ${signups[0].email}` : undefined)
+      // signups is one row from the menu or the selection, which only renders with something in it, so there is always a first.
+      toastBulk(outcome, "removed", `Removed ${signups[0].email}`)
       queryClient.invalidateQueries({ queryKey: ["console-waitlist"] })
     },
   })

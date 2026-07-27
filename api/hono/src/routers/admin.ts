@@ -137,8 +137,6 @@ const activitySchema = z.object({
   summary: z.string().meta({ example: "Changed ada@example.com from member to admin" }),
 })
 
-const allowlistBatchSchema = batchInput({})
-
 const waitlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
   email: z.string().meta({ example: "ada@example.com" }),
@@ -157,6 +155,8 @@ const waitlistSortColumns = {
   createdAt: waitlist.createdAt,
   email: waitlist.email,
 } satisfies Record<(typeof WAITLIST_SORTS)[number], unknown>
+
+const allowlistBatchSchema = batchInput({})
 
 const roleBatchSchema = batchInput({ role: z.enum(CONSOLE_ROLES) })
 
@@ -918,7 +918,9 @@ const { data, error } = await unwrap(
     },
   )
   // The waitlist is a public signup list rather than an access decision, so it sits behind its own flag: with the surface off, these routes 404 like the page and the nav entry do.
+  // Both paths are listed for the same reason the allowlist lists both: a Hono wildcard does not match the bare segment, and a sub-path added later would otherwise be ungated with nothing pointing at the omission.
   .use("/waitlist", requireFeature("waitlist"))
+  .use("/waitlist/*", requireFeature("waitlist"))
   .get(
     "/waitlist",
     describeRoute({
