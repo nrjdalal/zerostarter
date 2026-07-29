@@ -1,0 +1,48 @@
+---
+slug: /docs/manage/waitlist
+title: Waitlist
+description: Collect addresses before launch on a public page, and read them back at Console > Waitlist > Signups.
+---
+
+The public `/waitlist` page takes an address and reports an approximate count, rounded down in steps of five once it passes a threshold. That is all a visitor sees, deliberately: an exact number tells a competitor how you are doing, and tells an early signup they are one of four.
+
+**Console > Waitlist > Signups** is the other half, and the only place the addresses themselves are readable. It is `admin` and above, like every console page that shows an address.
+
+## What you can do with it
+
+- **Search** by address, and sort by address or by when they signed up. Newest first by default, because the question is usually who arrived since you last looked.
+- **Copy** a selection. The addresses come back one per line, oldest first, because a copy here exists to be pasted into whatever sends the mail. Not JSON: field names would only be in the way, which is the opposite of [Activity](/docs/manage/activity), whose rows go into a ticket where the field names carry the meaning.
+
+  A selection covers **the rows that have loaded**, not the whole list. The table loads as you scroll, so select-all after two batches selects fifty signups out of however many there are, and the toast says fifty. That is fine for reaching the people who signed up this week and wrong for a mailout: for the whole list, page through `GET /api/v1/admin/waitlist` rather than scrolling the table until it ends.
+
+- **Remove** a signup, one row or a selection. It is deleted, they can sign up again, and the removal is recorded in Activity, because the row is gone afterwards and the record is the only place the address survives.
+
+<Callout type="warn" title="Removing does not erase the address">
+
+The row leaves `waitlist`, and `activity` keeps the sentence that names it: `Removed ada@example.com from the waitlist`. That is deliberate for an allowlist rule, which an admin authored, and it is a different thing for a waitlist signup, which a member of the public typed into a public form. Someone asking to be taken off your list is asking to be forgotten, and by default this moves their address rather than deleting it.
+
+Nothing prunes `activity` either, so decide before you launch. Two ways out, both small: word the summary without the address (`waitlistRemoveSummary` in `packages/db/src/console.ts` is the only place it is written), or delete the matching `activity` rows in the same transaction as the signup. The second keeps the trail honest about role changes and bans while letting erasure mean erasure.
+
+</Callout>
+
+There is no way to add a signup from the console. The list is what the public form collected; typing an address in by hand would make it something else.
+
+## The one console table that can get big
+
+Every other console list is the size of your staff. A waitlist is the one that plausibly holds six figures, and this page is built like the others: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it.
+
+The one that bites first is neither: every batch runs its own `count(*)` beside the rows, because the table shows a total and paging needs one. Scrolling ten batches counts the whole table ten times.
+
+That is all fine for thousands and slow for hundreds of thousands. Three independent fixes when your own numbers ask for them, and not before: a `pg_trgm` GIN index on `waitlist.email` so the search uses an index, keyset paging instead of the offset, and counting only on the first page. See [Database](/docs/manage/database).
+
+## The flag takes the whole surface
+
+`waitlist` in `packages/config/src/site.ts` governs the public page, its API, and the console surface together. With it off, `/waitlist`, `/api/waitlist` and `/console/waitlist` all 404, the nav drops the group, and a fresh fork's home becomes a plain landing page. See [Features](/docs/manage/features).
+
+The table survives the flag being off. Dropping it would be a migration, and a fork that turns the waitlist back on should find its signups where it left them.
+
+## Next
+
+- [Features](/docs/manage/features): the flag, and what the other ones cover.
+- [Activity](/docs/manage/activity): where a removal is recorded.
+- [Data Tables](/docs/manage/data-tables): the module this page is built from.

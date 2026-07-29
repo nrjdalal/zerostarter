@@ -6,6 +6,7 @@ import {
   banSummary,
   roleChangeSummary,
   unbanSummary,
+  waitlistRemoveSummary,
 } from "../../../../packages/db/src/console"
 
 // These sentences are what a console reader actually reads, and what a pasted line carries with no column beside it, so they are worth pinning rather than only comparing between files.
@@ -41,6 +42,12 @@ describe("activity summaries", () => {
     expect(allowlistRemoveSummary("@example.com")).toBe("Removed @example.com from the allowlist")
   })
 
+  test("a removed signup names the address, which the row no longer holds", () => {
+    expect(waitlistRemoveSummary("ada@example.com")).toBe(
+      "Removed ada@example.com from the waitlist",
+    )
+  })
+
   test("every summary stands on its own, without the Action column beside it", () => {
     const all = [
       roleChangeSummary("ada@example.com", "member", "admin"),
@@ -50,6 +57,7 @@ describe("activity summaries", () => {
       unbanSummary("ada@example.com"),
       allowlistAddSummary("@example.com"),
       allowlistRemoveSummary("@example.com"),
+      waitlistRemoveSummary("ada@example.com"),
     ]
     for (const summary of all) {
       // A verb and the thing it happened to: the test of "informational" is that the sentence answers what happened without a header.

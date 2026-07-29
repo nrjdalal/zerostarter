@@ -6,7 +6,6 @@ import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -20,6 +19,7 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { toast } from "@/components/ui/toast"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
@@ -75,10 +75,10 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
         callbackURL: `${config.app.url}/dashboard`,
       })
       if (res.error) {
-        toast.error(res.error.message || "Provider Not Found")
+        toast.add({ title: res.error.message || "Provider Not Found", type: "error" })
         setLoader(null)
       } else {
-        toast.success("Check your email for the magic link!")
+        toast.add({ title: "Check your email for the magic link!", type: "success" })
         setLoader(null)
       }
       form.reset()
@@ -178,7 +178,10 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       callbackURL: `${config.app.url}/dashboard`,
                     })
                     if (res.error) {
-                      toast.error(res.error.message)
+                      toast.add({
+                        title: res.error.message || "Could not sign in with GitHub",
+                        type: "error",
+                      })
                       setLoader(null)
                     }
                   }}
@@ -200,7 +203,10 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                       callbackURL: `${config.app.url}/dashboard`,
                     })
                     if (res.error) {
-                      toast.error(res.error.message)
+                      toast.add({
+                        title: res.error.message || "Could not sign in with Google",
+                        type: "error",
+                      })
                       setLoader(null)
                     }
                   }}

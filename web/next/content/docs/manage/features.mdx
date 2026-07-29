@@ -21,14 +21,14 @@ export const features = {
 }
 ```
 
-| Flag           | Surface                                                                                   | Off means                                                                                                        |
-| -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `allowlist`    | Console > Access > Allowlist, `/api/v1/admin/allowlist*`, and the console grant it drives | the page and the API 404, the nav drops it, and console access is granted per person only                        |
-| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec                            | both 404 and the navbar "API Docs" link is hidden                                                                |
-| `blog`         | `/blog` and its posts                                                                     | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop                         |
-| `docs`         | `/docs`                                                                                   | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
-| `internalDocs` | `/console/docs` (internal docs, member and above)                                         | the console docs render the not-found page and their search (`/api/console/search`) 404s                         |
-| `waitlist`     | `/waitlist` page and its API                                                              | `/waitlist` and `/api/waitlist` 404, and a fresh fork's home becomes a plain landing page                        |
+| Flag           | Surface                                                                                       | Off means                                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `allowlist`    | Console > Access > Allowlist, `/api/v1/admin/allowlist*`, and the console grant it drives     | the page and the API 404, the nav drops it, and console access is granted per person only                                     |
+| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec                                | both 404 and the navbar "API Docs" link is hidden                                                                             |
+| `blog`         | `/blog` and its posts                                                                         | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop                                      |
+| `docs`         | `/docs`                                                                                       | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop              |
+| `internalDocs` | `/console/docs` (internal docs, member and above)                                             | the console docs render the not-found page and their search (`/api/console/search`) 404s                                      |
+| `waitlist`     | `/waitlist` page and its API, plus Console > Waitlist > Signups and `/api/v1/admin/waitlist*` | `/waitlist`, `/api/waitlist` and the console page 404, the nav drops it, and a fresh fork's home becomes a plain landing page |
 
 "Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
 

@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.1.14",
+  "version": "0.1.17",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -142,7 +142,6 @@
     "shadcn": "^4.13.1",
     "sharp": "^0.35.3",
     "shiki": "^4.3.1",
-    "sonner": "^2.0.7",
     "svgo": "^4.0.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",

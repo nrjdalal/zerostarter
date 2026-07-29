@@ -61,7 +61,18 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())`,
       },
     }),
     (c) => {
-      const data = c.get("session")
+      // Named field by field rather than handed the session straight out: that object also carries the active organization, the active team and impersonatedBy, none of which this route documents, and its own key order is the row's rather than the one declared above.
+      const session = c.get("session")
+      const data = {
+        createdAt: session.createdAt,
+        expiresAt: session.expiresAt,
+        id: session.id,
+        ipAddress: session.ipAddress,
+        token: session.token,
+        updatedAt: session.updatedAt,
+        userAgent: session.userAgent,
+        userId: session.userId,
+      }
       return c.json({ data })
     },
   )
@@ -94,7 +105,17 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())`,
       },
     }),
     (c) => {
-      const data = c.get("user")
+      // Same reason as the session above: the object carries the console's own columns, which this route does not document.
+      const user = c.get("user")
+      const data = {
+        createdAt: user.createdAt,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        id: user.id,
+        image: user.image,
+        name: user.name,
+        updatedAt: user.updatedAt,
+      }
       return c.json({ data })
     },
   )

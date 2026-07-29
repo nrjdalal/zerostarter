@@ -6,6 +6,10 @@ export const ACTIVITY_ACTIONS = [
   "role.change",
   "user.ban",
   "user.unban",
+  "waitlist.remove",
 ] as const
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number]
+
+// The most ids one set route will take. Shared rather than only enforced server side: the console's tables load more as you scroll and select-all takes every loaded row, so the client has to know where to split a selection rather than discover the limit as a rejected request.
+export const MAX_BATCH = 100

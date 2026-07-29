@@ -13,12 +13,12 @@ import { type User } from "better-auth/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { SidebarDropdownMenu } from "@/components/shell/sidebar-dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { SidebarMenuItem } from "@/components/ui/sidebar"
+import { toast } from "@/components/ui/toast"
 import { authClient } from "@/lib/auth/client"
 
 function getInitials(name: string) {
@@ -89,7 +89,7 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
               await authClient.signOut()
               router.push("/")
             } catch {
-              toast.error("Failed to sign out. Please try again.")
+              toast.add({ title: "Failed to sign out. Please try again.", type: "error" })
               setSigningOut(false)
             }
           }}

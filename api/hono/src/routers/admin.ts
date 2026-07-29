@@ -22,20 +22,32 @@ import {
   session,
   unbanSummary,
   user,
+  waitlist,
+  waitlistRemoveSummary,
+  type ActivityEvent,
 } from "@packages/db"
-import { and, asc, desc, eq, ilike, isNull, notInArray, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, ilike, inArray, isNull, notInArray, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import {
+  answerFor,
+  batchInput,
+  batchResponseSchema,
+  raced,
+  refused,
+  uniqueIds,
+  type BatchOutcome,
+} from "@/lib/batch"
+import {
   ApiError,
   authErrorResponses,
   conflictErrorResponses,
   forbiddenErrorResponses,
-  notFoundErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
 
@@ -82,7 +94,7 @@ const allowlistSchema = z.object({
   actor: z.string().nullable().meta({ example: "ada@example.com" }),
   actorId: z.string().nullable().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
-  id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
+  id: z.string().meta({ example: "3f7a1c92-0b64-4e5d-9a13-5c2f8e6d4b70" }),
   kind: z.enum(ALLOWLIST_KINDS).meta({ example: "domain" }),
   value: z.string().meta({ example: "@example.com" }),
 })
@@ -125,6 +137,33 @@ const activitySchema = z.object({
   summary: z.string().meta({ example: "Changed ada@example.com from member to admin" }),
 })
 
+const waitlistSchema = z.object({
+  createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),
+  email: z.string().meta({ format: "email", example: "ada@example.com" }),
+  id: z.string().meta({ example: "b81d5e3a-92c4-4f17-8ad6-1e70c3f92a4b" }),
+})
+
+// One tuple feeds the enum and the column map, so a sortable column cannot exist in one and not the other.
+const WAITLIST_SORTS = ["createdAt", "email"] as const
+
+const waitlistQuerySchema = z.object({
+  ...listQueryShape,
+  sort: z.enum(WAITLIST_SORTS).default("createdAt"),
+})
+
+const waitlistSortColumns = {
+  createdAt: waitlist.createdAt,
+  email: waitlist.email,
+} satisfies Record<(typeof WAITLIST_SORTS)[number], unknown>
+
+const allowlistBatchSchema = batchInput({})
+
+const roleBatchSchema = batchInput({ role: z.enum(CONSOLE_ROLES) })
+
+const statusBatchSchema = batchInput({ banned: z.boolean() })
+
+const waitlistBatchSchema = batchInput({})
+
 const activityQuerySchema = z.object({
   ...listQueryShape,
   action: facetSchema(ACTIVITY_ACTIONS),
@@ -134,25 +173,8 @@ const allowlistCreateSchema = z.object({
   value: z.string().trim().min(1).max(254),
 })
 
-const roleChangeSchema = z.object({
-  role: z.enum(CONSOLE_ROLES),
-})
-
-const statusChangeSchema = z.object({
-  banned: z.boolean(),
-})
-
-// The columns userSchema documents, so both PATCH handlers return exactly what their contract says instead of spreading the row and shipping banReason, banExpires and updatedAt as an undocumented payload.
-const RETURNED_USER = {
-  banned: user.banned,
-  createdAt: user.createdAt,
-  email: user.email,
-  emailVerified: user.emailVerified,
-  id: user.id,
-  image: user.image,
-  name: user.name,
-  role: user.role,
-}
+// What a set route reads back from a write: the email, to word the record of what happened. A set answers with outcomes rather than rows, so returning the documented user shape would be breadth nothing consumes.
+const WRITTEN_ROW = { email: user.email }
 
 const alreadyListed = (value: string) => `${value} is already on the list.`
 
@@ -184,7 +206,7 @@ const userSchema = z.object({
   emailVerified: z.boolean().meta({ example: true }),
   id: z.string().meta({ example: "iO8PZYiiwR6e0o9XDtqyAmUemv1Pc8tc" }),
   image: z.string().nullable().meta({ example: "https://example.com/avatar.png" }),
-  // Optional rather than nullable-and-always-present: the list joins the sessions subquery for it, the two PATCH routes do not, and null there would assert never-seen rather than not-asked-for.
+  // Optional rather than nullable-and-always-present: only the list joins the sessions subquery for it, so a reader that does not ask for it gets no key rather than a null asserting never-seen.
   lastActive: z
     .string()
     .nullable()
@@ -207,7 +229,7 @@ const sortColumns = {
   ),
 } satisfies Record<(typeof SORTS)[number], unknown>
 
-// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Everything here serves the Access section, which is an admin concern, so the whole router requires admin rather than the console's lower rung.
+// Console endpoints, mounted under /v1 behind authMiddleware; the console gate layers the fresh rank check on top. Every route here is a console surface for admins, whether that is who reaches the console, the rules that let them, the trail of those changes, or the waitlist, so the whole router requires admin rather than the console's lower rung.
 export const adminRouter = new Hono<{
   Variables: Session
 }>()
@@ -239,8 +261,8 @@ const { data, error } = await unwrap(
               schema: resolver(
                 z.object({
                   data: z.object({
-                    total: z.number().meta({ example: 42 }),
                     users: z.array(userSchema),
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -305,18 +327,18 @@ const { data, error } = await unwrap(
       ])
 
       const data = {
-        total,
         users: rows.map(asUserResponse),
+        ...paging({ page, perPage, total }),
       }
       return c.json({ data })
     },
   )
   .patch(
-    "/users/:id/role",
+    "/users/role",
     describeRoute({
       tags: ["Admin"],
       description:
-        "Change a user's console role. Refuses the changes that would lock an install out: your own role, a target at or above your rank, granting owner as a non-owner, and demoting the last owner.",
+        "Set the role on a set of accounts. Guards run per account, so some can change while others are refused; every id comes back with its own outcome.",
       ...({
         "x-codeSamples": [
           {
@@ -325,10 +347,7 @@ const { data, error } = await unwrap(
             source: `import { apiClient, unwrap } from "@/lib/api/client"
 
 const { data, error } = await unwrap(
-  apiClient.v1.admin.users[":id"].role.$patch({
-    json: { role: "member" },
-    param: { id: userId },
-  }),
+  apiClient.v1.admin.users.role.$patch({ json: { ids, role: "member" } }),
 )`,
           },
         ],
@@ -336,88 +355,94 @@ const { data, error } = await unwrap(
       responses: {
         200: {
           description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(z.object({ data: z.object({ user: userSchema }) })),
-            },
-          },
+          content: { "application/json": { schema: resolver(batchResponseSchema) } },
         },
         ...validationErrorResponses,
         ...authErrorResponses,
         ...forbiddenErrorResponses,
-        ...notFoundErrorResponses,
-        ...conflictErrorResponses,
       },
     }),
-    sValidator("json", roleChangeSchema, (result) => {
+    sValidator("json", roleBatchSchema, (result) => {
       if (!result.success) {
         throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
       }
     }),
     async (c) => {
       const actor = c.get("user")
-      const targetId = c.req.param("id")
-      const { role: nextRole } = c.req.valid("json")
+      const { ids, role: nextRole } = c.req.valid("json")
+      const targets = uniqueIds(ids)
 
-      const updated = await db.transaction(async (tx) => {
-        const [target] = await tx.select().from(user).where(eq(user.id, targetId)).limit(1)
-        if (!target) {
-          throw new ApiError(404, "NOT_FOUND", "User not found")
+      const results = await db.transaction(async (tx) => {
+        const rows = await tx.select().from(user).where(inArray(user.id, targets))
+        const byId = new Map(rows.map((row) => [row.id, row]))
+        // Counted once under the lock, then kept in step as the loop demotes. The single-row route can ask "is this the last owner" per request and be right; a batch holding two of the three owners would otherwise pass both guards on the same stale count and leave the install with none.
+        let owners = rows.some((row) => row.role === "owner")
+          ? (
+              await tx
+                .select({ id: user.id })
+                .from(user)
+                .where(eq(user.role, "owner"))
+                .for("update")
+            ).length
+          : 0
+
+        const outcomes = new Map<string, BatchOutcome>()
+        const records: ActivityEvent[] = []
+        // Written in id order, answered in the order asked. Two admins acting on overlapping selections take the same row locks in the same sequence, so they queue instead of deadlocking.
+        for (const id of [...targets].sort()) {
+          const target = byId.get(id)
+          if (!target) {
+            outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
+            continue
+          }
+          const refusal = refuseRoleChange({
+            actorRole: actor.role,
+            isSelf: actor.id === target.id,
+            nextRole,
+            targetIsLastOwner: target.role === "owner" && owners <= 1,
+            targetRole: target.role,
+          })
+          if (refusal) {
+            outcomes.set(id, refused(id, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal]))
+            continue
+          }
+          const [row] = await tx
+            .update(user)
+            // Stamped so the allowlist treats this rung as decided: without it, demoting someone a rule still matches would be undone by their next sign-in.
+            .set({ role: nextRole, roleSetAt: new Date() })
+            // The rung read above is part of the qual, which makes this a compare-and-set: a change landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing and the row is reported as raced rather than acted on.
+            .where(
+              and(
+                eq(user.id, id),
+                target.role === null ? isNull(user.role) : eq(user.role, target.role),
+              ),
+            )
+            .returning(WRITTEN_ROW)
+          if (!row) {
+            outcomes.set(id, raced(id))
+            continue
+          }
+          if (target.role === "owner" && nextRole !== "owner") owners -= 1
+          if (target.role !== "owner" && nextRole === "owner") owners += 1
+          records.push({
+            action: "role.change",
+            actor,
+            summary: roleChangeSummary(row.email, target.role, nextRole),
+          })
+          outcomes.set(id, { id, ok: true })
         }
-        // Only a demotion can reduce the owner count, so only that takes the lock. Everything else is protected by the compare-and-set below: a target promoted to owner between this read and that write makes the write match nothing rather than demote an owner unlocked.
-        let owners = 0
-        if (target.role === "owner") {
-          // Counting under the lock, because a count in one statement and an update in another lets two admins each demote one of the last two owners: both read two and both commit. The second waits here, then counts what the first left.
-          owners = (
-            await tx.select({ id: user.id }).from(user).where(eq(user.role, "owner")).for("update")
-          ).length
-        }
-        const refusal = refuseRoleChange({
-          actorRole: actor.role,
-          isSelf: actor.id === target.id,
-          nextRole,
-          // The one part of the decision that needs the database, so the guard itself stays pure.
-          targetIsLastOwner: target.role === "owner" && owners <= 1,
-          targetRole: target.role,
-        })
-        if (refusal) {
-          throw new ApiError(403, "FORBIDDEN", ROLE_CHANGE_MESSAGES[refusal])
-        }
-        const [row] = await tx
-          .update(user)
-          // Stamped so the allowlist treats this rung as decided: without it, demoting someone a rule still matches would be undone by their next sign-in.
-          .set({ role: nextRole, roleSetAt: new Date() })
-          .where(
-            and(
-              eq(user.id, targetId),
-              target.role === null ? isNull(user.role) : eq(user.role, target.role),
-            ),
-          )
-          .returning(RETURNED_USER)
-        if (!row) {
-          throw new ApiError(
-            409,
-            "CONFLICT",
-            "This account changed while you were acting on it. Try again.",
-          )
-        }
-        // In the transaction, so the change and the record of it stand or fall together.
-        await recordActivity(tx, {
-          action: "role.change",
-          actor,
-          summary: roleChangeSummary(row.email, target.role, nextRole),
-        })
-        return row
+        await recordActivity(tx, records)
+        return answerFor(targets, outcomes)
       })
-      return c.json({ data: { user: asUserResponse(updated) } })
+      return c.json({ data: { results } })
     },
   )
   .patch(
-    "/users/:id/status",
+    "/users/status",
     describeRoute({
       tags: ["Admin"],
       description:
-        "Ban or unban a user. Refuses your own account and anyone at or above your rank. A ban ends the person's sessions as well as flagging the account; an unban clears the flag, the reason and any expiry.",
+        "Ban or unban a set of accounts. Guards run per account, so some can change while others are refused; every id comes back with its own outcome. A ban ends that person's sessions.",
       ...({
         "x-codeSamples": [
           {
@@ -426,10 +451,7 @@ const { data, error } = await unwrap(
             source: `import { apiClient, unwrap } from "@/lib/api/client"
 
 const { data, error } = await unwrap(
-  apiClient.v1.admin.users[":id"].status.$patch({
-    json: { banned: true },
-    param: { id: userId },
-  }),
+  apiClient.v1.admin.users.status.$patch({ json: { banned: true, ids } }),
 )`,
           },
         ],
@@ -437,94 +459,110 @@ const { data, error } = await unwrap(
       responses: {
         200: {
           description: "OK",
-          content: {
-            "application/json": {
-              schema: resolver(z.object({ data: z.object({ user: userSchema }) })),
-            },
-          },
+          content: { "application/json": { schema: resolver(batchResponseSchema) } },
         },
         ...validationErrorResponses,
         ...authErrorResponses,
         ...forbiddenErrorResponses,
-        ...notFoundErrorResponses,
-        ...conflictErrorResponses,
       },
     }),
-    sValidator("json", statusChangeSchema, (result) => {
+    sValidator("json", statusBatchSchema, (result) => {
       if (!result.success) {
         throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
       }
     }),
     async (c) => {
       const actor = c.get("user")
-      const targetId = c.req.param("id")
-      const { banned } = c.req.valid("json")
+      const { banned, ids } = c.req.valid("json")
+      const targets = uniqueIds(ids)
 
-      const [target] = await db.select().from(user).where(eq(user.id, targetId)).limit(1)
-      if (!target) {
-        throw new ApiError(404, "NOT_FOUND", "User not found")
-      }
-      const refusal = refuseBan({
-        actorRole: actor.role,
-        isSelf: actor.id === target.id,
-        targetRole: target.role,
-      })
-      if (refusal) {
-        throw new ApiError(403, "FORBIDDEN", BAN_MESSAGES[refusal])
-      }
+      const results = await db.transaction(async (tx) => {
+        const rows = await tx.select().from(user).where(inArray(user.id, targets))
+        const byId = new Map(rows.map((row) => [row.id, row]))
+        // Locked whenever the set writes an owner row, not only when it bans one. An unban writes owner rows too, and a transaction that writes them without holding this lock can deadlock against one that takes it: this select acquires in scan order while the loop below takes its rows in id order, so the two orders can cross. Taking it first in every transaction that touches an owner makes "owner set, then targets ascending" a single order everything follows.
+        const owners = rows.some((row) => row.role === "owner")
+          ? await tx
+              .select({ banned: user.banned, id: user.id })
+              .from(user)
+              .where(eq(user.role, "owner"))
+              .for("update")
+          : []
+        // Owners who can still sign in, counted under the lock and kept in step as the loop bans, for the same reason the role route counts: banning two of the three in one set must not pass both guards on one stale count.
+        // Unbanned only, where the role route counts every owner: a banned owner cannot sign in to grant anyone else, so they do not keep the install reachable, while a banned owner still outranks an admin.
+        let active = owners.filter((owner) => !owner.banned).length
 
-      // The rung read above is part of the qual, which makes this a compare-and-set: a promotion landing between that read and this write means the guard weighed the wrong rank, so the write finds nothing rather than acting on a stale decision.
-      // banned is deliberately not in the qual. Racing this row is last-write-wins, and every outcome of that is the later intent: two bans are idempotent, and a ban losing to an unban leaves the person unbanned with their sessions already swept, which is what an unban means. In the qual, a repeated ban would answer 409 instead of success.
-      // Both writes or neither: a flagged row whose session sweep failed would leave the person signed in everywhere behind a 500.
-      const updated = await db.transaction(async (tx) => {
-        // Only an owner can ban an owner, so sequentially one always remains. Concurrently two of them can ban each other, both pass, and the install has none. Locking the owner rows makes the second wait and count what the first committed, the same serialization the role route needs for the same reason.
-        if (banned && target.role === "owner") {
-          const owners = await tx
-            .select({ banned: user.banned, id: user.id })
-            .from(user)
-            .where(eq(user.role, "owner"))
-            .for("update")
-          const active = owners.filter((owner) => owner.id !== targetId && !owner.banned)
-          if (active.length === 0) {
-            throw new ApiError(
-              403,
-              "FORBIDDEN",
-              "This is the last owner who can still sign in. Promote someone else to owner first.",
-            )
+        const outcomes = new Map<string, BatchOutcome>()
+        const records: {
+          action: "user.ban" | "user.unban"
+          actor: typeof actor
+          summary: string
+        }[] = []
+        const swept: string[] = []
+        // Written in id order, answered in the order asked, so two admins acting on overlapping selections queue on the same row locks instead of deadlocking on opposite orders.
+        for (const id of [...targets].sort()) {
+          const target = byId.get(id)
+          if (!target) {
+            outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
+            continue
           }
-        }
-        const [row] = await tx
-          .update(user)
-          .set(
+          const refusal = refuseBan({
+            actorRole: actor.role,
+            isSelf: actor.id === target.id,
+            targetRole: target.role,
+          })
+          if (refusal) {
+            outcomes.set(id, refused(id, "FORBIDDEN", BAN_MESSAGES[refusal]))
+            continue
+          }
+          if (banned && target.role === "owner" && !target.banned && active <= 1) {
+            outcomes.set(
+              id,
+              refused(
+                id,
+                "FORBIDDEN",
+                "This is the last owner who can still sign in. Promote someone else to owner first.",
+              ),
+            )
+            continue
+          }
+          const [row] = await tx
+            .update(user)
             // Both directions clear the expiry and the reason: the plugin auto-unbans once banExpires is in the past, so a ban that left a stale one would undo itself on the next session check.
-            { banExpires: null, banned, banReason: null },
-          )
-          .where(
-            and(
-              eq(user.id, targetId),
-              target.role === null ? isNull(user.role) : eq(user.role, target.role),
-            ),
-          )
-          .returning(RETURNED_USER)
-        if (!row) {
-          throw new ApiError(
-            409,
-            "CONFLICT",
-            "This account changed while you were acting on it. Try again.",
-          )
+            .set({ banExpires: null, banned, banReason: null })
+            // The rung is the qual, so a promotion landing between the read and this write means the guard weighed the wrong rank and the row is reported as raced.
+            // banned is deliberately not in the qual. Racing this row is last-write-wins, and every outcome of that is the later intent: two bans are idempotent, and a ban losing to an unban leaves the person unbanned with their sessions already swept, which is what an unban means. In the qual, a repeated ban would answer CONFLICT instead of success.
+            .where(
+              and(
+                eq(user.id, id),
+                target.role === null ? isNull(user.role) : eq(user.role, target.role),
+              ),
+            )
+            .returning(WRITTEN_ROW)
+          if (!row) {
+            outcomes.set(id, raced(id))
+            continue
+          }
+          if (banned) {
+            swept.push(id)
+            // target.banned comes from the read above the lock, so a ban landing in between could drift this count. It cannot matter today: the actor is refused their own account, so a signed-in owner always remains, which is the same reason the zero-owner case is unreachable at all.
+            if (target.role === "owner" && !target.banned) active -= 1
+          }
+          records.push({
+            action: banned ? "user.ban" : "user.unban",
+            actor,
+            summary: banned ? banSummary(row.email) : unbanSummary(row.email),
+          })
+          outcomes.set(id, { id, ok: true })
         }
-        // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route already owns the rank rule the plugin has no notion of.
-        if (banned) {
-          await tx.delete(session).where(eq(session.userId, targetId))
+        // A ban has to end the person's sessions, not only flag the row: the flag alone leaves them signed in everywhere until each gate happens to re-read it. Same two writes Better Auth's own banUser makes, done here because this route owns the rank rule the plugin has no notion of.
+        // One sweep and one insert for the whole set, rather than two statements per row inside the transaction holding the owner lock.
+        if (swept.length > 0) {
+          await tx.delete(session).where(inArray(session.userId, swept))
         }
-        await recordActivity(tx, {
-          action: banned ? "user.ban" : "user.unban",
-          actor,
-          summary: banned ? banSummary(row.email) : unbanSummary(row.email),
-        })
-        return row
+        await recordActivity(tx, records)
+        return answerFor(targets, outcomes)
       })
-      return c.json({ data: { user: asUserResponse(updated) } })
+      return c.json({ data: { results } })
     },
   )
   .get(
@@ -553,7 +591,7 @@ const { data, error } = await unwrap(
             "application/json": {
               schema: resolver(
                 z.object({
-                  data: z.object({ events: z.array(activitySchema), total: z.number() }),
+                  data: z.object({ events: z.array(activitySchema), ...pagingFields }),
                 }),
               ),
             },
@@ -617,12 +655,12 @@ const { data, error } = await unwrap(
             ...row,
             createdAt: row.createdAt.toISOString(),
           })),
-          total: counted[0] ? counted[0].value : 0,
+          ...paging({ page, perPage, total: countedTotal(counted) }),
         },
       })
     },
   )
-  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows. Both paths are listed because a Hono wildcard does not match the bare segment.
+  // The flag reaches the routes as well as the page and the nav: with it off, a rule can grant nothing, since the sign-in hook returns on the same flag, so an API that still accepted rules would only be collecting dead rows.
   .use("/allowlist", requireFeature("allowlist"))
   .use("/allowlist/*", requireFeature("allowlist"))
   .get(
@@ -653,7 +691,7 @@ const { data, error } = await unwrap(
                 z.object({
                   data: z.object({
                     rules: z.array(allowlistSchema),
-                    total: z.number().meta({ example: 3 }),
+                    ...pagingFields,
                   }),
                 }),
               ),
@@ -715,7 +753,7 @@ const { data, error } = await unwrap(
           createdAt: row.createdAt.toISOString(),
           kind: row.kind === "email" ? ("email" as const) : ("domain" as const),
         })),
-        total: counted[0] ? counted[0].value : 0,
+        ...paging({ page, perPage, total: countedTotal(counted) }),
       }
       return c.json({ data })
     },
@@ -805,23 +843,26 @@ const { data, error } = await unwrap(
       }
       return c.json({
         data: {
+          // Built key by key: the inserted row arrives in the table's column order, and a spread would carry that order into the reply, since re-assigning a key afterwards changes its value and not its position. Every other mapper here spreads safely only because its own select lists columns A to Z.
           rule: {
-            ...created,
+            actor: actor.email,
+            actorId: created.actorId,
             createdAt: created.createdAt.toISOString(),
-            actor: c.get("user").email,
+            id: created.id,
             // Narrowed the way the GET narrows it: kind is a text column in the row type, and the declared schema says the union.
             kind: created.kind === "email" ? ("email" as const) : ("domain" as const),
+            value: created.value,
           },
         },
       })
     },
   )
   .delete(
-    "/allowlist/:id",
+    "/allowlist",
     describeRoute({
       tags: ["Admin"],
       description:
-        "Remove a rule. Anyone already granted keeps their role; removing a rule only stops future grants.",
+        "Remove a set of rules in one transaction. A rule that is already gone comes back as its own not-found outcome rather than failing the request.",
       ...({
         "x-codeSamples": [
           {
@@ -830,7 +871,71 @@ const { data, error } = await unwrap(
             source: `import { apiClient, unwrap } from "@/lib/api/client"
 
 const { data, error } = await unwrap(
-  apiClient.v1.admin.allowlist[":id"].$delete({ param: { id: ruleId } }),
+  apiClient.v1.admin.allowlist.$delete({ json: { ids } }),
+)`,
+          },
+        ],
+      } as object),
+      responses: {
+        200: {
+          description: "OK",
+          content: { "application/json": { schema: resolver(batchResponseSchema) } },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("json", allowlistBatchSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const actor = c.get("user")
+      const targets = uniqueIds(c.req.valid("json").ids)
+
+      const results = await db.transaction(async (tx) => {
+        // Deleted in one statement, then read back to say which ids were actually there: the rows are gone after this, so their values only survive in the records written below.
+        const removed = await tx
+          .delete(allowlist)
+          .where(inArray(allowlist.id, targets))
+          .returning({ id: allowlist.id, value: allowlist.value })
+        const byId = new Map(removed.map((row) => [row.id, row]))
+        await recordActivity(
+          tx,
+          removed.map((row) => ({
+            action: "allowlist.remove" as const,
+            actor,
+            summary: allowlistRemoveSummary(row.value),
+          })),
+        )
+        return targets.map(
+          (id): BatchOutcome =>
+            byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Rule not found"),
+        )
+      })
+      return c.json({ data: { results } })
+    },
+  )
+  // The waitlist is a public signup list rather than an access decision, so it sits behind its own flag: with the surface off, these routes 404 like the page and the nav entry do.
+  // Both paths are listed, like the allowlist above: a Hono wildcard does not match the bare segment, so the bare route needs its own line, and without the wildcard a sub-path added later would be ungated with nothing pointing at the omission.
+  .use("/waitlist", requireFeature("waitlist"))
+  .use("/waitlist/*", requireFeature("waitlist"))
+  .get(
+    "/waitlist",
+    describeRoute({
+      tags: ["Admin"],
+      description: "Who has asked to be told when this launches, newest first.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.waitlist.$get({ query: { page: "1", perPage: "25" } }),
 )`,
           },
         ],
@@ -840,33 +945,115 @@ const { data, error } = await unwrap(
           description: "OK",
           content: {
             "application/json": {
-              schema: resolver(z.object({ data: z.object({ id: z.string() }) })),
+              schema: resolver(
+                z.object({
+                  data: z.object({
+                    signups: z.array(waitlistSchema),
+                    ...pagingFields,
+                  }),
+                }),
+              ),
             },
           },
         },
+        ...validationErrorResponses,
         ...authErrorResponses,
         ...forbiddenErrorResponses,
-        ...notFoundErrorResponses,
       },
+    }),
+    sValidator("query", waitlistQuerySchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
+    }),
+    async (c) => {
+      const { dir, page, perPage, q, sort } = c.req.valid("query")
+      const where = q ? ilike(waitlist.email, `%${escapeLike(q)}%`) : undefined
+
+      const [rows, counted] = await Promise.all([
+        db
+          .select({
+            createdAt: waitlist.createdAt,
+            email: waitlist.email,
+            id: waitlist.id,
+          })
+          .from(waitlist)
+          .where(where)
+          .orderBy(
+            sql`${waitlistSortColumns[sort]} ${sql.raw(dir === "asc" ? "asc" : "desc")}`,
+            asc(waitlist.id),
+          )
+          .limit(perPage)
+          .offset((page - 1) * perPage),
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(waitlist)
+          .where(where),
+      ])
+
+      const data = {
+        signups: rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() })),
+        ...paging({ page, perPage, total: countedTotal(counted) }),
+      }
+      return c.json({ data })
+    },
+  )
+  .delete(
+    "/waitlist",
+    describeRoute({
+      tags: ["Admin"],
+      description:
+        "Remove a set of signups in one transaction. A signup that is already gone comes back as its own not-found outcome rather than failing the request.",
+      ...({
+        "x-codeSamples": [
+          {
+            lang: "typescript",
+            label: "hono/client",
+            source: `import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json: { ids } }))`,
+          },
+        ],
+      } as object),
+      responses: {
+        200: {
+          description: "OK",
+          content: { "application/json": { schema: resolver(batchResponseSchema) } },
+        },
+        ...validationErrorResponses,
+        ...authErrorResponses,
+        ...forbiddenErrorResponses,
+      },
+    }),
+    sValidator("json", waitlistBatchSchema, (result) => {
+      if (!result.success) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Invalid input", { issues: result.error })
+      }
     }),
     async (c) => {
       const actor = c.get("user")
-      const deleted = await db.transaction(async (tx) => {
-        const [row] = await tx
-          .delete(allowlist)
-          .where(eq(allowlist.id, c.req.param("id")))
-          .returning({ id: allowlist.id, value: allowlist.value })
-        if (!row) {
-          throw new ApiError(404, "NOT_FOUND", "Rule not found")
-        }
-        // The rule is gone after this, so the record is the only place its value survives.
-        await recordActivity(tx, {
-          action: "allowlist.remove",
-          actor,
-          summary: allowlistRemoveSummary(row.value),
-        })
-        return row
+      const targets = uniqueIds(c.req.valid("json").ids)
+
+      const results = await db.transaction(async (tx) => {
+        // Deleted in one statement, then read back to say which ids were there: the rows are gone after this, so the address only survives in the records written below.
+        const removed = await tx
+          .delete(waitlist)
+          .where(inArray(waitlist.id, targets))
+          .returning({ email: waitlist.email, id: waitlist.id })
+        const byId = new Map(removed.map((row) => [row.id, row]))
+        await recordActivity(
+          tx,
+          removed.map((row) => ({
+            action: "waitlist.remove" as const,
+            actor,
+            summary: waitlistRemoveSummary(row.email),
+          })),
+        )
+        return targets.map(
+          (id): BatchOutcome =>
+            byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Signup not found"),
+        )
       })
-      return c.json({ data: { id: deleted.id } })
+      return c.json({ data: { results } })
     },
   )

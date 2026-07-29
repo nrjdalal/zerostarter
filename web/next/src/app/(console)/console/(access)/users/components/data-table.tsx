@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { runBulk, toastBulk } from "@/lib/api/bulk"
+import { runBatched, toastBulk } from "@/lib/api/bulk"
 import { apiClient, unwrap } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
@@ -78,7 +78,7 @@ async function fetchUsers({
     }),
   )
   if (error) throw new Error(error.message)
-  return { rows: data.users, total: data.total }
+  return { rows: data.users, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
 // Server-driven users table: sorting, search, and the role filter resolve on the API, batches stream in on scroll, and the table state lives in the URL.
@@ -135,19 +135,22 @@ export function UsersDataTable() {
       null,
   )
 
-  // The guard is per target, so a batch is partly refusable by design: one call per user, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
+  // The guard is per target, so a batch is partly refusable by design: one call for the set, then a count of what changed and what the API turned down. A role change is confirmed here though a single-row one is not, because a mis-picked role in a menu lands on every selected account at once.
   const setRole = useMutation({
     mutationFn: async (role: ConsoleRole) =>
-      runBulk(changeable, async (row) => {
-        const { error } = await unwrap(
-          apiClient.v1.admin.users[":id"].role.$patch({ json: { role }, param: { id: row.id } }),
-        )
-        return error
-      }),
-    onSuccess: (outcome) => {
+      runBatched(
+        changeable.map((row) => row.id),
+        (ids) => unwrap(apiClient.v1.admin.users.role.$patch({ json: { ids, role } })),
+      ),
+    onSuccess: (outcome, role) => {
       setPendingRole(null)
       table.resetRowSelection()
-      toastBulk(outcome, "changed")
+      // Named when it was one account, counted when it was a batch: "1 changed" reads like a report about someone you were looking at by name.
+      toastBulk(
+        outcome,
+        "changed",
+        changeable[0] ? `Changed ${changeable[0].email} to ${role}` : undefined,
+      )
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })
@@ -166,20 +169,19 @@ export function UsersDataTable() {
       fromSelection: boolean
       users: ConsoleUser[]
     }) =>
-      runBulk(users, async (row) => {
-        const { error } = await unwrap(
-          apiClient.v1.admin.users[":id"].status.$patch({
-            json: { banned },
-            param: { id: row.id },
-          }),
-        )
-        return error
-      }),
-    onSuccess: (outcome, { banned, fromSelection }) => {
+      runBatched(
+        users.map((row) => row.id),
+        (ids) => unwrap(apiClient.v1.admin.users.status.$patch({ json: { banned, ids } })),
+      ),
+    onSuccess: (outcome, { banned, fromSelection, users }) => {
       setPendingStatus(null)
       // Only what the selection bar started clears the selection: a row-menu ban has nothing to do with the rows someone has staged for a batch, and throwing that away is silent work lost.
       if (fromSelection) table.resetRowSelection()
-      toastBulk(outcome, banned ? "banned" : "unbanned")
+      toastBulk(
+        outcome,
+        banned ? "banned" : "unbanned",
+        users[0] ? `${banned ? "Banned" : "Unbanned"} ${users[0].email}` : undefined,
+      )
       queryClient.invalidateQueries({ queryKey: ["console-users"] })
     },
   })

@@ -27,5 +27,5 @@ export function requireConsoleRole(minimum: ConsoleRole) {
   })
 }
 
-// The Access section, and so every route serving it, is an admin concern. A surface meant for a member calls the factory with its own rung rather than reusing this.
+// The console's own surfaces, and so every route serving them, are an admin concern. A surface meant for a member calls the factory with its own rung rather than reusing this.
 export const consoleAdminMiddleware = requireConsoleRole(ACCESS_ROLE)

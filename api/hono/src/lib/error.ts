@@ -86,10 +86,10 @@ export const errorEnvelope = z.object({
 const validationErrorEnvelope = z.object({
   error: z.object({
     code: z.enum(ERROR_CODES),
-    message: z.string(),
     issues: z
-      .array(z.object({ path: z.array(z.union([z.string(), z.number()])), message: z.string() }))
+      .array(z.object({ message: z.string(), path: z.array(z.union([z.string(), z.number()])) }))
       .optional(),
+    message: z.string(),
   }),
 })
 
@@ -134,8 +134,8 @@ export const validationErrorResponses: ResponsesWithResolver = {
         example: {
           error: {
             code: "VALIDATION_ERROR",
+            issues: [{ message: "Invalid email address", path: ["email"] }],
             message: "Invalid request payload",
-            issues: [{ path: ["email"], message: "Invalid email address" }],
           },
         },
       },

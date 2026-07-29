@@ -38,7 +38,7 @@ The client is pre-configured with `credentials: "include"`, so cookie-based auth
 
 ```ts
 const { data, error } = await unwrap(apiClient.v1.session.$get())
-// data is the typed Session (or null when error is set)
+// data is the typed session payload the route declares (or null when error is set)
 ```
 
 <Callout type="info" title="Auth is not RPC-typed">
@@ -56,7 +56,11 @@ That typed `apiClient.v1.session.$get()` above works because the route is define
 export const v1Router = new Hono<{ Variables: Session }>()
   .use("/*", authMiddleware)
   .get("/session", describeRoute({/* OpenAPI metadata */}), (c) => {
-    return c.json({ data: c.get("session") })
+    // Named field by field rather than handed out whole: the session object carries more than this route documents.
+    const session = c.get("session")
+    return c.json({
+      data: { createdAt: session.createdAt, expiresAt: session.expiresAt, id: session.id },
+    })
   })
 ```
 
