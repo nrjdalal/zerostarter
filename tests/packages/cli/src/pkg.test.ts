@@ -71,6 +71,14 @@ describe("mergePkg", () => {
     expect(out.overrides).toEqual({ axios: "fork-pin", esbuild: "0.21-cvefix" })
   })
 
+  test("catalogs keeps a fork's own named catalog while the starter's groups stay current", () => {
+    const out = root(
+      { catalogs: { next: { typescript: "^6.0.0" }, mine: { zod: "^3.0.0" } } },
+      { catalogs: { next: { typescript: "^6.0.3" } } },
+    )
+    expect(out.catalogs).toEqual({ mine: { zod: "^3.0.0" }, next: { typescript: "^6.0.3" } })
+  })
+
   test("scripts is starter-wins so an upstream fix propagates while fork extras are kept", () => {
     const out = root(
       { scripts: { dev: "old", deploy: "vercel" } },

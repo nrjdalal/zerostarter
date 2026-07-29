@@ -6,6 +6,7 @@ export interface Pkg {
   devDependencies?: Record<string, unknown>
   overrides?: Record<string, unknown>
   catalog?: Record<string, unknown>
+  catalogs?: Record<string, unknown>
   [key: string]: unknown
 }
 
@@ -36,6 +37,8 @@ const MERGE_FIELDS = [
   "peerDependencies",
   "resolutions",
   "catalog",
+  // Merges at the group name, so a fork's own named catalog survives while a group the starter also defines takes the starter's.
+  "catalogs",
   "scripts",
   "overrides",
 ]
