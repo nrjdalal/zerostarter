@@ -16,6 +16,7 @@ const log = (msg: string) => console.log(`[shadcn-customize] ${msg}`)
 
 const UI = "web/next/src/components/ui"
 const BUTTON = `${UI}/button.tsx`
+const CHECKBOX = `${UI}/checkbox.tsx`
 const SPINNER = `${UI}/spinner.tsx`
 const SIDEBAR = `${UI}/sidebar.tsx`
 const GLOBALS = "web/next/src/app/globals.css"
@@ -69,6 +70,53 @@ function patchButton() {
 
 function isButtonPrimitive(el: { getTagNameNode(): { getText(): string } }) {
   return el.getTagNameNode().getText() === "ButtonPrimitive"
+}
+
+// checkbox.tsx: indeterminate. Base UI renders the indicator for checked OR indeterminate but sets data-indeterminate (never data-checked), so the registry's check-only indicator paints a partial selection as a check on an unfilled box; fill the box and swap the glyph to a minus. Both keyed off the data attribute rather than the prop, since Base UI also derives the state itself for a parent checkbox in a CheckboxGroup, where the prop is undefined.
+const INDETERMINATE_CLASSES =
+  "data-indeterminate:border-primary data-indeterminate:bg-primary data-indeterminate:text-primary-foreground dark:data-indeterminate:bg-primary"
+const INDETERMINATE_ICON =
+  '<>\n<RiCheckLine className="in-data-indeterminate:hidden" />\n<RiSubtractLine className="hidden in-data-indeterminate:block" />\n</>'
+
+function patchCheckbox() {
+  const sf = project.addSourceFileAtPath(CHECKBOX)
+  const imp = sf.getImportDeclaration((d) => d.getModuleSpecifierValue() === "@remixicon/react")
+  if (!imp)
+    throw new Error(
+      "shadcn-customize: @remixicon/react import not found in checkbox.tsx; shape changed",
+    )
+  if (!imp.getNamedImports().some((n) => n.getName() === "RiSubtractLine"))
+    imp.addNamedImport({ name: "RiSubtractLine" })
+
+  const root = sf
+    .getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
+    .find((el) => el.getTagNameNode().getText() === "CheckboxPrimitive.Root")
+  if (!root)
+    throw new Error(
+      "shadcn-customize: <CheckboxPrimitive.Root> not found in checkbox.tsx; shape changed",
+    )
+  const classes = root
+    .getAttribute("className")
+    ?.getFirstDescendantByKind(SyntaxKind.CallExpression)
+    ?.getArguments()[0]
+  if (!classes || !Node.isStringLiteral(classes))
+    throw new Error(
+      'shadcn-customize: CheckboxPrimitive.Root className is not cn("..."); shape changed',
+    )
+  if (!classes.getLiteralValue().includes("data-indeterminate:bg-primary"))
+    classes.setLiteralValue(`${classes.getLiteralValue()} ${INDETERMINATE_CLASSES}`)
+
+  // the swapped-in markup still contains <RiCheckLine />, so check for the patch before the target
+  if (!sf.getFullText().includes("in-data-indeterminate:")) {
+    const icon = sf
+      .getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+      .find((el) => el.getTagNameNode().getText() === "RiCheckLine")
+    if (!icon)
+      throw new Error("shadcn-customize: <RiCheckLine /> not found in checkbox.tsx; shape changed")
+    icon.replaceWithText(INDETERMINATE_ICON)
+  }
+  sf.saveSync()
+  log(`patched: ${CHECKBOX}`)
 }
 
 // spinner.tsx: type props off the Remixicon component (registry retypes to "svg").
@@ -153,6 +201,7 @@ function patchGlobals() {
 }
 
 patchButton()
+patchCheckbox()
 patchSpinner()
 patchSidebar()
 patchGlobals()

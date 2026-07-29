@@ -20,11 +20,13 @@
     "start": {
       "persistent": true,
       "cache": false
-    },
-    "test": {
-      "dependsOn": ["^build"]
     }
   },
+  "globalDependencies": [
+    ".env*",
+    // build-time generators (font metrics, env derivation): a build cached before an edit here would ship their stale output
+    "packages/scripts/src/**"
+  ],
   "globalEnv": [
     // CI variables
     "SKIP_ENV_VALIDATION",
@@ -41,6 +43,7 @@
     "HONO_RATE_LIMIT",
     "HONO_RATE_LIMIT_WINDOW_MS",
     "HONO_TRUSTED_ORIGINS",
+    "HONO_WEB_URL",
     "INTERNAL_API_URL",
     "POSTGRES_URL",
     // Client variables

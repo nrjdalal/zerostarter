@@ -1,28 +1,29 @@
 ---
 name: icebox
-description: Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives. Use when a review, PR, audit, or eval surfaces something real-maybe that should not be scheduled or closed yet, or when the user says to icebox or park an item.
+description: "Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives. Use when a review, PR, audit, or eval surfaces something real-maybe that should not be scheduled or closed yet, or when the user says to icebox or park an item."
+source: local
 ---
 
 # Icebox
 
-A concern got raised that you cannot honestly schedule or resolve right now. Do not force it into a plan or a dismissal. Put it on ice: record it with no verdict, so the context survives until someone can decide. The Icebox is the middle state between the plans backlog and a closed issue; its full definition and the standing index issue live in `.github/notes/plans/README.md`.
+Some concerns are real yet not decidable right now. Forcing one into a plan overstates it; closing it loses the context. **Ice** is the third option: park the concern verbatim, with no verdict, until someone can rule on it. It sits between the plans backlog and a closed issue. The full definition and the standing index live in `.github/notes/plans/README.md`.
 
-## When it belongs on ice
+## What belongs on ice
 
-All three hold:
+Ice is only for the genuinely undecided, all three at once:
 
-- **raised**: a review note, a PR follow-up, an audit or eval finding,
-- **not schedulable**: no agreed next action, so it is not a plans backlog item,
-- **not resolvable**: you cannot say fix-it or not-a-problem with confidence.
+- **Raised** by a review note, a PR follow-up, or an audit or eval finding.
+- **Not schedulable** into the plans backlog, because no next action is agreed.
+- **Not resolvable** as fix-it or not-a-problem with any confidence.
 
-A clear next action goes to the plans backlog; a clear verdict gets done or closed. The Icebox is only for the genuinely undecided.
+A known next action belongs in the plans backlog; a confident verdict gets shipped or closed. Everything else waits on ice until it thaws into one of those.
 
 ## Park it
 
-1. Write the item to `.github/notes/plans/<slug>.md`, or append a section to a fitting existing file. State the concern, its context, and the open question; give no verdict and no plan. Done when a reader learns the concern and what is unresolved, and finds no recommendation.
-2. Add it under `## Icebox` in `.github/notes/plans/README.md`, linking the write-up. Done when the index links the file.
-3. Append an unchecked entry to the standing Icebox issue (#707), mirroring the one-liner and the `plans/<slug>.md` path. Done when `gh issue view 707` shows it.
+1. Write the concern to `.github/notes/plans/<slug>.md`, or append a section to a fitting file: state the concern, its context, and the open question, with no plan and no verdict. Done when a reader grasps what is unresolved and finds no recommendation.
+2. Link it under `## Icebox` in `.github/notes/plans/README.md`. Done when the index points at the file.
+3. Mirror the one-liner and the `plans/<slug>.md` path as an unchecked box on the standing Icebox issue (#707). Done when `gh issue view 707` shows it.
 
-## When an item thaws
+## Thaw
 
-An item leaves the Icebox only by being decided. When that happens, check its box in #707, note what happened (shipped, dismissed, or moved to the backlog), and graduate its write-up to the plans backlog or delete it.
+An item leaves ice only by being decided. When that happens, check its box in #707, record the outcome (shipped, dismissed, or moved to the backlog), and graduate its write-up to the plans backlog or delete it.

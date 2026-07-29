@@ -12,6 +12,7 @@ The flags live next to the brand in `packages/config/src/site.ts`, as a separate
 
 ```ts
 export const features = {
+  allowlist: true,
   apiDocs: true,
   blog: true,
   docs: true,
@@ -20,19 +21,20 @@ export const features = {
 }
 ```
 
-| Flag           | Surface                                                        | Off means                                                                                                        |
-| -------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec | both 404 and the navbar "API Docs" link is hidden                                                                |
-| `blog`         | `/blog` and its posts                                          | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop                         |
-| `docs`         | `/docs`                                                        | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
-| `internalDocs` | `/console/docs` (admin-gated internal docs)                    | the console docs render the not-found page and their search (`/api/console/search`) 404s                         |
-| `waitlist`     | `/waitlist` page and its API                                   | `/waitlist` and `/api/waitlist` 404, and a fresh fork's home becomes a plain landing page                        |
+| Flag           | Surface                                                                                   | Off means                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `allowlist`    | Console > Access > Allowlist, `/api/v1/admin/allowlist*`, and the console grant it drives | the page and the API 404, the nav drops it, and console access is granted per person only                        |
+| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec                            | both 404 and the navbar "API Docs" link is hidden                                                                |
+| `blog`         | `/blog` and its posts                                                                     | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop                         |
+| `docs`         | `/docs`                                                                                   | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop |
+| `internalDocs` | `/console/docs` (internal docs, member and above)                                         | the console docs render the not-found page and their search (`/api/console/search`) 404s                         |
+| `waitlist`     | `/waitlist` page and its API                                                              | `/waitlist` and `/api/waitlist` 404, and a fresh fork's home becomes a plain landing page                        |
 
 "Off" is not a stub: the route returns a real 404, the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
 
 <Callout type="info" title="One soft 404">
 
-The console area is `force-dynamic` (its admin gate runs per request), and Next commits a 200 status before a page-level `notFound()` fires mid-stream, so a disabled `/console/docs` renders the not-found page with an HTTP 200, not a 404. It is admin-gated and `noindex` with no content leak, and the console docs search still returns a hard 404. Every other disabled surface returns a real 404.
+The console area is `force-dynamic` (its gate runs per request), and Next commits a 200 status before a page-level `notFound()` fires mid-stream, so a disabled `/console/docs` renders the not-found page with an HTTP 200, not a 404. The same is true of any unknown console path, which a catch-all routes into the same boundary on purpose, so a forbidden page and a nonexistent one cannot be told apart. The area is gated and `noindex` with no content leak, and the console docs search still returns a hard 404. Every other disabled surface returns a real 404.
 
 </Callout>
 

@@ -1,0 +1,61 @@
+---
+slug: /docs/manage/rate-limiting
+title: Rate Limiting
+description: Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.
+---
+
+Every request to the API passes a rate limiter, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter) in `api/hono/src/middlewares/rate-limiter.ts`. It runs in two tiers from one factory: a global limit on every request keyed by client, and a higher per-user limit on the authenticated `/api/v1/*` routes. An authenticated request passes through both, so a signed-in user is bounded by their own budget and still counts against the shared IP budget.
+
+## How a request is keyed
+
+The limiter buckets each request by the first of these it can resolve:
+
+1. **User id**, when the request carries a session (`userid:<id>`).
+2. **API key**, hashed, when one is supplied (`apikey:<hash>`).
+3. **IP address**, detected from request headers with [`@arcjet/ip`](https://github.com/arcjet/arcjet-js) (`ip:<addr>`).
+4. A **random per-request id** if no IP can be found, which effectively leaves that request unbounded.
+
+The global limiter passes no user or key resolver, so it always falls to the IP (or random) tier. The auth middleware installs the per-user limiter that supplies the session's user id, so authenticated traffic is bucketed by account rather than by shared network address.
+
+## Limits and window
+
+Two environment variables set the budget, both read in `packages/env/src/api-hono.ts`:
+
+| Variable                    | Default | Controls                                  |
+| --------------------------- | ------- | ----------------------------------------- |
+| `HONO_RATE_LIMIT`           | `60`    | Requests allowed per window (anonymous).  |
+| `HONO_RATE_LIMIT_WINDOW_MS` | `60000` | Window length in milliseconds (1 minute). |
+
+Authenticated users get **twice** the base limit: the auth middleware constructs its per-user limiter with `HONO_RATE_LIMIT * 2`. So out of the box an anonymous caller gets 60 requests per minute per IP, and a signed-in user gets 120 per minute for their account.
+
+## What a throttled request sees
+
+Exceeding a limit returns `429` in the standard [error envelope](/docs/manage/api-conventions):
+
+```json
+{ "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }
+```
+
+Every response also carries the `draft-6` standard headers, `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`, and a throttled one adds `Retry-After`, so a client can back off without guessing. The `429` is documented on every route in the OpenAPI spec, so it shows up in the [Scalar reference](/docs/getting-started/type-safe-api) too.
+
+<Callout type="info" title="Arcjet here is just IP detection">
+
+`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It only reads forwarded/platform headers to resolve the address the IP tier keys on.
+
+</Callout>
+
+<Callout type="warn" title="The store is in-process">
+
+Each limiter uses an in-memory store scoped to one server instance, so limits are per-process, not shared across replicas. That is fine for a single instance or for local development; behind a load balancer or on serverless, back the limiter with a shared store (for example Redis) so the budget is enforced globally.
+
+</Callout>
+
+## The API-key tier is a stub
+
+The key resolver has an API-key branch, but nothing supplies it: no limiter passes a key resolver, and the starter has no API-key authentication at all. Auth is session-based (a cookie or session token resolved by Better Auth), so in practice requests key by user id or IP. To add API-key auth, validate the key in a middleware and pass a resolver into the limiter so the `apikey:` tier starts firing.
+
+## Next
+
+- [API Conventions](/docs/manage/api-conventions): the error envelope the `429` uses, and the rest of the middleware chain.
+- [Environment Variables](/docs/manage/environment): where `HONO_RATE_LIMIT` and its window are validated.
+- [Authentication](/docs/manage/authentication): the sessions the per-user tier keys on.

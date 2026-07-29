@@ -29,7 +29,15 @@ const docsConfig = {
       {
         "/docs/getting-started/project-structure": {
           title: "Project Structure",
-          description: "How the monorepo fits together: two apps, four packages, one import graph.",
+          description:
+            "How the monorepo fits together: two apps, their packages, one import graph.",
+        },
+      },
+      {
+        "/docs/getting-started/cli": {
+          title: "CLI",
+          description:
+            "Scaffold, re-scaffold, and re-baseline a fork: the init, reinit, and sync commands.",
         },
       },
     ],
@@ -43,10 +51,24 @@ const docsConfig = {
         },
       },
       {
+        "/docs/getting-started/realtime": {
+          title: "Realtime",
+          description:
+            "WebSockets on Hono: one typed client, a Bun and Node adapter split for Vercel, and a REST-baseline fallback.",
+        },
+      },
+      {
         "/docs/manage/api-conventions": {
           title: "API Conventions",
           description:
             "The { data } / { error } envelope, error codes, and middleware every route shares.",
+        },
+      },
+      {
+        "/docs/manage/rate-limiting": {
+          title: "Rate Limiting",
+          description:
+            "Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.",
         },
       },
       {
@@ -60,6 +82,28 @@ const docsConfig = {
           title: "Auth & Organizations",
           description:
             "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
+        },
+      },
+      {
+        "/docs/manage/allowlist": {
+          title: "Allowlist",
+          description:
+            "Grant console access by domain or address, without promoting people one at a time.",
+        },
+      },
+      {
+        "/docs/manage/activity": {
+          title: "Activity",
+          description:
+            "A readable trail of every console write: who changed a role, banned an account, or edited the allowlist.",
+        },
+      },
+      {
+        "/docs/manage/organizations": {
+          title: "Organizations & Teams",
+          description:
+            "Multi-tenant from Better Auth: the org and team data model, roles, invitations, and active-org switching.",
+          label: "Organizations",
         },
       },
       {
@@ -100,6 +144,13 @@ const docsConfig = {
           title: "Dashboard",
           description:
             "The protected app shell: sidebar, org switcher, and the layout wrappers to build on.",
+        },
+      },
+      {
+        "/docs/manage/data-tables": {
+          title: "Data Tables",
+          description:
+            "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
         },
       },
       {

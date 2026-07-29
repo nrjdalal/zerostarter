@@ -1,14 +1,14 @@
 ---
 slug: /docs/getting-started/project-structure
 title: Project Structure
-description: "How the monorepo fits together: two apps, four packages, one import graph."
+description: "How the monorepo fits together: two apps, their packages, one import graph."
 ---
 
-The whole repo is one mental model: two deployable apps, four shared packages, and a single import graph that ties them together.
+The whole repo is one mental model: two deployable apps, their packages, and a single import graph that ties them together.
 
 - **`web/next`**: the Next.js frontend (App Router, React 19).
 - **`api/hono`**: the Hono backend that owns every route and talks to the database.
-- **`packages/*`**, the code both apps share: the auth instance, the Drizzle schema, validated env, and the brand config.
+- **`packages/*`**, the shared code plus build tooling: the auth instance, the Drizzle schema, validated env, the brand config, and a build-only scripts package.
 
 Three import aliases wire it together: `@api/hono` gives the frontend its API types, `@packages/*` pulls in a shared package, and `@/` is the local-to-this-app alias. Imports only point _down_ that list: apps depend on packages, never the reverse.
 
@@ -20,7 +20,8 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
    ├─ auth/       # Better Auth instance + session types
    ├─ db/         # Drizzle schema + migrations
    ├─ env/        # type-safe, validated environment variables
-   └─ config/     # TS base, tsdown factory, and site.ts (the brand)
+   ├─ config/     # TS base, tsdown factory, and site.ts (the brand)
+   └─ scripts/    # build-only tooling (build-time tldts/env derivation); never bundled
 ```
 
 ## `api/hono`
@@ -29,11 +30,11 @@ The entry point is `src/index.ts`, which exports the `AppType` the frontend infe
 
 ## `web/next`
 
-Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the admin console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
+Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the staff console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
 
 <Callout type="info" title="Two shells to build on">
 
-`(protected)/` (dashboard) and `(console)/` (admin) are auth-gated but intentionally empty. They are where your product goes, not finished features.
+`(protected)/` (dashboard) and `(console)/` (staff, member and above) are auth-gated and near-empty on purpose: they are where your product goes, not finished features. The console ships its Access section as the pattern to copy, `(access)/users/` and `(access)/allowlist/`, plus read-only [`activity/`](/docs/manage/activity), each a [data table](/docs/manage/data-tables) with its column defs and fetch wiring colocated in a `components/` folder beside the page.
 
 </Callout>
 
@@ -43,12 +44,15 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 
 </Callout>
 
+`src/components/` is grouped by domain the same way, one folder per area, so a component lives next to the surface it serves: `common/` (shared pieces like the navbar), `shell/` (the app frame: `PageShell`, `PageHeader`, and the `sidebar-*` parts), `dashboard/`, `console/`, `docs/`, `blog/`, `marketing/`, and `ui/`. Cross-domain families that follow the shadcn single-module pattern sit at the top level as one file, like `data-table.tsx` (see [Data Tables](/docs/manage/data-tables)). `ui/` is the generated shadcn registry: don't hand-edit it (the sync rewrites it); customize through the post-sync script instead.
+
 ## The packages
 
-- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin that gates `/console`. Exports session types.
-- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `waitlist.ts`) and generated migrations under `drizzle/`.
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `/console` is gated by the [role ladder](/docs/manage/authentication#the-console-role-ladder) in `src/access.ts`, a second subpath export (`@packages/auth/access`) so the web can read the rules without pulling the auth runtime. Exports session types.
+- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `console.ts`, `waitlist.ts`, grouped by concern rather than one file per table) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
+- **`scripts`**: build-only Bun tooling (e.g. the tldts breakdown baked into `auth`, and the client split signal `web/next`'s `next.config` inlines). It runs during a build and writes to the gitignored repo-root `.generated/`, never bundled or imported at runtime.
 
 ## Bun catalog
 

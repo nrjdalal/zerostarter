@@ -1,52 +1,51 @@
-/**
- * Extracts the cookie domain from a URL for cross-subdomain cookie sharing.
- *
- * @example
- * getCookieDomain("https://api.example.com")             // ".example.com"
- * getCookieDomain("https://api.canary.example.com")      // ".canary.example.com"
- * getCookieDomain("https://api.dev.example.com")         // ".dev.example.com"
- * getCookieDomain("http://api.zerostarter.localhost")    // ".zerostarter.localhost" (portless dev)
- * getCookieDomain("http://feat.api.zerostarter.localhost") // ".zerostarter.localhost" (portless worktree)
- * getCookieDomain("http://localhost:4000")               // undefined
- */
-export function getCookieDomain(url: string): string | undefined {
-  try {
-    const { hostname } = new URL(url)
-    if (hostname === "localhost" || hostname === "127.0.0.1") return undefined
-    const parts = hostname.split(".")
-    // Local dev (portless *.localhost): share the cookie across the base `<name>.localhost` so the web and api subdomains, branch-prefixed in a worktree, both receive it.
-    if (parts.at(-1) === "localhost") {
-      return parts.length >= 2 ? `.${parts.slice(-2).join(".")}` : undefined
-    }
-    if (parts.length <= 2) return undefined
-    return `.${parts.slice(1).join(".")}`
-  } catch {
-    return undefined
-  }
+// The tldts fields (parsed with allowPrivateDomains) auth reads to shape session cookies; a structural subset of tldts's result, baked into the bundle so @packages/auth carries no tldts dependency of its own.
+export type ParsedHost = {
+  domain: string | null
+  isIp: boolean
+  isPrivate: boolean | null
+  publicSuffix: string | null
+  subdomain: string | null
 }
 
-/**
- * Extracts the cookie prefix from a URL for environment-specific cookie isolation.
- * Returns undefined for production (uses Better Auth default prefix).
- *
- * @example
- * getCookiePrefix("https://api.example.com")             // undefined (production, uses default)
- * getCookiePrefix("https://api.canary.example.com")      // "canary"
- * getCookiePrefix("https://api.dev.example.com")         // "dev"
- * getCookiePrefix("http://feat.api.zerostarter.localhost") // undefined (local dev, no prefix)
- * getCookiePrefix("http://localhost:4000")               // undefined
- */
-export function getCookiePrefix(url: string): string | undefined {
+// Reconcile the app host's tldts breakdown into the session cookie config, plus tldts's own isPrivate flag passed through.
+export function cookieConfig({ domain, isIp, isPrivate, publicSuffix, subdomain }: ParsedHost): {
+  cookieDomain?: string
+  cookiePrefix?: string
+  isPrivate: boolean | null
+} {
+  // Cross-subdomain cookie domain: a portless *.localhost base shares under its own domain, otherwise drop the api leaf label and scope to the rest. None for an IP, or a bare or apex host with nothing to share under.
+  let cookieDomain: string | undefined
+  if (!isIp && domain) {
+    if (publicSuffix === "localhost") cookieDomain = `.${domain}`
+    else if (subdomain) cookieDomain = `.${[...subdomain.split(".").slice(1), domain].join(".")}`
+  }
+
+  // Environment isolation prefix: the label beneath the api leaf (api.canary.example.com yields canary). None for local .localhost dev and single-label subdomains.
+  let cookiePrefix: string | undefined
+  if (publicSuffix !== "localhost" && subdomain) {
+    const labels = subdomain.split(".")
+    if (labels.length >= 2) cookiePrefix = labels[1]
+  }
+
+  // isPrivate is tldts's own flag, passed through: true when the app sits on a PSL private-section hosting suffix (vercel.app, pages.dev, github.io), where sibling deployments cannot share a cross-subdomain cookie. Null for an IP.
+  return { cookieDomain, cookiePrefix, isPrivate }
+}
+
+// Portless serves dev over .localhost subdomains (api.<name>.localhost) injected at runtime, which the build-time breakdown, baked from the fixed-ports .env, cannot see. Re-derive the host from a runtime .localhost app URL so web and api share one Domain cookie; no Public Suffix List is needed since ".localhost" is the known suffix. Bare localhost (Docker, PORTLESS=0) and every real deploy return null and fall through to the baked breakdown.
+export function localhostHost(appUrl: string): ParsedHost | null {
+  let hostname: string
   try {
-    const { hostname } = new URL(url)
-    if (hostname === "localhost" || hostname === "127.0.0.1") return undefined
-    const parts = hostname.split(".")
-    // Local dev (portless *.localhost): no env prefix; branches share one cookie under `<name>.localhost` and there is no cross-branch boundary to isolate.
-    if (parts.at(-1) === "localhost") return undefined
-    // 4+ parts means environment subdomain: api.canary.example.com
-    if (parts.length >= 4) return parts[1]
-    return undefined
+    hostname = new URL(appUrl).hostname
   } catch {
-    return undefined
+    return null
+  }
+  if (!hostname.endsWith(".localhost")) return null
+  const labels = hostname.split(".")
+  return {
+    domain: labels.slice(-2).join("."),
+    isIp: false,
+    isPrivate: false,
+    publicSuffix: "localhost",
+    subdomain: labels.slice(0, -2).join("."),
   }
 }

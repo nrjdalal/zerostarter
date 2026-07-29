@@ -83,9 +83,29 @@ Env vars are set per project and don't propagate between them, and the two proje
 
 </Callout>
 
+Because both projects sit on `*.vercel.app` (a public suffix, where the browser refuses a shared `Domain` cookie), the app detects this shape at build and routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web with no extra setup.
+
+<Callout type="warn" title="Register the OAuth callback at the web origin">
+
+Sign-in completes on the web, so both the app origin and the callback are the web (swap in your web origin), not the api:
+
+```txt
+# origin (Homepage URL / Authorized origins)
+https://your-web.vercel.app
+# callback (callback URL / redirect URIs)
+https://your-web.vercel.app/api/auth/callback/github
+https://your-web.vercel.app/api/auth/callback/google
+```
+
+A custom domain (where web and api share a parent) switches back automatically, with the callback on the api host.
+
+</Callout>
+
+The api infers that web origin from `HONO_TRUSTED_ORIGINS`, taking the first trusted origin that isn't the api itself. Set `HONO_WEB_URL` on the api project to name it explicitly when that inference won't do: either because you trust more than one origin (say a preview URL) and don't want it to guess, or because no trusted origin differs from the api at all, in which case sign-in cannot complete until you set it.
+
 ## WebSockets
 
-The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). `hono/bun` can't drive the upgrade because Vercel Functions don't run `Bun.serve()`, so the api switches to the Node adapter (`@hono/node-server` + `ws`) when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. A single connection is pinned to one function instance and closes when the function reaches its max duration (a few minutes by default), so keep any shared socket state external (for example Redis) and let clients reconnect.
+The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). `hono/bun` can't drive the upgrade because Vercel Functions don't run `Bun.serve()`, so the api switches to the Node adapter (`@hono/node-server` + `ws`) when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. When the two projects sit on a public hosting suffix the client talks to the api through the web's `/api` proxy, and a Next rewrite does not forward the WebSocket upgrade, so the example falls back to its REST heartbeat there (the badge stays green, without live-over-socket updates); a custom domain, where the browser reaches the api directly, keeps the socket. A single connection is pinned to one function instance and closes when the function reaches its max duration (a few minutes by default), so keep any shared socket state external (for example Redis) and let clients reconnect. See [Realtime](/docs/getting-started/realtime) for the typed client and the reconnect pattern.
 
 ## Next
 

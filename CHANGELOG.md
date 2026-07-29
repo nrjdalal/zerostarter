@@ -1,3 +1,145 @@
+## v0.1.14
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.13...v0.1.14)
+
+### 🚀 Enhancements
+
+- **web:** The platform data table ([#754](https://github.com/nrjdalal/zerostarter/pull/754))
+
+### 🩹 Fixes
+
+- **ci:** Run the centralized suite from the repo root ([#757](https://github.com/nrjdalal/zerostarter/pull/757))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.13
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.12...v0.1.13)
+
+### 🚀 Enhancements
+
+- **marketing:** Design pass on the landing page ([#744](https://github.com/nrjdalal/zerostarter/pull/744))
+
+### 📖 Documentation
+
+- **plans:** Add the Icebox section and park the RSS feed decision ([#747](https://github.com/nrjdalal/zerostarter/pull/747))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.12
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.11...v0.1.12)
+
+### 🚀 Enhancements
+
+- **deps-manager:** Enforce caret ranges for catalog entries ([#745](https://github.com/nrjdalal/zerostarter/pull/745))
+
+### 🩹 Fixes
+
+- **scripts:** Make the skills-manager parser quote-aware ([#742](https://github.com/nrjdalal/zerostarter/pull/742))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.11
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.10...v0.1.11)
+
+### 🩹 Fixes
+
+- **skills:** Quote skill descriptions containing a colon ([#740](https://github.com/nrjdalal/zerostarter/pull/740))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.10
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.9...v0.1.10)
+
+### 🚀 Enhancements
+
+- **cli:** Rebrand fork skills on sync, keep upstream refs + plain-text AGENTS.md links ([#738](https://github.com/nrjdalal/zerostarter/pull/738))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.9
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.8...v0.1.9)
+
+### 📖 Documentation
+
+- **skills:** Link each skill name to its SKILL.md in AGENTS.md ([#736](https://github.com/nrjdalal/zerostarter/pull/736))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.8
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.7...v0.1.8)
+
+### 📖 Documentation
+
+- **skills:** Skills-writer rewrite of all skills + add release skill ([#734](https://github.com/nrjdalal/zerostarter/pull/734))
+
+### 🏡 Chore
+
+- Update deps ([a8b9ef7](https://github.com/nrjdalal/zerostarter/commit/a8b9ef7))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.7
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.6...v0.1.7)
+
+### 🚀 Enhancements
+
+- **marketing:** Sharpen the landing page (overhaul phase 3) ([#732](https://github.com/nrjdalal/zerostarter/pull/732))
+
+### 🩹 Fixes
+
+- **auth:** Share the session cookie across web and api under portless dev ([#728](https://github.com/nrjdalal/zerostarter/pull/728))
+
+### 📖 Documentation
+
+- Add CLI, Organizations & Teams, and Rate Limiting pages; fill gaps ([#730](https://github.com/nrjdalal/zerostarter/pull/730))
+- Realtime page + WebSockets/OG/magic-link/doc-sync depth (overhaul phase 2) ([#731](https://github.com/nrjdalal/zerostarter/pull/731))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
+## v0.1.6
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.5...v0.1.6)
+
+### 🚀 Enhancements
+
+- **auth:** Derive cookie config from a build-generated tldts breakdown ([#723](https://github.com/nrjdalal/zerostarter/pull/723))
+- **auth:** Route sign-in same-origin through the web proxy on public suffixes ([4f4922f](https://github.com/nrjdalal/zerostarter/commit/4f4922f))
+
+### 📖 Documentation
+
+- **web:** Sync the per-workspace hook with inscope and link it ([a574186](https://github.com/nrjdalal/zerostarter/commit/a574186))
+
+### 🏡 Chore
+
+- Merge main into canary to reconcile the #710 squash ([#710](https://github.com/nrjdalal/zerostarter/issues/710))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.5
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.4...v0.1.5)

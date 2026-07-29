@@ -1,9 +1,24 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
+
 import { getSafeEnv } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 import type { NextConfig } from "next"
 
 getSafeEnv(env, "@web/next")
+
+// @packages/scripts/src/generate-env.ts (web target) derives this before next build (next.config cannot read NEXT_PUBLIC_ vars itself); inline it as NEXT_PUBLIC_IS_PRIVATE so that on a public hosting suffix the client routes auth same-origin. Missing file (e.g. a bare next build) falls back to false.
+const isPrivate = (() => {
+  for (const candidate of [".generated/web-env.json", "../../.generated/web-env.json"]) {
+    try {
+      return JSON.parse(readFileSync(resolve(process.cwd(), candidate), "utf8")).isPrivate === true
+    } catch {
+      continue
+    }
+  }
+  return false
+})()
 
 function detectLibc() {
   if (process.platform !== "linux") return undefined
@@ -41,6 +56,7 @@ const appDevHost = (() => {
 })()
 
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_IS_PRIVATE: String(isPrivate) },
   output: "standalone",
   ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
   ...(libc && {

@@ -57,7 +57,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 **Data & auth**
 
 - [PostgreSQL](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team) on Bun's SQL driver, and migrations.
-- [Better Auth](https://better-auth.com): GitHub and Google OAuth, organizations and teams, and an `admin` role that gates `/console`.
+- [Better Auth](https://better-auth.com): GitHub and Google OAuth, organizations and teams, and a role ladder that gates `/console`.
 
 **Everything else, wired**
 
@@ -69,7 +69,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 
 <Callout type="info" title="What's a shell, not a feature">
 
-The auth, orgs, roles, API, database, and deploy paths are real and working. The **dashboard and console pages are intentionally empty, auth-gated shells**: a starting point for your product, not a pre-built app. Build on them.
+The auth, orgs, roles, API, database, and deploy paths are real and working. The **dashboard and console pages are intentionally near-empty, auth-gated shells**: a starting point for your product, not a pre-built app. The one built-out console surface is the users [data table](/docs/manage/data-tables), there as the pattern to copy. Build on them.
 
 </Callout>
 

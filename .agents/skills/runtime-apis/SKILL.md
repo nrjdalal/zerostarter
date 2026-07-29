@@ -1,6 +1,7 @@
 ---
 name: runtime-apis
-description: Prefer Bun-native APIs, else Node built-ins with the node: prefix. Use when importing a Node built-in (fs, path, child_process, crypto, os, util), reading or writing files, spawning a process, or choosing between a Bun and a Node API.
+description: "Prefer Bun-native APIs, else Node built-ins with the node: prefix. Use when importing a Node built-in (fs, path, child_process, crypto, os, util), reading or writing files, spawning a process, or choosing between a Bun and a Node API."
+source: local
 ---
 
 # Runtime APIs
@@ -8,7 +9,7 @@ description: Prefer Bun-native APIs, else Node built-ins with the node: prefix. 
 Two rules, in order:
 
 1. **Bun-first.** When the file runs under Bun and a native equivalent exists, use it: `Bun.file`, `Bun.write`, `Bun.spawn`/`Bun.spawnSync`, `Bun.Glob`, `Bun.YAML`, `Bun.serve`.
-2. **Else the `node:` prefix.** Reach for a Node built-in with the protocol prefix: `import { join } from "node:path"`, `require("node:fs")`. Never the bare form: write `node:path`, not a bare `path` specifier.
+2. **Else the `node:` prefix.** Reach for the Node built-in with its protocol prefix: `import { join } from "node:path"`, `require("node:fs")`. Never the bare specifier: write `node:path`, not `path`.
 
 The prefix is mandatory even in Bun-only code: it marks the import as a built-in rather than an npm package, so resolution is identical under every runtime.
 
@@ -23,7 +24,7 @@ The prefix is mandatory even in Bun-only code: it marks the import as a built-in
 | `packages/env/**` | Node + Bun | `node:` only. Imported by both web (Node) and api (Bun); stays portable. |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
 
-Bun-first applies to Bun-only files: `.github/scripts/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
+Bun-first therefore applies to the Bun-only files: `.github/scripts/*.ts` and `packages/scripts/src/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
 
 ## Bun equivalents
 
@@ -44,9 +45,7 @@ Bun-first applies to Bun-only files: `.github/scripts/*.ts` (`bun x.ts`). The CL
 
 ## Audit
 
-No bare (unprefixed) built-in specifier may exist anywhere. This prints nothing when clean:
-
-The alternation `$B` is the full Node built-in list, so a new bare import cannot slip through; extend it only if Node ships a new module.
+No bare (unprefixed) built-in specifier may exist anywhere. The `$B` alternation is the full Node built-in list, so a new bare import cannot slip through; extend it only when Node ships a new module. This prints nothing when clean:
 
 ```bash
 B='assert|async_hooks|buffer|child_process|cluster|console|constants|crypto|dgram|diagnostics_channel|dns|domain|events|fs|http|http2|https|inspector|module|net|os|path|perf_hooks|process|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|trace_events|tty|url|util|v8|vm|wasi|worker_threads|zlib'

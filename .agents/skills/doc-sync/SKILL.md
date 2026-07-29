@@ -1,15 +1,16 @@
 ---
 name: doc-sync
 description: Sync docs and skills so they never drift from the code. Use before opening or updating a PR, or when a change touches a command, path, convention, or the skill set a doc or skill documents.
+source: local
 ---
 
 # Doc Sync
 
-A change ships with its docs or it ships drift. This is the procedure to catch drift across every hand-authored surface before the PR goes up. `AGENTS.md` makes the sync mandatory; this makes it checkable.
+A change ships with its docs or it ships drift. This is the procedure that catches drift across every hand-authored surface before the PR goes up: `AGENTS.md` makes the sync mandatory, this makes it checkable.
 
 ## Surfaces
 
-Hand-authored, keep these in step with the code:
+Hand-authored, keep each in step with the code:
 
 | Surface | Documents | Drifts when |
 | --- | --- | --- |
@@ -21,36 +22,34 @@ Hand-authored, keep these in step with the code:
 
 Generated, never hand-edit (they regenerate from the surfaces above): `content/docs/meta.json` (git-ignored), the `/llms.txt` and `/llms-full.txt` routes, and the fumadocs search index.
 
-## Procedure
-
-### 1. Scope the change
+## 1. Scope the change
 
 List what the diff touched: paths, commands, script names, env vars, conventions, tooling, and whether the skill set changed. Start from `git diff --stat` and the code diff.
 
-### 2. Hunt drift
+## 2. Hunt drift
 
-Grep every surface for each changed path, command, or symbol. Every hit is a candidate:
+Grep every surface for each changed path, command, or symbol; every hit is a candidate:
 
 ```bash
 rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .agents/skills web/next/docs.config.ts
 ```
 
-### 3. Sync, coupled surfaces included
+## 3. Sync, coupled surfaces included
 
-Update each hit in the same change. Two couplings are easy to miss:
+Fix each hit in the same change. Two couplings are easy to miss:
 
-- **Add or remove a skill** touches three places: the `AGENTS.md` skills table, the `resources/ai-skills.mdx` catalog row, and that file's "N skills" counts.
-- **Add, remove, or rename a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
+- **Adding or removing a skill** touches three places: the `AGENTS.md` skills table, the `resources/ai-skills.mdx` catalog row, and that file's "N skills" counts.
+- **Adding, removing, or renaming a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
 
-### 4. Verify with the repo's own drift gate
+## 4. Verify with the repo's own drift gate
 
 ```bash
 bun .github/scripts/docs.ts --strict
 ```
 
-This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `cd web/next && bun run build` once: it reruns this check inside the full build and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.
+This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `cd web/next && bun run build` once: it reruns this check inside the full build, and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.
 
 ## Notes
 
-- Skills are symlinked: `.agents/skills` is canonical, edit once.
+- Skills are symlinked: `.agents/skills` is canonical, so edit once.
 - The `/llms.txt` and `/llms-full.txt` routes mirror the docs and regenerate at build, so fix the doc, never the route.

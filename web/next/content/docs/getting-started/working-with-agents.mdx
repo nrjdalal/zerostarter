@@ -58,11 +58,11 @@ curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
 curl -sS -b cookies.txt "$API/api/v1/user"   # now authenticated
 ```
 
-It signs in as `LocalAgent`, grants the `admin` role (so `/console` is reachable), and sets the session cookie. In the browser, the dev-only **Login (agents)** button does the same thing; in a dev build it appears once `AGENT_SIGNIN_ENABLED` is true, so a visible button always has a live route behind it.
+It signs in as `LocalAgent` and sets the session cookie. The sign-in that creates the account makes it an `owner`, so the whole console is reachable including the owner-only rules; after that its rung stands as it is, which is what lets you demote it to see what a lower rung sees. `bun run console:roles grant agent@local.host owner` puts it back. In the browser, the dev-only **Login (agents)** button does the same thing; in a dev build it appears once `AGENT_SIGNIN_ENABLED` is true, so a visible button always has a live route behind it.
 
 <Callout type="warn" title="Local only, by construction">
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true`. It ships off (blank) in `.env.example`, so a fresh clone and any deployed default env expose no admin-minting route: it returns `404`. `bunx zerostarter init` sets it only in your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button appears only in a dev build when the API advertises the route, so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true`. It ships off (blank) in `.env.example`, so a fresh clone and any deployed default env expose no session-minting route: it returns `404`. `bunx zerostarter init` sets it only in your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button appears only in a dev build when the API advertises the route, so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
 
 </Callout>
 
@@ -83,6 +83,8 @@ agent-browser click "@e12"    # act on a referenced element
 ## Docs that can't drift
 
 `AGENTS.md` (symlinked to `CLAUDE.md`) makes one rule load-bearing: **documentation is updated in the same change as the code.** When a convention moves, its skill and doc move with it. Paired with the symlinked skill directory, what an agent reads is always what the code actually does: the single biggest cause of agent mistakes, designed out.
+
+It is enforced, not just requested. Docs structure and page metadata live in one file, `web/next/docs.config.ts`, and the build derives every page's frontmatter and sidebar from it; `docs.ts --strict` fails the build when a page and the config disagree, so a doc can't silently fall out of sync. The `doc-sync` skill is the checklist an agent runs to keep code, docs, and skills aligned in the same change.
 
 ## Next
 
