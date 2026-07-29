@@ -22,6 +22,16 @@ The rule has **no opt-out**, so no pin survives an install, whatever reason is r
 
 Enforcement is only partial by design. Specs the rule cannot convert are reported and the script still exits 0, so a compound range such as `>=4.4.3 <5` survives an install with nothing but a line of `postinstall` output. Failing the install instead would block work for a range that may be perfectly deliberate, so the auto-convertible half is enforced and the rest is advisory.
 
+## Named catalogs
+
+A workspace that genuinely cannot take the shared version gets a named entry in the root `catalogs` block and references it as `catalog:<name>`. `eachCatalog` in the script walks the named groups alongside the main `catalog`, so the caret rule and the unused-key report cover them without extra config. The auto-move step preserves a `catalog:<name>` reference instead of collapsing it to `catalog:`, which is the whole reason the exception holds across an install.
+
+### `catalog:next` → `typescript@^6.0.3` (`web/next`)
+
+- **Why:** `next build` runs its type check through the TypeScript **JS API** (`verify-typescript-setup.js` does `require('typescript')` and hands the module to `runTypeCheck`). TypeScript 7 is the native compiler and ships only `lib/tsc.js`, `lib/getExePath.js`, and `lib/version.cjs`, no `lib/typescript.js`, so there is no JS API to hand over and the check cannot run.
+- **Why 6.0.3:** TypeScript 6.0 is the feature-frozen JS twin of 7.0, so the check runs on the same language version the rest of the monorepo compiles with. Everything outside `web/next` stays on native `typescript` 7 from the main catalog.
+- **Retire when:** Next ships TypeScript 7 support (landing in the 16.3 line; 16.2.x is the latest stable). Then drop the `catalogs` block and move `web/next` back to `catalog:`.
+
 ## Active overrides
 
 ### `postcss` → `^8.5.23`
