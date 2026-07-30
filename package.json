@@ -36,7 +36,7 @@
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test": "if [ -d tests ]; then bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi"
+    "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
