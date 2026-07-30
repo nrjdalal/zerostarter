@@ -113,7 +113,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run dev`                     | Start both dev servers on portless URLs     |
 | `bun run build`                   | Build every workspace                       |
 | `bun run check-types`             | Type-check every workspace                  |
-| `bun run test`                    | Run every workspace's tests                 |
+| `bun run test`                    | Build, then run the suite in `tests/`       |
 | `bun run lint` / `bun run format` | Lint with Oxlint / format with Oxfmt        |
 | `bun run db:generate`             | Generate Drizzle migrations from the schema |
 | `bun run db:migrate`              | Apply pending migrations                    |
