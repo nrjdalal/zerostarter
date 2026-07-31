@@ -1,3 +1,15 @@
+## v0.1.19
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.18...v0.1.19)
+
+### 🩹 Fixes
+
+- **ci:** Give the cli-release suite the env its build needs ([#775](https://github.com/nrjdalal/zerostarter/pull/775))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.18
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.17...v0.1.18)
