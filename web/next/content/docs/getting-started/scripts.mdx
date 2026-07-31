@@ -32,7 +32,7 @@ Each of these builds `@packages/env` first, then runs Drizzle Kit against `packa
 - `bun run format`: Oxfmt, writing fixes.
 - `bun run format:check`: Oxfmt, report only (also what CI runs).
 - `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
-- `bun run test`: run every workspace's tests through Turbo (the `packages/cli` suite today). PR CI runs this and `check-types` too, so a failing test or type error blocks the merge.
+- `bun run test`: build the shared `packages/*`, then run the whole suite from the repo-root `tests/` mirror. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds. PR CI runs this and `check-types` too, so a failing test or type error blocks the merge.
 
 ## Release / production
 
