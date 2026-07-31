@@ -48,6 +48,10 @@ jobs:
         # The suite lives at the repo root now (one tests/ mirror, no per-package test script), so this step steps out of the job's packages/cli default.
         run: bun run test
         working-directory: .
+        # The suite builds packages/* first, and @packages/db reads env while tsdown loads its config, so this needs what auto-check-build already sets. There is no .env on a runner.
+        env:
+          NODE_ENV: production
+          SKIP_ENV_VALIDATION: true
 
   release:
     if: |
