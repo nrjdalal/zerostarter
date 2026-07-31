@@ -1,3 +1,15 @@
+## v0.1.18
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.17...v0.1.18)
+
+### 🩹 Fixes
+
+- **test:** Build the shared packages before running the suite ([#772](https://github.com/nrjdalal/zerostarter/pull/772))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.17
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.16...v0.1.17)
