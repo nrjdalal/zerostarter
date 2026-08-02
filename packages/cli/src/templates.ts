@@ -47,9 +47,9 @@ export const site = {
   description: "${display} is just getting started. Tell its story here.",
   tagline: "Your tagline, ready when you are.",
   social: {
+    discord: "",
     github: "",
     x: "",
-    discord: "",
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
