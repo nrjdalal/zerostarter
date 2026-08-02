@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import path from "node:path"
 
 import { $, Glob } from "bun"
@@ -103,8 +104,26 @@ async function format(doc: string): Promise<string> {
   }
 }
 
+// The CLI records, per skill it synced into a fork, the hash of the upstream file it came from and of the file as written there. Comparing prose is not an option: sync rebrands the body to the fork's own name and prepends its note, so a synced skill can never match upstream byte for byte and every one would report as drifted.
+type LedgerEntry = { upstream: string; written: string }
+
+async function readLedger(): Promise<Record<string, LedgerEntry>> {
+  const file = Bun.file(path.join(SKILLS_DIR, ".sync.json"))
+  if (!(await file.exists())) return {}
+  try {
+    return await file.json()
+  } catch {
+    return {}
+  }
+}
+
+// Line-ending-normalized, matching the CLI: a Windows checkout must not read as drifted over CRLF alone.
+const digest = (text: string) =>
+  createHash("sha256").update(text.replace(/\r\n/g, "\n")).digest("hex").slice(0, 12)
+
 async function outdated(): Promise<void> {
   const skills = await readSkills()
+  const ledger = await readLedger()
   for (const s of skills) {
     // `source` is a full github link on a fork, an `owner/repo` shorthand, a tool name, or `local`.
     const repo = s.source.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "")
@@ -112,6 +131,12 @@ async function outdated(): Promise<void> {
       console.log(
         `  ${s.name}: ${s.source === "local" ? "local, no upstream" : `vendored (${s.source})`}`,
       )
+      continue
+    }
+    const entry = ledger[s.dir]
+    // Sync records only the skills it wrote, so an untracked one is either customized here (sync keeps that version and stops tracking it) or predates the ledger.
+    if (!entry) {
+      console.log(`  ${s.name}: untracked (customized here, or synced before tracking existed)`)
       continue
     }
     const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.dir}/SKILL.md`
@@ -124,11 +149,11 @@ async function outdated(): Promise<void> {
       console.log(`  ${s.name}: upstream fetch failed (HTTP ${res.status})`)
       continue
     }
-    // Compare bodies only; our added `source:` line and other local frontmatter edits are expected.
-    const body = (t: string) => t.slice(t.indexOf("---", 3) + 3).trim()
-    const ours = body(await Bun.file(s.file).text())
-    const theirs = body(await res.text())
-    console.log(`  ${s.name}: ${ours === theirs ? "up to date" : "DIFFERS from upstream"}`)
+    // Upstream moving is what "outdated" means; a local edit is separate news, since sync will keep that version rather than take the update.
+    const behind = digest(await res.text()) !== entry.upstream
+    const edited = digest(await Bun.file(s.file).text()) !== entry.written
+    const suffix = edited ? ", edited here (sync keeps your version)" : ""
+    console.log(`  ${s.name}: ${behind ? "DIFFERS from upstream" : "up to date"}${suffix}`)
   }
 }
 
