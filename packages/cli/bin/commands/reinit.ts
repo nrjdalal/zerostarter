@@ -4,6 +4,7 @@ import { convertRepo } from "@/convert"
 import { hasPostgresUrl, seedEnv } from "@/db"
 import { bunInstall, gitCommitAll, overlayZerostarter, requireCleanRepo, withRollback } from "@/git"
 import { emptyDir } from "@/io"
+import { regenerateSkillTables } from "@/skills"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -87,6 +88,8 @@ export const reinit = async (argv: string[]) => {
       convertRepo(target, { name })
       logStep(`Rebranded to ${name}`)
       await bunInstall(target)
+      // Fill the generated skills tables in the AGENTS.md the rebrand just wrote, so the commit below does not trip the pre-commit hook on empty ones.
+      await regenerateSkillTables(target)
       seedEnv(target)
       await gitCommitAll(target, `ci(reinit): re-baseline as ${name}`)
     },
