@@ -101,7 +101,8 @@ describe("fixDangling", () => {
   test("still catches a leaked shared fonts.ts even when the fork owns a marketing module", () => {
     setup(FONTS_LEAKED, NAV)
     write(join(dir, "web/next/src/lib/marketing/fonts.ts"), MARKETING_FONTS)
-    expect(() => fixDangling(dir, true)).toThrow(/fonts\.ts/)
+    // the leak-specific message, not just /fonts\.ts/, which the survived-the-strip throw also matches and would pass even if the flag were ignored
+    expect(() => fixDangling(dir, true)).toThrow(/references fonts\/marketing\//)
   })
 
   test("no-ops when the starter already dropped /hire (evolution)", () => {
@@ -390,6 +391,25 @@ describe("reconcileForkSkillsFromRoot (sync path)", () => {
       expect(read(join(dir, ".agents/skills/dev/SKILL.md"))).toContain("Revised upstream")
       expect(result.adopted).toContain("dev")
       expect(result.customized).toEqual([])
+    })
+
+    // skills-manager accepts an owner/repo shorthand as upstream provenance, so the CLI must read it as the same upstream; treating it as a foreign repo would freeze that skill forever.
+    test("reads an owner/repo shorthand source as this upstream, not a foreign one", () => {
+      forkPkg()
+      overlaid("dev", "local", "# Dev\n\nOriginal.\n")
+      reconcileForkSkillsFromRoot(dir)
+      const file = join(dir, ".agents/skills/dev/SKILL.md")
+      write(
+        file,
+        read(file).replace(
+          "source: https://github.com/nrjdalal/zerostarter",
+          "source: nrjdalal/zerostarter",
+        ),
+      )
+      const before = snapshotSkills(dir)
+      overlaid("dev", "local", "# Dev\n\nRevised upstream.\n")
+      const result = reconcileForkSkillsFromRoot(dir, before)
+      expect(result.forkOwned).toEqual([])
     })
 
     test("treats a dropped sync note as the fork taking ownership", () => {

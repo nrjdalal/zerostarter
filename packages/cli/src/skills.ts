@@ -50,6 +50,12 @@ const NOTE_MARKER = `> Synced from ${UPSTREAM}.`
 const syncNote = (): string =>
   `> [!CAUTION]\n${NOTE_MARKER} Customize this skill or remove this note to stop syncing.`
 
+// A source reduced to owner/repo, so the full URL and the owner/repo shorthand that .github/scripts/skills-manager.ts also accepts compare equal. Without this a fork that wrote the shorthand reads as a different upstream and its skill freezes forever.
+const repoOf = (source: string): string =>
+  source.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "")
+
+const UPSTREAM_REPO = repoOf(UPSTREAM)
+
 // The frontmatter `source` value, or "" when the file carries no frontmatter.
 const sourceOf = (text: string): string => {
   const lines = text.split("\n")
@@ -144,13 +150,14 @@ export const reconcileForkSkills = (
         bucket.push(name)
         if (carry) next[name] = carry
       }
+      const prevRepo = repoOf(prevSource)
       // The fork authored it, or took it from some other upstream: never ours to rewrite.
-      if (prevSource === "local" || (prevSource.includes("/") && prevSource !== UPSTREAM)) {
+      if (prevSource === "local" || (prevRepo.includes("/") && prevRepo !== UPSTREAM_REPO)) {
         keep(result.forkOwned)
         continue
       }
       // The note is the documented opt-out, so a fork that dropped it owns the skill.
-      if (prevSource === UPSTREAM && !prev.includes(NOTE_MARKER)) {
+      if (prevRepo === UPSTREAM_REPO && !prev.includes(NOTE_MARKER)) {
         keep(result.forkOwned)
         continue
       }

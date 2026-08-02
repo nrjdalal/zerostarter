@@ -77,8 +77,9 @@ To tell an edit of yours from an upstream change, the CLI records what it wrote 
 <Callout type="warn">
   The first sync after upgrading a fork scaffolded by an older CLI has no records to compare
   against, so an edit of yours there is indistinguishable from an upstream change. Those skills take
-  the update and are listed by name; anything you meant to keep is still in the diff (`git checkout`
-  restores it). From the next sync on, your edits are preserved automatically.
+  the update and are listed by name; anything you meant to keep is still in the diff, so
+  `git restore --source=HEAD -- .agents/skills/<name>/SKILL.md` brings it back. From the next sync
+  on, your edits are preserved automatically.
 </Callout>
 
 Run `bun .github/scripts/skills-manager.ts --outdated` in your fork to see which synced skills upstream has moved on, and which you have edited locally.

@@ -120,6 +120,13 @@ export const sync = async (argv: string[]) => {
   const skillFiles = (names: string[]) => names.map((name) => `.agents/skills/${name}/SKILL.md`)
   const plural = (names: string[]) => (names.length === 1 ? "" : "s")
 
+  if (skills.forkOwned.length > 0) {
+    logStep(
+      `Left ${skills.forkOwned.length} skill${plural(skills.forkOwned)} you own untouched:`,
+      skillFiles(skills.forkOwned),
+    )
+  }
+
   if (skills.customized.length > 0) {
     logWarn(
       `Kept your edits to ${skills.customized.length} skill${plural(skills.customized)}, so they did not take the update:`,
@@ -135,7 +142,7 @@ export const sync = async (argv: string[]) => {
       skillFiles(skills.unverified),
     )
     logStep(
-      "Check those in the diff; git restores anything you meant to keep. Later syncs track them.",
+      "Restore any with: git restore --source=HEAD -- .agents/skills/<name>/SKILL.md. Later syncs track them.",
     )
   }
 
