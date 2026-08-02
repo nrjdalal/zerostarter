@@ -164,6 +164,23 @@ describe("convertRepo (in-place)", () => {
     expect(exists(join(dir, "web/next/src/lib/marketing/fonts.ts"))).toBe(false)
   })
 
+  // The ledger is per-fork state: a fork that received the starter's would read every skill as untracked and lose the edits sync is meant to preserve. Guards the shipped .gitpickignore, not a fixture, since that file is what gitpick actually reads.
+  test("never carries a starter sync ledger into the fork", () => {
+    const shipped = readFileSync(join(import.meta.dir, "../../../../.gitpickignore"), "utf8")
+    expect(shipped).toContain(SKILL_LEDGER)
+    scaffold()
+    write(join(dir, ".gitpickignore"), shipped)
+    write(join(dir, SKILL_LEDGER), '{"stale":{"upstream":"deadbeefdead","written":"deadbeefdead"}}')
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: Start the ZeroStarter dev stack.\nsource: local\n---\n\n# Dev\n",
+    )
+    convertRepo(dir, { name: "acme" })
+    const ledger = JSON.parse(read(join(dir, SKILL_LEDGER)))
+    expect(ledger.stale).toBeUndefined()
+    expect(ledger.dev.written).toMatch(/^[0-9a-f]{12}$/)
+  })
+
   test("throws on a non-literal (glob) .gitpickignore entry", () => {
     write(join(dir, ".gitpickignore"), "# custom\n*.log\n")
     expect(() => convertRepo(dir, { name: "acme" })).toThrow(/literal path/)
