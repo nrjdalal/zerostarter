@@ -1,3 +1,16 @@
+## v0.1.20
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.19...v0.1.20)
+
+### 🩹 Fixes
+
+- **cli:** Keep what a fork owns through a sync ([#777](https://github.com/nrjdalal/zerostarter/pull/777))
+- **test:** Make the digest guard survive a CRLF checkout ([#779](https://github.com/nrjdalal/zerostarter/pull/779))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.19
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.18...v0.1.19)
