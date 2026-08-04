@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
-import type { Features } from "@/lib/data-table-features"
 import { relativeTime } from "@/lib/time"
 
 export type WaitlistSignup = InferResponseType<
@@ -39,7 +38,7 @@ export const waitlistColumnConfig: Record<string, ColumnConfig> = {
 
 export const waitlistColumns = (
   onRemove: (signup: WaitlistSignup) => void,
-): ColumnDef<Features, WaitlistSignup, unknown>[] => [
+): ColumnDef<WaitlistSignup>[] => [
   selectColumn((row: WaitlistSignup) => row.email),
   {
     accessorKey: "email",

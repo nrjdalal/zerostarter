@@ -23,7 +23,6 @@ import {
 import { actionLabel, activityJson } from "@/lib/activity"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
-import type { Features } from "@/lib/data-table-features"
 import { relativeTime } from "@/lib/time"
 
 export type ActivityEvent = InferResponseType<
@@ -39,7 +38,7 @@ export const activityColumnConfig: Record<string, ColumnConfig> = {
   actions: { align: "center", width: 12 },
 }
 
-export const activityColumns: ColumnDef<Features, ActivityEvent, unknown>[] = [
+export const activityColumns: ColumnDef<ActivityEvent>[] = [
   selectColumn((row: ActivityEvent) => row.summary),
   {
     accessorKey: "actor",
