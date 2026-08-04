@@ -910,9 +910,8 @@ const { data, error } = await unwrap(
             summary: allowlistRemoveSummary(row.value),
           })),
         )
-        return targets.map(
-          (id): BatchOutcome =>
-            byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Rule not found"),
+        return targets.map((id): BatchOutcome =>
+          byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Rule not found"),
         )
       })
       return c.json({ data: { results } })
@@ -1049,9 +1048,8 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
             summary: waitlistRemoveSummary(row.email),
           })),
         )
-        return targets.map(
-          (id): BatchOutcome =>
-            byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Signup not found"),
+        return targets.map((id): BatchOutcome =>
+          byId.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", "Signup not found"),
         )
       })
       return c.json({ data: { results } })
