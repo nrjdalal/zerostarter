@@ -57,7 +57,8 @@ const appDevHost = (() => {
 
 const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_IS_PRIVATE: String(isPrivate) },
-  output: "standalone",
+  // Standalone is the Docker runner's input only. Vercel builds through a Next adapter, and since 16.3.0 an adapter build writes no .nft.json trace files, so the standalone copy step reads next-server.js.nft.json and fails the build with ENOENT.
+  ...(!process.env.VERCEL && { output: "standalone" as const }),
   ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
   ...(libc && {
     outputFileTracingExcludes: { "*": libcExcludes[libc] },
