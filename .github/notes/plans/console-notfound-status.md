@@ -18,3 +18,19 @@ Two exits, both rejected for now. Rendering the not-found from the layout instea
 Scope check: it is one white paint, for someone with no console access typing a gated address directly, on a noindex area. Every console path still answers identically at every rung, so nothing is enumerable either way.
 
 Low severity: the correct not-found UI shows (no content leaks), and `/console` is `robots: noindex` and gated at member and above, so there is no SEO cost. The only practical downside is that a programmatic client cannot distinguish missing-vs-ok by status on console routes. A real fix is framework-rooted (decide existence before the force-dynamic stream, e.g. in middleware or a segment that can set the status pre-stream); not worth that surgery for a noindex, gated area.
+
+## Next 16.3's `catchError` does not fix it (spiked)
+
+16.3 says error boundaries previously "interfered with application code that called `notFound` or `redirect`", which reads like this bug. It is a different mechanism, and converting the boundary changes nothing here.
+
+Spiked by rewriting `(console)/console/error.tsx` onto `catchError` from `next/error` and re-measuring against a live dev server, with `/console/users` as a control:
+
+| Path                       | Before | With `catchError` |
+| -------------------------- | ------ | ----------------- |
+| `/console/does-not-exist`  | 200    | **200**           |
+| `/console/users` (control) | 200    | 200               |
+| `/nope-at-root` (control)  | 404    | 404               |
+
+What 16.3 fixed is a boundary swallowing the `notFound` signal. What happens here is the status line being committed before the page-level `notFound()` fires mid-stream, exactly as described above, which no boundary can reach. Reverted; the entry stands.
+
+Watch the control: an earlier run of this spike showed 404 and looked like a fix, because the dev server had died and every path was answered by the proxy. `/console/users` returning 404 was the tell.
