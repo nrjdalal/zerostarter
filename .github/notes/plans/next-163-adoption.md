@@ -26,9 +26,43 @@ Declined because the gain does not carry an experimental flag in a starter: ever
 
 A first measurement showed a 60% improvement and was wrong: the baseline arm built the workspace packages cold while the second read them from the turbo cache. Warm the cache in both arms before trusting any number from this.
 
+## Spiked and declined for now: Instant Navigations
+
+**`cacheComponents` + `partialPrefetching`.** The headline feature, and the console tables are the case it is built for. Spiked by flipping `cacheComponents: true` in a throwaway worktree and curling every route against a live dev server, rather than reasoning from the blog post.
+
+Dev boots clean (`- Cache Components enabled`, `✓ Ready in 326ms`), then **10 of 14 routes answer 500**. Only the marketing pages (`/`, `/hire`, `/resume`, `/waitlist`) survive the first request; `/blog`, `/docs`, `/dashboard` and the whole console fail. Two distinct causes, both hard errors, not warnings:
+
+```
+Error: Route segment config "dynamic" is not compatible with `nextConfig.cacheComponents`. Please remove it.
+Error: Route segment config "revalidate" is not compatible with `nextConfig.cacheComponents`. Please remove it.
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+```
+
+**Blocker 1: 15 route-segment exports across 10 files.** Every one has to be deleted and its behaviour re-expressed as `use cache` with a `cacheLife` profile, which is a per-route caching decision, not a mechanical rename.
+
+| File                                           | Exports                    |
+| ---------------------------------------------- | -------------------------- |
+| `app/(console)/console/layout.tsx`             | `dynamic` (the admin gate) |
+| `app/(content)/blog/[[...slug]]/page.tsx`      | `dynamic`, `revalidate`    |
+| `app/(llms.txt)/llms-full.txt/route.ts`        | `dynamic`, `revalidate`    |
+| `app/(llms.txt)/llms.txt/[[...slug]]/route.ts` | `dynamic`, `revalidate`    |
+| `app/api/console/search/route.ts`              | `dynamic`                  |
+| `app/og/blog/[[...slug]]/route.tsx`            | `dynamic`, `revalidate`    |
+| `app/og/docs/[[...slug]]/route.tsx`            | `dynamic`                  |
+| `app/og/home/route.tsx`                        | `dynamic`                  |
+| `app/og/route.tsx`                             | `dynamic`                  |
+| `app/sitemap.ts`                               | `dynamic`, `revalidate`    |
+
+**Blocker 2: three `Date.now()` calls that are deliberate.** `app/layout.tsx` (twice) and `lib/fumadocs.tsx` append `?t=${Date.now()}` to OG image URLs as a cache-buster. Under `cacheComponents` an unstable value read during prerender is an error, so the buster has to go or move behind a cached boundary, and losing it means stale OG images. That is a real trade to argue, not a lint fix.
+
+**Blocker 3: the shape the app does not have.** 0 `<Suspense>` boundaries, 0 `use cache`, 2 `loading.tsx`. The payoff is a prerendered shell streaming into dynamic holes, so every dynamic route needs a shell designed for it. Nothing to migrate; something to design.
+
+**Blocker 4: the two authed surfaces, which are the ones worth speeding up.** Both `(console)` and `(protected)` block on `getConsoleSession()` / the session read, which runs `disableCookieCache: true`, deliberately, so a ban or a role change takes effect on the next request rather than up to five minutes later. An App Shell can only be prerendered above that read, so getting the session into the shell means accepting `stale >= 5 minutes` and giving that property up. Separately, moving `assertConsoleAccess()` under `<Suspense>` turns its real 404 into a soft 200, which widens the bug already recorded in [console-notfound-status](console-notfound-status.md) instead of leaving it where it is.
+
+Declined for now on that basis: it is a project with a caching design per route and two policy decisions attached (OG freshness, session staleness), not a config flag. Revisit as its own plan entry, and start from blockers 1 and 2, which are mechanical enough to land ahead of any shell work.
+
 ## Assessed, not pursued
 
-- **Instant Navigations** (`cacheComponents` + `partialPrefetching`) - the console tables are the ideal case, but the app has 0 `<Suspense>` boundaries and 0 `use cache`, so adopting it means designing a loading shell per dynamic route. Its own project, with its own entry when it starts.
 - **`catchError` custom error boundaries** - see [console-notfound-status](console-notfound-status.md); spiked against the soft-404 and it does not fix it.
 - **Root params** (`next/root-params`) - no `[lang]` segment, no i18n.
 - **Playwright `instant()` helper** - UI here is verified with agent-browser, not Playwright.
