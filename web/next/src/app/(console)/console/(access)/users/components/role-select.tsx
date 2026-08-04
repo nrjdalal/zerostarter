@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { apiClient, unwrap } from "@/lib/api/client"
+import type { Features } from "@/lib/data-table-features"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
 export function UserRoleSelect({
@@ -25,7 +26,7 @@ export function UserRoleSelect({
   role,
   userId,
 }: {
-  column: Column<ConsoleUser, unknown>
+  column: Column<Features, ConsoleUser, unknown>
   email: string
   role: string
   userId: string

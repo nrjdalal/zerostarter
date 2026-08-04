@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
+import type { Features } from "@/lib/data-table-features"
 import { relativeTime } from "@/lib/time"
 
 // Row shape inferred from GET /api/v1/admin/users, so the endpoint cannot drift from these columns.
@@ -47,7 +48,7 @@ export const usersColumnConfig: Record<string, ColumnConfig> = {
 
 export const usersColumns = (
   onSetStatus: (users: ConsoleUser[], banned: boolean) => void,
-): ColumnDef<ConsoleUser>[] => [
+): ColumnDef<Features, ConsoleUser, unknown>[] => [
   selectColumn((row) => row.email),
   {
     accessorKey: "name",
