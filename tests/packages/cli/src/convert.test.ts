@@ -9,11 +9,7 @@ import {
   rebrandPortlessFromRoot,
 } from "../../../../packages/cli/src/convert"
 import { exists, read, readJson, write } from "../../../../packages/cli/src/io"
-import {
-  reconcileForkSkillsFromRoot,
-  SKILL_LEDGER,
-  snapshotSkills,
-} from "../../../../packages/cli/src/skills"
+import { SKILL_LEDGER } from "../../../../packages/cli/src/skills"
 
 let dir: string
 beforeEach(() => {
