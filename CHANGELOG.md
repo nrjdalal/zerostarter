@@ -1,3 +1,23 @@
+## v0.1.21
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.20...v0.1.21)
+
+### 🚀 Enhancements
+
+- **web:** Migrate the data table to @tanstack/react-table v9 ([#780](https://github.com/nrjdalal/zerostarter/pull/780))
+
+### 🩹 Fixes
+
+- **web:** Run the web functions on Node, not Bun ([#784](https://github.com/nrjdalal/zerostarter/pull/784))
+
+### 🏡 Chore
+
+- Update deps ([#783](https://github.com/nrjdalal/zerostarter/pull/783))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.20
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.19...v0.1.20)
