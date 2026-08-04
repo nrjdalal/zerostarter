@@ -22,9 +22,7 @@ export default defineConfig({
     __GIT_SHA__: JSON.stringify(GIT_SHA),
     __VERSION__: JSON.stringify(VERSION),
   },
-  dts: {
-    tsgo: true,
-  },
+  dts: {},
   entry: ["src/index.ts", "src/api-hono.ts", "src/auth.ts", "src/db.ts", "src/web-next.ts"],
   minify: true,
   outDir: "dist",

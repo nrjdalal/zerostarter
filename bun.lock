@@ -10,7 +10,6 @@
         "@octokit/rest": "catalog:",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
-        "@typescript/native-preview": "catalog:",
         "@viz-js/viz": "catalog:",
         "changelogen": "catalog:",
         "globby": "catalog:",
@@ -23,6 +22,7 @@
         "svgo": "catalog:",
         "ts-morph": "catalog:",
         "turbo": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "api/hono": {
@@ -247,7 +247,6 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/ws": "^8.18.1",
-    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
     "@viz-js/viz": "^3.28.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "^1.6.23",
