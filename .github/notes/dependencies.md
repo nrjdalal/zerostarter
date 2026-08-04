@@ -24,6 +24,20 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Active overrides
 
+### `brace-expansion` → `^5.0.9`
+
+- **Advisory:** [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895) (high): denial of service via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation. Affects `brace-expansion >=4.0.0 <5.0.9`.
+- **Why an override:** nothing to update. `ts-morph` is already latest and its `@ts-morph/common` → `minimatch` chain declares `^5.0.8`, which the patched `5.0.9` already satisfies, so the stale copy is purely a lockfile pin. A full re-resolve does lift it, but it also drags `next`, `hono`, and `takumi-js` up a minor, which is a dependency sweep rather than a security fix. The override lifts this one package inside the range its parent already declares.
+- **Risk:** low. `brace-expansion` expands our own glob patterns at build and lint time, never attacker-controlled input, and `5.0.9` is a patch release of the range already in use.
+- **Exit criteria:** remove once a normal dependency refresh has moved the tree to `brace-expansion >=5.0.9` on its own.
+
+### `fast-uri` → `^3.1.5`
+
+- **Advisory:** [GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7) (high): host confusion via a backslash authority introducer. Affects `fast-uri >=3.0.0 <3.1.5`. This is a second, distinct advisory on the same package: an earlier override for [GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx) was retired once the tree reached `3.1.4`, which this advisory then put back in range.
+- **Why an override:** same shape as `brace-expansion`. `shadcn` and `@commitlint/cli` are both already latest, and the `ajv` that pins it declares `^3.0.1`, which the patched `3.1.5` satisfies; only the lockfile held `3.1.4`. Note `fast-uri@4.x` exists but is outside `ajv`'s range, so `^3.1.5` is the highest usable.
+- **Risk:** low. It parses URIs for `ajv`'s JSON-schema `format` keyword during commitlint config validation and for `shadcn`'s registry fetches, neither of which takes untrusted input here.
+- **Exit criteria:** remove once `ajv` (via `@commitlint/config-validator`) and `shadcn` resolve `fast-uri >=3.1.5` on their own.
+
 ### `postcss` → `^8.5.23`
 
 - **Advisory:** [GHSA-6g55-p6wh-862q](https://github.com/advisories/GHSA-6g55-p6wh-862q) and [GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849) (high): arbitrary `.map` file read and path traversal via an attacker-controlled `sourceMappingURL` in CSS comments. Affects `postcss <=8.5.11`.
@@ -42,7 +56,7 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 Kept as a record so a returning advisory is recognised rather than re-investigated from scratch.
 
-- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both now resolve `fast-uri@3.1.4` on their own, meeting the recorded exit criterion.
+- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both reached `fast-uri@3.1.4` on their own, meeting the recorded exit criterion, and the override was retired. A later advisory then put `3.1.4` back in range, so the package is overridden again above; this entry is what made that recognisable rather than a fresh investigation.
 - **`shell-quote` → `^1.10.0`** ([GHSA-395f-4hp3-45gv](https://github.com/advisories/GHSA-395f-4hp3-45gv), high). Held up for `concurrently`, which now resolves `shell-quote@1.9.0`, past the `<=1.8.4` affected range.
 - **`esbuild` → `^0.28.1`**. Retired by decision, not because a parent caught up, so this one is an accepted exposure rather than a resolved one.
   - It was added for [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr) (high), **withdrawn on 2026-06-17** for naming the wrong package: the flaw was in esbuild's Deno distribution, not the npm one. Verified withdrawn, `bun audit` no longer reports it at any level with the override gone.
