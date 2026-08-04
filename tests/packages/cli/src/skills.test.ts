@@ -240,15 +240,15 @@ describe("the sync ledger", () => {
 
   // The CLI and .github/scripts/skills-manager.ts hash the ledger independently (a fork ships no
   // packages/cli to import), so a one-sided edit would make every skill silently read as untracked.
+  // Whitespace is stripped rather than matched, which keeps this insensitive to how either file is
+  // formatted and to the CRLF a Windows checkout brings, the very thing the hash normalizes away.
   test("hashes identically to the maintainer script", async () => {
-    const script = await Bun.file(
-      join(import.meta.dir, "../../../../.github/scripts/skills-manager.ts"),
-    ).text()
-    const theirs = script.match(/const digest = \(text: string\) =>\s*([\s\S]*?)\n\n/)
-    expect(theirs).not.toBeNull()
-    const normalized = (s: string) => s.replace(/\s+/g, "")
-    expect(normalized(theirs![1]!)).toContain(normalized('createHash("sha256")'))
-    expect(normalized(theirs![1]!)).toContain(normalized('.replace(/\\r\\n/g, "\\n")'))
-    expect(normalized(theirs![1]!)).toContain(normalized('.digest("hex").slice(0, 12)'))
+    const strip = (s: string) => s.replace(/\s+/g, "")
+    const pipeline = strip(
+      `createHash("sha256").update(text.replace(/\\r\\n/g, "\\n")).digest("hex").slice(0, 12)`,
+    )
+    const source = async (rel: string) => strip(await Bun.file(join(import.meta.dir, rel)).text())
+    expect(await source("../../../../packages/cli/src/skills.ts")).toContain(pipeline)
+    expect(await source("../../../../.github/scripts/skills-manager.ts")).toContain(pipeline)
   })
 })
