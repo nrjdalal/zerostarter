@@ -9,12 +9,14 @@ Deploy `web/next` and `api/hono` as **two separate Vercel projects** pointed at 
 
 ## The shape
 
-Both apps ship a `vercel.json`, so Vercel reads the install command, build command, framework, and Bun version automatically once you point a project at the right root. You set two things per project: the **Root Directory** and the **environment variables**.
+Both apps ship a `vercel.json`, so Vercel reads the install command, build command, framework, and function runtime automatically once you point a project at the right root. You set two things per project: the **Root Directory** and the **environment variables**.
 
-| Project  | Root Directory | Framework |
-| -------- | -------------- | --------- |
-| Backend  | `api/hono`     | Hono      |
-| Frontend | `web/next`     | Next.js   |
+| Project  | Root Directory | Framework | Function runtime           |
+| -------- | -------------- | --------- | -------------------------- |
+| Backend  | `api/hono`     | Hono      | Bun (`bunVersion`)         |
+| Frontend | `web/next`     | Next.js   | Node (no `bunVersion` set) |
+
+The api runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for. The web app does not set `bunVersion`: Next's server is built for Node, and Vercel's Bun runtime expects the build itself to run under Bun (`bun run --bun next build`) which this build does not do. Pinning the web functions to Bun while building for Node crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving.
 
 Deploy the **backend first**: the frontend needs its URL.
 
