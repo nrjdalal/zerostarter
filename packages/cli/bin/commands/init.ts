@@ -5,6 +5,7 @@ import { convertRepo } from "@/convert"
 import { dockerRunning, hasPostgresUrl, provisionDatabase, seedEnv } from "@/db"
 import { bunInstall, fetchZerostarter, gitBranch, gitCommitAll, gitInit } from "@/git"
 import { exists } from "@/io"
+import { regenerateSkillTables } from "@/skills"
 import { DEFAULT_FEATURES, type FeatureFlags } from "@/templates"
 
 import { parseArgsOrExit } from "./_args"
@@ -233,6 +234,9 @@ export const init = async (argv: string[]) => {
   )
 
   await bunInstall(target)
+
+  // Fill the generated skills tables in the AGENTS.md the rebrand just wrote, so the fork's first commit does not trip its own pre-commit hook on empty ones.
+  await regenerateSkillTables(target)
 
   await gitCommitAll(target, `ci(init): re-baseline as ${name}`)
 

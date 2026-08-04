@@ -1,6 +1,6 @@
 import { join, resolve } from "node:path"
 
-import { fixDangling } from "@/convert"
+import { fixDangling, ownsMarketingFonts, rebrandPortlessFromRoot } from "@/convert"
 import { parseForkLayout } from "@/fork-layout"
 import {
   bunInstall,
@@ -12,7 +12,14 @@ import {
 } from "@/git"
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg } from "@/pkg"
-import { reconcileForkSkillsFromRoot } from "@/skills"
+import {
+  emptyReconcile,
+  missingSkillTableMarkers,
+  reconcileForkSkillsFromRoot,
+  regenerateSkillTables,
+  type SkillReconcile,
+  snapshotSkills,
+} from "@/skills"
 
 import { parseArgsOrExit } from "./_args"
 import { ensureBun } from "./_bun"
@@ -64,6 +71,11 @@ export const sync = async (argv: string[]) => {
     logWarn("No PRESERVE_ON_SYNC directive found; fork-owned files may be overwritten.")
   }
 
+  // Both read the fork as it stands, because the overlay overwrites the evidence: a marketing fonts module here now is the fork's own (that path is fork-excluded, so the overlay never supplies one), and the skills snapshot is how reconcile tells a customized skill from a pristine one.
+  const forkOwnsMarketingFonts = ownsMarketingFonts(target)
+  const skillsBefore = snapshotSkills(target)
+  let skills: SkillReconcile = emptyReconcile()
+
   // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
   await withRollback(
     target,
@@ -71,7 +83,7 @@ export const sync = async (argv: string[]) => {
     async () => {
       await overlayZerostarter(target)
       // Reconcile files the overlay re-added that mix shared + author-only code (fonts.ts, navbar).
-      fixDangling(target)
+      fixDangling(target, forkOwnsMarketingFonts)
       // gitpick never copies the ignore file, but drop any that slipped through.
       remove(join(target, ".gitpickignore"))
       // Re-merge every fork manifest: starter's latest + the fork's extra deps, and the root's identity.
@@ -79,8 +91,10 @@ export const sync = async (argv: string[]) => {
         if (!exists(path)) continue
         writeJson(path, mergePkg(forkPkg, readJson<Pkg>(path), path === rootPkg))
       }
-      // Rebrand the overlaid skills to the fork: the overlay re-added upstream SKILL.md files naming "zerostarter", so re-run init's reconcile, sourcing the fork name from the just-restored root package.json.
-      reconcileForkSkillsFromRoot(target)
+      // Those merges carry the starter's portless dev-URL names back in, so re-apply the fork's; otherwise a synced fork serves zerostarter.localhost again and collides with every other fork on the machine.
+      rebrandPortlessFromRoot(target)
+      // Rebrand the overlaid skills to the fork: the overlay re-added upstream SKILL.md files naming "zerostarter", so re-run init's reconcile, sourcing the fork name from the just-restored root package.json. The snapshot restores every skill the fork owns or has customized.
+      skills = reconcileForkSkillsFromRoot(target, skillsBefore)
       // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
       await gitRestore(target, preserve)
     },
@@ -90,9 +104,52 @@ export const sync = async (argv: string[]) => {
 
   await bunInstall(target)
 
+  // The skills tables list what this reconcile left in place, so regenerate them from the fork's own skills.
+  await regenerateSkillTables(target)
+
+  if (missingSkillTableMarkers(target)) {
+    logWarn(
+      "Your AGENTS.md has no skills-table markers, so the pre-commit hook that fills them fails.",
+      [
+        "Add these two pairs under a ## Skills heading, then commit:",
+        "<!-- skills:custom -->  <!-- /skills:custom -->",
+        "<!-- skills:vendored -->  <!-- /skills:vendored -->",
+      ],
+    )
+  }
+
+  const skillFiles = (names: string[]) => names.map((name) => `.agents/skills/${name}/SKILL.md`)
+  const plural = (names: string[]) => (names.length === 1 ? "" : "s")
+
+  if (skills.forkOwned.length > 0) {
+    logStep(
+      `Left ${skills.forkOwned.length} skill${plural(skills.forkOwned)} you own untouched:`,
+      skillFiles(skills.forkOwned),
+    )
+  }
+
+  if (skills.customized.length > 0) {
+    logWarn(
+      `Kept your edits to ${skills.customized.length} skill${plural(skills.customized)}, so they did not take the update:`,
+      skillFiles(skills.customized),
+    )
+    logStep("To take upstream's version instead, delete the skill directory and sync again.")
+  }
+
+  // A fork synced before the CLI started recording what it wrote has nothing to compare against, so these took the update on a guess. Naming them is the difference between a reviewable diff and a silent loss.
+  if (skills.unverified.length > 0) {
+    logWarn(
+      `Updated ${skills.unverified.length} skill${plural(skills.unverified)} with no sync record, so any edits of yours are in the diff rather than the file:`,
+      skillFiles(skills.unverified),
+    )
+    logStep(
+      "Restore any with: git restore --source=HEAD -- .agents/skills/<name>/SKILL.md. Later syncs track them.",
+    )
+  }
+
   note(
     [
-      "Starter files were updated (edits overwritten); your content, public/marketing, and branding were preserved.",
+      "Starter files were updated (edits overwritten); your content, public/marketing, branding, and the skills you own were preserved.",
       yellow(`Review the diff and commit: git -C ${target} status`),
     ].join("\n"),
     "Review the changes",

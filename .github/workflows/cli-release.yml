@@ -6,6 +6,9 @@ on:
       - canary
     paths:
       - "packages/cli/**"
+      # the CLI's suite lives at the repo-root tests/ mirror, so a test-only change has to reach
+      # this matrix too; without it the legs that gate the publish never re-run on the fix
+      - "tests/packages/cli/**"
   workflow_run:
     workflows: ["auto-release"]
     types: [completed]
