@@ -13,6 +13,7 @@ import {
 import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg } from "@/pkg"
 import {
+  emptyReconcile,
   missingSkillTableMarkers,
   reconcileForkSkillsFromRoot,
   regenerateSkillTables,
@@ -73,7 +74,7 @@ export const sync = async (argv: string[]) => {
   // Both read the fork as it stands, because the overlay overwrites the evidence: a marketing fonts module here now is the fork's own (that path is fork-excluded, so the overlay never supplies one), and the skills snapshot is how reconcile tells a customized skill from a pristine one.
   const forkOwnsMarketingFonts = ownsMarketingFonts(target)
   const skillsBefore = snapshotSkills(target)
-  let skills: SkillReconcile = { adopted: [], customized: [], forkOwned: [], unverified: [] }
+  let skills: SkillReconcile = emptyReconcile()
 
   // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
   await withRollback(

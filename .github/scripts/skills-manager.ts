@@ -12,7 +12,7 @@ import { $, Glob } from "bun"
 const ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.join(ROOT, ".agents/skills")
 const AGENTS = path.join(ROOT, "AGENTS.md")
-const UPSTREAM_REF = "canary" // zerostarter default branch; where --outdated reads from
+const UPSTREAM_REF = "main" // the branch the CLI scaffolds and syncs a fork from; a ledger entry may name its own
 
 type Skill = {
   name: string
@@ -105,7 +105,7 @@ async function format(doc: string): Promise<string> {
 }
 
 // The CLI records, per skill it synced into a fork, the hash of the upstream file it came from and of the file as written there. Comparing prose is not an option: sync rebrands the body to the fork's own name and prepends its note, so a synced skill can never match upstream byte for byte and every one would report as drifted.
-type LedgerEntry = { upstream: string; written: string }
+type LedgerEntry = { ref?: string; upstream: string; written: string }
 
 async function readLedger(): Promise<Record<string, LedgerEntry>> {
   const file = Bun.file(path.join(SKILLS_DIR, ".sync.json"))
@@ -139,7 +139,9 @@ async function outdated(): Promise<void> {
       console.log(`  ${s.name}: untracked (customized here, or synced before tracking existed)`)
       continue
     }
-    const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.dir}/SKILL.md`
+    // Compare against the ref the entry was synced from, so a fork on main is not told it is behind for every skill this repo's default branch is ahead on.
+    const ref = entry.ref ?? UPSTREAM_REF
+    const url = `https://raw.githubusercontent.com/${repo}/${ref}/.agents/skills/${s.dir}/SKILL.md`
     const res = await fetch(url)
     if (res.status === 404) {
       console.log(`  ${s.name}: not in ${s.source} (local-only or renamed upstream)`)

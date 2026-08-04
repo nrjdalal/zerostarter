@@ -33,9 +33,11 @@ Each cell is the description's summary, the sentence before `Use ...`, so keep e
 
 A fork inherits its skills from the scaffold. On `init` and `sync` the CLI rebrands each skill's prose to the fork's project name (read from `package.json`). A skill this repo authored (`source: local`) becomes `source: <upstream repo>` with a `[!CAUTION]` note at the top; a skill this repo vendored keeps its tool as `source` and takes no note, so the fork re-vendors it the same way and it stays in that fork's **Vendored** table.
 
+Provenance decides what a later `sync` may touch: it rewrites only the skills sourced from here, and leaves every other one exactly as the fork has it.
+
 That note is the contract: `bunx zerostarter` updates a skill only while the note is intact and the body still matches what the CLI last wrote. Customize the skill or drop the note and the fork owns it, and sync names it in the summary instead of replacing it.
 
-Prose cannot be compared directly (sync rebrands the body to the fork's name, so a synced skill never matches upstream byte for byte), so the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, a hash of the upstream file and of the file as written. That ledger is what separates "the fork edited this" from "upstream moved". A fork commits it like any other synced file; this repo has none, since every skill here is `source: local`.
+Prose cannot be compared directly (sync rebrands the body to the fork's name, so a synced skill never matches upstream byte for byte), so the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, the ref it came from plus a hash of the upstream file and of the file as written. That ledger is what separates "the fork edited this" from "upstream moved". The ref is recorded because the CLI syncs a fork from `main` while this repo's default branch is `canary`, so comparing against the wrong one would report every skill canary is ahead on as drifted. A fork commits the ledger like any other synced file; this repo has none, since every skill here is `source: local`.
 
 Check state from inside a fork with:
 

@@ -11,7 +11,10 @@ const UPSTREAM = "https://github.com/nrjdalal/zerostarter"
 // What the CLI last wrote into this fork, per skill: the hash of the upstream file it came from (so the fork can tell it is behind) and of the file as written (so sync can tell the fork has edited it since). It sits beside the skills rather than in frontmatter, so a SKILL.md still carries provenance and nothing else.
 export const SKILL_LEDGER = ".agents/skills/.sync.json"
 
-export type SkillLedgerEntry = { upstream: string; written: string }
+// The branch a fork is scaffolded and synced from. Recorded per entry because --outdated must compare against the same ref: this repo's default branch is canary, so a fork synced from main would otherwise read every skill canary is ahead on as drifted, which is the false positive the ledger exists to remove.
+export const SKILL_REF = "main"
+
+export type SkillLedgerEntry = { ref: string; upstream: string; written: string }
 export type SkillLedger = Record<string, SkillLedgerEntry>
 
 // What a reconcile did, so sync can name the skills it left alone (or took without proof) instead of folding them into "edits overwritten".
@@ -22,7 +25,7 @@ export type SkillReconcile = {
   unverified: string[]
 }
 
-const emptyReconcile = (): SkillReconcile => ({
+export const emptyReconcile = (): SkillReconcile => ({
   adopted: [],
   customized: [],
   forkOwned: [],
@@ -151,8 +154,8 @@ export const reconcileForkSkills = (
         if (carry) next[name] = carry
       }
       const prevRepo = repoOf(prevSource)
-      // The fork authored it, or took it from some other upstream: never ours to rewrite.
-      if (prevSource === "local" || (prevRepo.includes("/") && prevRepo !== UPSTREAM_REPO)) {
+      // Anything whose provenance is not this repo belongs to the fork: one it authored (`local`), one it vendored from a tool (a bare name, re-synced by re-running that tool), or one it took from another upstream. Only a skill sourced from here is ours to rewrite.
+      if (prevSource !== "" && prevRepo !== UPSTREAM_REPO) {
         keep(result.forkOwned)
         continue
       }
@@ -176,7 +179,7 @@ export const reconcileForkSkills = (
       }
     }
     write(file, written)
-    next[name] = { upstream: digest(upstream), written: digest(written) }
+    next[name] = { ref: SKILL_REF, upstream: digest(upstream), written: digest(written) }
     result.adopted.push(name)
   }
   writeJson(join(root, SKILL_LEDGER), next)

@@ -68,8 +68,8 @@ git -C <dir> status
 
 The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`, so a synced skill keeps your identity rather than the starter's. Sync then decides per skill whether that update is even yours to take, and leaves alone anything you own:
 
-- a skill you authored (`source: local`) or took from another upstream is never touched, and never restamped as coming from here
-- a skill the starter vendored from a tool keeps that tool as its `source`, so you re-vendor it the same way and it stays in your **Vendored** table
+- sync only rewrites a skill whose `source` is this repo; anything else is yours and is left exactly as it is
+- so a skill you authored (`source: local`), vendored from a tool (re-synced by re-running that tool, and it stays in your **Vendored** table), or took from another upstream is never touched, and never restamped as coming from here
 - a skill you edited, or whose `[!CAUTION]` sync note you removed, keeps your version; sync names it in the summary rather than silently replacing it
 
 To tell an edit of yours from an upstream change, the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, a hash of the upstream file and of the file as written to your fork. Comparing the prose itself cannot work, since sync rebrands the body to your project name. Commit that file with the rest of the sync.
