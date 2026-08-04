@@ -33,7 +33,7 @@ base → prepare → builder → runner
 
 `prepare` runs `turbo prune <workspace> --docker` to carve a workspace-only build context, so each image installs and builds just its own dependencies. The final `runner` stage runs as the non-root `USER bun`.
 
-- The **web** image uses Next.js `output: "standalone"`: the builder copies `.next/static` and `public` into the standalone bundle, and the runner starts `bun server.js`.
+- The **web** image uses Next.js `output: "standalone"`: the builder copies `.next/static` and `public` into the standalone bundle, and the runner starts `bun server.js`. `next.config.ts` sets it for every build except Vercel's, which packages its own output through a Next adapter and writes no trace files for the standalone step to copy.
 - The **api** image copies its `bundle/` output and runs `bun bundle/index.mjs`.
 
 <Callout type="info" title="Why the images stay small and self-contained">
