@@ -47,9 +47,9 @@ export const site = {
   description: "${display} is just getting started. Tell its story here.",
   tagline: "Your tagline, ready when you are.",
   social: {
+    discord: "",
     github: "",
     x: "",
-    discord: "",
   },
   // Local-only dev agent identity (api/hono agents router).
   agent: {
@@ -86,7 +86,7 @@ export default function Home() {
 }
 `
 
-// AGENTS.md (CLAUDE.md is a symlink to it): a minimal agent guide for the fork to grow.
+// AGENTS.md (CLAUDE.md is a symlink to it): a minimal agent guide for the fork to grow. The skills tables are left empty for the fork's own .github/scripts/skills-manager.ts to fill; the markers are not optional, since that script (and the pre-commit hook running it) throws on a file that lacks them.
 export const agentsTemplate = (): string => `# AGENTS.md
 
 Guidance for AI coding agents working in this repository.
@@ -100,7 +100,21 @@ Guidance for AI coding agents working in this repository.
 
 ## Skills
 
-Custom skills live in \`.agents/skills\` (symlinked to \`.claude/skills\`). Start with the \`codebase-map\` skill to orient, then load the task skill that fits (\`api-endpoint\`, \`db-migration\`, \`dev\`, \`design\`, and more).
+Skills live in \`.agents/skills\` (symlinked to \`.claude/skills\` and \`.github/skills\`, so every agent tool reads the same files). Each is a \`SKILL.md\` with a \`description\` trigger and a literal procedure. Start with \`codebase-map\` to orient, then load the task skill that fits.
+
+These tables are generated from each skill's own description by \`bun .github/scripts/skills-manager.ts\`, which a pre-commit hook runs for you. **Custom** skills are maintained here; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
+
+**Custom**
+
+<!-- skills:custom -->
+
+<!-- /skills:custom -->
+
+**Vendored** (upstream, copied verbatim)
+
+<!-- skills:vendored -->
+
+<!-- /skills:vendored -->
 `
 
 // README.md: a minimal readme for the fork; the author replaces it with their product's.

@@ -56,6 +56,19 @@ test("generated docs.config.ts is a valid DocsConfig satisfies block", () => {
   expect(out).toContain("export default docsConfig")
 })
 
+// A fork inherits the skills-manager pre-commit hook, and that script throws on an AGENTS.md without these markers. Without them a scaffolded fork could not make its first commit.
+test("agentsTemplate carries the skills-table markers the fork's pre-commit hook needs", () => {
+  const out = agentsTemplate()
+  for (const id of ["custom", "vendored"]) {
+    expect(out).toContain(`<!-- skills:${id} -->`)
+    expect(out).toContain(`<!-- /skills:${id} -->`)
+    // the same shape .github/scripts/skills-manager.ts matches when it rewrites a region
+    expect(new RegExp(`(<!-- skills:${id} -->)[\\s\\S]*?(<!-- /skills:${id} -->)`).test(out)).toBe(
+      true,
+    )
+  }
+})
+
 test("content + agent stubs are brand-free", () => {
   const stubs = [
     docsIndexTemplate(),

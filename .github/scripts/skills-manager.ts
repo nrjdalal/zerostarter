@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import path from "node:path"
 
 import { $, Glob } from "bun"
@@ -11,7 +12,7 @@ import { $, Glob } from "bun"
 const ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.join(ROOT, ".agents/skills")
 const AGENTS = path.join(ROOT, "AGENTS.md")
-const UPSTREAM_REF = "canary" // zerostarter default branch; where --outdated reads from
+const UPSTREAM_REF = "main" // the branch the CLI scaffolds and syncs a fork from; a ledger entry may name its own
 
 type Skill = {
   name: string
@@ -103,8 +104,26 @@ async function format(doc: string): Promise<string> {
   }
 }
 
+// The CLI records, per skill it synced into a fork, the hash of the upstream file it came from and of the file as written there. Comparing prose is not an option: sync rebrands the body to the fork's own name and prepends its note, so a synced skill can never match upstream byte for byte and every one would report as drifted.
+type LedgerEntry = { ref?: string; upstream: string; written: string }
+
+async function readLedger(): Promise<Record<string, LedgerEntry>> {
+  const file = Bun.file(path.join(SKILLS_DIR, ".sync.json"))
+  if (!(await file.exists())) return {}
+  try {
+    return await file.json()
+  } catch {
+    return {}
+  }
+}
+
+// Line-ending-normalized, matching the CLI: a Windows checkout must not read as drifted over CRLF alone.
+const digest = (text: string) =>
+  createHash("sha256").update(text.replace(/\r\n/g, "\n")).digest("hex").slice(0, 12)
+
 async function outdated(): Promise<void> {
   const skills = await readSkills()
+  const ledger = await readLedger()
   for (const s of skills) {
     // `source` is a full github link on a fork, an `owner/repo` shorthand, a tool name, or `local`.
     const repo = s.source.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "")
@@ -114,7 +133,15 @@ async function outdated(): Promise<void> {
       )
       continue
     }
-    const url = `https://raw.githubusercontent.com/${repo}/${UPSTREAM_REF}/.agents/skills/${s.dir}/SKILL.md`
+    const entry = ledger[s.dir]
+    // Sync records only the skills it wrote, so an untracked one is either customized here (sync keeps that version and stops tracking it) or predates the ledger.
+    if (!entry) {
+      console.log(`  ${s.name}: untracked (customized here, or synced before tracking existed)`)
+      continue
+    }
+    // Compare against the ref the entry was synced from, so a fork on main is not told it is behind for every skill this repo's default branch is ahead on.
+    const ref = entry.ref ?? UPSTREAM_REF
+    const url = `https://raw.githubusercontent.com/${repo}/${ref}/.agents/skills/${s.dir}/SKILL.md`
     const res = await fetch(url)
     if (res.status === 404) {
       console.log(`  ${s.name}: not in ${s.source} (local-only or renamed upstream)`)
@@ -124,11 +151,11 @@ async function outdated(): Promise<void> {
       console.log(`  ${s.name}: upstream fetch failed (HTTP ${res.status})`)
       continue
     }
-    // Compare bodies only; our added `source:` line and other local frontmatter edits are expected.
-    const body = (t: string) => t.slice(t.indexOf("---", 3) + 3).trim()
-    const ours = body(await Bun.file(s.file).text())
-    const theirs = body(await res.text())
-    console.log(`  ${s.name}: ${ours === theirs ? "up to date" : "DIFFERS from upstream"}`)
+    // Upstream moving is what "outdated" means; a local edit is separate news, since sync will keep that version rather than take the update.
+    const behind = digest(await res.text()) !== entry.upstream
+    const edited = digest(await Bun.file(s.file).text()) !== entry.written
+    const suffix = edited ? ", edited here (sync keeps your version)" : ""
+    console.log(`  ${s.name}: ${behind ? "DIFFERS from upstream" : "up to date"}${suffix}`)
   }
 }
 

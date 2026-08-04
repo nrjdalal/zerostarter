@@ -57,12 +57,32 @@ bunx zerostarter sync [dir]
 
 Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo and rolls back on failure.
 
-What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version. The overlaid skills in `.agents/skills/` are then rebranded to your project name (read from `package.json`), matching `init`, so a synced skill keeps your identity rather than the starter's.
+What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), your [portless](/docs/getting-started/setup) dev-URL names, and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
 
 ```bash
 # review before committing
 git -C <dir> status
 ```
+
+### Skills you have customized
+
+The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`, so a synced skill keeps your identity rather than the starter's. Sync then decides per skill whether that update is even yours to take, and leaves alone anything you own:
+
+- sync only rewrites a skill whose `source` is this repo; anything else is yours and is left exactly as it is
+- so a skill you authored (`source: local`), vendored from a tool (re-synced by re-running that tool, and it stays in your **Vendored** table), or took from another upstream is never touched, and never restamped as coming from here
+- a skill you edited, or whose `[!CAUTION]` sync note you removed, keeps your version; sync names it in the summary rather than silently replacing it
+
+To tell an edit of yours from an upstream change, the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, a hash of the upstream file and of the file as written to your fork. Comparing the prose itself cannot work, since sync rebrands the body to your project name. Commit that file with the rest of the sync.
+
+<Callout type="warn">
+  The first sync after upgrading a fork scaffolded by an older CLI has no records to compare
+  against, so an edit of yours there is indistinguishable from an upstream change. Those skills take
+  the update and are listed by name; anything you meant to keep is still in the diff, so
+  `git restore --source=HEAD -- .agents/skills/<name>/SKILL.md` brings it back. From the next sync
+  on, your edits are preserved automatically.
+</Callout>
+
+Run `bun .github/scripts/skills-manager.ts --outdated` in your fork to see which synced skills upstream has moved on, and which you have edited locally.
 
 ## The fork boundary
 

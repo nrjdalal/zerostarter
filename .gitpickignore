@@ -21,6 +21,8 @@ web/next/src/lib/marketing/
 web/next/public/
 
 # custom files
+# the sync ledger records what the CLI wrote into a given fork, so it is per-fork state: a fork must never receive one from the starter, which would overwrite its own and make every skill read as untracked.
+.agents/skills/.sync.json
 .github/workflows/cli-release.yml
 .github/FUNDING.yml
 .infisical.json

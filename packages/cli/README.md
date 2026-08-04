@@ -54,7 +54,9 @@ Re-scaffold an existing repo in place. Every file is deleted (except `.git` and 
 
 ### `sync`
 
-Re-baseline a fork on the latest ZeroStarter. A gitpick overlay updates the starter files while your content, `public/marketing`, branding, `package.json` identity, and favicon are preserved. Requires a clean tree; lands as a reviewable diff you commit yourself.
+Re-baseline a fork on the latest ZeroStarter. A gitpick overlay updates the starter files while your content, `public/marketing`, branding, `package.json` identity, dev-URL names, and favicon are preserved. Requires a clean tree; lands as a reviewable diff you commit yourself.
+
+Skills you own are preserved too: sync only rewrites a skill whose `source` is this repo. One you authored, one you vendored from a tool, one you took from another upstream, one you edited, or one whose sync note you removed keeps your version, and sync names it in the summary rather than replacing it.
 
 ## Requirements
 
