@@ -5,7 +5,7 @@ type BundleDeps = {
   alwaysBundle?: (string | RegExp)[]
 }
 
-// Shared tsdown config for the backend packages: validates env in build:prepare via the caller's getSafeEnv (passed in so this package stays env-agnostic, avoiding a config<->env cycle), emits tsgo dts, and minifies. Callers supply only their name, env, and any bundle overrides.
+// Shared tsdown config for the backend packages: validates env in build:prepare via the caller's getSafeEnv (passed in so this package stays env-agnostic, avoiding a config<->env cycle), emits dts, and minifies. Callers supply only their name, env, and any bundle overrides.
 export function definePackageConfig(options: {
   name: string
   env: Record<string, unknown>
@@ -21,7 +21,6 @@ export function definePackageConfig(options: {
     defineConfig({
       ...(define ? { define } : {}),
       ...(deps ? { deps } : {}),
-      dts: { tsgo: true },
       entry: entry ?? ["src/index.ts"],
       hooks: {
         "build:prepare": () => {
