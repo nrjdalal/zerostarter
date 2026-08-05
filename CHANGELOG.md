@@ -1,3 +1,30 @@
+## v0.1.22
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.21...v0.1.22)
+
+### 🚀 Enhancements
+
+- **web:** Turn off Next's agent-rules writer, this repo generates its own ([#786](https://github.com/nrjdalal/zerostarter/pull/786))
+
+### 🩹 Fixes
+
+- **console:** Remove the black screen loader on the way into a console page ([#790](https://github.com/nrjdalal/zerostarter/pull/790))
+
+### 📖 Documentation
+
+- **notes:** Record the 16.3 assessment, and decline the Rust React Compiler ([#787](https://github.com/nrjdalal/zerostarter/pull/787))
+- **plans:** Record the cacheComponents spike and its blockers ([#789](https://github.com/nrjdalal/zerostarter/pull/789))
+- Record why the authed areas carry no route loading.tsx ([#791](https://github.com/nrjdalal/zerostarter/pull/791))
+- **hire:** Six years, and settle the pages against the biography ([#792](https://github.com/nrjdalal/zerostarter/pull/792))
+
+### 🏡 Chore
+
+- Update deps ([50e262d](https://github.com/nrjdalal/zerostarter/commit/50e262d))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.21
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.20...v0.1.21)
