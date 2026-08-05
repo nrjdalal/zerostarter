@@ -55,7 +55,7 @@ Error: Route "/": Next.js encountered the unstable value `Date.now()` while prer
 
 **Blocker 2: three `Date.now()` calls that are deliberate.** `app/layout.tsx` (twice) and `lib/fumadocs.tsx` append `?t=${Date.now()}` to OG image URLs as a cache-buster. Under `cacheComponents` an unstable value read during prerender is an error, so the buster has to go or move behind a cached boundary, and losing it means stale OG images. That is a real trade to argue, not a lint fix.
 
-**Blocker 3: the shape the app does not have.** 0 `<Suspense>` boundaries, 0 `use cache`, 2 `loading.tsx`. The payoff is a prerendered shell streaming into dynamic holes, so every dynamic route needs a shell designed for it. Nothing to migrate; something to design.
+**Blocker 3: the shape the app does not have.** 0 `<Suspense>` boundaries, 0 `use cache`, 0 `loading.tsx` (the two authed ones were removed in #790). The payoff is a prerendered shell streaming into dynamic holes, so every dynamic route needs a shell designed for it. Nothing to migrate; something to design.
 
 **Blocker 4: the two authed surfaces, which are the ones worth speeding up.** Both `(console)` and `(protected)` block on `getConsoleSession()` / the session read, which runs `disableCookieCache: true`, deliberately, so a ban or a role change takes effect on the next request rather than up to five minutes later. An App Shell can only be prerendered above that read, so getting the session into the shell means accepting `stale >= 5 minutes` and giving that property up. Separately, moving `assertConsoleAccess()` under `<Suspense>` turns its real 404 into a soft 200, which widens the bug already recorded in [console-notfound-status](console-notfound-status.md) instead of leaving it where it is.
 
