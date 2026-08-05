@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -20,8 +20,8 @@
   "scripts": {
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
-    "check-types:scripts": "tsgo -p .github/scripts/tsconfig.json",
-    "check-types:tests": "if [ -d tests ]; then find tests -name tsconfig.json -print0 | xargs -0 -n1 tsgo -p; fi",
+    "check-types:scripts": "tsc -p .github/scripts/tsconfig.json",
+    "check-types:tests": "if [ -d tests ]; then find tests -name tsconfig.json -print0 | xargs -0 -n1 tsc -p; fi",
     "clean": "bash .github/scripts/clean.sh",
     "console:roles": "bun .github/scripts/console-roles.ts",
     "db:generate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit generate",
@@ -44,7 +44,6 @@
     "@octokit/rest": "catalog:",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "@viz-js/viz": "catalog:",
     "changelogen": "catalog:",
     "globby": "catalog:",
@@ -56,13 +55,8 @@
     "sharp": "catalog:",
     "svgo": "catalog:",
     "ts-morph": "catalog:",
-    "turbo": "catalog:"
-  },
-  "overrides": {
-    "brace-expansion": "^5.0.9",
-    "fast-uri": "^3.1.5",
-    "postcss": "^8.5.23",
-    "sharp": "^0.35.3"
+    "turbo": "catalog:",
+    "typescript": "catalog:"
   },
   "commitlint": {
     "extends": [
@@ -103,7 +97,6 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/ws": "^8.18.1",
-    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
     "@viz-js/viz": "^3.28.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "^1.6.23",

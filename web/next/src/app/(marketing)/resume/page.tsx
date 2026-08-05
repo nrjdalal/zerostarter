@@ -173,7 +173,7 @@ export default function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>résumé</h1>
         <p className="text-lg">
-          AI-native Product Engineer with 5+ years shipping production SaaS, developer tools,
+          AI-native Product Engineer with 6+ years shipping production SaaS, developer tools,
           full-stack TypeScript systems, and AI agent infrastructure. Currently building AI-powered
           product surfaces and agent tooling at LightWork AI. Author of 250+ public repositories and
           open-source tools with 1,045+ GitHub stars, used by projects including TanStack, SST,

@@ -86,6 +86,8 @@ agent-browser click "@e12"    # act on a referenced element
 
 It is enforced, not just requested. Docs structure and page metadata live in one file, `web/next/docs.config.ts`, and the build derives every page's frontmatter and sidebar from it; `docs.ts --strict` fails the build when a page and the config disagree, so a doc can't silently fall out of sync. The `doc-sync` skill is the checklist an agent runs to keep code, docs, and skills aligned in the same change.
 
+Because that file is generated and symlinked, this starter turns off the one Next.js writes for you. Since 16.3, `next dev` upserts a managed block into `AGENTS.md` whenever it detects an AI coding agent, and creates `AGENTS.md` plus a `CLAUDE.md` containing `@AGENTS.md` when neither exists, which in this repo would mean a second pair inside `web/next/` fighting the generated root pair. `agentRules: false` in `web/next/next.config.ts` turns it off. The docs it points at are still worth reading: they ship in `node_modules/next/dist/docs/` and match the installed version exactly.
+
 ## Next
 
 - [AI Skills](/docs/resources/ai-skills): the full skill catalog, and writing your own.

@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 }
 
 const proof: { value: string; label: string }[] = [
-  { value: "5+ years", label: "shipping production software" },
+  { value: "6+ years", label: "shipping production software" },
   { value: "500+ PRs", label: "at LightWork AI" },
   { value: "1,000+", label: "GitHub stars across open source" },
   { value: "250+", label: "public repositories" },
@@ -169,7 +169,7 @@ export default function Page() {
             </span>
           </p>
           <p>
-            Five-plus years shipping production web apps, internal platforms, open-source developer
+            Six-plus years shipping production web apps, internal platforms, open-source developer
             tools, and AI-native systems. Right now I'm a Product Engineer at{" "}
             <a
               href="https://lightwork.co"
