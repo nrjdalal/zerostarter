@@ -1,11 +1,13 @@
-import type { ColumnDef, RowData } from "@tanstack/react-table"
+import type { ColumnDef, RowData, TableFeatures } from "@tanstack/react-table"
 import rawFontMetrics from "generated/data-table-metrics.json"
+
+import type { Features } from "@/lib/data-table-features"
 
 // The data table's layout math: pure arithmetic over the column config and the build-time font metrics, with no React and no DOM. It lives beside the module rather than inside it so it can be exercised directly (tests/web/next/src/lib); components/data-table.tsx re-exports the parts consumers use, so a table still imports everything from one place.
 
 // Column meta carried from the column config: labels for the view-options menu, plus the layout and overflow flags the renderer reads.
 declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData extends RowData, TValue> {
+  interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
     align?: "center" | "left" | "right"
     auto?: boolean
     flex?: boolean
@@ -52,12 +54,12 @@ export function autoWidthUnits(label: string, extraUnits: number): number {
   return Math.ceil((measureLabelPx(label) / 4 + extraUnits) / 3) * 3
 }
 
-// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
+// Folds a table's column config into its defs by column id (id, else accessorKey), so useTable sees size plus the align/flex/wrap meta. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
 export function applyColumnManager<TData extends RowData>(
-  columns: ColumnDef<TData>[],
+  columns: ColumnDef<Features, TData, unknown>[],
   columnConfig: Record<string, ColumnConfig>,
-): ColumnDef<TData>[] {
-  const configFor = (column: ColumnDef<TData>) => {
+): ColumnDef<Features, TData, unknown>[] {
+  const configFor = (column: ColumnDef<Features, TData, unknown>) => {
     const id = column.id
       ? column.id
       : "accessorKey" in column

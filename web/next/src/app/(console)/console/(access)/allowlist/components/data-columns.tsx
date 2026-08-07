@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
+import type { Features } from "@/lib/data-table-features"
 
 // Row shape inferred from GET /api/v1/admin/allowlist, so the endpoint cannot drift from these columns.
 export type AllowlistRuleRow = InferResponseType<
@@ -41,7 +42,7 @@ export const allowlistColumnConfig: Record<string, ColumnConfig> = {
 
 export const allowlistColumns = (
   onDelete: (rule: AllowlistRuleRow) => void,
-): ColumnDef<AllowlistRuleRow>[] => [
+): ColumnDef<Features, AllowlistRuleRow, unknown>[] => [
   selectColumn((row) => row.value),
   {
     id: "rule",

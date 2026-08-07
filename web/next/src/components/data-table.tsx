@@ -14,15 +14,15 @@ import {
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import {
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  useTable,
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
   type OnChangeFn,
+  type RowData,
   type RowSelectionState,
   type SortingState,
-  type Table as TableInstance,
+  type ReactTable as TableInstance,
   type Updater,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -69,12 +69,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { features, type Features } from "@/lib/data-table-features"
 import { applyColumnManager, growingColumnIds, type ColumnConfig } from "@/lib/data-table-layout"
 import { cn } from "@/lib/utils"
 
-// The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table v8 mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
-// The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, re-exported here so a table still has one import site.
-export { applyColumnManager, type ColumnConfig }
+// The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
+// The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, and the registered features every table type is generic over live in @/lib/data-table-features; both are re-exported here so a table still has one import site.
+export { applyColumnManager, features, type ColumnConfig, type Features }
 
 // ---------------------------------------------------------------------------
 // URL state: q, sort, and one array param per filter id. No page state; tables scroll infinitely and a queryKey change resets the list.
@@ -117,7 +118,7 @@ function resolveUpdater<T>(updater: Updater<T>, previous: T): T {
   return typeof updater === "function" ? (updater as (old: T) => T)(previous) : updater
 }
 
-// URL-synced table state shaped for useReactTable: spread the returned state into `state` and the handlers into the matching onChange options. Filter ids share the query-string namespace, so keep them clear of q/sort.
+// URL-synced table state shaped for useTable: spread the returned state into `state` and the handlers into the matching onChange options. Filter ids share the query-string namespace, so keep them clear of q/sort.
 export function useDataTableState(
   filterIds: string[] = [],
   defaultSorting: SortingState = EMPTY_SORTING,
@@ -196,14 +197,17 @@ export type DataTablePage<TRow> = {
 }
 
 // The select column, so a second table cannot ship a third variant of it. label names the row for a screen reader, which is the part that had already drifted.
-export function selectColumn<TData>(label: (row: TData) => string): ColumnDef<TData> {
+export function selectColumn<TData extends RowData>(
+  label: (row: TData) => string,
+): ColumnDef<Features, TData, unknown> {
   return {
     id: "select",
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
         checked={table.getIsAllPageRowsSelected()}
-        indeterminate={table.getIsSomePageRowsSelected()}
+        // v9's getIsSomePageRowsSelected is true when every row is selected, not only when some are, so it cannot express the third state on its own; without the second half the header box reads indeterminate at a full selection.
+        indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
@@ -220,7 +224,7 @@ export function selectColumn<TData>(label: (row: TData) => string): ColumnDef<TD
 }
 
 // The generic server-driven table wiring. A page brings only what a generic hook cannot know (its columns, its fetcher, its filter ids, its column config) and spreads tableProps into DataTable. Client-side tables skip this and use useDataTableState directly.
-export function useDataTable<TRow>({
+export function useDataTable<TRow extends RowData>({
   batchSize = 25,
   columnConfig,
   columns,
@@ -233,7 +237,7 @@ export function useDataTable<TRow>({
 }: {
   batchSize?: number
   columnConfig?: Record<string, ColumnConfig>
-  columns: ColumnDef<TRow>[]
+  columns: ColumnDef<Features, TRow, unknown>[]
   defaultSorting?: SortingState
   enableRowSelection?: boolean
   fetchPage: (input: DataTablePageInput) => Promise<DataTablePage<TRow>>
@@ -318,7 +322,7 @@ export function useDataTable<TRow>({
     setRowSelection({})
   }, [filters, search, sorting])
 
-  const table = useReactTable({
+  const table = useTable({
     columns: managedColumns,
     data: rows,
     state: { columnFilters, globalFilter, rowSelection, sorting },
@@ -327,7 +331,7 @@ export function useDataTable<TRow>({
     // Single-column sorting only: fetchPage sends one sort to the server, so shift-click multi-sort would silently drop the extra columns.
     enableMultiSort: false,
     enableRowSelection,
-    getCoreRowModel: getCoreRowModel(),
+    features,
     getRowId,
     manualFiltering: true,
     manualSorting: true,
@@ -365,7 +369,7 @@ export function useDataTable<TRow>({
 const ROW_ESTIMATE_PX = 45
 
 // Renders a table instance the page owns as a virtualized infinite-scroll region, following TanStack Table's virtualized-infinite-scrolling example: semantic table tags flipped to grid/flex so absolutely positioned virtual rows work, a sticky header, onLoadMore fired within 500px of the bottom, a spinner while loading, and an Empty fallback. The wrapper is the scroll container, focusable and named so keyboard users can reach the overflow; the inner shadcn container is flattened via its data-slot.
-export function DataTable<TData>({
+export function DataTable<TData extends RowData>({
   "aria-label": ariaLabel,
   empty,
   errorMessage,
@@ -390,7 +394,7 @@ export function DataTable<TData>({
   onRetry?: () => void
   // What can be done to the selected rows. Rendered in a bar that floats in over the bottom of the table while anything is selected, next to the rows it acts on rather than up in the toolbar with the filters.
   selectionActions?: React.ReactNode
-  table: TableInstance<TData>
+  table: TableInstance<Features, TData>
   total?: number
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -424,7 +428,7 @@ export function DataTable<TData>({
   }, [loadMoreOnBottomReached, rows.length])
 
   // Back to the top whenever sorting, search, or filters reshape the list; these state slices keep stable identities between changes, so they work as deps directly. The virtualizer instance is stable and deliberately not a dep.
-  const { columnFilters, globalFilter, sorting } = table.getState()
+  const { columnFilters, globalFilter, sorting } = table.state
   const filtering = Boolean(globalFilter) || columnFilters.length > 0
   React.useEffect(() => {
     if (rowVirtualizer.getVirtualItems().length) rowVirtualizer.scrollToIndex(0)
@@ -438,7 +442,7 @@ export function DataTable<TData>({
       id: column.id,
     })),
   )
-  const columnLayout = (column: Column<TData, unknown>) => {
+  const columnLayout = (column: Column<Features, TData, unknown>) => {
     const meta = column.columnDef.meta
     // Centered columns drop the horizontal padding: the shadcn cell strips pr when it holds a checkbox, which would skew a padded center.
     const align =
@@ -628,12 +632,12 @@ export function DataTable<TData>({
 // Column header: a plain title with a bare sort icon.
 
 // Sortable column header: the title stays text so it aligns with cell content natively; the only control is the icon, a native button for keyboard and screen readers with a focus ring as its only chrome, toggling asc and desc (hiding lives in the view options). A right-aligned header mirrors the icon to the left so the title stays flush with the cell text. Falls back to a plain label for non-sortable columns.
-export function DataTableColumnHeader<TData, TValue>({
+export function DataTableColumnHeader<TData extends RowData, TValue>({
   className,
   column,
 }: {
   className?: string
-  column: Column<TData, TValue>
+  column: Column<Features, TData, TValue>
 }) {
   // meta.label is the one source for this column's header text, its measured width, and its view-options entry; a separate title prop would silently desync the width from what the header actually renders.
   const title =
@@ -673,14 +677,14 @@ export function DataTableColumnHeader<TData, TValue>({
 // Cell text: overflow behavior from the column config.
 
 // Text cells render through this so column widths never move with content. The mode comes from the column config's wrap flag through column meta: false truncates to one line with an ellipsis and reveals the full value in a tooltip only when actually cut (measured on hover); true flows onto multiple lines and lets the self-measured virtual row grow. Truncation is CSS-only, so the full value stays in the DOM and assistive tech reads it whether or not the tooltip ever opens; the tooltip is a sighted-pointer convenience, which is why the trigger takes no tab stop (one per text cell would bury the table's real controls).
-export function DataTableCellText<TData, TValue>({
+export function DataTableCellText<TData extends RowData, TValue>({
   children,
   className,
   column,
 }: {
   children: React.ReactNode
   className?: string
-  column?: Column<TData, TValue>
+  column?: Column<Features, TData, TValue>
 }) {
   const ref = React.useRef<HTMLSpanElement>(null)
   const [truncated, setTruncated] = React.useState(false)
@@ -715,7 +719,7 @@ export function DataTableCellText<TData, TValue>({
 // Toolbar.
 
 // Search box wired to the table's global filter, a children slot for faceted filters, a reset button once anything filters, and on the right the view-options toggle followed by an actions slot.
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData>({
   actions,
   children,
   searchMaxLength,
@@ -727,11 +731,11 @@ export function DataTableToolbar<TData>({
   children?: React.ReactNode
   searchMaxLength?: number
   searchPlaceholder?: string
-  table: TableInstance<TData>
+  table: TableInstance<Features, TData>
 }) {
-  const globalFilter = table.getState().globalFilter
+  const globalFilter = table.state.globalFilter
   const search = typeof globalFilter === "string" ? globalFilter : ""
-  const isFiltered = search !== "" || table.getState().columnFilters.length > 0
+  const isFiltered = search !== "" || table.state.columnFilters.length > 0
   // The placeholder doubles as the accessible name, minus its trailing ellipsis: a screen reader would otherwise announce "Search users dot dot dot".
   const searchLabel = searchPlaceholder.replace(/[.\u2026]+$/, "")
 
@@ -774,7 +778,11 @@ export function DataTableToolbar<TData>({
 // View options.
 
 // Column visibility toggle for every hideable accessor column, labeled from columnDef.meta.label when set.
-export function DataTableViewOptions<TData>({ table }: { table: TableInstance<TData> }) {
+export function DataTableViewOptions<TData extends RowData>({
+  table,
+}: {
+  table: TableInstance<Features, TData>
+}) {
   const columns = table
     .getAllColumns()
     .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
@@ -812,12 +820,12 @@ export function DataTableViewOptions<TData>({ table }: { table: TableInstance<TD
 // Faceted filter.
 
 // Multi-select filter over a column's values; renders nothing when the column is absent so call sites can pass table.getColumn(...) directly.
-export function DataTableFacetedFilter<TData, TValue>({
+export function DataTableFacetedFilter<TData extends RowData, TValue>({
   column,
   options,
   title,
 }: {
-  column: Column<TData, TValue> | undefined
+  column: Column<Features, TData, TValue> | undefined
   options: { icon?: RemixiconComponentType; label: string; value: string }[]
   title: string
 }) {
