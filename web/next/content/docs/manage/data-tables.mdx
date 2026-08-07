@@ -79,7 +79,14 @@ const { table, tableProps } = useDataTable({
 
 ## Client-side tables
 
-For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the shared `features` from `@/lib/data-table-features` (v9 registers features and fills row-model slots there, so `sortedRowModel`, `filteredRowModel`, `facetedRowModel` and `facetedUniqueValues` come with it). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Set `globalFilterFn: "includesString"` and give faceted columns `filterFn: "arrIncludesSome"`.
+For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the shared `features` from `@/lib/data-table-features` (v9 registers features and fills row-model slots there, so `sortedRowModel`, `filteredRowModel`, `facetedRowModel` and `facetedUniqueValues` come with it). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Naming a filter or sort function by string means registering it first: v9 resolves `globalFilterFn: "includesString"` and `filterFn: "arrIncludesSome"` against the `filterFns` and `sortFns` maps on `features`, and anything unregistered is a compile error rather than a silent fallback. The console's tables resolve both on the server, so `data-table-features.ts` registers neither; add the ones a client-side table names:
+
+```ts
+export const features = tableFeatures({
+  // ...
+  filterFns: { arrIncludesSome: filterFn_arrIncludesSome, includesString: filterFn_includesString },
+})
+```
 
 ## Filling the viewport
 
