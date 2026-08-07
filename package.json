@@ -77,7 +77,7 @@
     "@octokit/rest": "^22.0.1",
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.11.12",
-    "@shadcn/react": "^0.2.1",
+    "@shadcn/react": "^0.3.0",
     "@t3-oss/env-core": "^0.13.11",
     "@tailwindcss/postcss": "^4.3.3",
     "@takumi-rs/core-darwin-arm64": "^2.5.6",
