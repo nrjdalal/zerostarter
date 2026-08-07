@@ -24,39 +24,20 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Active overrides
 
-### `brace-expansion` → `^5.0.9`
+### `js-yaml` → `^4.3.1`
 
-- **Advisory:** [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895) (high): denial of service via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation. Affects `brace-expansion >=4.0.0 <5.0.9`.
-- **Why an override:** nothing to update. `ts-morph` is already latest and its `@ts-morph/common` → `minimatch` chain declares `^5.0.8`, which the patched `5.0.9` already satisfies, so the stale copy is purely a lockfile pin. A full re-resolve does lift it, but it also drags `next`, `hono`, and `takumi-js` up a minor, which is a dependency sweep rather than a security fix. The override lifts this one package inside the range its parent already declares.
-- **Risk:** low. `brace-expansion` expands our own glob patterns at build and lint time, never attacker-controlled input, and `5.0.9` is a patch release of the range already in use.
-- **Exit criteria:** remove once a normal dependency refresh has moved the tree to `brace-expansion >=5.0.9` on its own.
-
-### `fast-uri` → `^3.1.5`
-
-- **Advisory:** [GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7) (high): host confusion via a backslash authority introducer. Affects `fast-uri >=3.0.0 <3.1.5`. This is a second, distinct advisory on the same package: an earlier override for [GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx) was retired once the tree reached `3.1.4`, which this advisory then put back in range.
-- **Why an override:** same shape as `brace-expansion`. `shadcn` and `@commitlint/cli` are both already latest, and the `ajv` that pins it declares `^3.0.1`, which the patched `3.1.5` satisfies; only the lockfile held `3.1.4`. Note `fast-uri@4.x` exists but is outside `ajv`'s range, so `^3.1.5` is the highest usable.
-- **Risk:** low. It parses URIs for `ajv`'s JSON-schema `format` keyword during commitlint config validation and for `shadcn`'s registry fetches, neither of which takes untrusted input here.
-- **Exit criteria:** remove once `ajv` (via `@commitlint/config-validator`) and `shadcn` resolve `fast-uri >=3.1.5` on their own.
-
-### `postcss` → `^8.5.23`
-
-- **Advisory:** [GHSA-6g55-p6wh-862q](https://github.com/advisories/GHSA-6g55-p6wh-862q) and [GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849) (high): arbitrary `.map` file read and path traversal via an attacker-controlled `sourceMappingURL` in CSS comments. Affects `postcss <=8.5.11`.
-- **Why an override:** a stale `postcss@8.4.31` is pinned transitively (through `@tailwindcss/postcss`, `next`, and `shadcn`) even though the tree already resolves a patched `8.5.x` elsewhere, so only an override forces the old copy up. `8.5.23` is the latest `8.x` and is backward compatible.
-- **Risk:** low. `postcss` runs at build time on our own CSS (Tailwind), not on attacker-controlled stylesheets, and `8.x` is API-stable.
-- **Exit criteria:** remove the override once every transitive parent depends on `postcss >=8.5.12`.
-
-### `sharp` → `^0.35.3`
-
-- **Advisory:** [GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj) (high): inherited libvips vulnerabilities (CVE-2026-33327, CVE-2026-33328, CVE-2026-35590, CVE-2026-35591). Affects `sharp <0.35.0`.
-- **Why an override:** our direct `sharp` (catalog `^0.35.3`) is already patched, but `next` pulls a second, vulnerable `sharp@0.34.5` transitively and `16.2.11` (latest stable) still pins it. The override dedupes the whole tree onto `0.35.3`, the version we already ship.
-- **Risk:** low. It converges the transitive copy onto the exact version our own image pipeline (OG rendering, `compress-images.ts`) already uses.
-- **Exit criteria:** remove the override once `next` depends on `sharp >=0.35.0`.
+- **Advisory:** [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj) (high): quadratic CPU consumption resolving `!!omap`, the CVE-2026-59870 fix not backported. Affects `js-yaml >=4.0.0 <4.3.1`.
+- **Why an override:** same shape as the two before it. `@commitlint/cli` is already latest, and the `cosmiconfig` under it declares `js-yaml: ^4.1.0`, which the patched `4.3.1` already satisfies, so the stale copy is purely a lockfile pin. Bumping the parent cannot lift it either: `cosmiconfig@10`, the current latest, still declares the same `^4.1.0`. Note `js-yaml@5.x` exists but is outside that range, so `^4.3.1` is the highest usable. Do not reach for `bun update js-yaml`: it adds js-yaml as a direct dependency at `5.x` and leaves the vulnerable transitive copy in place.
+- **Risk:** low. It parses commitlint's own config at commit time and shadcn's registry responses, neither of which takes untrusted input here, and `4.3.1` is a patch release of the range already in use.
+- **Exit criteria:** remove once `cosmiconfig` (via `@commitlint/cli`) resolves `js-yaml >=4.3.1` on its own.
 
 ## Retired overrides
 
 Kept as a record so a returning advisory is recognised rather than re-investigated from scratch.
 
-- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both reached `fast-uri@3.1.4` on their own, meeting the recorded exit criterion, and the override was retired. A later advisory then put `3.1.4` back in range, so the package is overridden again above; this entry is what made that recognisable rather than a fresh investigation.
+- **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both reached `fast-uri@3.1.4` on their own, meeting the recorded exit criterion, and the override was retired. A later advisory ([GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7)) then put `3.1.4` back in range and it was overridden a second time at `^3.1.5`; that one is retired below too. This entry is what made the second round recognisable rather than a fresh investigation.
+- **`brace-expansion` → `^5.0.9`** ([GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895), high). Held up for `ts-morph`'s `minimatch` chain, which declared `^5.0.8`; a normal dependency refresh moved the tree past `5.0.9`, meeting the recorded exit criterion, and the override went with it in `chore: update deps` (50e262df).
+- **`fast-uri` → `^3.1.5`** ([GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7), high). The second round on this package, held up for `ajv` (via `@commitlint/cli`) and `shadcn`. Both reached `>=3.1.5` on their own and it was retired in the same refresh.
 - **`shell-quote` → `^1.10.0`** ([GHSA-395f-4hp3-45gv](https://github.com/advisories/GHSA-395f-4hp3-45gv), high). Held up for `concurrently`, which now resolves `shell-quote@1.9.0`, past the `<=1.8.4` affected range.
 - **`esbuild` → `^0.28.1`**. Retired by decision, not because a parent caught up, so this one is an accepted exposure rather than a resolved one.
   - It was added for [GHSA-gv7w-rqvm-qjhr](https://github.com/advisories/GHSA-gv7w-rqvm-qjhr) (high), **withdrawn on 2026-06-17** for naming the wrong package: the flaw was in esbuild's Deno distribution, not the npm one. Verified withdrawn, `bun audit` no longer reports it at any level with the override gone.
