@@ -58,6 +58,9 @@
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
+  "overrides": {
+    "js-yaml": "^4.3.1"
+  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
