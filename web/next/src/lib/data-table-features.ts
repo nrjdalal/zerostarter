@@ -3,8 +3,6 @@ import {
   columnFilteringFeature,
   columnSizingFeature,
   columnVisibilityFeature,
-  createFacetedRowModel,
-  createFacetedUniqueValues,
   createFilteredRowModel,
   createSortedRowModel,
   globalFilteringFeature,
@@ -22,8 +20,6 @@ export const features = tableFeatures({
   globalFilteringFeature,
   rowSelectionFeature,
   rowSortingFeature,
-  facetedRowModel: createFacetedRowModel(),
-  facetedUniqueValues: createFacetedUniqueValues(),
   filteredRowModel: createFilteredRowModel(),
   sortedRowModel: createSortedRowModel(),
 })

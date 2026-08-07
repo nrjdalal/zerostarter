@@ -54,7 +54,7 @@ export function autoWidthUnits(label: string, extraUnits: number): number {
   return Math.ceil((measureLabelPx(label) / 4 + extraUnits) / 3) * 3
 }
 
-// Folds a table's column config into its defs by column id (id, else accessorKey), so useReactTable sees size plus the align/flex/wrap meta. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
+// Folds a table's column config into its defs by column id (id, else accessorKey), so useTable sees size plus the align/flex/wrap meta. A widthless config sizes from its header label via the bundled metrics. Flex capability reaches back from a flex column to every column before it. useDataTable applies this via its columnConfig option; client-side tables call it directly.
 export function applyColumnManager<TData extends RowData>(
   columns: ColumnDef<Features, TData, unknown>[],
   columnConfig: Record<string, ColumnConfig>,

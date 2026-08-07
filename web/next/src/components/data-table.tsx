@@ -74,8 +74,8 @@ import { applyColumnManager, growingColumnIds, type ColumnConfig } from "@/lib/d
 import { cn } from "@/lib/utils"
 
 // The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
-// The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, re-exported here so a table still has one import site.
-export { applyColumnManager, type ColumnConfig }
+// The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, and the registered features every table type is generic over live in @/lib/data-table-features; both are re-exported here so a table still has one import site.
+export { applyColumnManager, features, type ColumnConfig, type Features }
 
 // ---------------------------------------------------------------------------
 // URL state: q, sort, and one array param per filter id. No page state; tables scroll infinitely and a queryKey change resets the list.
@@ -118,7 +118,7 @@ function resolveUpdater<T>(updater: Updater<T>, previous: T): T {
   return typeof updater === "function" ? (updater as (old: T) => T)(previous) : updater
 }
 
-// URL-synced table state shaped for useReactTable: spread the returned state into `state` and the handlers into the matching onChange options. Filter ids share the query-string namespace, so keep them clear of q/sort.
+// URL-synced table state shaped for useTable: spread the returned state into `state` and the handlers into the matching onChange options. Filter ids share the query-string namespace, so keep them clear of q/sort.
 export function useDataTableState(
   filterIds: string[] = [],
   defaultSorting: SortingState = EMPTY_SORTING,
@@ -206,6 +206,7 @@ export function selectColumn<TData extends RowData>(
       <Checkbox
         aria-label="Select all"
         checked={table.getIsAllPageRowsSelected()}
+        // v9's getIsSomePageRowsSelected is true when every row is selected, not only when some are, so it cannot express the third state on its own; without the second half the header box reads indeterminate at a full selection.
         indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
