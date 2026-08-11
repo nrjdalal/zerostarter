@@ -94,7 +94,7 @@ Spread `pagingFields` into the response schema and `paging({ page, perPage, tota
 
 ## A route that acts on a set
 
-When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape:
+When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape. If the route is a plain delete, reach for `deleteSet` in `api/hono/src/lib/batch-write.ts` first: it already owns the transaction, the write-back and the ordering, and the two delete-set routes in `routers/admin/` are written with it.
 
 ```ts
 import { batchInput, batchResponseSchema, refused, uniqueIds, type BatchOutcome } from "@/lib/batch"
@@ -110,6 +110,22 @@ const inputSchema = batchInput({ banned: z.boolean() })   // adds a capped, non-
 
 - **Drop the by-id error responses.** A set route has no `notFoundErrorResponses` or `conflictErrorResponses`: those arrive per row inside `{ data }`, so listing them in `responses` would document statuses the route never returns.
 - **Record once for the set.** `recordActivity` takes an array, so collect the events in the loop and insert them in one statement after it, rather than one insert per row inside the transaction.
+
+For a delete set, none of the transaction wiring is written by hand. `deleteSet({ missing, records, remove, targets })` runs the caller's statement inside one transaction, records what came back and answers every id asked:
+
+```ts
+import { deleteSet } from "@/lib/batch-write"
+
+const results = await deleteSet({
+  missing: "Rule not found",
+  records: (rows) => rows.map((row) => ({ action: "allowlist.remove" as const, actor, summary: allowlistRemoveSummary(row.value) })),
+  // Annotate tx: without it both callbacks are context-sensitive, so the row type falls back to its constraint and the returning shape is lost.
+  remove: (tx: Transaction) => tx.delete(allowlist).where(inArray(allowlist.id, targets)).returning({ id: allowlist.id, value: allowlist.value }),
+  targets,
+})
+```
+
+The caller still writes its own statement, so the table keeps its Drizzle types, and `missing` carries the route's own wording. The pure half, `answerDeleted`, lives in `batch.ts` with the rest of the set vocabulary and is unit-tested.
 
 Two rules the routes depend on and a reader will not guess:
 

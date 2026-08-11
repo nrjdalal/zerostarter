@@ -7,13 +7,13 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
+import { codeSample } from "@/lib/code-sample"
 import {
   ApiError,
   authErrorResponses,
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { codeSample } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
 import { facetSchema, listQueryShape } from "@/routers/admin/shared"

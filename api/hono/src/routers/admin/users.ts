@@ -26,13 +26,13 @@ import {
   uniqueIds,
   type BatchOutcome,
 } from "@/lib/batch"
+import { codeSample } from "@/lib/code-sample"
 import {
   ApiError,
   authErrorResponses,
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { codeSample } from "@/lib/openapi"
 import { paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
 import { facetSchema, listQueryShape } from "@/routers/admin/shared"

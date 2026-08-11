@@ -3,8 +3,8 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
+import { codeSample } from "@/lib/code-sample"
 import { authErrorResponses } from "@/lib/error"
-import { codeSample } from "@/lib/openapi"
 import { authMiddleware } from "@/middlewares"
 import { adminRouter } from "@/routers/admin"
 

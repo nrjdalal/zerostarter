@@ -8,13 +8,13 @@ import { z } from "zod"
 
 import { batchInput, batchResponseSchema, uniqueIds } from "@/lib/batch"
 import { deleteSet } from "@/lib/batch-write"
+import { codeSample } from "@/lib/code-sample"
 import {
   ApiError,
   authErrorResponses,
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
-import { codeSample } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
 import { requireFeature } from "@/middlewares"

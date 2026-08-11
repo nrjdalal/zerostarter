@@ -4,8 +4,8 @@ import { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
+import { codeSample } from "@/lib/code-sample"
 import { ApiError, validationErrorResponses } from "@/lib/error"
-import { codeSample } from "@/lib/openapi"
 import { requireFeature } from "@/middlewares"
 
 const joinSchema = z.object({
