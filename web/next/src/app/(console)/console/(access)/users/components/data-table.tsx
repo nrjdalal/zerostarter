@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { runBatched, toastBulk } from "@/lib/api/bulk"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrap, unwrapOrThrow } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
 // Who has been around lately, rather than who signed up lately: the console is usually opened to find someone active. The sessions group-by behind it is paid on every load either way, since the column shows on every row; what this costs is ordering by that aggregate instead of an indexed column on user. Left unindexed until there are row counts worth reading.
@@ -65,7 +65,7 @@ async function fetchUsers({
   const sortId = resolveSort(SORT_FIELDS, sort.id, "lastActive")
   // Drop values the API's enum would reject, so a hand-written ?role=bogus degrades to an unfiltered list (which is what the facet UI shows, since it cannot select an unknown value) instead of 400ing the table into its error state.
   const roles = acceptedFacet(filters.role, CONSOLE_ROLES)
-  const { data, error } = await unwrap(
+  const data = await unwrapOrThrow(
     apiClient.v1.admin.users.$get({
       query: {
         dir: sort.desc ? "desc" : "asc",
@@ -77,7 +77,6 @@ async function fetchUsers({
       },
     }),
   )
-  if (error) throw new Error(error.message)
   return { rows: data.users, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 

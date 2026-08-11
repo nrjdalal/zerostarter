@@ -13,7 +13,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/toast"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrap, unwrapOrThrow } from "@/lib/api/client"
 
 const formSchema = z.object({
   email: z.email({ error: "Please enter a valid email address." }).max(254),
@@ -66,8 +66,7 @@ export default function WaitlistPage() {
 
   const joinWaitlist = useMutation({
     mutationFn: async (value: { email: string; subject: string }) => {
-      const { error } = await unwrap(apiClient.waitlist.$post({ json: value }))
-      if (error) throw new Error(error.message)
+      await unwrapOrThrow(apiClient.waitlist.$post({ json: value }))
     },
     onSuccess: () => {
       setJoined(true)
