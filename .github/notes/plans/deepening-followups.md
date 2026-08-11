@@ -7,7 +7,7 @@ Four items scoped during #797 and deliberately left out of it. Each is independe
 
 ## 1. Move the build-chain scripts into `packages/scripts`
 
-`docs.ts`, `compress-images.ts`, `migrate-on-deploy.ts` and `portless.ts` (488 lines) sit in `.github/scripts/` but are invoked by a build: the first two by `web/next`'s `build` script, the third by `api/hono/vercel.json`'s build command, the fourth by both dev commands. Because they are not a workspace package, both Dockerfiles carry `COPY --from=prepare /app/.github/scripts .github/scripts`, which pulls all 1,318 lines past `turbo prune`.
+`docs.ts`, `compress-images.ts`, `migrate-on-deploy.ts` and `portless.ts` (488 lines) sit in `.github/scripts/` but are invoked by a build: the first two by `web/next`'s `build` script, the third by `api/hono/vercel.json`'s build command, the fourth by both dev commands. Because they are not a workspace package, both Dockerfiles carry `COPY --from=prepare /app/.github/scripts .github/scripts`, which pulls the whole directory, 14 files and 1,752 lines, past `turbo prune`.
 
 Moving them deletes both COPY lines, puts `sharp` and `svgo` on the package that uses them rather than the root, brings them under `turbo.json`'s `globalDependencies`, and makes them importable, which is the precondition for testing them. #797 fixed the convention this depends on (AGENTS.md and `add-package/SKILL.md` contradicted each other), so placement is now unambiguous.
 
@@ -15,7 +15,7 @@ Moving them deletes both COPY lines, puts `sharp` and `svgo` on the package that
 
 ## 2. Point the package tests at the `exports` map
 
-`tests/packages/auth/src/access.test.ts` and `tests/packages/db/src/console.test.ts` import their subject by relative source path, so the `exports` map, which is what `api/hono` and `web/next` actually resolve, is never exercised. Drop the `./access` subpath and 330 tests stay green while both apps fail to build.
+`tests/packages/auth/src/access.test.ts` and `tests/packages/db/src/console.test.ts` import their subject by relative source path, so the `exports` map, which is what `api/hono` and `web/next` actually resolve, is never exercised. Drop the `./access` subpath and the whole 293-test suite stays green while both apps fail to build.
 
 Not a one-line change: `@packages/auth/access` does not resolve from `tests/` (no `node_modules/@packages` symlink, and `tests/` is not a workspace member). Making it work needs either root `@packages/*` devDependencies or a `tests` workspace, and `tests/` is fork-excluded, so a fork would carry dependencies for a directory it does not have. That trade-off is the decision to make.
 

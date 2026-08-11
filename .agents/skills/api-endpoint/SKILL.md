@@ -56,7 +56,7 @@ export const exampleRouter = new Hono().post(
 ```
 
 - Spread the matching error-response set into `responses` so its shape shows in the Scalar docs: `...validationErrorResponses` (400) for a validated route, `...authErrorResponses` (401) for an auth route, `...forbiddenErrorResponses` (403) for an admin route, `...notFoundErrorResponses` (404) for one addressing a row by id, and `...conflictErrorResponses` (409) for one that can lose a race to a unique constraint or to a concurrent edit. 429 and 500 are added globally in `index.ts`, so never per route.
-- Spread `codeSample(...)` from `lib/openapi.ts` so Scalar shows the `hono/client` usage (the template above omits it). It writes the `x-codeSamples` block and its cast, so a route supplies only the snippet.
+- Spread `codeSample(...)` from `lib/code-sample.ts` so Scalar shows the `hono/client` usage (the template above omits it). It writes the `x-codeSamples` block and its cast, so a route supplies only the snippet.
 - Auth-protected routes go in `v1.ts`, behind `authMiddleware` from `@/middlewares` with `Variables: Session` so `c.get("session")`/`c.get("user")` are typed. A public route gets its own router.
 - Console routes go in `routers/admin/`, one file per resource re-exported through `admin/index.ts` and mounted at `/admin` inside `v1.ts` behind the console gate (stacked after `authMiddleware`). Every route there is a console surface for admins, whether that is who reaches the console, the rules that let them, the trail of those changes, or the waitlist, so the router mounts `consoleAdminMiddleware` and requires admin throughout. That middleware is one instance of `requireConsoleRole(minimum)`, the factory to call if a surface ever wants a lower rung. It re-reads the session with `disableCookieCache: true` and also refuses a banned user, so a demotion or ban lands on the next request; never gate on the cached session's role.
 - A route the browser calls with a method other than GET or POST needs that method in the `cors()` `allowMethods` list in `index.ts`, and in the OpenAPI `defaultOptions` beside it, or the preflight fails and the request never leaves the page while its 429 and 500 go undocumented. curl will not catch the preflight.
@@ -94,7 +94,7 @@ Spread `pagingFields` into the response schema and `paging({ page, perPage, tota
 
 ## A route that acts on a set
 
-When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape. If the route is a plain delete, reach for `deleteSet` in `api/hono/src/lib/batch-write.ts` first: it already owns the transaction, the write-back and the ordering, and the two delete-set routes in `routers/admin/` are written with it.
+When a route acts on rows the caller picked rather than on one resource, use `api/hono/src/lib/batch.ts` rather than inventing a shape. If the route is a plain delete, reach for `deleteSet` in `api/hono/src/lib/batch-write.ts` first: it already owns the transaction, the write-back and the per-id answer in the order asked, and the two delete-set routes in `routers/admin/` are written with it.
 
 ```ts
 import { batchInput, batchResponseSchema, refused, uniqueIds, type BatchOutcome } from "@/lib/batch"
@@ -129,10 +129,10 @@ The caller still writes its own statement, so the table keeps its Drizzle types,
 
 Two rules the routes depend on and a reader will not guess:
 
-- **Write in sorted id order.** The ids are client-supplied, so two admins acting on overlapping selections in opposite orders would deadlock. Answer in the order asked (`answerFor`), write in sorted order.
+- **Write in sorted id order, when the route writes row by row.** The ids are client-supplied, so two admins acting on overlapping selections in opposite orders would deadlock. Answer in the order asked (`answerFor`), write in sorted order. A delete set does not loop: it deletes in one `inArray` statement, which takes its locks in one operation, so `deleteSet` passes `targets` through unsorted and answers with `answerDeleted`.
 - **Take a guard's lock whenever the set writes a row it covers**, not only when the guard is about to refuse. The owner lock is the live example: an unban writes owner rows too, and a transaction that writes them without holding the lock can cross orders with one that takes it.
 
-Both helpers are unit-tested from `tests/api/hono/src/lib/`. A test there can import a module that imports `zod`, but cannot import `zod` itself, so pin the parts that do not need it and leave a route's own extra fields to the route.
+These helpers are unit-tested from `tests/api/hono/src/lib/`, `answerDeleted` included. A test there can import a module that imports `zod`, but cannot import `zod` itself, so pin the parts that do not need it and leave a route's own extra fields to the route.
 
 On the web, `runBatched` in `web/next/src/lib/api/bulk.ts` sends the selection, splitting it at `MAX_BATCH` (from `@packages/config/console`, shared so both sides read one number) and folding each answer with `foldBatch`; `describeBulk` and `toastBulk` work off the resulting counts. See [API Conventions](https://zerostarter.dev/docs/manage/api-conventions) for the contract itself.
 
