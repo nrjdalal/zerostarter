@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrapOrThrow } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
 const HEARTBEAT_TIMEOUT_MS = 12000
@@ -29,8 +29,7 @@ export function ApiStatus() {
   const rest = useQuery({
     queryKey: ["api-health"],
     queryFn: async () => {
-      const { data, error } = await unwrap(apiClient.health.$get())
-      if (error) throw new Error(error.message)
+      const data = await unwrapOrThrow(apiClient.health.$get())
       return data
     },
     enabled: wsFrame === null,

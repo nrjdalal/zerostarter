@@ -20,7 +20,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/toast"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrapOrThrow } from "@/lib/api/client"
 import { authClient } from "@/lib/auth/client"
 import { config } from "@/lib/config"
 
@@ -41,8 +41,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
     queryKey: ["auth-providers"],
     staleTime: Infinity,
     queryFn: async () => {
-      const { data, error } = await unwrap(apiClient.auth.providers.$get())
-      if (error) throw new Error(error.message)
+      const data = await unwrapOrThrow(apiClient.auth.providers.$get())
       return data
     },
   })

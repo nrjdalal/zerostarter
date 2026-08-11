@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrapOrThrow } from "@/lib/api/client"
 import type { Features } from "@/lib/data-table-features"
 
 // The role cell for someone who may change roles. A member never renders this, and every rule it appears to enforce is enforced again on the API, which refuses with the reason shown here.
@@ -38,10 +38,9 @@ export function UserRoleSelect({
   const mutation = useMutation({
     mutationFn: async (next: ConsoleRole) => {
       // A set of one. The route answers per id, so a guard saying no about this account arrives as an outcome rather than an error, and is raised here so the mutation's own error path shows it.
-      const { data, error } = await unwrap(
+      const data = await unwrapOrThrow(
         apiClient.v1.admin.users.role.$patch({ json: { ids: [userId], role: next } }),
       )
-      if (error) throw new Error(error.message)
       const [result] = data.results
       if (!result) throw new Error("The account was not changed.")
       if (!result.ok) throw new Error(result.message)
