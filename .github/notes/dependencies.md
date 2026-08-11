@@ -31,17 +31,16 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 - **Risk:** low. It parses commitlint's own config at commit time and shadcn's registry responses, neither of which takes untrusted input here, and `4.3.1` is a patch release of the range already in use.
 - **Exit criteria:** remove once `cosmiconfig` (via `@commitlint/cli`) resolves `js-yaml >=4.3.1` on its own.
 
-### `postcss` → `nanoid` `^3.3.17` (scoped)
-
-- **Advisory:** [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) (high): a custom alphabet generator loops indefinitely when `size` is zero. Affects `nanoid <3.3.17`.
-- **Why scoped, not global:** only one copy in the tree was ever in range, `postcss`'s `nanoid@3.3.16`. `web/next` depends on `nanoid` directly (`catalog: ^6.0.1`) and `@scalar/types` declares `^5.1.6`; neither range admits `3.3.x` and neither was affected. A bare `"nanoid": "^3.3.17"` override is global in Bun, so it silently drags the app's own dependency down three majors and Scalar's down two. The override is written under `postcss` so the vulnerable copy lifts to `3.3.18` and the other two stay where they were. Verify with `grep -o '"nanoid@[^"]*"' bun.lock | sort -u`: it must list `3.3.18`, `5.1.16` and `6.0.1`.
-- **Risk:** low, and separate from the advisory. `web/next/src/lib/utils.ts` does call `customAlphabet` (via `generateId`, for `slugify`'s suffix), which is the shape the advisory describes, but it guards with `if (!size) return ""` so the zero-size path never reaches nanoid, and that copy is `6.x` and out of range regardless. `postcss`'s own use is build-time.
-- **Exit criteria:** remove once `postcss` resolves `nanoid >=3.3.17` on its own.
-
 ## Retired overrides
 
 Kept as a record so a returning advisory is recognised rather than re-investigated from scratch.
 
+- **`nanoid`** ([GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8), high): a custom alphabet generator loops indefinitely when `size` is zero, affecting `nanoid <3.3.17`. **No override is in place, and none is needed.** Recorded because two wrong attempts came first and a returning advisory should not repeat them.
+  - Only one copy was ever in range: `postcss`'s `nanoid@3.3.16`. `web/next` depends on nanoid directly (`catalog: ^6.0.1`, used by `customAlphabet` in `src/lib/utils.ts` for `slugify`) and `@scalar/types` declares `^5.1.6`; neither range admits `3.3.x`.
+  - **First attempt, a bare `"nanoid": "^3.3.17"` override, was wrong.** Bun applies a bare override to every copy in the tree, so it downgraded the app's own runtime dependency three majors and Scalar's two, collapsing all three to `3.3.18`.
+  - **Second attempt, a nested `"postcss": { "nanoid": "^3.3.17" }`, was inert.** Bun does not record a nested override: `bun.lock`'s `overrides` map listed `js-yaml` alone, and removing the entry changed no resolution.
+  - **What actually cleared it:** `postcss@8.5.23` declares `nanoid: "^3.3.16"`, which already admits the patched release, so refreshing the lockfile moved that copy to `3.3.18`. The lock now carries `3.3.18`, `5.1.16` and `6.0.1`, and `bun audit --audit-level high` is clean with no `overrides` entry at all.
+  - **If it returns:** check `grep -o '"nanoid@[^"]*"' bun.lock | sort -u` first. A bare override is the wrong tool here whatever the advisory says, because this package is a direct dependency of the web app at a different major.
 - **`fast-uri` → `^3.1.4`** ([GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx), high). Held up for `@commitlint/cli` (`ajv`) and `shadcn`. Both reached `fast-uri@3.1.4` on their own, meeting the recorded exit criterion, and the override was retired. A later advisory ([GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7)) then put `3.1.4` back in range and it was overridden a second time at `^3.1.5`; that one is retired below too. This entry is what made the second round recognisable rather than a fresh investigation.
 - **`brace-expansion` → `^5.0.9`** ([GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895), high). Held up for `ts-morph`'s `minimatch` chain, which declared `^5.0.8`; a normal dependency refresh moved the tree past `5.0.9`, meeting the recorded exit criterion, and the override went with it in `chore: update deps` (50e262df).
 - **`fast-uri` → `^3.1.5`** ([GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7), high). The second round on this package, held up for `ajv` (via `@commitlint/cli`) and `shadcn`. Both reached `>=3.1.5` on their own and it was retired in the same refresh.
