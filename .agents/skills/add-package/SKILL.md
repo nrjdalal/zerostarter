@@ -11,7 +11,7 @@ The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A sh
 ## Pick the shape
 
 - **Library** (`env`, `db`, `auth`, `config`): tsdown-built to `dist/` and imported by other workspaces through an `exports` map. Use it when code is consumed at runtime.
-- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (for example `@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first). Use it for build-time codegen. CI or repo tooling belongs in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
+- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (for example `@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first). Use it for build-time codegen. The test is whether a `build` script, a Dockerfile, or a `vercel.json` build command invokes it: if so it belongs here, so `turbo prune` carries it into the Docker build without an extra COPY. Repo and CI tooling that no build invokes (git hooks, release, dependency and skill management) belongs in `.github/scripts` instead.
 
 ## Common skeleton (both shapes)
 
