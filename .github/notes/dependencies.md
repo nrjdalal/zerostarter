@@ -24,19 +24,19 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Active overrides
 
-### `nanoid` → `^3.3.17`
-
-- **Advisory:** [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) (high): a custom alphabet generator loops indefinitely when `size` is zero. Affects `nanoid <3.3.17`.
-- **Why an override:** the same lockfile-pin shape as the entries above. The vulnerable copy is transitive through `next`, `@tailwindcss/postcss`, `shadcn` and `@scalar/hono-api-reference`, all already latest, and their declared ranges admit the patched `3.3.x`, so the tree reaches `3.3.18` with nothing else changed. Do not reach for `bun update nanoid`: it adds nanoid as a direct dependency at `6.x` and leaves the vulnerable transitive copy in place, exactly as the js-yaml entry warns.
-- **Risk:** low. Nothing here calls `nanoid` with a custom alphabet and a zero size; the copies are build tooling and the Scalar docs bundle.
-- **Exit criteria:** remove once those parents resolve `nanoid >=3.3.17` on their own.
-
 ### `js-yaml` → `^4.3.1`
 
 - **Advisory:** [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj) (high): quadratic CPU consumption resolving `!!omap`, the CVE-2026-59870 fix not backported. Affects `js-yaml >=4.0.0 <4.3.1`.
 - **Why an override:** same shape as the two before it. `@commitlint/cli` is already latest, and the `cosmiconfig` under it declares `js-yaml: ^4.1.0`, which the patched `4.3.1` already satisfies, so the stale copy is purely a lockfile pin. Bumping the parent cannot lift it either: `cosmiconfig@10`, the current latest, still declares the same `^4.1.0`. Note `js-yaml@5.x` exists but is outside that range, so `^4.3.1` is the highest usable. Do not reach for `bun update js-yaml`: it adds js-yaml as a direct dependency at `5.x` and leaves the vulnerable transitive copy in place.
 - **Risk:** low. It parses commitlint's own config at commit time and shadcn's registry responses, neither of which takes untrusted input here, and `4.3.1` is a patch release of the range already in use.
 - **Exit criteria:** remove once `cosmiconfig` (via `@commitlint/cli`) resolves `js-yaml >=4.3.1` on its own.
+
+### `postcss` → `nanoid` `^3.3.17` (scoped)
+
+- **Advisory:** [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) (high): a custom alphabet generator loops indefinitely when `size` is zero. Affects `nanoid <3.3.17`.
+- **Why scoped, not global:** only one copy in the tree was ever in range, `postcss`'s `nanoid@3.3.16`. `web/next` depends on `nanoid` directly (`catalog: ^6.0.1`) and `@scalar/types` declares `^5.1.6`; neither range admits `3.3.x` and neither was affected. A bare `"nanoid": "^3.3.17"` override is global in Bun, so it silently drags the app's own dependency down three majors and Scalar's down two. The override is written under `postcss` so the vulnerable copy lifts to `3.3.18` and the other two stay where they were. Verify with `grep -o '"nanoid@[^"]*"' bun.lock | sort -u`: it must list `3.3.18`, `5.1.16` and `6.0.1`.
+- **Risk:** low, and separate from the advisory. `web/next/src/lib/utils.ts` does call `customAlphabet` (via `generateId`, for `slugify`'s suffix), which is the shape the advisory describes, but it guards with `if (!size) return ""` so the zero-size path never reaches nanoid, and that copy is `6.x` and out of range regardless. `postcss`'s own use is build-time.
+- **Exit criteria:** remove once `postcss` resolves `nanoid >=3.3.17` on its own.
 
 ## Retired overrides
 
