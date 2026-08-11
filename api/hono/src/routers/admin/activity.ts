@@ -13,9 +13,10 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
-import { codeSample, facetSchema, listQueryShape } from "@/routers/admin/shared"
+import { facetSchema, listQueryShape } from "@/routers/admin/shared"
 
 const activitySchema = z.object({
   // The stored code, not z.enum(ACTIVITY_ACTIONS): a fork that adds a verb, or a row written before one was removed, still has to come back as what it is. The query side stays enumerated, since filtering by a verb nothing writes is a client bug.

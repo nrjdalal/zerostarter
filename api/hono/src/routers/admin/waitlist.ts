@@ -14,10 +14,11 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
 import { requireFeature } from "@/middlewares"
-import { codeSample, listQueryShape } from "@/routers/admin/shared"
+import { listQueryShape } from "@/routers/admin/shared"
 
 const waitlistSchema = z.object({
   createdAt: z.string().meta({ format: "date-time", example: "2026-01-21T13:06:25.712Z" }),

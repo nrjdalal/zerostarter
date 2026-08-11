@@ -4,6 +4,7 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { authErrorResponses } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { authMiddleware } from "@/middlewares"
 import { adminRouter } from "@/routers/admin"
 
@@ -37,17 +38,9 @@ export const v1Router = new Hono<{
     describeRoute({
       tags: ["v1"],
       description: "Get current session only",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
+      ...codeSample(`import { apiClient, unwrap } from "@/lib/api/client"
 
-const { data, error } = await unwrap(apiClient.v1.session.$get())`,
-          },
-        ],
-      } as object),
+const { data, error } = await unwrap(apiClient.v1.session.$get())`),
       responses: {
         200: {
           description: "OK",
@@ -81,17 +74,9 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())`,
     describeRoute({
       tags: ["v1"],
       description: "Get current user only",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
+      ...codeSample(`import { apiClient, unwrap } from "@/lib/api/client"
 
-const { data, error } = await unwrap(apiClient.v1.user.$get())`,
-          },
-        ],
-      } as object),
+const { data, error } = await unwrap(apiClient.v1.user.$get())`),
       responses: {
         200: {
           description: "OK",

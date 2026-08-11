@@ -32,9 +32,10 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { paging, pagingFields } from "@/lib/paging"
 import { escapeLike } from "@/lib/sql"
-import { codeSample, facetSchema, listQueryShape } from "@/routers/admin/shared"
+import { facetSchema, listQueryShape } from "@/routers/admin/shared"
 
 // Single source for the sortable columns: the schema enum and the column map both derive from it.
 const SORTS = ["banned", "createdAt", "email", "lastActive", "name", "role"] as const

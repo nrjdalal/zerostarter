@@ -24,10 +24,11 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { requireFeature } from "@/middlewares"
-import { codeSample, facetSchema, listQueryShape } from "@/routers/admin/shared"
+import { facetSchema, listQueryShape } from "@/routers/admin/shared"
 
 const allowlistSchema = z.object({
   actor: z.string().nullable().meta({ example: "ada@example.com" }),

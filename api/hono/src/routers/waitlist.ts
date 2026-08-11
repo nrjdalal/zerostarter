@@ -5,6 +5,7 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { ApiError, validationErrorResponses } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { requireFeature } from "@/middlewares"
 
 const joinSchema = z.object({
@@ -26,17 +27,9 @@ export const waitlistRouter = new Hono()
       tags: ["Waitlist"],
       description:
         "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
+      ...codeSample(`import { apiClient, unwrap } from "@/lib/api/client"
 
-const { data, error } = await unwrap(apiClient.waitlist.$get())`,
-          },
-        ],
-      } as object),
+const { data, error } = await unwrap(apiClient.waitlist.$get())`),
       responses: {
         200: {
           description: "OK",
@@ -61,17 +54,9 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())`,
     describeRoute({
       tags: ["Waitlist"],
       description: "Join the waitlist",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
+      ...codeSample(`import { apiClient, unwrap } from "@/lib/api/client"
 
-const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`,
-          },
-        ],
-      } as object),
+const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))`),
       responses: {
         200: {
           description: "OK",

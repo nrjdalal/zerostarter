@@ -10,6 +10,7 @@ import { logger } from "hono/logger"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
+import { codeSample } from "@/lib/openapi"
 import { createServer, upgradeWebSocket } from "@/lib/server"
 import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
@@ -65,17 +66,9 @@ const routes = app
     describeRoute({
       tags: ["System"],
       description: "Get the system health",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient, unwrap } from "@/lib/api/client"
+      ...codeSample(`import { apiClient, unwrap } from "@/lib/api/client"
 
-const { data, error } = await unwrap(apiClient.health.$get())`,
-          },
-        ],
-      } as object),
+const { data, error } = await unwrap(apiClient.health.$get())`),
       responses: {
         200: {
           description: "OK",
@@ -108,20 +101,12 @@ const { data, error } = await unwrap(apiClient.health.$get())`,
       tags: ["System"],
       description:
         "Live system health over a WebSocket. On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
-      ...({
-        "x-codeSamples": [
-          {
-            lang: "typescript",
-            label: "hono/client",
-            source: `import { apiClient } from "@/lib/api/client"
+      ...codeSample(`import { apiClient } from "@/lib/api/client"
 
 const socket = apiClient.health.ws.$ws()
 socket.addEventListener("message", (event) => {
   const health = JSON.parse(event.data)
-})`,
-          },
-        ],
-      } as object),
+})`),
       responses: {
         101: { description: "Switching Protocols: the WebSocket handshake succeeded." },
       },
