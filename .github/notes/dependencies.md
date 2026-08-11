@@ -24,6 +24,13 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Active overrides
 
+### `nanoid` → `^3.3.17`
+
+- **Advisory:** [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) (high): a custom alphabet generator loops indefinitely when `size` is zero. Affects `nanoid <3.3.17`.
+- **Why an override:** the same lockfile-pin shape as the entries above. The vulnerable copy is transitive through `next`, `@tailwindcss/postcss`, `shadcn` and `@scalar/hono-api-reference`, all already latest, and their declared ranges admit the patched `3.3.x`, so the tree reaches `3.3.18` with nothing else changed. Do not reach for `bun update nanoid`: it adds nanoid as a direct dependency at `6.x` and leaves the vulnerable transitive copy in place, exactly as the js-yaml entry warns.
+- **Risk:** low. Nothing here calls `nanoid` with a custom alphabet and a zero size; the copies are build tooling and the Scalar docs bundle.
+- **Exit criteria:** remove once those parents resolve `nanoid >=3.3.17` on their own.
+
 ### `js-yaml` → `^4.3.1`
 
 - **Advisory:** [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj) (high): quadratic CPU consumption resolving `!!omap`, the CVE-2026-59870 fix not backported. Affects `js-yaml >=4.0.0 <4.3.1`.
