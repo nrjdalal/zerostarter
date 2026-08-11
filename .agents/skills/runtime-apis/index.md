@@ -1,7 +1,7 @@
 # Node API index
 
 Per-file inventory of every Node built-in used in the repo, for the [`runtime-apis`](SKILL.md) skill.
-Snapshot: 2026-07-26. Regenerate with the `rg "node:..."` command in `SKILL.md`.
+Snapshot: 2026-08-12. Regenerate with the `rg "node:..."` command in `SKILL.md`.
 
 The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:` (no `Bun.*`);
 **Bun** files may move a call to a `Bun.*` equivalent where one exists.
@@ -25,7 +25,7 @@ The `Runtime` column drives the rule: **Node** and **Both** files stay on `node:
 | `packages/cli/src/git.ts` | Node | `node:path` (join) |
 | `packages/cli/src/io.ts` | Node | `node:fs` (existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync); `node:path` (dirname, join) |
 | `packages/cli/src/vendor/nano-spawn.ts` | Node | `node:child_process` (spawn, SpawnOptions); `node:fs/promises` (access); `node:path` (delimiter, resolve) |
-| `packages/env/src/lib/utils.ts` | Both | `node:path` (path) |
+| `packages/env/src/load-dotenv.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
