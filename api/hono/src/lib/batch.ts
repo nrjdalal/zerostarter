@@ -60,6 +60,18 @@ export const raced = (id: string) =>
 export const answerFor = (targets: string[], outcomes: Map<string, BatchOutcome>) =>
   targets.map((id) => outcomes.get(id) ?? raced(id))
 
+// The answer a delete set assembles from what came back: an id the statement returned was there and is gone, anything else was already missing. Order follows the request, like answerFor.
+export const answerDeleted = <R extends { id: string }>(
+  targets: string[],
+  removed: R[],
+  missing: string,
+): BatchOutcome[] => {
+  const present = new Set(removed.map((row) => row.id))
+  return targets.map((id): BatchOutcome =>
+    present.has(id) ? { id, ok: true } : refused(id, "NOT_FOUND", missing),
+  )
+}
+
 // What a set route answers with, as the client receives it after unwrap.
 export type BatchAnswer = {
   data: { results: BatchOutcome[] } | null

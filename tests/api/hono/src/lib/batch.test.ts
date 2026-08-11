@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 
 import {
+  answerDeleted,
   answerFor,
   batchInput,
   raced,
@@ -57,5 +58,37 @@ describe("answerFor", () => {
     const [only] = answerFor(["a"], new Map())
     expect(only).toEqual(raced("a"))
     expect(only.ok).toBe(false)
+  })
+})
+
+describe("answerDeleted", () => {
+  const rows = (...ids: string[]) => ids.map((id) => ({ id, value: `@${id}.com` }))
+
+  test("an id the statement returned is gone, and says so", () => {
+    expect(answerDeleted(["a", "b"], rows("a", "b"), "Rule not found")).toEqual([
+      { id: "a", ok: true },
+      { id: "b", ok: true },
+    ])
+  })
+
+  test("an id that came back with nothing was already missing", () => {
+    const [present, absent] = answerDeleted(["a", "b"], rows("a"), "Rule not found")
+    expect(present).toEqual({ id: "a", ok: true })
+    expect(absent).toEqual(refused("b", "NOT_FOUND", "Rule not found"))
+  })
+
+  test("answers in the order asked, not the order the rows came back", () => {
+    const answers = answerDeleted(["c", "a", "b"], rows("b", "a", "c"), "Signup not found")
+    expect(answers.map((answer) => answer.id)).toEqual(["c", "a", "b"])
+  })
+
+  test("carries the caller's wording, since a rule and a signup are not the same thing", () => {
+    const [only] = answerDeleted(["a"], [], "Signup not found")
+    expect(only.ok).toBe(false)
+    expect(only).toEqual(refused("a", "NOT_FOUND", "Signup not found"))
+  })
+
+  test("nothing deleted refuses every id rather than answering empty", () => {
+    expect(answerDeleted(["a", "b"], [], "Rule not found")).toHaveLength(2)
   })
 })
