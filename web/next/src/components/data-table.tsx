@@ -342,9 +342,6 @@ export function useDataTable<TRow extends RowData>({
   })
 
   return {
-    error: query.error,
-    isError: query.isError,
-    refetch: query.refetch,
     // The filtered model, so what the selection bar counts and what an action touches cannot drift apart on a client-filtered table.
     selected: table.getFilteredSelectedRowModel().rows.map((row) => row.original),
     table,
