@@ -11,12 +11,12 @@ Deploy `web/next` and `api/hono` as **two separate Vercel projects** pointed at 
 
 Both apps ship a `vercel.json`, so Vercel reads the install command, build command, framework, and function runtime automatically once you point a project at the right root. You set two things per project: the **Root Directory** and the **environment variables**.
 
-| Project  | Root Directory | Framework | Function runtime           |
-| -------- | -------------- | --------- | -------------------------- |
-| Backend  | `api/hono`     | Hono      | Bun (`bunVersion`)         |
-| Frontend | `web/next`     | Next.js   | Node (no `bunVersion` set) |
+| Project  | Root Directory | Framework | Function runtime   |
+| -------- | -------------- | --------- | ------------------ |
+| Backend  | `api/hono`     | Hono      | Bun (`bunVersion`) |
+| Frontend | `web/next`     | Next.js   | Bun (`bunVersion`) |
 
-The api runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for. The web app does not set `bunVersion`: Next's server is built for Node, and Vercel's Bun runtime expects the build itself to run under Bun (`bun run --bun next build`) which this build does not do. Pinning the web functions to Bun while building for Node crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving.
+Both projects pin `"bunVersion": "1.4.x"` (Vercel accepts only `1.4.x` or `1.x` and manages patch versions itself). The api runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for. The web app's constraint is different: Vercel's Bun runtime requires the Next build itself to run under Bun, so its `build:vercel` script wraps the regular build in `bun run --bun`, which shims `node` to Bun for every binary the script spawns, `next build` included. Pinning the web functions to Bun while building for Node instead crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving; Docker and local builds keep the plain `build` script, since the standalone server picks its runtime at start, not at build.
 
 Deploy the **backend first**: the frontend needs its URL.
 

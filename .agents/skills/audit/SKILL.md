@@ -28,6 +28,8 @@ Fix each advisory on the highest rung that lifts the whole tree; drop a rung onl
    "overrides": { "<vulnerable-package>": "<patched-version>" }
    ```
 
+`bun audit fix` applies the first two rungs mechanically when a patched version exists within the ranges parents allow; `--dry-run` previews and `--latest` also crosses majors, so review what it picks before accepting. Read the advisory's affected ranges before reaching for a lower rung: the audit header lists every installed version of the package, not only the vulnerable ones. Follow with `bun dedupe` to collapse duplicate versions the tree accumulated.
+
 Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
 
 ## 3. Record every override

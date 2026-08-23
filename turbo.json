@@ -7,7 +7,7 @@
     },
     "build:vercel": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "vercel-bundle/**"]
+      "outputs": [".next/**", "!.next/cache/**", ".source/**", "dist/**", "vercel-bundle/**"]
     },
     "check-types": {
       "dependsOn": ["^build"]

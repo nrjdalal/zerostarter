@@ -15,13 +15,13 @@ The prefix is mandatory even in Bun-only code: it marks the import as a built-in
 
 ## Not everything runs under Bun
 
-`Bun.*` exists only on the Bun runtime. These areas run on **Node**, so `node:` is load-bearing and `Bun.*` is a crash, not a style choice:
+`Bun.*` exists only on the Bun runtime. These areas run on **Node** in at least one of their environments, so `node:` is load-bearing and `Bun.*` is a crash, not a style choice:
 
 | Area | Runtime | Rule |
 | --- | --- | --- |
 | `packages/cli/**` | Node | `node:` only. Published to npm, launched via `npx` (bin shebang `#!/usr/bin/env node`); `Bun.*` breaks every npx user. |
-| `web/next/**` | Node | `node:` only. Next.js on Vercel. |
-| `packages/env/**` | Node + Bun | `node:` only. Imported by both web (Node) and api (Bun); stays portable. |
+| `web/next/**` | Node + Bun | `node:` only. `next dev` runs under the system Node locally; Docker (`bun server.js`) and Vercel (`bunVersion`, built via `bun run --bun`) run it under Bun. Stays portable. |
+| `packages/env/**` | Node + Bun | `node:` only. Imported by web (Node and Bun) and api (Bun); stays portable. |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
 
 Bun-first therefore applies to the Bun-only files: `.github/scripts/*.ts` and `packages/scripts/src/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
