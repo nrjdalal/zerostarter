@@ -20,7 +20,7 @@ The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, 
 
 ## Canonical URLs and structured data
 
-Every page carries a `<link rel="canonical">` for its own URL: the root layout sets `metadataBase` to `NEXT_PUBLIC_APP_URL` and `alternates.canonical: "./"`, which Next resolves per route, so no page declares one by hand. The root layout also emits a `WebSite` JSON-LD block from `site` (name, description, URL), and the landing page adds a `SoftwareSourceCode` block for the starter itself (repository, license, language); both go through `components/common/json-ld.tsx`, which escapes `<` so a value can never close the script tag.
+Every page carries a `<link rel="canonical">` for its own URL: the root layout sets `metadataBase` to `NEXT_PUBLIC_APP_URL` and `alternates.canonical: "./"`, which Next resolves per route, so no page declares one by hand. The root layout also emits a `WebSite` JSON-LD block from `site` (name, description, URL), and the landing page adds a `SoftwareApplication` block for the starter itself (a free developer application under the MIT license, with the repository as `sameAs`); both go through `components/common/json-ld.tsx`, which escapes `<` so a value can never close the script tag.
 
 ## Sitemap
 

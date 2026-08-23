@@ -237,13 +237,14 @@ docker compose up --build`
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "SoftwareSourceCode",
-          codeRepository: site.social.github,
+          "@type": "SoftwareApplication",
+          applicationCategory: "DeveloperApplication",
           description: site.description,
           license: "https://opensource.org/license/mit",
           name: site.name,
-          programmingLanguage: "TypeScript",
-          runtimePlatform: "Bun",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          operatingSystem: "Any",
+          sameAs: [site.social.github],
           url: config.app.url,
         }}
       />
