@@ -108,6 +108,11 @@ export async function generatePageMetadata<K extends ContentKind>(
   return {
     title: page.data.title,
     description: page.data.description,
+    // Page-level alternates replace the root layout's whole alternates object, so the canonical is restated. The markdown alternate advertises the .md alias to agents that fetch HTML first and follow <link rel="alternate" type="text/markdown"> (Codex CLI does); only the public kinds (docs, blog) have one, the same kinds that have an /og route.
+    alternates: {
+      canonical: "./",
+      ...(cs.og && { types: { "text/markdown": `${pageUrl}.md` } }),
+    },
     openGraph,
     other: {
       "og:logo": `${config.app.url}/favicon.ico`,

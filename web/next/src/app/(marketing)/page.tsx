@@ -17,6 +17,7 @@ import {
   RiSpeedLine,
   RiStackLine,
 } from "@remixicon/react"
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { Fragment, type ReactNode } from "react"
@@ -31,6 +32,11 @@ import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
+
+// The homepage's markdown sibling is the llms.txt index; advertise it for agents that follow <link rel="alternate" type="text/markdown">. Restates the canonical because a page-level alternates object replaces the root layout's.
+export const metadata: Metadata = {
+  alternates: { canonical: "./", types: { "text/markdown": "/llms.txt" } },
+}
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
