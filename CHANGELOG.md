@@ -1,3 +1,32 @@
+## v0.1.24
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.23...v0.1.24)
+
+### 🚀 Enhancements
+
+- Adopt bun 1.4 (toolchain, docker, and both vercel runtimes) ([#801](https://github.com/nrjdalal/zerostarter/pull/801))
+
+### 🔥 Performance
+
+- **env:** Load dotenv from its own module, not the one client code imports ([#798](https://github.com/nrjdalal/zerostarter/pull/798))
+
+### 💅 Refactors
+
+- **scripts:** Move the Bun-only scripts off node:child_process and node:fs ([#805](https://github.com/nrjdalal/zerostarter/pull/805))
+
+### 📖 Documentation
+
+- **notes:** Record the nanoid advisory and its traps in dependencies.md ([#803](https://github.com/nrjdalal/zerostarter/pull/803))
+- **skills:** Rejoin the heading a merge resolution split in the runtime-apis index ([#807](https://github.com/nrjdalal/zerostarter/pull/807))
+
+### 🏡 Chore
+
+- **ui:** Sync the shadcn registry and stop the sync touching the root package.json ([#806](https://github.com/nrjdalal/zerostarter/pull/806))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.23
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.22...v0.1.23)
