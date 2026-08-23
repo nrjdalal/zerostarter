@@ -19,10 +19,6 @@ const BUILD_VERSION = getBuildVersion()
 // The Scalar API reference UI, gated by the apiDocs feature. Built once; a fork can flip the flag on later without changing this route.
 const apiReference = Scalar({
   pageTitle: `API Reference | ${site.name}`,
-  defaultHttpClient: {
-    targetKey: "js",
-    clientKey: "hono/client",
-  },
   defaultOpenAllTags: true,
   expandAllResponses: true,
   url: "/api/openapi.json",
