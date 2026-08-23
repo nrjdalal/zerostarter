@@ -1,5 +1,3 @@
-import { execFileSync } from "node:child_process"
-
 // Pre-push guard for fresh forks, GitHub remotes only (other remotes are left alone). The user's first `git push origin canary` creates canary, which GitHub makes the default branch; on the next push the hook seeds the release branches (main by default, from RELEASE_BRANCHES) as separate refs, so they never collide with the canary push, so auto-canary-into-main opens the release PR. No gh or repo-admin is needed: the default branch falls out of push order. A per-branch, per-remote git-config marker makes it a no-op once done; shared via lefthook.yml so it runs here and in every fork.
 
 // Per-branch, per-remote local-only marker; the remote is sanitized and prefixed so the key is always a valid git-config name.
@@ -8,8 +6,12 @@ export const markerKey = (branch: string, remote: string): string => {
   return `zerostarter.seeded.${branch}.${/^[A-Za-z]/.test(safe) ? safe : `r-${safe}`}`
 }
 
-const git = (args: string[]): string =>
-  execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim()
+// Throws on a non-zero exit like execFileSync did, which every try/catch below relies on.
+const git = (args: string[]): string => {
+  const proc = Bun.spawnSync(["git", ...args], { stdin: "ignore", stdout: "pipe", stderr: "pipe" })
+  if (proc.exitCode !== 0) throw new Error(proc.stderr.toString().trim() || `git ${args[0]} failed`)
+  return proc.stdout.toString().trim()
+}
 
 // The repo's Actions settings URL from a GitHub remote URL (SSH or HTTPS); "" when not GitHub.
 export const settingsUrl = (remoteUrl: string): string => {
@@ -118,9 +120,12 @@ const ensureRemoteBranches = (remote: string): void => {
       `zerostarter: seeding ${branch} on ${remote} so the canary -> ${branch} release PR can open ...`,
     )
     try {
-      execFileSync("git", ["push", "--no-verify", remote, branch], {
-        stdio: ["ignore", "inherit", "inherit"],
+      const push = Bun.spawnSync(["git", "push", "--no-verify", remote, branch], {
+        stdin: "ignore",
+        stdout: "inherit",
+        stderr: "inherit",
       })
+      if (push.exitCode !== 0) throw new Error(`git push exited ${push.exitCode}`)
     } catch {
       console.error(
         `zerostarter: could not push ${branch} automatically. Push it yourself: git push ${remote} ${branch}`,
