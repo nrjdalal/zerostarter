@@ -18,10 +18,10 @@ const SPINNER = `${UI}/spinner.tsx`
 const SIDEBAR = `${UI}/sidebar.tsx`
 const GLOBALS = "web/next/src/app/globals.css"
 
-// init/add re-scaffold these with shadcn defaults we keep none of: a next/font/google layout, a
-// stripped utils.ts, and catalog->pinned dep drift in package.json/bun.lock. Reset to HEAD.
+// init/add re-scaffold these with shadcn defaults we keep none of: a next/font/google layout, a stripped utils.ts, catalog->pinned dep drift in web/next/package.json and bun.lock, and registry-declared deps nothing imports added to the root catalog (calendar's date-fns). Reset to HEAD; a dep a component really needs fails check-types and is bumped by hand.
 const RESTORE = [
   "bun.lock",
+  "package.json",
   "web/next/package.json",
   "web/next/src/app/layout.tsx",
   "web/next/src/lib/utils.ts",
