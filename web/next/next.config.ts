@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
 import { getSafeEnv } from "@packages/env"
+// Must stay above the web-next import: that module validates env when it evaluates, and imports hoist, so a call placed lower would run too late. oxfmt treats a bare import as a sort barrier, so the order holds.
+import "@packages/env/load-dotenv"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 import type { NextConfig } from "next"

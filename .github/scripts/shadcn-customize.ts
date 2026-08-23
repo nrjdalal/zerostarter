@@ -1,6 +1,3 @@
-import { execFileSync } from "node:child_process"
-import { readFileSync, writeFileSync } from "node:fs"
-
 import { Node, Project, SyntaxKind } from "ts-morph"
 
 // Re-applies every local override after `shadcn-update.sh` wipes ui/ and re-scaffolds the app.
@@ -21,15 +18,21 @@ const SPINNER = `${UI}/spinner.tsx`
 const SIDEBAR = `${UI}/sidebar.tsx`
 const GLOBALS = "web/next/src/app/globals.css"
 
-// init/add re-scaffold these with shadcn defaults we keep none of: a next/font/google layout, a
-// stripped utils.ts, and catalog->pinned dep drift in package.json/bun.lock. Reset to HEAD.
+// init/add re-scaffold these with shadcn defaults we keep none of: a next/font/google layout, a stripped utils.ts, catalog->pinned dep drift in web/next/package.json and bun.lock, and registry-declared deps nothing imports added to the root catalog (calendar's date-fns). Reset to HEAD; a dep a component really needs fails check-types and is bumped by hand.
 const RESTORE = [
   "bun.lock",
+  "package.json",
   "web/next/package.json",
   "web/next/src/app/layout.tsx",
   "web/next/src/lib/utils.ts",
 ]
-execFileSync("git", ["checkout", "HEAD", "--", ...RESTORE], { stdio: "inherit" })
+const restore = Bun.spawnSync(["git", "checkout", "HEAD", "--", ...RESTORE], {
+  stdin: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+})
+if (restore.exitCode !== 0)
+  throw new Error(`shadcn-customize: git checkout exited ${restore.exitCode}`)
 log(`restored from HEAD: ${RESTORE.join(", ")}`)
 
 const project = new Project({
@@ -178,8 +181,8 @@ function patchSidebar() {
 // globals.css: two brand overrides init reverts. --font-sans repoints at its own Inter variable;
 // --sidebar gets hardcoded light/dark defaults where we flush it with --background (PR #566). Both
 // are stable, uniquely-anchored lines, so guarded string swaps suffice; no CSS parser warranted.
-function patchGlobals() {
-  let css = readFileSync(GLOBALS, "utf8")
+async function patchGlobals() {
+  let css = await Bun.file(GLOBALS).text()
 
   const FONT_FROM = "--font-sans: var(--font-sans);"
   const FONT_TO = "--font-sans: var(--font-dm-sans), sans-serif;"
@@ -196,7 +199,7 @@ function patchGlobals() {
     )
   css = css.replace(SIDEBAR_LINE, "$1--sidebar: var(--background);")
 
-  writeFileSync(GLOBALS, css)
+  await Bun.write(GLOBALS, css)
   log(`patched: ${GLOBALS}`)
 }
 
@@ -204,4 +207,4 @@ patchButton()
 patchCheckbox()
 patchSpinner()
 patchSidebar()
-patchGlobals()
+await patchGlobals()

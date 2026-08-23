@@ -1,3 +1,23 @@
+## v0.1.23
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.22...v0.1.23)
+
+### 🚀 Enhancements
+
+- **web:** Migrate the data table to @tanstack/react-table v9 ([#793](https://github.com/nrjdalal/zerostarter/pull/793))
+
+### 🩹 Fixes
+
+- **deps:** Clear the js-yaml advisory and true up the override record ([#794](https://github.com/nrjdalal/zerostarter/pull/794))
+
+### 🏡 Chore
+
+- **ui:** Sync the shadcn registry and bump @shadcn/react for it ([#796](https://github.com/nrjdalal/zerostarter/pull/796))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.22
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.21...v0.1.22)

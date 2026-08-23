@@ -1,4 +1,4 @@
-export { getSafeEnv } from "@/lib/utils"
+export { getSafeEnv } from "@/lib/safe-env"
 export {
   VERSION,
   GIT_SHA,
