@@ -33,7 +33,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
-| Change how a page serves markdown to agents | `web/next/src/lib/negotiate.ts` (the decision: which pages have a markdown sibling, 406 rules), applied by `web/next/src/proxy.ts`; `Accept` parsing in `lib/accept.ts`, markdown headers and the markdown 404 in `lib/markdown.ts`; `Vary: Accept` for the HTML variant in `next.config.ts` `headers()` | `llms.txt` doc page |
+| Change how a page serves markdown to agents | `web/next/src/lib/negotiate.ts` (the decision: which pages have a markdown sibling, 406 rules), applied by `web/next/src/proxy.ts`; `Accept` parsing in `lib/accept.ts`, markdown headers and the markdown 404 in `lib/markdown.ts` | `llms.txt` doc page |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |

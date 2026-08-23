@@ -44,10 +44,10 @@ describe("negotiateMarkdown", () => {
     })
   })
 
-  test("an HTML request, or none at all, stays HTML and varies on Accept", () => {
-    expect(get("/docs", "text/html,*/*;q=0.8")).toEqual({ kind: "html", vary: true })
-    expect(get("/blog", null)).toEqual({ kind: "html", vary: true })
-    expect(get("/blog", "*/*")).toEqual({ kind: "html", vary: true })
+  test("an HTML request, or none at all, stays HTML", () => {
+    expect(get("/docs", "text/html,*/*;q=0.8")).toEqual({ kind: "html" })
+    expect(get("/blog", null)).toEqual({ kind: "html" })
+    expect(get("/blog", "*/*")).toEqual({ kind: "html" })
   })
 
   test("a client that accepts neither representation is told what exists", () => {
@@ -67,9 +67,9 @@ describe("negotiateMarkdown", () => {
     expect(get("/", "application/pdf", { method: "POST" })).toEqual({ kind: "skip" })
   })
 
-  test("an explicit .md or .txt URL keeps going to the rewrite, with Vary set", () => {
-    expect(get("/docs/setup.md", "text/markdown")).toEqual({ kind: "html", vary: true })
-    expect(get("/blog/post.txt", null)).toEqual({ kind: "html", vary: true })
+  test("an explicit .md or .txt URL keeps going to the rewrite untouched", () => {
+    expect(get("/docs/setup.md", "text/markdown")).toEqual({ kind: "skip" })
+    expect(get("/blog/post.txt", null)).toEqual({ kind: "skip" })
   })
 
   test("pages without a markdown sibling are left alone, even for a markdown-only client", () => {

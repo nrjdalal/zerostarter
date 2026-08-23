@@ -4,7 +4,7 @@ import { preferredType } from "@/lib/accept"
 const PRODUCES = ["text/html", "text/markdown"] as const
 
 export type Negotiation =
-  | { kind: "html"; vary: boolean }
+  | { kind: "html" }
   | { kind: "markdown"; path: string }
   | { kind: "not-acceptable"; requested: string }
   | { kind: "skip" }
@@ -27,10 +27,8 @@ export function negotiateMarkdown(request: {
   if (request.method !== "GET" && request.method !== "HEAD") return { kind: "skip" }
   if (request.nextInternal) return { kind: "skip" }
 
-  // An explicit markdown URL is one representation, not a negotiation: it keeps going to the rewrite, marked so caches know Accept matters for its sibling.
-  if (request.pathname.endsWith(".md") || request.pathname.endsWith(".txt")) {
-    return { kind: "html", vary: true }
-  }
+  // An explicit markdown URL is one representation, not a negotiation: it keeps going to the rewrite in next.config.ts.
+  if (request.pathname.endsWith(".md") || request.pathname.endsWith(".txt")) return { kind: "skip" }
 
   const path = markdownPathFor(request.pathname)
   if (!path) return { kind: "skip" }
@@ -38,5 +36,5 @@ export function negotiateMarkdown(request: {
   const chosen = preferredType(request.accept, PRODUCES)
   if (chosen === "text/markdown") return { kind: "markdown", path }
   if (chosen === null) return { kind: "not-acceptable", requested: request.accept ?? "" }
-  return { kind: "html", vary: true }
+  return { kind: "html" }
 }

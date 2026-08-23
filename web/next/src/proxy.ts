@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { withVaryAccept } from "@/lib/accept"
 import { negotiateMarkdown } from "@/lib/negotiate"
 
-// Markdown content negotiation (acceptmarkdown.com): the pages that have a markdown sibling serve it from their own URL when a client asks for text/markdown, with Vary: Accept on both variants and a 406 when the client accepts neither. The decision lives in lib/negotiate.ts; this only maps it onto Next responses.
+// Markdown content negotiation (acceptmarkdown.com): the pages that have a markdown sibling serve it from their own URL when a client asks for text/markdown, and a client that accepts neither gets a 406. The markdown variant, the 406 and the markdown 404 carry Vary: Accept themselves; the HTML variant cannot, since both the Node server's page render and Vercel drop a Vary set here or in next.config headers(), and the rewrite runs before any cache, so no variant reaches the other's clients. The decision lives in lib/negotiate.ts; this only maps it onto Next responses.
 export function proxy(request: NextRequest) {
   const decision = negotiateMarkdown({
     accept: request.headers.get("accept"),
@@ -31,11 +31,6 @@ export function proxy(request: NextRequest) {
           status: 406,
         },
       )
-    case "html": {
-      const response = NextResponse.next()
-      withVaryAccept(response.headers)
-      return response
-    }
     default:
       return NextResponse.next()
   }

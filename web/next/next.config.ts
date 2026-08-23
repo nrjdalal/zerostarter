@@ -72,17 +72,6 @@ const nextConfig: NextConfig = {
     },
   }),
   reactCompiler: true,
-  // Vary: Accept on the negotiated routes (see src/proxy.ts). The markdown variant and the llms routes set it themselves; this covers the HTML variant, which the Node server's page render does not take from the proxy, so it is applied at the routing layer instead (Vercel honors it at the edge).
-  headers: async () => {
-    const vary = [{ key: "Vary", value: "Accept" }]
-    return [
-      { source: "/", headers: vary },
-      { source: "/blog/:path*", headers: vary },
-      { source: "/docs/:path*", headers: vary },
-      { source: "/llms-full.txt", headers: vary },
-      { source: "/llms.txt/:path*", headers: vary },
-    ]
-  },
   rewrites: async () => {
     return [
       {
