@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && next build",
+    "build:vercel": "bun run --bun build",
     "check-types": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsc --noEmit",
     "dev": "portless",
     "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && bun ../../.github/scripts/portless.ts next dev",
