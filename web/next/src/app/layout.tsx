@@ -5,6 +5,7 @@ import { site } from "@packages/config/site"
 import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
+import { JsonLd } from "@/components/common/json-ld"
 import { Navbar } from "@/components/common/navbar"
 import { config } from "@/lib/config"
 import { dmSans, jetbrainsMono } from "@/lib/fonts"
@@ -24,11 +25,14 @@ function getOgImageUrl(): string {
 const ogImageUrl = getOgImageUrl()
 
 export const metadata: Metadata = {
+  metadataBase: new URL(config.app.url),
   title: {
     default: `${site.name} - ${site.tagline}`,
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  // Relative to the page, so every route gets its own canonical URL without each one declaring it.
+  alternates: { canonical: "./" },
   openGraph: {
     type: "website",
     siteName: site.name,
@@ -64,6 +68,15 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <body className="min-h-svh">
+          <JsonLd
+            data={{
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              description: site.description,
+              name: site.name,
+              url: config.app.url,
+            }}
+          />
           <InnerProvider>
             <Navbar />
             {children}

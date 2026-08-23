@@ -22,12 +22,14 @@ import Link from "next/link"
 import { Fragment, type ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
+import { JsonLd } from "@/components/common/json-ld"
 import { ApiStatus } from "@/components/marketing/api-status"
 import { AppShellDiagram } from "@/components/marketing/app-shell-diagram"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { CodeCard } from "@/components/marketing/code-card"
 import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
+import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
@@ -232,6 +234,19 @@ docker compose up --build`
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareSourceCode",
+          codeRepository: site.social.github,
+          description: site.description,
+          license: "https://opensource.org/license/mit",
+          name: site.name,
+          programmingLanguage: "TypeScript",
+          runtimePlatform: "Bun",
+          url: config.app.url,
+        }}
+      />
       <main className="relative isolate flex flex-col">
         <MarketingBackdrops />
         {/* Hero */}
