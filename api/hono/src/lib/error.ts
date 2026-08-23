@@ -1,26 +1,15 @@
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
 import type { Context } from "hono"
-import { resolver, type ResponsesWithResolver } from "hono-openapi"
+import type { ResponsesWithResolver } from "hono-openapi"
 import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { z } from "zod"
 
-// Every code the API can put in the { error } envelope. Single source of truth: the TS union, the OpenAPI schema, and the web client all derive from this list. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
-export const ERROR_CODES = [
-  "AGENT_LOGIN_FAILED",
-  "BAD_REQUEST",
-  "CONFLICT",
-  "ERROR",
-  "FORBIDDEN",
-  "INTERNAL_SERVER_ERROR",
-  "NOT_FOUND",
-  "TOO_MANY_REQUESTS",
-  "UNAUTHORIZED",
-  "VALIDATION_ERROR",
-] as const
+// Relative like batch.ts: the web tests type-check this file through a relative import, under a tsconfig whose @/ is web/next/src.
+import type { ErrorCode } from "./error-schema"
 
-export type ErrorCode = (typeof ERROR_CODES)[number]
+export { ERROR_CODES, errorComponents, errorEnvelope, type ErrorCode } from "./error-schema"
 
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
@@ -77,28 +66,12 @@ export const errorHandler = (err: Error, c: Context) => {
   return jsonError(c, 500, "INTERNAL_SERVER_ERROR", message)
 }
 
-// Shape of the error envelope jsonError emits; reused by the OpenAPI error responses below.
-export const errorEnvelope = z.object({
-  error: z.object({ code: z.enum(ERROR_CODES), message: z.string() }),
-})
-
-// Validation errors also carry the failing fields, so document that on the 400 response.
-const validationErrorEnvelope = z.object({
-  error: z.object({
-    code: z.enum(ERROR_CODES),
-    issues: z
-      .array(z.object({ message: z.string(), path: z.array(z.union([z.string(), z.number()])) }))
-      .optional(),
-    message: z.string(),
-  }),
-})
-
 // One OpenAPI error response, with its own code/message example.
 const errorResponse = (code: string, message: string) => ({
   description: message,
   content: {
     "application/json": {
-      schema: resolver(errorEnvelope),
+      schema: { $ref: "#/components/schemas/Error" },
       example: { error: { code, message } },
     },
   },
@@ -130,7 +103,7 @@ export const validationErrorResponses: ResponsesWithResolver = {
     description: "Invalid request payload",
     content: {
       "application/json": {
-        schema: resolver(validationErrorEnvelope),
+        schema: { $ref: "#/components/schemas/ValidationError" },
         example: {
           error: {
             code: "VALIDATION_ERROR",

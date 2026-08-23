@@ -8,6 +8,8 @@ import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
 import type { NextConfig } from "next"
 
+import { markdownRewrites } from "./src/lib/rewrites"
+
 getSafeEnv(env, "@web/next")
 
 // @packages/scripts/src/generate-env.ts (web target) derives this before next build (next.config cannot read NEXT_PUBLIC_ vars itself); inline it as NEXT_PUBLIC_IS_PRIVATE so that on a public hosting suffix the client routes auth same-origin. Missing file (e.g. a bare next build) falls back to false.
@@ -73,28 +75,34 @@ const nextConfig: NextConfig = {
   }),
   reactCompiler: true,
   rewrites: async () => {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path*`,
-      },
-      {
-        source: "/blog/:path*.md",
-        destination: "/llms.txt/blog/:path*",
-      },
-      {
-        source: "/blog/:path*.txt",
-        destination: "/llms.txt/blog/:path*",
-      },
-      {
-        source: "/docs/:path*.md",
-        destination: "/llms.txt/docs/:path*",
-      },
-      {
-        source: "/docs/:path*.txt",
-        destination: "/llms.txt/docs/:path*",
-      },
-    ]
+    return {
+      // Before the filesystem, since the pages these match exist: an explicit .md/.txt alias first (it is one representation, never negotiated), then the Accept-driven rules from src/lib/rewrites.ts, which see the alias already rewritten to its llms.txt path and so leave it alone.
+      beforeFiles: [
+        {
+          source: "/blog/:path*.md",
+          destination: "/llms.txt/blog/:path*",
+        },
+        {
+          source: "/blog/:path*.txt",
+          destination: "/llms.txt/blog/:path*",
+        },
+        {
+          source: "/docs/:path*.md",
+          destination: "/llms.txt/docs/:path*",
+        },
+        {
+          source: "/docs/:path*.txt",
+          destination: "/llms.txt/docs/:path*",
+        },
+        ...markdownRewrites(),
+      ],
+      afterFiles: [
+        {
+          source: "/api/:path*",
+          destination: `${env.INTERNAL_API_URL || env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        },
+      ],
+    }
   },
   serverExternalPackages: ["@takumi-rs/core", "takumi-js"],
 }

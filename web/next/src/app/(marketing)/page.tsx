@@ -17,18 +17,26 @@ import {
   RiSpeedLine,
   RiStackLine,
 } from "@remixicon/react"
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { Fragment, type ReactNode } from "react"
 import { codeToHtml } from "shiki"
 
+import { JsonLd } from "@/components/common/json-ld"
 import { ApiStatus } from "@/components/marketing/api-status"
 import { AppShellDiagram } from "@/components/marketing/app-shell-diagram"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { CodeCard } from "@/components/marketing/code-card"
 import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
+import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
+
+// The homepage's markdown sibling is the llms.txt index; advertise it for agents that follow <link rel="alternate" type="text/markdown">. Restates the canonical because a page-level alternates object replaces the root layout's.
+export const metadata: Metadata = {
+  alternates: { canonical: "./", types: { "text/markdown": "/llms.txt" } },
+}
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
@@ -232,6 +240,20 @@ docker compose up --build`
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          applicationCategory: "DeveloperApplication",
+          description: site.description,
+          license: "https://opensource.org/license/mit",
+          name: site.name,
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          operatingSystem: "Any",
+          sameAs: [site.social.github],
+          url: config.app.url,
+        }}
+      />
       <main className="relative isolate flex flex-col">
         <MarketingBackdrops />
         {/* Hero */}

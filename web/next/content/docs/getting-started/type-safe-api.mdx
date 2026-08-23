@@ -75,7 +75,7 @@ The `api-endpoint` skill has the full recipe: the router template, the mandatory
 
 ## The API reference
 
-Every route decorated with `describeRoute` shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas from the Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`.
+Every route decorated with `describeRoute` shows up in an interactive [Scalar](https://scalar.com) reference at `/api/docs`, with request and response schemas from the Zod validators and code samples that default to `hono/client`. The raw spec is at `/api/openapi.json`, with a `servers` entry, a named `Error` schema behind every 4xx/5xx, and a `security` requirement on each protected operation that names the console role it needs (see [API conventions](/docs/manage/api-conventions)).
 
 ## Live data over WebSockets
 

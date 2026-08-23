@@ -4,6 +4,7 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import { authErrorResponses } from "@/lib/error"
+import { sessionSecurity } from "@/lib/openapi"
 import { authMiddleware } from "@/middlewares"
 import { adminRouter } from "@/routers/admin"
 
@@ -48,6 +49,7 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())`,
           },
         ],
       } as object),
+      security: sessionSecurity,
       responses: {
         200: {
           description: "OK",
@@ -92,6 +94,7 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())`,
           },
         ],
       } as object),
+      security: sessionSecurity,
       responses: {
         200: {
           description: "OK",

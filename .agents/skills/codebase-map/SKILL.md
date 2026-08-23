@@ -33,6 +33,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
+| Change how a page serves markdown to agents | `web/next/src/lib/rewrites.ts` (the Accept rules and which pages have a markdown sibling), spread into `beforeFiles` in `next.config.ts`; markdown headers, the markdown 404 and the 406 body in `lib/markdown.ts`; the `/406` route handler in `app/406/route.ts`; the `<link rel="alternate" type="text/markdown">` in `lib/fumadocs.tsx` metadata | `llms.txt` doc page |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |

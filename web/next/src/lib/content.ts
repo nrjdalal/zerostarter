@@ -33,6 +33,7 @@ export interface ContentSource<K extends ContentKind> {
   // Whether this kind has an /og${baseUrl} route; false for console, so metadata omits the OG image rather than pointing at a route that does not exist.
   og: boolean
   source: SourceOf<K>
+  getPage: (slug: string[] | undefined) => PageOf<K> | undefined
   getPageOr404: (slug: string[] | undefined) => PageOf<K>
   pages: () => PageOf<K>[]
   params: () => { slug: string[] }[]
@@ -47,11 +48,18 @@ export function contentSource<K extends ContentKind>(kind: K): ContentSource<K> 
   const enabled = features[entry.feature]
   const isBlog = kind === "blog"
 
-  const getPageOr404 = (slug: string[] | undefined): PageOf<K> => {
-    if (!enabled) notFound()
+  // Same gates as getPageOr404, but undefined instead of the HTML not-found boundary, for callers that answer in another media type.
+  const getPage = (slug: string[] | undefined): PageOf<K> | undefined => {
+    if (!enabled) return undefined
     const page = source.getPage(slug)
-    if (!page || (isBlog && !isPublicBlogPage(page as PageOf<"blog">))) notFound()
+    if (!page || (isBlog && !isPublicBlogPage(page as PageOf<"blog">))) return undefined
     return page as PageOf<K>
+  }
+
+  const getPageOr404 = (slug: string[] | undefined): PageOf<K> => {
+    const page = getPage(slug)
+    if (!page) notFound()
+    return page
   }
 
   const pages = (): PageOf<K>[] => {
@@ -85,6 +93,7 @@ export function contentSource<K extends ContentKind>(kind: K): ContentSource<K> 
     enabled,
     og: entry.og,
     source,
+    getPage,
     getPageOr404,
     pages,
     params,

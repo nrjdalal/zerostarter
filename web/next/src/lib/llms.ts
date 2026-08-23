@@ -10,9 +10,7 @@ type LLMPage = {
   }
 }
 
-export const llmTextHeaders = {
-  "Content-Type": "text/markdown; charset=utf-8",
-} as const
+export { llmTextHeaders, markdownNotFound } from "@/lib/markdown"
 
 export async function getLLMText(page: LLMPage) {
   let body: string

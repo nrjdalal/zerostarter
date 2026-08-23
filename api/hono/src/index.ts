@@ -1,3 +1,4 @@
+import { sessionCookieName } from "@packages/auth"
 import { site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
@@ -9,7 +10,8 @@ import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
-import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
+import { errorComponents, errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
+import { securitySchemes } from "@/lib/openapi"
 import { createServer, upgradeWebSocket } from "@/lib/server"
 import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
@@ -153,11 +155,16 @@ socket.addEventListener("message", (event) => {
     "/openapi.json",
     openAPIRouteHandler(app, {
       documentation: {
+        components: {
+          schemas: errorComponents,
+          securitySchemes: securitySchemes(sessionCookieName),
+        },
         info: {
           version: BUILD_VERSION,
           title: site.name,
           description: site.apiReferenceDescription,
         },
+        servers: [{ url: env.HONO_APP_URL }],
       },
       // Always-reachable errors (429/500) on every method the API serves; routes add 400/401 in their own responses. Add a method here the day a route starts using it, or its responses ship undocumented.
       defaultOptions: {
