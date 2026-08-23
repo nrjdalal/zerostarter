@@ -42,8 +42,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |
 
-## Convertible
- to `Bun.*` (Bun-only files)
+## Convertible to `Bun.*` (Bun-only files)
 
 Nothing remains. The last two (`execFileSync` in `ensure-remote-branches.ts`; `execFileSync`, `readFileSync`,
 `writeFileSync` in `shadcn-customize.ts`) moved to `Bun.spawnSync`, `Bun.file` and `Bun.write` in 2026-08.
