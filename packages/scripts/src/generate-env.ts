@@ -1,5 +1,7 @@
 import { resolve } from "node:path"
 
+// web-next.ts does not load .env, because client components import it. The target imports below read env, so the load has to happen here first.
+import "@packages/env/load-dotenv"
 import { parse } from "tldts"
 
 // One build step for both deploy consumers; tldts's Public Suffix List runs only here at build, never in a shipped bundle. Each target picks its URL source (a different env module, so only the env that build actually has is validated) and the `.generated/<target>-env.json` the consumer reads: auth bakes the full host breakdown for cookieConfig via tsdown define, web bakes just the client isPrivate signal that next.config inlines (next.config cannot read NEXT_PUBLIC_ vars itself).

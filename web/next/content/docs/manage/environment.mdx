@@ -9,7 +9,7 @@ There is one `.env` at the repo root, and no package reads `process.env` directl
 
 ## One file, read per consumer
 
-`@packages/env` loads the root `.env` once (via `dotenv`, in `packages/env/src/lib/utils.ts`). Each app then imports only the slice it declared:
+`@packages/env` loads the root `.env` once, via `dotenv` in `packages/env/src/load-dotenv.ts`. The server slices (`api-hono`, `auth`, `db`) import that loader; `web-next` does not, because client components import it and `dotenv`'s browserified node graph would follow them onto every page, so a build-time consumer that reaches env only through `web-next` (`next.config.ts`, `generate-env.ts`) imports `@packages/env/load-dotenv` itself. Each app then imports only the slice it declared:
 
 ```ts
 // in api/hono, never process.env

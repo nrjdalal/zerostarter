@@ -21,7 +21,7 @@ The prefix is mandatory even in Bun-only code: it marks the import as a built-in
 | --- | --- | --- |
 | `packages/cli/**` | Node | `node:` only. Published to npm, launched via `npx` (bin shebang `#!/usr/bin/env node`); `Bun.*` breaks every npx user. |
 | `web/next/**` | Node + Bun | `node:` only. `next dev` runs under the system Node locally; Docker (`bun server.js`) and Vercel (`bunVersion`, built via `bun run --bun`) run it under Bun. Stays portable. |
-| `packages/env/**` | Node + Bun | `node:` only. Imported by web (Node and Bun) and api (Bun); stays portable. |
+| `packages/env/**` | Node + Bun | `node:` only. Imported by web (Node and Bun) and api (Bun); stays portable. Stricter for `web-next.ts` and the package index: client components import them, so they carry no `node:*` at all, prefixed or not. The `.env` load (`node:path` + `dotenv`) lives in `load-dotenv.ts`, which only the server targets import; a new server target imports `@/load-dotenv` first, and a script that reaches env through `web-next` or the index imports `@packages/env/load-dotenv` itself. |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
 
 Bun-first therefore applies to the Bun-only files: `.github/scripts/*.ts` and `packages/scripts/src/*.ts` (`bun x.ts`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.

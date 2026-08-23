@@ -26,10 +26,11 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/cli/src/io.ts` | Node | `node:fs` (existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync); `node:path` (dirname, join) |
 | `packages/cli/src/skills.ts` | Node | `node:crypto` (createHash); `node:fs` (readdirSync); `node:path` (join) |
 | `packages/cli/src/vendor/nano-spawn.ts` | Node | `node:child_process` (spawn, SpawnOptions); `node:fs/promises` (access); `node:path` (delimiter, resolve) |
-| `packages/env/src/lib/utils.ts` | Both | `node:path` (path) |
+| `packages/env/src/load-dotenv.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
+| `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/features-consistency.test.ts` | Bun | `node:fs` (readFileSync); `node:path` (join) |
 | `tests/packages/cli/src/convert.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
@@ -41,7 +42,8 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |
 
-## Convertible to `Bun.*` (Bun-only files)
+## Convertible
+ to `Bun.*` (Bun-only files)
 
 Nothing remains. The last two (`execFileSync` in `ensure-remote-branches.ts`; `execFileSync`, `readFileSync`,
 `writeFileSync` in `shadcn-customize.ts`) moved to `Bun.spawnSync`, `Bun.file` and `Bun.write` in 2026-08.

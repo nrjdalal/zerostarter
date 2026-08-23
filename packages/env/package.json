@@ -23,6 +23,10 @@
       "types": "./dist/db.d.mts",
       "default": "./dist/db.mjs"
     },
+    "./load-dotenv": {
+      "types": "./dist/load-dotenv.d.mts",
+      "default": "./dist/load-dotenv.mjs"
+    },
     "./web-next": {
       "types": "./dist/web-next.d.mts",
       "default": "./dist/web-next.mjs"
