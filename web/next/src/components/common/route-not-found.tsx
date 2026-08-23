@@ -16,12 +16,14 @@ export function RouteNotFound({
   className,
   description,
   href,
+  links,
   title,
 }: {
   action: string
   className?: string
   description: string
   href: string
+  links?: { href: string; label: string }[]
   title: string
 }) {
   return (
@@ -36,6 +38,18 @@ export function RouteNotFound({
         <Button variant="outline" render={<Link href={href} />}>
           {action}
         </Button>
+        {links && (
+          <nav
+            aria-label="Where to look next"
+            className="text-muted-foreground flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm"
+          >
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} className="underline-offset-4 hover:underline">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </EmptyContent>
     </Empty>
   )

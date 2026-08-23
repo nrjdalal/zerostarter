@@ -1,10 +1,9 @@
 import { site } from "@packages/config/site"
-import { notFound } from "next/navigation"
 
 import docsMeta from "@/../content/docs/meta.json"
 import { config } from "@/lib/config"
 import { contentSource } from "@/lib/content"
-import { getLLMText, llmTextHeaders, sortByMeta } from "@/lib/llms"
+import { getLLMText, llmTextHeaders, markdownNotFound, sortByMeta } from "@/lib/llms"
 
 export const dynamic = "force-static"
 export const revalidate = 60
@@ -52,7 +51,13 @@ ${sortByMeta(docs.pages(), docsMeta.pages, "/docs")
     return new Response(
       `# ${site.name}
 
-> ${site.description}${docsSection}${blogSection}
+> ${site.description}
+
+## When to use
+
+- ${site.tagline}. Reach for ${site.name} to start a product on that foundation rather than assembling it.
+- Read ${config.app.url}/llms-full.txt for every page in one request, or append .md to any docs or blog URL for one page. Those URLs, and this site's pages, also answer \`Accept: text/markdown\`.
+- Call the API through its reference at ${config.app.url}/api/docs; the OpenAPI document at ${config.app.url}/api/openapi.json declares each operation's security requirement and role.${docsSection}${blogSection}
 `,
       {
         headers: llmTextHeaders,
@@ -61,10 +66,10 @@ ${sortByMeta(docs.pages(), docsMeta.pages, "/docs")
   }
 
   const kind = slug[0] === "blog" ? "blog" : slug[0] === "docs" ? "docs" : null
-  if (!kind) notFound()
+  if (!kind) return markdownNotFound(config.app.url)
 
   const source = kind === "blog" ? blog : docs
-  if (!source.enabled) notFound()
+  if (!source.enabled) return markdownNotFound(config.app.url)
 
   if (kind === "blog" && slug.length === 1) {
     const blogIndex = blog
@@ -94,7 +99,9 @@ ${blogIndex}
   }
 
   const pageSlug = slug.length === 1 ? [] : slug.slice(1)
-  return createPageResponse(source.getPageOr404(pageSlug), kind === "docs")
+  const page = source.getPage(pageSlug)
+  if (!page) return markdownNotFound(config.app.url)
+  return createPageResponse(page, kind === "docs")
 }
 
 export function generateStaticParams() {

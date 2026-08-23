@@ -26,11 +26,23 @@ The docs and blog are [features](/docs/manage/features): turn one off and its pa
 
 Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page docs alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
 
-<Callout type="info" title="Only /docs and /blog aliases are routes">
+<Callout type="info" title="Where the aliases come from">
 
-The per-page `.md`/`.txt` rewrites (in `web/next/next.config.ts`) cover `/docs/*` and `/blog/*` only. The top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms are not routes and 404. Use `/llms.txt/docs` and `/llms.txt/blog` for the section indexes.
+The per-page `.md`/`.txt` rewrites (in `web/next/next.config.ts`) cover `/docs/*` and `/blog/*`, and the top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms resolve to the section indexes (`/llms.txt/docs` and `/llms.txt/blog`). An alias for a page that does not exist answers with a markdown 404 (below), never the HTML not-found page.
 
 </Callout>
+
+## Markdown from the same URL
+
+An agent does not have to know the alias: the pages that have a markdown sibling serve it from their own URL through [content negotiation](https://acceptmarkdown.com). A request for `/`, `/docs/...` or `/blog/...` with `Accept: text/markdown` gets the markdown (`/` answers with the `/llms.txt` index); a browser's `Accept` gets the HTML; both carry `Vary: Accept` so a cache keys on the header. The parser ranks the header's media ranges by q-value, breaks ties by specificity and then client order, and treats `q=0` as a rejection, so `Accept: text/markdown, text/html;q=0.8` is markdown and `Accept: text/html;q=0, */*` is too. A client that accepts neither representation (say `Accept: application/pdf`) gets `406 Not Acceptable` with a plain-text body naming both; a missing or `*/*` header means no constraint and stays HTML. Pages without a markdown sibling are left alone.
+
+```bash
+curl -sI -H "Accept: text/markdown" https://zerostarter.dev/docs/manage/llms-txt | grep -i -E "content-type|vary"
+```
+
+Not-found answers follow the same split: an unknown docs or blog path asked for as markdown, or any `.md`/`.txt` alias that resolves to nothing, is a real `404` whose body is markdown and points at `/llms.txt`, `/llms-full.txt` and `/sitemap.xml`; the HTML not-found page carries the same three links for browsers. The `/llms.txt` index also opens with a short "When to use" section, so an agent deciding whether this site is the right tool reads that before the page list.
+
+The decision lives in `web/next/src/lib/negotiate.ts` (applied by `web/next/src/proxy.ts`, the Next proxy, on `/`, `/docs/:path*` and `/blog/:path*`), the `Accept` parser in `web/next/src/lib/accept.ts`, and the markdown response shape (headers, the 404 body) in `web/next/src/lib/markdown.ts`. `Vary: Accept` on the HTML variant is set from `headers()` in `next.config.ts`, since the Node server's page render does not take it from the proxy; the markdown variant and every llms route set it themselves.
 
 ## Next
 
