@@ -1,4 +1,4 @@
-// The repo keeps one .env at its root, which no runtime finds on its own, so every entrypoint that validates env loads it first. Split out of lib/utils.ts because that module is also the home of getSafeEnv: importing it for the helper pulled dotenv and node:path in too, and web-next.ts is imported by client components, so the whole browserified node graph followed them onto every page.
+// The repo keeps one .env at its root, which no runtime finds on its own, so every server entrypoint that validates env imports this first. It stays apart from getSafeEnv on purpose: web-next.ts is imported by client components, and sharing a module with it would drag dotenv, node:path and the whole browserified node graph onto every page.
 import path from "node:path"
 
 import { config } from "dotenv"
