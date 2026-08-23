@@ -23,7 +23,7 @@ Two strategies. Each guard is idempotent and throws when its target is absent, s
 
 **Restore from HEAD** (`RESTORE` list), files the sync re-scaffolds but we own outright:
 
-- `bun.lock` + `web/next/package.json`: `add -a` rewrites deps off `catalog:` to pinned ranges; the root `catalog` is the source of truth, so reset to HEAD.
+- `bun.lock` + `web/next/package.json` + root `package.json`: `add -a` rewrites deps off `catalog:` to pinned ranges, and adds every dependency a registry item declares to the root catalog even when no component imports it (`calendar` declares `date-fns`; `react-day-picker` 10 needs no such peer). The root `catalog` is the source of truth, so reset all three to HEAD. A dependency a component really needs still surfaces: step 3's type-check fails, and the catalog is bumped by hand, as #796 did for `@shadcn/react`.
 - `web/next/src/app/layout.tsx`: `init` injects `next/font/google`; we self-host instead (see the `fonts` skill).
 - `web/next/src/lib/utils.ts`: `init` drops the repo helpers `slugify` and `isActive` (and internal `generateId`).
 
