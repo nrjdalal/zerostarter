@@ -20,3 +20,11 @@ No page exists at this path, or it moved.
     { headers: llmTextHeaders, status: 404 },
   )
 }
+
+// RFC 9110 406: the client accepts none of the representations this URL has, so say which exist rather than guess.
+export function notAcceptable(accept: string): Response {
+  return new Response(
+    `Not Acceptable\n\nThis URL is available as:\n- text/html\n- text/markdown\n\nYou requested: ${accept}\n`,
+    { headers: { "Content-Type": "text/plain; charset=utf-8", Vary: "Accept" }, status: 406 },
+  )
+}

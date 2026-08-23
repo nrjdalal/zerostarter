@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test"
 
-import { llmTextHeaders, markdownNotFound } from "../../../../../web/next/src/lib/markdown"
+import {
+  llmTextHeaders,
+  markdownNotFound,
+  notAcceptable,
+} from "../../../../../web/next/src/lib/markdown"
 
 describe("llmTextHeaders", () => {
   test("every markdown response is typed as markdown and varies on Accept", () => {
@@ -24,5 +28,18 @@ describe("markdownNotFound", () => {
     expect(body).toContain("https://example.com/llms.txt")
     expect(body).toContain("https://example.com/llms-full.txt")
     expect(body).toContain("https://example.com/sitemap.xml")
+  })
+})
+
+describe("notAcceptable", () => {
+  test("is a 406 that lists both representations and echoes what was asked for", async () => {
+    const response = notAcceptable("application/pdf")
+    expect(response.status).toBe(406)
+    expect(response.headers.get("Content-Type")).toBe("text/plain; charset=utf-8")
+    expect(response.headers.get("Vary")).toBe("Accept")
+    const body = await response.text()
+    expect(body).toContain("text/html")
+    expect(body).toContain("text/markdown")
+    expect(body).toContain("application/pdf")
   })
 })
