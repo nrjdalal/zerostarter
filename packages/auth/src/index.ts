@@ -13,6 +13,7 @@ import {
 import { env } from "@packages/env/auth"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { getCookies } from "better-auth/cookies"
 import {
   admin as adminPlugin,
   openAPI as openAPIPlugin,
@@ -145,5 +146,8 @@ export const enabledProviders: AuthProvider[] = [
   ...enabledSocialProviders,
   ...(magicLinkEnabled ? (["magic-link"] as const) : []),
 ]
+
+// The session cookie's wire name as Better Auth derives it (prefix, environment label, __Secure- on https), so the API's OpenAPI security scheme names the real cookie rather than a guess.
+export const sessionCookieName = getCookies(auth.options).sessionToken.name
 
 export type Session = typeof auth.$Infer.Session

@@ -47,6 +47,7 @@ import {
   forbiddenErrorResponses,
   validationErrorResponses,
 } from "@/lib/error"
+import { consoleSecurity } from "@/lib/openapi"
 import { countedTotal, paging, pagingFields } from "@/lib/paging"
 import { escapeLike, isUniqueViolation } from "@/lib/sql"
 import { consoleAdminMiddleware, requireFeature } from "@/middlewares"
@@ -253,6 +254,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -352,6 +354,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -456,6 +459,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -584,6 +588,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -682,6 +687,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -777,6 +783,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -876,6 +883,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -939,6 +947,7 @@ const { data, error } = await unwrap(
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
@@ -1014,6 +1023,7 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
           },
         ],
       } as object),
+      security: consoleSecurity,
       responses: {
         200: {
           description: "OK",
