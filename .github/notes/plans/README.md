@@ -16,6 +16,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## Planned
 
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
+- [Set account.issuer NOT NULL after the 1.7 release ships](account-issuer-not-null.md) - backfill window rows, then the SET NOT NULL migration; run promptly after the release.
 
 ## Backlog / ideas
 
