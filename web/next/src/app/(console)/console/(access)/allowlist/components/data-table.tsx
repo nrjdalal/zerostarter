@@ -39,7 +39,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
 import { runBatched, toastBulk } from "@/lib/api/bulk"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrap, unwrapOrThrow } from "@/lib/api/client"
 import { acceptedFacet, facetOptions, resolveSort } from "@/lib/data-table-layout"
 
 const DEFAULT_SORT = { desc: true, id: "createdAt" }
@@ -81,7 +81,7 @@ async function fetchRules({
   const kinds = acceptedFacet(filters.kind, ALLOWLIST_KINDS)
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
-  const { data, error } = await unwrap(
+  const data = await unwrapOrThrow(
     apiClient.v1.admin.allowlist.$get({
       query: {
         dir: sort.desc ? "desc" : "asc",
@@ -93,7 +93,6 @@ async function fetchRules({
       },
     }),
   )
-  if (error) throw new Error(error.message)
   return { rows: data.rules, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
@@ -209,10 +208,9 @@ function AddRuleDialog({ onAdded }: { onAdded: () => void }) {
 
   const create = useMutation({
     mutationFn: async (input: string) => {
-      const { data, error } = await unwrap(
+      const data = await unwrapOrThrow(
         apiClient.v1.admin.allowlist.$post({ json: { value: input } }),
       )
-      if (error) throw new Error(error.message)
       return data
     },
     onError: (error) => toast.add({ title: error.message, type: "error" }),

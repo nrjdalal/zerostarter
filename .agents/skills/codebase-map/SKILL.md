@@ -31,7 +31,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts` | `db-migration` skill |
 | Add/change a page | `web/next/src/app/`, route groups: `(marketing)` public, `(protected)` dashboard, `(console)` member and above, `(content)` docs+blog | - |
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
-| Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
+| Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`, `unwrapOrThrow`; the envelope reader itself is `lib/api/unwrap.ts`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first | - |
 | Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |

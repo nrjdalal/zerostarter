@@ -3,7 +3,7 @@
 - Status: backlog
 - Links: 2026-07-12 architecture review (deep-module lens); PR #535 (envelope design); subsumes [openapi-ws-responses](openapi-ws-responses.md) (#664)
 
-The `{ data, error }` envelope is emitted server-side (`api/hono/src/lib/error.ts`) and re-derived client-side by shape-sniffing (`web/next/src/lib/api/client.ts` string-matches `"data" in body`), joined only by prose comments; only `ErrorCode` is actually shared, so a server rename degrades silently to `UNKNOWN_ERROR`. Separately, every documented route hand-writes the same ~30-line `describeRoute` scaffold (the `z.object({ data })` wrapper, the `200/OK` content block, the `x-codeSamples`), and the auth/validation error responses are attached by a per-route spread that nothing forces to match the runtime behaviour.
+The `{ data, error }` envelope is emitted server-side (`api/hono/src/lib/error.ts`) and re-derived client-side by shape-sniffing (`web/next/src/lib/api/unwrap.ts` string-matches `"data" in body`), joined only by prose comments; only `ErrorCode` is actually shared, so a server rename degrades silently to `UNKNOWN_ERROR`. Separately, every documented route hand-writes the same ~30-line `describeRoute` scaffold (the `z.object({ data })` wrapper, the `200/OK` content block, the `x-codeSamples`), and the auth/validation error responses are attached by a per-route spread that nothing forces to match the runtime behaviour.
 
 Two moves:
 

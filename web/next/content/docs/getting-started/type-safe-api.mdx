@@ -28,11 +28,26 @@ Wrap any call in `unwrap`. It returns a `{ data, error }` result where exactly o
 import { apiClient, unwrap } from "@/lib/api/client"
 
 const { data, error } = await unwrap(apiClient.health.$get())
-if (error) throw new Error(error.message)
-// data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
+if (error) {
+  // error.code is a closed set you can switch on
+} else {
+  // data: { message: string; version: string; environment: "local" | "development" | "test" | "staging" | "production" }
+}
 ```
 
 `data` is the payload from the `{ data }` envelope, typed from the route's Zod schema. `error` is `{ code, message }`. `code` is the API's `ErrorCode` union plus the two transport codes `unwrap` itself adds (`NETWORK_ERROR`, `UNKNOWN_ERROR`), so it is a closed set you can `switch` on. See [API Conventions](/docs/manage/api-conventions) for the envelope and the full code list.
+
+Inside a TanStack Query `queryFn` or `mutationFn`, reach for `unwrapOrThrow` instead: those expect a rejected promise, and it returns the payload directly.
+
+```ts
+import { apiClient, unwrapOrThrow } from "@/lib/api/client"
+
+const data = await unwrapOrThrow(apiClient.health.$get())
+```
+
+It rejects with an `ApiRequestError` carrying `code` alongside `message`, so a caller can still tell a refusal from a network failure. Reaching for `unwrap` and rethrowing `new Error(error.message)` by hand drops the code, which is what the console tables used to do.
+
+Both live in `web/next/src/lib/api/unwrap.ts`, which imports nothing at runtime so tests can exercise the envelope without constructing the client; `@/lib/api/client` re-exports them and stays the entry to import from.
 
 The client is pre-configured with `credentials: "include"`, so cookie-based auth just works. A protected route is the same call:
 

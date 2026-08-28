@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { runBatched, toastBulk } from "@/lib/api/bulk"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrap, unwrapOrThrow } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
 import { resolveSort } from "@/lib/data-table-layout"
 import { waitlistEmails } from "@/lib/waitlist"
@@ -49,7 +49,7 @@ async function fetchSignups({
 }: DataTablePageInput): Promise<DataTablePage<WaitlistSignup>> {
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
   const sortId = resolveSort(SORT_FIELDS, sort.id, "createdAt")
-  const { data, error } = await unwrap(
+  const data = await unwrapOrThrow(
     apiClient.v1.admin.waitlist.$get({
       query: {
         dir: sort.desc ? "desc" : "asc",
@@ -60,7 +60,6 @@ async function fetchSignups({
       },
     }),
   )
-  if (error) throw new Error(error.message)
   return { rows: data.signups, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 

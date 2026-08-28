@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { actionOptions, activityJson } from "@/lib/activity"
-import { apiClient, unwrap } from "@/lib/api/client"
+import { apiClient, unwrapOrThrow } from "@/lib/api/client"
 import { copyToClipboard } from "@/lib/clipboard"
 import { acceptedFacet } from "@/lib/data-table-layout"
 
@@ -37,7 +37,7 @@ async function fetchActivity({
 }: DataTablePageInput): Promise<DataTablePage<ActivityEvent>> {
   const actions = acceptedFacet(filters.action, ACTIVITY_ACTIONS)
   const sort = sorting.length ? sorting[0] : DEFAULT_SORT
-  const { data, error } = await unwrap(
+  const data = await unwrapOrThrow(
     apiClient.v1.admin.activity.$get({
       query: {
         action: actions.length ? actions.join(",") : undefined,
@@ -48,7 +48,6 @@ async function fetchActivity({
       },
     }),
   )
-  if (error) throw new Error(error.message)
   return { rows: data.events, hasNextPage: data.hasNextPage, page: data.page, total: data.total }
 }
 
