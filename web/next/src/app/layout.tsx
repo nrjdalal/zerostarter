@@ -3,6 +3,7 @@ import { join } from "node:path"
 
 import { site } from "@packages/config/site"
 import type { Metadata } from "next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/common/navbar"
@@ -68,6 +69,7 @@ export default function RootLayout({
             <Navbar />
             {children}
           </InnerProvider>
+          <SpeedInsights />
         </body>
       </html>
     </OuterProvider>
