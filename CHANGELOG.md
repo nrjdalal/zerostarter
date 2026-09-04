@@ -1,3 +1,19 @@
+## v0.1.25
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.24...v0.1.25)
+
+### 🩹 Fixes
+
+- **ci:** Make the seed test pass on Windows and let any test change re-run the publish gate ([#808](https://github.com/nrjdalal/zerostarter/pull/808))
+
+### 🏡 Chore
+
+- **hire:** Drop the PR-count stat from the proof grid ([#814](https://github.com/nrjdalal/zerostarter/pull/814))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.24
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.23...v0.1.24)
