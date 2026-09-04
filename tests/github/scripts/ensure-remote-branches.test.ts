@@ -47,9 +47,10 @@ test("repoSlug detects GitHub remotes (SSH and HTTPS) and is empty otherwise", (
   expect(repoSlug("https://gitlab.com/acme/widgets.git")).toBe("")
 })
 
-// End to end against a throwaway remote: a local bare repo whose path ends in github.com/acme/widgets.git, which the
-// hook's GitHub detection matches, so every real git call runs (remote get-url, rev-parse, ls-remote, push --no-verify)
-// and the config marker makes the second run a no-op. An insteadOf rewrite would not do: get-url returns the rewritten URL.
+// End to end against a throwaway remote: a local bare repo at a path ending in github.com/acme/widgets.git, added by
+// its file:// URL so the hook's GitHub detection matches on Windows too (a joined path there uses backslashes). Every
+// real git call runs (remote get-url, rev-parse, ls-remote, push --no-verify) and the config marker makes the second
+// run a no-op. An insteadOf rewrite would not do: get-url returns the rewritten URL.
 const SCRIPT = join(import.meta.dir, "../../../.github/scripts/ensure-remote-branches.ts")
 
 const sh = (cwd: string, args: string[]): string => {
@@ -78,7 +79,7 @@ test("seeds main on a fresh GitHub remote once canary exists, then no-ops via th
     sh(work, ["git", "config", "user.email", "t@example.com"])
     sh(work, ["git", "config", "user.name", "t"])
     sh(work, ["git", "commit", "-q", "--allow-empty", "-m", "init"])
-    sh(work, ["git", "remote", "add", "origin", bare])
+    sh(work, ["git", "remote", "add", "origin", Bun.pathToFileURL(bare).href])
     sh(work, ["git", "push", "-q", "origin", "canary"])
     sh(work, ["git", "branch", "main"])
 

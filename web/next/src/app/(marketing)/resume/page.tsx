@@ -1,11 +1,11 @@
 import { site } from "@packages/config/site"
 import { RiArrowRightUpLine } from "@remixicon/react"
+import { cn } from "cn"
 import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/marketing/fonts"
-import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",

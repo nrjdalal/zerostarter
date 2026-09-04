@@ -1,11 +1,11 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { cn } from "cn"
 import { useEffect, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { apiClient, unwrap } from "@/lib/api/client"
-import { cn } from "@/lib/utils"
 
 const HEARTBEAT_TIMEOUT_MS = 12000
 const RECONNECT_BASE_MS = 3000

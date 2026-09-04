@@ -26,6 +26,7 @@ import {
   type Updater,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { cn } from "cn"
 import { createParser, parseAsArrayOf, parseAsString, useQueryStates } from "nuqs"
 import * as React from "react"
 
@@ -71,7 +72,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { features, type Features } from "@/lib/data-table-features"
 import { applyColumnManager, growingColumnIds, type ColumnConfig } from "@/lib/data-table-layout"
-import { cn } from "@/lib/utils"
 
 // The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
 // The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, and the registered features every table type is generic over live in @/lib/data-table-features; both are re-exported here so a table still has one import site.

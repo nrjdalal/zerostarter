@@ -1,6 +1,5 @@
+import { cn } from "cn"
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
 
 // The title/description/actions row for a protected page: owns the heading typography and spacing so pages never hand-roll the header layout.
 function PageHeader({

@@ -7,12 +7,12 @@ import {
   RiMailLine,
   RiTwitterXFill,
 } from "@remixicon/react"
+import { cn } from "cn"
 import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
 import { caveat, newsreader } from "@/lib/marketing/fonts"
-import { cn } from "@/lib/utils"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Hire",
@@ -45,7 +45,6 @@ export const metadata: Metadata = {
 
 const proof: { value: string; label: string }[] = [
   { value: "6+ years", label: "shipping production software" },
-  { value: "500+ PRs", label: "at LightWork AI" },
   { value: "1,000+", label: "GitHub stars across open source" },
   { value: "250+", label: "public repositories" },
   { value: "10,000+", label: "installs across VS Code extensions" },
