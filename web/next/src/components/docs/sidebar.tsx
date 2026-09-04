@@ -2,6 +2,7 @@
 
 import { env } from "@packages/env/web-next"
 import { RiArrowRightSLine, RiSearchLine } from "@remixicon/react"
+import { cn } from "cn"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/sidebar"
 import { config } from "@/lib/config"
 import type { NavGroup, NavItem, NavNode } from "@/lib/docs"
-import { cn, isActive as isActivePath } from "@/lib/utils"
+import { isActive as isActivePath } from "@/lib/utils"
 
 const isPage = (node: NavNode): node is NavItem => "url" in node
 

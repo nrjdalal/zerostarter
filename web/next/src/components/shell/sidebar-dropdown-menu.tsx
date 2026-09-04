@@ -1,6 +1,7 @@
 "use client"
 
 import { RiExpandUpDownLine } from "@remixicon/react"
+import { cn } from "cn"
 import { type ReactNode } from "react"
 
 import {
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
 
 type Identity = {
   leading: ReactNode

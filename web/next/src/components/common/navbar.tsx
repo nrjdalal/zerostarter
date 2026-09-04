@@ -8,6 +8,7 @@ import {
   RiMenuLine,
   RiTwitterXFill,
 } from "@remixicon/react"
+import { cn } from "cn"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -19,7 +20,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { authClient } from "@/lib/auth/client"
-import { cn, isActive } from "@/lib/utils"
+import { isActive } from "@/lib/utils"
 
 const socialLinks = [
   {

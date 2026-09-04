@@ -17,6 +17,7 @@ import {
   RiSpeedLine,
   RiStackLine,
 } from "@remixicon/react"
+import { cn } from "cn"
 import Image from "next/image"
 import Link from "next/link"
 import { Fragment, type ReactNode } from "react"
@@ -28,7 +29,6 @@ import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { CodeCard } from "@/components/marketing/code-card"
 import { CodeWindow } from "@/components/marketing/code-window"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 

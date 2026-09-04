@@ -1,6 +1,5 @@
 import { RiLoaderLine, type RemixiconComponentType } from "@remixicon/react"
-
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 
 function Spinner({ className, ...props }: React.ComponentProps<RemixiconComponentType>) {
   return (
