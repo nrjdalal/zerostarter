@@ -45,7 +45,6 @@ export const metadata: Metadata = {
 
 const proof: { value: string; label: string }[] = [
   { value: "6+ years", label: "shipping production software" },
-  { value: "500+ PRs", label: "at LightWork AI" },
   { value: "1,000+", label: "GitHub stars across open source" },
   { value: "250+", label: "public repositories" },
   { value: "10,000+", label: "installs across VS Code extensions" },
