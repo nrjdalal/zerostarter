@@ -1,9 +1,8 @@
 "use client"
 
+import { cn } from "cn"
 import { useTheme } from "next-themes"
 import { useEffect, useRef } from "react"
-
-import { cn } from "@/lib/utils"
 
 // A subtle, animated grain gradient for the landing backdrop, ported from paper.design's grain-gradient shader (simplex + value-noise FBM) with its noise texture swapped for a procedural hash, so nothing is fetched and no runtime dependency is added.
 

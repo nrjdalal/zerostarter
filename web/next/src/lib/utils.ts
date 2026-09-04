@@ -1,8 +1,6 @@
 import { customAlphabet } from "nanoid"
 import z from "zod"
 
-export { cn } from "cn"
-
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 const generateId = (size: number) => {

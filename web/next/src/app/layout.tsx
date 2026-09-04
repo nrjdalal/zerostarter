@@ -2,13 +2,13 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 
 import { site } from "@packages/config/site"
+import { cn } from "cn"
 import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/common/navbar"
 import { config } from "@/lib/config"
 import { dmSans, jetbrainsMono } from "@/lib/fonts"
-import { cn } from "@/lib/utils"
 
 import "@/app/globals.css"
 

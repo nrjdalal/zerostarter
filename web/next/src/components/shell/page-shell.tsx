@@ -1,7 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "cn"
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
 
 const pageShellVariants = cva("mx-auto w-full p-4 sm:p-6", {
   variants: {
