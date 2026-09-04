@@ -2,10 +2,10 @@
 
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { RiCloseLine } from "@remixicon/react"
+import { cn } from "cn"
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />

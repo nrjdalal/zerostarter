@@ -2,10 +2,10 @@
 
 import { RiCheckLine } from "@remixicon/react"
 import { Questionnaire as QuestionnairePrimitive } from "@shadcn/react/questionnaire"
+import { cn } from "cn"
 import * as React from "react"
 
 import { buttonVariants, type Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 function Questionnaire({
   className,

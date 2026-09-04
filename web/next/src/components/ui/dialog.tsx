@@ -2,10 +2,10 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { RiCloseLine } from "@remixicon/react"
+import { cn } from "cn"
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />

@@ -2,9 +2,8 @@
 
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { RiArrowDownSLine, RiCheckLine, RiArrowUpSLine } from "@remixicon/react"
+import { cn } from "cn"
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
 
 const Select = SelectPrimitive.Root
 
