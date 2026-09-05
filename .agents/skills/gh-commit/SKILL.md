@@ -34,7 +34,7 @@ git commit -m "<type>(<scope>): <subject>"
 
 | Element     | Rule                                                                                                                                                                                     |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Type**    | `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`, `build`, `revert`. Type `ci` is RESERVED for pipeline-generated commits and dropped from the changelog (`changelog.config.json`); real CI work uses `fix(ci)`/`feat(ci)`/`docs(ci)`. |
+| **Type**    | `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`, `build`, `revert`. Type `ci` is RESERVED for pipeline-generated commits and dropped from the changelog (`changelog.config.json`); real CI work uses `fix(ci)`/`feat(ci)`/`docs(ci)`. Dependency refreshes use `build(deps)`, never `chore(deps)`: changelogen hardcodes dropping non-breaking `chore(deps)` from the changelog, so a release window holding only one can never release (v0.1.25's notes silently lost the cn + zod bump this way). |
 | **Scope**   | Optional area in parentheses (package, component, feature).                                                                                                                             |
 | **Subject** | Imperative, lowercase, no period. The commit-msg hook rejects a header over 100 chars or a capitalized subject (`subject-case`).                                                          |
 | **Body**    | Optional; explain "why", not "what". Wrap lines at 100 (the hook rejects longer).                                                                                                       |
@@ -48,7 +48,7 @@ feat(auth): add OAuth provider support
 fix(api): prevent duplicate webhook delivery
 refactor(web): extract auth middleware into separate module
 docs(readme): update installation steps
-chore(deps): bump dependencies to latest versions
+build(deps): bump dependencies to latest versions
 ```
 
 ## 4. Push (only when explicitly requested)
