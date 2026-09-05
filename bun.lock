@@ -251,7 +251,7 @@
     "@types/ws": "^8.18.1",
     "@viz-js/viz": "^3.30.0",
     "babel-plugin-react-compiler": "^1.0.0",
-    "better-auth": "1.6.23",
+    "better-auth": "^1.6.23",
     "changelogen": "^0.6.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
