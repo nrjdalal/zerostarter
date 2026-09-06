@@ -45,7 +45,10 @@ export const slugify = (value: string): string =>
 
 // Rebrand the fork's own identity (display name, portless dev-URL names, docker image, log paths) while preserving upstream references: `bunx zerostarter` is the CLI a fork still runs to sync (it ships none of its own) and "zerostarter scaffolding CLI" names that upstream tool, so a lowercase "zerostarter" preceded by "bunx " or followed by " scaffolding CLI" is left alone. The frontmatter source line and sync note are stamped separately and never pass through here.
 const reconcile = (text: string, slug: string, name: string): string =>
-  text.replaceAll("ZeroStarter", name).replace(/(?<!bunx )zerostarter(?! scaffolding CLI)/g, slug)
+  // A replacer function, so a `$` in the name is literal rather than a replacement pattern.
+  text
+    .replaceAll("ZeroStarter", () => name)
+    .replace(/(?<!bunx )zerostarter(?! scaffolding CLI)/g, slug)
 
 // The line marking a skill as synced from here; its presence is the fork's opt-in, and removing it hands the skill to the fork.
 const NOTE_MARKER = `> Synced from ${UPSTREAM}.`

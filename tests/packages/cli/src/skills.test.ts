@@ -252,3 +252,19 @@ describe("the sync ledger", () => {
     expect(await source("../../../../.github/scripts/skills-manager.ts")).toContain(pipeline)
   })
 })
+
+describe("reconcile", () => {
+  test("substitutes a brand name literally, so a $ in it is not a replacement pattern", () => {
+    // "$&" would otherwise re-insert the matched "ZeroStarter" and "$'" the rest of the line.
+    write(join(dir, "package.json"), JSON.stringify({ name: "Acme $& Co" }))
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: Start the ZeroStarter dev stack.\nsource: local\n---\n\n# Dev\n\nZeroStarter runs here.\n",
+    )
+    reconcileForkSkillsFromRoot(dir)
+    const skill = read(join(dir, ".agents/skills/dev/SKILL.md"))
+    expect(skill).toContain("Start the Acme $& Co dev stack.")
+    expect(skill).toContain("Acme $& Co runs here.")
+    expect(skill).not.toContain("ZeroStarter")
+  })
+})
