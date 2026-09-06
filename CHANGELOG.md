@@ -1,3 +1,19 @@
+## v0.1.28
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.27...v0.1.28)
+
+### 🚀 Enhancements
+
+- **ci:** The release number boards with the code ([#826](https://github.com/nrjdalal/zerostarter/pull/826))
+
+### 📖 Documentation
+
+- **plans:** Drop the member_count backfill item, run after the release ([#825](https://github.com/nrjdalal/zerostarter/pull/825))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.27
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.26...v0.1.27)
