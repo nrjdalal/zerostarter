@@ -5,7 +5,7 @@ title: Environment Variables
 description: One validated .env, read per-consumer so client code can never touch server secrets.
 ---
 
-There is one `.env` at the repo root, and no package reads `process.env` directly. Each consumer imports a validated, typed slice of the environment from `@packages/env/<name>`, so there is one place to set a variable, every variable is checked at boot instead of surfacing as `undefined` mid-request, and server secrets are structurally unable to reach the browser.
+There is one `.env` at the repo root, and no package reads `process.env` directly, with one exception: a variable the hosting platform injects rather than you configuring (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`) is read at the point of use and belongs in neither the schema nor `.env.example`. Each consumer imports a validated, typed slice of the environment from `@packages/env/<name>`, so there is one place to set a variable, every variable is checked at boot instead of surfacing as `undefined` mid-request, and server secrets are structurally unable to reach the browser.
 
 ## One file, read per consumer
 

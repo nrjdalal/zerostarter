@@ -193,7 +193,7 @@ const docsConfig = {
         "/docs/manage/analytics": {
           title: "Analytics & Feedback",
           description:
-            "Optional PostHog analytics, Vercel Speed Insights, and a feedback link: wire them in when you need them.",
+            "PostHog analytics and a feedback link you opt into with an env var, and Vercel Speed Insights, which renders on every Vercel deployment until you remove it.",
         },
       },
     ],
