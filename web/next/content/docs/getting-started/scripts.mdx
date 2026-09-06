@@ -34,6 +34,7 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 - `bun run format:check`: Oxfmt, report only (also what CI runs).
 - `bun run check-types`: type-check every workspace, then the repo scripts (`check-types:scripts`, `tsgo` over `.github/scripts`).
 - `bun run test`: build the shared `packages/*`, then run the whole suite from the repo-root `tests/` mirror. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds. PR CI runs this and `check-types` too, so a failing test or type error blocks the merge.
+- `bun run test:e2e`: the end-to-end suite, every `*.e2e.test.ts` under `tests/`, against a running local-stage stack (`NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true`, so the agent can sign in). `E2E_API_URL` and `E2E_WEB_URL` default to the compose ports (`localhost:4000`, `localhost:3000`) and are refused unless local, since the suite writes through the API; `E2E_POSTGRES_URL` unlocks the flows that seed a second account. Golden: every contract response is snapshotted, and `bun run test:e2e --update-snapshots` accepts a deliberate change. Skipped when no stack is named, so `bun run test` stays green without one.
 
 ## Release / production
 

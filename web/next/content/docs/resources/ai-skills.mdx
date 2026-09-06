@@ -37,7 +37,7 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Build    | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                                             |
 | Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                                          |
 | Operate  | `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook.                                 |
-| Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`.                                                                                     |
+| Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`, and run the golden end-to-end suite against them.                                   |
 | Operate  | `ui-verify`     | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                                                 |
 | Maintain | `fonts`         | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                            |
 | Maintain | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                                                                   |

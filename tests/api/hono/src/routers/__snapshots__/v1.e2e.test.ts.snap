@@ -1,0 +1,38 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/routers/v1.ts an anonymous caller is refused 1`] = `
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Unauthorized",
+  },
+}
+`;
+
+exports[`api/hono/src/routers/v1.ts the session and the user read back as documented 1`] = `
+{
+  "session": {
+    "data": {
+      "createdAt": "<timestamp>",
+      "expiresAt": "<expiresAt:string>",
+      "id": "<id>",
+      "ipAddress": "<ipAddress:string>",
+      "token": "<token:string>",
+      "updatedAt": "<timestamp>",
+      "userAgent": "<userAgent:string>",
+      "userId": "<id>",
+    },
+  },
+  "user": {
+    "data": {
+      "createdAt": "<timestamp>",
+      "email": "agent@local.host",
+      "emailVerified": true,
+      "id": "<id>",
+      "image": null,
+      "name": "LocalAgent",
+      "updatedAt": "<timestamp>",
+    },
+  },
+}
+`;

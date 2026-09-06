@@ -1,7 +1,7 @@
 # Hardening refactors from the external evaluation
 
 - Status: in progress
-- Links: external SaaS-starter evaluation (nrjdalal/saas-starter-evals), `ZEROSTARTER-RECOMMENDATIONS.md` §4
+- Links: external SaaS-starter evaluation (nrjdalal/saas-starter-evals), `ZEROSTARTER-RECOMMENDATIONS.md` §4, PR #823 (the agent route's end-to-end test)
 
 A set of small, self-contained refactors surfaced by an external, evidence-based evaluation of the repo (at v0.1.2). Each is its own PR into canary, verified end to end. Preserve the evaluation's noted strengths: the agent-DX login is a differentiator (tighten the gate, keep the route); one canonical way; docs in sync.
 
@@ -22,3 +22,5 @@ To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `
 ## Larger, tracked separately
 
 Default security headers/CSP + a durable rate-limit store, and a full product-test harness (Playwright e2e + example org-scoped tests, where the deferred route/env tests land), are larger; scope them after these.
+
+Since 2026-09-06 `tests/api/hono/src/routers/agents.e2e.test.ts` (`bun run test:e2e`) drives the route on a running stack: an untrusted Origin is refused and a trusted one mints a session. The env-shape tests still wait for the harness.

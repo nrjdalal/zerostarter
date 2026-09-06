@@ -1,0 +1,13 @@
+import { describe, expect, test } from "bun:test"
+
+import { Client, enabled, WEB } from "../../../../../../stack"
+
+// The resume page in web/next/src/app/(marketing)/resume/page.tsx on a running stack: it renders.
+
+describe.skipIf(!enabled)("web/next/src/app/(marketing)/resume/page.tsx", () => {
+  test("the resume page renders", async () => {
+    const response = await new Client(WEB).fetch("/resume")
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toContain("text/html")
+  })
+})

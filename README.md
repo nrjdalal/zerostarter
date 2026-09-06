@@ -114,6 +114,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run build`                   | Build every workspace                       |
 | `bun run check-types`             | Type-check every workspace                  |
 | `bun run test`                    | Build, then run the suite in `tests/`       |
+| `bun run test:e2e`                | Drive a running stack with the e2e suite    |
 | `bun run lint` / `bun run format` | Lint with Oxlint / format with Oxfmt        |
 | `bun run auth:schema`             | Regenerate the Better Auth tables           |
 | `bun run db:generate`             | Generate Drizzle migrations from the schema |

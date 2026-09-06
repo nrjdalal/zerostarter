@@ -1,0 +1,40 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/routers/waitlist.ts a join is accepted once and answered the same way twice 1`] = `
+{
+  "first": {
+    "data": {
+      "message": "ok",
+    },
+  },
+  "second": {
+    "body": {
+      "data": {
+        "message": "ok",
+      },
+    },
+    "status": 200,
+  },
+}
+`;
+
+exports[`api/hono/src/routers/waitlist.ts a malformed address is refused with the envelope 1`] = `
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "issues": [
+      {
+        "code": "invalid_format",
+        "format": "email",
+        "message": "Invalid email address",
+        "origin": "string",
+        "path": [
+          "email",
+        ],
+        "pattern": "/^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$/",
+      },
+    ],
+    "message": "Invalid email address",
+  },
+}
+`;
