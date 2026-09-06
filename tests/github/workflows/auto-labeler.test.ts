@@ -1,11 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { createRequire } from "node:module"
 import { join } from "node:path"
 
 // The labeler is inline JavaScript in a workflow, so this lifts the mapping out of the YAML and runs it against this checkout, the way the job runs it against the base branch. Anything that reshapes the script has to keep these two anchors.
 const root = join(import.meta.dir, "../../..")
-const yml = readFileSync(join(root, ".github/workflows/auto-labeler.yml"), "utf8")
+const yml = await Bun.file(join(root, ".github/workflows/auto-labeler.yml")).text()
 const slice = (from: string, to: string): string => {
   const start = yml.indexOf(from)
   const end = yml.indexOf(to)
@@ -33,17 +32,15 @@ const packageMap = new Map([
 ])
 
 describe("auto-labeler getLabelForFile", () => {
-  // git answers relative to the working directory, which is the repo root under `bun run test`; an untracked top-level directory stands in for install output the checkout carries.
-  const untracked = join(root, "untracked-probe-for-labeler-test")
+  // git answers relative to the working directory, so the script runs from the repo root, as the job does, and the directory is put back afterwards.
+  const cwd = process.cwd()
   let getLabelForFile: Mapper
   beforeAll(() => {
     process.chdir(root)
-    mkdirSync(untracked, { recursive: true })
-    writeFileSync(join(untracked, "x.txt"), "")
     getLabelForFile = load()
   })
   afterAll(() => {
-    rmSync(untracked, { force: true, recursive: true })
+    process.chdir(cwd)
   })
 
   test("labels a file by the directory the base branch tracks", () => {
@@ -61,11 +58,10 @@ describe("auto-labeler getLabelForFile", () => {
   })
 
   test("never mints a label from a directory the base branch does not track", () => {
-    // A fork's file list is the contributor's; under pull_request_target the token can create labels.
+    // A fork's file list is the contributor's; under pull_request_target the token can create labels. node_modules is on the disk of a checkout that has run an install, and still not tracked.
     expect(getLabelForFile("zzz-spam/x.txt", packageMap)).toBe("@misc")
     expect(getLabelForFile("evil/../../x", packageMap)).toBe("@misc")
     expect(getLabelForFile("node_modules/evil/x.js", packageMap)).toBe("@misc")
-    expect(getLabelForFile("untracked-probe-for-labeler-test/x.txt", packageMap)).toBe("@misc")
   })
 
   test("reads a glob-looking directory name as a name, not a pathspec", () => {
