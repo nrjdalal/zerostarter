@@ -43,11 +43,13 @@ jobs:
           # the boundary this changelog covers; tagged below so the next run starts exactly here
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
-          LAST_VERSION="${LAST_TAG#v}"
-          # version target: the larger of the tree and what the window earned from the last tag (a missing tag counts as v0.0.0),
-          # which honours a hand-set ahead of the window and lifts one that undercounts it; a tree below the last tag stops here, loudly.
-          # computed before changelogen overwrites package.json below; the script puts every file back after its own dry run
-          MANUAL_VERSION=$(bun packages/scripts/src/release-version.ts | jq -r .next)
+          # the target: the larger of the tree and what the window earned from the last tag (a missing tag counts as v0.0.0); a hand-set ahead of the window stays, one that undercounts it is lifted, a tree below the tag stops here loudly. read before changelogen overwrites package.json below; the script puts every file back after its own dry run
+          DECISION=$(bun packages/scripts/src/release-version.ts)
+          TARGET_VERSION=$(echo "$DECISION" | jq -r .next)
+          if [ -z "$TARGET_VERSION" ] || [ "$TARGET_VERSION" = "null" ]; then
+            echo "::error::release-version answered nothing usable: $DECISION"
+            exit 1
+          fi
           if [ -n "$LAST_TAG" ]; then
             # only changelog commits (or nothing) since the anchor: skip, but backfill the
             # release if a previous run pushed the commit+tag and failed before publishing
@@ -71,13 +73,12 @@ jobs:
           else
             bunx changelogen --bump --no-commit || true
           fi
-          # ship the target exactly: changelogen bumped from whatever package.json held, which is not the target when the tree
-          # was moved forward during the window or hand-set, so the number and the changelog header are rewritten to it
+          # ship the target exactly: changelogen bumped from whatever package.json held, which differs from the target once the tree was moved or hand-set, so the number and the changelog header are rewritten to it
           AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
-          if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
-            bunx json -I -f package.json -e "this.version=\"$MANUAL_VERSION\""
+          if [ "$TARGET_VERSION" != "$AUTO_VERSION" ]; then
+            bunx json -I -f package.json -e "this.version=\"$TARGET_VERSION\""
             AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
-            sed -i "s|v${AUTO_ESC}|v${MANUAL_VERSION}|g" CHANGELOG.md
+            sed -i "s|v${AUTO_ESC}|v${TARGET_VERSION}|g" CHANGELOG.md
           fi
           bunx oxfmt --write CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build

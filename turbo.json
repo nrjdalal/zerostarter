@@ -24,6 +24,8 @@
   },
   "globalDependencies": [
     ".env*",
+    // the root version is baked into @packages/env at build (BUILD_VERSION); a version-only commit must not replay a cached build
+    "package.json",
     // build-time generators (font metrics, env derivation): a build cached before an edit here would ship their stale output
     "packages/scripts/src/**"
   ],

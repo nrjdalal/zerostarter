@@ -56,22 +56,19 @@ jobs:
           > Merge with a **merge commit** (not squash), so main keeps shared history with canary and future release diffs stay clean."
 
       - name: Setup Bun
-        if: steps.release.outputs.window == 'open'
+        if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
 
       - name: Move the version forward to what the window has earned
-        if: steps.release.outputs.window == 'open'
+        if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
         run: |
-          # the number boards with the code: package.json moves to what this window's commits earn from the last tag
-          # (max of the tree and changelogen's bump, computed from the tag's version, refusing a tree below the tag),
-          # so main, and production, carry the released number on the merge instead of one release later.
-          # this push is made by the workflow token, which starts no further workflows: no loop, and the next human
-          # push recomputes. a push that loses a race with a human push is dropped, since that push recomputes too.
+          # the number boards with the code: package.json moves to what the window has earned from the last tag (the larger of the tree and changelogen's bump computed from the tag's version; a tree below the tag stops loudly), so main and production carry the released number on the merge. the workflow token's push starts no further workflows, so there is no loop and the next human push recomputes.
           bun install --ignore-scripts
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          STARTED_FROM=$(git rev-parse HEAD)
           DECISION=$(bun packages/scripts/src/release-version.ts --write)
           echo "$DECISION"
           if [ -z "$(git status --porcelain package.json)" ]; then
@@ -79,7 +76,16 @@ jobs:
             exit 0
           fi
           NEXT=$(echo "$DECISION" | jq -r .next)
+          [ -n "$NEXT" ] && [ "$NEXT" != "null" ] || { echo "::error::release-version answered nothing usable: $DECISION"; exit 1; }
           git add package.json
           git commit -m "ci(version): bump to v$NEXT"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary \
-            || echo "canary moved under this bump; the next push recomputes it."
+          if ! git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary; then
+            # a human push landing during this run is the one failure that is fine: that push recomputes; anything else is real
+            git fetch --quiet origin canary
+            if [ "$(git rev-parse origin/canary)" != "$STARTED_FROM" ]; then
+              echo "canary moved under this bump; the next push recomputes it."
+              exit 0
+            fi
+            echo "::error::could not push the version bump to canary"
+            exit 1
+          fi
