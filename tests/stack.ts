@@ -2,6 +2,7 @@
 export const API = process.env.E2E_API_URL ?? ""
 export const POSTGRES_URL = process.env.E2E_POSTGRES_URL ?? ""
 export const WEB = process.env.E2E_WEB_URL ?? ""
+// Every suite file guards itself with describe.skipIf(!enabled); bun run test:e2e is what names a stack.
 export const enabled = API !== "" && WEB !== ""
 
 export const AGENT_EMAIL = "agent@local.host"
@@ -70,6 +71,16 @@ export const signOut = async (client: Client): Promise<void> => {
   if (status !== 200) throw new Error(`sign-out answered ${status}`)
 }
 
+// Run one step as the signed-in agent and end the session whatever the step does.
+export const withAgent = async (step: (agent: Client) => Promise<void>): Promise<void> => {
+  const agent = await signInAsAgent()
+  try {
+    await step(agent)
+  } finally {
+    await signOut(agent)
+  }
+}
+
 const BETTER_AUTH_ID = /^[A-Za-z0-9]{32}$/
 const BUILD_VERSION = /^\d+\.\d+\.\d+(-[0-9a-f]{7,40})?$/
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
@@ -109,7 +120,7 @@ export const normalize = (value: unknown, key = ""): unknown => {
 // Seeding writes straight into the database, so it runs only against a disposable one: on this machine, and holding no account but the agent and the seed. A populated database is someone's data, whatever host it answers on.
 const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
 
-const disposable = async (): Promise<Bun.SQL> => {
+const openDisposable = async (): Promise<Bun.SQL> => {
   const host = new URL(POSTGRES_URL).hostname
   if (!LOCAL_HOSTS.has(host)) {
     throw new Error(
@@ -130,14 +141,14 @@ const disposable = async (): Promise<Bun.SQL> => {
 
 // Seed rows the API offers no route for (a second user), only when the run names the database. Fake rows, fixed ids, removed again at the end.
 export const seedUser = async (): Promise<void> => {
-  const sql = await disposable()
+  const sql = await openDisposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql`insert into "user" (id, name, email, email_verified, created_at, updated_at, role) values (${SEEDED_ID}, ${"Golden Seed"}, ${SEEDED_EMAIL}, true, now() - interval '1 day', now() - interval '1 day', ${"user"})`
   await sql.end()
 }
 
 export const removeSeededUser = async (): Promise<void> => {
-  const sql = await disposable()
+  const sql = await openDisposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql.end()
 }

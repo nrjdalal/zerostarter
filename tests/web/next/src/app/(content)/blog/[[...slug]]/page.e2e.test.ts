@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { Client, enabled, WEB } from "../../../../../../../stack"
 
-// The blog in web/next/src/app/(content)/blog/[[...slug]]/page.tsx on a running stack: the index renders, the first post it links renders, an unknown slug is not found. The post is found through the index rather than named, so a fork with its own posts passes unchanged. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The blog in web/next/src/app/(content)/blog/[[...slug]]/page.tsx on a running stack: the index renders, the first post it links renders, an unknown slug is not found. The post is found through the index rather than named, so a fork with its own posts passes unchanged.
 
 describe.skipIf(!enabled)("web/next/src/app/(content)/blog/[[...slug]]/page.tsx", () => {
   const visitor = new Client(WEB)

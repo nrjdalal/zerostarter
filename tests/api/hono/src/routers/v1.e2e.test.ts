@@ -10,7 +10,7 @@ import {
   signOut,
 } from "../../../../stack"
 
-// The signed-in reads in api/hono/src/routers/v1.ts on a running stack: an anonymous caller is refused with the envelope, and the agent reads its session and its user back with exactly the documented fields. Golden after normalize(). Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The signed-in reads in api/hono/src/routers/v1.ts on a running stack: an anonymous caller is refused with the envelope, and the agent reads its session and its user back with exactly the documented fields. Golden after normalize().
 
 describe.skipIf(!enabled)("api/hono/src/routers/v1.ts", () => {
   let agent: Client

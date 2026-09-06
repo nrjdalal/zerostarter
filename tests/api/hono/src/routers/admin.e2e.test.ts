@@ -15,7 +15,7 @@ import {
   signOut,
 } from "../../../../stack"
 
-// The console routes in api/hono/src/routers/admin.ts on a running stack, as the owner: the users list, the refusal to change one's own role, a seeded account promoted then banned and unbanned (only when E2E_POSTGRES_URL names the database, since no route creates a user), the activity those writes leave, and the allowlist and waitlist as the console sees them. Golden after normalize(). The users list assumes a fresh database where LocalAgent is the only account. Re-runnable: rows a dead run left are removed first. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The console routes in api/hono/src/routers/admin.ts on a running stack, as the owner: the users list, the refusal to change one's own role, a seeded account promoted then banned and unbanned (only when E2E_POSTGRES_URL names the database, since no route creates a user), the activity those writes leave, and the allowlist and waitlist as the console sees them. Golden after normalize(). The users list assumes a fresh database where LocalAgent is the only account. Re-runnable: rows a dead run left are removed first.
 
 type Outcome = { id: string; ok: boolean; code?: string; message?: string }
 type Batch = { data: { results: Outcome[] } }
@@ -54,8 +54,11 @@ describe.skipIf(!enabled)("api/hono/src/routers/admin.ts", () => {
   })
 
   afterAll(async () => {
-    if (POSTGRES_URL) await removeSeededUser()
-    await signOut(agent)
+    try {
+      if (POSTGRES_URL) await removeSeededUser()
+    } finally {
+      await signOut(agent)
+    }
   })
 
   test("the users list holds every account, the agent as owner", async () => {

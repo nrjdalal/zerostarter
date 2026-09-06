@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test"
 
-import { Client, enabled, signInAsAgent, signOut, WEB } from "../../../../../../../../stack"
+import { Client, enabled, WEB, withAgent } from "../../../../../../../../stack"
 
-// The console docs in web/next/src/app/(console)/console/docs/[[...slug]]/page.tsx on a running stack: absent for a visitor, rendered for the owner. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The console docs in web/next/src/app/(console)/console/docs/[[...slug]]/page.tsx on a running stack: absent for a visitor, rendered for the owner.
 
 describe.skipIf(!enabled)("web/next/src/app/(console)/console/docs/[[...slug]]/page.tsx", () => {
   test("the console docs do not exist for an anonymous visitor", async () => {
@@ -11,13 +11,10 @@ describe.skipIf(!enabled)("web/next/src/app/(console)/console/docs/[[...slug]]/p
   })
 
   test("the owner gets the console docs", async () => {
-    const agent = await signInAsAgent()
-    try {
+    await withAgent(async (agent) => {
       const response = await agent.fetch(`${WEB}/console/docs`)
       expect(response.status).toBe(200)
       expect(response.headers.get("content-type")).toContain("text/html")
-    } finally {
-      await signOut(agent)
-    }
+    })
   })
 })

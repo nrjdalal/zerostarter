@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { API, Client, enabled, normalize } from "../../../stack"
 
-// The app's own surface in api/hono/src/index.ts, driven over HTTP on a running stack: the root, the header echo, health over HTTP and over the WebSocket, the OpenAPI document and its reference UI, and the error envelope for a route that does not exist. The stage is asserted as local, the only one the suite can sign in on and the one the Docker build used to lose. Golden: the document, the frames and the envelopes are snapshotted after normalize(), so a contract change fails here until the snapshot is updated on purpose (bun test --update-snapshots). Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The app's own surface in api/hono/src/index.ts, driven over HTTP on a running stack: the root, the header echo, health over HTTP and over the WebSocket, the OpenAPI document and its reference UI, and the error envelope for a route that does not exist. The stage is asserted as local, the only one the suite can sign in on and the one the Docker build used to lose. Golden: the document, the frames and the envelopes are snapshotted after normalize(), so a contract change fails here until the snapshot is updated on purpose (bun run test:e2e --update-snapshots).
 
 type Health = { data: { environment: string; message: string; version: string } }
 

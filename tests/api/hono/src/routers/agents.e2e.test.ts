@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { API, Client, enabled, signOut, WEB } from "../../../../stack"
 
-// The local-only agent sign-in in api/hono/src/routers/agents.ts on a running stack: it refuses an untrusted Origin and, from a trusted one, mints a session and sends the agent to the dashboard. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The local-only agent sign-in in api/hono/src/routers/agents.ts on a running stack: it refuses an untrusted Origin and, from a trusted one, mints a session and sends the agent to the dashboard.
 
 describe.skipIf(!enabled)("api/hono/src/routers/agents.ts", () => {
   test("an untrusted origin is refused", async () => {

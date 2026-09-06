@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { API, Client, enabled, normalize, signInAsAgent, signOut } from "../../../../stack"
 
-// Better Auth as mounted by api/hono/src/routers/auth.ts on a running stack: the router's own providers list and session read, then the organization plugin's own endpoints: an organization is created, made active, and read back whole; a team counts its seats as a member comes and goes (the member_count and membership_key columns 1.7 added); and the organization is deleted with its team. Golden after normalize(). Re-runnable: a golden-org left by a run that died is removed first, and the session is ended at the end. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// Better Auth as mounted by api/hono/src/routers/auth.ts on a running stack: the router's own providers list and session read, then the organization plugin's own endpoints: an organization is created, made active, and read back whole; a team counts its seats as a member comes and goes (the member_count and membership_key columns 1.7 added); and the organization is deleted with its team. Golden after normalize(). Re-runnable: a golden-org left by a run that died is removed first, and the session is ended at the end.
 
 type Organization = {
   id: string
@@ -41,10 +41,13 @@ describe.skipIf(!enabled)("api/hono/src/routers/auth.ts", () => {
   })
 
   afterAll(async () => {
-    if (organizationId) {
-      await agent.send("POST", "/api/auth/organization/delete", { organizationId })
+    try {
+      if (organizationId) {
+        await agent.send("POST", "/api/auth/organization/delete", { organizationId })
+      }
+    } finally {
+      await signOut(agent)
     }
-    await signOut(agent)
   })
 
   test("better auth answers ok", async () => {

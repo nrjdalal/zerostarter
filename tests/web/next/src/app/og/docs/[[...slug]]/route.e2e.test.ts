@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { Client, enabled, WEB } from "../../../../../../../stack"
 
-// The docs Open Graph image in web/next/src/app/og/docs/[[...slug]]/route.tsx on a running stack: a PNG for the index and for a page. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The docs Open Graph image in web/next/src/app/og/docs/[[...slug]]/route.tsx on a running stack: a PNG for the index and for a page.
 
 describe.skipIf(!enabled)("web/next/src/app/og/docs/[[...slug]]/route.tsx", () => {
   test("the docs images render", async () => {

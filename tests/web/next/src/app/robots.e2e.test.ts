@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { Client, enabled, WEB } from "../../../../stack"
 
-// The robots route in web/next/src/app/robots.ts on a running stack: it answers and names the sitemap. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The robots route in web/next/src/app/robots.ts on a running stack: it answers and names the sitemap.
 
 describe.skipIf(!enabled)("web/next/src/app/robots.ts", () => {
   test("robots.txt answers and names the sitemap", async () => {

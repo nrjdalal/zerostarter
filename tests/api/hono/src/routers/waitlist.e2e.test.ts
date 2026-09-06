@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
-import { API, Client, enabled, signInAsAgent, signOut } from "../../../../stack"
+import { API, Client, enabled, withAgent } from "../../../../stack"
 
-// The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. A signup left by an interrupted run is removed first, so the first join is a real insert, and the row is removed through the console afterwards so the run leaves nothing behind. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. A signup left by an interrupted run is removed first, so the first join is a real insert, and the row is removed through the console afterwards so the run leaves nothing behind.
 
 const EMAIL = "golden.join@example.com"
 
@@ -10,16 +10,13 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
   const visitor = new Client(API)
 
   const removeSignup = async () => {
-    const agent = await signInAsAgent()
-    try {
+    await withAgent(async (agent) => {
       const { body } = await agent.json<{ data: { signups: { email: string; id: string }[] } }>(
         "/api/v1/admin/waitlist?perPage=100",
       )
       const ids = body.data.signups.filter((row) => row.email === EMAIL).map((row) => row.id)
       if (ids.length > 0) await agent.send("DELETE", "/api/v1/admin/waitlist", { ids })
-    } finally {
-      await signOut(agent)
-    }
+    })
   }
 
   beforeAll(removeSignup)

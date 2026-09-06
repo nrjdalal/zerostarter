@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { Client, enabled, WEB } from "../../../../../../stack"
 
-// The resume page in web/next/src/app/(marketing)/resume/page.tsx on a running stack: it renders. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The resume page in web/next/src/app/(marketing)/resume/page.tsx on a running stack: it renders.
 
 describe.skipIf(!enabled)("web/next/src/app/(marketing)/resume/page.tsx", () => {
   test("the resume page renders", async () => {

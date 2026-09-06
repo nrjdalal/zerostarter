@@ -1,7 +1,7 @@
 # The rate limiter's client-IP resolution
 
 - Status: icebox, top priority
-- Links: deepsec audit 2026-09-06 (item 3, MEDIUM / high confidence), PR #819 (built, verified, then reverted out to keep that PR to safe changes), [the public-suffix rewrite item](rate-limit-rewrite-bucket.md)
+- Links: deepsec audit 2026-09-06 (item 3, MEDIUM / high confidence), PR #819 (built, verified, then reverted out to keep that PR to safe changes), [the public-suffix rewrite item](rate-limit-rewrite-bucket.md), PR #823 (names the 429 test path)
 
 ## The concern
 

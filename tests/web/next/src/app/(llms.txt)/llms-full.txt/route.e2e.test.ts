@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import { Client, enabled, WEB } from "../../../../../../stack"
 
-// The llms-full.txt route in web/next/src/app/(llms.txt)/llms-full.txt/route.ts on a running stack: one markdown file carrying the docs. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The llms-full.txt route in web/next/src/app/(llms.txt)/llms-full.txt/route.ts on a running stack: one markdown file carrying the docs.
 
 describe.skipIf(!enabled)("web/next/src/app/(llms.txt)/llms-full.txt/route.ts", () => {
   test("llms-full.txt is markdown that carries the docs", async () => {
