@@ -24,7 +24,7 @@ function getOgImageUrl(): string {
 
 const ogImageUrl = getOgImageUrl()
 
-// Speed Insights reports only to Vercel, so anywhere else (Docker, self-host) it would ship a beacon that can never arrive. Read straight from the platform like the repo's other two Vercel checks (next.config.ts, api/hono/src/lib/server.ts): VERCEL is injected by the platform, not app config, so it belongs in neither @packages/env nor .env.example. Deciding it in this server component keeps the client reference out of the RSC payload when it is unset.
+// Off Vercel the beacon posts to a route nothing serves, so it is never rendered there. Platform-injected, so it is read here rather than through @packages/env, matching api/hono/src/lib/server.ts.
 const onVercel = process.env.VERCEL === "1"
 
 export const metadata: Metadata = {

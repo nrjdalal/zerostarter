@@ -32,7 +32,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
-- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay
+- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay, and [Vercel Speed Insights](https://vercel.com/docs/speed-insights) for real Core Web Vitals, rendered only when deployed on Vercel
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
 - **SEO**: sitemap, robots, and per-page metadata, indexable by default

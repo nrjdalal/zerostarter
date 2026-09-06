@@ -65,17 +65,24 @@ const onVercel = process.env.VERCEL === "1"
 </body>
 ```
 
-`VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render. Deciding on the server also keeps the client reference out of the payload entirely when you deploy anywhere else.
+`VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render.
+
+What the gate does and does not do: off Vercel the component is never rendered, so the beacon script never loads and no request is made. The package's own module is a static import, so it still ships in the client bundle either way. It is about a kilobyte and nothing executes it. Make it a dynamic import if you want it gone from the bundle too.
 
 Deploy to Vercel and enable Speed Insights once in the project dashboard, and data starts arriving. Nothing else to wire.
 
 <Callout type="info" title="Previews count against your quota">
 
-Every deployment reports, previews included, and Vercel meters Speed Insights by data point. If PR previews are eating the allowance, narrow the check to `process.env.VERCEL_ENV === "production"`.
+Every deployment reports, previews included, and Vercel meters Speed Insights by data point. Narrowing to `process.env.VERCEL_ENV === "production"` drops PR previews, but it drops `canary` too, since canary deploys as a preview. To keep canary and lose the rest, test the branch as well, the way `.github/scripts/migrate-on-deploy.ts` already picks its deploy branches:
+
+```ts
+const onVercel =
+  process.env.VERCEL_ENV === "production" || process.env.VERCEL_GIT_COMMIT_REF === "canary"
+```
 
 </Callout>
 
-To remove it entirely, delete the import, the `onVercel` line, and the one line that renders it, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
+To remove it entirely, delete the import, the `onVercel` line with its comment, and the one line that renders it, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
 
 ## User feedback
 
