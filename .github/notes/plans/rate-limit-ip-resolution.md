@@ -26,3 +26,5 @@ What #819 established before the revert, all reproducible: the peer-first approa
 ## Open question
 
 Adopt the library's model as its adapters use it: `findIp({ headers, ip: peer }, { platform: platform(process.env), proxies: [cloudflare] })`, with the peer from `getConnInfo`, the mapped-address unwrap, no random fallback (one shared bucket for the unattributable), and a decision on whether a private peer that forwarded nothing is skipped as internal or pooled. Whether to expose a trusted-proxies list for custom load balancers, and what Vercel stamps on a rewrite ([the rewrite item](rate-limit-rewrite-bucket.md)), are the parts still undecided. The durable store is tracked separately in the hardening-refactors plan.
+
+The end-to-end suite (`bun run test:e2e`, 2026-09-06) leaves the 429 untested on purpose: on a Bun-served stack the limiter finds no client address and keys every request on its own, so a test today would pin the bug. The 429 test belongs at `tests/api/hono/src/middlewares/rate-limiter.e2e.test.ts` once this lands.
