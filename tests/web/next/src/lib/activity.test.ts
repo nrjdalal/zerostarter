@@ -1,6 +1,23 @@
 import { describe, expect, test } from "bun:test"
 
-import { ACTION_LABELS, activityJson } from "../../../../../web/next/src/lib/activity"
+import { ACTION_LABELS, actionLabel, activityJson } from "../../../../../web/next/src/lib/activity"
+
+describe("actionLabel", () => {
+  test("reads a known action by its label", () => {
+    expect(actionLabel("role.change")).toBe("Set role")
+  })
+
+  test("falls back to the stored code for a verb it has no label for", () => {
+    expect(actionLabel("fork.custom")).toBe("fork.custom")
+  })
+
+  test("treats a code that names an Object.prototype member as just another unknown code", () => {
+    // `in` would find these on the prototype and hand the cell a function instead of a string.
+    for (const code of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+      expect(actionLabel(code)).toBe(code)
+    }
+  })
+})
 
 const event = {
   action: "role.change" as const,
