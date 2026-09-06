@@ -4,7 +4,7 @@ title: Analytics & Feedback
 description: "Optional PostHog analytics, Vercel Speed Insights, and a feedback link: wire them in when you need them."
 ---
 
-All three of these are **optional**. PostHog and the feedback link stay off until you set an environment variable, and Speed Insights turns itself on only where it can actually report. Out of the box nothing tracks your users and no feedback link renders; you opt in when you need them.
+PostHog and the feedback link are **optional** and stay off until you set an environment variable, so out of the box neither one runs and you opt in when you need them. Speed Insights works the other way round: it takes no key and no variable, and it renders on every Vercel deployment, so removing it is how you turn it off rather than adding something is how you turn it on.
 
 ## PostHog analytics
 
@@ -67,9 +67,9 @@ const onVercel = process.env.VERCEL === "1"
 
 `VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render.
 
-What the gate does and does not do: off Vercel the component is never rendered, so the beacon script never loads and no request is made. The package's own module is a static import, so it still ships in the client bundle either way. It is about a kilobyte and nothing executes it. Make it a dynamic import if you want it gone from the bundle too.
+What the gate does and does not do: off Vercel the component is never rendered, so the beacon script never loads and no request is made. The package's own module is a static import, so it still ships in the client bundle either way, where nothing executes it. Make it a dynamic import if you want it gone from the bundle too.
 
-Deploy to Vercel and enable Speed Insights once in the project dashboard, and data starts arriving. Nothing else to wire.
+There is no enable step. Deploy to Vercel and it starts collecting, because every deployment already serves the collection routes; the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through. Nothing else to wire.
 
 <Callout type="info" title="Previews count against your quota">
 

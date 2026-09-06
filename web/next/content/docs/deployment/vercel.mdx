@@ -111,7 +111,7 @@ The api serves WebSockets on Vercel through [Vercel's native support](https://ve
 
 ## Speed Insights
 
-The web app ships [Speed Insights](https://vercel.com/docs/speed-insights) and turns it on by itself here, with no key and no environment variable: the root layout renders it only when `process.env.VERCEL` is set, the same platform check the api uses to pick its WebSocket adapter. Enable Speed Insights once in the project dashboard and real Core Web Vitals start arriving. Deploy the same code to Docker or any other host and the beacon is never rendered, so nothing calls a Vercel-only endpoint that isn't there. See [Analytics](/docs/manage/analytics#vercel-speed-insights) for how to scope it to production or remove it.
+The web app ships [Speed Insights](https://vercel.com/docs/speed-insights) and turns it on by itself here, with no key and no environment variable: the root layout renders it only when `process.env.VERCEL` is set, the same platform check the api uses to pick its WebSocket adapter. There is no enable step, because every Vercel deployment already serves the collection routes under `/_vercel/speed-insights/*`, so real Core Web Vitals start arriving as soon as visitors do and show up under **Speed Insights** in the project dashboard. Deploy the same code to Docker or any other host and the beacon is never rendered, so nothing calls a Vercel-only endpoint that isn't there. See [Analytics](/docs/manage/analytics#vercel-speed-insights) for how to scope it to production or remove it.
 
 ## Next
 
