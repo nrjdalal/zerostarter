@@ -52,3 +52,5 @@ Raised but undecided: real concerns with no agreed next action and no confident 
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
 - [Data table offset pagination](data-table-offset-pagination.md) - batches can skip or repeat a row mid-scroll, and a repeat aliases selection; keyset is the fix but moves the contract (#754 review).
+- [Actions on mutable major tags in token-bearing workflows](action-sha-pinning.md) - pin every action to a commit SHA with Dependabot for Actions, pin only the two privileged workflows, or record major tags as the convention (deepsec audit 2026-09-06).
+- [The public-suffix /api rewrite bills a Vercel hop](rate-limit-rewrite-bucket.md) - pre-existing: on a `*.vercel.app` host every visitor shares one anonymous bucket on that path; an echo route on a preview API would show which header carries the client (deepsec audit 2026-09-06).
