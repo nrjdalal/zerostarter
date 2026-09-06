@@ -7,5 +7,5 @@ import { adapterConfig, schemaOptions } from "@/schema"
 export const auth = betterAuth({
   ...schemaOptions,
   database: drizzleAdapter({}, adapterConfig),
-  secret: "schema-generation-only-secret-never-used-",
+  secret: "schema-generation-only-secret-never-used",
 })

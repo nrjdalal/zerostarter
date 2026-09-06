@@ -8,9 +8,9 @@ import { userAc } from "better-auth/plugins/admin/access"
 
 import { ACCESS_ROLE, CONSOLE_ROLES, roleAtLeast } from "@/access"
 
-// Everything that decides the database schema, in one place, so the auth instance and the schema generator read one declaration: the plugins, with the tables and columns they bring, and the app's own columns. packages/db/src/schema/auth.ts is generated from it (bun run auth:schema) and never edited by hand. Nothing here may reach the database or the environment: the auth CLI loads it under Node, where the db client (which imports bun) cannot load.
 export const adapterConfig = { provider: "pg" } as const
 
+// Everything that decides the database schema, in one place, so the auth instance and the schema generator read one declaration: the plugins, with the tables and columns they bring, and the app's own columns. packages/db/src/schema/auth.ts is generated from it (bun run auth:schema) and never edited by hand. Nothing here may reach the database or the environment: the auth CLI loads it under Node, where the db client (which imports bun) cannot load.
 export const schemaOptions = {
   plugins: [
     openAPIPlugin(),
