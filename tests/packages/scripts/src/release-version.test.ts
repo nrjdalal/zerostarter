@@ -3,7 +3,13 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { compare, decide, decideHere } from "../../../../packages/scripts/src/release-version"
+import {
+  compare,
+  decide,
+  decideIn,
+  readVersion,
+  writeVersion,
+} from "../../../../packages/scripts/src/release-version"
 
 // The pure decision, then the whole script against throwaway git repositories shaped like each stage of a project: a fresh fork with no tag, a steady-state window, a window that turns breaking halfway, a window of nothing but mechanical commits, a hand-set ahead of everything, a tree already moved forward, and a tree below the last tag. The repositories are real so changelogen reads real commits, and the script runs this repo's locked changelogen whatever directory it is pointed at.
 
@@ -84,24 +90,24 @@ const commit = async (dir: string, message: string, tag?: string): Promise<void>
 }
 
 const setVersion = async (dir: string, version: string): Promise<void> => {
-  const file = join(dir, "package.json")
-  const text = await Bun.file(file).text()
-  await Bun.write(file, text.replace(/"version": "[^"]+"/, `"version": "${version}"`))
+  await writeVersion(join(dir, "package.json"), version)
   await Bun.$`git -C ${dir} commit -q -am ${"chore: set version " + version}`
 }
 
-const cleanup = async (dir: string): Promise<void> => {
+const cleanup = (dir: string): void => {
   rmSync(dir, { force: true, recursive: true })
 }
 
-describe("decideHere, against real repositories", () => {
+const script = join(import.meta.dir, "../../../../packages/scripts/src/release-version.ts")
+
+describe("decideIn, against real repositories", () => {
   test("a fresh fork with no tag earns 0.0.1 from its first fix", async () => {
     const dir = await repo("0.0.0")
     try {
       await commit(dir, "fix: first")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.0.1", next: "0.0.1", tag: null })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.0.1", next: "0.0.1", tag: null })
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -110,11 +116,11 @@ describe("decideHere, against real repositories", () => {
     try {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: true, next: "0.1.28" })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.28", moved: true, next: "0.1.28" })
       await commit(dir, "feat!: two")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.2.0", next: "0.2.0" })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.2.0", next: "0.2.0" })
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -124,13 +130,13 @@ describe("decideHere, against real repositories", () => {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "ci(changelog): update changelog and bump version")
       await commit(dir, "ci(version): bump to v0.1.28")
-      expect(await decideHere(dir)).toMatchObject({
+      expect(await decideIn(dir)).toMatchObject({
         earned: "0.1.27",
         moved: false,
         next: "0.1.27",
       })
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -140,11 +146,11 @@ describe("decideHere, against real repositories", () => {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "chore(deps): bump something")
       await commit(dir, "ci(labels): retitle")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.27", moved: false })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.27", moved: false })
       await commit(dir, "build(deps): refresh the catalog")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: true })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.28", moved: true })
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -153,16 +159,76 @@ describe("decideHere, against real repositories", () => {
     try {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
-      await Bun.write(join(dir, "package.json"), `{"name":"probe","version":"0.1.27"}\n`)
+      const file = join(dir, "package.json")
+      await Bun.write(file, `{"name":"probe","version":"0.1.27"}\n`)
       await Bun.$`git -C ${dir} commit -q -am ${"chore: compact"}`
-      expect(await decideHere(dir)).toMatchObject({ current: "0.1.27", earned: "0.1.28" })
-      expect(await Bun.file(join(dir, "package.json")).text()).toBe(
-        `{"name":"probe","version":"0.1.27"}\n`,
-      )
+      expect(await decideIn(dir)).toMatchObject({ current: "0.1.27", earned: "0.1.28" })
+      expect(await Bun.file(file).text()).toBe(`{"name":"probe","version":"0.1.27"}\n`)
+      await writeVersion(file, "0.1.28")
+      expect(await Bun.file(file).text()).toBe(`{"name":"probe","version":"0.1.28"}\n`)
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
+
+  test("the version field is the package's own, not one nested deeper", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "release-version-"))
+    try {
+      const file = join(dir, "package.json")
+      await Bun.write(
+        file,
+        `{\n  "engines": { "version": "9.9.9" },\n  "name": "probe",\n  "version": "0.1.27"\n}\n`,
+      )
+      expect(await readVersion(file)).toBe("0.1.27")
+      await writeVersion(file, "0.1.28")
+      expect(await Bun.file(file).text()).toBe(
+        `{\n  "engines": { "version": "9.9.9" },\n  "name": "probe",\n  "version": "0.1.28"\n}\n`,
+      )
+      await Bun.write(file, `{\n  "engines": { "version": "9.9.9" },\n  "name": "probe"\n}\n`)
+      await expect(readVersion(file)).rejects.toThrow('no top-level "version" field')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  test("changelogen's own errors are failures, not an empty window", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      await Bun.write(join(dir, "changelog.config.json"), "{ broken\n")
+      await expect(decideIn(dir)).rejects.toThrow("changelogen failed")
+      expect(await readVersion(join(dir, "package.json"))).toBe("0.1.27")
+      expect(await Bun.file(join(dir, "CHANGELOG.md")).exists()).toBe(false)
+    } finally {
+      cleanup(dir)
+    }
+  }, 30000)
+
+  test("the entry point prints the decision, and moves the tree only with --write", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      const decideVia = (...args: string[]) => {
+        const proc = Bun.spawnSync(["bun", script, ...args], {
+          cwd: dir,
+          stderr: "pipe",
+          stdout: "pipe",
+        })
+        expect(proc.exitCode).toBe(0)
+        return JSON.parse(proc.stdout.toString())
+      }
+      expect(decideVia()).toMatchObject({ moved: true, next: "0.1.28" })
+      expect(await readVersion(join(dir, "package.json"))).toBe("0.1.27")
+      expect(decideVia("--write")).toMatchObject({ moved: true, next: "0.1.28" })
+      expect(await readVersion(join(dir, "package.json"))).toBe("0.1.28")
+      await Bun.$`git -C ${dir} commit -q -am ${"ci(version): bump to v0.1.28"}`
+      expect(decideVia("--write")).toMatchObject({ current: "0.1.28", moved: false })
+    } finally {
+      cleanup(dir)
+    }
+  }, 60000)
 
   test("a tree already moved forward is not bumped twice", async () => {
     const dir = await repo("0.1.27")
@@ -170,13 +236,13 @@ describe("decideHere, against real repositories", () => {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
       await setVersion(dir, "0.1.28")
-      expect(await decideHere(dir)).toMatchObject({
+      expect(await decideIn(dir)).toMatchObject({
         current: "0.1.28",
         earned: "0.1.28",
         moved: false,
       })
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -186,11 +252,11 @@ describe("decideHere, against real repositories", () => {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
       await setVersion(dir, "2.0.0")
-      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: false, next: "2.0.0" })
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.28", moved: false, next: "2.0.0" })
       expect(await Bun.file(join(dir, "package.json")).text()).toContain('"version": "2.0.0"')
       expect(await Bun.file(join(dir, "CHANGELOG.md")).exists()).toBe(false)
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 
@@ -199,9 +265,9 @@ describe("decideHere, against real repositories", () => {
     try {
       await commit(dir, "chore: release", "v0.1.28")
       await commit(dir, "fix: one")
-      await expect(decideHere(dir)).rejects.toThrow("below the last release v0.1.28")
+      await expect(decideIn(dir)).rejects.toThrow("below the last release v0.1.28")
     } finally {
-      await cleanup(dir)
+      cleanup(dir)
     }
   }, 30000)
 })

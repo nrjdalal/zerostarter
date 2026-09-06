@@ -12,7 +12,8 @@ export type Decision = {
   tag: string | null
 }
 
-const VERSION_FIELD = /"version":\s*"([^"]+)"/
+// Every "version" field in a manifest, spacing after the colon captured so a rewrite keeps the file's shape.
+const VERSION_FIELD = /"version":(\s*)"([^"]+)"/g
 
 const parse = (version: string): Version => {
   const parts = version.split(".").map(Number)
@@ -51,20 +52,45 @@ const run = (cmd: string[], cwd: string): { err: string; ok: boolean; out: strin
   }
 }
 
-const readVersion = async (file: string): Promise<string> => {
-  const match = VERSION_FIELD.exec(await Bun.file(file).text())
-  if (match === null) throw new Error(`${file} has no "version" field`)
-  return match[1]
+// How many objects and arrays enclose the character at index, strings skipped, so a field can be told apart from a same-named one nested deeper.
+const depthAt = (text: string, index: number): number => {
+  let depth = 0
+  let quoted = false
+  for (let i = 0; i < index; i++) {
+    const c = text[i]
+    if (quoted) {
+      if (c === "\\") i++
+      else if (c === '"') quoted = false
+    } else if (c === '"') quoted = true
+    else if (c === "{" || c === "[") depth++
+    else if (c === "}" || c === "]") depth--
+  }
+  return depth
 }
 
-// Rewrites the version field in place, keeping the rest of the file byte for byte, and refuses a file it cannot find the field in.
-const writeVersion = async (file: string, version: string): Promise<void> => {
+// The package's own version field: the first one at the top level of the object, so one inside a nested object is never read or rewritten in its place.
+const ownVersionField = (file: string, text: string): RegExpExecArray => {
+  for (const match of text.matchAll(VERSION_FIELD)) {
+    if (depthAt(text, match.index) === 1) return match
+  }
+  throw new Error(`${file} has no top-level "version" field`)
+}
+
+export const readVersion = async (file: string): Promise<string> =>
+  ownVersionField(file, await Bun.file(file).text())[2]
+
+// Rewrites the version field in place, keeping the rest of the file byte for byte.
+export const writeVersion = async (file: string, version: string): Promise<void> => {
   const text = await Bun.file(file).text()
-  if (!VERSION_FIELD.test(text)) throw new Error(`${file} has no "version" field`)
-  await Bun.write(file, text.replace(VERSION_FIELD, `"version": "${version}"`))
+  const match = ownVersionField(file, text)
+  const field = `"version":${match[1]}"${version}"`
+  await Bun.write(
+    file,
+    text.slice(0, match.index) + field + text.slice(match.index + match[0].length),
+  )
 }
 
-// This package's own changelogen, declared as its dependency and resolved from this file, so a throwaway repository in a test computes with the same locked binary the workflows use. Its bin is read from its manifest rather than the .bin shim, which Bun writes as .exe and .bunx on Windows.
+// This package's own changelogen, declared as its dependency and resolved from this file, so a throwaway repository in a test computes with the same locked binary the workflows use. Its bin is read from its manifest (which Bun resolves although changelogen's exports map lists only its entry) rather than from the .bin shim, which Bun writes as .exe and .bunx on Windows.
 const changelogenManifest = Bun.resolveSync("changelogen/package.json", import.meta.dir)
 const changelogen = join(
   dirname(changelogenManifest),
@@ -82,12 +108,17 @@ const earnedFrom = async (root: string, tag: string | null): Promise<string> => 
     await writeVersion(pkg, baseOf(tag))
     const from = tag === null ? [] : ["--from", tag]
     const bumped = run(["bun", changelogen, "--bump", "--no-commit", ...from], root)
-    if (!bumped.ok) throw new Error(`changelogen failed: ${bumped.err || bumped.out}`)
+    // changelogen's CLI reports its own errors and still exits 0, so success is read from what it left behind: the version moved past the tag's and a section for it heads the changelog. Measured: even a window of nothing it recognizes bumps a patch and writes an empty section, which the content gate below then discounts.
+    const version = await readVersion(pkg)
+    const text = (await Bun.file(changelog).exists()) ? await Bun.file(changelog).text() : ""
+    const headed = new RegExp(`^## v${version.replaceAll(".", "\\.")}\\r?$`, "m").test(text)
+    if (!bumped.ok || compare(version, baseOf(tag)) <= 0 || !headed) {
+      throw new Error(`changelogen failed: ${bumped.err || bumped.out}`)
+    }
     // changelogen drops some types from the changelog (ci, and chore(deps)) yet still bumps; auto-release refuses a section with no entry, so a window that earns no entry earns no number either.
-    const section = (await Bun.file(changelog).text()).split(/^## v/m)[1] ?? ""
-    const entries = section.split("### ❤️ Contributors")[0]
+    const entries = (text.split(/^## v/m)[1] ?? "").split("### ❤️ Contributors")[0]
     if (!/^- /m.test(entries)) return baseOf(tag)
-    return await readVersion(pkg)
+    return version
   } finally {
     await Bun.write(pkg, pkgText)
     if (hadChangelog) await Bun.write(changelog, changelogText)
@@ -114,7 +145,8 @@ const releasable = (root: string, tag: string | null): boolean => {
   return counted.out !== "0"
 }
 
-export const decideHere = async (root: string): Promise<Decision> => {
+// The decision for the repository at root: its last tag, its tree, and what its window has earned.
+export const decideIn = async (root: string): Promise<Decision> => {
   const described = run(["git", "describe", "--tags", "--abbrev=0", "--match", "v*"], root)
   const tag = described.ok && described.out !== "" ? described.out : null
   const current = await readVersion(join(root, "package.json"))
@@ -124,7 +156,7 @@ export const decideHere = async (root: string): Promise<Decision> => {
 
 if (import.meta.main) {
   const root = process.cwd()
-  const decision = await decideHere(root)
+  const decision = await decideIn(root)
   if (decision.moved && process.argv.includes("--write")) {
     await writeVersion(join(root, "package.json"), decision.next)
   }
