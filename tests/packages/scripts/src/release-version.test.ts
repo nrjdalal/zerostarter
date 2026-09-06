@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import {
+  bump,
   compare,
   decide,
   decideIn,
@@ -11,7 +12,7 @@ import {
   writeVersion,
 } from "../../../../packages/scripts/src/release-version"
 
-// The pure decision, then the whole script against throwaway git repositories shaped like each stage of a project: a fresh fork with no tag, a steady-state window, a window that turns breaking halfway, a window of nothing but mechanical commits, a hand-set ahead of everything, a tree already moved forward, and a tree below the last tag. The repositories are real so changelogen reads real commits, and the script runs this repo's locked changelogen offline whatever directory it is pointed at.
+// The pure decision, then the whole script against throwaway git repositories shaped like each stage of a project: a fresh fork with no tag, a steady-state window, a window that turns breaking halfway, a window of nothing but mechanical commits, a hand-set ahead of everything, a tree already moved forward, and a tree below the last tag. The repositories are real so changelogen's own parsing reads real commits, and one scenario runs changelogen's command beside the script to keep the two agreeing.
 
 describe("compare", () => {
   test("orders numeric semver by major, then minor, then patch", () => {
@@ -26,6 +27,18 @@ describe("compare", () => {
   test("refuses anything that is not three numbers", () => {
     expect(() => compare("0.1", "0.1.0")).toThrow("not a release version")
     expect(() => compare("v0.1.0", "0.1.0")).toThrow("not a release version")
+  })
+})
+
+describe("bump", () => {
+  test("moves one step, collapsing major and minor below 1.0 as changelogen does", () => {
+    expect(bump("0.1.27", "patch")).toBe("0.1.28")
+    expect(bump("0.1.27", "minor")).toBe("0.1.28")
+    expect(bump("0.1.27", "major")).toBe("0.2.0")
+    expect(bump("0.0.99", "patch")).toBe("0.0.100")
+    expect(bump("1.4.2", "patch")).toBe("1.4.3")
+    expect(bump("1.4.2", "minor")).toBe("1.5.0")
+    expect(bump("1.4.2", "major")).toBe("2.0.0")
   })
 })
 
@@ -70,6 +83,7 @@ const repo = async (version: string): Promise<string> => {
   await Bun.$`git init -q -b canary ${dir}`
   await Bun.$`git -C ${dir} config user.email probe@example.com`
   await Bun.$`git -C ${dir} config user.name probe`
+  await Bun.$`git -C ${dir} remote add origin https://github.com/probe/probe.git`
   // The changelog config rides along, as it does in this repo and in a fork: it is what drops ci commits from the changelog, which the content gate reads.
   await Bun.write(
     join(dir, "changelog.config.json"),
@@ -191,19 +205,44 @@ describe("decideIn, against real repositories", () => {
     }
   })
 
-  test("changelogen's own errors are failures, not an empty window", async () => {
+  test("a broken changelog config is a failure, not an empty window", async () => {
     const dir = await repo("0.1.27")
     try {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
       await Bun.write(join(dir, "changelog.config.json"), "{ broken\n")
-      await expect(decideIn(dir)).rejects.toThrow("changelogen failed")
+      await expect(decideIn(dir)).rejects.toThrow()
       expect(await readVersion(join(dir, "package.json"))).toBe("0.1.27")
-      expect(await Bun.file(join(dir, "CHANGELOG.md")).exists()).toBe(false)
     } finally {
       cleanup(dir)
     }
   }, 30000)
+
+  test("agrees with changelogen's own command on the number a window earns", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      await commit(dir, "chore(deps): bump something")
+      await commit(dir, "fix(api)!: two")
+      // The command looks every author up over the network while it renders; an empty exclusion matches every author, so this run stays offline.
+      const configFile = join(dir, "changelog.config.json")
+      const config = JSON.parse(await Bun.file(configFile).text())
+      await Bun.write(configFile, JSON.stringify({ ...config, excludeAuthors: [""] }))
+      const manifest = Bun.resolveSync("changelogen/package.json", join(script, ".."))
+      const cli = join(manifest, "..", JSON.parse(await Bun.file(manifest).text()).bin.changelogen)
+      const proc = Bun.spawnSync(
+        [process.execPath, cli, "--bump", "--no-commit", "--from", "v0.1.27"],
+        { cwd: dir, stderr: "pipe", stdout: "pipe" },
+      )
+      expect(proc.exitCode).toBe(0)
+      const commanded = await readVersion(join(dir, "package.json"))
+      expect(commanded).toBe("0.2.0")
+      expect((await decideIn(dir)).earned).toBe(commanded)
+    } finally {
+      cleanup(dir)
+    }
+  }, 60000)
 
   test("the entry point prints the decision, and moves the tree only with --write", async () => {
     const dir = await repo("0.1.27")
