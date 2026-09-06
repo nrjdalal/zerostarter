@@ -33,7 +33,13 @@ const removeForkExcludes = (root: string): void => {
       )
     }
     const inside = relative(base, resolve(base, path))
-    if (!inside || inside === ".." || inside.startsWith(`..${sep}`) || isAbsolute(inside)) {
+    if (
+      isAbsolute(path) ||
+      !inside ||
+      inside === ".." ||
+      inside.startsWith(`..${sep}`) ||
+      isAbsolute(inside)
+    ) {
       throw new Error(
         `.gitpickignore entry "${path}" is not inside the project; the in-place converter only removes paths under the root.`,
       )
