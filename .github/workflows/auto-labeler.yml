@@ -142,7 +142,8 @@ jobs:
                 return '@misc';
               }
 
-              return topLevel ? `@${topLevel}` : '@misc';
+              // a directory label only for a directory the base branch has: the file list is the contributor's, and a novel top-level path must not mint a label under this write token
+              return topLevel && fs.existsSync(topLevel) ? `@${topLevel}` : '@misc';
             };
 
             const ensureLabel = async (labelName) => {
