@@ -43,9 +43,8 @@ export const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Rebrand the fork's own identity (display name, portless dev-URL names, docker image, log paths) while preserving upstream references: `bunx zerostarter` is the CLI a fork still runs to sync (it ships none of its own) and "zerostarter scaffolding CLI" names that upstream tool, so a lowercase "zerostarter" preceded by "bunx " or followed by " scaffolding CLI" is left alone. The frontmatter source line and sync note are stamped separately and never pass through here.
+// Rebrand the fork's own identity (display name, portless dev-URL names, docker image, log paths) while preserving upstream references: `bunx zerostarter` is the CLI a fork still runs to sync (it ships none of its own) and "zerostarter scaffolding CLI" names that upstream tool, so a lowercase "zerostarter" preceded by "bunx " or followed by " scaffolding CLI" is left alone. The frontmatter source line and sync note are stamped separately and never pass through here. The name goes in through a replacer function, so a `$` in it is literal rather than a replacement pattern.
 const reconcile = (text: string, slug: string, name: string): string =>
-  // A replacer function, so a `$` in the name is literal rather than a replacement pattern.
   text
     .replaceAll("ZeroStarter", () => name)
     .replace(/(?<!bunx )zerostarter(?! scaffolding CLI)/g, slug)
