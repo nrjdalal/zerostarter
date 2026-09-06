@@ -26,7 +26,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [A better landing page](landing-page.md) - #26.
 - [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
-- [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
+- [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning, read-helper unification and the version pass-through left).
 - [OpenAPI: the WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664; subsumed by api-envelope-typed-endpoint, but shippable on its own as the smaller fix.
 - [An API route harness](api-route-test-harness.md) - the last-owner FOR UPDATE, the ban compare-and-set and the sign-in grant hook are only checked by hand; a mock cannot tell you whether a lock blocks (PR #758 review).
 - [Next.js 16.3 adoption](next-163-adoption.md) - what was taken (`agentRules: false`, PR #786), what was measured and declined (the Rust React Compiler, ~6% here against a claimed 34-46%), and what Instant Navigations costs: `cacheComponents` spiked to 10 of 14 routes 500ing, with the blocker list.
