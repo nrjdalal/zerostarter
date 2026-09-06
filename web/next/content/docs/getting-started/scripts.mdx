@@ -20,9 +20,9 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 
 ## Database
 
-Each of these builds `@packages/env` first, then runs Drizzle Kit against `packages/db`.
+`bun run auth:schema` runs the Better Auth CLI; each `db:*` script builds `@packages/env` first, then runs Drizzle Kit against `packages/db`.
 
-- `bun run auth:schema`: regenerate the Better Auth tables in `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts` with the Better Auth CLI (builds `@packages/auth` first; `--check` only compares).
+- `bun run auth:schema`: regenerate the Better Auth tables in `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts` (`--check` only compares).
 - `bun run db:generate`: generate a migration from schema changes.
 - `bun run db:migrate`: apply pending migrations.
 - `bun run db:studio`: open Drizzle Studio to browse and edit data.

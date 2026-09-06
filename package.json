@@ -18,7 +18,7 @@
     "web/*"
   ],
   "scripts": {
-    "auth:schema": "turbo run build --filter=@packages/auth && bun packages/scripts/src/auth-schema.ts",
+    "auth:schema": "bun packages/scripts/src/auth-schema.ts",
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
     "check-types:scripts": "tsc -p .github/scripts/tsconfig.json",

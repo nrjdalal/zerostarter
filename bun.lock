@@ -69,6 +69,7 @@
         "@packages/scripts": "workspace:*",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
+        "auth": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
       },
@@ -131,10 +132,6 @@
     "packages/scripts": {
       "name": "@packages/scripts",
       "version": "0.0.0",
-      "dependencies": {
-        "auth": "catalog:",
-        "better-auth": "catalog:",
-      },
       "devDependencies": {
         "@packages/config": "workspace:*",
         "@packages/env": "workspace:*",
