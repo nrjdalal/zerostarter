@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test"
 
-import { API, Client, enabled, signInAsAgent } from "../../../../stack"
+import { API, Client, enabled, signInAsAgent, signOut } from "../../../../stack"
 
 // The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. The row is removed through the console afterwards so the run leaves nothing behind. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
 
@@ -16,6 +16,7 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
     )
     const ids = body.data.signups.filter((row) => row.email === EMAIL).map((row) => row.id)
     if (ids.length > 0) await agent.send("DELETE", "/api/v1/admin/waitlist", { ids })
+    await signOut(agent)
   })
 
   test("the count is public", async () => {

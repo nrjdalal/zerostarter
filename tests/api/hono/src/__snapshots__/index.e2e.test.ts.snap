@@ -1,12 +1,30 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`api/hono/src/index.ts the root names the build and the stage 1`] = `
+{
+  "data": {
+    "environment": "local",
+    "version": "<version:string>",
+  },
+}
+`;
+
 exports[`api/hono/src/index.ts health names the build and answers ok 1`] = `
 {
   "data": {
-    "environment": "<environment>",
+    "environment": "local",
     "message": "ok",
-    "version": "<version>",
+    "version": "<version:string>",
   },
+}
+`;
+
+exports[`api/hono/src/index.ts health over the WebSocket opens with a snapshot frame 1`] = `
+{
+  "environment": "local",
+  "message": "ok",
+  "timestamp": "<timestamp>",
+  "version": "<version:string>",
 }
 `;
 
@@ -21,9 +39,9 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
 - [hono/client](/docs/getting-started/type-safe-api) - Type-safe API client for frontend"
 ,
     "title": "ZeroStarter",
-    "version": "<version>",
+    "version": "<version:string>",
   },
-  "openapi": "<version>",
+  "openapi": "3.1.0",
   "paths": {
     "/api/health": {
       "get": {
@@ -53,7 +71,7 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
                           "type": "string",
                         },
                         "version": {
-                          "example": "<version>",
+                          "example": "0.1.26",
                           "type": "string",
                         },
                       },

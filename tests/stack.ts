@@ -1,29 +1,26 @@
-// The running stack this suite drives, named by env so the same tests run against docker compose, the dev stack, or any other deployment that mounts the agent sign-in route. Nothing here imports app source: the suite tests the artifact that is serving, not the code that built it.
+// The running stack this suite drives, named by env so the same tests run against docker compose, the dev stack, or any other local-stage deployment, which is the only kind that mounts the agent sign-in the suite signs in with. Nothing here imports app source: the suite tests the artifact that is serving, not the code that built it.
 export const API = process.env.E2E_API_URL ?? ""
-export const WEB = process.env.E2E_WEB_URL ?? ""
 export const POSTGRES_URL = process.env.E2E_POSTGRES_URL ?? ""
-// The Origin the agent sign-in and every Better Auth write must carry; the web URL is a trusted origin by construction.
-export const ORIGIN = process.env.E2E_ORIGIN ?? WEB
+export const WEB = process.env.E2E_WEB_URL ?? ""
 export const enabled = API !== "" && WEB !== ""
 
 export const AGENT_EMAIL = "agent@local.host"
 export const SEEDED_EMAIL = "golden.seed@example.com"
 export const SEEDED_ID = "golden-seed-user"
 
-// A cookie jar just wide enough for one signed-in agent: keeps every cookie the server sets and replays them, dropping the ones it clears.
+// A cookie jar just wide enough for one signed-in agent: keeps every cookie the server sets and replays them, dropping the ones it clears. A path is resolved against the base; an absolute URL is fetched as given, which is how the web app is reached with the API's session.
 export class Client {
   readonly cookies = new Map<string, string>()
 
   constructor(readonly base: string) {}
 
-  cookieHeader(): string {
-    return [...this.cookies].map(([name, value]) => `${name}=${value}`).join("; ")
-  }
-
-  async fetch(path: string, init: RequestInit = {}): Promise<Response> {
+  async fetch(target: string, init: RequestInit = {}): Promise<Response> {
+    const url = target.startsWith("http") ? target : `${this.base}${target}`
     const headers = new Headers(init.headers)
-    if (this.cookies.size > 0) headers.set("cookie", this.cookieHeader())
-    const response = await fetch(`${this.base}${path}`, { ...init, headers, redirect: "manual" })
+    if (this.cookies.size > 0) {
+      headers.set("cookie", [...this.cookies].map(([name, value]) => `${name}=${value}`).join("; "))
+    }
+    const response = await fetch(url, { ...init, headers, redirect: "manual" })
     for (const raw of response.headers.getSetCookie()) {
       const [pair, ...attributes] = raw.split(";")
       const eq = pair.indexOf("=")
@@ -37,18 +34,18 @@ export class Client {
   }
 
   async json<T = unknown>(
-    path: string,
+    target: string,
     init: RequestInit = {},
   ): Promise<{ status: number; body: T }> {
-    const response = await this.fetch(path, init)
+    const response = await this.fetch(target, init)
     return { status: response.status, body: (await response.json()) as T }
   }
 
-  // Every write carries the trusted Origin, which Better Auth checks on state-changing requests and the agent route requires outright.
-  send<T = unknown>(method: string, path: string, body?: unknown) {
-    return this.json<T>(path, {
+  // Every write carries the web URL as its Origin, which Better Auth checks on state-changing requests and the agent route requires outright; the web URL is a trusted origin by construction.
+  send<T = unknown>(method: string, target: string, body?: unknown) {
+    return this.json<T>(target, {
       method,
-      headers: { "content-type": "application/json", origin: ORIGIN },
+      headers: { "content-type": "application/json", origin: WEB },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   }
@@ -59,7 +56,7 @@ export const signInAsAgent = async (): Promise<Client> => {
   const client = new Client(API)
   const response = await client.fetch("/api/agents/sign-in-as", {
     method: "POST",
-    headers: { origin: ORIGIN },
+    headers: { origin: WEB },
   })
   if (response.status !== 302) {
     throw new Error(`agent sign-in answered ${response.status}: ${await response.text()}`)
@@ -67,18 +64,22 @@ export const signInAsAgent = async (): Promise<Client> => {
   return client
 }
 
+// End the session a sign-in minted, so a run leaves no session rows behind.
+export const signOut = async (client: Client): Promise<void> => {
+  await client.send("POST", "/api/auth/sign-out")
+}
+
+const BETTER_AUTH_ID = /^[A-Za-z0-9]{32}$/
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-const BETTER_AUTH_ID = /^[A-Za-z0-9]{32}$/
-const BUILD_VERSION = /^\d+\.\d+\.\d+(-[0-9a-f]{7,40})?$/
-// Fields whose value depends on the run, the machine, or the clock, and never on the contract.
+// Fields whose value depends on the run, the machine, the clock, or the build, and never on the contract. The placeholder keeps the type, so a field that changes type still fails.
 const VOLATILE_KEYS = new Set([
-  "environment",
   "expiresAt",
   "ipAddress",
   "lastActive",
   "token",
   "userAgent",
+  "version",
 ])
 
 // Replace every run-dependent value with a placeholder so a snapshot captures the shape and the stable content, and nothing else.
@@ -89,26 +90,40 @@ export const normalize = (value: unknown, key = ""): unknown => {
       Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, normalize(v, k)]),
     )
   }
-  if (VOLATILE_KEYS.has(key) && value !== null && value !== undefined) return `<${key}>`
+  if (VOLATILE_KEYS.has(key) && value !== null && value !== undefined) {
+    return `<${key}:${typeof value}>`
+  }
   if (typeof value === "string") {
     if (ISO_TIMESTAMP.test(value)) return "<timestamp>"
     if (UUID.test(value)) return "<uuid>"
-    if (BUILD_VERSION.test(value)) return "<version>"
     if (BETTER_AUTH_ID.test(value)) return "<id>"
   }
   return value
 }
 
+// Seeding writes straight into the database, so it runs only against one on this machine: a disposable container, never the shared one a dev stack could be pointed at by mistake.
+const LOCAL_HOSTS = new Set(["127.0.0.1", "::1", "host.docker.internal", "localhost"])
+
+const disposable = (): Bun.SQL => {
+  const host = new URL(POSTGRES_URL).hostname
+  if (!LOCAL_HOSTS.has(host)) {
+    throw new Error(
+      `E2E_POSTGRES_URL points at ${host}; seeding runs only against a local disposable database`,
+    )
+  }
+  return new Bun.SQL(POSTGRES_URL)
+}
+
 // Seed rows the API offers no route for (a second user), only when the run names the database. Fake rows, fixed ids, removed again at the end.
 export const seedUser = async (): Promise<void> => {
-  const sql = new Bun.SQL(POSTGRES_URL)
+  const sql = disposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql`insert into "user" (id, name, email, email_verified, created_at, updated_at, role) values (${SEEDED_ID}, ${"Golden Seed"}, ${SEEDED_EMAIL}, true, now() - interval '1 day', now() - interval '1 day', ${"user"})`
   await sql.end()
 }
 
 export const removeSeededUser = async (): Promise<void> => {
-  const sql = new Bun.SQL(POSTGRES_URL)
+  const sql = disposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql.end()
 }

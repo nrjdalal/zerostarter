@@ -15,7 +15,7 @@ exports[`api/hono/src/routers/admin.ts the users list holds every account, the a
         "emailVerified": true,
         "id": "<id>",
         "image": null,
-        "lastActive": "<lastActive>",
+        "lastActive": "<lastActive:string>",
         "name": "LocalAgent",
         "role": "owner",
       },

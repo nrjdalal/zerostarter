@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import {
   AGENT_EMAIL,
+  API,
   Client,
   enabled,
   normalize,
@@ -11,6 +12,7 @@ import {
   SEEDED_ID,
   seedUser,
   signInAsAgent,
+  signOut,
 } from "../../../../stack"
 
 // The console routes in api/hono/src/routers/admin.ts on a running stack, as the owner: the users list, the refusal to change one's own role, a seeded account promoted then banned and unbanned (only when E2E_POSTGRES_URL names the database, since no route creates a user), the activity those writes leave, and the allowlist and waitlist as the console sees them. Golden after normalize(). The users list assumes a fresh database where LocalAgent is the only account. Re-runnable: rows a dead run left are removed first. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
@@ -53,6 +55,7 @@ describe.skipIf(!enabled)("api/hono/src/routers/admin.ts", () => {
 
   afterAll(async () => {
     if (POSTGRES_URL) await removeSeededUser()
+    await signOut(agent)
   })
 
   test("the users list holds every account, the agent as owner", async () => {
@@ -82,16 +85,16 @@ describe.skipIf(!enabled)("api/hono/src/routers/admin.ts", () => {
       role: "member",
     })
     const banned = await agent.send<Batch>("PATCH", "/api/v1/admin/users/status", {
-      ids: [SEEDED_ID],
       banned: true,
+      ids: [SEEDED_ID],
     })
     const listed = await agent.json<Users>("/api/v1/admin/users")
     const seeded = listed.body.data.users.find((u) => u.email === SEEDED_EMAIL)
     expect(seeded && seeded.role).toBe("member")
     expect(seeded && seeded.banned).toBe(true)
     const unbanned = await agent.send<Batch>("PATCH", "/api/v1/admin/users/status", {
-      ids: [SEEDED_ID],
       banned: false,
+      ids: [SEEDED_ID],
     })
     expect(
       normalize({ promoted: promoted.body, banned: banned.body, unbanned: unbanned.body }),
@@ -117,7 +120,7 @@ describe.skipIf(!enabled)("api/hono/src/routers/admin.ts", () => {
   })
 
   test("the waitlist lists a signup and removes it", async () => {
-    const joined = await new Client(agent.base).send("POST", "/api/waitlist", {
+    const joined = await new Client(API).send("POST", "/api/waitlist", {
       email: WAITLIST_EMAIL,
     })
     expect(joined.status).toBe(200)

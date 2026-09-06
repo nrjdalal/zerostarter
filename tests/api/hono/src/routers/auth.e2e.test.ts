@@ -1,18 +1,19 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
-import { API, Client, enabled, normalize, signInAsAgent } from "../../../../stack"
+import { API, Client, enabled, normalize, signInAsAgent, signOut } from "../../../../stack"
 
-// Better Auth as mounted by api/hono/src/routers/auth.ts, driven through the organization plugin's own endpoints on a running stack: an organization is created, made active, and read back whole; a team counts its seats as a member comes and goes (the member_count and membership_key columns 1.7 added); and the organization is deleted with its team. Golden after normalize(). Re-runnable: a golden-org left by a run that died is removed first. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// Better Auth as mounted by api/hono/src/routers/auth.ts on a running stack: the router's own providers list and session read, then the organization plugin's own endpoints: an organization is created, made active, and read back whole; a team counts its seats as a member comes and goes (the member_count and membership_key columns 1.7 added); and the organization is deleted with its team. Golden after normalize(). Re-runnable: a golden-org left by a run that died is removed first, and the session is ended at the end. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
 
 type Organization = {
   id: string
   slug: string
-  teams: { id: string; name: string; memberCount: number }[]
+  teams: { id: string; memberCount: number; name: string }[]
 }
 
 const ORG_SLUG = "golden-org"
 
 describe.skipIf(!enabled)("api/hono/src/routers/auth.ts", () => {
+  const anonymous = new Client(API)
   let agent: Client
   let agentId = ""
   let organizationId = ""
@@ -43,12 +44,31 @@ describe.skipIf(!enabled)("api/hono/src/routers/auth.ts", () => {
     if (organizationId) {
       await agent.send("POST", "/api/auth/organization/delete", { organizationId })
     }
+    await signOut(agent)
   })
 
   test("better auth answers ok", async () => {
-    const { status, body } = await new Client(API).json("/api/auth/ok")
+    const { status, body } = await anonymous.json("/api/auth/ok")
     expect(status).toBe(200)
     expect(body).toEqual({ ok: true })
+  })
+
+  test("the providers list names the agent on a local stage", async () => {
+    const { status, body } = await anonymous.json<{ data: { providers: string[] } }>(
+      "/api/auth/providers",
+    )
+    expect(status).toBe(200)
+    expect(body.data.providers).toContain("agent")
+    expect(body).toMatchSnapshot()
+  })
+
+  test("the session read is empty for a visitor and whole for the agent", async () => {
+    const visitor = await anonymous.json("/api/auth/get-session")
+    const signedIn = await agent.json("/api/auth/get-session")
+    expect(visitor.status).toBe(200)
+    expect(visitor.body).toBeNull()
+    expect(signedIn.status).toBe(200)
+    expect(normalize(signedIn.body)).toMatchSnapshot()
   })
 
   test("an organization is created, made active, and read back whole", async () => {

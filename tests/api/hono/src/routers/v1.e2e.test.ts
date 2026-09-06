@@ -1,6 +1,14 @@
-import { beforeAll, describe, expect, test } from "bun:test"
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
-import { AGENT_EMAIL, API, Client, enabled, normalize, signInAsAgent } from "../../../../stack"
+import {
+  AGENT_EMAIL,
+  API,
+  Client,
+  enabled,
+  normalize,
+  signInAsAgent,
+  signOut,
+} from "../../../../stack"
 
 // The signed-in reads in api/hono/src/routers/v1.ts on a running stack: an anonymous caller is refused with the envelope, and the agent reads its session and its user back with exactly the documented fields. Golden after normalize(). Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
 
@@ -9,6 +17,10 @@ describe.skipIf(!enabled)("api/hono/src/routers/v1.ts", () => {
 
   beforeAll(async () => {
     agent = await signInAsAgent()
+  })
+
+  afterAll(async () => {
+    await signOut(agent)
   })
 
   test("an anonymous caller is refused", async () => {

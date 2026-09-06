@@ -14,12 +14,12 @@ exports[`api/hono/src/routers/v1.ts the session and the user read back as docume
   "session": {
     "data": {
       "createdAt": "<timestamp>",
-      "expiresAt": "<expiresAt>",
+      "expiresAt": "<expiresAt:string>",
       "id": "<id>",
-      "ipAddress": "<ipAddress>",
-      "token": "<token>",
+      "ipAddress": "<ipAddress:string>",
+      "token": "<token:string>",
       "updatedAt": "<timestamp>",
-      "userAgent": "<userAgent>",
+      "userAgent": "<userAgent:string>",
       "userId": "<id>",
     },
   },

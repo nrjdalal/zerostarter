@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { API, Client, enabled, ORIGIN } from "../../../../stack"
+import { API, Client, enabled, signOut, WEB } from "../../../../stack"
 
 // The local-only agent sign-in in api/hono/src/routers/agents.ts on a running stack: it refuses an untrusted Origin and, from a trusted one, mints a session and sends the agent to the dashboard. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
 
@@ -18,10 +18,11 @@ describe.skipIf(!enabled)("api/hono/src/routers/agents.ts", () => {
     const client = new Client(API)
     const response = await client.fetch("/api/agents/sign-in-as", {
       method: "POST",
-      headers: { origin: ORIGIN },
+      headers: { origin: WEB },
     })
     expect(response.status).toBe(302)
-    expect(response.headers.get("location")).toBe(`${ORIGIN}/dashboard`)
+    expect(response.headers.get("location")).toBe(`${WEB}/dashboard`)
     expect(client.cookies.size).toBeGreaterThan(0)
+    await signOut(client)
   })
 })
