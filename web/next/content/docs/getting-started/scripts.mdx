@@ -39,7 +39,7 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 ## Release / production
 
 - `bun run build`: build every app with Turbo, then print each workspace's size. This is the same build the pre-commit hook runs.
-- `bun run release:version`: print the version decision for the current release window as JSON (the last tag, the tree, what the window earned, and the larger of the two); `--write` moves `package.json` to it. The draft-PR workflow runs this on every push to `canary`; running it by hand only previews. It reads the `v*` tags, so fetch them first: with tags present but none reachable from HEAD it stops rather than computing from v0.0.0.
+- `bun run release:version`: print the version decision for the current release window as JSON (the last tag, the tree, what the window earned, and the larger of the two); `--write` moves `package.json` to it. The draft-PR workflow runs this on every push to `canary`; running it by hand only previews, and it needs no network. It reads the `v*` tags, so fetch them first: with tags present but none reachable from HEAD it stops rather than computing from v0.0.0.
 - `bun run start`: serve the production build.
 
 The changelog, version bump, tag, and GitHub release are automated: you don't run them by hand. See [Releases](/docs/manage/release).

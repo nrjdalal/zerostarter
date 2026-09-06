@@ -106,11 +106,15 @@ const changelogen = join(
   JSON.parse(await Bun.file(changelogenManifest).text()).bin.changelogen,
 )
 
-// changelogen looks every author up on ungh.cc while it renders, with no timeout and no switch that skips the lookup, and a stalled lookup once held a CI test leg past its limit. The decision needs no network, so the lookup is sent through a closed local port and fails at once inside changelogen's own catch.
+// changelogen looks every author up on ungh.cc while it renders, with no timeout and no switch that skips the lookup, and a stalled lookup once held a CI test leg past its limit. The decision needs no network, so the lookup is sent through a closed local port and fails at once inside changelogen's own catch. Bun reads the lowercase proxy variables on their own, so both cases are set and both bypass lists cleared.
+const BLACKHOLE = "http://127.0.0.1:9"
 const OFFLINE = {
-  HTTPS_PROXY: "http://127.0.0.1:9",
-  HTTP_PROXY: "http://127.0.0.1:9",
+  HTTPS_PROXY: BLACKHOLE,
+  HTTP_PROXY: BLACKHOLE,
   NO_PROXY: "",
+  http_proxy: BLACKHOLE,
+  https_proxy: BLACKHOLE,
+  no_proxy: "",
 }
 
 // changelogen bumps whatever package.json holds and writes the changelog, so it runs against a copy set to the tag's version, and both files are put back afterwards.
