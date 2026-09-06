@@ -22,3 +22,5 @@ To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `
 ## Larger, tracked separately
 
 Default security headers/CSP + a durable rate-limit store, and a full product-test harness (Playwright e2e + example org-scoped tests, where the deferred route/env tests land), are larger; scope them after these.
+
+Since 2026-09-06 `tests/api/hono/src/routers/agents.e2e.test.ts` (`bun run test:e2e`) drives the route on a running stack: an untrusted Origin is refused and a trusted one mints a session. The env-shape tests still wait for the harness.
