@@ -1,7 +1,7 @@
 # Node API index
 
 Per-file inventory of every Node built-in used in the repo, for the [`runtime-apis`](SKILL.md) skill.
-Snapshot: 2026-08-23. Regenerate with the `rg "node:..."` command in `SKILL.md`.
+Snapshot: 2026-09-06. Regenerate with the `rg "node:..."` command in `SKILL.md`.
 
 The `Runtime` column drives the rule: **Node**, **Both** and **Build** files stay on `node:` (no `Bun.*`);
 **Bun** files may move a call to a `Bun.*` equivalent where one exists. `web/next` is **Both**: `next dev`
