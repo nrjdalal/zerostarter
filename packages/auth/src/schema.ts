@@ -17,7 +17,6 @@ export const schemaOptions = {
     organizationPlugin({
       teams: { enabled: true },
     }),
-    // The plugin validates adminRoles against its own role table, so the ladder's rungs are declared here as well as ranked in @/access.
     // Every rung holds no statements, deliberately: the plugin mounts /api/auth/admin/* and authorizes on statements alone, with no notion of rank, of the actor's position relative to the target, or of the last owner, so the stock adminAc let one set-role request make an admin an owner (verified before this was narrowed). The console's own routes own all of it, guarded by refuseRoleChange and refuseBan, and the plugin keeps only what nothing else provides: the role, banned, banReason and banExpires columns, and the session check that refuses a banned user. A fork that wants the plugin's endpoints widens one statement at a time and accepts that the ladder does not constrain them.
     adminPlugin({
       // Derived, not restated: the rungs the plugin treats as admin are the rungs the ladder admits to Access, and every rung is declared so the plugin's own validation passes.
