@@ -52,7 +52,7 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 - **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `console.ts`, `waitlist.ts`, grouped by concern rather than one file per table) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
-- **`scripts`**: Bun tooling that is never bundled or imported at runtime. The build-time scripts (the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, the data-table font metrics) write to the gitignored repo-root `.generated/`; the on-demand `auth-schema` regenerator (`bun run auth:schema`) writes the committed `packages/db/src/schema/auth.ts`.
+- **`scripts`**: Bun tooling that is never bundled or imported at runtime. The build-time scripts (the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, the data-table font metrics) write to the gitignored repo-root `.generated/`; the on-demand `auth-schema` regenerator (`bun run auth:schema`) writes the committed `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned.
 
 ## Bun catalog
 

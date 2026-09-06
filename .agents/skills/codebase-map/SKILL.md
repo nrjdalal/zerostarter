@@ -16,7 +16,7 @@ packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
-packages/scripts/ # build-only bun tooling (auth-schema, data-table-metrics, generate-env); every new script lands here, never bundled
+packages/scripts/ # build-only bun tooling (auth-schema, data-table-metrics, generate-env, release-version); every new script lands here, never bundled
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 tests/            # the whole suite, mirroring each subject's path; *.e2e.test.ts drive a running stack (canonical repo only; forks take no tests)
 ```

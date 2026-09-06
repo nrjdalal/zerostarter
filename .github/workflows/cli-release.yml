@@ -115,11 +115,14 @@ jobs:
             TAG="latest"
           else
             TAG="canary"
-            LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "v0.0.0")
-            LAST_VERSION="${LAST_TAG#v}"
-            ROOT_VERSION=$(bunx json -f ../../package.json -a version)
-            # preview the next release: a hand-set root version (a pin) or the default patch bump, matching auto-release
-            NEXT_VERSION=$([ "$ROOT_VERSION" != "$LAST_VERSION" ] && echo "$ROOT_VERSION" || bun -e "const p='$LAST_VERSION'.split('.'); console.log(p[0]+'.'+p[1]+'.'+(Number(p[2])+1))")
+            # preview the next release with the same decision auto-release ships: the larger of the tree and what the window earned. the script runs the scripts package's locked changelogen, so the install (no lifecycle scripts, the npm token is in scope) comes first here; the shared install below is then a no-op
+            (cd ../.. && bun install --frozen-lockfile --ignore-scripts)
+            DECISION=$(cd ../.. && bun packages/scripts/src/release-version.ts)
+            NEXT_VERSION=$(echo "$DECISION" | jq -r .next)
+            if [ -z "$NEXT_VERSION" ] || [ "$NEXT_VERSION" = "null" ]; then
+              echo "::error::release-version answered nothing usable: $DECISION"
+              exit 1
+            fi
             TAGGED_VERSION=$(echo $VERSIONS | bunx json $TAG)
             RELEASE_VERSION=$([[ $TAGGED_VERSION == $NEXT_VERSION-canary* ]] && bunx semver $TAGGED_VERSION -i prerelease || echo $NEXT_VERSION-canary.0)
           fi

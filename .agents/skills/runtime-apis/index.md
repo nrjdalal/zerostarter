@@ -31,6 +31,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/scripts/src/auth-schema.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
+| `packages/scripts/src/release-version.ts` | Bun | `node:path` (dirname, join) |
 | `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
@@ -42,6 +43,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/packages/cli/src/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/src/skills.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/db/src/schema/auth.test.ts` | Bun | `node:path` (join) |
+| `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |
 
