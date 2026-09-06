@@ -41,10 +41,11 @@ export const siteTemplate = (
   features: FeatureFlags = DEFAULT_FEATURES,
 ): string => {
   const display = name.charAt(0).toUpperCase() + name.slice(1)
+  // JSON.stringify emits a valid TS string literal whatever the name holds: a quote or backslash in a directory name must not break out of the literal in a module the app executes.
   return `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
 export const site = {
-  name: "${display}",
-  description: "${display} is just getting started. Tell its story here.",
+  name: ${JSON.stringify(display)},
+  description: ${JSON.stringify(`${display} is just getting started. Tell its story here.`)},
   tagline: "Your tagline, ready when you are.",
   social: {
     discord: "",
