@@ -16,9 +16,9 @@ packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
-packages/scripts/ # build-only bun tooling (generate-env, the data-table font metrics); every new script lands here, never bundled
+packages/scripts/ # build-only bun tooling (auth-schema, data-table-metrics, generate-env); every new script lands here, never bundled
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
-tests/            # the whole suite, mirroring each subject's path (canonical repo only; forks take no tests)
+tests/            # the whole suite, mirroring each subject's path; *.e2e.test.ts drive a running stack (canonical repo only; forks take no tests)
 ```
 
 Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the whole codebase as one context file.
@@ -28,15 +28,16 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Goal | Edit here | Then |
 | --- | --- | --- |
 | Add/change an API route | `api/hono/src/routers/<name>.ts` → export from `routers/index.ts` → mount in `src/index.ts` `.route()` chain | `api-endpoint` skill |
-| Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts` | `db-migration` skill |
+| Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts`; `auth.ts` is generated, see the row below | `db-migration` skill |
 | Add/change a page | `web/next/src/app/`, route groups: `(marketing)` public, `(protected)` dashboard, `(console)` member and above, `(content)` docs+blog | - |
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
-| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first | - |
-| Configure auth (providers, plugins) | `packages/auth/src/index.ts` | - |
+| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first. The exception is a variable the hosting platform injects rather than you configuring (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`): those are read from `process.env` at the point of use and belong in neither the schema nor `.env.example` | - |
+| Configure auth (providers, cookies, hooks) | `packages/auth/src/index.ts` | - |
+| Add or change an auth plugin, or a column on `user`/`session` | `packages/auth/src/schema.ts` (`additionalFields` for a column) → `bun run auth:schema` regenerates `packages/db/src/schema/auth.ts` | `db-migration` skill |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |
-| Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test` | - |
+| Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test`. An end-to-end test is `tests/<path of the router or page it drives>.e2e.test.ts` on the `tests/stack.ts` helper, run against a stack with `bun run test:e2e` | `docker-test` skill |
 | Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package | - |
 | Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |

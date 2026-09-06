@@ -1,3 +1,15 @@
+## v0.1.26
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.25...v0.1.26)
+
+### 🏡 Chore
+
+- **skills:** Title dependency refreshes build(deps) so they can release ([#817](https://github.com/nrjdalal/zerostarter/pull/817))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.25
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.24...v0.1.25)

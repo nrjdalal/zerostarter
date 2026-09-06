@@ -25,25 +25,25 @@ When you don't know where to start, the `codebase-map` skill orients first; it m
 
 The skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
 
-| Stage    | Skill           | What it does                                                                                                                  |
-| -------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Navigate | `codebase-map`  | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory. |
-| Build    | `add-package`   | Add a shared workspace package the repo's way: skeleton, `types: ["bun"]` for Bun scripts, gitignored `.generated/` output.   |
-| Build    | `api-endpoint`  | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.     |
-| Build    | `db-migration`  | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                     |
-| Build    | `design`        | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                   |
-| Build    | `dev`           | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                      |
-| Build    | `portless`      | Set up and use portless for stable named `.localhost` dev URLs instead of `localhost:PORT`.                                   |
-| Build    | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                         |
-| Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                      |
-| Operate  | `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook.             |
-| Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`.                                                                 |
-| Operate  | `ui-verify`     | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                             |
-| Maintain | `fonts`         | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                        |
-| Maintain | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                                               |
-| Maintain | `shadcn-sync`   | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                              |
-| Ship     | `doc-sync`      | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                 |
-| Ship     | `gh-commit`     | Atomic commits in conventional-commit format.                                                                                 |
+| Stage    | Skill           | What it does                                                                                                                                      |
+| -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Navigate | `codebase-map`  | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory.                     |
+| Build    | `add-package`   | Add a shared workspace package the repo's way: skeleton, `types: ["bun"]` for Bun scripts, where output goes (`.generated/` or committed source). |
+| Build    | `api-endpoint`  | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.                         |
+| Build    | `db-migration`  | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                                         |
+| Build    | `design`        | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                                       |
+| Build    | `dev`           | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                                          |
+| Build    | `portless`      | Set up and use portless for stable named `.localhost` dev URLs instead of `localhost:PORT`.                                                       |
+| Build    | `runtime-apis`  | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                                             |
+| Operate  | `agent-browser` | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                                          |
+| Operate  | `audit`         | Run the dependency security audit and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook.                                 |
+| Operate  | `docker-test`   | Build and smoke-test the Docker images with `docker compose`, and run the golden end-to-end suite against them.                                   |
+| Operate  | `ui-verify`     | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                                                 |
+| Maintain | `fonts`         | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                            |
+| Maintain | `ignore-sync`   | Keep `.dockerignore` in step with `.gitignore`.                                                                                                   |
+| Maintain | `shadcn-sync`   | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                                                  |
+| Ship     | `doc-sync`      | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                                     |
+| Ship     | `gh-commit`     | Atomic commits in conventional-commit format.                                                                                                     |
 
 Two skills are vendored from Vercel Labs; every other skill is written for this repo. `agent-browser` (from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser)) is a discovery stub pinned in `skills-lock.json` for integrity: its committed `SKILL.md` just points the agent at the live workflow (`agent-browser skills get core`), installed with `npm i -g agent-browser && agent-browser install`. `portless` (from [`vercel-labs/portless`](https://github.com/vercel-labs/portless)) is copied in full and self-contained. Re-vendor to update either; do not hand-edit.
 

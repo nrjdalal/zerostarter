@@ -1,7 +1,7 @@
 # An API route harness, for the rules that only exist where code meets the database
 
 - Status: backlog
-- Links: PR #758 review
+- Links: PR #758 review, PR #823 (the end-to-end suite)
 
 The access rules are pure functions with 42 unit tests, and that is most of the safety. What has none is the seam where those functions meet a query, which is exactly where this section's load-bearing behaviour lives:
 
@@ -15,3 +15,5 @@ Each was verified by hand against the running stack, which is worth something an
 What it needs is a harness that can start the Hono app against a real Postgres and drive it as a client, with a per-test database (a template database, or a schema per worker) so a transaction test can actually open two connections and race them. Testcontainers or a disposable Neon branch both fit; the deciding question is what CI can start cheaply, since the suite today is `bun test` over pure modules with no services.
 
 Not urgent, and deliberately not faked with a mocked driver: a mock cannot tell you whether `FOR UPDATE` blocks, which is the entire claim.
+
+Since 2026-09-06 the `*.e2e.test.ts` suite (`bun run test:e2e`) drives a running stack over HTTP and covers the happy paths and the refusals as a client sees them, the refusal to change one's own role included; the last-owner race and the other rules above still need the per-test database this plan describes.

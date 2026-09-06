@@ -4,6 +4,7 @@ import { z } from "zod"
 import "@/load-dotenv"
 import { NODE_ENV } from "@/lib/constants"
 import { polyfillServer } from "@/lib/polyfill"
+import { dockerHostUrl } from "@/lib/postgres-url"
 
 export const env = createEnv({
   server: {
@@ -14,7 +15,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     POSTGRES_URL: polyfillServer(
       process.env.INTERNAL_API_URL
-        ? process.env.POSTGRES_URL?.replace("localhost", "host.docker.internal")
+        ? dockerHostUrl(process.env.POSTGRES_URL)
         : process.env.POSTGRES_URL,
       "postgres://polyfill.local:5432/db",
     ),

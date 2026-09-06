@@ -1,0 +1,19 @@
+import { describe, expect, test } from "bun:test"
+
+import { Client, enabled, WEB } from "../../../../../../../stack"
+
+// The blog Open Graph image in web/next/src/app/og/blog/[[...slug]]/route.tsx on a running stack: a PNG for the index and for the first post the index links.
+
+describe.skipIf(!enabled)("web/next/src/app/og/blog/[[...slug]]/route.tsx", () => {
+  test("the blog images render", async () => {
+    const visitor = new Client(WEB)
+    const html = await (await visitor.fetch("/blog")).text()
+    const link = html.match(/href="\/blog\/([^"/]+)"/)
+    expect(link, "the index links at least one post").not.toBeNull()
+    for (const path of ["/og/blog", `/og/blog/${link ? link[1] : "missing"}`]) {
+      const response = await visitor.fetch(path)
+      expect(response.status, path).toBe(200)
+      expect(response.headers.get("content-type"), path).toContain("image/png")
+    }
+  })
+})

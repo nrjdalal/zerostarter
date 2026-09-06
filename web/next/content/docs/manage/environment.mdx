@@ -5,7 +5,7 @@ title: Environment Variables
 description: One validated .env, read per-consumer so client code can never touch server secrets.
 ---
 
-There is one `.env` at the repo root, and no package reads `process.env` directly. Each consumer imports a validated, typed slice of the environment from `@packages/env/<name>`, so there is one place to set a variable, every variable is checked at boot instead of surfacing as `undefined` mid-request, and server secrets are structurally unable to reach the browser.
+There is one `.env` at the repo root, and no package reads `process.env` directly, with one exception: a variable the hosting platform injects rather than you configuring (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`) is read at the point of use and belongs in neither the schema nor `.env.example`. Each consumer imports a validated, typed slice of the environment from `@packages/env/<name>`, so there is one place to set a variable, every variable is checked at boot instead of surfacing as `undefined` mid-request, and server secrets are structurally unable to reach the browser.
 
 ## One file, read per consumer
 
@@ -41,7 +41,7 @@ The prefix is the rule the bundler enforces. A server secret has no `NEXT_PUBLIC
 
 ## Stages
 
-`NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`.
+`NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`. The API bundle reads it at runtime rather than at build (`bun build --env disable`), so the process or container env decides the stage, never the shell that ran the build.
 
 To branch on the stage, `@packages/env` also exports checkers (`isLocal`, `isProduction`, and one per stage) so code reads `isProduction(env.NEXT_PUBLIC_NODE_ENV)` instead of comparing raw strings.
 

@@ -32,7 +32,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
-- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay
+- **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay, and [Vercel Speed Insights](https://vercel.com/docs/speed-insights) for real Core Web Vitals, rendered only when deployed on Vercel
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
 - **SEO**: sitemap, robots, and per-page metadata, indexable by default
@@ -52,7 +52,7 @@ Every item below is wired and working out of the box, not just a dependency in `
     ├── db/        # Drizzle ORM schema and PostgreSQL client
     ├── env/       # Type-safe environment variables (t3-oss/env + Zod)
     ├── config/    # Shared config: TS/tsdown bases and the `site` brand identity
-    └── scripts/   # Build-only tooling (e.g. build-time tldts/env derivation); never bundled
+    └── scripts/   # Build tooling, auth schema regenerator; never bundled
 ```
 
 Two deployable apps (`api/hono` and `web/next`) and shared `packages/*` (auth, config, db, env, scripts). Brand identity lives in one place, `@packages/config/site`, so a fork rebrands by editing a single file.
@@ -114,7 +114,9 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run build`                   | Build every workspace                       |
 | `bun run check-types`             | Type-check every workspace                  |
 | `bun run test`                    | Build, then run the suite in `tests/`       |
+| `bun run test:e2e`                | Drive a running stack with the e2e suite    |
 | `bun run lint` / `bun run format` | Lint with Oxlint / format with Oxfmt        |
+| `bun run auth:schema`             | Regenerate the Better Auth tables           |
 | `bun run db:generate`             | Generate Drizzle migrations from the schema |
 | `bun run db:migrate`              | Apply pending migrations                    |
 | `bun run db:studio`               | Open Drizzle Studio                         |

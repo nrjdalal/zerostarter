@@ -16,6 +16,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## Planned
 
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
+- [Re-run the team member_count backfill after the 1.7 release](member-count-backfill-after-release.md) - one idempotent UPDATE on the shared database once production serves 1.7.3 (PR #821).
 
 ## Backlog / ideas
 
@@ -26,7 +27,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [A better landing page](landing-page.md) - #26.
 - [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
-- [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning + read-helper unification left).
+- [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning, read-helper unification and the version pass-through left).
 - [OpenAPI: the WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664; subsumed by api-envelope-typed-endpoint, but shippable on its own as the smaller fix.
 - [An API route harness](api-route-test-harness.md) - the last-owner FOR UPDATE, the ban compare-and-set and the sign-in grant hook are only checked by hand; a mock cannot tell you whether a lock blocks (PR #758 review).
 - [Next.js 16.3 adoption](next-163-adoption.md) - what was taken (`agentRules: false`, PR #786), what was measured and declined (the Rust React Compiler, ~6% here against a claimed 34-46%), and what Instant Navigations costs: `cacheComponents` spiked to 10 of 14 routes 500ing, with the blocker list.
@@ -48,7 +49,10 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 
 Raised but undecided: real concerns with no agreed next action and no confident verdict. They sit here rather than in the backlog (which implies a plan) or closed (which loses the context), and leave only by being decided. Mirrored as checkboxes on the standing Icebox issue (#707).
 
+- [The rate limiter's client-IP resolution](rate-limit-ip-resolution.md) - **top priority**: on any deploy where Bun owns the socket a forged `x-forwarded-for` names its own bucket and a header-less client gets a fresh random key, so anonymous limiting is off; adopt `@arcjet/ip` as its adapters use it, `platform` plus `proxies` and the socket peer (deepsec audit 2026-09-06, built and reverted on #819).
 - [Gating who may create an account](signup-gating.md) - the Access spec's other half, retired when the allowlist became a console grant; a second list, a fork-edited predicate, or nothing at all (#758).
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
 - [Data table offset pagination](data-table-offset-pagination.md) - batches can skip or repeat a row mid-scroll, and a repeat aliases selection; keyset is the fix but moves the contract (#754 review).
+- [Actions on mutable major tags in token-bearing workflows](action-sha-pinning.md) - pin every action to a commit SHA with Dependabot for Actions, pin only the two privileged workflows, or record major tags as the convention (deepsec audit 2026-09-06).
+- [The public-suffix /api rewrite bills a Vercel hop](rate-limit-rewrite-bucket.md) - pre-existing: on a `*.vercel.app` host every visitor shares one anonymous bucket on that path; an echo route on a preview API would show which header carries the client (deepsec audit 2026-09-06).

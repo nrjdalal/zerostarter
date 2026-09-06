@@ -19,7 +19,7 @@ Inside the Compose network the web container can't reach the api at `localhost`:
 
 - **web, build time**: baked into the Next.js rewrite in `next.config.ts`, so `/api/*` proxies to `http://api:4000`.
 - **web, runtime**: server-side API calls (SSR, server actions) in `src/lib/config.ts` hit the api container directly.
-- **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`packages/env/src/db.ts`), so the container reaches a database running on your host.
+- **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`dockerHostUrl` in `packages/env/src/lib/postgres-url.ts`, applied by `db.ts`), so the container reaches a database running on your host.
 
 External clients still use the mapped ports (`localhost:3000`, `localhost:4000`). You don't set `INTERNAL_API_URL` by hand for Compose: it's already wired.
 
@@ -51,6 +51,8 @@ Both builds validate the full env, so they need `.env` at build time, but never 
 ```
 
 Compose wires this from `secrets: dotenv` (sourced from `./.env`); a plain `docker build` passes `--secret id=dotenv,src=.env`. The secret is read from your host and never enters the build context; `.dockerignore` also excludes every real `.env*` file, letting only `.env.example` in. A missing `.env` fails the build immediately.
+
+The API bundle does not bake `NODE_ENV` either: it is built with `bun build --env disable`, so the value `env_file` supplies at runtime decides the stage, and `/api/health` reports it as `environment`. Without the flag bun inlines whatever the build shell had, which is never what `.env` says, since the secret is a mounted file and not a sourced environment.
 
 <Callout type="warn" title="Rebuild with --no-cache after editing .env">
 

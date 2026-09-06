@@ -1,4 +1,4 @@
-import { join } from "node:path"
+import { isAbsolute, join, relative, resolve, sep } from "node:path"
 
 import { parseForkLayout } from "@/fork-layout"
 import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
@@ -21,18 +21,34 @@ import {
 
 const p = (root: string, ...parts: string[]): string => join(root, ...parts)
 
-// Remove the fork excludes the .gitpickignore names, then drop the ignore file (a no-op for gitpick fetches, which never copy those paths). Each exclude must be a literal path: a glob would diverge from gitpick's own fetch, so fail loudly rather than half-match.
+// Remove the fork excludes the .gitpickignore names, then drop the ignore file (a no-op for gitpick fetches, which never copy those paths). Each exclude must be a literal path: a glob would diverge from gitpick's own fetch, so fail loudly rather than half-match. It must also sit inside the root: an in-place convert reads the checkout's own .gitpickignore, not the starter's, so an entry that climbs out (or names the root itself) would delete the user's files.
 const removeForkExcludes = (root: string): void => {
   const ignore = p(root, ".gitpickignore")
   if (!exists(ignore)) return
-  for (const path of parseForkLayout(read(ignore)).excludes) {
-    if (/[*?![\]]/.test(path)) {
-      throw new Error(
-        `.gitpickignore entry "${path}" is not a literal path; the in-place converter only supports literal paths (a glob or negation would diverge from gitpick's fetch).`,
-      )
-    }
-    remove(p(root, path))
+  const base = resolve(root)
+  const refuse = (path: string, reason: string): never => {
+    throw new Error(
+      `.gitpickignore entry "${path}" ${reason}; the in-place converter only removes literal paths under the root.`,
+    )
   }
+  // Every entry is checked before anything is removed, so a bad entry anywhere in the file leaves the checkout untouched.
+  const targets = parseForkLayout(read(ignore)).excludes.map((path) => {
+    if (/[*?![\]]/.test(path)) {
+      refuse(path, "is not a literal path (a glob or negation would diverge from gitpick's fetch)")
+    }
+    const inside = relative(base, resolve(base, path))
+    if (
+      isAbsolute(path) ||
+      !inside ||
+      inside === ".." ||
+      inside.startsWith(`..${sep}`) ||
+      isAbsolute(inside)
+    ) {
+      refuse(path, "is not inside the project")
+    }
+    return join(base, inside)
+  })
+  for (const target of targets) remove(target)
   remove(ignore)
 }
 

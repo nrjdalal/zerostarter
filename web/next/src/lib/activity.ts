@@ -12,7 +12,8 @@ export const ACTION_LABELS: Record<ActivityAction, string> = {
 
 // How an action reads, falling back to the stored code. A row keeps whatever verb was written, so a label may not exist for it: a fork's own verb, or one retired after rows already carried it. Showing the code is honest, and inventing a label is not.
 export function actionLabel(action: string) {
-  return action in ACTION_LABELS ? ACTION_LABELS[action as ActivityAction] : action
+  // hasOwn, not `in`: a stored code such as "constructor" would otherwise resolve through the prototype chain and hand the cell a function.
+  return Object.hasOwn(ACTION_LABELS, action) ? ACTION_LABELS[action as ActivityAction] : action
 }
 
 // The filter's options, labelled through the map above rather than through facetOptions, which upper-cases the first letter and would offer "Role.change" beside a column reading "Set role".

@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -18,6 +18,7 @@
     "web/*"
   ],
   "scripts": {
+    "auth:schema": "bun packages/scripts/src/auth-schema.ts",
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
     "check-types:scripts": "tsc -p .github/scripts/tsconfig.json",
@@ -36,7 +37,8 @@
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi"
+    "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi",
+    "test:e2e": "[ ! -d tests ] || E2E_API_URL=${E2E_API_URL:-http://localhost:4000} E2E_WEB_URL=${E2E_WEB_URL:-http://localhost:3000} bun test e2e.test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
@@ -100,9 +102,11 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@types/ws": "^8.18.1",
+    "@vercel/speed-insights": "^2.0.0",
     "@viz-js/viz": "^3.30.0",
+    "auth": "^1.7.3",
     "babel-plugin-react-compiler": "^1.0.0",
-    "better-auth": "^1.6.23",
+    "better-auth": "^1.7.3",
     "changelogen": "^0.6.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",

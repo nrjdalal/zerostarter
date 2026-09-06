@@ -1,0 +1,95 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/routers/auth.ts the providers list names the agent on a local stage 1`] = `
+{
+  "data": {
+    "providers": [
+      "github",
+      "google",
+      "agent",
+    ],
+  },
+}
+`;
+
+exports[`api/hono/src/routers/auth.ts the session read is empty for a visitor and whole for the agent 1`] = `
+{
+  "session": {
+    "activeOrganizationId": null,
+    "activeTeamId": null,
+    "createdAt": "<timestamp>",
+    "expiresAt": "<expiresAt:string>",
+    "id": "<id>",
+    "impersonatedBy": null,
+    "ipAddress": "<ipAddress:string>",
+    "token": "<token:string>",
+    "updatedAt": "<timestamp>",
+    "userAgent": "<userAgent:string>",
+    "userId": "<id>",
+  },
+  "user": {
+    "banExpires": null,
+    "banReason": null,
+    "banned": false,
+    "createdAt": "<timestamp>",
+    "email": "agent@local.host",
+    "emailVerified": true,
+    "id": "<id>",
+    "image": null,
+    "name": "LocalAgent",
+    "role": "owner",
+    "updatedAt": "<timestamp>",
+  },
+}
+`;
+
+exports[`api/hono/src/routers/auth.ts an organization is created, made active, and read back whole 1`] = `
+{
+  "createdAt": "<timestamp>",
+  "id": "<id>",
+  "invitations": [],
+  "logo": null,
+  "members": [
+    {
+      "createdAt": "<timestamp>",
+      "id": "<id>",
+      "organizationId": "<id>",
+      "role": "owner",
+      "user": {
+        "email": "agent@local.host",
+        "id": "<id>",
+        "image": null,
+        "name": "LocalAgent",
+      },
+      "userId": "<id>",
+    },
+  ],
+  "metadata": null,
+  "name": "Golden Org",
+  "slug": "golden-org",
+  "teams": [
+    {
+      "createdAt": "<timestamp>",
+      "id": "<id>",
+      "memberCount": 1,
+      "name": "Golden Org",
+      "organizationId": "<id>",
+      "updatedAt": "<timestamp>",
+    },
+  ],
+}
+`;
+
+exports[`api/hono/src/routers/auth.ts a team counts its seats as a member comes and goes 1`] = `
+{
+  "added": {
+    "createdAt": "<timestamp>",
+    "id": "<id>",
+    "teamId": "<id>",
+    "userId": "<id>",
+  },
+  "removed": {
+    "message": "Team member removed successfully.",
+  },
+}
+`;

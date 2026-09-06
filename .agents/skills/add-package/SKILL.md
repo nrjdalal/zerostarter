@@ -1,6 +1,6 @@
 ---
 name: add-package
-description: Add a new shared workspace package under packages/*. Use when creating a new @packages/<name>, whether a bundled library other workspaces import or a build-only script package that runs during a build.
+description: Add a new shared workspace package under packages/*. Use when creating a new @packages/<name>, whether a bundled library other workspaces import or a build-only script package that runs during a build or on demand (bun run <script>).
 source: local
 ---
 
@@ -11,7 +11,7 @@ The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A sh
 ## Pick the shape
 
 - **Library** (`env`, `db`, `auth`, `config`): tsdown-built to `dist/` and imported by other workspaces through an `exports` map. Use it when code is consumed at runtime.
-- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (for example `@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first). Use it for build-time codegen. CI or repo tooling belongs in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
+- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts`, either during another package's build (`@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first) or on demand from a root script (`bun run auth:schema` runs `auth-schema.ts`). Use it for build-time codegen and for regenerators of committed source. CI or repo tooling belongs in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
 
 ## Common skeleton (both shapes)
 
@@ -102,7 +102,7 @@ A package with no env of its own can pass another package's `env`/`getSafeEnv`, 
 
 ## Build-only script shape (adds to the skeleton)
 
-No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and the native tsc preview (tsgo) will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
+No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and the native tsc preview (tsgo) will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
 
 ```json
 {
@@ -120,7 +120,7 @@ No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own too
 
 `types: ["bun"]` is the only line that differs from a library's tsconfig; `bun-types` pulls in the node references, so `@types/node` stays a devDep but needs no separate `types` entry. The consumer runs the script in its own `build`, e.g. `"build": "bun ../<name>/src/<script>.ts && tsdown"` (the same `bun <path>` sibling-script call `web/next` and `api/hono` use for `.github/scripts/*.ts`), and declares `"@packages/<name>": "workspace:*"` as a devDependency so `turbo prune` keeps it in the Docker build. Invoke it from the consumer's directory (the `bun ../<name>/...` form), not the repo root: a script that reads env inherits the cwd-relative `.env` load (`cwd/../../.env`) that `@packages/env/load-dotenv` performs, so running it from root silently misses `.env`. That load rides on the server targets, `api-hono`, `auth` and `db`, which each import `@/load-dotenv`. Two entrypoints deliberately do not: the `@packages/env` index, which carries only constants and `getSafeEnv`, and `web-next`, which client components import and so must stay free of `node:*`. A script reaching env through either of those imports `@packages/env/load-dotenv` itself, as `generate-env.ts` does.
 
-Write any generated artifact to the repo-root `.generated/` dir (gitignored, dockerignored, removed by `bun run clean`), never inside a package. `.generated/` is the one centralized home for generated-but-disposable files the build consumes, which keeps individual packages free of committed-or-not `*.generated.*` files. When you add a new generated artifact type, add it to `.gitignore`/`.dockerignore` and `.github/scripts/clean.sh` together.
+Write any generated-but-disposable artifact to the repo-root `.generated/` dir (gitignored, dockerignored, removed by `bun run clean`), never inside a package; a regenerator whose output is committed source (`auth-schema.ts` writing `packages/db/src/schema/auth.ts`) writes that file in place and keeps its scratch in `.generated/`. `.generated/` is the one centralized home for generated-but-disposable files the build consumes, which keeps individual packages free of committed-or-not `*.generated.*` files. When you add a new generated artifact type, add it to `.gitignore`/`.dockerignore` and `.github/scripts/clean.sh` together.
 
 ## Wire it up
 

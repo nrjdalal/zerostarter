@@ -5,7 +5,7 @@ title: Organizations & Teams
 description: "Multi-tenant from Better Auth: the org and team data model, roles, invitations, and active-org switching."
 ---
 
-Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/index.ts`. The plugin backs the whole surface (organizations, members, teams, invitations, and an active org per session) with tables in the same Drizzle schema as the rest of your data, so a tenant is just rows you already own, not a separate service.
+Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/schema.ts`. The plugin backs the whole surface (organizations, members, teams, invitations, and an active org per session) with tables in the same Drizzle schema as the rest of your data, so a tenant is just rows you already own, not a separate service.
 
 The starter wires the two flows a product needs on day one, creating an organization and switching between them, and leaves the rest of the plugin's capability (invitations, teams, member management) available but unwired, ready for your product logic.
 
@@ -62,7 +62,7 @@ Working end to end in the app:
 
 Capable in the backend, but with no UI (and no email) yet:
 
-- **Invitations.** The `invitation` table and the plugin's invite/accept/reject endpoints exist, but no `sendInvitationEmail` is configured, so an invite creates a row without delivering a link. Wire delivery by adding `sendInvitationEmail` to the plugin in `packages/auth/src/index.ts`, then build the accept page around `organization.acceptInvitation`.
+- **Invitations.** The `invitation` table and the plugin's invite/accept/reject endpoints exist, but no `sendInvitationEmail` is configured, so an invite creates a row without delivering a link. Wire delivery by adding `sendInvitationEmail` to the plugin in `packages/auth/src/schema.ts`, importing the sender inside the callback as [Auth & Organizations](/docs/manage/authentication) shows for magic link, then build the accept page around `organization.acceptInvitation`.
 - **Teams.** `teams.enabled` is on and the tables are there, but nothing reads or writes `activeTeamId` yet. Build team UI on the `createTeam` / `setActiveTeam` methods.
 - **Member management.** `removeMember`, `updateMemberRole`, and `leave` are all available to build against.
 

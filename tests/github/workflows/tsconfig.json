@@ -1,0 +1,11 @@
+// Extends the scripts config: a workflow has no config of its own, and this is the nearest subject config, so the test type-checks like its sibling.
+// The tests themselves import by relative path: @/ would be ambiguous here, since every package defines it against its own src.
+{
+  "extends": "../../../.github/scripts/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}
