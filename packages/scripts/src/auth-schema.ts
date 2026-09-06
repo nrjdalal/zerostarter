@@ -8,7 +8,7 @@ const target = join(root, "packages/db/src/schema/auth.ts")
 const check = process.argv.includes("--check")
 const scratch = join(root, ".generated/auth-schema.ts")
 
-const run = async (cmd: string[], cwd: string, stdin?: string): Promise<string> => {
+const capture = async (cmd: string[], cwd: string, stdin?: string): Promise<string> => {
   const proc = Bun.spawn(cmd, {
     cwd,
     stderr: "pipe",
@@ -28,11 +28,11 @@ const run = async (cmd: string[], cwd: string, stdin?: string): Promise<string> 
 await Bun.write(scratch, "")
 let generated: string
 try {
-  await run(
+  await capture(
     ["bunx", "auth", "generate", "--config", config, "--output", scratch, "-y"],
     authPackage,
   )
-  generated = await run(
+  generated = await capture(
     ["bunx", "oxfmt", "--stdin-filepath", target],
     authPackage,
     await Bun.file(scratch).text(),
