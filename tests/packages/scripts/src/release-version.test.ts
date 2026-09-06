@@ -45,7 +45,7 @@ describe("decide", () => {
     expect(decide("0.1.28", "0.1.28", "v0.1.27").moved).toBe(false)
   })
 
-  test("treats a missing tag as v0.0.0, so a fork's first number is honoured", () => {
+  test("treats a missing tag as v0.0.0, so a fork's first number is honored", () => {
     expect(decide("0.0.0", "0.0.1", null).next).toBe("0.0.1")
     expect(decide("1.0.0", "0.0.1", null).next).toBe("1.0.0")
   })
@@ -56,17 +56,22 @@ describe("decide", () => {
   })
 })
 
-// A throwaway repository with one starter commit at a version, and helpers to add tagged or untagged conventional commits.
+// A throwaway repository with one starter commit at a version and this repo's changelog config, and helpers to add tagged or untagged conventional commits.
 const repo = async (version: string): Promise<string> => {
   const dir = await Bun.$`mktemp -d`.text().then((t) => t.trim())
   await Bun.$`git init -q -b canary ${dir}`
   await Bun.$`git -C ${dir} config user.email probe@example.com`
   await Bun.$`git -C ${dir} config user.name probe`
+  // The changelog config rides along, as it does in this repo and in a fork: it is what drops ci commits from the changelog, which the content gate reads.
+  await Bun.write(
+    join(dir, "changelog.config.json"),
+    await Bun.file(join(import.meta.dir, "../../../../changelog.config.json")).text(),
+  )
   await Bun.write(
     join(dir, "package.json"),
     `{\n  "name": "probe",\n  "version": "${version}"\n}\n`,
   )
-  await Bun.$`git -C ${dir} add package.json`
+  await Bun.$`git -C ${dir} add package.json changelog.config.json`
   await Bun.$`git -C ${dir} commit -q -m "chore: scaffold"`
   return dir
 }
@@ -122,6 +127,36 @@ describe("decideHere, against real repositories", () => {
         moved: false,
         next: "0.1.27",
       })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a window whose commits changelogen drops from the changelog earns nothing", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "chore(deps): bump something")
+      await commit(dir, "ci(labels): retitle")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.27", moved: false })
+      await commit(dir, "build(deps): refresh the catalog")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: true })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("the version field is read and written whatever its spacing", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      await Bun.write(join(dir, "package.json"), `{"name":"probe","version":"0.1.27"}\n`)
+      await Bun.$`git -C ${dir} commit -q -am ${"chore: compact"}`
+      expect(await decideHere(dir)).toMatchObject({ current: "0.1.27", earned: "0.1.28" })
+      expect(await Bun.file(join(dir, "package.json")).text()).toBe(
+        `{"name":"probe","version":"0.1.27"}\n`,
+      )
     } finally {
       await cleanup(dir)
     }
