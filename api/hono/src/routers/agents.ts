@@ -38,11 +38,14 @@ export const agentsRouter = new Hono()
       if (!user) return fail("user update failed")
     } else {
       try {
-        user = await ctx.internalAdapter.createUser({
-          email: AGENT_EMAIL,
-          name: AGENT_NAME,
-          emailVerified: true,
-        })
+        user = await ctx.internalAdapter.createUser(
+          {
+            email: AGENT_EMAIL,
+            name: AGENT_NAME,
+            emailVerified: true,
+          },
+          { method: "agent" },
+        )
         created = true
       } catch (err) {
         console.error("POST /api/agents/sign-in-as createUser failed:", err)
