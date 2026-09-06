@@ -21,7 +21,7 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
    ├─ db/         # Drizzle schema + migrations
    ├─ env/        # type-safe, validated environment variables
    ├─ config/     # TS base, tsdown factory, and site.ts (the brand)
-   └─ scripts/    # build-only tooling (build-time tldts/env derivation); never bundled
+   └─ scripts/    # Bun tooling: build-time tldts/env derivation, the on-demand auth schema regenerator; never bundled
 ```
 
 ## `api/hono`
@@ -52,7 +52,7 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 - **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `console.ts`, `waitlist.ts`, grouped by concern rather than one file per table) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
-- **`scripts`**: build-only Bun tooling (e.g. the tldts breakdown baked into `auth`, and the client split signal `web/next`'s `next.config` inlines). It runs during a build and writes to the gitignored repo-root `.generated/`, never bundled or imported at runtime.
+- **`scripts`**: Bun tooling that is never bundled or imported at runtime. The build-time scripts (the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines) write to the gitignored repo-root `.generated/`; the on-demand `auth-schema` regenerator (`bun run auth:schema`) writes the committed `packages/db/src/schema/auth.ts`.
 
 ## Bun catalog
 
