@@ -16,7 +16,6 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## Planned
 
 - [Dynamic per-branch preview URLs](dynamic-preview-urls.md) - predictable per-branch preview URLs on our own domains via alias-on-deploy (#677).
-- [Re-run the team member_count backfill after the 1.7 release](member-count-backfill-after-release.md) - one idempotent UPDATE on the shared database once production serves 1.7.3 (PR #821).
 
 ## Backlog / ideas
 
