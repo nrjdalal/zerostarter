@@ -1,10 +1,10 @@
 ---
 slug: /docs/manage/analytics
 title: Analytics & Feedback
-description: "Optional PostHog analytics and a feedback link: wire them in when you need them."
+description: "Optional PostHog analytics, Vercel Speed Insights, and a feedback link: wire them in when you need them."
 ---
 
-Both of these are **optional**, and both stay off until you set an environment variable. Out of the box nothing tracks your users and no feedback link renders; you opt in when you need them.
+All three of these are **optional**. PostHog and the feedback link stay off until you set an environment variable, and Speed Insights turns itself on only where it can actually report. Out of the box nothing tracks your users and no feedback link renders; you opt in when you need them.
 
 ## PostHog analytics
 
@@ -46,6 +46,36 @@ function Dashboard() {
 ```
 
 PostHog is privacy-configurable: the host picks EU or US data residency, session recordings can be masked or turned off, and its built-in opt-out honors users who decline tracking.
+
+## Vercel Speed Insights
+
+[Speed Insights](https://vercel.com/docs/speed-insights) reports real Core Web Vitals from your actual visitors, rather than the synthetic numbers a Lighthouse run gives you. It needs no environment variable and no key, because it only reports to the platform it is deployed on.
+
+That is also why it is conditional. The beacon posts to `/_vercel/speed-insights/vitals`, a route only Vercel serves, so on Docker or any self-host it would fire requests that can never arrive. The root layout gates it on the platform instead:
+
+```tsx
+// web/next/src/app/layout.tsx
+const onVercel = process.env.VERCEL === "1"
+```
+
+```tsx
+<body className="min-h-svh">
+  <InnerProvider>{children}</InnerProvider>
+  {onVercel && <SpeedInsights />}
+</body>
+```
+
+`VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render. Deciding on the server also keeps the client reference out of the payload entirely when you deploy anywhere else.
+
+Deploy to Vercel and enable Speed Insights once in the project dashboard, and data starts arriving. Nothing else to wire.
+
+<Callout type="info" title="Previews count against your quota">
+
+Every deployment reports, previews included, and Vercel meters Speed Insights by data point. If PR previews are eating the allowance, narrow the check to `process.env.VERCEL_ENV === "production"`.
+
+</Callout>
+
+To remove it entirely, delete the import, the `onVercel` line, and the one line that renders it, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
 
 ## User feedback
 

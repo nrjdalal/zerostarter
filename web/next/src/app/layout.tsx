@@ -2,6 +2,7 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 
 import { site } from "@packages/config/site"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { cn } from "cn"
 import type { Metadata } from "next"
 
@@ -22,6 +23,9 @@ function getOgImageUrl(): string {
 }
 
 const ogImageUrl = getOgImageUrl()
+
+// Speed Insights reports only to Vercel, so anywhere else (Docker, self-host) it would ship a beacon that can never arrive. Read straight from the platform like the repo's other two Vercel checks (next.config.ts, api/hono/src/lib/server.ts): VERCEL is injected by the platform, not app config, so it belongs in neither @packages/env nor .env.example. Deciding it in this server component keeps the client reference out of the RSC payload when it is unset.
+const onVercel = process.env.VERCEL === "1"
 
 export const metadata: Metadata = {
   title: {
@@ -68,6 +72,7 @@ export default function RootLayout({
             <Navbar />
             {children}
           </InnerProvider>
+          {onVercel && <SpeedInsights />}
         </body>
       </html>
     </OuterProvider>

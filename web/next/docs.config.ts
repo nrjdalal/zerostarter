@@ -193,7 +193,7 @@ const docsConfig = {
         "/docs/manage/analytics": {
           title: "Analytics & Feedback",
           description:
-            "Optional PostHog analytics and a feedback link: wire them in when you need them.",
+            "Optional PostHog analytics, Vercel Speed Insights, and a feedback link: wire them in when you need them.",
         },
       },
     ],
