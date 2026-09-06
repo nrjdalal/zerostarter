@@ -7,24 +7,24 @@ import { getConnInfo } from "hono/bun"
 
 import { jsonError } from "@/lib/error"
 
-// Vercel fronts the function with its own proxy and stamps the client headers; everywhere else Bun owns the socket (lib/server.ts) and the peer address is authoritative.
+// Vercel fronts the function with its own proxy and overwrites x-forwarded-for with the client, also through the web's /api rewrite; everywhere else Bun owns the socket (lib/server.ts) and the peer address is authoritative.
 const onVercel = process.env.VERCEL === "1"
 
-// The peer Bun accepted the connection from, or undefined under another adapter (Vercel's Node server, a test context) whose env is not the Bun server.
+// The peer Bun accepted the connection from, or undefined under another adapter (Vercel's Node server, a test context) whose env is not the Bun server. A dual-stack listener reports an IPv4 client as ::ffff:a.b.c.d, which the IP library does not classify, so it is unwrapped first: left as is, a public IPv4 client would read as internal and never be billed.
 const peerAddress = (c: Context): string | undefined => {
   if (onVercel) return undefined
   try {
-    return getConnInfo(c).remote.address
+    const address = getConnInfo(c).remote.address
+    return address && address.startsWith("::ffff:") ? address.slice("::ffff:".length) : address
   } catch {
     return undefined
   }
 }
 
-// The address the IP tier bills. A public peer is the client itself and no header overrides it, so a forged x-forwarded-for on a direct deploy changes nothing; a private peer is a proxy or a sibling service, and the client is whatever it forwarded (Vercel's own headers on Vercel). A private peer that forwarded nothing is internal traffic, the web app's server-side calls or a health check, and is not billed: pooling it into one bucket would throttle every user at once.
+// The address the IP tier bills. A public peer is the client itself and no header overrides it, so a forged x-forwarded-for on a direct deploy changes nothing; a private peer is a proxy or a sibling service, and the client is whatever it forwarded in x-forwarded-for, read last hop first. No platform option: Vercel's would read x-real-ip first, whose value behind a rewrite is not established, while x-forwarded-for is the client production has keyed on all along, directly and through the web's /api rewrite. A private peer that forwarded nothing is internal traffic, the web app's server-side calls or a health check, and is not billed: pooling it into one bucket would throttle every user at once.
 export const clientAddress = (c: Context): { address: string; internal: boolean } => {
   const peer = peerAddress(c)
-  const options = onVercel ? { platform: "vercel" as const } : undefined
-  const address = findIp({ headers: c.req.raw.headers, ip: peer }, options)
+  const address = findIp({ headers: c.req.raw.headers, ip: peer })
   if (address) return { address, internal: false }
   return { address: peer ?? "unknown", internal: peer !== undefined }
 }

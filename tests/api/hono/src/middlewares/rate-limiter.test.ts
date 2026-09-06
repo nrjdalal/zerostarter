@@ -45,6 +45,23 @@ describe("clientAddress", () => {
     })
   })
 
+  test("unwraps the IPv4-mapped form a dual-stack listener reports, so a public IPv4 client is still billed", () => {
+    // Bun listening on :: reports an IPv4 peer as ::ffff:a.b.c.d, which @arcjet/ip classifies as nothing at all.
+    expect(clientAddress(context({ "x-forwarded-for": "1.1.1.1" }, "::ffff:8.8.8.8"))).toEqual({
+      address: "8.8.8.8",
+      internal: false,
+    })
+    expect(clientAddress(context({}, "::ffff:172.18.0.5"))).toEqual({
+      address: "172.18.0.5",
+      internal: true,
+    })
+    expect(clientAddress(context({}, "::1"))).toEqual({ address: "::1", internal: true })
+    expect(clientAddress(context({ "x-forwarded-for": "1.1.1.1" }, "2606:4700::1111"))).toEqual({
+      address: "2606:4700::1111",
+      internal: false,
+    })
+  })
+
   test("with no socket at all, an unattributable request lands in one shared bucket, never a fresh key", () => {
     expect(clientAddress(context({}))).toEqual({ address: "unknown", internal: false })
     expect(clientAddress(context({ "x-forwarded-for": "1.1.1.1" }))).toEqual({
