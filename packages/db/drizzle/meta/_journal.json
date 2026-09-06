@@ -29,6 +29,13 @@
       "when": 1785074357611,
       "tag": "0003_console",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788684887633,
+      "tag": "0004_better_auth_1_7",
+      "breakpoints": true
     }
   ]
 }

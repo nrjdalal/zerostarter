@@ -14,6 +14,10 @@
     "./access": {
       "types": "./dist/access.d.mts",
       "default": "./dist/access.mjs"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.mts",
+      "default": "./dist/schema.mjs"
     }
   },
   "scripts": {

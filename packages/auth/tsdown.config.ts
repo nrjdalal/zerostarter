@@ -33,7 +33,8 @@ if (existsSync(generatedPath)) {
 export default definePackageConfig({
   name: "@packages/auth",
   // access.ts is its own entry so the web can import the rank predicate without pulling the auth instance, which reaches the database driver and does not resolve in a Next build.
-  entry: ["src/access.ts", "src/index.ts"],
+  // schema.ts is its own entry too: the auth CLI loads it under Node to generate the Drizzle schema, and it must not drag the instance (and the bun-only db client) in.
+  entry: ["src/access.ts", "src/index.ts", "src/schema.ts"],
   env,
   getSafeEnv,
   define: { __DERIVED_TLDTS__: JSON.stringify(breakdown) },
