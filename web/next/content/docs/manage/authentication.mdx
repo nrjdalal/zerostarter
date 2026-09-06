@@ -25,6 +25,7 @@ import { magicLink } from "better-auth/plugins"
 // packages/auth/src/schema.ts, inside plugins
 magicLink({
   sendMagicLink: async ({ email, url }) => {
+    // your own module, imported here rather than at the top of the file
     const { sendEmail } = await import("@/lib/email")
     await sendEmail({
       to: email,
