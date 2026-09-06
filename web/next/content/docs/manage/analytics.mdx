@@ -1,10 +1,10 @@
 ---
 slug: /docs/manage/analytics
 title: Analytics & Feedback
-description: "Optional PostHog analytics and a feedback link: wire them in when you need them."
+description: Optional PostHog analytics and a feedback link, plus Speed Insights on every Vercel deploy.
 ---
 
-Both of these are **optional**, and both stay off until you set an environment variable. Out of the box nothing tracks your users and no feedback link renders; you opt in when you need them.
+PostHog and the feedback link are **optional** and stay off until you set an environment variable, so out of the box neither one runs and you opt in when you need them. Speed Insights works the other way round: it takes no key and no variable, and it renders on every Vercel deployment, so you turn it off by removing it, not on by adding something.
 
 ## PostHog analytics
 
@@ -46,6 +46,43 @@ function Dashboard() {
 ```
 
 PostHog is privacy-configurable: the host picks EU or US data residency, session recordings can be masked or turned off, and its built-in opt-out honors users who decline tracking.
+
+## Vercel Speed Insights
+
+[Speed Insights](https://vercel.com/docs/speed-insights) reports real Core Web Vitals from your actual visitors, rather than the synthetic numbers a Lighthouse run gives you. It needs no environment variable and no key, because it only reports to the platform it is deployed on.
+
+That is also why it is conditional. The beacon posts to `/_vercel/speed-insights/vitals`, a route only Vercel serves, so on Docker or any self-host it would fire requests that can never arrive. The root layout gates it on the platform instead:
+
+```tsx
+// web/next/src/app/layout.tsx
+const onVercel = process.env.VERCEL === "1"
+```
+
+```tsx
+<body className="min-h-svh">
+  <InnerProvider>{children}</InnerProvider>
+  {onVercel && <SpeedInsights />}
+</body>
+```
+
+`VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render.
+
+What the gate does and does not do: off Vercel the component is never rendered, so the beacon script never loads and no request is made. The package's own module is a static import, so it still ships in the client bundle either way, where nothing executes it. Make it a dynamic import if you want it gone from the bundle too.
+
+There is no enable step. Deploy to Vercel and it starts collecting, because every deployment already serves the collection routes; the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through. Nothing else to wire.
+
+<Callout type="info" title="Previews count against your quota">
+
+Every deployment reports, previews included, and Vercel meters Speed Insights by data point. Narrowing to `process.env.VERCEL_ENV === "production"` drops PR previews, but it drops `canary` too, since canary deploys as a preview. To keep canary and lose the rest, test the branch as well, the way `.github/scripts/migrate-on-deploy.ts` already picks its deploy branches:
+
+```ts
+const onVercel =
+  process.env.VERCEL_ENV === "production" || process.env.VERCEL_GIT_COMMIT_REF === "canary"
+```
+
+</Callout>
+
+To remove it entirely, delete the import, the `onVercel` line with its comment, and the one line that renders it, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
 
 ## User feedback
 

@@ -2,6 +2,7 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 
 import { site } from "@packages/config/site"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { cn } from "cn"
 import type { Metadata } from "next"
 
@@ -22,6 +23,9 @@ function getOgImageUrl(): string {
 }
 
 const ogImageUrl = getOgImageUrl()
+
+// Off Vercel the beacon posts to a route nothing serves, so it is never rendered there. Platform-injected, so it is read here rather than through @packages/env, matching api/hono/src/lib/server.ts.
+const onVercel = process.env.VERCEL === "1"
 
 export const metadata: Metadata = {
   title: {
@@ -68,6 +72,7 @@ export default function RootLayout({
             <Navbar />
             {children}
           </InnerProvider>
+          {onVercel && <SpeedInsights />}
         </body>
       </html>
     </OuterProvider>
