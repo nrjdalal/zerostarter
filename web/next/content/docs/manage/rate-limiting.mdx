@@ -12,10 +12,10 @@ The limiter buckets each request by the first of these it can resolve:
 
 1. **User id**, when the request carries a session (`userid:<id>`).
 2. **API key**, hashed, when one is supplied (`apikey:<hash>`).
-3. **IP address** (`ip:<addr>`), resolved with [`@arcjet/ip`](https://github.com/arcjet/arcjet-js): the socket peer when Bun owns the socket and the peer is a public address, which no request header can override; otherwise the client a trusted party forwarded in `x-forwarded-for`, read last hop first. Only that header is consulted: Vercel overwrites it with the client, a reverse proxy sets it elsewhere, and the library's other fallbacks (`forwarded`, `true-client-ip`, `x-client-ip`, `x-real-ip`) are ignored, since behind a private peer they would let a client name its own bucket.
-4. **Internal traffic is skipped**: a private-network peer that forwarded no client address (off Vercel, where Bun owns the socket: the web app's server-side calls, a health check, local dev behind portless) is not billed at all, since pooling it into one bucket would throttle every user at once. Front a self-host with a reverse proxy that sets `x-forwarded-for` if you want its anonymous callers limited per client. A request with neither a usable peer nor a forwarded client, which only another server adapter can produce, lands in one shared `ip:unknown` bucket rather than escaping the limit.
+3. **IP address**, detected from request headers with [`@arcjet/ip`](https://github.com/arcjet/arcjet-js) (`ip:<addr>`).
+4. A **random per-request id** if no IP can be found, which effectively leaves that request unbounded.
 
-The global limiter passes no user or key resolver, so it always falls to the IP tier. The auth middleware installs the per-user limiter that supplies the session's user id, so authenticated traffic is bucketed by account rather than by shared network address.
+The global limiter passes no user or key resolver, so it always falls to the IP (or random) tier. The auth middleware installs the per-user limiter that supplies the session's user id, so authenticated traffic is bucketed by account rather than by shared network address.
 
 ## Limits and window
 
@@ -40,7 +40,7 @@ Every response also carries the `draft-6` standard headers, `RateLimit-Limit`, `
 
 <Callout type="info" title="Arcjet here is just IP detection">
 
-`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It is handed the socket peer and the request's `x-forwarded-for`, nothing else, and resolves the address the IP tier keys on.
+`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It only reads forwarded/platform headers to resolve the address the IP tier keys on.
 
 </Callout>
 
