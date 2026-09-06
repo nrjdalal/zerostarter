@@ -35,6 +35,7 @@
     "lint": "oxlint",
     "postinstall": "bun .github/scripts/deps-manager.ts",
     "prepare": "bunx lefthook install",
+    "release:version": "bun packages/scripts/src/release-version.ts",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
     "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi",

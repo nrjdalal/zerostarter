@@ -1,0 +1,170 @@
+import { describe, expect, test } from "bun:test"
+import { join } from "node:path"
+
+import { compare, decide, decideHere } from "../../../../packages/scripts/src/release-version"
+
+// The pure decision, then the whole script against throwaway git repositories shaped like each stage of a project: a fresh fork with no tag, a steady-state window, a window that turns breaking halfway, a window of nothing but mechanical commits, a hand-set ahead of everything, a tree already moved forward, and a tree below the last tag. The repositories are real so changelogen reads real commits, and the script runs this repo's locked changelogen whatever directory it is pointed at.
+
+describe("compare", () => {
+  test("orders numeric semver by major, then minor, then patch", () => {
+    expect(compare("0.1.28", "0.1.27")).toBeGreaterThan(0)
+    expect(compare("0.2.0", "0.1.99")).toBeGreaterThan(0)
+    expect(compare("1.0.0", "0.99.99")).toBeGreaterThan(0)
+    expect(compare("0.0.100", "0.0.99")).toBeGreaterThan(0)
+    expect(compare("0.1.27", "0.1.27")).toBe(0)
+    expect(compare("0.1.27", "0.1.28")).toBeLessThan(0)
+  })
+
+  test("refuses anything that is not three numbers", () => {
+    expect(() => compare("0.1", "0.1.0")).toThrow("not a release version")
+    expect(() => compare("v0.1.0", "0.1.0")).toThrow("not a release version")
+  })
+})
+
+describe("decide", () => {
+  test("moves the tree forward to what the window earned", () => {
+    expect(decide("0.1.27", "0.1.28", "v0.1.27")).toEqual({
+      current: "0.1.27",
+      earned: "0.1.28",
+      moved: true,
+      next: "0.1.28",
+      tag: "v0.1.27",
+    })
+  })
+
+  test("keeps a hand-set that is ahead of the window", () => {
+    expect(decide("2.0.0", "0.1.28", "v0.1.27").next).toBe("2.0.0")
+    expect(decide("2.0.0", "0.1.28", "v0.1.27").moved).toBe(false)
+  })
+
+  test("lifts a hand-set that undercounts a breaking window", () => {
+    expect(decide("0.1.28", "0.2.0", "v0.1.27").next).toBe("0.2.0")
+  })
+
+  test("leaves a tree already at the earned number alone", () => {
+    expect(decide("0.1.28", "0.1.28", "v0.1.27").moved).toBe(false)
+  })
+
+  test("treats a missing tag as v0.0.0, so a fork's first number is honoured", () => {
+    expect(decide("0.0.0", "0.0.1", null).next).toBe("0.0.1")
+    expect(decide("1.0.0", "0.0.1", null).next).toBe("1.0.0")
+  })
+
+  test("refuses a tree below the last release", () => {
+    expect(() => decide("0.1.26", "0.1.28", "v0.1.27")).toThrow("below the last release v0.1.27")
+    expect(() => decide("0.1.27", "0.1.28", "v0.1.28")).toThrow("below the last release v0.1.28")
+  })
+})
+
+// A throwaway repository with one starter commit at a version, and helpers to add tagged or untagged conventional commits.
+const repo = async (version: string): Promise<string> => {
+  const dir = await Bun.$`mktemp -d`.text().then((t) => t.trim())
+  await Bun.$`git init -q -b canary ${dir}`
+  await Bun.$`git -C ${dir} config user.email probe@example.com`
+  await Bun.$`git -C ${dir} config user.name probe`
+  await Bun.write(
+    join(dir, "package.json"),
+    `{\n  "name": "probe",\n  "version": "${version}"\n}\n`,
+  )
+  await Bun.$`git -C ${dir} add package.json`
+  await Bun.$`git -C ${dir} commit -q -m "chore: scaffold"`
+  return dir
+}
+
+const commit = async (dir: string, message: string, tag?: string): Promise<void> => {
+  await Bun.$`git -C ${dir} commit -q --allow-empty -m ${message}`
+  if (tag) await Bun.$`git -C ${dir} tag ${tag}`
+}
+
+const setVersion = async (dir: string, version: string): Promise<void> => {
+  const file = join(dir, "package.json")
+  const text = await Bun.file(file).text()
+  await Bun.write(file, text.replace(/"version": "[^"]+"/, `"version": "${version}"`))
+  await Bun.$`git -C ${dir} commit -q -am ${"chore: set version " + version}`
+}
+
+const cleanup = async (dir: string): Promise<void> => {
+  await Bun.$`rm -rf ${dir}`
+}
+
+describe("decideHere, against real repositories", () => {
+  test("a fresh fork with no tag earns 0.0.1 from its first fix", async () => {
+    const dir = await repo("0.0.0")
+    try {
+      await commit(dir, "fix: first")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.0.1", next: "0.0.1", tag: null })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a feature window at 0.x earns a patch, and a breaking commit turns it minor", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: true, next: "0.1.28" })
+      await commit(dir, "feat!: two")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.2.0", next: "0.2.0" })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a window of nothing but mechanical commits earns nothing", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "ci(changelog): update changelog and bump version")
+      await commit(dir, "ci(version): bump to v0.1.28")
+      expect(await decideHere(dir)).toMatchObject({
+        earned: "0.1.27",
+        moved: false,
+        next: "0.1.27",
+      })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a tree already moved forward is not bumped twice", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      await setVersion(dir, "0.1.28")
+      expect(await decideHere(dir)).toMatchObject({
+        current: "0.1.28",
+        earned: "0.1.28",
+        moved: false,
+      })
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a hand-set major stays, and the files are put back after the computation", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "feat: one")
+      await setVersion(dir, "2.0.0")
+      expect(await decideHere(dir)).toMatchObject({ earned: "0.1.28", moved: false, next: "2.0.0" })
+      expect(await Bun.file(join(dir, "package.json")).text()).toContain('"version": "2.0.0"')
+      expect(await Bun.file(join(dir, "CHANGELOG.md")).exists()).toBe(false)
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+
+  test("a tree below the last tag is refused", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.28")
+      await commit(dir, "fix: one")
+      await expect(decideHere(dir)).rejects.toThrow("below the last release v0.1.28")
+    } finally {
+      await cleanup(dir)
+    }
+  }, 30000)
+})
