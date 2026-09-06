@@ -20,9 +20,12 @@ describe.skipIf(!enabled)("api/hono/src/routers/agents.ts", () => {
       method: "POST",
       headers: { origin: WEB },
     })
-    expect(response.status).toBe(302)
-    expect(response.headers.get("location")).toBe(`${WEB}/dashboard`)
-    expect(client.cookies.size).toBeGreaterThan(0)
-    await signOut(client)
+    try {
+      expect(response.status).toBe(302)
+      expect(response.headers.get("location")).toBe(`${WEB}/dashboard`)
+      expect(client.cookies.size).toBeGreaterThan(0)
+    } finally {
+      await signOut(client)
+    }
   })
 })

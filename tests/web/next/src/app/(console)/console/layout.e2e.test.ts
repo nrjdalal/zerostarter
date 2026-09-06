@@ -12,9 +12,12 @@ describe.skipIf(!enabled)("web/next/src/app/(console)/console/layout.tsx", () =>
 
   test("the owner gets the console home", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console`)
-    expect(response.status).toBe(200)
-    expect(await response.text()).toContain("Console")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain("Console")
+    } finally {
+      await signOut(agent)
+    }
   })
 })

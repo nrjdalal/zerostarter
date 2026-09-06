@@ -12,9 +12,12 @@ describe.skipIf(!enabled)("web/next/src/app/(console)/console/docs/[[...slug]]/p
 
   test("the owner gets the console docs", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console/docs`)
-    expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toContain("text/html")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console/docs`)
+      expect(response.status).toBe(200)
+      expect(response.headers.get("content-type")).toContain("text/html")
+    } finally {
+      await signOut(agent)
+    }
   })
 })

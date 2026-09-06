@@ -11,12 +11,15 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
 
   afterAll(async () => {
     const agent = await signInAsAgent()
-    const { body } = await agent.json<{ data: { signups: { email: string; id: string }[] } }>(
-      "/api/v1/admin/waitlist?perPage=100",
-    )
-    const ids = body.data.signups.filter((row) => row.email === EMAIL).map((row) => row.id)
-    if (ids.length > 0) await agent.send("DELETE", "/api/v1/admin/waitlist", { ids })
-    await signOut(agent)
+    try {
+      const { body } = await agent.json<{ data: { signups: { email: string; id: string }[] } }>(
+        "/api/v1/admin/waitlist?perPage=100",
+      )
+      const ids = body.data.signups.filter((row) => row.email === EMAIL).map((row) => row.id)
+      if (ids.length > 0) await agent.send("DELETE", "/api/v1/admin/waitlist", { ids })
+    } finally {
+      await signOut(agent)
+    }
   })
 
   test("the count is public", async () => {
@@ -31,7 +34,7 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
     expect(first.status).toBe(200)
     expect({
       first: first.body,
-      second: { status: second.status, body: second.body },
+      second: { body: second.body, status: second.status },
     }).toMatchSnapshot()
   })
 

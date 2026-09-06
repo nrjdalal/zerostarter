@@ -7,8 +7,11 @@ import { enabled, signInAsAgent, signOut, WEB } from "../../../../../../../stack
 describe.skipIf(!enabled)("web/next/src/app/(console)/console/[...unmatched]/page.tsx", () => {
   test("an unknown console path is not found for the owner", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console/nothing-here`)
-    expect(response.status).toBe(404)
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console/nothing-here`)
+      expect(response.status).toBe(404)
+    } finally {
+      await signOut(agent)
+    }
   })
 })

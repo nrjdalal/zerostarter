@@ -13,8 +13,11 @@ describe.skipIf(!enabled)("web/next/src/app/(protected)/layout.tsx", () => {
 
   test("the signed-in agent gets the dashboard", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/dashboard`)
-    expect(response.status).toBe(200)
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/dashboard`)
+      expect(response.status).toBe(200)
+    } finally {
+      await signOut(agent)
+    }
   })
 })

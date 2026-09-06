@@ -38,15 +38,15 @@ export class Client {
     init: RequestInit = {},
   ): Promise<{ status: number; body: T }> {
     const response = await this.fetch(target, init)
-    return { status: response.status, body: (await response.json()) as T }
+    return { body: (await response.json()) as T, status: response.status }
   }
 
   // Every write carries the web URL as its Origin, which Better Auth checks on state-changing requests and the agent route requires outright; the web URL is a trusted origin by construction.
   send<T = unknown>(method: string, target: string, body?: unknown) {
     return this.json<T>(target, {
-      method,
-      headers: { "content-type": "application/json", origin: WEB },
       body: body === undefined ? undefined : JSON.stringify(body),
+      headers: { "content-type": "application/json", origin: WEB },
+      method,
     })
   }
 }
@@ -66,10 +66,12 @@ export const signInAsAgent = async (): Promise<Client> => {
 
 // End the session a sign-in minted, so a run leaves no session rows behind.
 export const signOut = async (client: Client): Promise<void> => {
-  await client.send("POST", "/api/auth/sign-out")
+  const { status } = await client.send("POST", "/api/auth/sign-out")
+  if (status !== 200) throw new Error(`sign-out answered ${status}`)
 }
 
 const BETTER_AUTH_ID = /^[A-Za-z0-9]{32}$/
+const BUILD_VERSION = /^\d+\.\d+\.\d+(-[0-9a-f]{7,40})?$/
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // Fields whose value depends on the run, the machine, the clock, or the build, and never on the contract. The placeholder keeps the type, so a field that changes type still fails.
@@ -93,6 +95,9 @@ export const normalize = (value: unknown, key = ""): unknown => {
   if (VOLATILE_KEYS.has(key) && value !== null && value !== undefined) {
     return `<${key}:${typeof value}>`
   }
+  // The OpenAPI document quotes the build version as an example, under a key that is not volatile anywhere else.
+  if (key === "example" && typeof value === "string" && BUILD_VERSION.test(value))
+    return "<version:string>"
   if (typeof value === "string") {
     if (ISO_TIMESTAMP.test(value)) return "<timestamp>"
     if (UUID.test(value)) return "<uuid>"
@@ -102,7 +107,7 @@ export const normalize = (value: unknown, key = ""): unknown => {
 }
 
 // Seeding writes straight into the database, so it runs only against one on this machine: a disposable container, never the shared one a dev stack could be pointed at by mistake.
-const LOCAL_HOSTS = new Set(["127.0.0.1", "::1", "host.docker.internal", "localhost"])
+const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
 
 const disposable = (): Bun.SQL => {
   const host = new URL(POSTGRES_URL).hostname

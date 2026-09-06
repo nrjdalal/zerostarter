@@ -12,9 +12,14 @@ describe.skipIf(!enabled)("web/next/src/app/api/console/search/route.ts", () => 
 
   test("the owner gets a list of hits", async () => {
     const agent = await signInAsAgent()
-    const { status, body } = await agent.json<unknown[]>(`${WEB}/api/console/search?query=console`)
-    expect(status).toBe(200)
-    expect(Array.isArray(body)).toBe(true)
-    await signOut(agent)
+    try {
+      const { status, body } = await agent.json<unknown[]>(
+        `${WEB}/api/console/search?query=console`,
+      )
+      expect(status).toBe(200)
+      expect(Array.isArray(body)).toBe(true)
+    } finally {
+      await signOut(agent)
+    }
   })
 })

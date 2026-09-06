@@ -71,7 +71,7 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
                           "type": "string",
                         },
                         "version": {
-                          "example": "0.1.26",
+                          "example": "<version:string>",
                           "type": "string",
                         },
                       },

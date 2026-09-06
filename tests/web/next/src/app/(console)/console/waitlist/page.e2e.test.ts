@@ -7,9 +7,12 @@ import { enabled, signInAsAgent, signOut, WEB } from "../../../../../../../stack
 describe.skipIf(!enabled)("web/next/src/app/(console)/console/waitlist/page.tsx", () => {
   test("the owner gets the signups page", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console/waitlist`)
-    expect(response.status).toBe(200)
-    expect(await response.text()).toContain("Signups")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console/waitlist`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain("Signups")
+    } finally {
+      await signOut(agent)
+    }
   })
 })

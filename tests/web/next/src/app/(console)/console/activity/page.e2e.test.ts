@@ -7,9 +7,12 @@ import { enabled, signInAsAgent, signOut, WEB } from "../../../../../../../stack
 describe.skipIf(!enabled)("web/next/src/app/(console)/console/activity/page.tsx", () => {
   test("the owner gets the activity page", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console/activity`)
-    expect(response.status).toBe(200)
-    expect(await response.text()).toContain("Activity")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console/activity`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain("Activity")
+    } finally {
+      await signOut(agent)
+    }
   })
 })

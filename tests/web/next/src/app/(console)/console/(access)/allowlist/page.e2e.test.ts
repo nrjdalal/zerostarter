@@ -7,9 +7,12 @@ import { enabled, signInAsAgent, signOut, WEB } from "../../../../../../../../st
 describe.skipIf(!enabled)("web/next/src/app/(console)/console/(access)/allowlist/page.tsx", () => {
   test("the owner gets the allowlist page", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/console/allowlist`)
-    expect(response.status).toBe(200)
-    expect(await response.text()).toContain("Allowlist")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/console/allowlist`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain("Allowlist")
+    } finally {
+      await signOut(agent)
+    }
   })
 })

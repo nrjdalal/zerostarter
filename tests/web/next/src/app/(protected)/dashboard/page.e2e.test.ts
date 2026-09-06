@@ -7,11 +7,14 @@ import { enabled, signInAsAgent, signOut, WEB } from "../../../../../../stack"
 describe.skipIf(!enabled)("web/next/src/app/(protected)/dashboard/page.tsx", () => {
   test("the signed-in agent gets the dashboard", async () => {
     const agent = await signInAsAgent()
-    const response = await agent.fetch(`${WEB}/dashboard`)
-    expect(response.status).toBe(200)
-    const html = await response.text()
-    expect(html).toContain("Dashboard")
-    expect(html).toContain("agent@local.host")
-    await signOut(agent)
+    try {
+      const response = await agent.fetch(`${WEB}/dashboard`)
+      expect(response.status).toBe(200)
+      const html = await response.text()
+      expect(html).toContain("Dashboard")
+      expect(html).toContain("agent@local.host")
+    } finally {
+      await signOut(agent)
+    }
   })
 })
