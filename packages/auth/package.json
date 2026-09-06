@@ -31,6 +31,7 @@
     "@packages/scripts": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
+    "auth": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

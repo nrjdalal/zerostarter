@@ -65,7 +65,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 - The frontend calls the API only through the type-safe RPC client (\`import { apiClient } from "@/lib/api/client"\`); do not use raw \`fetch\` or \`axios\`.
 
 **Database:**
-- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database).
+- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database). \`auth.ts\` there is generated from \`packages/auth/src/schema.ts\` by \`bun run auth:schema\`: declare a plugin or a column there, regenerate, then migrate.
 
 **Code style:**
 - Use workspace imports (\`@api/hono\`, \`@packages/*\`) and the \`@/\` path alias; avoid deep relative paths.

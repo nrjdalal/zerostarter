@@ -4,7 +4,7 @@ title: Auth & Organizations
 description: Better Auth with OAuth, organizations, teams, and the role gate behind /console.
 ---
 
-[Better Auth](https://better-auth.com) owns the whole auth surface (sign-in methods, sessions, organizations, and roles) as one config in `packages/auth/src/index.ts`, backed by the same Drizzle schema as the rest of your data. It runs in-process against your own Postgres, so no user records leave your database and there is no separate auth service to keep in sync.
+[Better Auth](https://better-auth.com) owns the whole auth surface (sign-in methods, sessions, organizations, and roles) as one config in `packages/auth` (`schema.ts` declares the plugins and the columns they add, and the Drizzle auth schema is generated from it; `index.ts` adds the providers, cookies and hooks), backed by the same Drizzle schema as the rest of your data. It runs in-process against your own Postgres, so no user records leave your database and there is no separate auth service to keep in sync.
 
 ## Sign-in methods
 
@@ -17,14 +17,16 @@ The sign-in dialog renders itself from whatever is configured. It fetches the en
 
 `packages/auth/src/index.ts` builds `socialProviders` conditionally from those vars and exports the resulting `enabledSocialProviders`. Adding a brand-new provider is a small code change: register it conditionally there, then add a button in `web/next/src/components/common/access.tsx`.
 
-**Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To turn it on, register the server plugin in the `plugins` array in `packages/auth/src/index.ts` and implement `sendMagicLink` to deliver the email:
+**Magic link is off by default.** The client plugin is registered but the server `magicLink` plugin is not, so the email field stays hidden rather than showing a dead control. To turn it on, register the server plugin in the `plugins` array in `packages/auth/src/schema.ts` and implement `sendMagicLink` to deliver the email:
 
 ```ts
 import { magicLink } from "better-auth/plugins"
 
-// inside betterAuth({ plugins: [...] })
+// packages/auth/src/schema.ts, inside plugins
 magicLink({
   sendMagicLink: async ({ email, url }) => {
+    // your own module, imported here rather than at the top of the file
+    const { sendEmail } = await import("@/lib/email")
     await sendEmail({
       to: email,
       subject: `Sign in to ${site.name}`,
@@ -34,7 +36,7 @@ magicLink({
 })
 ```
 
-`sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
+`sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). Import it inside the callback rather than at the top of `schema.ts`: that file is also what the Better Auth CLI loads, under Node, to generate the tables, so everything it imports at the top has to load there too, and a sender that reaches the database cannot (the db client imports `bun`). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
 
 **Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent`, made an `owner` on the sign-in that creates the account and left at whatever rung it holds after that, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
@@ -106,7 +108,7 @@ The plugin's own endpoints are switched off rather than gated. Better Auth mount
 A fork that wants any of these back widens one statement at a time, on the understanding that the ladder does not constrain them. Impersonation for owners, for example:
 
 ```ts
-// packages/auth/src/index.ts
+// packages/auth/src/schema.ts
 import { defaultAc } from "better-auth/plugins/admin/access"
 
 owner: defaultAc.newRole({ user: ["impersonate", "impersonate-admins"] }),

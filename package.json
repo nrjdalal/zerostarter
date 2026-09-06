@@ -18,6 +18,7 @@
     "web/*"
   ],
   "scripts": {
+    "auth:schema": "bun packages/scripts/src/auth-schema.ts",
     "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
     "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
     "check-types:scripts": "tsc -p .github/scripts/tsconfig.json",
@@ -101,8 +102,9 @@
     "@types/react-dom": "^19.2.7",
     "@types/ws": "^8.18.1",
     "@viz-js/viz": "^3.30.0",
+    "auth": "^1.7.3",
     "babel-plugin-react-compiler": "^1.0.0",
-    "better-auth": "^1.6.23",
+    "better-auth": "^1.7.3",
     "changelogen": "^0.6.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
