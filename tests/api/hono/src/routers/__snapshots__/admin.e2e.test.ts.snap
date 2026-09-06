@@ -1,0 +1,144 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/routers/admin.ts the users list holds every account, the agent as owner 1`] = `
+{
+  "data": {
+    "hasNextPage": false,
+    "page": 1,
+    "perPage": 10,
+    "total": 1,
+    "users": [
+      {
+        "banned": false,
+        "createdAt": "<timestamp>",
+        "email": "agent@local.host",
+        "emailVerified": true,
+        "id": "<id>",
+        "image": null,
+        "lastActive": "<lastActive>",
+        "name": "LocalAgent",
+        "role": "owner",
+      },
+    ],
+  },
+}
+`;
+
+exports[`api/hono/src/routers/admin.ts an owner cannot change its own role 1`] = `
+{
+  "data": {
+    "results": [
+      {
+        "code": "FORBIDDEN",
+        "id": "<id>",
+        "message": "You cannot change your own role.",
+        "ok": false,
+      },
+    ],
+  },
+}
+`;
+
+exports[`api/hono/src/routers/admin.ts a seeded account is promoted, banned, and unbanned 1`] = `
+{
+  "banned": {
+    "data": {
+      "results": [
+        {
+          "id": "golden-seed-user",
+          "ok": true,
+        },
+      ],
+    },
+  },
+  "promoted": {
+    "data": {
+      "results": [
+        {
+          "id": "golden-seed-user",
+          "ok": true,
+        },
+      ],
+    },
+  },
+  "unbanned": {
+    "data": {
+      "results": [
+        {
+          "id": "golden-seed-user",
+          "ok": true,
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`api/hono/src/routers/admin.ts the activity log records those writes, newest first 1`] = `
+[
+  {
+    "action": "user.unban",
+    "actor": "agent@local.host",
+    "actorId": "<id>",
+    "createdAt": "<timestamp>",
+    "id": "<uuid>",
+    "summary": "Unbanned golden.seed@example.com",
+  },
+  {
+    "action": "user.ban",
+    "actor": "agent@local.host",
+    "actorId": "<id>",
+    "createdAt": "<timestamp>",
+    "id": "<uuid>",
+    "summary": "Banned golden.seed@example.com, ending their sessions",
+  },
+  {
+    "action": "role.change",
+    "actor": "agent@local.host",
+    "actorId": "<id>",
+    "createdAt": "<timestamp>",
+    "id": "<uuid>",
+    "summary": "Changed golden.seed@example.com from user to member",
+  },
+]
+`;
+
+exports[`api/hono/src/routers/admin.ts the allowlist takes a value, lists it, and removes it 1`] = `
+{
+  "added": {
+    "data": {
+      "rule": {
+        "actor": "agent@local.host",
+        "actorId": "<id>",
+        "createdAt": "<timestamp>",
+        "id": "<uuid>",
+        "kind": "email",
+        "value": "golden.allow@example.com",
+      },
+    },
+  },
+  "removed": {
+    "data": {
+      "results": [
+        {
+          "id": "<uuid>",
+          "ok": true,
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`api/hono/src/routers/admin.ts the waitlist lists a signup and removes it 1`] = `
+{
+  "data": {
+    "results": [
+      {
+        "id": "<uuid>",
+        "ok": true,
+      },
+    ],
+  },
+}
+`;

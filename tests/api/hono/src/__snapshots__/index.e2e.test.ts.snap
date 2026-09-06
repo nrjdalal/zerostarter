@@ -1,0 +1,4595 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/index.ts health names the build and answers ok 1`] = `
+{
+  "data": {
+    "environment": "<environment>",
+    "message": "ok",
+    "version": "<version>",
+  },
+}
+`;
+
+exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
+{
+  "components": {},
+  "info": {
+    "description": 
+"API Reference for your instance.
+- [Dashboard](/dashboard) - Client-side dashboard application
+- [Better Auth Instance](/api/auth/reference) - Better Auth API reference
+- [hono/client](/docs/getting-started/type-safe-api) - Type-safe API client for frontend"
+,
+    "title": "ZeroStarter",
+    "version": "<version>",
+  },
+  "openapi": "<version>",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "description": "Get the system health",
+        "operationId": "getApiHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "environment": {
+                          "enum": [
+                            "local",
+                            "development",
+                            "test",
+                            "staging",
+                            "production",
+                          ],
+                          "example": "local",
+                          "type": "string",
+                        },
+                        "message": {
+                          "example": "ok",
+                          "type": "string",
+                        },
+                        "version": {
+                          "example": "<version>",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "environment",
+                        "message",
+                        "version",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "System",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.health.$get())"
+,
+          },
+        ],
+      },
+    },
+    "/api/health/ws": {
+      "get": {
+        "description": "Live system health over a WebSocket. On connect the server sends a snapshot, then a heartbeat every 5s. Each frame is JSON: { message, version, environment, timestamp }.",
+        "operationId": "getApiHealthWs",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols: the WebSocket handshake succeeded.",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "System",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient } from "@/lib/api/client"
+
+const socket = apiClient.health.ws.$ws()
+socket.addEventListener("message", (event) => {
+  const health = JSON.parse(event.data)
+})"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/activity": {
+      "get": {
+        "description": "What the console did and who did it, newest first. Append only, so the list never shows an edited row.",
+        "operationId": "getApiV1AdminActivity",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "events": {
+                          "items": {
+                            "properties": {
+                              "action": {
+                                "example": "role.change",
+                                "type": "string",
+                              },
+                              "actor": {
+                                "example": "ada@example.com",
+                                "type": "string",
+                              },
+                              "actorId": {
+                                "example": "<id>",
+                                "type": [
+                                  "string",
+                                  "null",
+                                ],
+                              },
+                              "createdAt": {
+                                "example": "<timestamp>",
+                                "format": "date-time",
+                                "type": "string",
+                              },
+                              "id": {
+                                "example": "<uuid>",
+                                "type": "string",
+                              },
+                              "summary": {
+                                "example": "Changed ada@example.com from member to admin",
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "action",
+                              "actor",
+                              "actorId",
+                              "createdAt",
+                              "id",
+                              "summary",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "hasNextPage": {
+                          "example": true,
+                          "type": "boolean",
+                        },
+                        "page": {
+                          "example": 2,
+                          "type": "number",
+                        },
+                        "perPage": {
+                          "example": 25,
+                          "type": "number",
+                        },
+                        "total": {
+                          "example": 80,
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "events",
+                        "hasNextPage",
+                        "page",
+                        "perPage",
+                        "total",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.activity.$get({ query: { page: "1", perPage: "25" } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/allowlist": {
+      "delete": {
+        "description": "Remove a set of rules in one transaction. A rule that is already gone comes back as its own not-found outcome rather than failing the request.",
+        "operationId": "deleteApiV1AdminAllowlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "results": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": true,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "id",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "properties": {
+                                  "code": {
+                                    "enum": [
+                                      "CONFLICT",
+                                      "FORBIDDEN",
+                                      "NOT_FOUND",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "message": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": false,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "code",
+                                  "id",
+                                  "message",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                            ],
+                          },
+                          "type": "array",
+                        },
+                      },
+                      "required": [
+                        "results",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist.$delete({ json: { ids } }),
+)"
+,
+          },
+        ],
+      },
+      "get": {
+        "description": "List the rules granting console access. Admin and above; an empty list grants nothing.",
+        "operationId": "getApiV1AdminAllowlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "hasNextPage": {
+                          "example": true,
+                          "type": "boolean",
+                        },
+                        "page": {
+                          "example": 2,
+                          "type": "number",
+                        },
+                        "perPage": {
+                          "example": 25,
+                          "type": "number",
+                        },
+                        "rules": {
+                          "items": {
+                            "properties": {
+                              "actor": {
+                                "example": "ada@example.com",
+                                "type": [
+                                  "string",
+                                  "null",
+                                ],
+                              },
+                              "actorId": {
+                                "example": "<id>",
+                                "type": [
+                                  "string",
+                                  "null",
+                                ],
+                              },
+                              "createdAt": {
+                                "example": "<timestamp>",
+                                "format": "date-time",
+                                "type": "string",
+                              },
+                              "id": {
+                                "example": "<uuid>",
+                                "type": "string",
+                              },
+                              "kind": {
+                                "enum": [
+                                  "domain",
+                                  "email",
+                                ],
+                                "example": "domain",
+                                "type": "string",
+                              },
+                              "value": {
+                                "example": "@example.com",
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "actor",
+                              "actorId",
+                              "createdAt",
+                              "id",
+                              "kind",
+                              "value",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "total": {
+                          "example": 80,
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "rules",
+                        "hasNextPage",
+                        "page",
+                        "perPage",
+                        "total",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist.$get({ query: { page: "1", perPage: "10" } }),
+)"
+,
+          },
+        ],
+      },
+      "post": {
+        "description": "Add a rule granting console access. A leading @ makes it a domain rule, anything else must parse as an address; both are normalized lowercase.",
+        "operationId": "postApiV1AdminAllowlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "rule": {
+                          "properties": {
+                            "actor": {
+                              "example": "ada@example.com",
+                              "type": [
+                                "string",
+                                "null",
+                              ],
+                            },
+                            "actorId": {
+                              "example": "<id>",
+                              "type": [
+                                "string",
+                                "null",
+                              ],
+                            },
+                            "createdAt": {
+                              "example": "<timestamp>",
+                              "format": "date-time",
+                              "type": "string",
+                            },
+                            "id": {
+                              "example": "<uuid>",
+                              "type": "string",
+                            },
+                            "kind": {
+                              "enum": [
+                                "domain",
+                                "email",
+                              ],
+                              "example": "domain",
+                              "type": "string",
+                            },
+                            "value": {
+                              "example": "@example.com",
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "actor",
+                            "actorId",
+                            "createdAt",
+                            "id",
+                            "kind",
+                            "value",
+                          ],
+                          "type": "object",
+                        },
+                      },
+                      "required": [
+                        "rule",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CONFLICT",
+                    "message": "The value already exists",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "The value already exists",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.allowlist.$post({ json: { value: "@example.com" } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "description": "List users with server-driven pagination, sorting, search (name or email), and role filtering (admin only)",
+        "operationId": "getApiV1AdminUsers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "hasNextPage": {
+                          "example": true,
+                          "type": "boolean",
+                        },
+                        "page": {
+                          "example": 2,
+                          "type": "number",
+                        },
+                        "perPage": {
+                          "example": 25,
+                          "type": "number",
+                        },
+                        "total": {
+                          "example": 80,
+                          "type": "number",
+                        },
+                        "users": {
+                          "items": {
+                            "properties": {
+                              "banned": {
+                                "example": false,
+                                "type": "boolean",
+                              },
+                              "createdAt": {
+                                "example": "<timestamp>",
+                                "format": "date-time",
+                                "type": "string",
+                              },
+                              "email": {
+                                "example": "user@example.com",
+                                "type": "string",
+                              },
+                              "emailVerified": {
+                                "example": true,
+                                "type": "boolean",
+                              },
+                              "id": {
+                                "example": "<id>",
+                                "type": "string",
+                              },
+                              "image": {
+                                "example": "https://example.com/avatar.png",
+                                "type": [
+                                  "string",
+                                  "null",
+                                ],
+                              },
+                              "lastActive": {
+                                "example": "<timestamp>",
+                                "format": "date-time",
+                                "type": [
+                                  "string",
+                                  "null",
+                                ],
+                              },
+                              "name": {
+                                "example": "John Doe",
+                                "type": "string",
+                              },
+                              "role": {
+                                "enum": [
+                                  "owner",
+                                  "admin",
+                                  "member",
+                                  "user",
+                                ],
+                                "example": "user",
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "banned",
+                              "createdAt",
+                              "email",
+                              "emailVerified",
+                              "id",
+                              "image",
+                              "name",
+                              "role",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                      },
+                      "required": [
+                        "users",
+                        "hasNextPage",
+                        "page",
+                        "perPage",
+                        "total",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.users.$get({ query: { page: "1", perPage: "10" } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/users/role": {
+      "patch": {
+        "description": "Set the role on a set of accounts. Guards run per account, so some can change while others are refused; every id comes back with its own outcome.",
+        "operationId": "patchApiV1AdminUsersRole",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "results": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": true,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "id",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "properties": {
+                                  "code": {
+                                    "enum": [
+                                      "CONFLICT",
+                                      "FORBIDDEN",
+                                      "NOT_FOUND",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "message": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": false,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "code",
+                                  "id",
+                                  "message",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                            ],
+                          },
+                          "type": "array",
+                        },
+                      },
+                      "required": [
+                        "results",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.users.role.$patch({ json: { ids, role: "member" } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/users/status": {
+      "patch": {
+        "description": "Ban or unban a set of accounts. Guards run per account, so some can change while others are refused; every id comes back with its own outcome. A ban ends that person's sessions.",
+        "operationId": "patchApiV1AdminUsersStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "results": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": true,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "id",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "properties": {
+                                  "code": {
+                                    "enum": [
+                                      "CONFLICT",
+                                      "FORBIDDEN",
+                                      "NOT_FOUND",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "message": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": false,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "code",
+                                  "id",
+                                  "message",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                            ],
+                          },
+                          "type": "array",
+                        },
+                      },
+                      "required": [
+                        "results",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.users.status.$patch({ json: { banned: true, ids } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/admin/waitlist": {
+      "delete": {
+        "description": "Remove a set of signups in one transaction. A signup that is already gone comes back as its own not-found outcome rather than failing the request.",
+        "operationId": "deleteApiV1AdminWaitlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "results": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": true,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "id",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "properties": {
+                                  "code": {
+                                    "enum": [
+                                      "CONFLICT",
+                                      "FORBIDDEN",
+                                      "NOT_FOUND",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                  },
+                                  "message": {
+                                    "type": "string",
+                                  },
+                                  "ok": {
+                                    "const": false,
+                                    "type": "boolean",
+                                  },
+                                },
+                                "required": [
+                                  "code",
+                                  "id",
+                                  "message",
+                                  "ok",
+                                ],
+                                "type": "object",
+                              },
+                            ],
+                          },
+                          "type": "array",
+                        },
+                      },
+                      "required": [
+                        "results",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json: { ids } }))"
+,
+          },
+        ],
+      },
+      "get": {
+        "description": "Who has asked to be told when this launches, newest first.",
+        "operationId": "getApiV1AdminWaitlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "hasNextPage": {
+                          "example": true,
+                          "type": "boolean",
+                        },
+                        "page": {
+                          "example": 2,
+                          "type": "number",
+                        },
+                        "perPage": {
+                          "example": 25,
+                          "type": "number",
+                        },
+                        "signups": {
+                          "items": {
+                            "properties": {
+                              "createdAt": {
+                                "example": "<timestamp>",
+                                "format": "date-time",
+                                "type": "string",
+                              },
+                              "email": {
+                                "example": "ada@example.com",
+                                "format": "email",
+                                "type": "string",
+                              },
+                              "id": {
+                                "example": "<uuid>",
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "createdAt",
+                              "email",
+                              "id",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "total": {
+                          "example": 80,
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "signups",
+                        "hasNextPage",
+                        "page",
+                        "perPage",
+                        "total",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "FORBIDDEN",
+                    "message": "Forbidden",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Forbidden",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Admin",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(
+  apiClient.v1.admin.waitlist.$get({ query: { page: "1", perPage: "25" } }),
+)"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/session": {
+      "get": {
+        "description": "Get current session only",
+        "operationId": "getApiV1Session",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "createdAt": {
+                          "example": "<timestamp>",
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                        "expiresAt": {
+                          "example": "<timestamp>",
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                        "id": {
+                          "example": "<id>",
+                          "type": "string",
+                        },
+                        "ipAddress": {
+                          "example": "202.9.121.21",
+                          "type": [
+                            "string",
+                            "null",
+                          ],
+                        },
+                        "token": {
+                          "example": "<id>",
+                          "type": "string",
+                        },
+                        "updatedAt": {
+                          "example": "<timestamp>",
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                        "userAgent": {
+                          "example": "Mozilla/5.0 Chrome/143.0.0.0 Safari/537.36",
+                          "type": [
+                            "string",
+                            "null",
+                          ],
+                        },
+                        "userId": {
+                          "example": "<id>",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "createdAt",
+                        "expiresAt",
+                        "id",
+                        "ipAddress",
+                        "token",
+                        "updatedAt",
+                        "userAgent",
+                        "userId",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "v1",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.v1.session.$get())"
+,
+          },
+        ],
+      },
+    },
+    "/api/v1/user": {
+      "get": {
+        "description": "Get current user only",
+        "operationId": "getApiV1User",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "createdAt": {
+                          "example": "<timestamp>",
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                        "email": {
+                          "example": "user@example.com",
+                          "type": "string",
+                        },
+                        "emailVerified": {
+                          "example": true,
+                          "type": "boolean",
+                        },
+                        "id": {
+                          "example": "<id>",
+                          "type": "string",
+                        },
+                        "image": {
+                          "example": "https://example.com/avatar.png",
+                          "type": [
+                            "string",
+                            "null",
+                          ],
+                        },
+                        "name": {
+                          "example": "John Doe",
+                          "type": "string",
+                        },
+                        "updatedAt": {
+                          "example": "<timestamp>",
+                          "format": "date-time",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "createdAt",
+                        "email",
+                        "emailVerified",
+                        "id",
+                        "image",
+                        "name",
+                        "updatedAt",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "UNAUTHORIZED",
+                    "message": "Unauthorized",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Unauthorized",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "v1",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.v1.user.$get())"
+,
+          },
+        ],
+      },
+    },
+    "/api/waitlist": {
+      "get": {
+        "description": "Approximate waitlist count once it passes a display threshold (0 below it), rounded down in steps of 5",
+        "operationId": "getApiWaitlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "count": {
+                          "example": 40,
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Waitlist",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.waitlist.$get())"
+,
+          },
+        ],
+      },
+      "post": {
+        "description": "Join the waitlist",
+        "operationId": "postApiWaitlist",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "message": {
+                          "example": "ok",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "data",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "OK",
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "issues": [
+                      {
+                        "message": "Invalid email address",
+                        "path": [
+                          "email",
+                        ],
+                      },
+                    ],
+                    "message": "Invalid request payload",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "issues": {
+                          "items": {
+                            "properties": {
+                              "message": {
+                                "type": "string",
+                              },
+                              "path": {
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                            },
+                            "required": [
+                              "message",
+                              "path",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Invalid request payload",
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TOO_MANY_REQUESTS",
+                    "message": "Too Many Requests",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Too Many Requests",
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "Internal Server Error",
+                  },
+                },
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "AGENT_LOGIN_FAILED",
+                            "BAD_REQUEST",
+                            "CONFLICT",
+                            "ERROR",
+                            "FORBIDDEN",
+                            "INTERNAL_SERVER_ERROR",
+                            "NOT_FOUND",
+                            "TOO_MANY_REQUESTS",
+                            "UNAUTHORIZED",
+                            "VALIDATION_ERROR",
+                          ],
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Internal Server Error",
+          },
+        },
+        "tags": [
+          "Waitlist",
+        ],
+        "x-codeSamples": [
+          {
+            "label": "hono/client",
+            "lang": "typescript",
+            "source": 
+"import { apiClient, unwrap } from "@/lib/api/client"
+
+const { data, error } = await unwrap(apiClient.waitlist.$post({ json: { email: "you@example.com" } }))"
+,
+          },
+        ],
+      },
+    },
+  },
+}
+`;
+
+exports[`api/hono/src/index.ts an unknown route answers the error envelope 1`] = `
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Not Found",
+  },
+}
+`;

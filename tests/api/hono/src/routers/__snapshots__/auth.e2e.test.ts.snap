@@ -1,0 +1,52 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`api/hono/src/routers/auth.ts an organization is created, made active, and read back whole 1`] = `
+{
+  "createdAt": "<timestamp>",
+  "id": "<id>",
+  "invitations": [],
+  "logo": null,
+  "members": [
+    {
+      "createdAt": "<timestamp>",
+      "id": "<id>",
+      "organizationId": "<id>",
+      "role": "owner",
+      "user": {
+        "email": "agent@local.host",
+        "id": "<id>",
+        "image": null,
+        "name": "LocalAgent",
+      },
+      "userId": "<id>",
+    },
+  ],
+  "metadata": null,
+  "name": "Golden Org",
+  "slug": "golden-org",
+  "teams": [
+    {
+      "createdAt": "<timestamp>",
+      "id": "<id>",
+      "memberCount": 1,
+      "name": "Golden Org",
+      "organizationId": "<id>",
+      "updatedAt": "<timestamp>",
+    },
+  ],
+}
+`;
+
+exports[`api/hono/src/routers/auth.ts a team counts its seats as a member comes and goes 1`] = `
+{
+  "added": {
+    "createdAt": "<timestamp>",
+    "id": "<id>",
+    "teamId": "<id>",
+    "userId": "<id>",
+  },
+  "removed": {
+    "message": "Team member removed successfully.",
+  },
+}
+`;

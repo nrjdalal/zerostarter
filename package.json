@@ -37,7 +37,8 @@
     "prepare": "bunx lefthook install",
     "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
-    "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi"
+    "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi",
+    "test:e2e": "E2E_API_URL=${E2E_API_URL:-http://localhost:4000} E2E_WEB_URL=${E2E_WEB_URL:-http://localhost:3000} bun test e2e.test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
