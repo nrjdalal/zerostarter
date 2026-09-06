@@ -116,7 +116,7 @@ export const auth = betterAuth({
   },
 })
 
-// Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to the plugins above (and implement the sender) to enable it.
+// Magic-link sign-in shows in the UI only when its server plugin is registered; add `magicLink({ sendMagicLink })` to `plugins` in @/schema (and implement the sender) to enable it.
 export const magicLinkEnabled = (auth.options.plugins ?? []).some(
   (p) => (p.id as string) === "magic-link",
 )
