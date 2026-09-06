@@ -138,6 +138,7 @@
         "@types/bun": "catalog:",
         "@types/fontkit": "catalog:",
         "@types/node": "catalog:",
+        "changelogen": "catalog:",
         "fontkit": "catalog:",
         "tldts": "catalog:",
         "typescript": "catalog:",

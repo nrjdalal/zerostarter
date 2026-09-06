@@ -11,21 +11,21 @@ Releases ship by promoting `canary` to `main`. Everything downstream (version bu
 ## How it works
 
 - Work reaches `canary` through squash-merged PRs (`canary` is the default branch).
-- Every push to `canary` runs `auto-canary-into-main.yml`, which opens (or reuses) a **draft** PR `canary -> main` titled `ci(release): 🚀 merge canary into main`. It skips when `canary` is not ahead of `main` or a release PR is already open.
+- Every push to `canary` runs `auto-canary-into-main.yml`, which opens (or reuses) a **draft** PR `canary -> main` titled `ci(release): 🚀 merge canary into main`, and then moves the root `package.json` version forward to what the window has earned so far (`bun run release:version --write`: changelogen's bump applied to the last tag's version, kept if the tree is already ahead), committing `ci(version): bump to vX.Y.Z` when it moves. It skips when `main` is missing or `canary` is not ahead of it.
 - Merging that PR into `main` with a **merge commit** fires `auto-release.yml` (trigger: a PR into `main` whose head branch is `canary`, merged). It then, working on `canary`:
-  - runs `changelogen --bump` from the last `v*` tag to compute the next version and the changelog section,
+  - takes the version from the tree (`bun run release:version` prints the decision: the larger of the tree and what the window earned from the last tag) and runs `changelogen` from the last `v*` tag for the changelog section,
   - regenerates `.github/assets/graph-build.svg` from a fresh production build,
   - commits `ci(changelog): update changelog and bump version` directly to `canary`,
   - tags `vX.Y.Z` at the merge boundary and pushes branch + tag atomically,
   - publishes a GitHub release whose notes mirror the changelog section.
 
-The version and notes are derived after the merge, not set in the PR.
+The notes are derived after the merge; the version is already in the tree, so `main` and production carry the released number on the merge itself.
 
 ## Versioning
 
-- **Default:** a patch bump (e.g. `0.1.7 -> 0.1.8`), computed by `changelogen`.
-- **To ship a chosen version** (for example a minor `0.2.0`): hand-set `version` in the root `package.json` on `canary` before cutting the release. It must be strictly ahead of the last tag, or `auto-release` fails loud (`hand-set version X is not ahead of the last release vY`). A version equal to the last tag is ignored and the patch bump stands.
-- The changelog drops `ci`-type commits (`changelog.config.json`). A release needs at least one non-`ci(changelog)` commit and at least one `- ` entry in the new section, or `auto-release` no-ops (`No releasable changelog content`).
+- **Default:** the bump `changelogen` computes from the window's commits, applied to the last tag's version: at 0.x a feature is a patch (`0.1.7 -> 0.1.8`) and a breaking commit a minor; past 1.0 the usual semver. The draft-PR workflow writes it into `package.json` on every human push to `canary` (`ci(version): bump to vX.Y.Z`), so previews show the upcoming number and production shows it on the release merge. A missing tag counts as `v0.0.0`, which is a fresh fork's first window.
+- **To ship a chosen version** (for example a minor `0.2.0`): hand-set `version` in the root `package.json` on `canary` before cutting the release. It stays as long as it is ahead of what the window earns; a breaking window lifts a smaller pin to the minor it earns. A tree below the last tag stops both workflows loudly (`package.json is at X, below the last release vY`), and a version equal to the last tag is treated as untouched.
+- The changelog drops `ci`-type commits (`changelog.config.json`). A release needs at least one commit that is neither `ci(changelog)` nor `ci(version)` and at least one `- ` entry in the new section, or `auto-release` no-ops (`No releasable changelog content`).
 
 ## Cutting a release
 
@@ -39,7 +39,7 @@ gh pr list --base canary --state open
 
 ### 2. (Optional) Pin the version
 
-For anything other than a patch bump, set `version` in the root `package.json` on `canary` first, via a normal PR, strictly ahead of the last `v*` tag. Otherwise skip this and let `changelogen` patch-bump.
+For anything bigger than the window earns, set `version` in the root `package.json` on `canary` first, via a normal PR, ahead of the last `v*` tag. Otherwise skip this: the tree already holds the number the window has earned.
 
 ### 3. Find the release PR
 
@@ -74,6 +74,7 @@ The `ci(changelog): ...` commit and the new tag land on `canary`, so pull `canar
 ## Notes
 
 - **Merge method is load-bearing.** `canary` PRs squash; the `canary -> main` release PR merges with a **merge commit** so `main` keeps shared history with `canary` and future release diffs stay clean. The `main` ruleset enforces this.
+- **The version bump is a token push.** The draft-PR workflow pushes `ci(version)` with the workflow token, which starts no further workflows: no loop, and the bump commit carries no checks of its own until the next human merge. `main`'s ruleset asks for a review, not status checks, so a window with a single PR still releases; a fork that requires status checks on `main` sees its release PR wait for one more merge.
 - **Never tag or push a release by hand.** `auto-release` owns tagging and the atomic branch + tag push; a hand-cut tag collides and fails the next run.
 - **The changelog commit lands on `canary` directly, not through a PR** (it is mechanical, generated from already-reviewed PR titles). Pull `canary` after a release.
 - **Backfill is automatic.** If a prior run pushed the commit and tag but died before publishing, the next run recreates the missing GitHub release instead of double-bumping.

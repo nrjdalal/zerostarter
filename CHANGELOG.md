@@ -1,3 +1,25 @@
+## v0.1.27
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.26...v0.1.27)
+
+### 🚀 Enhancements
+
+- **auth:** Better-auth 1.7.3 with a generated, docs-exact Drizzle schema ([#821](https://github.com/nrjdalal/zerostarter/pull/821))
+- **web:** Render vercel speed insights only when deployed on vercel ([#822](https://github.com/nrjdalal/zerostarter/pull/822))
+
+### 🩹 Fixes
+
+- Address the deepsec scan findings and record the audit ([ac3a7406](https://github.com/nrjdalal/zerostarter/commit/ac3a7406))
+- **scripts:** Compare the auth schema with line endings normalized ([#824](https://github.com/nrjdalal/zerostarter/pull/824))
+
+### ✅ Tests
+
+- A golden end-to-end suite, and NODE_ENV read at runtime in the API bundle ([#823](https://github.com/nrjdalal/zerostarter/pull/823))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.26
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.25...v0.1.26)

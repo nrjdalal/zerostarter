@@ -1,6 +1,12 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
+    // the root version is baked into this build (BUILD_VERSION), so a version-only commit must miss its cache; the apps rebuild behind it through their dependency hashes
+    "@packages/env#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/package.json"],
+      "outputs": ["dist/**"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", ".source/**", "bundle/**", "dist/**"]

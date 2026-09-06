@@ -22,6 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create release PR if missing
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -40,6 +41,8 @@ jobs:
             echo "canary has no commits ahead of main. Nothing to release. Skipping."
             exit 0
           fi
+          # a release window is open from here on: the version step below runs whether the PR is new or already open
+          echo "window=open" >> "$GITHUB_OUTPUT"
           EXISTING=$(gh pr list --head canary --base main --state open --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
             echo "Pull request #$EXISTING already exists. Skipping creation."
@@ -51,3 +54,41 @@ jobs:
 
           > [!IMPORTANT]
           > Merge with a **merge commit** (not squash), so main keeps shared history with canary and future release diffs stay clean."
+
+      - name: Setup Bun
+        if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - name: Move the version forward to what the window has earned
+        if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
+        run: |
+          # the number boards with the code: package.json moves to what the window has earned from the last tag (the larger of the tree and changelogen's bump computed from the tag's version; a tree below the tag stops loudly), so main and production carry the released number on the merge. the workflow token's push starts no further workflows, so there is no loop and the next human push recomputes.
+          bun install --frozen-lockfile --ignore-scripts
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          STARTED_FROM=$(git rev-parse HEAD)
+          DECISION=$(bun packages/scripts/src/release-version.ts --write)
+          echo "$DECISION"
+          if [ -z "$(git status --porcelain package.json)" ]; then
+            echo "package.json already carries what the window has earned."
+            exit 0
+          fi
+          NEXT=$(echo "$DECISION" | jq -r .next)
+          if [ -z "$NEXT" ] || [ "$NEXT" = "null" ]; then
+            echo "::error::release-version answered nothing usable: $DECISION"
+            exit 1
+          fi
+          git add package.json
+          git commit -m "ci(version): bump to v$NEXT"
+          if ! git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary; then
+            # a human push landing during this run is the one failure that is fine: that push recomputes; anything else is real
+            git fetch --quiet origin canary
+            if [ "$(git rev-parse origin/canary)" != "$STARTED_FROM" ]; then
+              echo "canary moved under this bump; the next push recomputes it."
+              exit 0
+            fi
+            echo "::error::could not push the version bump to canary"
+            exit 1
+          fi
