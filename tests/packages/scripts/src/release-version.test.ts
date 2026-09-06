@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { compare, decide, decideHere } from "../../../../packages/scripts/src/release-version"
@@ -58,7 +60,7 @@ describe("decide", () => {
 
 // A throwaway repository with one starter commit at a version and this repo's changelog config, and helpers to add tagged or untagged conventional commits.
 const repo = async (version: string): Promise<string> => {
-  const dir = await Bun.$`mktemp -d`.text().then((t) => t.trim())
+  const dir = mkdtempSync(join(tmpdir(), "release-version-"))
   await Bun.$`git init -q -b canary ${dir}`
   await Bun.$`git -C ${dir} config user.email probe@example.com`
   await Bun.$`git -C ${dir} config user.name probe`
@@ -89,7 +91,7 @@ const setVersion = async (dir: string, version: string): Promise<void> => {
 }
 
 const cleanup = async (dir: string): Promise<void> => {
-  await Bun.$`rm -rf ${dir}`
+  rmSync(dir, { force: true, recursive: true })
 }
 
 describe("decideHere, against real repositories", () => {

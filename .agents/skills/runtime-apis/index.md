@@ -43,7 +43,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/packages/cli/src/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/src/skills.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/db/src/schema/auth.test.ts` | Bun | `node:path` (join) |
-| `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:path` (join) |
+| `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |
 
