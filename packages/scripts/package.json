@@ -6,6 +6,10 @@
   "scripts": {
     "check-types": "tsc --noEmit"
   },
+  "dependencies": {
+    "auth": "catalog:",
+    "better-auth": "catalog:"
+  },
   "devDependencies": {
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
