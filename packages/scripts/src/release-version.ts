@@ -1,6 +1,14 @@
-import { dirname, join } from "node:path"
+import { join } from "node:path"
 
-// The number the next release will carry, decided before the release merge so the tree main builds from already holds it. Three rules: the number a window has earned is changelogen's bump applied to the last tag's version (a missing tag counts as v0.0.0), never to whatever package.json says, or a number set early would be bumped twice; the tree moves forward only, to max(tree, earned), so a hand-set ahead of both stays; a tree below the last tag is refused loudly. Prints the decision as JSON; --write moves package.json when the decision is ahead of it. Runs from the repo root (cwd), which is what the workflows and bun run release:version do.
+import {
+  determineSemverChange,
+  getGitDiff,
+  loadChangelogConfig,
+  parseCommits,
+  type SemverBumpType,
+} from "changelogen"
+
+// The number the next release will carry, decided before the release merge so the tree main builds from already holds it. Three rules: the number a window has earned is changelogen's bump applied to the last tag's version (a missing tag counts as v0.0.0), never to whatever package.json says, or a number set early would be bumped twice; the tree moves forward only, to max(tree, earned), so a hand-set ahead of both stays; a tree below the last tag is refused loudly. changelogen is used as a library, its own config and commit parsing with no changelog rendered, so the decision touches no file and no network. Prints the decision as JSON; --write moves package.json when the decision is ahead of it. Runs from the repo root (cwd), which is what the workflows and bun run release:version do.
 
 type Version = [number, number, number]
 
@@ -31,6 +39,15 @@ export const baseOf = (tag: string | null): string =>
 export const compare = (a: string, b: string): number => {
   const [x, y] = [parse(a), parse(b)]
   return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]
+}
+
+// The version one change up from another, as changelogen's bump command moves it: below 1.0 a major counts as a minor and a minor as a patch.
+export const bump = (version: string, change: SemverBumpType): string => {
+  const [major, minor, patch] = parse(version)
+  const step = major > 0 ? change : change === "major" ? "minor" : "patch"
+  if (step === "major") return `${major + 1}.0.0`
+  if (step === "minor") return `${major}.${minor + 1}.0`
+  return `${major}.${minor}.${patch + 1}`
 }
 
 // The decision, pure: current is the tree, earned is what the window's commits add to the tag's version.
@@ -90,60 +107,19 @@ export const writeVersion = async (file: string, version: string): Promise<void>
   )
 }
 
-// This package's own changelogen, declared as its dependency and resolved from this file, so a throwaway repository in a test computes with the same locked binary the workflows use. Its bin is read from its manifest (which Bun resolves although changelogen's exports map lists only its entry) rather than from the .bin shim, which Bun writes as .exe and .bunx on Windows.
-const changelogenManifest = Bun.resolveSync("changelogen/package.json", import.meta.dir)
-const changelogen = join(
-  dirname(changelogenManifest),
-  JSON.parse(await Bun.file(changelogenManifest).text()).bin.changelogen,
-)
-
-// changelogen bumps whatever package.json holds and writes the changelog, so it runs against a copy set to the tag's version, and both files are put back afterwards.
+// What the window since the tag has earned on top of the tag's version. The commits are the ones changelogen's own command keeps for the changelog (its config from changelog.config.json, the type lowercased as its parser is case-insensitive, disabled types and non-breaking chore(deps) dropped), so a window that keeps none earns nothing, which is the entry auto-release's content gate demands; the change is its semver reading of them, falling back to the patch its command bumps when no commit says more.
 const earnedFrom = async (root: string, tag: string | null): Promise<string> => {
-  const pkg = join(root, "package.json")
-  const changelog = join(root, "CHANGELOG.md")
-  const pkgText = await Bun.file(pkg).text()
-  const hadChangelog = await Bun.file(changelog).exists()
-  const changelogText = hadChangelog ? await Bun.file(changelog).text() : ""
-  try {
-    await writeVersion(pkg, baseOf(tag))
-    const from = tag === null ? [] : ["--from", tag]
-    const bumped = run([process.execPath, changelogen, "--bump", "--no-commit", ...from], root)
-    // changelogen's CLI reports its own errors and still exits 0, so success is read from what it left behind: the version moved past the tag's and a section for it heads the changelog. Measured: even a window of nothing it recognizes bumps a patch and writes an empty section, which the content gate below then discounts.
-    const version = await readVersion(pkg)
-    const text = (await Bun.file(changelog).exists()) ? await Bun.file(changelog).text() : ""
-    const heading = new RegExp(`^## v${version.replaceAll(".", "\\.")}\\r?$`, "m").exec(text)
-    const headed = heading !== null && text.search(/^## /m) === heading.index
-    if (!bumped.ok || compare(version, baseOf(tag)) <= 0 || !headed) {
-      throw new Error(`changelogen failed: ${bumped.err || bumped.out}`)
-    }
-    // changelogen drops some types from the changelog (ci, and chore(deps)) yet still bumps; auto-release refuses a section with no entry, so a window that earns no entry earns no number either.
-    const entries = (text.split(/^## v/m)[1] ?? "").split("### ❤️ Contributors")[0]
-    if (!/^- /m.test(entries)) return baseOf(tag)
-    return version
-  } finally {
-    await Bun.write(pkg, pkgText)
-    if (hadChangelog) await Bun.write(changelog, changelogText)
-    else if (await Bun.file(changelog).exists()) await Bun.file(changelog).delete()
-  }
-}
-
-// changelogen bumps a patch even for a window of nothing but mechanical commits, so the window is checked first the way auto-release's own gate checks it: with only ci(changelog) and ci(version) commits since the tag, nothing was earned.
-const releasable = (root: string, tag: string | null): boolean => {
-  const range = tag === null ? "HEAD" : `${tag}..HEAD`
-  const counted = run(
-    [
-      "git",
-      "rev-list",
-      "--count",
-      "--invert-grep",
-      "--grep=^ci(changelog)",
-      "--grep=^ci(version)",
-      range,
-    ],
-    root,
-  )
-  if (!counted.ok) throw new Error(`git rev-list failed: ${counted.err}`)
-  return counted.out !== "0"
+  const from = tag === null ? undefined : tag
+  const config = await loadChangelogConfig(root, { cwd: root, from, to: "HEAD" })
+  const kept = parseCommits(await getGitDiff(from, "HEAD", root), config)
+    .map((commit) => ({ ...commit, type: commit.type.toLowerCase() }))
+    .filter(
+      (commit) =>
+        config.types[commit.type] &&
+        !(commit.type === "chore" && commit.scope === "deps" && !commit.isBreaking),
+    )
+  if (kept.length === 0) return baseOf(tag)
+  return bump(baseOf(tag), determineSemverChange(kept, config) ?? "patch")
 }
 
 // The last v* tag HEAD can reach, or null for a repository with no tag yet. git describe fails the same way for a repository with no tag and for one whose tags HEAD cannot reach (a shallow clone without them); only the first is a fresh start, the second would compute from v0.0.0 and answer wrong, so it stops here.
@@ -162,8 +138,7 @@ const lastTag = (root: string): string | null => {
 export const decideIn = async (root: string): Promise<Decision> => {
   const tag = lastTag(root)
   const current = await readVersion(join(root, "package.json"))
-  const earned = releasable(root, tag) ? await earnedFrom(root, tag) : baseOf(tag)
-  return decide(current, earned, tag)
+  return decide(current, await earnedFrom(root, tag), tag)
 }
 
 if (import.meta.main) {

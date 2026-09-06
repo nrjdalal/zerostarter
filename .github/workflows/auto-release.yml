@@ -43,7 +43,7 @@ jobs:
           # the boundary this changelog covers; tagged below so the next run starts exactly here
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
-          # the target: the larger of the tree and what the window earned from the last tag (a missing tag counts as v0.0.0); a hand-set ahead of the window stays, one that undercounts it is lifted, a tree below the tag stops here loudly. read before changelogen overwrites package.json below; the script puts every file back after its own dry run
+          # the target: the larger of the tree and what the window earned from the last tag (a missing tag counts as v0.0.0); a hand-set ahead of the window stays, one that undercounts it is lifted, a tree below the tag stops here loudly. read before changelogen overwrites package.json below; the script itself touches no file
           DECISION=$(bun packages/scripts/src/release-version.ts)
           TARGET_VERSION=$(echo "$DECISION" | jq -r .next)
           if [ -z "$TARGET_VERSION" ] || [ "$TARGET_VERSION" = "null" ]; then
