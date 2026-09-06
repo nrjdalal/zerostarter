@@ -45,9 +45,19 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { execFileSync } = require('node:child_process');
             const fs = require('node:fs');
             const path = require('node:path');
             const { globbySync } = require('globby');
+
+            // a directory the base branch tracks, asked of git rather than the disk: the checkout has run an install, so the disk also holds node_modules and other untracked output
+            const trackedDirectory = (dir) => {
+              try {
+                return execFileSync('git', ['ls-files', '--', dir], { encoding: 'utf8' }).trim().length > 0;
+              } catch {
+                return false;
+              }
+            };
 
             const { number: prNumber } = context.payload.pull_request;
             const { owner, repo } = context.repo;
@@ -142,8 +152,8 @@ jobs:
                 return '@misc';
               }
 
-              // a directory label only for a directory the base branch has: the file list is the contributor's, and a novel top-level path must not mint a label under this write token
-              return topLevel && fs.existsSync(topLevel) ? `@${topLevel}` : '@misc';
+              // a directory label only for a directory the base branch tracks: the file list is the contributor's, and a novel top-level path must not mint a label under this write token
+              return topLevel && trackedDirectory(topLevel) ? `@${topLevel}` : '@misc';
             };
 
             const ensureLabel = async (labelName) => {
