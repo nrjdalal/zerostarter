@@ -28,7 +28,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/cli/src/vendor/nano-spawn.ts` | Node | `node:child_process` (spawn, SpawnOptions); `node:fs/promises` (access); `node:path` (delimiter, resolve) |
 | `packages/env/src/load-dotenv.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
-| `packages/scripts/src/auth-schema.ts` | Bun | `node:path` (dirname, join) |
+| `packages/scripts/src/auth-schema.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
 | `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |

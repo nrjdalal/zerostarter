@@ -7,7 +7,6 @@ const root = join(import.meta.dir, "../../../../..")
 test("packages/db/src/schema/auth.ts is exactly what the auth CLI generates", () => {
   const result = Bun.spawnSync(["bun", "run", "auth:schema", "--check"], {
     cwd: root,
-    env: { ...process.env, NODE_ENV: "production", SKIP_ENV_VALIDATION: "true" },
     stderr: "pipe",
     stdout: "pipe",
   })
