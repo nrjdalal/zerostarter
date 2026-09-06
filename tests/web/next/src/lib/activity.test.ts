@@ -13,7 +13,7 @@ describe("actionLabel", () => {
 
   test("treats a code that names an Object.prototype member as just another unknown code", () => {
     // `in` would find these on the prototype and hand the cell a function instead of a string.
-    for (const code of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+    for (const code of ["__proto__", "constructor", "hasOwnProperty", "toString"]) {
       expect(actionLabel(code)).toBe(code)
     }
   })
