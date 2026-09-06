@@ -25,6 +25,7 @@ import { magicLink } from "better-auth/plugins"
 // packages/auth/src/schema.ts, inside plugins
 magicLink({
   sendMagicLink: async ({ email, url }) => {
+    const { sendEmail } = await import("@/lib/email")
     await sendEmail({
       to: email,
       subject: `Sign in to ${site.name}`,
@@ -34,7 +35,7 @@ magicLink({
 })
 ```
 
-`sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). Import it inside the callback rather than at the top of `schema.ts`: that file is also what the Better Auth CLI loads to generate the tables, with no environment and no database on hand. The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
+`sendEmail` is yours to supply; any provider works (Resend, Postmark, SES). Import it inside the callback rather than at the top of `schema.ts`: that file is also what the Better Auth CLI loads, under Node, to generate the tables, so everything it imports at the top has to load there too, and a sender that reaches the database cannot (the db client imports `bun`). The client plugin is already wired, so once the server plugin is registered the sign-in dialog shows the email field and offers magic-link sign-in with no further UI change.
 
 **Agent sign-in** is a local-only shortcut: `POST /api/agents/sign-in-as` mints a real session as `LocalAgent`, made an `owner` on the sign-in that creates the account and left at whatever rung it holds after that, mounted only when `NODE_ENV` is `local` and `AGENT_SIGNIN_ENABLED` is `true` (off by default in `.env.example`, so deploys expose nothing; `zerostarter init` sets it in your local `.env`), and guarded by a trusted `Origin`. See [Working with Agents](/docs/getting-started/working-with-agents).
 
