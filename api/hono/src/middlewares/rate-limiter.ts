@@ -27,7 +27,7 @@ const forwardedHeaders = (c: Context): Headers => {
   return headers
 }
 
-// The address the IP tier bills. A public peer is the client itself and no header overrides it; a private peer is a proxy or a sibling service, and the client is what it forwarded, last hop first; a private peer that forwarded nothing is internal traffic (the web app's server-side calls, a health check) and is not billed, since pooling it into one bucket would throttle every user at once.
+// The address the IP tier bills. A public peer is the client itself and no header overrides it; a private peer is a proxy or a sibling service, and the client is what it forwarded, last hop first; a private peer that forwarded nothing is internal traffic (off Vercel: the web app's server-side calls, a health check) and is not billed, since pooling it into one bucket would throttle every user at once.
 export const clientAddress = (c: Context): { address: string; internal: boolean } => {
   const peer = peerAddress(c)
   const address = findIp({ headers: forwardedHeaders(c), ip: peer })
@@ -55,6 +55,18 @@ export const rateLimitDecision = (
   return { key: `ip:${address}`, skip: internal }
 }
 
+// One limiter's decision for a request, made once: the limiter asks skip and then keyGenerator about the same request. Held per limiter rather than in a context variable because the global and the per-user limiter both see one request and must not read each other's answer.
+export const rateLimitDecider = (getUserId?: Resolver, getApiKey?: Resolver) => {
+  const decisions = new WeakMap<Request, Decision>()
+  return (c: Context): Decision => {
+    const remembered = decisions.get(c.req.raw)
+    if (remembered) return remembered
+    const decision = rateLimitDecision(c, getUserId, getApiKey)
+    decisions.set(c.req.raw, decision)
+    return decision
+  }
+}
+
 interface RateLimiterConfig {
   getApiKey?: Resolver
   getUserId?: Resolver
@@ -64,16 +76,7 @@ interface RateLimiterConfig {
 
 export function createRateLimiter(config: RateLimiterConfig = {}) {
   const { getApiKey, getUserId, limit = 60, windowMs = 60000 } = config
-
-  // The limiter asks skip and then keyGenerator about the same request, so the decision is made once and remembered for the life of that request.
-  const decisions = new WeakMap<Request, Decision>()
-  const decide = (c: Context): Decision => {
-    const remembered = decisions.get(c.req.raw)
-    if (remembered) return remembered
-    const decision = rateLimitDecision(c, getUserId, getApiKey)
-    decisions.set(c.req.raw, decision)
-    return decision
-  }
+  const decide = rateLimitDecider(getUserId, getApiKey)
 
   return rateLimiter({
     handler: (c) => jsonError(c, 429, "TOO_MANY_REQUESTS", "Too Many Requests"),

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import {
   clientAddress,
+  rateLimitDecider,
   rateLimitDecision,
 } from "../../../../../api/hono/src/middlewares/rate-limiter"
 
@@ -124,5 +125,28 @@ describe("rateLimitDecision", () => {
     expect(decision.skip).toBe(false)
     expect(decision.key).toMatch(/^apikey:[0-9a-f]+$/)
     expect(decision.key).not.toContain("secret-key")
+  })
+})
+
+describe("rateLimitDecider", () => {
+  test("decides once per request, however often the limiter asks", () => {
+    let resolved = 0
+    const decide = rateLimitDecider(() => {
+      resolved++
+      return "u1"
+    })
+    const request = context({}, "172.18.0.5")
+    expect(decide(request)).toEqual({ key: "userid:u1", skip: false })
+    expect(decide(request)).toEqual({ key: "userid:u1", skip: false })
+    expect(resolved).toBe(1)
+    decide(context({}, "172.18.0.5"))
+    expect(resolved).toBe(2)
+  })
+
+  test("keeps one limiter's answer from another's", () => {
+    // The global and the per-user limiter both see a request; the second must not read the first's ip bucket.
+    const request = context({ "x-forwarded-for": "1.1.1.1" }, "172.18.0.5")
+    expect(rateLimitDecider()(request).key).toBe("ip:1.1.1.1")
+    expect(rateLimitDecider(() => "u1")(request).key).toBe("userid:u1")
   })
 })
