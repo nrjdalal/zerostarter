@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { basename, join } from "node:path"
 
 import {
   convertRepo,
@@ -180,6 +180,44 @@ describe("convertRepo (in-place)", () => {
   test("throws on a non-literal (glob) .gitpickignore entry", () => {
     write(join(dir, ".gitpickignore"), "# custom\n*.log\n")
     expect(() => convertRepo(dir, { name: "acme" })).toThrow(/literal path/)
+  })
+
+  // An in-place convert reads the checkout's own .gitpickignore, so a crafted one must not reach past the root.
+  test("refuses an exclude that climbs out of the project, and removes nothing", () => {
+    scaffold()
+    const outside = mkdtempSync(join(tmpdir(), "zs-outside-"))
+    try {
+      write(join(outside, "victim.txt"), "keep")
+      write(join(dir, ".gitpickignore"), `../${basename(outside)}/victim.txt\nLICENSE.md\n`)
+      expect(() => convertRepo(dir, { name: "acme" })).toThrow(/not inside the project/)
+      expect(exists(join(outside, "victim.txt"))).toBe(true)
+      expect(exists(join(dir, "LICENSE.md"))).toBe(true)
+    } finally {
+      rmSync(outside, { force: true, recursive: true })
+    }
+  })
+
+  test("refuses an absolute exclude", () => {
+    scaffold()
+    const outside = mkdtempSync(join(tmpdir(), "zs-outside-"))
+    try {
+      write(join(outside, "victim.txt"), "keep")
+      write(join(dir, ".gitpickignore"), `${join(outside, "victim.txt")}\n`)
+      expect(() => convertRepo(dir, { name: "acme" })).toThrow(/not inside the project/)
+      expect(exists(join(outside, "victim.txt"))).toBe(true)
+    } finally {
+      rmSync(outside, { force: true, recursive: true })
+    }
+  })
+
+  test("refuses an exclude that names the root itself", () => {
+    scaffold()
+    write(join(dir, ".gitpickignore"), ".\n")
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/not inside the project/)
+    expect(exists(join(dir, "package.json"))).toBe(true)
+    write(join(dir, ".gitpickignore"), "web/next/../..\n")
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/not inside the project/)
+    expect(exists(join(dir, "package.json"))).toBe(true)
   })
 
   test("rebrands package.json to the fork name and drops author fields", () => {
