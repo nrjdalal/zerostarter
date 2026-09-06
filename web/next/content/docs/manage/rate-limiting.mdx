@@ -40,7 +40,7 @@ Every response also carries the `draft-6` standard headers, `RateLimit-Limit`, `
 
 <Callout type="info" title="Arcjet here is just IP detection">
 
-`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It reads the socket peer and the forwarded or platform headers to resolve the address the IP tier keys on.
+`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It is handed the socket peer and the request's `x-forwarded-for`, nothing else, and resolves the address the IP tier keys on.
 
 </Callout>
 
