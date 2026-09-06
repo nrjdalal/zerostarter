@@ -62,6 +62,21 @@ describe("clientAddress", () => {
     })
   })
 
+  test("consults x-forwarded-for alone, so no other client header can name a bucket", () => {
+    // The IP library would otherwise fall through to x-real-ip, x-client-ip, true-client-ip and forwarded.
+    for (const header of ["x-real-ip", "x-client-ip", "true-client-ip", "forwarded"]) {
+      const value = header === "forwarded" ? "for=8.8.8.8" : "8.8.8.8"
+      expect(clientAddress(context({ [header]: value }, "172.18.0.5"))).toEqual({
+        address: "172.18.0.5",
+        internal: true,
+      })
+      expect(clientAddress(context({ [header]: value }))).toEqual({
+        address: "unknown",
+        internal: false,
+      })
+    }
+  })
+
   test("with no socket at all, an unattributable request lands in one shared bucket, never a fresh key", () => {
     expect(clientAddress(context({}))).toEqual({ address: "unknown", internal: false })
     expect(clientAddress(context({ "x-forwarded-for": "1.1.1.1" }))).toEqual({

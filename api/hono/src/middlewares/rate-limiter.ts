@@ -6,11 +6,9 @@ import { rateLimiter } from "hono-rate-limiter"
 import { getConnInfo } from "hono/bun"
 
 import { jsonError } from "@/lib/error"
+import { onVercel } from "@/lib/server"
 
-// Vercel fronts the function with its own proxy and overwrites x-forwarded-for with the client, also through the web's /api rewrite; everywhere else Bun owns the socket (lib/server.ts) and the peer address is authoritative.
-const onVercel = process.env.VERCEL === "1"
-
-// The peer Bun accepted the connection from, or undefined under another adapter (Vercel's Node server, a test context) whose env is not the Bun server. A dual-stack listener reports an IPv4 client as ::ffff:a.b.c.d, which the IP library does not classify, so it is unwrapped first: left as is, a public IPv4 client would read as internal and never be billed.
+// The peer Bun accepted the connection from, or undefined under another adapter (Vercel's Node server, a test context) whose env is not the Bun server. A dual-stack listener reports an IPv4 client as ::ffff:a.b.c.d, which the IP library does not classify, so it is unwrapped first.
 const peerAddress = (c: Context): string | undefined => {
   if (onVercel) return undefined
   try {
@@ -21,22 +19,32 @@ const peerAddress = (c: Context): string | undefined => {
   }
 }
 
-// The address the IP tier bills. A public peer is the client itself and no header overrides it, so a forged x-forwarded-for on a direct deploy changes nothing; a private peer is a proxy or a sibling service, and the client is whatever it forwarded in x-forwarded-for, read last hop first. No platform option: Vercel's would read x-real-ip first, whose value behind a rewrite is not established, while x-forwarded-for is the client production has keyed on all along, directly and through the web's /api rewrite. A private peer that forwarded nothing is internal traffic, the web app's server-side calls or a health check, and is not billed: pooling it into one bucket would throttle every user at once.
+// Only x-forwarded-for reaches the IP library, never its fallbacks (x-real-ip, x-client-ip, forwarded, ...): a proxy that forwards the client sets this one and Vercel overwrites it outright, while any other header behind a private peer is the client naming its own bucket.
+const forwardedHeaders = (c: Context): Headers => {
+  const headers = new Headers()
+  const value = c.req.raw.headers.get("x-forwarded-for")
+  if (value) headers.set("x-forwarded-for", value)
+  return headers
+}
+
+// The address the IP tier bills. A public peer is the client itself and no header overrides it; a private peer is a proxy or a sibling service, and the client is what it forwarded, last hop first; a private peer that forwarded nothing is internal traffic (the web app's server-side calls, a health check) and is not billed, since pooling it into one bucket would throttle every user at once.
 export const clientAddress = (c: Context): { address: string; internal: boolean } => {
   const peer = peerAddress(c)
-  const address = findIp({ headers: c.req.raw.headers, ip: peer })
+  const address = findIp({ headers: forwardedHeaders(c), ip: peer })
   if (address) return { address, internal: false }
   return { address: peer ?? "unknown", internal: peer !== undefined }
 }
 
 type Resolver = (c: Context) => string | undefined
 
+type Decision = { key: string; skip: boolean }
+
 // The bucket a request bills, and whether it bills one at all. Only the IP tier has an internal case: a request the limiter can name by user or key is always billed.
 export const rateLimitDecision = (
   c: Context,
   getUserId?: Resolver,
   getApiKey?: Resolver,
-): { key: string; skip: boolean } => {
+): Decision => {
   const userId = getUserId && getUserId(c)
   if (userId) return { key: `userid:${userId}`, skip: false }
 
@@ -48,21 +56,31 @@ export const rateLimitDecision = (
 }
 
 interface RateLimiterConfig {
+  getApiKey?: Resolver
+  getUserId?: Resolver
   limit?: number
   windowMs?: number
-  getUserId?: Resolver
-  getApiKey?: Resolver
 }
 
 export function createRateLimiter(config: RateLimiterConfig = {}) {
-  const { limit = 60, windowMs = 60000, getUserId, getApiKey } = config
+  const { getApiKey, getUserId, limit = 60, windowMs = 60000 } = config
+
+  // The limiter asks skip and then keyGenerator about the same request, so the decision is made once and remembered for the life of that request.
+  const decisions = new WeakMap<Request, Decision>()
+  const decide = (c: Context): Decision => {
+    const remembered = decisions.get(c.req.raw)
+    if (remembered) return remembered
+    const decision = rateLimitDecision(c, getUserId, getApiKey)
+    decisions.set(c.req.raw, decision)
+    return decision
+  }
 
   return rateLimiter({
-    limit,
-    windowMs,
-    keyGenerator: (c) => rateLimitDecision(c, getUserId, getApiKey).key,
-    skip: (c) => rateLimitDecision(c, getUserId, getApiKey).skip,
     handler: (c) => jsonError(c, 429, "TOO_MANY_REQUESTS", "Too Many Requests"),
+    keyGenerator: (c) => decide(c).key,
+    limit,
+    skip: (c) => decide(c).skip,
+    windowMs,
   })
 }
 
