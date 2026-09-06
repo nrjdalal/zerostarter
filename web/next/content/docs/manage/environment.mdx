@@ -41,7 +41,7 @@ The prefix is the rule the bundler enforces. A server secret has no `NEXT_PUBLIC
 
 ## Stages
 
-`NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`.
+`NODE_ENV` is a five-stage enum, centralized in `@packages/env` and validated everywhere: **local → development → test → staging → production**. When it is set to a known stage, a stage-specific `.env.<stage>` file (e.g. `.env.production`) is layered on top of the base `.env` with `override: true`. The API bundle reads it at runtime rather than at build (`bun build --env disable`), so the process or container env decides the stage, never the shell that ran the build.
 
 To branch on the stage, `@packages/env` also exports checkers (`isLocal`, `isProduction`, and one per stage) so code reads `isProduction(env.NEXT_PUBLIC_NODE_ENV)` instead of comparing raw strings.
 

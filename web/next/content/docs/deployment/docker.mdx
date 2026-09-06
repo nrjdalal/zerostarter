@@ -52,6 +52,8 @@ Both builds validate the full env, so they need `.env` at build time, but never 
 
 Compose wires this from `secrets: dotenv` (sourced from `./.env`); a plain `docker build` passes `--secret id=dotenv,src=.env`. The secret is read from your host and never enters the build context; `.dockerignore` also excludes every real `.env*` file, letting only `.env.example` in. A missing `.env` fails the build immediately.
 
+The API bundle does not bake `NODE_ENV` either: it is built with `bun build --env disable`, so the value `env_file` supplies at runtime decides the stage, and `/api/health` reports it as `environment`. Without the flag bun inlines whatever the build shell had, which is never what `.env` says, since the secret is a mounted file and not a sourced environment.
+
 <Callout type="warn" title="Rebuild with --no-cache after editing .env">
 
 Secret contents aren't part of BuildKit's cache key. Edit `.env` and a plain rebuild can reuse the cached build step, silently shipping stale values, including web's `NEXT_PUBLIC_*` and the auth session-cookie scope derived from `HONO_APP_URL`, both baked into the bundle at build time. After any env change, run `docker compose build --no-cache`.
