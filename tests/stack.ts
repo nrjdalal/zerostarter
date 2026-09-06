@@ -2,7 +2,22 @@
 export const API = process.env.E2E_API_URL ?? ""
 export const POSTGRES_URL = process.env.E2E_POSTGRES_URL ?? ""
 export const WEB = process.env.E2E_WEB_URL ?? ""
-// Every suite file guards itself with describe.skipIf(!enabled); bun run test:e2e is what names a stack.
+// Every suite file guards itself with describe.skipIf(!enabled); bun run test:e2e is what names a stack. The suite writes through the API and signs in as the agent, so a stack that is not on this machine is refused outright rather than skipped: a misconfigured job must fail, not run against a deployment.
+const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
+
+const isLocalHost = (host: string): boolean => LOCAL_HOSTS.has(host) || host.endsWith(".localhost")
+
+for (const [name, url] of [
+  ["E2E_API_URL", API],
+  ["E2E_WEB_URL", WEB],
+]) {
+  if (url !== "" && !isLocalHost(new URL(url).hostname)) {
+    throw new Error(
+      `${name} points at ${new URL(url).hostname}; the suite runs only against a local stack`,
+    )
+  }
+}
+
 export const enabled = API !== "" && WEB !== ""
 
 export const AGENT_EMAIL = "agent@local.host"
@@ -118,7 +133,6 @@ export const normalize = (value: unknown, key = ""): unknown => {
 }
 
 // Seeding writes straight into the database, so it runs only against a disposable one: on this machine, and holding no account but the agent and the seed. A populated database is someone's data, whatever host it answers on.
-const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
 
 const openDisposable = async (): Promise<Bun.SQL> => {
   const host = new URL(POSTGRES_URL).hostname
