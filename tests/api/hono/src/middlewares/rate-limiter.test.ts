@@ -63,8 +63,8 @@ describe("clientAddress", () => {
   })
 
   test("consults x-forwarded-for alone, so no other client header can name a bucket", () => {
-    // The IP library would otherwise fall through to x-real-ip, x-client-ip, true-client-ip and forwarded.
-    for (const header of ["x-real-ip", "x-client-ip", "true-client-ip", "forwarded"]) {
+    // The IP library would otherwise fall through to these.
+    for (const header of ["forwarded", "true-client-ip", "x-client-ip", "x-real-ip"]) {
       const value = header === "forwarded" ? "for=8.8.8.8" : "8.8.8.8"
       expect(clientAddress(context({ [header]: value }, "172.18.0.5"))).toEqual({
         address: "172.18.0.5",

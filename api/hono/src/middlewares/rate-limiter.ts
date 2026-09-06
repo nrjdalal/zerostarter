@@ -19,7 +19,7 @@ const peerAddress = (c: Context): string | undefined => {
   }
 }
 
-// Only x-forwarded-for reaches the IP library, never its fallbacks (x-real-ip, x-client-ip, forwarded, ...): a proxy that forwards the client sets this one and Vercel overwrites it outright, while any other header behind a private peer is the client naming its own bucket.
+// Only x-forwarded-for reaches the IP library, never its fallbacks (forwarded, true-client-ip, x-client-ip, x-real-ip): a proxy that forwards the client sets this one and Vercel overwrites it outright, while any other header behind a private peer is the client naming its own bucket.
 const forwardedHeaders = (c: Context): Headers => {
   const headers = new Headers()
   const value = c.req.raw.headers.get("x-forwarded-for")
