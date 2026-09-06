@@ -11,7 +11,7 @@ The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A sh
 ## Pick the shape
 
 - **Library** (`env`, `db`, `auth`, `config`): tsdown-built to `dist/` and imported by other workspaces through an `exports` map. Use it when code is consumed at runtime.
-- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts` during another package's build (for example `@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first). Use it for build-time codegen. CI or repo tooling belongs in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
+- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts`, either during another package's build (`@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first) or on demand from a root script (`bun run auth:schema` runs `auth-schema.ts`). Use it for build-time codegen and for regenerators of committed source. CI or repo tooling belongs in `.github/scripts` instead; `packages/scripts` is for app-build tooling that needs workspace deps.
 
 ## Common skeleton (both shapes)
 
