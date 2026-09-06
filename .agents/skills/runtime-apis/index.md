@@ -12,7 +12,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `.github/scripts/compress-images.ts` | Bun | `node:path` (path) |
 | `.github/scripts/docs.ts` | Bun | `node:path` (path) |
 | `.github/scripts/skills-manager.ts` | Bun | `node:crypto` (createHash); `node:path` (path) |
-| `.github/workflows/auto-labeler.yml` | Node | `node:fs`, `node:path` (via `require`, `actions/github-script`) |
+| `.github/workflows/auto-labeler.yml` | Node | `node:child_process`, `node:fs`, `node:path` (via `require`, `actions/github-script`) |
 | `packages/auth/tsdown.config.ts` | Build | `node:fs` (existsSync, readFileSync); `node:path` (resolve) |
 | `packages/cli/bin/commands/_args.ts` | Node | `node:util` (parseArgs, ParseArgsConfig) |
 | `packages/cli/bin/commands/_bun.ts` | Node | `node:os` (homedir); `node:path` (delimiter, join) |
@@ -20,7 +20,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/cli/bin/commands/init.ts` | Node | `node:fs` (existsSync, readdirSync, readFileSync); `node:path` (basename, dirname, join, parse, resolve) |
 | `packages/cli/bin/commands/reinit.ts` | Node | `node:path` (basename, resolve) |
 | `packages/cli/bin/commands/sync.ts` | Node | `node:path` (join, resolve) |
-| `packages/cli/src/convert.ts` | Node | `node:path` (join) |
+| `packages/cli/src/convert.ts` | Node | `node:path` (isAbsolute, join, relative, resolve, sep) |
 | `packages/cli/src/db.ts` | Node | `node:crypto` (randomBytes); `node:path` (join) |
 | `packages/cli/src/git.ts` | Node | `node:path` (join) |
 | `packages/cli/src/io.ts` | Node | `node:fs` (existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync); `node:path` (dirname, join) |
@@ -33,7 +33,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/features-consistency.test.ts` | Bun | `node:fs` (readFileSync); `node:path` (join) |
-| `tests/packages/cli/src/convert.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
+| `tests/packages/cli/src/convert.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync); `node:os` (tmpdir); `node:path` (basename, join) |
 | `tests/packages/cli/src/db.test.ts` | Bun | `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/src/fork-layout.test.ts` | Bun | `node:fs` (readFileSync); `node:path` (join) |
 | `tests/packages/cli/src/git.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |

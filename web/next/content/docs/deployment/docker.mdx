@@ -19,7 +19,7 @@ Inside the Compose network the web container can't reach the api at `localhost`:
 
 - **web, build time**: baked into the Next.js rewrite in `next.config.ts`, so `/api/*` proxies to `http://api:4000`.
 - **web, runtime**: server-side API calls (SSR, server actions) in `src/lib/config.ts` hit the api container directly.
-- **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`packages/env/src/db.ts`), so the container reaches a database running on your host.
+- **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`dockerHostUrl` in `packages/env/src/lib/postgres-url.ts`, applied by `db.ts`), so the container reaches a database running on your host.
 
 External clients still use the mapped ports (`localhost:3000`, `localhost:4000`). You don't set `INTERNAL_API_URL` by hand for Compose: it's already wired.
 
