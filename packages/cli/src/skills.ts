@@ -43,9 +43,11 @@ export const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "app"
 
-// Rebrand the fork's own identity (display name, portless dev-URL names, docker image, log paths) while preserving upstream references: `bunx zerostarter` is the CLI a fork still runs to sync (it ships none of its own) and "zerostarter scaffolding CLI" names that upstream tool, so a lowercase "zerostarter" preceded by "bunx " or followed by " scaffolding CLI" is left alone. The frontmatter source line and sync note are stamped separately and never pass through here.
+// Rebrand the fork's own identity (display name, portless dev-URL names, docker image, log paths) while preserving upstream references: `bunx zerostarter` is the CLI a fork still runs to sync (it ships none of its own) and "zerostarter scaffolding CLI" names that upstream tool, so a lowercase "zerostarter" preceded by "bunx " or followed by " scaffolding CLI" is left alone. The frontmatter source line and sync note are stamped separately and never pass through here. The name goes in through a replacer function, so a `$` in it is literal rather than a replacement pattern.
 const reconcile = (text: string, slug: string, name: string): string =>
-  text.replaceAll("ZeroStarter", name).replace(/(?<!bunx )zerostarter(?! scaffolding CLI)/g, slug)
+  text
+    .replaceAll("ZeroStarter", () => name)
+    .replace(/(?<!bunx )zerostarter(?! scaffolding CLI)/g, slug)
 
 // The line marking a skill as synced from here; its presence is the fork's opt-in, and removing it hands the skill to the fork.
 const NOTE_MARKER = `> Synced from ${UPSTREAM}.`

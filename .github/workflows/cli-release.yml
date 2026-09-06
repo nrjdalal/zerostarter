@@ -19,15 +19,12 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-permissions:
-  id-token: write
-  contents: write
-  statuses: write
-  pull-requests: write
-
 jobs:
   test:
     if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    # the publish scopes live on the release job alone; a test matrix needs none of them
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -66,6 +63,11 @@ jobs:
       )
     needs: [test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+      statuses: write
     defaults:
       run:
         working-directory: packages/cli
@@ -94,8 +96,12 @@ jobs:
           LATEST_VERSION=$(echo $VERSIONS | bunx json latest)
           # the CLI has no version of its own (package.json is a 0.0.0 placeholder CI stamps): it ships the repo's release version, read from the tag auto-release created
           if [[ $GITHUB_EVENT_NAME == 'issue_comment' ]]; then
-            PR_NUMBER=$(echo "${{ github.event.issue.pull_request.url }}" | grep -o '[0-9]*$')
-            LATEST_COMMIT_SHA=$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" | bunx json -a sha | tail -n 1)
+            PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+            PR=$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+            HEAD_REPO=$(echo "$PR" | bunx json head.repo.full_name)
+            # same-repo only: this builds and publishes the PR's own code with the npm token in scope, so a fork's install scripts and build must never run here (a fork head is not even fetched today, but the gate must not rest on that)
+            [[ $HEAD_REPO == "$GITHUB_REPOSITORY" ]] || { echo "::error::/release publishes same-repo PRs only; #$PR_NUMBER comes from $HEAD_REPO"; exit 1; }
+            LATEST_COMMIT_SHA=$(echo "$PR" | bunx json head.sha)
             git checkout $LATEST_COMMIT_SHA
             TAG="test"
             RELEASE_VERSION="0.0.0-${LATEST_COMMIT_SHA:0:7}"
@@ -119,7 +125,8 @@ jobs:
           fi
 
           bunx json -I -f package.json -e "this.version=\"$RELEASE_VERSION\""
-          bun install --frozen-lockfile
+          # no lifecycle scripts while the npm token is in the environment; the build needs none
+          bun install --frozen-lockfile --ignore-scripts
           bun run build
           bunx json -I -f package.json -e 'delete this.scripts'
           bunx json -I -f package.json -e 'delete this.commitlint'
@@ -128,7 +135,7 @@ jobs:
 
           PACKAGE_URL="https://www.npmjs.com/package/$PACKAGE_NAME/v/$RELEASE_VERSION"
           if [[ $GITHUB_EVENT_NAME == 'issue_comment' ]]; then
-            curl -fsSL -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/${{ github.event.comment.id }}" >/dev/null \
+            curl -fsSL -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" >/dev/null \
               && echo "🟢 Releasing comment deleted!" || echo "🔴 Failed to delete releasing comment."
             curl -fsSL -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
               -d "{\"body\": \"Test package released - [\`$PACKAGE_NAME@$RELEASE_VERSION\`]($PACKAGE_URL)\"}" >/dev/null \
@@ -141,5 +148,8 @@ jobs:
               -d "{\"state\": \"success\", \"context\": \"Package released\", \"description\": \"$PACKAGE_NAME@$RELEASE_VERSION\", \"target_url\": \"$PACKAGE_URL\"}" >/dev/null \
               && echo "🟢 Release status updated!" || echo "🔴 Failed to update release status."
           fi
+        # event values reach the script through env, never inline in run, so a payload field is data rather than shell
         env:
+          COMMENT_ID: ${{ github.event.comment.id }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}

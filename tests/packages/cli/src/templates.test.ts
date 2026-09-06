@@ -82,3 +82,15 @@ test("content + agent stubs are brand-free", () => {
     expect(out).not.toContain("nrjdalal")
   }
 })
+
+test("siteTemplate emits the name as a safe string literal, so a quote in a directory name cannot break out of it", () => {
+  const out = siteTemplate({ name: 'ac"me";process.exit(1);//' })
+  expect(out).toContain('name: "Ac\\"me\\";process.exit(1);//",')
+  expect(out).toContain('description: "Ac\\"me\\";process.exit(1);// is just getting started.')
+  expect(out).not.toContain('name: "Ac"me')
+})
+
+test("siteTemplate escapes a backslash and a newline in the name the same way", () => {
+  const out = siteTemplate({ name: "back\\slash\nline" })
+  expect(out).toContain('name: "Back\\\\slash\\nline",')
+})

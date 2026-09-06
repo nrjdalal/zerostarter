@@ -1,7 +1,7 @@
 // Extends the subject's own config so its @/ paths resolve for the source these tests import.
 // The tests themselves import by relative path: @/ would be ambiguous here, since every package defines it against its own src.
 {
-  "extends": "../../../api/hono/tsconfig.json",
+  "extends": "../../../packages/env/tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
     "types": ["bun"]

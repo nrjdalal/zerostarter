@@ -45,9 +45,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { execFileSync } = require('node:child_process');
             const fs = require('node:fs');
             const path = require('node:path');
             const { globbySync } = require('globby');
+
+            // the top-level directories the base branch tracks, read once from git rather than the disk: the checkout has run an install, so the disk also holds node_modules and other untracked output, and a pathspec would read a name such as "*" as a glob
+            const trackedDirectories = new Set(
+              execFileSync('git', ['ls-tree', '--name-only', '-d', 'HEAD'], { encoding: 'utf8' })
+                .split('\n')
+                .filter(Boolean),
+            );
 
             const { number: prNumber } = context.payload.pull_request;
             const { owner, repo } = context.repo;
@@ -142,7 +150,8 @@ jobs:
                 return '@misc';
               }
 
-              return topLevel ? `@${topLevel}` : '@misc';
+              // a directory label only for a directory the base branch tracks: the file list is the contributor's, and a novel top-level path must not mint a label under this write token
+              return topLevel && trackedDirectories.has(topLevel) ? `@${topLevel}` : '@misc';
             };
 
             const ensureLabel = async (labelName) => {
