@@ -1,15 +1,15 @@
-import { afterAll, describe, expect, test } from "bun:test"
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
 import { API, Client, enabled, signInAsAgent, signOut } from "../../../../stack"
 
-// The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. The row is removed through the console afterwards so the run leaves nothing behind. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
+// The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. A signup left by an interrupted run is removed first, so the first join is a real insert, and the row is removed through the console afterwards so the run leaves nothing behind. Skipped unless E2E_API_URL and E2E_WEB_URL name a stack (bun run test:e2e).
 
 const EMAIL = "golden.join@example.com"
 
 describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
   const visitor = new Client(API)
 
-  afterAll(async () => {
+  const removeSignup = async () => {
     const agent = await signInAsAgent()
     try {
       const { body } = await agent.json<{ data: { signups: { email: string; id: string }[] } }>(
@@ -20,7 +20,11 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
     } finally {
       await signOut(agent)
     }
-  })
+  }
+
+  beforeAll(removeSignup)
+
+  afterAll(removeSignup)
 
   test("the count is public", async () => {
     const { status, body } = await visitor.json<{ data: { count: number } }>("/api/waitlist")

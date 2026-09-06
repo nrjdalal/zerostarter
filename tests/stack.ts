@@ -106,29 +106,38 @@ export const normalize = (value: unknown, key = ""): unknown => {
   return value
 }
 
-// Seeding writes straight into the database, so it runs only against one on this machine: a disposable container, never the shared one a dev stack could be pointed at by mistake.
+// Seeding writes straight into the database, so it runs only against a disposable one: on this machine, and holding no account but the agent and the seed. A populated database is someone's data, whatever host it answers on.
 const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
 
-const disposable = (): Bun.SQL => {
+const disposable = async (): Promise<Bun.SQL> => {
   const host = new URL(POSTGRES_URL).hostname
   if (!LOCAL_HOSTS.has(host)) {
     throw new Error(
       `E2E_POSTGRES_URL points at ${host}; seeding runs only against a local disposable database`,
     )
   }
-  return new Bun.SQL(POSTGRES_URL)
+  const sql = new Bun.SQL(POSTGRES_URL)
+  const [other] =
+    await sql`select email from "user" where email not in (${AGENT_EMAIL}, ${SEEDED_EMAIL}) limit 1`
+  if (other) {
+    await sql.end()
+    throw new Error(
+      "E2E_POSTGRES_URL holds accounts beyond the agent and the seed; seeding runs only against a fresh disposable database",
+    )
+  }
+  return sql
 }
 
 // Seed rows the API offers no route for (a second user), only when the run names the database. Fake rows, fixed ids, removed again at the end.
 export const seedUser = async (): Promise<void> => {
-  const sql = disposable()
+  const sql = await disposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql`insert into "user" (id, name, email, email_verified, created_at, updated_at, role) values (${SEEDED_ID}, ${"Golden Seed"}, ${SEEDED_EMAIL}, true, now() - interval '1 day', now() - interval '1 day', ${"user"})`
   await sql.end()
 }
 
 export const removeSeededUser = async (): Promise<void> => {
-  const sql = disposable()
+  const sql = await disposable()
   await sql`delete from "user" where email = ${SEEDED_EMAIL}`
   await sql.end()
 }
