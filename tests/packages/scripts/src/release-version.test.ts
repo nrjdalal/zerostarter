@@ -211,7 +211,7 @@ describe("decideIn, against real repositories", () => {
       await commit(dir, "chore: release", "v0.1.27")
       await commit(dir, "feat: one")
       const decideVia = (...args: string[]) => {
-        const proc = Bun.spawnSync(["bun", script, ...args], {
+        const proc = Bun.spawnSync([process.execPath, script, ...args], {
           cwd: dir,
           stderr: "pipe",
           stdout: "pipe",
@@ -255,6 +255,19 @@ describe("decideIn, against real repositories", () => {
       expect(await decideIn(dir)).toMatchObject({ earned: "0.1.28", moved: false, next: "2.0.0" })
       expect(await Bun.file(join(dir, "package.json")).text()).toContain('"version": "2.0.0"')
       expect(await Bun.file(join(dir, "CHANGELOG.md")).exists()).toBe(false)
+    } finally {
+      cleanup(dir)
+    }
+  }, 30000)
+
+  test("tags that HEAD cannot reach stop the script instead of counting as no tag", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await Bun.$`git -C ${dir} checkout -q -b elsewhere`
+      await commit(dir, "chore: release elsewhere", "v0.1.27")
+      await Bun.$`git -C ${dir} checkout -q canary`
+      await commit(dir, "feat: one")
+      await expect(decideIn(dir)).rejects.toThrow("none is reachable from HEAD")
     } finally {
       cleanup(dir)
     }

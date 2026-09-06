@@ -107,11 +107,12 @@ const earnedFrom = async (root: string, tag: string | null): Promise<string> => 
   try {
     await writeVersion(pkg, baseOf(tag))
     const from = tag === null ? [] : ["--from", tag]
-    const bumped = run(["bun", changelogen, "--bump", "--no-commit", ...from], root)
+    const bumped = run([process.execPath, changelogen, "--bump", "--no-commit", ...from], root)
     // changelogen's CLI reports its own errors and still exits 0, so success is read from what it left behind: the version moved past the tag's and a section for it heads the changelog. Measured: even a window of nothing it recognizes bumps a patch and writes an empty section, which the content gate below then discounts.
     const version = await readVersion(pkg)
     const text = (await Bun.file(changelog).exists()) ? await Bun.file(changelog).text() : ""
-    const headed = new RegExp(`^## v${version.replaceAll(".", "\\.")}\\r?$`, "m").test(text)
+    const header = new RegExp(`^## v${version.replaceAll(".", "\\.")}\\r?$`, "m").exec(text)
+    const headed = header !== null && text.search(/^## /m) === header.index
     if (!bumped.ok || compare(version, baseOf(tag)) <= 0 || !headed) {
       throw new Error(`changelogen failed: ${bumped.err || bumped.out}`)
     }
@@ -148,6 +149,14 @@ const releasable = (root: string, tag: string | null): boolean => {
 // The decision for the repository at root: its last tag, its tree, and what its window has earned.
 export const decideIn = async (root: string): Promise<Decision> => {
   const described = run(["git", "describe", "--tags", "--abbrev=0", "--match", "v*"], root)
+  // git describe fails the same way for a repository with no tag and for one whose tags HEAD cannot reach (a shallow clone without them); only the first is a fresh start, the second would compute from v0.0.0 and answer wrong, so it stops here.
+  if (!described.ok) {
+    const listed = run(["git", "tag", "--list", "v*"], root)
+    if (!listed.ok) throw new Error(`git tag failed: ${listed.err}`)
+    if (listed.out !== "") {
+      throw new Error("v* tags exist but none is reachable from HEAD; fetch the tags first")
+    }
+  }
   const tag = described.ok && described.out !== "" ? described.out : null
   const current = await readVersion(join(root, "package.json"))
   const earned = releasable(root, tag) ? await earnedFrom(root, tag) : baseOf(tag)
