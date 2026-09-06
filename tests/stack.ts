@@ -2,22 +2,25 @@
 export const API = process.env.E2E_API_URL ?? ""
 export const POSTGRES_URL = process.env.E2E_POSTGRES_URL ?? ""
 export const WEB = process.env.E2E_WEB_URL ?? ""
-// Every suite file guards itself with describe.skipIf(!enabled); bun run test:e2e is what names a stack. The suite writes through the API and signs in as the agent, so a stack that is not on this machine is refused outright rather than skipped: a misconfigured job must fail, not run against a deployment.
+
+// The hosts a stack or a database on this machine answers on. A .localhost name is the dev stack's portless proxy, which serves HTTP only, so it counts for the stack below and not for the database the seeder opens.
 const LOCAL_HOSTS = new Set(["127.0.0.1", "[::1]", "host.docker.internal", "localhost"])
 
 const isLocalHost = (host: string): boolean => LOCAL_HOSTS.has(host) || host.endsWith(".localhost")
 
+// The suite writes through the API and signs in as the agent, so a stack that is not on this machine is refused outright rather than skipped: a misconfigured job must fail, not run against a deployment.
 for (const [name, url] of [
   ["E2E_API_URL", API],
   ["E2E_WEB_URL", WEB],
 ]) {
-  if (url !== "" && !isLocalHost(new URL(url).hostname)) {
-    throw new Error(
-      `${name} points at ${new URL(url).hostname}; the suite runs only against a local stack`,
-    )
+  if (url === "") continue
+  const host = new URL(url).hostname
+  if (!isLocalHost(host)) {
+    throw new Error(`${name} points at ${host}; the suite runs only against a local stack`)
   }
 }
 
+// Every suite file guards itself with describe.skipIf(!enabled); bun run test:e2e is what names a stack.
 export const enabled = API !== "" && WEB !== ""
 
 export const AGENT_EMAIL = "agent@local.host"
@@ -52,7 +55,7 @@ export class Client {
   async json<T = unknown>(
     target: string,
     init: RequestInit = {},
-  ): Promise<{ status: number; body: T }> {
+  ): Promise<{ body: T; status: number }> {
     const response = await this.fetch(target, init)
     return { body: (await response.json()) as T, status: response.status }
   }
@@ -71,8 +74,8 @@ export class Client {
 export const signInAsAgent = async (): Promise<Client> => {
   const client = new Client(API)
   const response = await client.fetch("/api/agents/sign-in-as", {
-    method: "POST",
     headers: { origin: WEB },
+    method: "POST",
   })
   if (response.status !== 302) {
     throw new Error(`agent sign-in answered ${response.status}: ${await response.text()}`)
@@ -133,7 +136,6 @@ export const normalize = (value: unknown, key = ""): unknown => {
 }
 
 // Seeding writes straight into the database, so it runs only against a disposable one: on this machine, and holding no account but the agent and the seed. A populated database is someone's data, whatever host it answers on.
-
 const openDisposable = async (): Promise<Bun.SQL> => {
   const host = new URL(POSTGRES_URL).hostname
   if (!LOCAL_HOSTS.has(host)) {

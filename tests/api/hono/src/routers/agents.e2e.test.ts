@@ -7,8 +7,8 @@ import { API, Client, enabled, signOut, WEB } from "../../../../stack"
 describe.skipIf(!enabled)("api/hono/src/routers/agents.ts", () => {
   test("an untrusted origin is refused", async () => {
     const response = await new Client(API).fetch("/api/agents/sign-in-as", {
-      method: "POST",
       headers: { origin: "https://evil.example.com" },
+      method: "POST",
     })
     expect(response.status).toBe(500)
     expect(await response.json()).toMatchSnapshot()
@@ -17,8 +17,8 @@ describe.skipIf(!enabled)("api/hono/src/routers/agents.ts", () => {
   test("a trusted origin gets a session and the dashboard", async () => {
     const client = new Client(API)
     const response = await client.fetch("/api/agents/sign-in-as", {
-      method: "POST",
       headers: { origin: WEB },
+      method: "POST",
     })
     try {
       expect(response.status).toBe(302)
