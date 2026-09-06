@@ -31,7 +31,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/scripts/src/auth-schema.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
-| `packages/scripts/src/release-version.ts` | Bun | `node:path` (join) |
+| `packages/scripts/src/release-version.ts` | Bun | `node:path` (dirname, join) |
 | `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |

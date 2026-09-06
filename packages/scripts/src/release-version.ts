@@ -1,4 +1,4 @@
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 // The number the next release will carry, decided before the release merge so the tree main builds from already holds it. Three rules: the number a window has earned is changelogen's bump applied to the last tag's version (a missing tag counts as v0.0.0), never to whatever package.json says, or a number set early would be bumped twice; the tree moves forward only, to max(tree, earned), so a hand-set ahead of both stays; a tree below the last tag is refused loudly. Prints the decision as JSON; --write moves package.json when the decision is ahead of it. Runs from the repo root (cwd), which is what the workflows and bun run release:version do.
 
@@ -64,8 +64,12 @@ const writeVersion = async (file: string, version: string): Promise<void> => {
   await Bun.write(file, text.replace(VERSION_FIELD, `"version": "${version}"`))
 }
 
-// This package's own changelogen, declared as its dependency and anchored to this file, so a throwaway repository in a test computes with the same locked binary the workflows use.
-const changelogen = join(import.meta.dir, "../node_modules/.bin/changelogen")
+// This package's own changelogen, declared as its dependency and resolved from this file, so a throwaway repository in a test computes with the same locked binary the workflows use. Its bin is read from its manifest rather than the .bin shim, which Bun writes as .exe and .bunx on Windows.
+const changelogenManifest = Bun.resolveSync("changelogen/package.json", import.meta.dir)
+const changelogen = join(
+  dirname(changelogenManifest),
+  JSON.parse(await Bun.file(changelogenManifest).text()).bin.changelogen,
+)
 
 // changelogen bumps whatever package.json holds and writes the changelog, so it runs against a copy set to the tag's version, and both files are put back afterwards.
 const earnedFrom = async (root: string, tag: string | null): Promise<string> => {
@@ -80,7 +84,7 @@ const earnedFrom = async (root: string, tag: string | null): Promise<string> => 
     const bumped = run(["bun", changelogen, "--bump", "--no-commit", ...from], root)
     if (!bumped.ok) throw new Error(`changelogen failed: ${bumped.err || bumped.out}`)
     // changelogen drops some types from the changelog (ci, and chore(deps)) yet still bumps; auto-release refuses a section with no entry, so a window that earns no entry earns no number either.
-    const section = (await Bun.file(changelog).text()).split(/^## /m)[1] ?? ""
+    const section = (await Bun.file(changelog).text()).split(/^## v/m)[1] ?? ""
     const entries = section.split("### ❤️ Contributors")[0]
     if (!/^- /m.test(entries)) return baseOf(tag)
     return await readVersion(pkg)
