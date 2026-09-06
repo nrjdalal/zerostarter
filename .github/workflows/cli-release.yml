@@ -6,7 +6,7 @@ on:
       - canary
     paths:
       - "packages/cli/**"
-      # the release-version script this workflow runs lives here; a change to it re-runs the gate
+      # the scripts package holds the release-version script this workflow runs; a change in it re-runs the gate
       - "packages/scripts/**"
       # the matrix gates the publish on the whole suite (bun run test), so a change to any test
       # has to reach it; filtered to the CLI's own tests, a fix elsewhere never re-ran the gate
