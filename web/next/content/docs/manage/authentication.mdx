@@ -4,7 +4,7 @@ title: Auth & Organizations
 description: Better Auth with OAuth, organizations, teams, and the role gate behind /console.
 ---
 
-[Better Auth](https://better-auth.com) owns the whole auth surface (sign-in methods, sessions, organizations, and roles) as one config in `packages/auth/src/index.ts`, backed by the same Drizzle schema as the rest of your data. It runs in-process against your own Postgres, so no user records leave your database and there is no separate auth service to keep in sync.
+[Better Auth](https://better-auth.com) owns the whole auth surface (sign-in methods, sessions, organizations, and roles) as one config in `packages/auth` (`schema.ts` declares the plugins and the columns they add, and the Drizzle auth schema is generated from it; `index.ts` adds the providers, cookies and hooks), backed by the same Drizzle schema as the rest of your data. It runs in-process against your own Postgres, so no user records leave your database and there is no separate auth service to keep in sync.
 
 ## Sign-in methods
 

@@ -48,7 +48,7 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 
 ## The packages
 
-- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `/console` is gated by the [role ladder](/docs/manage/authentication#the-console-role-ladder) in `src/access.ts`, a second subpath export (`@packages/auth/access`) so the web can read the rules without pulling the auth runtime. Exports session types.
+- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `src/schema.ts` holds the plugins and any extra column, and `packages/db/src/schema/auth.ts` is generated from it (`bun run auth:schema`). `/console` is gated by the [role ladder](/docs/manage/authentication#the-console-role-ladder) in `src/access.ts`, a second subpath export (`@packages/auth/access`) so the web can read the rules without pulling the auth runtime. Exports session types.
 - **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `console.ts`, `waitlist.ts`, grouped by concern rather than one file per table) and generated migrations under `drizzle/`.
 - **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
 - **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
