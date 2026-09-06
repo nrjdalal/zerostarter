@@ -1,12 +1,16 @@
 import { join } from "node:path"
 
-import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from "changelogen"
+import {
+  determineSemverChange,
+  getGitDiff,
+  loadChangelogConfig,
+  parseCommits,
+  type SemverBumpType,
+} from "changelogen"
 
 // The number the next release will carry, decided before the release merge so the tree main builds from already holds it. Three rules: the number a window has earned is changelogen's bump applied to the last tag's version (a missing tag counts as v0.0.0), never to whatever package.json says, or a number set early would be bumped twice; the tree moves forward only, to max(tree, earned), so a hand-set ahead of both stays; a tree below the last tag is refused loudly. changelogen is used as a library, its own config and commit parsing with no changelog rendered, so the decision touches no file and no network. Prints the decision as JSON; --write moves package.json when the decision is ahead of it. Runs from the repo root (cwd), which is what the workflows and bun run release:version do.
 
 type Version = [number, number, number]
-
-type Change = NonNullable<ReturnType<typeof determineSemverChange>>
 
 export type Decision = {
   current: string
@@ -38,7 +42,7 @@ export const compare = (a: string, b: string): number => {
 }
 
 // The version one change up from another, as changelogen's bump command moves it: below 1.0 a major counts as a minor and a minor as a patch.
-export const bump = (version: string, change: Change): string => {
+export const bump = (version: string, change: SemverBumpType): string => {
   const [major, minor, patch] = parse(version)
   const step = major > 0 ? change : change === "major" ? "minor" : "patch"
   if (step === "major") return `${major + 1}.0.0`
@@ -103,15 +107,17 @@ export const writeVersion = async (file: string, version: string): Promise<void>
   )
 }
 
-// What the window since the tag has earned on top of the tag's version. The commits are the ones changelogen's own command keeps for the changelog (its config from changelog.config.json, disabled types and non-breaking chore(deps) dropped), so a window that keeps none earns nothing, which is the entry auto-release's content gate demands; the change is its semver reading of them, falling back to the patch its command bumps when no commit says more.
+// What the window since the tag has earned on top of the tag's version. The commits are the ones changelogen's own command keeps for the changelog (its config from changelog.config.json, the type lowercased as its parser is case-insensitive, disabled types and non-breaking chore(deps) dropped), so a window that keeps none earns nothing, which is the entry auto-release's content gate demands; the change is its semver reading of them, falling back to the patch its command bumps when no commit says more.
 const earnedFrom = async (root: string, tag: string | null): Promise<string> => {
   const from = tag === null ? undefined : tag
   const config = await loadChangelogConfig(root, { cwd: root, from, to: "HEAD" })
-  const kept = parseCommits(await getGitDiff(from, "HEAD", root), config).filter(
-    (commit) =>
-      config.types[commit.type] &&
-      !(commit.type === "chore" && commit.scope === "deps" && !commit.isBreaking),
-  )
+  const kept = parseCommits(await getGitDiff(from, "HEAD", root), config)
+    .map((commit) => ({ ...commit, type: commit.type.toLowerCase() }))
+    .filter(
+      (commit) =>
+        config.types[commit.type] &&
+        !(commit.type === "chore" && commit.scope === "deps" && !commit.isBreaking),
+    )
   if (kept.length === 0) return baseOf(tag)
   return bump(baseOf(tag), determineSemverChange(kept, config) ?? "patch")
 }

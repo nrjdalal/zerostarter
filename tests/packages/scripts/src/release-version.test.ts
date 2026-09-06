@@ -84,7 +84,7 @@ const repo = async (version: string): Promise<string> => {
   await Bun.$`git -C ${dir} config user.email probe@example.com`
   await Bun.$`git -C ${dir} config user.name probe`
   await Bun.$`git -C ${dir} remote add origin https://github.com/probe/probe.git`
-  // The changelog config rides along, as it does in this repo and in a fork: it is what drops ci commits from the changelog, which the content gate reads.
+  // The changelog config rides along, as it does in this repo and in a fork: it is what drops ci commits, which the decision reads the way the content gate does.
   await Bun.write(
     join(dir, "changelog.config.json"),
     await Bun.file(join(import.meta.dir, "../../../../changelog.config.json")).text(),
@@ -149,6 +149,28 @@ describe("decideIn, against real repositories", () => {
         moved: false,
         next: "0.1.27",
       })
+    } finally {
+      cleanup(dir)
+    }
+  }, 30000)
+
+  test("a window of one non-conventional commit earns nothing", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "wip, not a conventional message")
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.27", moved: false })
+    } finally {
+      cleanup(dir)
+    }
+  }, 30000)
+
+  test("reads a type whatever its case, as changelogen's command does", async () => {
+    const dir = await repo("0.1.27")
+    try {
+      await commit(dir, "chore: release", "v0.1.27")
+      await commit(dir, "Fix: shouted")
+      expect(await decideIn(dir)).toMatchObject({ earned: "0.1.28", moved: true })
     } finally {
       cleanup(dir)
     }
@@ -285,7 +307,7 @@ describe("decideIn, against real repositories", () => {
     }
   }, 30000)
 
-  test("a hand-set major stays, and the files are put back after the computation", async () => {
+  test("a hand-set major stays, and the computation touches no file", async () => {
     const dir = await repo("0.1.27")
     try {
       await commit(dir, "chore: release", "v0.1.27")
