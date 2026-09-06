@@ -41,9 +41,11 @@ try {
   await Bun.file(scratch).delete()
 }
 
+// Compared with line endings normalized: a Windows checkout without a .gitattributes policy carries CRLF, and the formatter emits LF, which is drift in bytes and not in content.
+const lf = (text: string) => text.replaceAll("\r\n", "\n")
 const current = (await Bun.file(target).exists()) ? await Bun.file(target).text() : ""
 if (check) {
-  if (generated !== current) {
+  if (lf(generated) !== lf(current)) {
     console.error(
       "packages/db/src/schema/auth.ts is not what the generator emits; run: bun run auth:schema",
     )
