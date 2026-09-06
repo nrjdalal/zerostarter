@@ -203,6 +203,18 @@ describe("convertRepo (in-place)", () => {
     })
   })
 
+  test("checks every entry before removing any, so a good entry ahead of a bad one is not removed either", () => {
+    scaffold()
+    withVictimOutside((outside) => {
+      write(join(dir, ".gitpickignore"), `LICENSE.md\n../${basename(outside)}/victim.txt\n`)
+      expect(() => convertRepo(dir, { name: "acme" })).toThrow(/not inside the project/)
+      expect(exists(join(dir, "LICENSE.md"))).toBe(true)
+    })
+    write(join(dir, ".gitpickignore"), "LICENSE.md\n*.log\n")
+    expect(() => convertRepo(dir, { name: "acme" })).toThrow(/literal path/)
+    expect(exists(join(dir, "LICENSE.md"))).toBe(true)
+  })
+
   test("refuses an absolute exclude, outside or inside the root", () => {
     scaffold()
     withVictimOutside((outside) => {

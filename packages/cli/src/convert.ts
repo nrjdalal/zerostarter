@@ -26,11 +26,15 @@ const removeForkExcludes = (root: string): void => {
   const ignore = p(root, ".gitpickignore")
   if (!exists(ignore)) return
   const base = resolve(root)
-  for (const path of parseForkLayout(read(ignore)).excludes) {
+  const refuse = (path: string, reason: string): never => {
+    throw new Error(
+      `.gitpickignore entry "${path}" ${reason}; the in-place converter only removes literal paths under the root.`,
+    )
+  }
+  // Every entry is checked before anything is removed, so a bad entry anywhere in the file leaves the checkout untouched.
+  const targets = parseForkLayout(read(ignore)).excludes.map((path) => {
     if (/[*?![\]]/.test(path)) {
-      throw new Error(
-        `.gitpickignore entry "${path}" is not a literal path; the in-place converter only supports literal paths (a glob or negation would diverge from gitpick's fetch).`,
-      )
+      refuse(path, "is not a literal path (a glob or negation would diverge from gitpick's fetch)")
     }
     const inside = relative(base, resolve(base, path))
     if (
@@ -40,12 +44,11 @@ const removeForkExcludes = (root: string): void => {
       inside.startsWith(`..${sep}`) ||
       isAbsolute(inside)
     ) {
-      throw new Error(
-        `.gitpickignore entry "${path}" is not inside the project; the in-place converter only removes paths under the root.`,
-      )
+      refuse(path, "is not inside the project")
     }
-    remove(join(base, inside))
-  }
+    return join(base, inside)
+  })
+  for (const target of targets) remove(target)
   remove(ignore)
 }
 
