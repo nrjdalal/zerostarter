@@ -13,4 +13,4 @@ Pre-existing, not introduced by #819, which keeps keying on `x-forwarded-for` re
 
 ## Open question
 
-Whether Vercel stamps the original client anywhere on that path (`x-vercel-forwarded-for`, `x-real-ip`, or the first `x-forwarded-for` entry) is unknown from outside. An echo route on a preview API would settle it; then either the limiter reads that header on Vercel, or public-suffix hosts are documented as sharing a bucket.
+Whether Vercel stamps the original client anywhere on that path (the first `x-forwarded-for` entry, `x-real-ip`, or `x-vercel-forwarded-for`) is unknown from outside. An echo route on a preview API would settle it; then either the limiter reads that header on Vercel, or public-suffix hosts are documented as sharing a bucket.
