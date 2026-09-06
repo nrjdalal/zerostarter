@@ -65,7 +65,7 @@ jobs:
         if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
         run: |
           # the number boards with the code: package.json moves to what the window has earned from the last tag (the larger of the tree and changelogen's bump computed from the tag's version; a tree below the tag stops loudly), so main and production carry the released number on the merge. the workflow token's push starts no further workflows, so there is no loop and the next human push recomputes.
-          bun install --ignore-scripts
+          bun install --frozen-lockfile --ignore-scripts
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           STARTED_FROM=$(git rev-parse HEAD)
@@ -76,7 +76,10 @@ jobs:
             exit 0
           fi
           NEXT=$(echo "$DECISION" | jq -r .next)
-          [ -n "$NEXT" ] && [ "$NEXT" != "null" ] || { echo "::error::release-version answered nothing usable: $DECISION"; exit 1; }
+          if [ -z "$NEXT" ] || [ "$NEXT" = "null" ]; then
+            echo "::error::release-version answered nothing usable: $DECISION"
+            exit 1
+          fi
           git add package.json
           git commit -m "ci(version): bump to v$NEXT"
           if ! git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary; then

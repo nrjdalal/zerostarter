@@ -115,10 +115,14 @@ jobs:
             TAG="latest"
           else
             TAG="canary"
-            # preview the next release with the same decision auto-release ships: the larger of the tree and what the window earned
+            # preview the next release with the same decision auto-release ships: the larger of the tree and what the window earned. the script runs this package's locked changelogen, so the install (no lifecycle scripts, the npm token is in scope) comes first here; the shared install below is then a no-op
+            (cd ../.. && bun install --frozen-lockfile --ignore-scripts)
             DECISION=$(cd ../.. && bun packages/scripts/src/release-version.ts)
             NEXT_VERSION=$(echo "$DECISION" | jq -r .next)
-            [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "null" ] || { echo "::error::release-version answered nothing usable: $DECISION"; exit 1; }
+            if [ -z "$NEXT_VERSION" ] || [ "$NEXT_VERSION" = "null" ]; then
+              echo "::error::release-version answered nothing usable: $DECISION"
+              exit 1
+            fi
             TAGGED_VERSION=$(echo $VERSIONS | bunx json $TAG)
             RELEASE_VERSION=$([[ $TAGGED_VERSION == $NEXT_VERSION-canary* ]] && bunx semver $TAGGED_VERSION -i prerelease || echo $NEXT_VERSION-canary.0)
           fi
