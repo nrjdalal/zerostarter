@@ -74,6 +74,7 @@ The `ci(changelog): ...` commit and the new tag land on `canary`, so pull `canar
 ## Notes
 
 - **Merge method is load-bearing.** `canary` PRs squash; the `canary -> main` release PR merges with a **merge commit** so `main` keeps shared history with `canary` and future release diffs stay clean. The `main` ruleset enforces this.
+- **The version bump is a token push.** The draft-PR workflow pushes `ci(version)` with the workflow token, which starts no further workflows: no loop, and the bump commit carries no checks of its own until the next human merge. `main`'s ruleset asks for a review, not status checks, so a window with a single PR still releases; a fork that requires status checks on `main` sees its release PR wait for one more merge.
 - **Never tag or push a release by hand.** `auto-release` owns tagging and the atomic branch + tag push; a hand-cut tag collides and fails the next run.
 - **The changelog commit lands on `canary` directly, not through a PR** (it is mechanical, generated from already-reviewed PR titles). Pull `canary` after a release.
 - **Backfill is automatic.** If a prior run pushed the commit and tag but died before publishing, the next run recreates the missing GitHub release instead of double-bumping.

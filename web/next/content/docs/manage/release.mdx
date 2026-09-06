@@ -71,7 +71,7 @@ The changelog commit lands directly on `canary` rather than through a second PR 
 
 ## Pinning a version
 
-Ordinary releases carry what the window earned: at 0.x a feature is a patch (`0.1.0 -> 0.1.1 -> ...`) and a breaking commit a minor; past 1.0 the usual semver, all computed by changelogen from the last tag and written into `package.json` as the window grows. To cut something bigger (a minor like `0.2.0` or a major like `1.0.0`), set the `version` in the root `package.json` yourself on `canary` before you merge the release PR. `auto-release.yml` notices a hand-set version that is ahead of the last `v*` tag and ships that exact number (retargeting the generated changelog section to it), then resumes patch-bumping from it on the next release.
+Ordinary releases carry what the window earned: at 0.x a feature is a patch (`0.1.0 -> 0.1.1 -> ...`) and a breaking commit a minor; past 1.0 the usual semver, all computed by changelogen from the last tag and written into `package.json` as the window grows. To cut something bigger (a minor like `0.2.0` or a major like `1.0.0`), set the `version` in the root `package.json` yourself on `canary` before you merge the release PR. `auto-release.yml` ships a hand-set version as long as it is ahead of what the window earned (a breaking window lifts a smaller pin to the minor it earns) (retargeting the generated changelog section to it), and the window after it moves forward from there.
 
 ## How it deploys
 

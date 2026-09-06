@@ -29,7 +29,6 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 
 ## Quality
 
-- `bun run release:version`: print the version decision for the current release window as JSON (the last tag, the tree, what the window earned, and the larger of the two); `--write` moves `package.json` to it. The draft-PR workflow runs this on every push to `canary`; running it by hand only previews.
 - `bun run lint`: Oxlint over the whole tree (also what CI runs).
 - `bun run format`: Oxfmt, writing fixes.
 - `bun run format:check`: Oxfmt, report only (also what CI runs).
@@ -39,6 +38,7 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 
 ## Release / production
 
+- `bun run release:version`: print the version decision for the current release window as JSON (the last tag, the tree, what the window earned, and the larger of the two); `--write` moves `package.json` to it. The draft-PR workflow runs this on every push to `canary`; running it by hand only previews.
 - `bun run build`: build every app with Turbo, then print each workspace's size. This is the same build the pre-commit hook runs.
 - `bun run start`: serve the production build.
 
