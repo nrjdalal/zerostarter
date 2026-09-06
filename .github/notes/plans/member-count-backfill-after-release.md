@@ -5,7 +5,7 @@
 
 ## Why
 
-Migration 0004 adds `team.member_count` and backfills it once, when canary applies it to the shared database. Production keeps serving better-auth 1.6 until the next release, and 1.6 does not maintain the column, so any team seat added or removed in that window leaves the count stale. Nothing in the starter reads the column and teams have no UI yet, so the drift is harmless until a per-team cap is set, but the number should be right.
+Migration 0004 adds `team.member_count` and backfills it once, when canary applies it to the shared database. Production keeps serving better-auth 1.6 until the next release, and 1.6 does not maintain the column, so any team seat added or removed in that window leaves the count stale. Nothing in the starter code reads the column and teams have no UI yet, so the only behaviour that depends on it (the seat reservation behind a per-team cap) is unset. The number is client-visible all the same: `getFullOrganization` returns `teams[].memberCount`, and the dashboard sidebar loads it on every visit, unrendered.
 
 ## What
 
@@ -14,5 +14,3 @@ Once production serves 1.7.3, run the backfill statement from the migration once
 ```sql
 UPDATE "team" SET "member_count" = (SELECT count(*) FROM "team_member" WHERE "team_member"."team_id" = "team"."id");
 ```
-
-Then delete this file.
