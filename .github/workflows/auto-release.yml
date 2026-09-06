@@ -44,12 +44,14 @@ jobs:
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
           LAST_VERSION="${LAST_TAG#v}"
-          # version target: a hand-set package.json version (ahead of the last tag) ships as-is; otherwise changelogen's patch bump stands. captured before changelogen overwrites it.
-          MANUAL_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+          # version target: the larger of the tree and what the window earned from the last tag (a missing tag counts as v0.0.0),
+          # which honours a hand-set ahead of the window and lifts one that undercounts it; a tree below the last tag stops here, loudly.
+          # computed before changelogen overwrites package.json below; the script puts every file back after its own dry run
+          MANUAL_VERSION=$(bun packages/scripts/src/release-version.ts | jq -r .next)
           if [ -n "$LAST_TAG" ]; then
             # only changelog commits (or nothing) since the anchor: skip, but backfill the
             # release if a previous run pushed the commit+tag and failed before publishing
-            if [ "$(git rev-list "$LAST_TAG"..HEAD --count --invert-grep --grep='^ci(changelog)')" = "0" ]; then
+            if [ "$(git rev-list "$LAST_TAG"..HEAD --count --invert-grep --grep='^ci(changelog)' --grep='^ci(version)')" = "0" ]; then
               if ! gh release view "$LAST_TAG" > /dev/null 2>&1; then
                 NOTES=$(awk -v ver="## $LAST_TAG" '$0 == ver { flag = 1; next } /^## / { flag = 0 } flag' CHANGELOG.md)
                 gh release create "$LAST_TAG" --title "$LAST_TAG" --notes "$NOTES" --latest
@@ -69,18 +71,13 @@ jobs:
           else
             bunx changelogen --bump --no-commit || true
           fi
-          # honor a hand-set version: ship it exactly when package.json is ahead of the last tag; otherwise changelogen's patch bump stands. a lower pin would move the release backward, so fail loud instead.
-          if [ -n "$LAST_TAG" ] && [ "$MANUAL_VERSION" != "$LAST_VERSION" ]; then
-            if ! bun -e "const a='$MANUAL_VERSION'.split('.').map(Number), b='$LAST_VERSION'.split('.').map(Number); process.exit((a[0]-b[0] || a[1]-b[1] || a[2]-b[2]) > 0 ? 0 : 1)"; then
-              echo "::error::hand-set version $MANUAL_VERSION is not ahead of the last release v$LAST_VERSION"
-              exit 1
-            fi
-            AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
-            if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
-              bunx json -I -f package.json -e "this.version=\"$MANUAL_VERSION\""
-              AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
-              sed -i "s|v${AUTO_ESC}|v${MANUAL_VERSION}|g" CHANGELOG.md
-            fi
+          # ship the target exactly: changelogen bumped from whatever package.json held, which is not the target when the tree
+          # was moved forward during the window or hand-set, so the number and the changelog header are rewritten to it
+          AUTO_VERSION=$(bun -e 'console.log(JSON.parse(await Bun.file("package.json").text()).version)')
+          if [ "$MANUAL_VERSION" != "$AUTO_VERSION" ]; then
+            bunx json -I -f package.json -e "this.version=\"$MANUAL_VERSION\""
+            AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
+            sed -i "s|v${AUTO_ESC}|v${MANUAL_VERSION}|g" CHANGELOG.md
           fi
           bunx oxfmt --write CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build
