@@ -43,8 +43,17 @@ export const decide = (current: string, earned: string, tag: string | null): Dec
   return { current, earned, moved: next !== current, next, tag }
 }
 
-const run = (cmd: string[], cwd: string): { err: string; ok: boolean; out: string } => {
-  const proc = Bun.spawnSync(cmd, { cwd, stderr: "pipe", stdout: "pipe" })
+const run = (
+  cmd: string[],
+  cwd: string,
+  env?: Record<string, string>,
+): { err: string; ok: boolean; out: string } => {
+  const proc = Bun.spawnSync(cmd, {
+    cwd,
+    env: { ...process.env, ...env },
+    stderr: "pipe",
+    stdout: "pipe",
+  })
   return {
     err: proc.stderr.toString().trim(),
     ok: proc.exitCode === 0,
@@ -97,6 +106,13 @@ const changelogen = join(
   JSON.parse(await Bun.file(changelogenManifest).text()).bin.changelogen,
 )
 
+// changelogen looks every author up on ungh.cc while it renders, with no timeout and no switch that skips the lookup, and a stalled lookup once held a CI test leg past its limit. The decision needs no network, so the lookup is sent through a closed local port and fails at once inside changelogen's own catch.
+const OFFLINE = {
+  HTTPS_PROXY: "http://127.0.0.1:9",
+  HTTP_PROXY: "http://127.0.0.1:9",
+  NO_PROXY: "",
+}
+
 // changelogen bumps whatever package.json holds and writes the changelog, so it runs against a copy set to the tag's version, and both files are put back afterwards.
 const earnedFrom = async (root: string, tag: string | null): Promise<string> => {
   const pkg = join(root, "package.json")
@@ -107,7 +123,11 @@ const earnedFrom = async (root: string, tag: string | null): Promise<string> => 
   try {
     await writeVersion(pkg, baseOf(tag))
     const from = tag === null ? [] : ["--from", tag]
-    const bumped = run([process.execPath, changelogen, "--bump", "--no-commit", ...from], root)
+    const bumped = run(
+      [process.execPath, changelogen, "--bump", "--no-commit", ...from],
+      root,
+      OFFLINE,
+    )
     // changelogen's CLI reports its own errors and still exits 0, so success is read from what it left behind: the version moved past the tag's and a section for it heads the changelog. Measured: even a window of nothing it recognizes bumps a patch and writes an empty section, which the content gate below then discounts.
     const version = await readVersion(pkg)
     const text = (await Bun.file(changelog).exists()) ? await Bun.file(changelog).text() : ""
