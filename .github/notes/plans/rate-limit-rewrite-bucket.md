@@ -9,7 +9,7 @@ On a `*.vercel.app` web host the browser reaches the API through the web's `/api
 
 ## Context
 
-Pre-existing, not introduced by #819, which keeps keying on `x-forwarded-for` read last hop first. A custom domain calls the API directly and is unaffected. The web's server-side session reads on Vercel key on whatever Vercel stamps for a function-to-function call, which is unverified either way.
+Pre-existing; #819 shipped no limiter change in the end (see [the IP resolution item](rate-limit-ip-resolution.md)). A custom domain calls the API directly and is unaffected. The web's server-side session reads on Vercel key on whatever Vercel stamps for a function-to-function call, which is unverified either way.
 
 ## Open question
 

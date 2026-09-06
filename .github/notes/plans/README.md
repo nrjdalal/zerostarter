@@ -48,6 +48,7 @@ Candidate refactors that turn a scattered cluster into one deep module, ordered 
 
 Raised but undecided: real concerns with no agreed next action and no confident verdict. They sit here rather than in the backlog (which implies a plan) or closed (which loses the context), and leave only by being decided. Mirrored as checkboxes on the standing Icebox issue (#707).
 
+- [The rate limiter's client-IP resolution](rate-limit-ip-resolution.md) - **top priority**: on any deploy where Bun owns the socket a forged `x-forwarded-for` names its own bucket and a header-less client gets a fresh random key, so anonymous limiting is off; adopt `@arcjet/ip` as its adapters use it, `platform` plus `proxies` and the socket peer (deepsec audit 2026-09-06, built and reverted on #819).
 - [Gating who may create an account](signup-gating.md) - the Access spec's other half, retired when the allowlist became a console grant; a second list, a fork-edited predicate, or nothing at all (#758).
 - [RSS feed](rss-feed.md) - built and removed on #744; ship by default, feature-flag it, or leave it to forks.
 - [A shared contracts package](shared-contracts-package.md) - validation schemas live inside their router, so numbers are stated twice and cannot be unit tested; a types package would fix both and add a second home for a contract (#754 review).
