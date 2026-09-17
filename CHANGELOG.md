@@ -1,3 +1,15 @@
+## v0.1.31
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.30...v0.1.31)
+
+### 📦 Build
+
+- **deps:** Refresh the catalog to the latest in-range versions ([#836](https://github.com/nrjdalal/zerostarter/pull/836))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.30
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.29...v0.1.30)
