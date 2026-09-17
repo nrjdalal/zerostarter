@@ -1,3 +1,20 @@
+## v0.1.30
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.29...v0.1.30)
+
+### 🩹 Fixes
+
+- **dev:** Spare the shared proxy, and the surface the sweep missed ([#832](https://github.com/nrjdalal/zerostarter/pull/832))
+- **dev:** Find the shared proxy on the port it was told to use ([#833](https://github.com/nrjdalal/zerostarter/pull/833))
+
+### 📖 Documentation
+
+- Sweep every surface back into step with the code ([#830](https://github.com/nrjdalal/zerostarter/pull/830))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.29
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.28...v0.1.29)

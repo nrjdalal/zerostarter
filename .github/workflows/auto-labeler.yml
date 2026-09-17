@@ -5,7 +5,8 @@ on:
   # read-only), and this workflow runs no PR code, the script and bare checkout are base
   pull_request_target:
     types: [opened, synchronize, reopened]
-    branches: ["canary", "main"]
+    branches: ["canary"]
+  # no branches filter is available on this event, so the base branch is checked in the job
   pull_request_review:
     types: [submitted, edited, dismissed]
 
@@ -23,24 +24,38 @@ jobs:
   auto-labeler:
     name: Auto Labeler
     runs-on: ubuntu-latest
-    if: github.event.pull_request.base.ref == 'canary'
 
     steps:
+      # gated per step rather than on the job: a job-level if reports the check as skipped,
+      # and a release PR into main would carry that skip for the life of the PR
+      - name: Decide whether this PR is labelled
+        id: gate
+        run: |
+          if [ "${{ github.event.pull_request.base.ref }}" = "canary" ]; then
+            echo "labelled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Base is ${{ github.event.pull_request.base.ref }}, not canary; nothing to label."
+          fi
+
       # bare checkout = base branch under pull_request_target; never set ref to the PR head
       - name: Checkout
+        if: steps.gate.outputs.labelled == 'true'
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Bun
+        if: steps.gate.outputs.labelled == 'true'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
 
       - name: Install dependencies
+        if: steps.gate.outputs.labelled == 'true'
         run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Add labels based on files in PR
+        if: steps.gate.outputs.labelled == 'true'
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -252,6 +267,7 @@ jobs:
             }
 
       - name: Get approval count
+        if: steps.gate.outputs.labelled == 'true'
         id: approvals
         uses: actions/github-script@v8
         with:
@@ -283,6 +299,7 @@ jobs:
             return count.toString();
 
       - name: Apply dynamic approval label
+        if: steps.gate.outputs.labelled == 'true'
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -363,7 +380,7 @@ jobs:
             }
 
       - name: Comment merge-method guidance
-        if: github.event.action == 'opened'
+        if: steps.gate.outputs.labelled == 'true' && (github.event.action == 'opened')
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

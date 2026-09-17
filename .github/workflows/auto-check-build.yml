@@ -1,11 +1,12 @@
 name: auto-check-build
 
 on:
+  # no pull_request_review trigger: the result cannot change because someone reviewed, and a
+  # second run on the same commit only cancels the first through the concurrency group below,
+  # which surfaces on the PR as a cancelled check
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["canary", "main"]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
