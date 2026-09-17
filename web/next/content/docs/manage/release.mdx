@@ -46,7 +46,7 @@ Every push to `canary` runs `auto-canary-into-main.yml`, which opens a draft PR 
 
 ### You review and merge with a merge commit
 
-Mark the draft ready, review it, and merge with a **merge commit**. That merge is what triggers `auto-release.yml`.
+Mark the draft ready, review it, and merge with a **merge commit**. That merge is what triggers `auto-release.yml`. The release PR's head is a commit the workflow pushed, so GitHub holds its build for approval rather than running it: approve that run under the PR's checks (or `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`) and let it pass before you merge.
 
 </Step>
 <Step>
