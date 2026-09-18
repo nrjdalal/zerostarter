@@ -1,7 +1,5 @@
 import { globby } from "globby"
 
-// TODO: AI-generated script, replace later.
-
 type DepSection = "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies"
 
 const DEP_SECTIONS: DepSection[] = [
