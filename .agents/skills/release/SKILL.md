@@ -67,7 +67,7 @@ gh pr review <n> --approve
 gh pr merge <n> --merge
 ```
 
-The release PR's head is always a commit the workflow pushed, the `ci(version)` bump or the changelog commit, so its `pull_request` build lands as `action_required` and never runs on its own, and without it the PR merges with no build check at all. Approving the run starts it. Wait for it to pass before merging: the merge state reads `CLEAN` once it does. If `canary` moves while the release PR is open, the new head brings a new held run and a stale approval, so approve both again.
+When the release PR's head is a commit the workflow pushed, the `ci(version)` bump or the changelog commit, its `pull_request` build lands as `action_required` and never runs on its own, and without it the PR merges with no build check at all. Approving the run starts it. When the last push was a human merge that moved no version, the head is that merge, the build runs by itself, and the lookup above finds nothing to approve. Wait for it to pass before merging: the merge state reads `CLEAN` once it does. If `canary` moves while the release PR is open, the new head brings a new held run and a stale approval, so approve both again.
 
 ### 5. Verify
 

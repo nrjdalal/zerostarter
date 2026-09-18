@@ -1,6 +1,6 @@
 # Hardening refactors from the external evaluation
 
-- Status: in progress
+- Status: backlog; the three named items shipped, the larger ones under "Larger, tracked separately" are open
 - Links: external SaaS-starter evaluation (nrjdalal/saas-starter-evals), `ZEROSTARTER-RECOMMENDATIONS.md` §4, PR #823 (the agent route's end-to-end test)
 
 A set of small, self-contained refactors surfaced by an external, evidence-based evaluation of the repo (at v0.1.2). Each is its own PR into canary, verified end to end. Preserve the evaluation's noted strengths: the agent-DX login is a differentiator (tighten the gate, keep the route); one canonical way; docs in sync.

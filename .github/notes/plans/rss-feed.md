@@ -1,5 +1,8 @@
 # RSS feed
 
+- Status: icebox
+- Links: PR #744 (built and removed)
+
 ## Concern
 
 The blog ships machine-readable routes for agents (`/blog.md`, `/llms.txt`, `/llms-full.txt`) but nothing for humans' feed readers. A design critique flagged this as an inconsistency on a surface that advertises agent-readability as a feature: `/rss.xml`, `/feed.xml`, and `/blog/rss.xml` all 404 while the agent routes return 200.
