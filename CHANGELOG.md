@@ -1,3 +1,19 @@
+## v0.1.33
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.32...v0.1.33)
+
+### 🩹 Fixes
+
+- **tests:** Keep zod's internal regex out of the waitlist snapshot ([#841](https://github.com/nrjdalal/zerostarter/pull/841))
+
+### 📦 Build
+
+- **deps:** Take the six entries that sit outside their caret ranges ([#842](https://github.com/nrjdalal/zerostarter/pull/842))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.32
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.31...v0.1.32)
