@@ -57,7 +57,7 @@ bunx zerostarter sync [dir]
 
 Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo and rolls back on failure.
 
-What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), your [portless](/docs/getting-started/setup) dev-URL names, and the `PRESERVE_ON_SYNC` paths (`bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
+What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), your [portless](/docs/getting-started/setup) dev-URL names, and the `PRESERVE_ON_SYNC` paths (`AGENTS.md` once you have edited it, `bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
 
 ```bash
 # review before committing
@@ -84,9 +84,15 @@ To tell an edit of yours from an upstream change, the CLI records what it wrote 
 
 Run `bun .github/scripts/skills-manager.ts --outdated` in your fork to see which synced skills upstream has moved on, and which you have edited locally.
 
+### Your agent guide
+
+`AGENTS.md` (with `CLAUDE.md` symlinked to it) ships to your fork whole: the starter's own rules for worktrees, migrations, tests, runtime APIs, commits and UI verification, rebranded to your project name, with the skills tables filled from your skills. It follows the same contract as a skill. While you have not edited it, `sync` hands you the starter's latest; once you have, it is yours and sync keeps your version and says so. The generated skills tables do not count as an edit, so adding a skill of your own does not freeze the guide.
+
+A fork scaffolded before the guide shipped has the short stub older CLIs wrote. If that stub is untouched, the next sync replaces it with the full guide. If you have written your own rules into it, sync leaves it alone; to take the starter's guide, delete `AGENTS.md`, commit that on its own, and sync again. On its own matters: the pre-commit hook regenerates the skills tables inside `AGENTS.md` whenever a skill is staged, so a commit that touches a skill while the guide is missing fails.
+
 ## The fork boundary
 
-All three commands fetch with gitpick, which reads the repo's root `.gitpickignore`. That one file declares the fork boundary in two parts: the paths a fork does not take from the starter (your `web/next/content/`, the `(marketing)` route group and marketing assets, `packages/cli/`, and author-only workflows), and a `PRESERVE_ON_SYNC` line naming the paths `sync` restores after an overlay (your applied database migrations and schema, `docs.config.ts`, the lockfile, and favicon). The boundary applies only to gitpick fetches; a plain `git clone` still gets the whole repository.
+All three commands fetch with gitpick, which reads the repo's root `.gitpickignore`. That one file declares the fork boundary in two parts: the paths a fork does not take from the starter (your `web/next/content/`, the `(marketing)` route group and marketing assets, `packages/cli/`, and author-only workflows), and a `PRESERVE_ON_SYNC` line naming the paths `sync` restores after an overlay (your agent guide, your applied database migrations and schema, `docs.config.ts`, the lockfile, and favicon). The boundary applies only to gitpick fetches; a plain `git clone` still gets the whole repository.
 
 ## Rebrand: one edit, whole system
 

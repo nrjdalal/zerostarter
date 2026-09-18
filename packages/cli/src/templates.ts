@@ -87,7 +87,7 @@ export default function Home() {
 }
 `
 
-// AGENTS.md (CLAUDE.md is a symlink to it): a minimal agent guide for the fork to grow. The skills tables are left empty for the fork's own .github/scripts/skills-manager.ts to fill; the markers are not optional, since that script (and the pre-commit hook running it) throws on a file that lacks them.
+// AGENTS.md (CLAUDE.md is a symlink to it): the fallback guide for a starter ref that ships none, since the starter's own now ships whole; it is also how sync recognizes the untouched stub an older CLI scaffolded, so changing it stops those forks from upgrading. The skills tables are left empty for the fork's own .github/scripts/skills-manager.ts to fill; the markers are not optional, since that script (and the pre-commit hook running it) throws on a file that lacks them.
 export const agentsTemplate = (): string => `# AGENTS.md
 
 Guidance for AI coding agents working in this repository.

@@ -280,6 +280,29 @@ describe("convertRepo (in-place)", () => {
     expect(read(join(dir, "README.md"))).not.toContain("nrjdalal")
   })
 
+  // The guide ships whole like the skills: a fork gets the starter's own rules, rebranded, not a four-rule stub.
+  test("keeps the starter's agent guide and rebrands it, instead of writing a stub over it", () => {
+    scaffold()
+    write(
+      join(dir, "AGENTS.md"),
+      "# AGENTS.md\n\n- ALWAYS: Do every change in its own git worktree.\n\nWEB=$(bunx portless get zerostarter)\n",
+    )
+    convertRepo(dir, { name: "acme" })
+    const guide = read(join(dir, "AGENTS.md"))
+    expect(guide).toContain("Do every change in its own git worktree.")
+    expect(guide).toContain("bunx portless get acme")
+    expect(guide).not.toContain("get zerostarter")
+  })
+
+  test("the shipped .gitpickignore lets the agent guide through an in-place convert", () => {
+    const shipped = readFileSync(join(import.meta.dir, "../../../../.gitpickignore"), "utf8")
+    scaffold()
+    write(join(dir, ".gitpickignore"), shipped)
+    write(join(dir, "AGENTS.md"), "# AGENTS.md\n\n- ALWAYS: A rule from the starter.\n")
+    convertRepo(dir, { name: "acme" })
+    expect(read(join(dir, "AGENTS.md"))).toContain("A rule from the starter.")
+  })
+
   test("writes the chosen feature flags into site.ts", () => {
     scaffold()
     convertRepo(
