@@ -33,11 +33,18 @@ Done when Visual, Responsive, and Theme are each exercised (or consciously marke
 
 ## 4. Attach evidence to the PR
 
-Upload each screenshot to litterbox (a temporary host) and embed the returned URL in the PR; never commit a binary screenshot.
+Attach each screenshot with the GitHub CLI, which uploads it as an asset of the PR; never commit a binary screenshot.
+
+```bash
+gh pr comment <n> --body-file body.md \
+  --attach './before.png#Before: what it shows' --attach './after.png#After: what it shows'
+```
+
+`--attach` takes `<file>#<alt text>`, repeats, and needs gh 2.100 or newer. A `![alt](./before.png)` in the body is rewritten to the uploaded asset; files the body does not reference are appended. On an older gh, fall back to a temporary host and embed the URL it prints:
 
 ```bash
 curl -sS -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@screenshot.png" \
   https://litterbox.catbox.moe/resources/internals/api.php
 ```
 
-Valid `time`: `1h`, `12h`, `24h`, `72h`. The command prints the public URL. Done when every screenshot (before+after pairs for a visual change) has its URL embedded in the PR.
+Done when every screenshot (before+after pairs for a visual change) is on the PR.
