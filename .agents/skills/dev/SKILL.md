@@ -10,6 +10,8 @@ source: local
 
 ## Start
 
+Start it from a shell that has not exported `NODE_ENV`. The worktree commit recipe exports `NODE_ENV=production`, and a stack started under it boots in the production stage: `/api/health` still answers ok, but the agent sign-in route is gone and the end-to-end suite fails wholesale. `unset NODE_ENV SKIP_ENV_VALIDATION` first; the stage then comes from `.env`, and `/api/health` names it in `environment`.
+
 ```bash
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 # Resolve this worktree's URLs (branch-prefixed); the proxy needs a moment, so retry
