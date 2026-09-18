@@ -9,7 +9,6 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## In progress
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
-- [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
 
 ## Planned
 
@@ -22,7 +21,6 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Feature flags via PostHog or a service](feature-flags.md) - #153.
 - [A logo](logo.md) - #113.
 - [A better landing page](landing-page.md) - #26.
-- [Bun-native file APIs in .github/scripts](bun-native-scripts.md) - #423.
 - [Org-creation name and other restrictions](org-creation-restrictions.md) - #349.
 - [Standardize and pin the release-workflow tooling](workflow-tooling-consistency.md) - deferred from #683 (JSON tool standardized on `json`; pinning, read-helper unification and the version pass-through left).
 - [OpenAPI: the WS upgrade route lists inapplicable 429/500 responses](openapi-ws-responses.md) - #664; subsumed by api-envelope-typed-endpoint, but shippable on its own as the smaller fix.
@@ -31,6 +29,7 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Unit-test the pure web seams](web-content-source-tests.md) - the contentSource gate and the data-table layout math; needs a web test harness first (PR #691, #754 reviews).
 - [Console not-found status and the anonymous white flash](console-notfound-status.md) - a layout-thrown notFound cannot unwind into an already-streaming parent: console 404s soft-200, and an anonymous visit paints white before hydrating; middleware is the real fix (PR #691, #758 reviews).
 - [Derive BlogPostMeta from the blog zod schema](blog-meta-from-schema.md) - carved out of content-source-consolidation; a decouple-vs-derive tradeoff, not a mechanical rename (PR #691 review).
+- [Security headers and a durable rate-limit store](hardening-refactors.md) - what is left of the external evaluation's hardening list: its three named items shipped (CI gates, `serverSecret`, the agent sign-in toggle); default security headers and CSP, and a rate-limit store that survives a restart, did not.
 - [Activity log retention and indexes](console-activity-log.md) - the log shipped in PR #762 with no retention and no indexes, both deliberately; the table grows without bound, and `created_at` is the first index worth adding once the list feels slow.
 
 ### Architecture deepenings (2026-07-12 review, deep-module lens)
