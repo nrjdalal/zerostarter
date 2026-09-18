@@ -1,3 +1,20 @@
+## v0.1.32
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.31...v0.1.32)
+
+### 📖 Documentation
+
+- **release:** Approve the held build before merging a release PR ([#837](https://github.com/nrjdalal/zerostarter/pull/837))
+- **plans:** Drop the items that shipped, keep what the activity log left open ([#839](https://github.com/nrjdalal/zerostarter/pull/839))
+
+### 📦 Build
+
+- **deps:** Refresh the catalog to the latest in-range versions ([#840](https://github.com/nrjdalal/zerostarter/pull/840))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.31
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.30...v0.1.31)
