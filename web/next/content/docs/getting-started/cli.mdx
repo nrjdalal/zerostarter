@@ -88,7 +88,7 @@ Run `bun .github/scripts/skills-manager.ts --outdated` in your fork to see which
 
 `AGENTS.md` (with `CLAUDE.md` symlinked to it) ships to your fork whole: the starter's own rules for worktrees, migrations, tests, runtime APIs, commits and UI verification, rebranded to your project name, with the skills tables filled from your skills. It follows the same contract as a skill. While you have not edited it, `sync` hands you the starter's latest; once you have, it is yours and sync keeps your version and says so. The generated skills tables do not count as an edit, so adding a skill of your own does not freeze the guide.
 
-A fork scaffolded before the guide shipped has the short stub older CLIs wrote. If that stub is untouched, the next sync replaces it with the full guide. If you have written your own rules into it, sync leaves it alone; to take the starter's guide, delete `AGENTS.md`, commit, and sync again.
+A fork scaffolded before the guide shipped has the short stub older CLIs wrote. If that stub is untouched, the next sync replaces it with the full guide. If you have written your own rules into it, sync leaves it alone; to take the starter's guide, delete `AGENTS.md`, commit that on its own, and sync again. On its own matters: the pre-commit hook regenerates the skills tables inside `AGENTS.md` whenever a skill is staged, so a commit that touches a skill while the guide is missing fails.
 
 ## The fork boundary
 

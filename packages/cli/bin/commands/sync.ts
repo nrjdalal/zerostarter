@@ -148,13 +148,13 @@ export const sync = async (argv: string[]) => {
 
   if (guide === "customized") {
     logStep(
-      "Kept your AGENTS.md, which you have edited, so it did not take the update. To take the starter's version instead, delete it, commit, and sync again.",
+      "Kept your AGENTS.md, which you have edited, so it did not take the update. To take the starter's version instead, delete it, commit that on its own, and sync again.",
     )
   }
   // A guide with no sync record that is not the stub an older CLI wrote is the fork's own work, so it is never replaced on a guess.
   if (guide === "forkOwned") {
     logStep(
-      "Kept your AGENTS.md. The starter now ships its full agent guide; to take it, delete AGENTS.md, commit, and sync again.",
+      "Kept your AGENTS.md. The starter now ships its full agent guide; to take it, delete AGENTS.md, commit that on its own, and sync again.",
     )
   }
 
