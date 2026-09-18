@@ -3,9 +3,9 @@
 - Status: backlog
 - Links: PR #691 review; PR #754 review
 
-`web/next/src/lib/content.ts` is the load-bearing gate for docs/blog/console (`enabled`, `getPageOr404`, `pages`, `params`, `tree`), but it has no unit tests; PR #691 verified it via browser + authenticated-SSR e2e instead, matching this repo's convention of no web unit-test harness yet.
+`web/next/src/lib/content.ts` is the load-bearing gate for docs/blog/console (`enabled`, `getPageOr404`, `pages`, `params`, `tree`), but it has no unit tests; PR #691 verified it via browser + authenticated-SSR e2e instead.
 
-When a web test harness lands (see the deferred cafe `web/next` test port), assert `contentSource(kind)` against a mocked `features`: `enabled` follows the flag, `getPageOr404` 404s when off (and for blog gates unpublished posts via `isPublicBlogPage`), and `pages()`/`params()`/`tree()` return empty when off. That one seam backs every gated surface, so it is the highest-leverage place to add the first web unit tests.
+The harness is no longer what it waits on: pure web modules are tested under `tests/web/next/src/lib/` today. What it needs is module mocks, which no test in the suite uses yet, since `content.ts` imports the generated fumadocs collections (`@/lib/source`), `next/navigation` and `fumadocs-ui/mdx`. With those mocked, assert `contentSource(kind)` against a mocked `features`: `enabled` follows the flag, `getPageOr404` 404s when off (and for blog gates unpublished posts via `isPublicBlogPage`), and `pages()`/`params()`/`tree()` return empty when off. That one seam backs every gated surface, so it is the highest-leverage place to add the first web unit tests.
 
 ## Data-table layout math (PR #754)
 
