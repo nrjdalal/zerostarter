@@ -31,7 +31,7 @@ exports[`api/hono/src/routers/waitlist.ts a malformed address is refused with th
         "path": [
           "email",
         ],
-        "pattern": "/^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$/",
+        "pattern": "<pattern:string>",
       },
     ],
     "message": "Invalid email address",
