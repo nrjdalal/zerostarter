@@ -9,8 +9,6 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 ## In progress
 
 - [TanStack Start migration](tanstack-start-migration.md) - complete and verified locally, blocked on the Vercel Bun-runtime deploy (#650).
-- [Batch the console's bulk writes](api-batch-writes.md) - built in PR #767: three set routes taking ids in the body, answering per-id outcomes inside the normal envelope, with the per-row routes removed rather than kept beside them (#759).
-- [A console activity log](console-activity-log.md) - one typed log for every console write, admin-gated at Console > History > Activity; built in PR #762, awaiting review. Retention and indexes deliberately left to the install.
 - [Hardening refactors from the external evaluation](hardening-refactors.md) - gate the agent sign-in behind an explicit secret, read the auth secret directly, and gate tests + check-types in PR CI.
 
 ## Planned
@@ -33,12 +31,12 @@ This is the internal, fork-excluded backlog. It is separate from the published `
 - [Unit-test the pure web seams](web-content-source-tests.md) - the contentSource gate and the data-table layout math; needs a web test harness first (PR #691, #754 reviews).
 - [Console not-found status and the anonymous white flash](console-notfound-status.md) - a layout-thrown notFound cannot unwind into an already-streaming parent: console 404s soft-200, and an anonymous visit paints white before hydrating; middleware is the real fix (PR #691, #758 reviews).
 - [Derive BlogPostMeta from the blog zod schema](blog-meta-from-schema.md) - carved out of content-source-consolidation; a decouple-vs-derive tradeoff, not a mechanical rename (PR #691 review).
+- [Activity log retention and indexes](console-activity-log.md) - the log shipped in PR #762 with no retention and no indexes, both deliberately; the table grows without bound, and `created_at` is the first index worth adding once the list feels slow.
 
 ### Architecture deepenings (2026-07-12 review, deep-module lens)
 
 Candidate refactors that turn a scattered cluster into one deep module, ordered by strength.
 
-- [Own the fork boundary with one forkLayout module](cli-fork-layout.md) - in progress on `refactor/cli-fork-layout`; one `.gitpickignore` parser feeds convert + sync + tests.
 - [One nav model and a deep SidebarShell](sidebar-nav-model.md) - collapse close/active/item-shape across the three sidebars; delete `sidebar-adaptive.tsx`.
 - [One typed API envelope and a defineRoute helper](api-envelope-typed-endpoint.md) - shared `Envelope<T>` + boilerplate collapse; subsumes #664.
 - [Consolidate OG rendering behind one seam](og-render-consolidation.md) - #485; broadened to own size + URL scheme + defaults.

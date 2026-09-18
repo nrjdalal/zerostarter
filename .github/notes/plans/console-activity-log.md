@@ -1,6 +1,6 @@
 # A console activity log
 
-- Status: shipped in PR #762 (awaiting review)
+- Status: shipped in PR #762; retention and indexes left open
 - Links: PR #758 review (raised); graduated from the icebox once the shape was decided; built in PR #762
 
 An allowlist rule records who added it and when. A role change records nothing: `user.role` is overwritten in place, so the table that decides who can ban accounts, read every address, and grant further access keeps no history of who granted what.

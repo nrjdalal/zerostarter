@@ -55,12 +55,19 @@ gh workflow run auto-canary-into-main.yml --ref canary
 
 ### 4. Merge to production
 
-Mark it ready and merge with a **merge commit** (never squash). This is the production action; do it only on the user's explicit go-ahead.
+Mark it ready, let its build run, and merge with a **merge commit** (never squash). This is the production action; do it only on the user's explicit go-ahead.
 
 ```bash
 gh pr ready <n>
+# the head was pushed by the workflow, so GitHub holds that commit's build for approval instead of running it
+RUN=$(gh run list --branch canary --workflow auto-check-build.yml --json databaseId,conclusion,headSha \
+  --jq "[.[] | select(.headSha == \"$(gh pr view <n> --json headRefOid --jq .headRefOid)\")][0] | select(.conclusion == \"action_required\") | .databaseId")
+[ -n "$RUN" ] && gh api -X POST "repos/{owner}/{repo}/actions/runs/$RUN/approve" && gh run watch "$RUN" --exit-status
+gh pr review <n> --approve
 gh pr merge <n> --merge
 ```
+
+The release PR's head is always a commit the workflow pushed, the `ci(version)` bump or the changelog commit, so its `pull_request` build lands as `action_required` and never runs on its own, and without it the PR merges with no build check at all. Approving the run starts it. Wait for it to pass before merging: the merge state reads `CLEAN` once it does. If `canary` moves while the release PR is open, the new head brings a new held run and a stale approval, so approve both again.
 
 ### 5. Verify
 
