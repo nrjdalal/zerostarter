@@ -46,7 +46,6 @@
     "recharts": "catalog:",
     "shiki": "catalog:",
     "takumi-js": "catalog:",
-    "vaul": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
