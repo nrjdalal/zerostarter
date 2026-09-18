@@ -108,6 +108,8 @@ const VOLATILE_KEYS = new Set([
   "expiresAt",
   "ipAddress",
   "lastActive",
+  // zod prints the regex behind a format check, and rewrites it between releases: it is the validator's internal, not this API's contract
+  "pattern",
   "token",
   "userAgent",
   "version",

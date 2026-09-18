@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 
-import { API, Client, enabled, withAgent } from "../../../../stack"
+import { API, Client, enabled, normalize, withAgent } from "../../../../stack"
 
 // The public waitlist in api/hono/src/routers/waitlist.ts on a running stack: the count, a join, and what a second join of the same address answers. Golden. A signup left by an interrupted run is removed first, so the first join is a real insert, and the row is removed through the console afterwards so the run leaves nothing behind.
 
@@ -42,6 +42,6 @@ describe.skipIf(!enabled)("api/hono/src/routers/waitlist.ts", () => {
   test("a malformed address is refused with the envelope", async () => {
     const { status, body } = await visitor.send("POST", "/api/waitlist", { email: "not-an-email" })
     expect(status).toBe(400)
-    expect(body).toMatchSnapshot()
+    expect(normalize(body)).toMatchSnapshot()
   })
 })
