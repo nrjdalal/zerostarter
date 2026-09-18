@@ -39,6 +39,8 @@ That note is the contract: `bunx zerostarter` updates a skill only while the not
 
 Prose cannot be compared directly (sync rebrands the body to the fork's name, so a synced skill never matches upstream byte for byte), so the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, the ref it came from plus a hash of the upstream file and of the file as written. That ledger is what separates "the fork edited this" from "upstream moved". The ref is recorded because the CLI syncs a fork from `main` while this repo's default branch is `canary`, so comparing against the wrong one would report every skill canary is ahead on as drifted. A fork commits the ledger like any other synced file; this repo has none, since no skill here is synced from an upstream repo: every skill is `source: local` or vendored under its tool's own name.
 
+`AGENTS.md` ships the same way and is tracked in the same ledger, under its own path. `init` rebrands it; `sync` hands the fork the update only while its copy is still what the CLI last wrote, and keeps an edited one. The generated skills tables are left out of that comparison, since the fork's own `skills-manager` rewrites them. It carries no note: editing it is the opt-out. A guide with no sync record is replaced only when it is the untouched stub an older CLI scaffolded; anything else is the fork's own work and stays. `AGENTS.md` is also a `PRESERVE_ON_SYNC` path, which is what keeps an older CLI from overwriting it.
+
 Check state from inside a fork with:
 
 ```bash
