@@ -37,7 +37,7 @@ Read the generated `packages/db/drizzle/NNNN_*.sql`. Done when that SQL, its `me
 bunx pglaunch -k                                    # disposable Postgres, -k keeps it across restarts
 ```
 
-Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, then migrate and seed into it. One container per worktree, so two branches with different migrations cannot corrupt each other. Two things follow:
+Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, then migrate and seed into it. The output is colorized, so a script that captures it must strip the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the end of the URL makes `drizzle-kit migrate` exit 1 with no message at all. One container per worktree, so two branches with different migrations cannot corrupt each other. Two things follow:
 
 - Seed your own fake rows rather than copying real ones. The shared database holds real people, and a screenshot or a response body from it must never reach a PR.
 - Applying to the shared database is a deliberate, separately-authorized act. It happens when the change merges, not while it is being built.
