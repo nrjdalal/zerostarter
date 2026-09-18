@@ -3,13 +3,17 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { read, write } from "../../../../packages/cli/src/io"
+import { exists, read, write } from "../../../../packages/cli/src/io"
 import {
+  GUIDE,
+  reconcileForkGuide,
+  reconcileForkGuideFromRoot,
   reconcileForkSkillsFromRoot,
   SKILL_LEDGER,
   SKILL_REF,
   snapshotSkills,
 } from "../../../../packages/cli/src/skills"
+import { agentsTemplate } from "../../../../packages/cli/src/templates"
 
 let dir: string
 beforeEach(() => {
@@ -250,6 +254,146 @@ describe("the sync ledger", () => {
     const source = async (rel: string) => strip(await Bun.file(join(import.meta.dir, rel)).text())
     expect(await source("../../../../packages/cli/src/skills.ts")).toContain(pipeline)
     expect(await source("../../../../.github/scripts/skills-manager.ts")).toContain(pipeline)
+  })
+})
+
+describe("the agent guide", () => {
+  const tables = (custom: string) =>
+    `**Custom**\n\n<!-- skills:custom -->\n${custom}\n<!-- /skills:custom -->\n\n**Vendored**\n\n<!-- skills:vendored -->\n\n<!-- /skills:vendored -->\n`
+  const upstreamGuide = (rule: string) =>
+    `# AGENTS.md\n\nGuidance for agents.\n\n- ALWAYS: ${rule}\n\n\`\`\`bash\nWEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)\n\`\`\`\n\nRun \`bunx zerostarter sync\` to update.\n\n${tables("| dev | Start the ZeroStarter dev stack. |")}`
+  const guide = () => read(join(dir, GUIDE))
+  const ledger = () => JSON.parse(read(join(dir, SKILL_LEDGER)))
+  const named = (name = "acme-app") => write(join(dir, "package.json"), JSON.stringify({ name }))
+
+  test("init rebrands the guide the starter ships and records it", () => {
+    write(join(dir, GUIDE), upstreamGuide("Use worktrees."))
+    expect(reconcileForkGuide(dir, { name: "Acme App" })).toBe("adopted")
+    expect(guide()).toContain("- ALWAYS: Use worktrees.")
+    expect(guide()).toContain("bunx portless get acme-app")
+    expect(guide()).toContain("bunx portless get api.acme-app")
+    expect(guide()).toContain("Start the Acme App dev stack")
+    // the CLI a fork still runs keeps its upstream name
+    expect(guide()).toContain("bunx zerostarter sync")
+    expect(ledger()[GUIDE].ref).toBe(SKILL_REF)
+  })
+
+  test("init falls back to the stub when the starter ref ships no guide, and records it so a later sync upgrades it", () => {
+    expect(reconcileForkGuide(dir, { name: "acme" })).toBe("adopted")
+    expect(guide()).toBe(agentsTemplate())
+    expect(ledger()[GUIDE]).toBeDefined()
+  })
+
+  test("the skills pass, which rebuilds the ledger, carries the guide's entry across", () => {
+    named()
+    write(join(dir, GUIDE), upstreamGuide("Use worktrees."))
+    reconcileForkGuide(dir, { name: "acme-app" })
+    const entry = ledger()[GUIDE]
+    write(
+      join(dir, ".agents/skills/dev/SKILL.md"),
+      "---\nname: dev\ndescription: A skill.\nsource: local\n---\n\n# Dev\n",
+    )
+    reconcileForkSkillsFromRoot(dir)
+    expect(ledger()[GUIDE]).toEqual(entry)
+    expect(ledger().dev).toBeDefined()
+  })
+
+  describe("on sync", () => {
+    const scaffolded = (rule: string) => {
+      named()
+      write(join(dir, GUIDE), upstreamGuide(rule))
+      reconcileForkGuide(dir, { name: "acme-app" })
+      return guide()
+    }
+
+    test("takes the update while the fork has not touched the guide", () => {
+      const before = scaffolded("Use worktrees.")
+      const result = reconcileForkGuideFromRoot(dir, {
+        before,
+        upstream: upstreamGuide("Use worktrees, always."),
+      })
+      expect(result).toBe("adopted")
+      expect(guide()).toContain("Use worktrees, always.")
+      expect(guide()).toContain("bunx portless get acme-app")
+    })
+
+    // The fork's own skills-manager fills these tables after the CLI writes the file, and they change whenever the fork adds a skill. Counting that as an edit would freeze every fork's guide on its first commit.
+    test("does not read the generated skills tables as an edit", () => {
+      const written = scaffolded("Use worktrees.")
+      const before = written.replace(
+        /(<!-- skills:custom -->)[\s\S]*?(<!-- \/skills:custom -->)/,
+        "$1\n| dev | Start it. |\n| mine | A skill the fork added. |\n$2",
+      )
+      expect(before).not.toBe(written)
+      expect(
+        reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("A new rule.") }),
+      ).toBe("adopted")
+      expect(guide()).toContain("A new rule.")
+    })
+
+    test("keeps a guide the fork has edited, and says so", () => {
+      const before = scaffolded("Use worktrees.").replace(
+        "Guidance for agents.",
+        "Our house rules.",
+      )
+      write(join(dir, GUIDE), upstreamGuide("A new rule."))
+      expect(
+        reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("A new rule.") }),
+      ).toBe("customized")
+      expect(guide()).toBe(before)
+    })
+
+    test("a CRLF checkout of an untouched guide is not an edit", () => {
+      const before = scaffolded("Use worktrees.").replace(/\n/g, "\r\n")
+      expect(
+        reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("A new rule.") }),
+      ).toBe("adopted")
+    })
+
+    test("upgrades the untouched stub an older CLI scaffolded, tables filled or not", () => {
+      named()
+      const before = agentsTemplate().replace(
+        "<!-- skills:custom -->\n",
+        "<!-- skills:custom -->\n\n| dev | Start it. |\n",
+      )
+      expect(before).not.toBe(agentsTemplate())
+      expect(
+        reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("Use worktrees.") }),
+      ).toBe("adopted")
+      expect(guide()).toContain("Use worktrees.")
+    })
+
+    // Until now AGENTS.md was fork-excluded, so a guide with no sync record is the fork's own work. It is never replaced on a guess.
+    test("never replaces a fork-written guide that has no sync record", () => {
+      named()
+      const before = "# AGENTS.md\n\nRules this fork wrote itself.\n"
+      write(join(dir, GUIDE), upstreamGuide("Use worktrees."))
+      expect(
+        reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("Use worktrees.") }),
+      ).toBe("forkOwned")
+      expect(guide()).toBe(before)
+      expect(exists(join(dir, SKILL_LEDGER)) ? ledger()[GUIDE] : undefined).toBeUndefined()
+    })
+
+    test("adopts the guide into a fork that has none", () => {
+      named()
+      expect(
+        reconcileForkGuideFromRoot(dir, {
+          before: undefined,
+          upstream: upstreamGuide("Use worktrees."),
+        }),
+      ).toBe("adopted")
+      expect(guide()).toContain("bunx portless get acme-app")
+    })
+
+    test("does nothing when the starter ref supplied no guide", () => {
+      named()
+      const before = "# AGENTS.md\n\nRules this fork wrote itself.\n"
+      write(join(dir, GUIDE), before)
+      expect(reconcileForkGuideFromRoot(dir, { before, upstream: before })).toBe("absent")
+      expect(reconcileForkGuideFromRoot(dir, { before, upstream: undefined })).toBe("absent")
+      expect(guide()).toBe(before)
+    })
   })
 })
 

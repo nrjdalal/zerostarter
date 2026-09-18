@@ -58,6 +58,8 @@ Re-baseline a fork on the latest ZeroStarter. A gitpick overlay updates the star
 
 Skills you own are preserved too: sync only rewrites a skill whose `source` is this repo. One you authored, one you vendored from a tool, one you took from another upstream, one you edited, or one whose sync note you removed keeps your version, and sync names it in the summary rather than replacing it.
 
+`AGENTS.md` ships to a fork whole, rebranded, and follows the same contract: sync hands you the starter's latest while your copy is unedited, and keeps yours once you have changed it.
+
 ## Requirements
 
 - **[Bun](https://bun.sh)** runs the scaffolded project. If it is missing, the CLI offers to install it for you.

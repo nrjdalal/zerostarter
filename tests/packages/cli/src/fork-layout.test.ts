@@ -60,11 +60,14 @@ describe("parseForkLayout", () => {
     for (const path of excludes) expect(path).not.toMatch(/[*?![\]]/)
     // The fork-owned paths sync restores after the overlay; drift here silently overwrites a fork's own DB state, lockfile, or docs config.
     expect(preserve).toEqual([
+      "AGENTS.md",
       "bun.lock",
       "packages/db/drizzle/",
       "packages/db/src/schema/",
       "web/next/docs.config.ts",
       "web/next/src/app/favicon.ico",
     ])
+    // The agent guide ships whole. It is listed as preserved, not excluded: excluding it hands a fork the stub, and dropping it from the preserve set lets an older CLI overwrite a fork's own guide.
+    expect(excludes).not.toContain("AGENTS.md")
   })
 })

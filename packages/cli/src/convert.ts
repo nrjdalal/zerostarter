@@ -3,9 +3,8 @@ import { isAbsolute, join, relative, resolve, sep } from "node:path"
 import { parseForkLayout } from "@/fork-layout"
 import { exists, read, readJson, remove, removeMatch, write, writeJson } from "@/io"
 import { AUTHOR_FIELDS } from "@/pkg"
-import { reconcileForkSkills, slugify } from "@/skills"
+import { reconcileForkGuide, reconcileForkSkills, slugify } from "@/skills"
 import {
-  agentsTemplate,
   blogIndexTemplate,
   type Brand,
   consoleIndexTemplate,
@@ -71,7 +70,6 @@ const scaffoldContent = (root: string, brand: Brand): void => {
   write(p(root, "web/next/docs.config.ts"), docsConfigTemplate())
   write(p(root, "web/next/public/.gitkeep"), "")
   write(p(root, "web/next/src/app/page.tsx"), homeTemplate())
-  write(p(root, "AGENTS.md"), agentsTemplate())
   write(p(root, "README.md"), readmeTemplate(brand))
 }
 
@@ -155,4 +153,6 @@ export const convertRepo = (
   rebrand(root, brand, features)
   // Reconcile the inherited skills to the fork: rename the upstream identity, point source at it, and stamp the sync note.
   reconcileForkSkills(root, brand)
+  // The guide ships whole like the skills, so it takes the same rebrand; after the skills, whose pass rebuilds the ledger this one adds to.
+  reconcileForkGuide(root, brand)
 }
