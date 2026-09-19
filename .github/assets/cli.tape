@@ -1,5 +1,7 @@
 # zerostarter init: scaffold a fresh, rebranded product from the starter (needs Docker running for the DB step).
 # Render from the repo root: bun run --cwd packages/cli build && vhs .github/assets/cli.tape && gifsicle --batch -O3 --lossy=30 .github/assets/cli.gif
+# If vhs exits 0 and writes no file (seen with vhs 0.12.0 beside ffmpeg 9: it captures the frames and never encodes them), change the Output below to `Output .vhs-frames/`, record, and encode them yourself at this tape's size and background:
+#   ffmpeg -y -framerate 24 -i .vhs-frames/frame-text-%05d.png -framerate 24 -i .vhs-frames/frame-cursor-%05d.png -filter_complex "[0][1]overlay[m];[m]pad=1280:720:(ow-iw)/2:(oh-ih)/2:color=#101216[p];[p]split[a][b];[a]palettegen=max_colors=256:stats_mode=full[pal];[b][pal]paletteuse=dither=none" .github/assets/cli.gif
 Output .github/assets/cli.gif
 
 Require node
@@ -21,6 +23,10 @@ Show
 
 Sleep 800ms
 Type "bunx zerostarter init" Sleep 300ms Enter
+# the feature picker comes first; Enter takes the fork defaults it is pre-checked to
+Wait+Screen@30s /optional surfaces/
+Sleep 1800ms
+Enter
 Wait+Screen@90s /Provision a local Postgres/
 Sleep 1500ms
 Enter
