@@ -18,7 +18,7 @@
 
 Every item below is wired and working out of the box, not just a dependency in `package.json`.
 
-- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
+- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turborepo.dev) for caching and task orchestration
 - **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
 - **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
 - **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
