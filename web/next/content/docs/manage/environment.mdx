@@ -31,28 +31,28 @@ A variable that is missing or malformed at startup fails validation with a messa
 
 ## Every variable
 
-`.env.example` holds the ones you are expected to set. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: each has a working default or is wired for you.
+`.env.example` holds the ones you are expected to set. The Default column reads `required` where there is none and the app will not boot without a value. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: each has a working default or is wired for you.
 
-| Variable                            | Slice               | Required | Default  | What it does                                                                                                      |
-| ----------------------------------- | ------------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| `AGENT_SIGNIN_ENABLED`              | `api-hono`          | no       | `false`  | Mounts the local [agent sign-in](/docs/getting-started/working-with-agents), and only while `NODE_ENV` is `local` |
-| `BETTER_AUTH_SECRET`                | `auth`              | yes      | -        | Signs sessions; `init` generates one                                                                              |
-| `GITHUB_CLIENT_ID` / `_SECRET`      | `auth`              | no       | -        | Turns on GitHub sign-in when both are set                                                                         |
-| `GOOGLE_CLIENT_ID` / `_SECRET`      | `auth`              | no       | -        | Turns on Google sign-in when both are set                                                                         |
-| `HONO_APP_URL`                      | `api-hono`, `auth`  | yes      | -        | The api's public origin; the cookie scope and Better Auth's `baseURL` derive from it                              |
-| `HONO_PORT`                         | `api-hono`          | no       | `4000`   | The port the api binds when the host injects no `PORT`                                                            |
-| `HONO_RATE_LIMIT`                   | `api-hono`          | no       | `60`     | [Requests per window](/docs/manage/rate-limiting); signed-in users get twice this                                 |
-| `HONO_RATE_LIMIT_WINDOW_MS`         | `api-hono`          | no       | `60000`  | The window, in milliseconds                                                                                       |
-| `HONO_TRUSTED_ORIGINS`              | `api-hono`, `auth`  | yes      | -        | Comma-separated origins CORS and Better Auth accept                                                               |
-| `HONO_WEB_URL`                      | `auth`              | no       | inferred | Names the web origin on a [public hosting suffix](/docs/deployment/vercel) when it cannot be inferred             |
-| `INTERNAL_API_URL`                  | `web-next` (server) | no       | -        | Where the web server reaches the api; [Docker](/docs/deployment/docker) sets it to `http://api:4000`              |
-| `NEXT_PUBLIC_API_URL`               | `web-next` (client) | yes      | -        | The api origin the browser calls                                                                                  |
-| `NEXT_PUBLIC_APP_URL`               | `web-next` (client) | yes      | -        | The web origin: canonical URLs, the sitemap, OG images                                                            |
-| `NEXT_PUBLIC_POSTHOG_HOST`          | `web-next` (client) | no       | EU cloud | [PostHog](/docs/manage/analytics) region or self-hosted URL                                                       |
-| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | `web-next` (client) | no       | -        | Turns PostHog on                                                                                                  |
-| `NEXT_PUBLIC_USERJOT_URL`           | `web-next` (client) | no       | -        | Shows the [feedback link](/docs/manage/analytics#user-feedback)                                                   |
-| `NODE_ENV`                          | every slice         | yes      | -        | The [stage](#stages); the web also exposes it to the client as `NEXT_PUBLIC_NODE_ENV`, which you never set        |
-| `POSTGRES_URL`                      | `db`                | yes      | -        | The [database](/docs/manage/database); `init` fills it when it provisions one                                     |
+| Variable                            | Slice               | Default  | What it does                                                                                                      |
+| ----------------------------------- | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `AGENT_SIGNIN_ENABLED`              | `api-hono`          | `false`  | Mounts the local [agent sign-in](/docs/getting-started/working-with-agents), and only while `NODE_ENV` is `local` |
+| `BETTER_AUTH_SECRET`                | `auth`              | required | Signs sessions; `init` generates one                                                                              |
+| `GITHUB_CLIENT_ID` / `_SECRET`      | `auth`              | optional | Turns on GitHub sign-in when both are set                                                                         |
+| `GOOGLE_CLIENT_ID` / `_SECRET`      | `auth`              | optional | Turns on Google sign-in when both are set                                                                         |
+| `HONO_APP_URL`                      | `api-hono`, `auth`  | required | The api's public origin; the cookie scope and Better Auth's `baseURL` derive from it                              |
+| `HONO_PORT`                         | `api-hono`          | `4000`   | The port the api binds when the host injects no `PORT`                                                            |
+| `HONO_RATE_LIMIT`                   | `api-hono`          | `60`     | [Requests per window](/docs/manage/rate-limiting); signed-in users get twice this                                 |
+| `HONO_RATE_LIMIT_WINDOW_MS`         | `api-hono`          | `60000`  | The window, in milliseconds                                                                                       |
+| `HONO_TRUSTED_ORIGINS`              | `api-hono`, `auth`  | required | Comma-separated origins CORS and Better Auth accept                                                               |
+| `HONO_WEB_URL`                      | `auth`              | inferred | Names the web origin on a [public hosting suffix](/docs/deployment/vercel) when it cannot be inferred             |
+| `INTERNAL_API_URL`                  | `web-next` (server) | optional | Where the web server reaches the api; [Docker](/docs/deployment/docker) sets it to `http://api:4000`              |
+| `NEXT_PUBLIC_API_URL`               | `web-next` (client) | required | The api origin the browser calls                                                                                  |
+| `NEXT_PUBLIC_APP_URL`               | `web-next` (client) | required | The web origin: canonical URLs, the sitemap, OG images                                                            |
+| `NEXT_PUBLIC_POSTHOG_HOST`          | `web-next` (client) | EU cloud | [PostHog](/docs/manage/analytics) region or self-hosted URL                                                       |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | `web-next` (client) | optional | Turns PostHog on                                                                                                  |
+| `NEXT_PUBLIC_USERJOT_URL`           | `web-next` (client) | optional | Shows the [feedback link](/docs/manage/analytics#user-feedback)                                                   |
+| `NODE_ENV`                          | every slice         | required | The [stage](#stages); the web also exposes it to the client as `NEXT_PUBLIC_NODE_ENV`, which you never set        |
+| `POSTGRES_URL`                      | `db`                | required | The [database](/docs/manage/database); `init` fills it when it provisions one                                     |
 
 ## Server and client
 
