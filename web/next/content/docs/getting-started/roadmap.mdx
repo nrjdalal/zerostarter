@@ -12,6 +12,10 @@ Available out of the box in a fresh scaffold:
 
 - **[Better Auth organizations](/docs/manage/authentication)**: multi-tenant orgs and teams, member roles, and invitations, with the backing tables.
 - **[A role ladder + gated `/console`](/docs/getting-started/scripts#console)**: `owner > admin > member > user` on `user.role`, gating the route server-side; manage it from Console > Access, or with `bun run console:roles`, with every change recorded in [Console > History > Activity](/docs/manage/activity).
+- **[An allowlist for the console](/docs/manage/allowlist)**: grant the console's bottom rung to a whole domain or a single address, applied on sign-in, never lowering anyone. An optional [feature](/docs/manage/features), off in a fresh fork.
+- **[An activity trail](/docs/manage/activity)**: every console write that changes who gets in, or destroys a row, records a readable line in the same transaction as the change.
+- **[Data tables](/docs/manage/data-tables)**: one module of composable pieces on TanStack Table, server-driven with infinite scroll and virtualized rows; the console's tables are the pattern to copy.
+- **[Realtime over WebSockets](/docs/getting-started/realtime)**: the typed client reaches sockets too, on Bun and on Vercel, with a reconnecting, REST-backed example.
 - **Rate limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com), per-user when authenticated and per-IP otherwise, tuned via `HONO_RATE_LIMIT`.
 - **[Scalar API docs](/docs/getting-started/type-safe-api)**: an interactive reference at `/api/docs`, generated from the OpenAPI spec at `/api/openapi.json`.
 - **[Dynamic OG images](/docs/manage/seo)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.
@@ -20,8 +24,8 @@ Available out of the box in a fresh scaffold:
 - **[PostHog analytics](/docs/manage/analytics)**: product analytics, feature flags, and session replay. Optional; on only when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` are set.
 - **[Vercel Speed Insights](/docs/manage/analytics#vercel-speed-insights)**: real Core Web Vitals from your visitors. No key and no env var; the root layout renders it only when `VERCEL` is set, so it is absent on Docker and every other host.
 - **[Waitlist](/docs/manage/waitlist)**: a `/waitlist` page backed by `POST /api/waitlist`, read back at Console > Waitlist > Signups where the addresses can be searched, copied or removed; an optional [feature](/docs/manage/features) that becomes a fresh fork's home when enabled.
-- **[Configurable features](/docs/manage/features)**: turn the allowlist, docs, blog, API reference, internal docs, or waitlist on or off per fork, from `init` flags or an interactive picker, and flip any of them later in config.
-- **[The `zerostarter` CLI](/docs/getting-started/setup)**: `bunx zerostarter init` scaffolds a rebranded fork, strips the sample content, installs dependencies, and provisions a local Postgres.
+- **[Configurable features](/docs/manage/features)**: turn the allowlist, API reference, blog, docs, internal docs, or waitlist on or off per fork, from `init` flags or an interactive picker, and flip any of them later in config.
+- **[The `zerostarter` CLI](/docs/getting-started/cli)**: `bunx zerostarter init` scaffolds a rebranded fork, strips the sample content, installs dependencies, and provisions a local Postgres; `sync` re-baselines that fork on the latest starter and keeps what it owns. A fork inherits every [skill](/docs/resources/ai-skills) and the starter's own `AGENTS.md`, rebranded.
 
 ## Planned
 

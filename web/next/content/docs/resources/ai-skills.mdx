@@ -8,6 +8,8 @@ A skill is a `SKILL.md` file: a trigger plus a literal procedure. Not a vague "y
 
 Every skill lives in `.agents/skills/<name>/SKILL.md`. That is the one source. `.claude/skills` is a symlink to it, so Claude Code, Cursor, and Codex all read the same files. Edit a skill once and every agent tool sees the change. There is no second copy to keep in sync.
 
+A fork scaffolded with the [CLI](/docs/getting-started/cli) inherits every skill below, rebranded, and `sync` keeps the ones it has not customized up to date.
+
 ## How an agent picks one
 
 Each `SKILL.md` opens with frontmatter, a `name` and a `description` that states _when_ to use it:
