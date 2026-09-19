@@ -1,29 +1,13 @@
-import { serve, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
 import { env } from "@packages/env/api-hono"
 import type { Hono } from "hono"
-import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
-import { WebSocketServer } from "ws"
+import { upgradeWebSocket, websocket } from "hono/bun"
 
-// On Vercel we serve WebSockets through the Node adapter (@hono/node-server + ws), the setup Vercel documents for Hono; everywhere else (local, Docker/self-host) Bun.serve() owns the socket via hono/bun.
-const onVercel = process.env.VERCEL === "1"
+// SPIKE (variant A): one socket owner everywhere. Bun.serve() owns fetch and the socket through hono/bun on every host, Vercel included, now that its Bun runtime documents a native Bun.serve() WebSocket path.
+export { upgradeWebSocket }
 
-// Both adapters accept the same handler factory; the cast collapses their otherwise non-unionable signatures to one callable type. Registered on a route in index.ts.
-export const upgradeWebSocket = onVercel
-  ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
-  : bunUpgradeWebSocket
-
-// On Vercel, return the Node http.Server so the platform drives all traffic including the WebSocket upgrade; elsewhere return the Bun.serve() shape so Bun owns fetch + the socket. Both honor process.env.PORT when set (Vercel, or portless assigning a dev port), else HONO_PORT.
-export const createServer = (app: Hono) => {
-  const port = process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT
-  return onVercel
-    ? serve({
-        fetch: app.fetch,
-        port,
-        websocket: { server: new WebSocketServer({ noServer: true }) },
-      })
-    : {
-        fetch: app.fetch,
-        port,
-        websocket,
-      }
-}
+// The Bun.serve() shape. Honors process.env.PORT when set (Vercel, or portless assigning a dev port), else HONO_PORT.
+export const createServer = (app: Hono) => ({
+  fetch: app.fetch,
+  port: process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT,
+  websocket,
+})
