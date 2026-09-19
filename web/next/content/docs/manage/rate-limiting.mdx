@@ -46,7 +46,7 @@ Every response also carries the `draft-6` standard headers (`RateLimit-Limit`, `
 
 <Callout type="warn" title="The IP tier trusts forwarding headers">
 
-`findIp` is called bare, with no `platform` and no trusted `proxies`, so it walks its generic header list, which its own README says to trust only behind a proxy that sets those headers. That holds on Vercel, which overwrites `x-forwarded-for`. On a deploy where Bun owns the socket with nothing in front (a bare Docker host), a client can name its own bucket by sending `x-forwarded-for`, and one that sends nothing lands on the random tier above. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host.
+`findIp` is called bare, with no `platform` and no trusted `proxies`, so it walks its generic header list. Its own README is blunt about that: the IP "should not be trusted as it can be spoofed in most cases", and the guards it offers apply only when a `platform` is passed. On Vercel the headers can be trusted anyway, because Vercel [overwrites `x-forwarded-for`](https://vercel.com/docs/headers/request-headers#x-forwarded-for) and does not forward a client-supplied one. On a deploy where Bun owns the socket with nothing in front (a bare Docker host), a client can name its own bucket by sending `x-forwarded-for`, and one that sends nothing lands on the random tier above. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host.
 
 </Callout>
 

@@ -10,8 +10,8 @@ Every script lives in the root `package.json`; run any of them with `bun run <na
 
 | Script             | What it does                                                                                                                 |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `bun run dev`      | Start both apps through portless on named `.localhost` URLs (`bunx portless list` shows them; branch-prefixed in a worktree) |
 | `bun run clean`    | Remove build artifacts and caches (`.next`, `.turbo`, `dist`), every `node_modules`, and generated typedefs                  |
+| `bun run dev`      | Start both apps through portless on named `.localhost` URLs (`bunx portless list` shows them; branch-prefixed in a worktree) |
 | `bun run devtools` | Open Turborepo DevTools                                                                                                      |
 
 `PORTLESS=0 bun run dev` uses fixed ports instead: web `:3000`, api `:4000`.
@@ -39,16 +39,16 @@ See [Database](/docs/manage/database) for the loop these belong to.
 
 | Script                 | What it does                                                                           | In PR CI |
 | ---------------------- | -------------------------------------------------------------------------------------- | -------- |
-| `bun run lint`         | Oxlint over the whole tree                                                             | yes      |
+| `bun run check-types`  | Type-check every workspace, then the repo scripts and the test tree                    | yes      |
 | `bun run format`       | Oxfmt, writing fixes                                                                   | no       |
 | `bun run format:check` | Oxfmt, report only                                                                     | yes      |
-| `bun run check-types`  | Type-check every workspace, then the repo scripts and the test tree                    | yes      |
+| `bun run lint`         | Oxlint over the whole tree                                                             | yes      |
 | `bun run test`         | Build the shared packages, then run the whole suite from the repo-root `tests/` mirror | yes      |
 | `bun run test:e2e`     | Run every `*.e2e.test.ts` against a stack that is already running                      | no       |
 
 A failing test or type error blocks the merge. The details worth knowing:
 
-- **`check-types`** runs three passes: every workspace through Turbo, then `check-types:scripts` (`tsc` over `.github/scripts`), then `check-types:tests` (one `tsc` run per `tests/**/tsconfig.json`).
+- **`check-types`** runs in passes: every workspace through Turbo, then `check-types:scripts` (`tsc` over `.github/scripts`), then `check-types:tests` (one `tsc` run per `tests/**/tsconfig.json`).
 - **`test`** builds `packages/*` and regenerates the data-table font metrics first. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds.
 
 ### The end-to-end suite

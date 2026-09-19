@@ -4,7 +4,7 @@ import type { Hono } from "hono"
 import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
 import { WebSocketServer } from "ws"
 
-// On Vercel we serve WebSockets through the Node adapter (@hono/node-server + ws), the setup Vercel documents for Hono; everywhere else (local, Docker/self-host) Bun.serve() owns the socket via hono/bun. Vercel's Bun runtime has since gained a native Bun.serve() WebSocket path (beta, with documented differences), which this has not moved to.
+// On Vercel we serve WebSockets through the Node adapter (@hono/node-server + ws), the setup Vercel documents for Hono; everywhere else (local, Docker/self-host) Bun.serve() owns the socket via hono/bun.
 const onVercel = process.env.VERCEL === "1"
 
 // Both adapters accept the same handler factory; the cast collapses their otherwise non-unionable signatures to one callable type. Registered on a route in index.ts.

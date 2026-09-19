@@ -71,15 +71,15 @@ The changelog commit lands directly on `canary` rather than through a second PR 
 
 ## The CLI rides the same release
 
-This part is the canonical repo's alone: a fork does not take `packages/cli` or `cli-release.yml`. The `zerostarter` npm package has no version of its own (its `package.json` holds a `0.0.0` placeholder); `cli-release.yml` stamps one at publish time, from three triggers:
+This part is the canonical repo's alone: a fork does not take `packages/cli` or `cli-release.yml`. The `zerostarter` npm package has no version of its own (its `package.json` holds a `0.0.0` placeholder); `cli-release.yml` stamps one at publish time. What it publishes depends on what started it:
 
 | Trigger                                                                   | Publishes                         | npm tag  |
 | ------------------------------------------------------------------------- | --------------------------------- | -------- |
-| `auto-release.yml` finishes                                               | the release version, from the tag | `latest` |
+| `auto-release.yml` finishes, or a GitHub release is published by hand     | the release version, from the tag | `latest` |
 | a push to `canary` touching `packages/cli`, `packages/scripts` or `tests` | `<next version>-canary.<n>`       | `canary` |
 | the repo owner comments `/release` on a same-repo PR                      | `0.0.0-<short sha>` of that PR    | `test`   |
 
-The first two run the whole suite on Linux, macOS and Windows before anything is published. The `/release` comment skips that matrix, since its point is a build you can try in seconds: `bunx zerostarter@0.0.0-<short sha> init`.
+A release and a `canary` push both run the whole suite on Linux, macOS and Windows before anything is published. The `/release` comment skips that matrix, since its point is a build you can try in seconds: `bunx zerostarter@0.0.0-<short sha> init`.
 
 ## Pinning a version
 

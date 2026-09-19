@@ -51,10 +51,10 @@ bun run db:migrate
 
 ## Already have a repo, or a fork?
 
-Two more commands cover the cases `init` does not. Both require a clean tree and roll back to your last commit if a step fails:
+The CLI also covers the cases `init` does not. Both of these require a clean tree:
 
-- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive.
-- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit.
+- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive. Any failure rolls the tree back to your last commit.
+- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit. A failed overlay rolls back to your last commit; a failed dependency install after it does not, so you re-run `bun install` rather than the whole sync.
 
 See [The CLI](/docs/getting-started/cli) for every flag, exactly what `sync` preserves, and how it treats the skills and the agent guide you have edited.
 
@@ -65,7 +65,7 @@ Turborepo starts both apps together through [portless](https://portless.sh), whi
 - **web** (Next.js) at `http://zerostarter.localhost:1355`
 - **api** (Hono) at `http://api.zerostarter.localhost:1355`, with an interactive API reference at `/api/docs`
 
-`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`). Reach for it in two cases:
+`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`). Reach for it when:
 
 - **OAuth.** Providers reject `.localhost` redirect URIs, so callbacks expect the fixed ports (see [Authentication](/docs/manage/authentication#callback-urls)).
 - **`*.localhost` does not resolve server-side.** macOS and most Linux resolve it to loopback; some containers and corporate DNS setups do not. There the web server can't reach `api.<name>.localhost` to render authenticated pages, and they redirect to the home page.

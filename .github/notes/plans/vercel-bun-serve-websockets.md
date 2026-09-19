@@ -10,7 +10,7 @@ That is no longer true. Vercel's Bun runtime now accepts `Bun.serve()` as an ent
 Why it is only an idea:
 
 - Both the Bun runtime and WebSockets are in beta on Vercel.
-- Vercel lists three differences from a standalone Bun server: headers passed to `server.upgrade()` are not applied to the upgrade response, the `drain` handler is never invoked, and `socket.send()` does not return the `-1` backpressure status. `hono/bun`'s `upgradeWebSocket` has to be checked against each.
+- Vercel lists differences from a standalone Bun server: headers passed to `server.upgrade()` are not applied to the upgrade response, the `drain` handler is never invoked, and `socket.send()` does not return the `-1` backpressure status. `hono/bun`'s `upgradeWebSocket` has to be checked against each.
 - The api deploys with the Hono framework preset and a self-contained bundle, not the Bun preset's `server.ts` entrypoint, so the entrypoint shape would change too.
 - The Node adapter path is the one Vercel documents for Hono, and it is proven here, production included.
 

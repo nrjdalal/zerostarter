@@ -10,7 +10,7 @@ Everything below is wired and working together, not just listed in `package.json
 
 ## The shape
 
-Two deployable apps share the packages under `packages/`:
+Two deployable apps share the packages they both import:
 
 ![Architecture graph](/marketing/graph-build.svg)
 
@@ -72,7 +72,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 
 <Callout type="info" title="What's a shell, not a feature">
 
-The auth, orgs, roles, API, database, and deploy paths are real and working. The **dashboard and console pages are intentionally near-empty, auth-gated shells**: a starting point for your product, not a pre-built app. The built-out console surfaces are Access (users and allowlist) plus activity and waitlist, each a [data table](/docs/manage/data-tables) there as the pattern to copy. Build on them.
+The auth, orgs, roles, API, database, and deploy paths are real and working. The **dashboard is an intentionally near-empty, auth-gated shell**: a starting point for your product, not a pre-built app. The console is gated the same way and is where the worked examples live. The built-out console surfaces are Access (users and allowlist) plus activity and waitlist, each a [data table](/docs/manage/data-tables) there as the pattern to copy. Build on them.
 
 </Callout>
 

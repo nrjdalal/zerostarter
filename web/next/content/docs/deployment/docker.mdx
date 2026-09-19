@@ -80,7 +80,7 @@ docker run -p 3000:3000 --env-file .env zerostarter-web
 bun run test:e2e
 ```
 
-It is a suite for a local-stage stack on a disposable database, never a deployed one: `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true` so the suite can sign in, plus both OAuth client ids set to any value, since the providers response it snapshots lists them. It refuses a host that is not local, because it writes through the API. See [Scripts](/docs/getting-started/scripts#quality) for the rest, and the `docker-test` skill for the full recipe, including the offline check that proves the api bundle resolves every import without a network.
+It needs a local-stage stack on a disposable database, never a deployed one; [Scripts](/docs/getting-started/scripts#the-end-to-end-suite) lists what `.env` has to hold. The `docker-test` skill has the full recipe, including the offline check that proves the api bundle resolves every import without a network.
 
 ## Migrations: you run them
 

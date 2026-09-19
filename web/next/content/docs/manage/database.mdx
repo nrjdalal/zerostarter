@@ -22,7 +22,7 @@ Three files under `packages/db/src/schema/`, all re-exported from `index.ts`. Fi
 
 ### `auth.ts` is generated
 
-`bun run auth:schema` writes exactly what the Better Auth CLI emits for the plugins and columns declared in `packages/auth/src/schema.ts`. Three things follow:
+`bun run auth:schema` writes exactly what the Better Auth CLI emits for the plugins and columns declared in `packages/auth/src/schema.ts`. What follows from that:
 
 - **Never edit it by hand.** A test fails when the committed file differs from a fresh generation (line endings aside, so a Windows checkout passes).
 - **A column of your own** on `user` or `session` is an `additionalFields` entry in `packages/auth/src/schema.ts` (the console's `roleSetAt` is one), regenerated and then migrated like any other change.
@@ -39,7 +39,7 @@ Across the schema:
 - `CASCADE` on foreign-key deletes.
 - An index on most foreign-key columns, plus `verification.identifier` and `invitation.email`, which are not foreign keys; `invitation.inviter_id` carries none.
 
-Add indexes when your own row counts and query plans ask for them, not in advance. Two places where that choice shows:
+Add indexes when your own row counts and query plans ask for them, not in advance. Where that choice shows:
 
 - **`user.role` has no index and no database default.** The console filters and sorts by it, and four distinct values over a table the size of your staff list is a sequential scan either way. The default is absent because the admin plugin stamps `user` on every account it creates, and the generated schema says only what the plugin declares.
 - **The `console.ts` tables break both rules above.** Their `actor_id` is `SET NULL`, not `CASCADE`, because deleting the admin who added a rule must not delete the rule, nor the history they made. Neither carries an index beyond its primary key, because at console sizes the sequential scan wins. Each also stores an `actor` text alongside the id, so a row stays readable once the id is null, and can name an actor that was never an account (a matching rule, or a script run from a terminal).
