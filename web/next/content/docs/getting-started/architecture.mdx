@@ -48,10 +48,12 @@ You feel this most when you refactor: the compiler walks you from the database t
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the React Compiler.
 - [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives.
 - [TanStack Query](https://tanstack.com/query/latest) for server state, [TanStack Form](https://tanstack.com/form/latest) + [Zod](https://zod.dev) for forms.
+- [TanStack Table](https://tanstack.com/table) and [TanStack Virtual](https://tanstack.com/virtual) under the [data tables](/docs/manage/data-tables), with their state in the URL through [nuqs](https://nuqs.dev).
 
 **Backend** (`api/hono`)
 
 - [Hono](https://hono.dev) with [Hono RPC](https://hono.dev/docs/guides/rpc) for the end-to-end types, plus OpenAPI and an interactive [Scalar](https://scalar.com) reference at `/api/docs`.
+- [WebSockets](/docs/getting-started/realtime) through the same typed client, on Bun and on Vercel.
 - Rate limiting via [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter), keyed per user, API key, or IP.
 
 **Data & auth**
@@ -66,6 +68,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 **Tooling**
 
 - [Oxc](https://oxc.rs): one Rust toolchain (`oxlint` + `oxfmt`) in place of ESLint and Prettier. Plus [tsdown](https://tsdown.dev) for backend bundling, and [Lefthook](https://github.com/evilmartians/lefthook) + [Commitlint](https://commitlint.js.org) git hooks.
+- [portless](https://portless.sh): named `.localhost` dev URLs off one proxy, branch-prefixed in a git worktree, so parallel checkouts never fight over a port.
 
 <Callout type="info" title="What's a shell, not a feature">
 

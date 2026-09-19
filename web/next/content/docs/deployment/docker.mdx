@@ -72,6 +72,16 @@ docker run -p 3000:3000 --env-file .env zerostarter-web
 
 `.env` does double duty here: `--secret` supplies it at build, `--env-file` supplies it at runtime.
 
+## Test the images end to end
+
+`bun run test:e2e` drives a running stack over HTTP, and its defaults are the compose ports, so with `docker compose up` running it tests the images you just built rather than a dev server:
+
+```bash
+bun run test:e2e
+```
+
+It is a suite for a local-stage stack on a disposable database, never a deployed one: `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true` so the suite can sign in, plus both OAuth client ids set to any value, since the providers response it snapshots lists them. It refuses a host that is not local, because it writes through the API. See [Scripts](/docs/getting-started/scripts#quality) for the rest, and the `docker-test` skill for the full recipe, including the offline check that proves the api bundle resolves every import without a network.
+
 ## Migrations: you run them
 
 <Callout type="warn" title="Docker does not migrate your database">

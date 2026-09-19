@@ -12,13 +12,16 @@ Both audiences are first-class. The codebase is small and strict on purpose, and
 
 ## What's inside
 
-- **Auth & organizations**: Better Auth with optional GitHub and Google OAuth (each button appears only when its credentials are set), organizations and teams, and a role ladder that gates the console.
-- **A typed API**: Hono with end-to-end RPC. The frontend infers its types from the backend, so a wrong call fails at compile time, not in production.
-- **Database & migrations**: PostgreSQL and Drizzle on Bun's SQL driver, schema-first, with generated migrations you apply in one command.
-- **Docs**: Fumadocs with search and an auto-generated `llms.txt`, the site you're reading now.
-- **Deploy**: Docker and Vercel configs that ship the same code you develop against.
+- **Auth & organizations**: [Better Auth](/docs/manage/authentication) with optional GitHub and Google OAuth (each button appears only when its credentials are set), [organizations and teams](/docs/manage/organizations), and a role ladder that gates the console.
+- **A typed API**: [Hono with end-to-end RPC](/docs/getting-started/type-safe-api). The frontend infers its types from the backend, so a wrong call fails at compile time, not in production. The same client reaches [WebSockets](/docs/getting-started/realtime).
+- **Database & migrations**: [PostgreSQL and Drizzle](/docs/manage/database) on Bun's SQL driver, schema-first, with generated migrations you apply in one command.
+- **A staff console**: who gets in ([users and roles](/docs/manage/authentication#the-console-role-ladder), plus an [allowlist](/docs/manage/allowlist) by domain or address), what they changed ([Activity](/docs/manage/activity)), and the [waitlist signups](/docs/manage/waitlist), each built on one reusable [data table](/docs/manage/data-tables).
+- **Feature flags**: the allowlist, API reference, blog, docs, internal docs and waitlist are each [one boolean](/docs/manage/features), chosen at `init` and flippable later.
+- **Docs and a blog**: [Fumadocs](/docs/manage/content) with search, scheduled posts, [SEO and OG images](/docs/manage/seo), and an auto-generated [`llms.txt`](/docs/manage/llms-txt): the site you're reading now.
+- **A CLI**: [`bunx zerostarter`](/docs/getting-started/cli) scaffolds a rebranded fork, and later syncs it with the starter without touching what the fork owns.
+- **Deploy and release**: [Docker](/docs/deployment/docker) and [Vercel](/docs/deployment/vercel) configs that ship the same code you develop against, and a [release](/docs/manage/release) that is one merge.
 
-All of that is real and working. The **dashboard and console are auth-gated shells**: a signed-in starting point, not a pre-built app. You build your product on them.
+All of that is real and working. The **dashboard is an auth-gated shell**: a signed-in starting point, not a pre-built app. The console is where the worked examples live, and you build your product on both.
 
 ## Start here
 

@@ -48,6 +48,10 @@ For example, the `api-endpoint` skill hands the agent the Hono router template, 
 
 See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write your own.
 
+### A fork inherits all of it
+
+`bunx zerostarter init` ships every skill and the starter's own `AGENTS.md` into your fork, rebranded to your project name, so an agent opening your repo gets the same playbook rather than a stub. `bunx zerostarter sync` keeps them current: a skill or a guide you have not edited takes the starter's update, and one you have edited stays yours. See [the CLI](/docs/getting-started/cli#skills-you-have-customized).
+
 ## Local sign-in
 
 Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route stays unmounted until you opt in):
