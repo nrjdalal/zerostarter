@@ -53,10 +53,10 @@ bun run db:migrate
 
 The CLI also covers the cases `init` does not. Both of these require a clean tree:
 
-- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive. Any failure rolls the tree back to your last commit.
-- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit. A failed overlay rolls back to your last commit; a failed dependency install after it does not, so you re-run `bun install` rather than the whole sync.
+- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive.
+- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit.
 
-See [The CLI](/docs/getting-started/cli) for every flag, exactly what `sync` preserves, and how it treats the skills and the agent guide you have edited.
+See [The CLI](/docs/getting-started/cli) for every flag, what each rolls back when a step fails, exactly what `sync` preserves, and how it treats the skills and the agent guide you have edited.
 
 ## `bun run dev`
 

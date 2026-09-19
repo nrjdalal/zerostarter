@@ -14,10 +14,10 @@ Drizzle is not a query builder wrapped around SQL strings. Because the schema is
 
 ## The schema
 
-Three files under `packages/db/src/schema/`, all re-exported from `index.ts`. Files group by **concern, not by table**, so a table joins the file its neighbours are in rather than getting one of its own:
+The schema lives in `packages/db/src/schema/`, all re-exported from `index.ts`. Files group by **concern, not by table**, so a table joins the file its neighbours are in rather than getting one of its own:
 
 - **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds. This file is [generated, never edited](#authts-is-generated).
-- **`console.ts`**, the console's own two tables: `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores, and `activity` behind [Console > History](/docs/manage/activity), the trail of who changed what. They share a file because they are one concern, the same way the nine auth tables do.
+- **`console.ts`**, the console's own tables: `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores, and `activity` behind [Console > History](/docs/manage/activity), the trail of who changed what. They share a file because they are one concern, the same way the auth tables do.
 - **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page and [Console > Waitlist](/docs/manage/waitlist).
 
 ### `auth.ts` is generated

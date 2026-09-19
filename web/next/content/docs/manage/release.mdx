@@ -75,7 +75,7 @@ This part is the canonical repo's alone: a fork does not take `packages/cli` or 
 
 | Trigger                                                                   | Publishes                         | npm tag  |
 | ------------------------------------------------------------------------- | --------------------------------- | -------- |
-| `auto-release.yml` finishes, or a GitHub release is published by hand     | the release version, from the tag | `latest` |
+| `auto-release.yml` succeeds, or a GitHub release is published by hand     | the release version, from the tag | `latest` |
 | a push to `canary` touching `packages/cli`, `packages/scripts` or `tests` | `<next version>-canary.<n>`       | `canary` |
 | the repo owner comments `/release` on a same-repo PR                      | `0.0.0-<short sha>` of that PR    | `test`   |
 

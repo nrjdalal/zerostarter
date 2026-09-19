@@ -1,7 +1,7 @@
 ---
 slug: /docs/manage/features
 title: Features
-description: Toggle optional surfaces (allowlist, docs, blog, API reference, internal docs, waitlist) from one config, chosen at init and flippable anytime.
+description: Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.
 ---
 
 Not every product wants a public blog, a docs site, or a waitlist. ZeroStarter makes each optional surface a **feature flag**: one boolean in config that turns the whole surface on or off. The starter ships with every feature on (it demos them all); a fork picks its set at `init` and can change it at any time.
@@ -61,7 +61,7 @@ bunx zerostarter init my-app --no-blog --waitlist
 bunx zerostarter init my-app
 ```
 
-The fork defaults are **docs, blog, internal docs, and the API reference on; the waitlist and the allowlist off** (so a fresh fork lands on a plain home). Skipping the picker keeps those defaults. `--yes` takes them without prompting.
+The fork defaults are **the API reference, blog, docs, and internal docs on; the allowlist and the waitlist off** (so a fresh fork lands on a plain home). Skipping the picker keeps those defaults. `--yes` takes them without prompting.
 
 ## Enable anytime
 
