@@ -55,7 +55,7 @@ The operation is atomic: any failure resets the working tree to your last commit
 bunx zerostarter sync [dir]
 ```
 
-Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo and rolls back on failure.
+Overlays the latest starter onto your fork, updating shared starter files while preserving everything your fork owns. Unlike `init` and `reinit`, it does not commit: it leaves the changes in your working tree so you review the diff and commit yourself. It requires a clean repo. If the overlay or the reconciliation fails it rolls the tree back to your last commit; a dependency-install failure after that leaves the synced files in place, so you can re-run `bun install` rather than the whole sync.
 
 What it preserves: your content, `public/`, marketing, `packages/config/src/site.ts` branding, `README.md`, your root package identity (name, version, author fields), your [portless](/docs/getting-started/setup) dev-URL names, and the `PRESERVE_ON_SYNC` paths (`AGENTS.md` once you have edited it, `bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, and the favicon). What it overwrites: every shared starter file, so local edits to those are replaced by the upstream version.
 

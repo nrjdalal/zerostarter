@@ -67,7 +67,7 @@ socket.addEventListener("message", (event) => {
 
 ## Treat the socket as an enhancement
 
-A socket can drop: a tab backgrounds, a network blips, or a serverless function reaches its max duration (a few minutes by default) and closes the connection. So the reference badge (`web/next/src/components/marketing/api-status.tsx`) never depends on the socket alone. It polls REST `/api/health` whenever no frame is live and overlays a live pulse only while the socket streams, so the status is always current before the socket connects or after it drops; only the pulse is socket-only.
+A socket can drop: a tab backgrounds, a network blips, or a serverless function reaches its max duration (300 seconds by default on Vercel) and closes the connection. So the reference badge (`web/next/src/components/marketing/api-status.tsx`) never depends on the socket alone. It polls REST `/api/health` whenever no frame is live and overlays a live pulse only while the socket streams, so the status is always current before the socket connects or after it drops; only the pulse is socket-only.
 
 The reconnect logic is worth copying for your own realtime UI: capped exponential backoff (3s, doubling to a 30s ceiling) after a drop, a heartbeat watchdog that treats a silent-but-open socket as dropped, and an immediate reconnect when the tab becomes visible again.
 

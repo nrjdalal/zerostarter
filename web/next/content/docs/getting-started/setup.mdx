@@ -8,7 +8,9 @@ Two commands take you from nothing to a running, signed-in app.
 
 <Callout type="info" title="Prerequisites">
 
-Bun is required (the repo pins `bun@1.4.0` via `packageManager` in the root `package.json`). Run the CLI with `bunx`, not `npx`: it shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress. If Bun is missing it shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you. Docker is optional: `init` uses it to provision a local Postgres automatically, and without it you set `POSTGRES_URL` yourself.
+- **Bun**, required. The repo pins `bun@1.4.0` via `packageManager` in the root `package.json`. If it is missing, the CLI shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you.
+- **`bunx`, not `npx`.** The CLI shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress.
+- **Docker**, optional. `init` uses it to provision a local Postgres automatically; without it you set `POSTGRES_URL` yourself.
 
 </Callout>
 
@@ -21,10 +23,15 @@ The rest of this page is what those commands do, and the one thing to check if t
 
 ## `zerostarter init`
 
-`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder of its own; if the folder already has files, it asks for a project name and scaffolds into that new directory instead, and it stops early if you run it inside an existing workspace or monorepo, where a parent lockfile would break the dependency install. In one run it:
+`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder of its own:
+
+- if the folder already has files, it asks for a project name and scaffolds into that new directory instead;
+- if you run it inside an existing workspace or monorepo, it stops early, because a parent lockfile would break the dependency install.
+
+In one run it:
 
 - fetches the latest ZeroStarter and strips the sample content,
-- rebrands the copy to your project name,
+- rebrands the copy to your project name, the agent [skills](/docs/resources/ai-skills) and `AGENTS.md` included,
 - sets your [feature flags](/docs/manage/features) (allowlist, API reference, blog, docs, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
 - installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
 - provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
@@ -42,13 +49,14 @@ bun run db:migrate
 
 </Callout>
 
-## `zerostarter reinit`
+## Already have a repo, or a fork?
 
-`bunx zerostarter reinit` re-scaffolds an **existing git repo** as a fresh ZeroStarter: it deletes every file (keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive), fetches the latest ZeroStarter, rebrands to the directory name, and commits on the current branch. Use it to point an existing repo at ZeroStarter without losing its git history. It refuses a dirty tree, and rolls back to your last commit if any step fails.
+Two more commands cover the cases `init` does not. Both require a clean tree and roll back to your last commit if a step fails:
 
-## `zerostarter sync`
+- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive.
+- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit.
 
-`bunx zerostarter sync` re-baselines an **existing fork** on ZeroStarter's latest scaffold. A gitpick overlay updates the starter files while your content, `public/marketing`, branding (`site.ts`), `package.json` identity, lockfile (`bun.lock`), database migrations and schema (`packages/db/drizzle`, `packages/db/src/schema`), the docs config (`docs.config.ts`, which describes your own docs), and favicon are preserved and the files you added are untouched. It requires a clean tree and lands as a reviewable diff you commit yourself (no auto-commit); if the overlay or reconciliation fails it rolls the tree back to your last commit, while a later dependency-install failure leaves the synced files in place for you to re-run `bun install`.
+See [The CLI](/docs/getting-started/cli) for every flag, exactly what `sync` preserves, and how it treats the skills and the agent guide you have edited.
 
 ## `bun run dev`
 
@@ -57,7 +65,10 @@ Turborepo starts both apps together through [portless](https://portless.sh), whi
 - **web** (Next.js) at `http://zerostarter.localhost:1355`
 - **api** (Hono) at `http://api.zerostarter.localhost:1355`, with an interactive API reference at `/api/docs`
 
-`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`), which is what OAuth callbacks expect (see [Authentication](/docs/manage/authentication)). It is also the fallback where the OS does not resolve `*.localhost` to loopback server-side (macOS and most Linux do; some containers and corporate DNS setups do not); without it, the web server can't reach `api.<name>.localhost` to render authenticated pages and they redirect to the home page.
+`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`). Reach for it in two cases:
+
+- **OAuth.** Providers reject `.localhost` redirect URIs, so callbacks expect the fixed ports (see [Authentication](/docs/manage/authentication#callback-urls)).
+- **`*.localhost` does not resolve server-side.** macOS and most Linux resolve it to loopback; some containers and corporate DNS setups do not. There the web server can't reach `api.<name>.localhost` to render authenticated pages, and they redirect to the home page.
 
 ## Sign in
 
