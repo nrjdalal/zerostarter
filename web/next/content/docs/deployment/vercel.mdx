@@ -16,7 +16,18 @@ Both apps ship a `vercel.json`, so Vercel reads the install command, build comma
 | Backend  | `api/hono`     | Hono      | Bun (`bunVersion`) |
 | Frontend | `web/next`     | Next.js   | Bun (`bunVersion`) |
 
-Both projects pin `"bunVersion": "1.4.x"` (Vercel accepts only `1.4.x` or `1.x` and manages patch versions itself). The api runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for. The web app's constraint is different: Vercel's Bun runtime requires the Next build itself to run under Bun, so its `build:vercel` script wraps the regular build in `bun run --bun`, which shims `node` to Bun for every binary the script spawns, `next build` included. Pinning the web functions to Bun while building for Node instead crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving; Docker and local builds keep the plain `build` script, since the standalone server picks its runtime at start, not at build.
+Vercel's [Bun runtime](https://vercel.com/docs/functions/runtimes/bun) is in beta.
+
+Both projects pin `"bunVersion": "1.4.x"` (Vercel accepts only `1.4.x` or `1.x` and manages patch versions itself). Why each app is on Bun differs:
+
+- **The api** runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for.
+- **The web** has to build under Bun as well as run under it. Vercel's Bun runtime requires the Next build itself to run under Bun, so its `build:vercel` script wraps the regular build in `bun run --bun`, which shims `node` to Bun for every binary the script spawns, `next build` included.
+
+<Callout type="warn" title="Bun at runtime needs Bun at build">
+
+Pinning the web functions to Bun while building for Node crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving, which hides the break until a dynamic route is hit. Docker and local builds keep the plain `build` script, since the standalone server picks its runtime at start, not at build.
+
+</Callout>
 
 Deploy the **backend first**: the frontend needs its URL.
 
@@ -107,7 +118,12 @@ The api infers that web origin from `HONO_TRUSTED_ORIGINS`, taking the first tru
 
 ## WebSockets
 
-The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). `hono/bun` can't drive the upgrade because Vercel Functions don't run `Bun.serve()`, so the api switches to the Node adapter (`@hono/node-server` + `ws`) when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. When the two projects sit on a public hosting suffix the client talks to the api through the web's `/api` proxy, and a Next rewrite does not forward the WebSocket upgrade, so the example falls back to its REST heartbeat there (the badge stays green, without live-over-socket updates); a custom domain, where the browser reaches the api directly, keeps the socket. A single connection is pinned to one function instance and closes when the function reaches its max duration (a few minutes by default), so keep any shared socket state external (for example Redis) and let clients reconnect. See [Realtime](/docs/getting-started/realtime) for the typed client and the reconnect pattern.
+The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). The api switches to the Node adapter (`@hono/node-server` + `ws`), the setup Vercel documents for Hono, when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. See [Realtime](/docs/getting-started/realtime#two-adapters-one-route) for why the split is still there now that Vercel's Bun runtime can run `Bun.serve()` too. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. Worth knowing on Vercel:
+
+- **On a public hosting suffix the socket falls back to REST.** The client talks to the api through the web's `/api` proxy, and a Next rewrite does not forward the WebSocket upgrade, so the example runs on its REST heartbeat there (the badge stays green, without live-over-socket updates). A custom domain, where the browser reaches the api directly, keeps the socket.
+- **A connection is pinned to one function instance** and closes when the function reaches its [max duration](https://vercel.com/docs/functions/limitations#max-duration) (300 seconds by default under Fluid compute), so keep any shared socket state external (for example Redis) and let clients reconnect.
+
+See [Realtime](/docs/getting-started/realtime) for the typed client and the reconnect pattern.
 
 ## Speed Insights
 

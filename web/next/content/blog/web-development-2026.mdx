@@ -30,7 +30,7 @@ Rename a route or change a payload on the backend and this line stops compiling.
 
 ### One place for everything shared
 
-Duplication is where bugs hide. Fix auth in one file and forget the other two, and you've shipped a vulnerability. A monorepo gives every shared concern exactly one home: the database schema lives once in `packages/db`, the auth instance in `packages/auth`, and the brand (name, description, links) in a single `site.ts`, so rebranding a fork is a one-file change. Change something, and [Turborepo](https://turbo.build) rebuilds only what depends on it.
+Duplication is where bugs hide. Fix auth in one file and forget the other two, and you've shipped a vulnerability. A monorepo gives every shared concern exactly one home: the database schema lives once in `packages/db`, the auth instance in `packages/auth`, and the brand (name, description, links) in a single `site.ts`, so rebranding a fork is a one-file change. Change something, and [Turborepo](https://turborepo.dev) rebuilds only what depends on it.
 
 The practice is **clear boundaries and one source of truth.** Monorepo, polyrepo, published packages. Pick your mechanism; just don't copy-paste the important logic.
 

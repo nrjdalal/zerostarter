@@ -18,7 +18,7 @@
 
 Every item below is wired and working out of the box, not just a dependency in `package.json`.
 
-- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turbo.build) for caching and task orchestration
+- **Runtime & Build**: [Bun](https://bun.sh) (runtime and package manager) with [Turborepo](https://turborepo.dev) for caching and task orchestration, and [portless](https://portless.sh) for named `.localhost` dev URLs that never collide across worktrees
 - **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, end-to-end from the database to the UI
 - **Frontend**: [Next.js 16](https://nextjs.org) (App Router, Turbopack) with [React 19](https://react.dev) and the [React Compiler](https://react.dev/learn/react-compiler)
 - **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) on [Base UI](https://base-ui.com) primitives
@@ -28,9 +28,11 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Authentication**: [Better Auth](https://better-auth.com) with GitHub and Google OAuth, organizations, and teams
 - **Authorization**: a console at `/console` on a four-rung role ladder (`owner > admin > member > user`), with an allowlist that grants access by domain or address, and an activity trail of every change the console makes
 - **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count, read back at Console > Waitlist > Signups; an optional surface that, when enabled, becomes a fresh fork's home
-- **Configurable Features**: toggle the allowlist, docs, blog, API reference, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
+- **Configurable Features**: toggle the allowlist, API reference, blog, docs, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
 - **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
+- **Data Tables**: [TanStack Table](https://tanstack.com/table) and [TanStack Virtual](https://tanstack.com/virtual), server-driven with infinite scroll, their state in the URL through [nuqs](https://nuqs.dev)
+- **Realtime**: WebSockets through the same typed client, on Bun and on Vercel
 - **Validation**: [Zod](https://zod.dev), shared across the API, forms, and type-safe environment variables
 - **Analytics**: [PostHog](https://posthog.com) for product analytics, feature flags, and session replay, and [Vercel Speed Insights](https://vercel.com/docs/speed-insights) for real Core Web Vitals, rendered only when deployed on Vercel
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)

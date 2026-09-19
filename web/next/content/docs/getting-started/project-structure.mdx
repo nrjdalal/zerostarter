@@ -14,15 +14,21 @@ Three import aliases wire it together: `@api/hono` gives the frontend its API ty
 
 ```
 .
-├─ api/hono/      # backend (Hono): routes, middleware, error envelope
-├─ web/next/      # frontend (Next.js): app router, components, content/
-└─ packages/
-   ├─ auth/       # Better Auth instance + session types
-   ├─ db/         # Drizzle schema + migrations
-   ├─ env/        # type-safe, validated environment variables
-   ├─ config/     # TS base, tsdown factory, and site.ts (the brand)
-   └─ scripts/    # build tooling, auth schema regenerator; never bundled
+├─ .agents/skills/  # the agent skills (.claude/skills and .github/skills symlink here)
+├─ api/hono/        # backend (Hono): routes, middleware, error envelope
+├─ web/next/        # frontend (Next.js): app router, components, content/
+├─ packages/
+│  ├─ auth/         # Better Auth instance + session types
+│  ├─ cli/          # the zerostarter CLI (canonical repo only; a fork does not take it)
+│  ├─ config/       # TS base, tsdown factory, and site.ts (the brand)
+│  ├─ db/           # Drizzle schema + migrations
+│  ├─ env/          # type-safe, validated environment variables
+│  └─ scripts/      # build tooling, auth schema regenerator; never bundled
+├─ tests/           # the whole suite, mirroring each subject's path (canonical repo only)
+└─ AGENTS.md        # the rules every agent reads first (CLAUDE.md symlinks to it)
 ```
+
+What a fork does and does not take is one file, the root `.gitpickignore`; see [the fork boundary](/docs/getting-started/cli#the-fork-boundary).
 
 ## `api/hono`
 
@@ -32,9 +38,9 @@ The entry point is `src/index.ts`, which exports the `AppType` the frontend infe
 
 Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the staff console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
 
-<Callout type="info" title="Two shells to build on">
+<Callout type="info" title="A shell and a set of worked examples">
 
-`(protected)/` (dashboard) and `(console)/` (staff, member and above) are auth-gated and near-empty on purpose: they are where your product goes, not finished features. The console ships its Access section as the pattern to copy, `(access)/users/` and `(access)/allowlist/`, plus read-only [`activity/`](/docs/manage/activity) and [`waitlist/`](/docs/manage/waitlist), each a [data table](/docs/manage/data-tables) with its column defs and fetch wiring colocated in a `components/` folder beside the page.
+`(protected)/` (dashboard) and `(console)/` (staff, member and above) are both auth-gated. The dashboard is near-empty on purpose: it is where your product goes, not a finished feature. The console ships its Access section as the pattern to copy, `(access)/users/` and `(access)/allowlist/`, plus read-only [`activity/`](/docs/manage/activity) and [`waitlist/`](/docs/manage/waitlist), each a [data table](/docs/manage/data-tables) with its column defs and fetch wiring colocated in a `components/` folder beside the page.
 
 </Callout>
 
@@ -48,11 +54,22 @@ The `(marketing)/` route group under `src/app/` holds the marketing surfaces: th
 
 ## The packages
 
-- **`auth`**, the Better Auth config: optional GitHub/Google OAuth, the organizations + teams plugin, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `src/schema.ts` holds the plugins and any extra column, and `packages/db/src/schema/auth.ts` is generated from it (`bun run auth:schema`). `/console` is gated by the [role ladder](/docs/manage/authentication#the-console-role-ladder) in `src/access.ts`, a second subpath export (`@packages/auth/access`) so the web can read the rules without pulling the auth runtime. Exports session types.
-- **`db`**: Drizzle schema under `src/schema/` (`auth.ts`, `console.ts`, `waitlist.ts`, grouped by concern rather than one file per table) and generated migrations under `drizzle/`.
-- **`env`**: every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per surface (`api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`).
-- **`config`**: the TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the single file a fork edits to rebrand.
-- **`scripts`**: Bun tooling that is never bundled or imported at runtime. The build-time scripts (the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, the data-table font metrics) write to the gitignored repo-root `.generated/`; the on-demand `auth-schema` regenerator (`bun run auth:schema`) writes the committed `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned.
+| Package   | Holds                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `auth`    | The Better Auth config and the console's access rules. Exports session types                                             |
+| `cli`     | The `zerostarter` npm CLI: `init`, `reinit`, `sync`. Canonical repo only; a fork does not take it                        |
+| `config`  | The TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the one file a fork edits to rebrand |
+| `db`      | The Drizzle schema under `src/schema/` and the generated migrations under `drizzle/`                                     |
+| `env`     | Every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per consumer                  |
+| `scripts` | Bun build tooling. Never bundled, never imported at runtime                                                              |
+
+Some have a detail worth knowing before you edit:
+
+- **`auth`** declares its plugins and any extra column in `src/schema.ts`: optional GitHub/Google OAuth, organizations + teams, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `packages/db/src/schema/auth.ts` is generated from that file (`bun run auth:schema`). The [role ladder](/docs/manage/authentication#the-console-role-ladder) that gates `/console` lives in `src/access.ts`, a second subpath export (`@packages/auth/access`), so the web can read the rules without pulling the auth runtime.
+- **`db`** groups its schema by concern rather than one file per table: `auth.ts`, `console.ts`, `waitlist.ts`. See [Database](/docs/manage/database).
+- **`env`** has one slice per consumer: `api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`. See [Environment Variables](/docs/manage/environment).
+
+`scripts` holds build-time scripts and on-demand ones. The build-time ones write to the gitignored repo-root `.generated/`: the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, and the data-table font metrics. The on-demand ones write committed source or decide something: `auth-schema` (`bun run auth:schema`) writes `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned.
 
 ## Bun catalog
 
