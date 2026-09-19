@@ -4,7 +4,7 @@ import { join } from "node:path"
 
 import { exists, read, readJson, write, writeJson } from "@/io"
 import { run } from "@/spawn"
-import type { Brand } from "@/templates"
+import { agentsTemplate, type Brand } from "@/templates"
 
 const UPSTREAM = "https://github.com/nrjdalal/zerostarter"
 
@@ -16,6 +16,12 @@ export const SKILL_REF = "main"
 
 export type SkillLedgerEntry = { ref: string; upstream: string; written: string }
 export type SkillLedger = Record<string, SkillLedgerEntry>
+
+// The agent guide a fork inherits whole (CLAUDE.md is a symlink to it). It is tracked in the same ledger as the skills, under its own path, which no skill directory can take.
+export const GUIDE = "AGENTS.md"
+
+// What a reconcile did with the guide: `absent` when the starter ref supplied none, `adopted` when the fork took it, `customized` when the fork has edited the one the CLI wrote, `forkOwned` when the fork's predates the ledger and is not the untouched stub.
+export type GuideReconcile = "absent" | "adopted" | "customized" | "forkOwned"
 
 // What a reconcile did, so sync can name the skills it left alone (or took without proof) instead of folding them into "edits overwritten".
 export type SkillReconcile = {
@@ -184,11 +190,59 @@ export const reconcileForkSkills = (
     next[name] = { ref: SKILL_REF, upstream: digest(upstream), written: digest(written) }
     result.adopted.push(name)
   }
+  // This pass rebuilds the ledger from the skill directories, so carry the guide's entry across it.
+  if (ledger[GUIDE]) next[GUIDE] = ledger[GUIDE]
   writeJson(join(root, SKILL_LEDGER), next)
   return result
 }
 
-// True when the fork's AGENTS.md predates the generated skills tables. Its own skills-manager (and the pre-commit hook calling it) throws without these markers, and sync cannot just add them: AGENTS.md is fork-excluded, so the fork owns that file.
+// The guide's skills tables are generated in the fork by its own skills-manager after the CLI writes the file, and change whenever the fork adds a skill, so they are left out of what counts as an edit.
+const blankTables = (text: string): string =>
+  text.replace(/(<!-- skills:(custom|vendored) -->)[\s\S]*?(<!-- \/skills:\2 -->)/g, "$1$3")
+
+// Reconcile the inherited AGENTS.md to the fork: rebrand it like a skill and record it in the ledger. On init there is nothing to preserve. On sync, `before` is the fork's guide as committed and `upstream` the one the overlay supplied, both read by the caller because the overlay and the PRESERVE_ON_SYNC restore each overwrite the file. The fork keeps a guide it has edited; it takes the update only while the file is still what the CLI last wrote, or is the untouched stub an older CLI scaffolded.
+export const reconcileForkGuide = (
+  root: string,
+  brand: Brand,
+  sync?: { before: string | undefined; upstream: string | undefined },
+): GuideReconcile => {
+  const file = join(root, GUIDE)
+  const ledgerPath = join(root, SKILL_LEDGER)
+  const ledger = readLedger(root)
+  const slug = slugify(brand.name)
+  const adopt = (upstream: string, written: string): GuideReconcile => {
+    write(file, written)
+    ledger[GUIDE] = {
+      ref: SKILL_REF,
+      upstream: digest(upstream),
+      written: digest(blankTables(written)),
+    }
+    writeJson(ledgerPath, ledger)
+    return "adopted"
+  }
+  if (sync === undefined) {
+    // A starter ref that still fork-excludes the guide supplies none, so fall back to the stub; recording it lets a later sync upgrade it.
+    if (!exists(file)) return adopt(agentsTemplate(), agentsTemplate())
+    const upstream = read(file)
+    return adopt(upstream, reconcile(upstream, slug, brand.name))
+  }
+  const { before, upstream } = sync
+  // The overlay left the fork's own file in place, so this ref ships no guide.
+  if (upstream === undefined || upstream === before) return "absent"
+  if (before !== undefined) {
+    const entry = ledger[GUIDE]
+    const untouched = entry
+      ? entry.written === digest(blankTables(before))
+      : digest(blankTables(before)) === digest(blankTables(agentsTemplate()))
+    if (!untouched) {
+      write(file, before)
+      return entry ? "customized" : "forkOwned"
+    }
+  }
+  return adopt(upstream, reconcile(upstream, slug, brand.name))
+}
+
+// True when the fork's AGENTS.md predates the generated skills tables. Its own skills-manager (and the pre-commit hook calling it) throws without these markers, and sync cannot just add them: a guide the fork has edited is the fork's own.
 export const missingSkillTableMarkers = (root: string): boolean => {
   const path = join(root, "AGENTS.md")
   if (!exists(path)) return false
@@ -214,4 +268,20 @@ export const reconcileForkSkillsFromRoot = (
   const name = readJson<{ name?: string }>(join(root, "package.json")).name
   if (!name) return emptyReconcile()
   return reconcileForkSkills(root, { name }, before)
+}
+
+// The guide counterpart of reconcileForkSkillsFromRoot: sync has no brand prompt, so the fork's name comes from its preserved root package.json.
+export const reconcileForkGuideFromRoot = (
+  root: string,
+  sync: { before: string | undefined; upstream: string | undefined },
+): GuideReconcile => {
+  const name = readJson<{ name?: string }>(join(root, "package.json")).name
+  if (!name) return "absent"
+  return reconcileForkGuide(root, { name }, sync)
+}
+
+// The fork's guide as it stands, or undefined when it has none. Sync reads it twice, before the overlay and after it.
+export const readGuide = (root: string): string | undefined => {
+  const file = join(root, GUIDE)
+  return exists(file) ? read(file) : undefined
 }

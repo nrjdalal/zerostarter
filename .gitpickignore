@@ -5,7 +5,8 @@
 # packages/db/drizzle + src/schema are the fork's own applied DB state; overlaying the starter's would corrupt its migration history.
 # docs.config.ts describes the fork's own content/docs (also preserved); overlaying the starter's lists docs the fork lacks and fails the strict docs build.
 # bun.lock ships to the fork so a fresh init installs from locked versions (no slow cold resolve of the whole graph); sync keeps the fork's own lockfile.
-# PRESERVE_ON_SYNC - bun.lock, packages/db/drizzle/, packages/db/src/schema/, web/next/docs.config.ts, web/next/src/app/favicon.ico
+# AGENTS.md ships whole and sync hands a fork the update only while its copy is unedited (the CLI decides that from its ledger after this restore); listing it here also keeps a CLI older than that logic from overwriting a fork's guide.
+# PRESERVE_ON_SYNC - AGENTS.md, bun.lock, packages/db/drizzle/, packages/db/src/schema/, web/next/docs.config.ts, web/next/src/app/favicon.ico
 
 # custom directories
 .github/assets/
@@ -27,7 +28,6 @@ web/next/public/
 .github/FUNDING.yml
 .infisical.json
 .coderabbit.yaml
-AGENTS.md
 CHANGELOG.md
 LICENSE.md
 packages/config/src/site.ts

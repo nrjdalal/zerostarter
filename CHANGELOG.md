@@ -1,3 +1,20 @@
+## v0.1.34
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.33...v0.1.34)
+
+### 📖 Documentation
+
+- Audit the docs and skills against a week of releases ([#844](https://github.com/nrjdalal/zerostarter/pull/844))
+- **audits:** Relevance audit, fold the dated audits into the plans ([#845](https://github.com/nrjdalal/zerostarter/pull/845))
+
+### 📦 Build
+
+- **deps:** Drop vaul, which nothing imports ([#846](https://github.com/nrjdalal/zerostarter/pull/846))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.33
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.32...v0.1.33)

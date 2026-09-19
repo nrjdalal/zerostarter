@@ -8,7 +8,9 @@ Method: every claim below was checked against the repo or the GitHub API on cana
 
 The code and the docs pages are in good shape. The mechanical pass in #844 found no dead path, script, env var or workflow reference, and this pass found one dead dependency and no orphan script or workflow. What has rotted is everything that tracks work: the plans index, the dated audits, the Icebox issue, the public roadmap's Planned table, and the branch list. They drift because nothing fails when they do. Most of that is now cleared; what is left under Decide is the part only the owner can rule on.
 
-## Fixed in this PR
+## Fixed in the tree
+
+The first six landed with this report in #845; the last four are item 8, done after it.
 
 - **`plans/bun-native-scripts.md` shipped and was never closed.** It asks to move `.github/scripts` off `node:fs`. PR #805 (merged 2026-08-23) did that: no script there imports `node:fs` today. File and index line removed, as #825 and #839 did for finished items.
 - **`plans/hardening-refactors.md` said "in progress"; its three named items all shipped.** CI gates check-types and tests, `serverSecret()` exists in `packages/env/src/lib/polyfill.ts` and guards `BETTER_AUTH_SECRET`, and `AGENT_SIGNIN_ENABLED` gates the agent route. What is left is its own "larger, tracked separately" tail: default security headers and CSP, and a durable rate-limit store. Status and index line now say that, and it moves from In progress to the backlog.
@@ -19,6 +21,11 @@ The code and the docs pages are in good shape. The mechanical pass in #844 found
   - `2026-07-04-cli-dx.md` marked two of ten findings shipped. Checked against today's CLI, a third is closed (npm packs the README whatever `files` says) and a fourth partly (`init` and the prompt layer have tests; `reinit` and `sync` do not). The rest have a known next action, so they moved to the backlog as `plans/cli-dx.md`: `--dry-run` on `reinit` and `sync`, a `--ref` with a provenance stamp, a confirm on `sync`, an update notice, `--verbose`, and one constant for the gitpick pin. The first report of this audit listed four open findings and missed the `--ref` and the pin; the plan has all of them.
   - `2026-07-04-lighthouse-zerostarter-dev.md` ended on four product tradeoffs with no verdict, which is what the Icebox is for. All four still describe the code, so they are parked as `plans/lighthouse-followups.md` with no recommendation.
 - **An Icebox entry had lost its write-up.** "Authenticated WebSocket ticket pattern" pointed at `plans/portless-local-urls.md`, removed in July. The concern is still open (the one shipped socket is public, and the `api-endpoint` skill covers authenticated ones in a sentence), so it has a file again: `plans/websocket-auth-ticket.md`.
+
+- **The "AI-generated script, replace later" note on `deps-manager.ts` is gone** (item 8). The script has been extended by hand since 2025-11 and reads soundly, so it does not need replacing. What it lacks is a test, which is now a backlog plan that names the two small changes in the way: `plans/deps-manager-tests.md`.
+- **`skills-lock.json` was right and one skill line was wrong** (item 8). The lock pins `agent-browser` because it is a stub kept for integrity; `portless` is copied in full and needs no pin, which `resources/ai-skills.mdx` already says. The `doc-sync` skill claimed every vendored skill touches the lock; it now draws the same line.
+- **`plans/web-content-source-tests.md` named the wrong blocker** (item 8). It waited on a web test harness, and one runs five files under `tests/web/next/src/lib/`. What the `contentSource` test needs is module mocks for the generated fumadocs source and `next/navigation`, which no test in the suite uses yet. The plan and its index line say so.
+- **The rate-limit index line read as if `@arcjet/ip` were not adopted** (item 8). It is the resolver already, called bare; the line now says the ask is to call it as its adapters do. Mirrored on #707.
 
 ## Done outside the tree
 
@@ -50,13 +57,6 @@ Recommendation: decide between reviving it as a fresh migration against today's 
 #700 and #718 date from mid-July and sit more than 200 commits behind; #746 is 81 behind; #799 and #810 are from August. All five now conflict with canary, so none of them runs the PR build any more, and their green checks are from before they fell behind.
 
 Recommendation: #799 (split `unwrap` out of the API client) and #810 (agent readiness) are recent and self-contained enough to rebase. #700, #718 and #746 are older than most of the code they touch; close them and keep what still matters as a plan.
-
-### 8. Smaller, for the record
-
-- `.github/scripts/deps-manager.ts` opens with `TODO: AI-generated script, replace later`, written 2025-11-29. It runs on every `postinstall` and is what enforces the catalog's caret rule, so it is load-bearing code with a ten-month-old note saying it should not be trusted. Either the note goes or the rewrite gets a plan.
-- `skills-lock.json` records `agent-browser` only, while `portless` is vendored too and its skill says `source: portless`. Either the lock tracks one kind of vendoring and the doc-sync skill should say so, or portless is missing from it.
-- `plans/web-content-source-tests.md` still frames the `contentSource` test as waiting for "a web test harness". One exists: five unit test files run under `tests/web/next/src/lib/`. The test itself is still unwritten, so the item stands, but its blocker may not.
-- `plans/rate-limit-ip-resolution.md` is indexed as "adopt `@arcjet/ip`". `rate-limiter.ts` already imports `findIp` from it; what the plan wants is the adapter-style use with `platform` and `proxies`. The index line reads as if nothing is adopted.
 
 ## Checked and fine
 

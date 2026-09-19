@@ -14,7 +14,10 @@ import { exists, findPackageJsons, readJson, remove, writeJson } from "@/io"
 import { mergePkg, type Pkg } from "@/pkg"
 import {
   emptyReconcile,
+  type GuideReconcile,
   missingSkillTableMarkers,
+  readGuide,
+  reconcileForkGuideFromRoot,
   reconcileForkSkillsFromRoot,
   regenerateSkillTables,
   type SkillReconcile,
@@ -30,7 +33,7 @@ const helpMessage = `Usage:
 
 Re-baseline an existing fork (default .) on the latest ZeroStarter: a gitpick overlay
 updates the starter files while your content, public/marketing, branding, package.json
-identity, and favicon are preserved. Requires a clean tree; lands as a reviewable diff
+identity, favicon, and any skill or AGENTS.md you have edited are preserved. Requires a clean tree; lands as a reviewable diff
 you commit yourself.
 
 Options:
@@ -74,7 +77,10 @@ export const sync = async (argv: string[]) => {
   // Both read the fork as it stands, because the overlay overwrites the evidence: a marketing fonts module here now is the fork's own (that path is fork-excluded, so the overlay never supplies one), and the skills snapshot is how reconcile tells a customized skill from a pristine one.
   const forkOwnsMarketingFonts = ownsMarketingFonts(target)
   const skillsBefore = snapshotSkills(target)
+  const guideBefore = readGuide(target)
   let skills: SkillReconcile = emptyReconcile()
+  // Asserted, not annotated: the assignment happens inside the rollback callback, which control-flow narrowing cannot see, so an annotation would pin this to "absent".
+  let guide = "absent" as GuideReconcile
 
   // Run overlay + reconcile atomically; withRollback resets to the pre-sync commit on any failure.
   await withRollback(
@@ -95,8 +101,12 @@ export const sync = async (argv: string[]) => {
       rebrandPortlessFromRoot(target)
       // Rebrand the overlaid skills to the fork: the overlay re-added upstream SKILL.md files naming "zerostarter", so re-run init's reconcile, sourcing the fork name from the just-restored root package.json. The snapshot restores every skill the fork owns or has customized.
       skills = reconcileForkSkillsFromRoot(target, skillsBefore)
+      // The guide the overlay just supplied, read now because the restore below puts the fork's own back: AGENTS.md is a PRESERVE_ON_SYNC path so that a CLI older than this one never overwrites a fork's guide.
+      const guideUpstream = readGuide(target)
       // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
       await gitRestore(target, preserve)
+      // Then take the starter's guide only where the fork has not made its own.
+      guide = reconcileForkGuideFromRoot(target, { before: guideBefore, upstream: guideUpstream })
     },
   )
 
@@ -136,6 +146,18 @@ export const sync = async (argv: string[]) => {
     logStep("To take upstream's version instead, delete the skill directory and sync again.")
   }
 
+  if (guide === "customized") {
+    logStep(
+      "Kept your AGENTS.md, which you have edited, so it did not take the update. To take the starter's version instead, delete it, commit that on its own, and sync again.",
+    )
+  }
+  // A guide with no sync record that is not the stub an older CLI wrote is the fork's own work, so it is never replaced on a guess.
+  if (guide === "forkOwned") {
+    logStep(
+      "Kept your AGENTS.md. The starter now ships its full agent guide; to take it, delete AGENTS.md, commit that on its own, and sync again.",
+    )
+  }
+
   // A fork synced before the CLI started recording what it wrote has nothing to compare against, so these took the update on a guess. Naming them is the difference between a reviewable diff and a silent loss.
   if (skills.unverified.length > 0) {
     logWarn(
@@ -149,7 +171,7 @@ export const sync = async (argv: string[]) => {
 
   note(
     [
-      "Starter files were updated (edits overwritten); your content, public/marketing, branding, and the skills you own were preserved.",
+      "Starter files were updated (edits overwritten); your content, public/marketing, branding, and the skills and agent guide you own were preserved.",
       yellow(`Review the diff and commit: git -C ${target} status`),
     ].join("\n"),
     "Review the changes",
