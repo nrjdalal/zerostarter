@@ -62,7 +62,7 @@ Mark the draft ready, review it, and merge with a **merge commit**. That merge i
 - tags `v<version>` and pushes branch and tag atomically,
 - publishes a GitHub release whose notes mirror the new `CHANGELOG.md` section.
 
-If the commit range holds only filtered-out types (like `ci`), it skips the release.
+If the commit range holds only filtered-out types, it skips the release. That is `ci`, which `changelog.config.json` turns off, and non-breaking `chore(deps)`, which changelogen drops on its own whatever the config says: title a dependency refresh `build(deps)` so it earns a line and a version.
 
 </Step>
 </Steps>

@@ -25,16 +25,16 @@ The rest of this page is what those commands do, and the one thing to check if t
 
 - fetches the latest ZeroStarter and strips the sample content,
 - rebrands the copy to your project name,
-- sets your [feature flags](/docs/manage/features) (docs, blog, API reference, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
+- sets your [feature flags](/docs/manage/features) (allowlist, API reference, blog, docs, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
 - installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
 - provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
 - writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`, which enables the local **Login (agents)** sign-in out of the box.
 
-Everything else has a working default, so the scaffold runs as-is. The feature checklist is pre-checked to the defaults (all on except the waitlist), and any feature can be flipped later in config. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
+Everything else has a working default, so the scaffold runs as-is. The feature checklist is pre-checked to the defaults (all on except the allowlist and the waitlist), and any feature can be flipped later in config. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
 
 <Callout type="info" title="If Docker isn't running">
 
-`init` skips the database and leaves `POSTGRES_URL` empty. Point it at any Postgres (a hosted one like [Neon](https://neon.tech) works) by setting `POSTGRES_URL` in `.env`, then apply the migrations once:
+`init` skips the database and leaves `POSTGRES_URL` empty. Point it at any Postgres (a hosted one like [Neon](https://neon.com) works) by setting `POSTGRES_URL` in `.env`, then apply the migrations once:
 
 ```bash
 bun run db:migrate

@@ -10,7 +10,7 @@ Everything below is wired and working together, not just listed in `package.json
 
 ## The shape
 
-Two deployable apps share four packages:
+Two deployable apps share the packages under `packages/`:
 
 ![Architecture graph](/marketing/graph-build.svg)
 
@@ -41,7 +41,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 **Runtime & build**
 
 - [Bun](https://bun.sh): runtime and package manager, one tool instead of node + npm + a bundler.
-- [Turborepo](https://turbo.build): caches and orders tasks across the workspaces.
+- [Turborepo](https://turborepo.dev): caches and orders tasks across the workspaces.
 
 **Frontend** (`web/next`)
 

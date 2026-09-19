@@ -36,11 +36,17 @@ Exceeding a limit returns `429` in the standard [error envelope](/docs/manage/ap
 { "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }
 ```
 
-Every response also carries the `draft-6` standard headers, `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`, and a throttled one adds `Retry-After`, so a client can back off without guessing. The `429` is documented on every route in the OpenAPI spec, so it shows up in the [Scalar reference](/docs/getting-started/type-safe-api) too.
+Every response also carries the `draft-6` standard headers (`RateLimit-Limit`, `RateLimit-Policy`, `RateLimit-Remaining`, and `RateLimit-Reset`), the limiter's default, and a throttled one adds `Retry-After`, so a client can back off without guessing. The `429` is documented on every route in the OpenAPI spec, so it shows up in the [Scalar reference](/docs/getting-started/type-safe-api) too.
 
 <Callout type="info" title="Arcjet here is just IP detection">
 
 `@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It only reads forwarded/platform headers to resolve the address the IP tier keys on.
+
+</Callout>
+
+<Callout type="warn" title="The IP tier trusts forwarding headers">
+
+`findIp` is called bare, with no `platform` and no trusted `proxies`, so it walks its generic header list, which its own README says to trust only behind a proxy that sets those headers. That holds on Vercel, which overwrites `x-forwarded-for`. On a deploy where Bun owns the socket with nothing in front (a bare Docker host), a client can name its own bucket by sending `x-forwarded-for`, and one that sends nothing lands on the random tier above. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host.
 
 </Callout>
 

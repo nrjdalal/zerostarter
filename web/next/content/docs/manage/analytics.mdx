@@ -74,9 +74,9 @@ What the gate does and does not do: off Vercel the component is never rendered, 
 
 There is no enable step. Deploy to Vercel and it starts collecting, because every deployment already serves the collection routes; the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through. Nothing else to wire.
 
-<Callout type="info" title="Previews count against your quota">
+<Callout type="info" title="Previews count against your allocation">
 
-Every deployment reports, previews included, and Vercel meters Speed Insights by data point. Narrowing to `process.env.VERCEL_ENV === "production"` drops PR previews, but it drops `canary` too, since canary deploys as a preview. To keep canary and lose the rest, test the branch as well, the way `.github/scripts/migrate-on-deploy.ts` already picks its deploy branches:
+Every deployment reports, previews included, and Vercel [meters Speed Insights by event](https://vercel.com/docs/speed-insights/limits-and-pricing): the free tier shares 10,000 events over the last 30 days across the whole team, and pauses ingestion for 14 days once a team goes past it. Narrowing to `process.env.VERCEL_ENV === "production"` drops PR previews, but it drops `canary` too, since canary deploys as a preview. To keep canary and lose the rest, test the branch as well, the way `.github/scripts/migrate-on-deploy.ts` already picks its deploy branches:
 
 ```ts
 const onVercel =
