@@ -38,7 +38,7 @@ base → prepare → builder → runner
 
 <Callout type="info" title="Why the images stay small and self-contained">
 
-The api runner ships only its bundle: no `node_modules`, so it resolves every import from the bundle and starts with no network. Bun's runtime auto-install is off (`--no-install`), so a bare specifier the bundle does not carry, such as the optional telemetry import inside Better Auth, fails at once and the code that guards it falls back, instead of a running container reaching npm on its first sign-in. The web build prunes the native binaries it will never run: `next.config.ts` detects the image's libc (alpine is musl) and drops the other-libc `sharp` and `@takumi-rs` binaries from output tracing, keeping only the takumi core `/og` needs. That keeps a single libc stack in the standalone output instead of both.
+The api runner ships only its bundle, no `node_modules`, and module resolution never reaches npm: everything the bundle needs is inside it, and with Bun's runtime auto-install off (`--no-install`) a bare specifier the bundle does not carry fails at once instead of being fetched. The one such specifier, the optional telemetry import inside Better Auth, is guarded and falls back, where a running container used to reach npm on its first sign-in. The web build prunes the native binaries it will never run: `next.config.ts` detects the image's libc (alpine is musl) and drops the other-libc `sharp` and `@takumi-rs` binaries from output tracing, keeping only the takumi core `/og` needs. That keeps a single libc stack in the standalone output instead of both.
 
 </Callout>
 
