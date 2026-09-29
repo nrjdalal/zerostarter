@@ -56,7 +56,7 @@ A failing test or type error blocks the merge. The details worth knowing:
 `bun run test:e2e` is a golden suite: every contract response is snapshotted, and `bun run test:e2e --update-snapshots` accepts a deliberate change. It needs a running **local-stage** stack:
 
 - `NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true`, so the agent can sign in.
-- Both OAuth client ids set to any value, since the providers snapshot lists them.
+- Both OAuth credential pairs set to any value, the id and the secret of each: a provider registers only when both halves are present, and the providers snapshot lists all three.
 - `E2E_API_URL` and `E2E_WEB_URL` default to the compose ports (`localhost:4000`, `localhost:3000`), and are refused unless local, since the suite writes through the API.
 - `E2E_POSTGRES_URL` unlocks the flows that seed a second account.
 
