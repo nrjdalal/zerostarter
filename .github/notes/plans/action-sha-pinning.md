@@ -5,7 +5,7 @@
 
 ## The concern
 
-`auto-labeler.yml` (`pull_request_target` with `issues: write` and `pull-requests: write`) and `cli-release.yml` (the npm publish, with `NPM_TOKEN` and `id-token: write`) reference `actions/checkout@v6`, `actions/github-script@v8`, `actions/setup-node@v6` and `oven-sh/setup-bun@v2` by mutable major tag. A repointed tag would run in those privileged contexts.
+`auto-labeler.yml` (`pull_request_target` with `issues: write` and `pull-requests: write`) and `cli-release.yml` (the npm publish, whose `id-token: write` is the publish credential) reference `actions/checkout@v6`, `actions/github-script@v8`, `actions/setup-node@v6` and `oven-sh/setup-bun@v2` by mutable major tag. A repointed tag would run in those privileged contexts.
 
 ## Context
 
