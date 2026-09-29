@@ -12,7 +12,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
-import { caveat, newsreader } from "@/lib/marketing/fonts"
+import { caveat, lora } from "@/lib/marketing/fonts"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Hire",
@@ -163,7 +163,7 @@ export default function Page() {
           <p>
             AI-native product engineer building SaaS products, developer tools, and agent
             infrastructure.{" "}
-            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
+            <span className={cn(lora.className, "font-medium tracking-wide italic")}>
               I learn by shipping.
             </span>
           </p>
@@ -184,7 +184,7 @@ export default function Page() {
           <p>
             Before that I helped take SaaS and AI products from 0 to 1, shipped scraping- and
             automation-heavy SaaS, and built open-source tools now used by projects including{" "}
-            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
+            <span className={cn(lora.className, "font-medium tracking-wide italic")}>
               TanStack, SST, Electric SQL, and Storybook
             </span>
             . I care about clean systems, fast builds, strong types, useful docs, and software that
@@ -307,7 +307,7 @@ export default function Page() {
           </p>
           <p className="text-muted-foreground">{roles.join(" · ")}</p>
           <p>
-            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
+            <span className={cn(lora.className, "font-medium tracking-wide italic")}>
               The speed of a builder, the taste of someone who maintains tools for other developers,
               and the judgment that comes from shipping enough software to know where the sharp
               edges are.
@@ -322,7 +322,7 @@ export default function Page() {
         <div className="space-y-4">
           <p>
             When I'm not coding, you'll find me consuming content and playing games.{" "}
-            <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
+            <span className={cn(lora.className, "font-medium tracking-wide italic")}>
               This year, I want to travel more and explore new places
             </span>
             .
