@@ -1,3 +1,27 @@
+## v0.1.36
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.35...v0.1.36)
+
+### 🩹 Fixes
+
+- **cli:** Accept the --allowlist flag that init documents ([#851](https://github.com/nrjdalal/zerostarter/pull/851))
+- **api:** Run the image with Bun's auto-install off ([#859](https://github.com/nrjdalal/zerostarter/pull/859))
+
+### 📖 Documentation
+
+- Audit every page against the source and upstream docs ([#852](https://github.com/nrjdalal/zerostarter/pull/852))
+- **cli:** Re-record the init demo with the feature picker ([#854](https://github.com/nrjdalal/zerostarter/pull/854))
+- **cli:** Keep the sandbox setup out of the init demo's first frames ([#856](https://github.com/nrjdalal/zerostarter/pull/856))
+- **cli:** Give the init demo a row of headroom so it stops scrolling ([#858](https://github.com/nrjdalal/zerostarter/pull/858))
+
+### 📦 Build
+
+- **deps:** Refresh within caret ranges, keep turbo out of AGENTS.md ([#857](https://github.com/nrjdalal/zerostarter/pull/857))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.35
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.34...v0.1.35)
