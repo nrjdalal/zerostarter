@@ -18,7 +18,8 @@ Set Framerate 24
 
 Hide
 Type "source .github/assets/setup.sh" Enter
-Type "clear" Enter
+# setup.sh ends by clearing the screen; showing before its prompt is back put the typed line and the clear into the first frames
+Wait@30s /acme ❯\s*$/
 Show
 
 Sleep 800ms
