@@ -1,5 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  // turbo 2.11.5 writes a managed block into AGENTS.md when it detects an agent; this repo generates that file and forks inherit it whole, so a second writer would fight both. Off here, as Next's writer is in web/next/next.config.ts
+  "agentGuidance": false,
   "tasks": {
     // the root version is baked into this build (BUILD_VERSION), so a version-only commit must miss its cache; the apps rebuild behind it through their dependency hashes
     "@packages/env#build": {
