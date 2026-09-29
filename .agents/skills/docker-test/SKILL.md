@@ -33,6 +33,7 @@ docker compose down
       -e 's|^GOOGLE_CLIENT_ID=$|GOOGLE_CLIENT_ID=dummy|' \
       -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
       -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
+      -e 's|^AGENT_SIGNIN_ENABLED=$|AGENT_SIGNIN_ENABLED=true|' \
       .env.example > .env
   ```
 
@@ -46,17 +47,20 @@ docker compose down
 
 ## Self-containment check (catches runtime auto-install)
 
-The api runner ships only `bundle/`, so the bundle must resolve every import with no `node_modules`. When one is missing, Bun auto-installs it from npm at runtime, so a container that "works" online may be downloading packages on every cold start. Prove it offline:
+The api runner ships only `bundle/`, so the bundle must resolve every import with no `node_modules`. When one is missing, Bun's runtime auto-install fetches it from npm, so a container that "works" online may be downloading packages at cold start or on a later request. The image runs `bun --no-install`, which turns that off: a missing import fails at once instead. Two probes prove both halves, offline:
 
 ```bash
 sed 's/ #.*//' .env > .env.docker
 docker run -d --name t-offline --network=none --env-file .env.docker <image>
 docker exec t-offline sh -c 'for i in $(seq 1 30); do wget -qO- http://localhost:4000/api/health && exit 0; sleep 1; done; exit 1'
-docker logs t-offline        # on failure: "Cannot find package 'X'" = unresolved import
+docker logs t-offline        # on failure: "Cannot find package 'X'" = an import the bundle needs and does not carry
+# the first sign-in is where Better Auth reaches for its optional telemetry import; it answers with the database error here (nothing is reachable), and it must answer at once
+time docker exec t-offline sh -c 'wget -qO- --post-data=x --header="Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as; echo'
+docker diff t-offline | grep .bun/install/cache   # must print nothing
 docker rm -f t-offline
 ```
 
-Forensics on an online container: `docker diff <name> | grep .bun/install/cache`; entries there mean auto-install fired (history: `--external hono` in the bundle build fetched hono from npm at cold start).
+Health alone proves nothing about sign-in: the telemetry import fires on the first Better Auth call, not at boot. Before `--no-install`, this container fetched `@opentelemetry/api` (some 640 files) on that call whenever it had a network, and stalled on it when it did not. Run the same `docker diff` on the online container after the golden suite; entries under `.bun/install/cache` mean a runtime install got past the flag (history: `--external hono` in the bundle build fetched hono from npm at cold start).
 
 ## Single-libc check (web image, catches silent re-bloat)
 
