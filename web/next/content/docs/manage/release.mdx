@@ -62,12 +62,24 @@ Mark the draft ready, review it, and merge with a **merge commit**. That merge i
 - tags `v<version>` and pushes branch and tag atomically,
 - publishes a GitHub release whose notes mirror the new `CHANGELOG.md` section.
 
-If the commit range holds only filtered-out types (like `ci`), it skips the release.
+If the commit range holds only filtered-out types, it skips the release. That is `ci`, which `changelog.config.json` turns off, and non-breaking `chore(deps)`, which changelogen drops on its own whatever the config says: title a dependency refresh `build(deps)` so it earns a line and a version.
 
 </Step>
 </Steps>
 
 The changelog commit lands directly on `canary` rather than through a second PR because it's mechanical, generated from PR titles you already reviewed. If a run tags the version but fails before publishing, the next run backfills the missing GitHub release.
+
+## The CLI rides the same release
+
+This part is the canonical repo's alone: a fork does not take `packages/cli` or `cli-release.yml`. The `zerostarter` npm package has no version of its own (its `package.json` holds a `0.0.0` placeholder); `cli-release.yml` stamps one at publish time. What it publishes depends on what started it:
+
+| Trigger                                                                   | Publishes                         | npm tag  |
+| ------------------------------------------------------------------------- | --------------------------------- | -------- |
+| `auto-release.yml` succeeds, or a GitHub release is published by hand     | the release version, from the tag | `latest` |
+| a push to `canary` touching `packages/cli`, `packages/scripts` or `tests` | `<next version>-canary.<n>`       | `canary` |
+| the repo owner comments `/release` on a same-repo PR                      | `0.0.0-<short sha>` of that PR    | `test`   |
+
+A release and a `canary` push both run the whole suite on Linux, macOS and Windows before anything is published. The `/release` comment skips that matrix, since its point is a build you can try in seconds: `bunx zerostarter@0.0.0-<short sha> init`.
 
 ## Pinning a version
 

@@ -1,3 +1,19 @@
+## v0.1.35
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.34...v0.1.35)
+
+### 🚀 Enhancements
+
+- **cli:** Ship the starter's AGENTS.md to a fork instead of a stub ([#849](https://github.com/nrjdalal/zerostarter/pull/849))
+
+### 📖 Documentation
+
+- **plans:** Close relevance audit item 8 ([#848](https://github.com/nrjdalal/zerostarter/pull/848))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.34
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.33...v0.1.34)

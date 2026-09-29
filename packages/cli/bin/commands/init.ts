@@ -26,15 +26,43 @@ import {
   withSpinner,
 } from "./_prompt"
 
-// The optional surfaces init can toggle, their CLI flags (--<flag> / --no-<flag>), and prompt labels. Alphabetical, to match the config's features export. Kept in lockstep with @packages/config/site's `features` by tests/packages/cli/features-consistency.test.ts.
+// The optional surfaces init can toggle, their CLI flags (--<flag> / --no-<flag>), the line each gets in --help, and prompt labels. Alphabetical, to match the config's features export. Kept in lockstep with @packages/config/site's `features` by tests/packages/cli/features-consistency.test.ts. The parser's options and the help text below are both built from this list, so a flag cannot exist here and be rejected there, which is how --allowlist shipped documented and unusable.
 export const FEATURE_DEFS = [
-  { value: "allowlist", flag: "allowlist", label: "Allowlist (grant console access by domain)" },
-  { value: "apiDocs", flag: "api-docs", label: "API docs" },
-  { value: "blog", flag: "blog", label: "Blog" },
-  { value: "docs", flag: "docs", label: "Docs" },
-  { value: "internalDocs", flag: "internal-docs", label: "Internal (console) docs" },
-  { value: "waitlist", flag: "waitlist", label: "Waitlist (else a plain landing home)" },
+  {
+    value: "allowlist",
+    flag: "allowlist",
+    help: "Console access by email domain or address",
+    label: "Allowlist (grant console access by domain)",
+  },
+  { value: "apiDocs", flag: "api-docs", help: "The /api/docs API reference", label: "API docs" },
+  { value: "blog", flag: "blog", help: "The /blog", label: "Blog" },
+  { value: "docs", flag: "docs", help: "The /docs", label: "Docs" },
+  {
+    value: "internalDocs",
+    flag: "internal-docs",
+    help: "The /console/docs internal docs",
+    label: "Internal (console) docs",
+  },
+  {
+    value: "waitlist",
+    flag: "waitlist",
+    help: "The /waitlist (off leaves a plain landing home)",
+    label: "Waitlist (else a plain landing home)",
+  },
 ] as const
+
+const offByDefault = FEATURE_DEFS.filter((f) => !DEFAULT_FEATURES[f.value]).map((f) => f.flag)
+
+const featureHelp = FEATURE_DEFS.map(
+  (f) => `      ${`--${f.flag},`.padEnd(18)}${`--no-${f.flag}`.padEnd(21)}${f.help}`,
+).join("\n")
+
+const featureOptions = Object.fromEntries(
+  FEATURE_DEFS.flatMap((f) => [
+    [f.flag, { type: "boolean" as const }],
+    [`no-${f.flag}`, { type: "boolean" as const }],
+  ]),
+)
 
 const helpMessage = `Usage:
   $ bunx zerostarter init [dir] [options]
@@ -52,12 +80,8 @@ Options:
       --dry-run  Print the plan without writing anything
   -h, --help     Display help
 
-Features (default on, except the waitlist; pass any flag to skip the interactive picker):
-      --api-docs,       --no-api-docs        The /api/docs API reference
-      --blog,           --no-blog            The /blog
-      --docs,           --no-docs            The /docs
-      --internal-docs,  --no-internal-docs   The /console/docs internal docs
-      --waitlist,       --no-waitlist        The /waitlist (off leaves a plain landing home)`
+Features (on by default, except ${offByDefault.join(" and ")}; pass any flag to skip the interactive picker):
+${featureHelp}`
 
 const isEmptyDir = (dir: string): boolean =>
   !existsSync(dir) || readdirSync(dir).filter((f) => f !== ".git").length === 0
@@ -93,16 +117,7 @@ export const init = async (argv: string[]) => {
       "dry-run": { type: "boolean" },
       help: { short: "h", type: "boolean" },
       yes: { short: "y", type: "boolean" },
-      "api-docs": { type: "boolean" },
-      "no-api-docs": { type: "boolean" },
-      blog: { type: "boolean" },
-      "no-blog": { type: "boolean" },
-      docs: { type: "boolean" },
-      "no-docs": { type: "boolean" },
-      "internal-docs": { type: "boolean" },
-      "no-internal-docs": { type: "boolean" },
-      waitlist: { type: "boolean" },
-      "no-waitlist": { type: "boolean" },
+      ...featureOptions,
     },
   })
 

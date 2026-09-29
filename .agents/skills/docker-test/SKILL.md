@@ -33,6 +33,7 @@ docker compose down
       -e 's|^GOOGLE_CLIENT_ID=$|GOOGLE_CLIENT_ID=dummy|' \
       -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
       -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
+      -e 's|^AGENT_SIGNIN_ENABLED=$|AGENT_SIGNIN_ENABLED=true|' \
       .env.example > .env
   ```
 
@@ -46,17 +47,20 @@ docker compose down
 
 ## Self-containment check (catches runtime auto-install)
 
-The api runner ships only `bundle/`, so the bundle must resolve every import with no `node_modules`. When one is missing, Bun auto-installs it from npm at runtime, so a container that "works" online may be downloading packages on every cold start. Prove it offline:
+The api runner ships only `bundle/`, so the bundle must resolve every import with no `node_modules`. When one is missing, Bun's runtime auto-install fetches it from npm, so a container that "works" online may be downloading packages at cold start or on a later request. The image runs `bun --no-install`, which turns that off: a missing import fails at once instead. Two probes prove both halves, offline:
 
 ```bash
 sed 's/ #.*//' .env > .env.docker
 docker run -d --name t-offline --network=none --env-file .env.docker <image>
 docker exec t-offline sh -c 'for i in $(seq 1 30); do wget -qO- http://localhost:4000/api/health && exit 0; sleep 1; done; exit 1'
-docker logs t-offline        # on failure: "Cannot find package 'X'" = unresolved import
+docker logs t-offline        # on failure: "Cannot find package 'X'" = an import the bundle needs and does not carry
+# the first sign-in is where Better Auth reaches for its optional telemetry import; it answers with the database error here (nothing is reachable), and it must answer at once
+time docker exec t-offline sh -c 'wget -qO- --post-data=x --header="Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as; echo'
+docker diff t-offline | grep .bun/install/cache   # must print nothing
 docker rm -f t-offline
 ```
 
-Forensics on an online container: `docker diff <name> | grep .bun/install/cache`; entries there mean auto-install fired (history: `--external hono` in the bundle build fetched hono from npm at cold start).
+Health alone proves nothing about sign-in: the telemetry import fires on the first Better Auth call, not at boot. Before `--no-install`, this container fetched `@opentelemetry/api` (some 640 files) on that call whenever it had a network, and stalled on it when it did not. Run the same `docker diff` on the online container after the golden suite; entries under `.bun/install/cache` mean a runtime install got past the flag (history: `--external hono` in the bundle build fetched hono from npm at cold start).
 
 ## Single-libc check (web image, catches silent re-bloat)
 
@@ -77,7 +81,7 @@ With the stack up on a fresh disposable database, run every `*.e2e.test.ts` unde
 E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run test:e2e
 ```
 
-`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports. The suite signs in as `LocalAgent` and asserts the stage is `local` (so `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, plus both OAuth client ids set, which the dummy `.env` above already does: left blank, the providers endpoint lists only `agent` and its snapshot fails; it is a suite for a local-stage stack, never a deployed one, and a URL whose host is not local is refused at load), drives the organization plugin, the console routes, the waitlist and the web pages, and snapshots every contract response after normalizing ids, timestamps and the build version. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. The users list assumes LocalAgent is the only account, which is why the database is fresh; `E2E_POSTGRES_URL` is what lets the suite seed and remove a second account for the role and ban flows, and it refuses any host that is not local and any database holding an account beyond the agent and the seed, so neither the shared database nor a populated local one can be seeded by mistake; the stack's own `POSTGRES_URL` must be disposable for the same reason, since the suite writes through the API. Done when it prints 0 fail twice in a row: the second run proves the goldens are deterministic and that a run removes what it created (its organization, rules, signups, seeded account and sessions; the audit log keeps its rows by design, and the goldens read only the entries a run adds).
+`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports. The suite signs in as `LocalAgent` and asserts the stage is `local` (so `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, plus both OAuth credential pairs set, the id and the secret of each, which the dummy `.env` above already does: left blank, the providers endpoint lists only `agent` and its snapshot fails; it is a suite for a local-stage stack, never a deployed one, and a URL whose host is not local is refused at load), drives the organization plugin, the console routes, the waitlist and the web pages, and snapshots every contract response after normalizing ids, timestamps and the build version. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. The users list assumes LocalAgent is the only account, which is why the database is fresh; `E2E_POSTGRES_URL` is what lets the suite seed and remove a second account for the role and ban flows, and it refuses any host that is not local and any database holding an account beyond the agent and the seed, so neither the shared database nor a populated local one can be seeded by mistake; the stack's own `POSTGRES_URL` must be disposable for the same reason, since the suite writes through the API. Done when it prints 0 fail twice in a row: the second run proves the goldens are deterministic and that a run removes what it created (its organization, rules, signups, seeded account and sessions; the audit log keeps its rows by design, and the goldens read only the entries a run adds).
 
 In a browser against the images the **Login (agents)** button is absent: its guard is Next's build-time `NODE_ENV`, so a production build compiles it out. Submit the same form it posts from the page's console, and the 302 lands on the dashboard with the session (cookies on `localhost` do not isolate by port):
 

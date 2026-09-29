@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { init } from "../../../../../packages/cli/bin/commands/init"
+import { FEATURE_DEFS, init } from "../../../../../packages/cli/bin/commands/init"
 
 // Run `init --dry-run` and capture the printed plan; `setup` can scaffold the dir first.
 const planFor = async (args: string[], setup?: (dir: string) => void): Promise<string> => {
@@ -66,6 +66,36 @@ describe("init --dry-run plan", () => {
   test("--waitlist adds the waitlist to the plan", async () => {
     const out = await planFor(["--waitlist"])
     expect(out).toContain("features: apiDocs, blog, docs, internalDocs, waitlist")
+  })
+
+  // --allowlist was in FEATURE_DEFS and in the docs while the parser had never heard of it, so the documented command died on "Unknown option". The parser and the help are now built from that list; these hold them to it.
+  test("--allowlist adds the allowlist to the plan", async () => {
+    const plan = await planFor(["--allowlist"])
+    expect(plan).toContain("features: allowlist, apiDocs, blog, docs, internalDocs")
+  })
+
+  test("the parser accepts both forms of every feature flag", async () => {
+    const exit = process.exit
+    process.exit = ((code?: number) => {
+      throw new Error(`the parser rejected a flag and exited ${code}`)
+    }) as typeof process.exit
+    try {
+      for (const { flag } of FEATURE_DEFS) {
+        expect(await planFor([`--${flag}`])).toContain("features:")
+        expect(await planFor([`--no-${flag}`])).toContain("features:")
+      }
+    } finally {
+      process.exit = exit
+    }
+  })
+
+  test("--help names both forms of every feature flag, and which are off by default", async () => {
+    const help = await planFor(["--help"])
+    for (const { flag } of FEATURE_DEFS) {
+      expect(help).toContain(`--${flag},`)
+      expect(help).toContain(`--no-${flag}`)
+    }
+    expect(help).toContain("except allowlist and waitlist")
   })
 
   test("--no-blog wins over --blog (--no- takes precedence)", async () => {

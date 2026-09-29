@@ -62,11 +62,11 @@ The publishing rule lives in one place (`web/next/src/lib/blog-policy.ts`) and t
 
 ## Search
 
-Full-text search is powered by [Orama](https://orama.com) through Fumadocs, built by the route handler at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page to open it. Only the `docs` collection is indexed; the blog and the private console docs are not.
+Full-text search is powered by [Orama](https://orama.com) through Fumadocs, built by the route handler at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page to open it. That public index holds the `docs` collection only. The blog is not indexed, and the private console docs have an index of their own at `/api/console/search`, which answers `404` to anyone the console would not admit, so nothing in it leaks.
 
 ## The private console docs
 
-`web/next/source.config.ts` defines a third collection, `consoleDocs` (`content/console/docs/`), served only under the auth-gated `/console` area. Its source is deliberately never referenced by a public route, so it is excluded from search, the sitemap, and `llms.txt` by construction: a home for internal docs that ship with the repo but stay behind the console.
+`web/next/source.config.ts` defines a third collection, `consoleDocs` (`content/console/docs/`), served only under the auth-gated `/console` area. Its source is deliberately never referenced by a public route, so it is excluded from the public search, the sitemap, and `llms.txt` by construction (its own search is gated like the pages are): a home for internal docs that ship with the repo but stay behind the console.
 
 ## Next
 

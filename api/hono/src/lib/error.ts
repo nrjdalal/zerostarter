@@ -1,9 +1,10 @@
 import { isLocal } from "@packages/env"
 import { env } from "@packages/env/api-hono"
-import type { Context } from "hono"
+import type { Context, TypedResponse } from "hono"
 import { resolver, type ResponsesWithResolver } from "hono-openapi"
 import { HTTPException } from "hono/http-exception"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
+import type { JSONParsed } from "hono/utils/types"
 import { z } from "zod"
 
 // Every code the API can put in the { error } envelope. Single source of truth: the TS union, the OpenAPI schema, and the web client all derive from this list. "ERROR" is the catch-all for an HTTPException whose status isn't mapped below.
@@ -22,15 +23,18 @@ export const ERROR_CODES = [
 
 export type ErrorCode = (typeof ERROR_CODES)[number]
 
+// Spelled out as hono's own JSONRespondReturn is, from the types it exports: the inferred return names an alias hono's d.ts bundle keeps private, which the api's declaration emit cannot reference (TS2883 since hono 4.13.11).
 export function jsonError<S extends ContentfulStatusCode>(
   c: Context,
   status: S,
   code: ErrorCode,
   message: string,
   extra?: Record<string, unknown>,
-) {
+): Response & TypedResponse<JSONParsed<ErrorBody>, S, "json"> {
   return c.json({ error: { ...extra, code, message } }, status)
 }
+
+type ErrorBody = { error: { [key: string]: unknown; code: ErrorCode; message: string } }
 
 // Throw this anywhere and onError shapes the { error } envelope. Extends HTTPException so Hono treats it as a known error; carries our envelope's domain code and any extras (e.g. validation issues).
 export class ApiError extends HTTPException {

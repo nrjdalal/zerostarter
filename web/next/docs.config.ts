@@ -179,7 +179,7 @@ const docsConfig = {
         "/docs/manage/features": {
           title: "Features",
           description:
-            "Toggle optional surfaces (allowlist, docs, blog, API reference, internal docs, waitlist) from one config, chosen at init and flippable anytime.",
+            "Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.",
         },
       },
       {

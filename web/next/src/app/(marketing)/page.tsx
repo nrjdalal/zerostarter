@@ -347,8 +347,8 @@ docker compose up --build`
               </h2>
               <p className="text-muted-foreground mt-4 text-lg text-balance">
                 The boring, critical pieces every serious SaaS needs are already connected and
-                working on first run. The dashboard and console ship as auth-gated shells, ready for
-                your product logic.
+                working on first run. The dashboard ships as an auth-gated shell and the console
+                ships with worked examples to copy, ready for your product logic.
               </p>
             </div>
             <div className="grid gap-3.5 sm:grid-cols-2">

@@ -37,7 +37,7 @@ That is all fine for thousands and slow for hundreds of thousands. Three indepen
 
 ## The flag takes the whole surface
 
-`waitlist` in `packages/config/src/site.ts` governs the public page, its API, and the console surface together. With it off, `/waitlist`, `/api/waitlist` and `/console/waitlist` all 404, the nav drops the group, and a fresh fork's home becomes a plain landing page. See [Features](/docs/manage/features).
+`waitlist` in `packages/config/src/site.ts` governs the public page, its API, and the console surface together. With it off, `/waitlist` and `/api/waitlist` return `404`, `/console/waitlist` renders the console's not-found page (with a `200`, like every disabled console page), the nav drops the group, and a fresh fork's home becomes a plain landing page. See [Features](/docs/manage/features).
 
 The table survives the flag being off. Dropping it would be a migration, and a fork that turns the waitlist back on should find its signups where it left them.
 

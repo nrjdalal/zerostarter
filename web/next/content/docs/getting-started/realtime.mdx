@@ -8,7 +8,7 @@ The same typed client that reaches the REST API reaches WebSockets too. Hono ser
 
 ## Two adapters, one route
 
-The route is a `GET` upgraded with `upgradeWebSocket`, but the socket owner depends on where it runs. Bun (local, Docker, self-host) runs `Bun.serve()`, so the socket comes from `hono/bun`. Vercel Functions can't run `Bun.serve()`, so on Vercel the upgrade goes through the Node adapter (`@hono/node-server` + `ws`), which Vercel [drives natively](https://vercel.com/docs/functions/websockets). `api/hono/src/lib/server.ts` picks the adapter at boot from `process.env.VERCEL` and exports the matching server, so `index.ts` only registers routes:
+The route is a `GET` upgraded with `upgradeWebSocket`, but the socket owner depends on where it runs. Bun (local, Docker, self-host) runs `Bun.serve()`, so the socket comes from `hono/bun`. On Vercel the upgrade goes through the Node adapter (`@hono/node-server` + `ws`), which is the setup [Vercel documents for Hono](https://vercel.com/docs/functions/websockets#node.js-server-frameworks). `api/hono/src/lib/server.ts` picks the adapter at boot from `process.env.VERCEL` and exports the matching server, so `index.ts` only registers routes:
 
 ```ts
 // api/hono/src/lib/server.ts
@@ -40,6 +40,12 @@ app.basePath("/api").get(
 )
 ```
 
+<Callout type="info" title="Why two adapters, still">
+
+When this shipped, a Vercel Function could not run `Bun.serve()` at all, which is why the split exists. Vercel's Bun runtime has since gained a [native `Bun.serve()` WebSocket path](https://vercel.com/docs/functions/websockets#bun), with documented differences (headers passed to `server.upgrade()` are not applied, `drain` never fires, `send()` reports no backpressure). The starter has not moved to it: the Node adapter is proven here, and both WebSockets and the Bun runtime are still in beta on Vercel.
+
+</Callout>
+
 ## Connecting from the client
 
 The RPC object exposes `$ws()` on the route, so the socket URL derives from the same configured API base (`http` becomes `ws`), with no second client to keep in sync:
@@ -61,7 +67,7 @@ socket.addEventListener("message", (event) => {
 
 ## Treat the socket as an enhancement
 
-A socket can drop: a tab backgrounds, a network blips, or a serverless function reaches its max duration (a few minutes by default) and closes the connection. So the reference badge (`web/next/src/components/marketing/api-status.tsx`) never depends on the socket alone. It polls REST `/api/health` whenever no frame is live and overlays a live pulse only while the socket streams, so the status is always current before the socket connects or after it drops; only the pulse is socket-only.
+A socket can drop: a tab backgrounds, a network blips, or a serverless function reaches its [max duration](/docs/deployment/vercel#websockets) and closes the connection. So the reference badge (`web/next/src/components/marketing/api-status.tsx`) never depends on the socket alone. It polls REST `/api/health` whenever no frame is live and overlays a live pulse only while the socket streams, so the status is always current before the socket connects or after it drops; only the pulse is socket-only.
 
 The reconnect logic is worth copying for your own realtime UI: capped exponential backoff (3s, doubling to a 30s ceiling) after a drop, a heartbeat watchdog that treats a silent-but-open socket as dropped, and an immediate reconnect when the tab becomes visible again.
 

@@ -26,3 +26,6 @@ autoload -Uz add-zsh-hook
 PROMPT=$'\n%F{cyan}%1~ ❯ '
 __zs_demo_reset() { print -n $'\e[0m' }
 add-zsh-hook preexec __zs_demo_reset
+
+# End on a cleared screen so the typed source line never reaches the recording; the tape waits for the prompt below to return before it shows the terminal.
+clear
