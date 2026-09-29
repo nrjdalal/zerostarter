@@ -76,10 +76,13 @@ This part is the canonical repo's alone: a fork does not take `packages/cli` or 
 | Trigger                                                                   | Publishes                         | npm tag  |
 | ------------------------------------------------------------------------- | --------------------------------- | -------- |
 | `auto-release.yml` succeeds, or a GitHub release is published by hand     | the release version, from the tag | `latest` |
+| a manual run, `gh workflow run cli-release.yml --ref canary`              | the release version, from the tag | `latest` |
 | a push to `canary` touching `packages/cli`, `packages/scripts` or `tests` | `<next version>-canary.<n>`       | `canary` |
 | the repo owner comments `/release` on a same-repo PR                      | `0.0.0-<short sha>` of that PR    | `test`   |
 
 A release and a `canary` push both run the whole suite on Linux, macOS and Windows before anything is published. The `/release` comment skips that matrix, since its point is a build you can try in seconds: `bunx zerostarter@0.0.0-<short sha> init`.
+
+Publishing authenticates through [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers): npm trusts `cli-release.yml` in this repository through the job's `id-token: write`, so there is no npm token in the repo to expire or leak, and every version carries a provenance attestation. The manual run is how a release whose publish leg failed gets to npm; re-running the failed run would replay the workflow file it started with.
 
 ## Pinning a version
 

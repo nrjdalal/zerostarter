@@ -16,6 +16,8 @@ on:
     types: [completed]
   release:
     types: [published]
+  # a manual run publishes the latest tag's release version: the way back when a release's publish leg failed, since a re-run replays that run's own workflow file
+  workflow_dispatch:
   issue_comment:
     types: [created]
 
@@ -23,7 +25,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   test:
-    if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    if: github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     # the publish scopes live on the release job alone; a test matrix needs none of them
     permissions:
       contents: read
@@ -60,6 +62,7 @@ jobs:
       always() && !failure() && !cancelled() && (
         github.event_name == 'push' ||
         github.event_name == 'release' ||
+        github.event_name == 'workflow_dispatch' ||
         (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
         github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner && startsWith(github.event.comment.body, '/release')
       )
@@ -82,8 +85,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          # 24 bundles npm >= 11.5.1, the floor for npm Trusted Publishing
+          node-version: 24
           registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -101,13 +106,13 @@ jobs:
             PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
             PR=$(curl -fsSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
             HEAD_REPO=$(echo "$PR" | bunx json head.repo.full_name)
-            # same-repo only: this builds and publishes the PR's own code with the npm token in scope, so a fork's install scripts and build must never run here (a fork head is not even fetched today, but the gate must not rest on that)
+            # same-repo only: this builds and publishes the PR's own code with the job able to publish, so a fork's install scripts and build must never run here (a fork head is not even fetched today, but the gate must not rest on that)
             [[ $HEAD_REPO == "$GITHUB_REPOSITORY" ]] || { echo "::error::/release publishes same-repo PRs only; #$PR_NUMBER comes from $HEAD_REPO"; exit 1; }
             LATEST_COMMIT_SHA=$(echo "$PR" | bunx json head.sha)
             git checkout $LATEST_COMMIT_SHA
             TAG="test"
             RELEASE_VERSION="0.0.0-${LATEST_COMMIT_SHA:0:7}"
-          elif [[ $GITHUB_EVENT_NAME == 'workflow_run' || $GITHUB_EVENT_NAME == 'release' ]]; then
+          elif [[ $GITHUB_EVENT_NAME == 'workflow_run' || $GITHUB_EVENT_NAME == 'release' || $GITHUB_EVENT_NAME == 'workflow_dispatch' ]]; then
             # after auto-release cuts the release, publish the CLI at that version from the latest tag. workflow_run fires even though auto-release used GITHUB_TOKEN (release:published does not), and gives a default-branch checkout, so read the tag rather than the event payload.
             git fetch --tags --force --quiet
             RELEASE_TAG=$(git describe --tags --abbrev=0 --match "v*")
@@ -117,7 +122,7 @@ jobs:
             TAG="latest"
           else
             TAG="canary"
-            # preview the next release with the same decision auto-release ships: the larger of the tree and what the window earned. the script imports the scripts package's locked changelogen, so the install (no lifecycle scripts, the npm token is in scope) comes first here; the shared install below is then a no-op
+            # preview the next release with the same decision auto-release ships: the larger of the tree and what the window earned. the script imports the scripts package's locked changelogen, so the install (no lifecycle scripts, the job can publish) comes first here; the shared install below is then a no-op
             (cd ../.. && bun install --frozen-lockfile --ignore-scripts)
             DECISION=$(cd ../.. && bun packages/scripts/src/release-version.ts)
             NEXT_VERSION=$(echo "$DECISION" | jq -r .next)
@@ -130,13 +135,14 @@ jobs:
           fi
 
           bunx json -I -f package.json -e "this.version=\"$RELEASE_VERSION\""
-          # no lifecycle scripts while the npm token is in the environment; the build needs none
+          # no lifecycle scripts while the job can publish; the build needs none
           bun install --frozen-lockfile --ignore-scripts
           bun run build
           bunx json -I -f package.json -e 'delete this.scripts'
           bunx json -I -f package.json -e 'delete this.commitlint'
           bunx json -I -f package.json -e 'delete this.devDependencies'
-          npm publish --provenance --access public --no-git-checks --tag $TAG
+          # npm Trusted Publishing (OIDC): npm trusts this repo and workflow through id-token: write, so there is no NPM_TOKEN secret, and provenance comes without --provenance
+          npm publish --access public --no-git-checks --tag $TAG
 
           PACKAGE_URL="https://www.npmjs.com/package/$PACKAGE_NAME/v/$RELEASE_VERSION"
           if [[ $GITHUB_EVENT_NAME == 'issue_comment' ]]; then
@@ -156,5 +162,4 @@ jobs:
         # event values reach the script through env, never inline in run, so a payload field is data rather than shell
         env:
           COMMENT_ID: ${{ github.event.comment.id }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PR_URL: ${{ github.event.issue.pull_request.url }}
