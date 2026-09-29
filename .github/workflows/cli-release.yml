@@ -16,7 +16,7 @@ on:
     types: [completed]
   release:
     types: [published]
-  # a manual run publishes the latest tag's release version: the way back when a release's publish leg failed, since a re-run replays that run's own workflow file
+  # a manual run on canary publishes the latest tag's release version: the way back when a release's publish leg failed, since a re-run replays that run's own workflow file. canary only, because the tag is found by what the checkout can reach, and an older ref reaches an older release
   workflow_dispatch:
   issue_comment:
     types: [created]
@@ -25,7 +25,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   test:
-    if: github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/canary') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     # the publish scopes live on the release job alone; a test matrix needs none of them
     permissions:
       contents: read
@@ -62,7 +62,7 @@ jobs:
       always() && !failure() && !cancelled() && (
         github.event_name == 'push' ||
         github.event_name == 'release' ||
-        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/canary') ||
         (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
         github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner && startsWith(github.event.comment.body, '/release')
       )
