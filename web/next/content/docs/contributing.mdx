@@ -15,7 +15,7 @@ Read `AGENTS.md` (symlinked to `CLAUDE.md`) first. It holds the repo's load-bear
 Branch off `canary` with a descriptive name (`feat/...`, `fix/...`), then run the checks before you push:
 
 ```bash
-bun audit --audit-level high   # the first CI gate
+bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm   # the first CI gate
 bun run format
 bun run lint
 bun run check-types

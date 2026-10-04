@@ -28,13 +28,15 @@ Fix each advisory on the highest rung that lifts the whole tree; drop a rung onl
    "overrides": { "<vulnerable-package>": "<patched-version>" }
    ```
 
+When the advisory lists no patched version at all, none of the three can lift it. Then the gate ignores that one advisory by ID: add `--ignore <GHSA-id>`, with a one-line comment naming the package and why (the notes below do not ship to a fork), to the audit command in both `lefthook.yml` and `.github/workflows/auto-check-build.yml`, mirror it in the docs that quote them (`manage/code-quality.mdx`, `contributing.mdx`), and record it under `## Ignored advisories` in `.github/notes/dependencies.md`. It is a security exception that ships to every fork, so it needs the user's go.
+
 `bun audit fix` applies the first two rungs mechanically when a patched version exists within the ranges parents allow; `--dry-run` previews and `--latest` also crosses majors, so review what it picks before accepting. Read the advisory's affected ranges before reaching for a lower rung: the audit header lists every installed version of the package, not only the vulnerable ones. Follow with `bun dedupe` to collapse duplicate versions the tree accumulated.
 
 Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
 
-## 3. Record every override
+## 3. Record every override and ignore
 
-Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
+Every ignored advisory needs a block under `## Ignored advisories` with the same four fields, and leaves all four places together. Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
 
 ## 4. Ship
 

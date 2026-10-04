@@ -30,7 +30,8 @@ jobs:
 
       - name: Audit, Format, Lint, Check-types, Test, and Build
         run: |
-          bun audit --audit-level high
+          # GHSA-vfj7-8cjw-p6xm: braces has no patched release, and only dev tooling (shadcn, globby) reaches it
+          bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm
           bun run format:check
           bun run lint
           bun run check-types
