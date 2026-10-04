@@ -76,7 +76,7 @@ Fonts are self-hosted, not fetched at runtime, localized through `next/font/loca
 - **DM Sans** → `--font-sans`: body and headings.
 - **JetBrains Mono** → `--font-mono`: code.
 
-**Caveat** and **Newsreader** (`--font-caveat`, `--font-newsreader`) are author-only accents for `/hire` and `/resume`, applied via their `.className`. They live in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`.woff2` in `web/next/src/fonts/marketing/`), kept out of `lib/fonts.ts` so their preload stays scoped to those two pages.
+**Caveat** and **Lora** (`--font-caveat`, `--font-lora`) are author-only accents for `/hire` and `/resume`, applied via their `.className`. They live in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`.woff2` in `web/next/src/fonts/marketing/`), kept out of `lib/fonts.ts` so their preload stays scoped to those two pages.
 
 Headings track `--font-sans` unless you repoint `--font-heading`. To add or swap a font, follow the [`fonts` skill](/docs/resources/ai-skills): it fetches the variable woff2 and wires the preload so you don't ship layout shift.
 

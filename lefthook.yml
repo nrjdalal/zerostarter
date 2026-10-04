@@ -23,7 +23,8 @@ commit-msg:
 pre-push:
   commands:
     audit:
-      run: bun audit --audit-level high
+      # GHSA-vfj7-8cjw-p6xm: braces has no patched release, and only dev tooling (shadcn, globby) reaches it
+      run: bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm
       only:
         - ref: canary
     ensure-branches:

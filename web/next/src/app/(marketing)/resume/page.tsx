@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
-import { caveat, newsreader } from "@/lib/marketing/fonts"
+import { caveat, lora } from "@/lib/marketing/fonts"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",
@@ -178,7 +178,7 @@ export default function Page() {
           product surfaces and agent tooling at LightWork AI. Author of 250+ public repositories and
           open-source tools with 1,045+ GitHub stars, used by projects including TanStack, SST,
           Electric SQL, and Storybook.{" "}
-          <span className={cn(newsreader.className, "font-medium tracking-wide italic")}>
+          <span className={cn(lora.className, "font-medium tracking-wide italic")}>
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
         </p>
