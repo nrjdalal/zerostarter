@@ -3,6 +3,8 @@ import { join } from "node:path"
 import { exists } from "@/io"
 import { ok, run, runTail } from "@/spawn"
 
+const GITPICK = "gitpick@6.0.0"
+
 // Install dependencies in `dir`, showing a rolling window of bun's output that collapses to a done step, keeping the tail (which carries bun's "N packages installed [time]" summary line). Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
 export const bunInstall = async (dir: string): Promise<void> => {
   await runTail("bun", ["install"], {
@@ -35,19 +37,14 @@ export const bunAvailable = async (
 
 // Fetch the latest zerostarter scaffold into `dir` (a gitpick subtree overlay, no .git history). --bun runs gitpick under the Bun runtime, not Node.
 export const fetchZerostarter = async (dir: string, ref = "main"): Promise<void> => {
-  await run("bunx", [
-    "--bun",
-    "gitpick@6.0.0",
-    `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
-    dir,
-  ])
+  await run("bunx", ["--bun", GITPICK, `https://github.com/nrjdalal/zerostarter/tree/${ref}`, dir])
 }
 
 // Overlay the latest zerostarter onto a fork (gitpick -o); .gitpickignore paths and fork-added files are kept.
 export const overlayZerostarter = async (dir: string, ref = "main"): Promise<void> => {
   await run("bunx", [
     "--bun",
-    "gitpick@6.0.0",
+    GITPICK,
     `https://github.com/nrjdalal/zerostarter/tree/${ref}`,
     dir,
     "-o",
