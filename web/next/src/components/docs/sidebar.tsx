@@ -239,7 +239,6 @@ export function DocsSearch() {
           return
         }
 
-        e.preventDefault()
         handleSearchTrigger()
       }
     }
