@@ -28,7 +28,7 @@ curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 
 ## Restart
 
-The API dev task runs `bun --hot`, which misses a file created after the modules that import it reloaded: a new router or schema export can answer `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
+The API dev task runs `bun --hot`, which misses a file created after the modules that import it have reloaded: wire a new router or schema export before its file exists and the route answers `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
 
 ```bash
 # Kill this checkout's dev processes by their working directory: ROOT is the worktree when run from one, and a worktree nested under it is skipped
