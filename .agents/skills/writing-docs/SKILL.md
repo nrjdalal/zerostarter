@@ -33,7 +33,11 @@ rg -n -i "<subject>" CHANGELOG.md
 
 A question filed twice is one the page owes an answer to; anything renamed or moved in the changelog raises a "where did it go". The count stays honest: a well-discussed subject earns several, an obscure one earns none, and padding teaches nothing. Done when every question comes from a thread, a changelog line, or a plain reading of the subject.
 
-## 3. Write the frame
+## 3. Check the facts against the code
+
+A page outlives the code it describes, so every claim is re-read at the source before it is kept: a path with `ls`, a script in `package.json`, an env var in `packages/env/src/`, a command by running it, a behaviour in the file that implements it, a dependency's claim in the installed package under `node_modules`. The production page is the before: open it beside the source and mark what moved, what was removed, and what was added since. Done when every path, command, env var and behaviour on the page is checked against the current source, and the obsolete ones are gone.
+
+## 4. Write the frame
 
 The frame is the same on every page; the middle is the page's own.
 
@@ -46,7 +50,7 @@ The frame is the same on every page; the middle is the page's own.
 
 Done when the frame's sections are present in that order, or consciously omitted.
 
-## 4. Point instead of pasting
+## 5. Point instead of pasting
 
 - A procedure that a skill holds is named and linked (`db-migration`, `docker-test`, `release`), with the page keeping only the why and the trap the skill guards against. The skill carries the steps.
 - A config file is linked by path with a one-line gist. An excerpt shows the lines the page is about and names the file; the whole file lives in the repo.
@@ -56,11 +60,11 @@ Done when the frame's sections are present in that order, or consciously omitted
 
 Done when no fenced block mirrors a repo file whole, and every skill the page touches is linked rather than restated.
 
-## 5. Keep the voice
+## 6. Keep the voice
 
 Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Hyphens, commas and colons carry pauses.
 
-## 6. Register and verify
+## 7. Register and verify
 
 A new or renamed page is an entry in `web/next/docs.config.ts` first; the `.mdx` alone fails the strict gate. Then:
 
@@ -69,10 +73,11 @@ bun .github/scripts/docs.ts --strict
 cd web/next && bun run build
 ```
 
-Open the rendered page (the `ui-verify` skill) and read it once as the reader would. Done when the strict gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
+Open the rendered page (the `ui-verify` skill) and read it once as the reader would, with the production page beside it as the before. Done when the strict gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
 
 ## Done when
 
+- Every path, command, env var and behaviour on the page is checked against the current source.
 - The opening states the job and the defining constraint as plain prose.
 - `## When you need this` names the trigger, and the sibling where one is confusable.
 - The middle surfaces the leading word and matches the page's kind.
