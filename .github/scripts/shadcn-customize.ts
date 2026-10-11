@@ -178,7 +178,7 @@ function patchSidebar() {
   log(`patched: ${SIDEBAR}`)
 }
 
-// globals.css: two brand overrides init reverts. --font-sans repoints at its own Inter variable;
+// globals.css: two brand overrides init reverts. --font-sans repoints at the brand sans variable (FONT_TO);
 // --sidebar gets hardcoded light/dark defaults where we flush it with --background (PR #566). Both
 // are stable, uniquely-anchored lines, so guarded string swaps suffice; no CSS parser warranted.
 async function patchGlobals() {

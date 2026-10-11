@@ -6,7 +6,7 @@ source: local
 
 # Fonts
 
-Every font loads through `next/font/local`, which generates the metric-adjusted `"<export> Fallback"` face that holds CLS near zero. A fontsource CSS import resolves its `url()` into `node_modules` (a 404 in dev) and ships no fallback metrics, so the loader is the only path.
+Every font loads through `next/font/local`, which generates the metric-adjusted fallback face that holds CLS near zero. A fontsource CSS import resolves its `url()` into `node_modules` (a 404 in dev) and ships no fallback metrics, so the loader is the only path.
 
 ## 1. Fetch the latin variable woff2
 
@@ -41,7 +41,7 @@ In `globals.css` `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`
 
 ## 5. Verify
 
-The CSS carries `"<export> Fallback"` with `size-adjust` and a hashed `/_next/static/media/*.woff2` src; the HTML carries one `<link rel="preload" as="font">` per file the route loads, in dev and in a production build alike. Done when the preload count matches the route's files, every font request answers 200, and a changed public page shows no layout shift.
+The CSS carries a `Fallback` face (`__<export>_Fallback_<hash>`) with `size-adjust` and a hashed `/_next/static/media/*.woff2` src; the HTML carries one `<link rel="preload" as="font">` per file the route loads, in dev and in a production build alike. Done when the preload count matches the route's files, every font request answers 200, and a changed public page shows no layout shift.
 
 ## 6. Remove a font
 

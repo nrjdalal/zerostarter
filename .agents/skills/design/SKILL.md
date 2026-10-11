@@ -23,7 +23,7 @@ Spacing stays on the Tailwind scale, snapped to the nearest step (`gap-8`, not `
 
 ## Typography
 
-Exactly one `h1` per page, the page title (`PageHeader` renders it), then `h2` and below with no skipped level, all on the existing type scale and tokens. A marketing heading is `font-bold`, a sub-heading within a section stays lighter (a `font-semibold` `h3`) to hold the hierarchy, and non-heading display text follows its own weight.
+Exactly one `h1` per page, the page title (`PageHeader` renders it in the app shell; a marketing, docs or blog page renders its own), then `h2` and below with no skipped level, all on the existing type scale and tokens. A marketing heading is `font-bold`, a sub-heading within a section stays lighter (a `font-semibold` `h3`) to hold the hierarchy, and non-heading display text follows its own weight.
 
 ## Color
 
@@ -35,7 +35,7 @@ Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and
 - Footer content renders in a `footer` beside `main`, never a `div` inside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer.
 - A `section` with a visible heading is named by `aria-labelledby` on that heading's id, since a hand-written `aria-label` leaks authoring vocabulary ("Hero") into the accessibility tree; a wrapper with no visible heading (a `role="region"` scroll container) takes `aria-label`.
 - A scrollable region (a code block, a wide table) carries `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
-- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height.
+- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page whose table has to fill the viewport, which passes `flex h-svh flex-col` to `PageShell`.
 
 ## Motion
 
@@ -44,6 +44,7 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 ## Components
 
 - **Loading:** a wait is `<Spinner />`, bare, inside the surface that is waiting. The authed route groups carry no route `loading.tsx`: a segment's boundary wraps its page, not the slow layout above it, so the fallback would cover a page that was never the wait.
+- **Dialogs:** `DialogContent` renders bare at its default width; a dialog that needs more (the auth dialog's `max-w-md`) is the exception that earns its class.
 - **Empty states:** an empty state is `Empty`.
 - **Badges and identity:** a pill is `Badge` (a variant, plus a className for a semantic color like `text-success`); an identity row (avatar, name, email) is `Item` with `ItemMedia` and `ItemContent`. Two stay hand-rolled: the sidebar trigger identity inside `SidebarMenuButton`, where the chevron is a sibling, and the landing page's larger `Eyebrow` pill, since `Badge` is sized for compact UI.
 - **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack.
@@ -53,11 +54,11 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 
 ## Data tables
 
-A table composes the `components/data-table.tsx` family; its header comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region.
+A table composes the `components/data-table.tsx` family; its leading comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region, and features register once in `lib/data-table-features.ts`, so every table shares them.
 
 - A column id says what the column shows, not the backing field (`status` over `banned`). A sortable column takes `extra` over `width`: the auto path reserves room for the sort button, a fixed width clips the header.
-- A select column exists only with a selection action; those go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.
-- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold); one control only where it is the row's primary action (the role `Select`), never a cluster.
+- A select column exists only with a selection action and stays left-aligned; those actions go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.
+- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). The last column takes the remaining width, so no spacer column is added.
 - Sort UI is a plain label plus a bare icon-only button toggling asc and desc (icon before the label on a right-aligned column); hiding lives in `DataTableViewOptions`. Every table shows a single `defaultSorting`.
 - A time column reads relative through `relativeTime` from `@/lib/time` (`5 min. ago`, `just now` under a minute), since a reader scanning a log wants how long ago; an absolute time is for what leaves the screen (a copy, an export, an API response). A row with nothing to show renders `-`.
 
