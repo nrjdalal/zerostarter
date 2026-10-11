@@ -16,7 +16,7 @@ A refresh moves the npm tree, then the pins outside it, which `bun update` never
 
 ```bash
 bun update -r --latest
-bun install        # once more: a range postinstall rewrote leaves bun.lock one install behind
+bun install        # once more: postinstall rewrote ranges, so bun.lock is one install behind
 bun outdated -r    # expect no rows
 ```
 
@@ -36,11 +36,11 @@ These name a version no `package.json` range covers:
 
 After each move, `git grep -nF '<old value>' -- ':!bun.lock' ':!CHANGELOG.md'` lists every copy left: the docs that quote it, and in the canonical starter the notes under `.github/notes/`. A hit that belongs to something else (a test fixture sharing the number) stays.
 
-- **Bun:** `@types/bun` is a catalog entry, so step 1 moves it; it trails Bun's patch releases, so a lower patch there is expected.
-- **CLI-executed packages:** prove a new gitpick fetches the same tree. Run the old and the new version into two empty directories and `diff -r` them, then again as an overlay (`-o`) onto an existing checkout.
+- **Bun:** `bun upgrade` first, so the local gates in step 4 run under the pinned release. `@types/bun` is a catalog entry, so step 1 moves it; it trails Bun's patch releases, so a lower patch there is expected.
+- **CLI-executed packages:** prove each by running it. A new gitpick fetches the same tree: run the old and the new version into two empty directories and `diff -r` them, then again as an overlay (`-o`) onto an existing checkout. A new pglaunch provisions and migrates through `init --db` against a running Docker.
 - **GitHub Actions:** a major tag is the pin, so only a new major moves it. Read that major's release notes against how each workflow uses the action: its inputs, privileged triggers such as `pull_request_target` and `workflow_run`, and any script that `require`s a module. A pull request runs its own copy of only its `pull_request` and `pull_request_review` workflows. `pull_request_target` runs the base branch's copy, a `push` workflow runs on the next `canary` push that matches its path filter, and a workflow on a pull request closed into `main` or on `workflow_run` runs at the next release. So each workflow whose action moved has its first real run after the PR, and that run is the one to watch.
 - **Node:** the comment beside it names the npm floor it keeps, so it moves to a new LTS line, not to every release.
-- **Vercel's Bun runtime:** `bunVersion` names a release line, not a release, and Vercel moves the patch itself, so a Bun patch release changes nothing here. Move it only when the docs list a new line and the code is checked against that line's breaking changes; `deployment/vercel.mdx` quotes the line and the accepted values.
+- **Vercel's Bun runtime:** `bunVersion` names a release line, not a release, and Vercel moves the patch itself, so a Bun patch release changes nothing here. Move it only when the docs list a new line and the code is checked against that line's breaking changes; `web/next/content/docs/deployment/vercel.mdx` (canonical starter) quotes the line and the accepted values.
 
 Done when every row is on its latest release and the old-value grep returns no hit that belongs to the pin.
 
@@ -57,7 +57,7 @@ A refresh touches every surface, so verify every surface:
 3. **Docker:** when Bun or anything in the image moved, build both images with `--no-cache` and run the single-libc and offline checks (the `docker-test` skill).
 4. **Browser:** drive the pages built on the packages that moved (the `ui-verify` skill), for example the docs search after Fumadocs moves, or the console tables and their menus after Base UI moves.
 
-When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Done when every gate is green, the suite passes twice, and the browser pass is clean.
+When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Fix the code where the fix is ours; a group that has to stay back keeps its older catalog range, with the reason in the PR body, and is the one row `bun outdated -r` is then expected to print. Done when every gate is green, the suite passes twice, and the browser pass is clean.
 
 ### 5. Ship
 
@@ -71,7 +71,7 @@ One PR titled `build(deps): ...`, so the window can release (the `gh-commit` ski
 bun audit --audit-level high
 ```
 
-Done when the output is clean, or you have the list of high advisories to clear.
+Add the `--ignore` flags the command in `lefthook.yml` carries, so an accepted exception stays quiet. Done when the output is clean, or you have the list of high advisories to clear.
 
 ### 2. Fix on the highest rung that works
 
