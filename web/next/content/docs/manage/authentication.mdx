@@ -39,7 +39,7 @@ Each OAuth app takes your app's origin (GitHub's "Homepage URL", Google's "Autho
 | Local, `PORTLESS=0 bun run dev` (web `:3000`, api `:4000`)           | `http://localhost:3000`       | `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`             |
 | Two deployments on a public hosting suffix (two `*.vercel.app` apps) | `https://your-web.vercel.app` | `https://your-web.vercel.app/api/auth/callback/github` and `https://your-web.vercel.app/api/auth/callback/google` |
 
-The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a callback on the api there is the `state_mismatch` in [common questions](#common-questions). Under the default `bun run dev`, providers refuse the `.localhost` redirect URI, so OAuth round-trips only on the fixed ports; the question below has the detail.
+The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a sign-in there that comes back on the api is the `state_mismatch` question in [common questions](#common-questions). Under the default `bun run dev`, providers refuse the `.localhost` redirect URI, so OAuth round-trips only on the fixed ports; the question below has the detail.
 
 ## The console role ladder
 
@@ -60,7 +60,7 @@ The plugin's own endpoints are switched off rather than gated: `/api/auth/admin/
 
 ### Changing a role, banning an account
 
-Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request: your own account is refused, and so is every request from below admin; past that, an owner may act on anyone, another owner included, an admin only on a rung below admin, and a role change may grant only a rung the actor could act on, so granting owner is owner-only; and the last owner cannot be demoted. A ban also ends the person's sessions, so they are signed out everywhere at once; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
+Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request. It enforces the ladder's "May change" column, plus three rules the table does not show: your own account is refused, a role change may grant only a rung the actor could act on, and the last owner cannot be demoted. A ban also ends the person's sessions, so they are signed out everywhere at once; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
 
 The first owner comes from the CLI, which is also how a fresh install gets its first way in:
 
@@ -68,7 +68,7 @@ The first owner comes from the CLI, which is also how a fresh install gets its f
 bun run console:roles grant you@example.com owner
 ```
 
-The usage header of `.github/scripts/console-roles.ts` is the reference for `grant`, `revoke` and `list` and the defaults each takes; a grant or a revoke from it leaves the same activity line as the console.
+The usage header of `.github/scripts/console-roles.ts` is the reference for `grant`, `list` and `revoke` and the defaults each takes; a grant or a revoke from it leaves the same activity line as the console.
 
 ## Sessions and cookies
 
@@ -107,7 +107,7 @@ By design: every endpoint the Admin plugin mounts refuses every rung, because th
 
 **How does an install with no owner get one back?**
 
-An admin cannot grant owner, act on a peer, or unban another admin, so an install with no owner is recoverable only from the CLI: `bun run console:roles grant <email> owner`. The console refuses to demote the last owner or to ban the last unbanned one, so the state comes from the script, which warns when a `revoke` takes the last owner, or from a write straight to the database.
+Only an owner may grant owner (the [role ladder](#the-console-role-ladder)), so an install with no owner is recoverable only from the CLI: `bun run console:roles grant <email> owner`. The [console's guard](#changing-a-role-banning-an-account) never leaves an install ownerless, so that state comes from the script, which warns when a `revoke` takes the last owner, or from a write straight to the database.
 
 ## It's working if
 

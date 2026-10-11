@@ -43,7 +43,7 @@ await authClient.organization.create({ name, slug })
 await authClient.organization.setActive({ organizationId })
 ```
 
-Everything else works against the backend as soon as you build UI for it:
+Everything else works against the backend as soon as you build UI for it. The wired rows come first, then the available ones, each group A→Z:
 
 | Capability                     | State                         | Build on                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -66,7 +66,7 @@ A role or active-org change made elsewhere can trail by the [cookie cache](/docs
 
 **What does the server check when an organization is created?**
 
-Less than the form does. The plugin's own route accepts any non-empty `name` and `slug`, and the database adds only that the slug is unique; the 2 to 32 character limit and the slug derivation live in the sidebar form. A direct `POST /api/auth/organization/create` from curl bypasses both, so an unbounded name or an uppercase, non-URL-safe slug is possible today. The slug is not routed anywhere (organizations switch by id), so a collision is hygiene rather than a security hole. The backend rules, a `beforeCreateOrganization` hook sharing one schema with the form and `organizationLimit` for a per-user cap, are open shapes the canonical starter keeps in `.github/notes/plans/org-creation-restrictions.md`.
+Less than the form does. The plugin's own route accepts any non-empty `name` and `slug`, and the database adds only that the slug is unique; the 2 to 32 character limit and the slug derivation live in the sidebar form. A direct `POST /api/auth/organization/create` from curl bypasses both, so an unbounded name or an uppercase, non-URL-safe slug is possible. The slug is not routed anywhere (organizations switch by id), so a collision is hygiene rather than a security hole. The backend rules, a `beforeCreateOrganization` hook sharing one schema with the form and `organizationLimit` for a per-user cap, are open shapes the canonical starter keeps in `.github/notes/plans/org-creation-restrictions.md`.
 
 **The active organization did not come back after a reload. Where do I look?**
 

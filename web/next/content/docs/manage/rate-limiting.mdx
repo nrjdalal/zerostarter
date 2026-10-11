@@ -1,12 +1,12 @@
 ---
 slug: /docs/manage/rate-limiting
 title: Rate Limiting
-description: Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.
+description: "Layered rate limits keyed by user, API key, or IP: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it."
 ---
 
 Every request to the API passes a rate limiter before any route runs, and a signed-in request passes a second, larger one on its way into `/api/v1`. Both come from one factory in `api/hono/src/middlewares/rate-limiter.ts`, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter).
 
-A limiter keys a request by who before where: user id, then API key, then IP, in a per-process store. Signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and a count lives on the instance that served the request, not across a fleet.
+A limiter keys a request by who before where: user id, then API key, then IP, in a per-process store. The two limiters stack rather than replace: signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and the larger per-user budget binds first only for a user spread across addresses. A count lives on the instance that served the request, not across a fleet.
 
 ## When you need this
 
@@ -16,12 +16,12 @@ Reach for this page when you are seeing 429s, or deciding what the limits should
 
 The key is the first of these the limiter can resolve (`generateRateLimitKey` in `rate-limiter.ts`):
 
-| Tier    | Key              | Comes from                                                                                        |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------- |
-| User    | `userid:<id>`    | the session `authMiddleware` sets on `/api/v1/*` before its limiter runs                          |
-| API key | `apikey:<hash>`  | a resolver no limiter passes today: the starter has no API-key auth, so this branch waits for one |
-| Address | `ip:<address>`   | `findIp` from `@arcjet/ip`, a header parser with no account and no network call                   |
-| None    | `ip:<random id>` | a fresh id per request when no address resolves, which leaves that request unbounded              |
+| Tier    | Key              | Comes from                                                                                            |
+| ------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| User    | `userid:<id>`    | the session `authMiddleware` sets on `/api/v1/*` before its limiter runs                              |
+| API key | `apikey:<hash>`  | a resolver no limiter passes, since the starter has no API-key auth; a fork that adds it supplies one |
+| Address | `ip:<address>`   | `findIp` from `@arcjet/ip`, a header parser with no account and no network call                       |
+| None    | `ip:<random id>` | a fresh id per request when no address resolves, which leaves that request unbounded                  |
 
 The global limiter passes no resolver, so it always keys on address; the per-user limiter supplies the session's user id.
 
@@ -40,7 +40,7 @@ The global limiter passes no resolver, so it always keys on address; the per-use
 | `rateLimiterMiddleware`                       | every request, after CORS and the logger in `api/hono/src/index.ts` | `HONO_RATE_LIMIT`, 60 by default      | address  |
 | the per-user limiter in `middlewares/auth.ts` | `/api/v1/*`, once the session is set                                | `HONO_RATE_LIMIT * 2`, 120 by default | user id  |
 
-Both windows are `HONO_RATE_LIMIT_WINDOW_MS`, 60000 by default, and both variables are validated in `packages/env/src/api-hono.ts` ([Environment Variables](/docs/manage/environment)). The two stack rather than replace: a signed-in request still counts against the address budget it shares with everyone behind that address, so from one address a user meets the 60 before the 120. The larger tier binds only for a user spread across addresses, or on a deploy where the address tier resolves nothing (the callout above) and it is the only limit left.
+Both windows are `HONO_RATE_LIMIT_WINDOW_MS`, 60000 by default, and both variables are validated in `packages/env/src/api-hono.ts` ([Environment Variables](/docs/manage/environment)). On a deploy where the address tier resolves nothing (the callout above), the per-user tier is the only limit a signed-in request meets.
 
 ## What a throttled request sees
 
@@ -50,7 +50,7 @@ A `429` in the standard envelope, `{ "error": { "code": "TOO_MANY_REQUESTS", "me
 
 **Why do all anonymous visitors on a `*.vercel.app` host share one bucket?**
 
-On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Whether Vercel stamps the original client anywhere on the rewrite path is unverified, so the limiter does not read one yet. Until it does, raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
+On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Nothing in the limiter recovers the original client on that path, so raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
 
 **Are the limits shared across instances?**
 

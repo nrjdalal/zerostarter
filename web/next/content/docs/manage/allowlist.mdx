@@ -50,7 +50,7 @@ To take the console away from a person, demote them in the Users table, in eithe
 
 **Does a rule gate sign-up?**
 
-No. A rule decides who reaches the console and nothing about who may create an account; the starter has no sign-up gate. The two look like one list and are not: an empty console grant must admit nobody, while an empty sign-up gate must admit everybody, and one table carrying both is how an install locks itself out or opens itself up on a flag flip. If your fork needs a gate, `parseAllowlistRule` and `matchesAllowlist` in `@packages/auth/access` are pure and take any list, so the matching half exists and only the policy and its storage are yours; the canonical starter keeps the open shapes in `.github/notes/plans/signup-gating.md`.
+No. A rule decides who reaches the console and nothing about who may create an account; the starter has no sign-up gate. The two look like one list and are not: an empty console grant must admit nobody, while an empty sign-up gate must admit everybody, and one table carrying both is how an install locks itself out or opens itself up on a flag flip. If your fork needs a gate, `matchesAllowlist` and `parseAllowlistRule` in `@packages/auth/access` are pure and take any list, so the matching half exists and only the policy and its storage are yours; the canonical starter keeps the open shapes in `.github/notes/plans/signup-gating.md`.
 
 **Can a rule lift someone I revoked?**
 
