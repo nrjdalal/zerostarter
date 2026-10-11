@@ -83,13 +83,13 @@ A clone that skips `init` draws the marketing line by hand: delete `web/next/src
 
 ### Skills you have customized
 
-The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`, and sync then decides per skill whether that update is yours to take:
+The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`. Each skill the CLI writes opens with a `[!CAUTION]` note whose `> Synced from` line is the opt-in, and sync decides per skill whether an update is yours to take:
 
 | The skill                                                                                  | Sync does                                                                                                        |
 | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `source` is this repo, the `[!CAUTION]` note is intact, and the body is what the CLI wrote | Takes the update                                                                                                 |
 | `source: local`, a tool name (vendored), or another upstream                               | Leaves it exactly as it is, and never restamps its `source`                                                      |
-| The note removed                                                                           | Yours; left alone                                                                                                |
+| That note, or its `> Synced from` line, removed                                            | Yours; left alone                                                                                                |
 | Edited since the CLI wrote it                                                              | Keeps your version and names it in the summary; delete the skill directory and sync again to take upstream's     |
 | No record in `.sync.json` (scaffolded by an older CLI)                                     | Takes the update and names it; `git restore --source=HEAD -- .agents/skills/<name>/SKILL.md` brings an edit back |
 

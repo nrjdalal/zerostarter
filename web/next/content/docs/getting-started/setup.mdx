@@ -48,7 +48,7 @@ Turborepo starts both apps through [portless](https://portless.sh), one proxy on
 
 ## Sign in
 
-A fresh scaffold has no OAuth configured, so **Login** in the navbar opens a dialog with one button, **Login (agents)**: `init` set `AGENT_SIGNIN_ENABLED=true`, and the route it posts to mints a real session with no OAuth round-trip, an `owner` the first time because that sign-in creates the account. It lands on `/dashboard`. The curl form and why the route cannot exist in a deploy are in [Working with Agents](/docs/getting-started/working-with-agents). Real users come from GitHub or Google in [Authentication](/docs/manage/authentication); each button appears once its credentials are set.
+A fresh scaffold has no OAuth configured, so **Login** in the navbar opens a dialog with one button, **Login (agents)**: `init` set `AGENT_SIGNIN_ENABLED=true`, and the route it posts to mints a real session with no OAuth round-trip, an `owner` the first time because that sign-in creates the account. It lands on `/dashboard`. The curl form is the `dev` skill's Agent login, and why the route cannot exist in a deploy is in [Working with Agents](/docs/getting-started/working-with-agents). Real users come from GitHub or Google in [Authentication](/docs/manage/authentication); each button appears once its credentials are set.
 
 ## Common questions
 
