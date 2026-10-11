@@ -35,7 +35,7 @@ Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and
 - Footer content renders in a `footer` beside `main`, never a `div` inside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer.
 - A `section` with a visible heading is named by `aria-labelledby` on that heading's id, since a hand-written `aria-label` leaks authoring vocabulary ("Hero") into the accessibility tree; a wrapper with no visible heading (a `role="region"` scroll container) takes `aria-label`.
 - A scrollable region (a code block, a wide table) carries `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
-- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page whose table has to fill the viewport, which passes `flex h-svh flex-col` to `PageShell`.
+- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page whose table has to fill the viewport: it passes `flex h-svh flex-col` to `PageShell` and `flex-1 min-h-0` down to the scroll region, since a `min-h-svh` ancestor is not a definite height.
 
 ## Motion
 
@@ -50,11 +50,11 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 - **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack.
 - **Toasts:** `toast.add({ title, type })` from `@/components/ui/toast`, rendered by the `Toaster` in `providers.tsx` and used as the component ships (no wrapper, no toast library), so a sync carries nothing for it; the surface stays neutral and the kind shows in the icon, red for an error.
 - **Icons:** `@remixicon/react`.
-- **Primitives (`components/ui/*`):** extending one is a `shadcn-sync` override that patches the file in place, since the sync re-scaffolds `ui/` and a forked copy would drift from the registry.
+- **Primitives (`components/ui/*`):** extending one is a `shadcn-sync` override.
 
 ## Data tables
 
-A table composes the `components/data-table.tsx` family; its leading comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region, and features register once in `lib/data-table-features.ts`, so every table shares them.
+A table composes the `components/data-table.tsx` family; its leading comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region, features register once in `lib/data-table-features.ts`, so every table shares them, and a table's own files carry `"use no memo"`, as the reference does.
 
 - A column id says what the column shows, not the backing field (`status` over `banned`). A sortable column takes `extra` over `width`: the auto path reserves room for the sort button, a fixed width clips the header.
 - A select column exists only with a selection action and stays left-aligned; those actions go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.

@@ -14,7 +14,7 @@ Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming
 
 ## 2. Review the diff
 
-Read `git diff`. Done when it is empty or every hunk is a registry change under `ui/`; a hunk that drops an override is a guard whose target moved (step 4).
+Read `git diff`. Done when it is empty or every hunk is a registry change in what the sync re-scaffolds (`ui/`, `globals.css`, `components.json`); a hunk that drops an override is a guard whose target moved (step 4).
 
 ## 3. Type-check
 
@@ -26,7 +26,7 @@ In `shadcn-customize.ts` only: extend `RESTORE`, or add a shape-keyed ts-morph p
 
 ## 5. Commit the residual
 
-Commit with the `gh-commit` skill. Done when the commit holds only `ui/` files plus any catalog bump.
+Commit with the `gh-commit` skill. Done when the commit holds only the re-scaffolded paths plus any catalog bump.
 
 ## Guards
 

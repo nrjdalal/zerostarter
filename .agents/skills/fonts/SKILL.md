@@ -37,7 +37,7 @@ Omitted, `weight` leaves the face at 400 and every bold glyph synthesizes. A ser
 
 ## 4. Wire the role
 
-In `globals.css` `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`. The sans also moves `FONT` in `packages/scripts/src/data-table-metrics.ts` (the table measures header labels from bundled metrics of that woff2) and `FONT_TO` in `.github/scripts/shadcn-customize.ts` (or the next sync restores the old sans). Done when `rg -- "<name>" .github/scripts/shadcn-customize.ts packages/scripts/src/data-table-metrics.ts web/next/src/app/globals.css` hits the role, and for the sans all three files, which is what `rg -- "dm-sans"` over them lists today.
+In `globals.css` `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`. The sans also moves `FONT` in `packages/scripts/src/data-table-metrics.ts` (the table measures header labels from bundled metrics of that woff2) and `FONT_TO` in `.github/scripts/shadcn-customize.ts` (or the next sync restores the old sans). Done when `rg -- "<name>" .github/scripts/shadcn-customize.ts packages/scripts/src/data-table-metrics.ts web/next/src/app/globals.css` hits the role, and for the sans all three files.
 
 ## 5. Verify
 
