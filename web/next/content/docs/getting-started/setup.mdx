@@ -58,7 +58,7 @@ Not without Bun installed: `npx zerostarter init` on a machine without it used t
 
 **What happens when I run `init` again?**
 
-The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, while `-c` on pglaunch is the only thing that forces a fresh one; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
+The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, and `init` asks pglaunch for a fresh one only when that first run printed no URL; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
 
 **Can two checkouts run `bun run dev` at once?**
 
