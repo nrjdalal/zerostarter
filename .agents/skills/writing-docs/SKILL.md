@@ -6,7 +6,7 @@ source: local
 
 # Writing docs pages
 
-A docs page orients one reader around one subject: what it does for them, when they need it, how to tell it is working, and where it sits among its neighbours. The page is the reader's map; the runbook lives in a skill and the facts live in the code, and the page points at both. A page that pastes a config file or restates a skill's steps is a second copy that drifts the moment the first moves, so `doc-sync` spends its time chasing it.
+A docs page orients one reader around one subject: what it does for them, when they need it, how to tell it is working, and where it sits among its neighbors. The page is the reader's map; the runbook lives in a skill and the facts live in the code, and the page points at both. A page that pastes a config file or restates a skill's steps is a second copy that drifts the moment the first moves, so `doc-sync` spends its time chasing it.
 
 ## 1. Pin the page
 
@@ -35,19 +35,19 @@ A question filed twice is one the page owes an answer to; anything renamed or mo
 
 ## 3. Check the facts against the code
 
-A page outlives the code it describes, so every claim is re-read at the source before it is kept: a path with `ls`, a script in `package.json`, an env var in `packages/env/src/`, a command by running it, a behaviour in the file that implements it, a dependency's claim in the installed package under `node_modules`. The production page is the before: open it beside the source and mark what moved, what was removed, and what was added since. Done when every path, command, env var and behaviour on the page is checked against the current source, and the obsolete ones are gone.
+A page outlives the code it describes, so every claim is re-read at the source before it is kept: a path with `ls`, a script in `package.json`, an env var in `packages/env/src/`, a command by running it, a behavior in the file that implements it, a dependency's claim in the installed package under `node_modules`. The production page is the before: open it beside the source and mark what moved, what was removed, and what was added since. Done when every path, command, env var and behavior on the page is checked against the current source, and the obsolete ones are gone.
 
 ## 4. Write the frame
 
-The frame is the same on every page; the middle is the page's own.
+Every page takes this frame as it is rewritten, and the middle is the page's own; today the pages carry only `## Next`, so the frame is what a rewrite converges on.
 
-- **Opening, no heading.** One or two paragraphs: what the subject does for the reader, then the defining constraint, the single fact that makes it behave differently from the obvious default, as a plain sentence rather than a labelled aside. This is the most valuable line on the page.
+- **Opening, no heading.** One or two paragraphs: what the subject does for the reader, then the defining constraint, the single fact that makes it behave differently from the obvious default, as a plain sentence rather than a labeled aside. This is the most valuable line on the page.
 - **`## When you need this`.** The trigger: reach for this page when. Where a sibling page is confusable, add the other half: for that, see the sibling.
 - **`## Prerequisites`**, only when something must already be in place (a running Docker daemon, a Vercel project, an Infisical workspace); a page that runs on a fresh clone has no such section.
 - **The middle**, one to three sections in the subject's vocabulary, shaped by its kind. Surface the subject's leading word (the term the reader will think with later: `catalog`, `envelope`, `window`) and use it throughout.
 - **`## Common questions`.** Each question in bold, the answer beneath it, sharpest first, no sub-headings. Say the unflattering thing where it is true. Omit the heading when step 2 found nothing.
 - **`## It's working if`.** Bullets the reader can check in their own app without opening the source: a URL that renders, an output line, a UI state, an error that names the cause. Omit the heading where the tells stay vague.
-- **`## Next`.** Two to four links that situate the page: the neighbour a reader usually needs next, with a because-clause each.
+- **`## Next`.** Two to four links that situate the page: the neighbor a reader usually needs next, with a because-clause each.
 
 Done when the frame's sections are present in that order, or consciously omitted.
 
@@ -63,29 +63,8 @@ Done when no fenced block mirrors a repo file whole, and every skill the page to
 
 ## 6. Keep the voice
 
-Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Every claim stands on its own: a finding from a thread keeps its substance and drops who said it, since the reader is choosing a tool and an attribution dates as soon as the position moves. Hyphens, commas and colons carry pauses.
+Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Every claim stands on its own: a finding from a thread keeps its substance and drops who said it, since the reader is choosing a tool and an attribution dates as soon as the position moves. Hyphens, commas and colons carry pauses. Done when the page reads in this voice and every claim stands on its own.
 
 ## 7. Register and verify
 
-A new or renamed page is an entry in `web/next/docs.config.ts` first; the `.mdx` alone fails the strict gate. Then:
-
-```bash
-bun .github/scripts/docs.ts --strict
-cd web/next && bun run build
-```
-
-Open the rendered page (the `ui-verify` skill) and read it once as the reader would, with the production page beside it as the before. Done when the strict gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
-
-## Done when
-
-- Every path, command, env var and behaviour on the page is checked against the current source.
-- The opening states the job and the defining constraint as plain prose.
-- `## When you need this` names the trigger, and the sibling where one is confusable.
-- `## Prerequisites` is present where something must be in place first, and absent where nothing must.
-- Every claim stands on its own, with no author named or quoted.
-- The middle surfaces the leading word and matches the page's kind.
-- `## Common questions` holds only what the hunt found; `## It's working if` holds only what the reader can check.
-- Every skill the page touches is linked, and no fenced block mirrors a repo file whole.
-- Every branch is a table or a list.
-- `## Next` has two to four links with a because-clause each.
-- The page is registered in `docs.config.ts`, the strict gate and the build pass, and the rendered page reads as one map.
+A new or renamed page is an entry in `web/next/docs.config.ts` first; the `.mdx` alone fails the strict gate. Run the gate and the build the way `doc-sync` step 4 says, then open the rendered page (the `ui-verify` skill) and read it once as the reader would, with the production page beside it as the before. Done when the gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
