@@ -58,7 +58,7 @@ A table composes the `components/data-table.tsx` family; its leading comments an
 
 - A column id says what the column shows, not the backing field (`status` over `banned`). A sortable column takes `extra` over `width`: the auto path reserves room for the sort button, a fixed width clips the header.
 - A select column exists only with a selection action and stays left-aligned; those actions go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.
-- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). A column marked `flex` takes the remaining width (the last one that can grow), so no spacer column is added.
+- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). One column is `flex: true` and takes the remaining width (the last visible column that can grow takes the slack), so no spacer column is added.
 - Sort UI is a plain label plus a bare icon-only button toggling asc and desc (icon before the label on a right-aligned column); hiding lives in `DataTableViewOptions`. Every table shows a single `defaultSorting`.
 - A time column reads relative through `relativeTime(value, now)` from `@/lib/time` (`5 min. ago`, `just now` under a minute), since a reader scanning a log wants how long ago; an absolute time is for what leaves the screen (a copy, an export, an API response). A row with nothing to show renders `-`.
 
