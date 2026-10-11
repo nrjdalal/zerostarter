@@ -20,7 +20,7 @@ Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so t
 bunx pglaunch -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
 ```
 
-Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers from the container and the worktree `.env` names it, with the shared URL nowhere in the worktree.
+Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers from the container (its suffixed name is on pglaunch's `started` line) and the worktree `.env` carries its URL, with the shared URL nowhere in the worktree.
 
 ## 2. Edit the schema
 
