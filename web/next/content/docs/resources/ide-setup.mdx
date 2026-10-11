@@ -4,47 +4,28 @@ title: IDE Setup
 description: VS Code and Cursor settings for the Oxc toolchain.
 ---
 
-ZeroStarter ships `.vscode/` config so your editor lints and formats with the same [Oxc](https://oxc.rs) toolchain the CLI and git hooks use: one Rust tool in place of ESLint and Prettier, fast enough to run on every save.
+ZeroStarter ships a `.vscode/` folder so the editor lints and formats with the [Oxc](https://oxc.rs) toolchain, one Rust tool in place of ESLint and Prettier. The editor runs the same `oxlint` and `oxfmt` binaries the hooks and CI run, so what you see on save is what the commit will enforce.
+
+## When you need this
+
+The first time you open the repo in VS Code or Cursor, or when a file looks fine in the editor and the pre-commit hook rewrites it anyway.
 
 ## VS Code
 
-Open the repo and VS Code recommends one extension, from `.vscode/extensions.json`:
+Two files do all of it: `.vscode/extensions.json` recommends one extension, `oxc.oxc-vscode`, and `.vscode/settings.json` makes it the default formatter and turns on format-on-save. Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints with Oxlint and formats with Oxfmt inline; lint-staged runs the same binaries over the staged files on every commit, which catches an editor without it.
 
-```json
-{
-  "recommendations": ["oxc.oxc-vscode"]
-}
-```
-
-Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints (Oxlint) and formats (Oxfmt) inline. `.vscode/settings.json` makes it the default formatter and runs it on save:
-
-```json
-{
-  "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true
-}
-```
-
-The extension reads the project's root config, so the editor and the CLI can never disagree:
-
-- `.oxlintrc.jsonc`: lint rules.
-- `.oxfmtrc.jsonc`: formatting: no semicolons, sorted imports, Tailwind class sorting. It ignores `.agents/**`, so the AI skill docs are left untouched.
+The extension reads the root config, so the editor and the CLI cannot disagree: `.oxlintrc.jsonc` is a schema line with every rule at its default, and `.oxfmtrc.jsonc` turns off semicolons, sorts imports, sorts Tailwind classes, and ignores `.agents/**`, so the skill docs stay as written.
 
 ## Cursor
 
-[Cursor](https://cursor.com) reads the same `.vscode/` config, so the extension and format-on-save work with no extra setup.
+[Cursor](https://cursor.com) reads the same `.vscode/` folder, so the extension and format-on-save work with no extra setup.
 
-## From the terminal
+## It's working if
 
-No editor integration required. The same checks run from the shell, and again on commit:
-
-```bash
-bun run format        # format the tree with Oxfmt
-bun run format:check  # check formatting without writing
-bun run lint          # lint the tree with Oxlint
-```
+- A saved `.ts` file loses its semicolons and its imports come out sorted.
+- A file under `.agents/` stays exactly as you wrote it.
 
 ## Next
 
-- [Code Quality](/docs/manage/code-quality): how lint and format run automatically on every commit.
-- [Working with Agents](/docs/getting-started/working-with-agents): the AGENTS.md and skills Cursor and Claude Code read.
+- [Code Quality](/docs/manage/code-quality), because the hooks and CI run the same two binaries, in the order it lists.
+- [Contributing](/docs/contributing), because a formatted tree is the first thing a pull request is checked for.

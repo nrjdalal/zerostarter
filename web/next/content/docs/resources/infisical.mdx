@@ -4,39 +4,39 @@ title: Infisical
 description: "Optional secrets management: pull your .env from a shared vault."
 ---
 
-[Infisical](https://infisical.com) is an optional way to manage the root `.env`. Instead of each teammate hand-editing secrets and passing them around, a shared vault holds them and everyone pulls the same `.env` with one command.
+[Infisical](https://infisical.com) is an optional source for the root `.env`: a shared vault holds the secrets and every teammate pulls the same file with one command. Nothing in the repo reads Infisical at runtime; `@packages/env/*` validates whatever `.env` holds, wherever it came from, so a hand-written file behaves identically.
 
-You don't need it. Copy `.env.example` to `.env`, fill in the values, and the stack runs: the `@packages/env/*` modules validate whatever's there, no matter where it came from. Infisical only changes the _source_ of those values: one shared source of truth instead of a file copied through chat.
+## When you need this
 
-<Callout type="info" title="Optional">
+When a team is sharing and rotating secrets and wants one place to do it. Working alone, copy `.env.example` to `.env` and skip this page; [Environment Variables](/docs/manage/environment) says what each value means.
 
-Nothing in ZeroStarter requires Infisical. A hand-managed `.env` works identically. Reach for a vault when a team is sharing and rotating secrets and wants one place to do it.
+## Prerequisites
 
-</Callout>
+An Infisical workspace holding the keys `.env.example` names, and the CLI from npm (`bun add -g @infisical/cli`) or Homebrew (`brew install infisical/get-cli/infisical`).
 
 ## How the repo wires it
 
-A committed `.infisical.json` at the root records the `workspaceId` that links this checkout to an Infisical project. With it in place, `infisical export` writes the root `.env` (or a stage-specific `.env.<stage>`) that `@packages/env/*` reads and validates at runtime. Infisical is the source of secrets; the `.env` file is the local artifact they land in.
+`.infisical.json` at the root links the checkout to a project: a `workspaceId`, a `defaultEnvironment` (empty, so the CLI falls back to `dev`), a `gitBranchToEnvironmentMapping` (unset), and no secret, which is why it is safe to commit. The canonical starter commits its own; the file is fork-excluded, so a fork links its checkout itself:
+
+```sh
+infisical login   # opens the browser
+infisical init    # writes .infisical.json with your project's id
+```
+
+From then on one command writes the `.env` that `@packages/env/*` reads:
 
 ```sh
 infisical export --env=dev --output-file=./.env
 ```
 
-`--env` is one of `dev`, `staging`, or `prod`.
+`--env` is one of your project's environment slugs (`dev`, `staging` and `prod` on a fresh project); omitted, the CLI reads `defaultEnvironment`, then falls back to `dev`. Re-run the export whenever a secret changes: Infisical is the source, `.env` the local artifact it lands in. Machine identities for CI and the full flag list are in the [CLI reference](https://infisical.com/docs/cli/overview).
 
-## Set it up
+## It's working if
 
-Install the CLI, log in, and link this checkout to your project:
-
-```sh
-bun add -g @infisical/cli
-infisical login          # opens the browser; add --plain --silent for CI
-infisical init           # writes .infisical.json with your workspaceId
-```
-
-Then re-run `infisical export` whenever secrets change. See the [Infisical CLI reference](https://infisical.com/docs/cli/overview) for machine identities, self-hosting, and the full flag list.
+- `infisical export` with no output file prints `KEY=value` lines for the keys `.env.example` names.
+- After the export, `bun run dev` starts without an environment validation error.
 
 ## Next
 
-- [Environment Variables](/docs/manage/environment): the .env this fills, and how @packages/env validates it per-consumer.
-- [Quickstart](/docs/getting-started/setup): where the .env first comes into play.
+- [Environment Variables](/docs/manage/environment), because it is the `.env` this fills and the validation that reads it.
+- [Quickstart](/docs/getting-started/setup), because that is where `.env` first comes into play, with or without a vault.
