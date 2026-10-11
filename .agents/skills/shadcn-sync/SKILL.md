@@ -10,11 +10,11 @@ source: local
 
 ## 1. Run the sync
 
-Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming the files, and root `package.json`, which the sync resets, sits outside that check. Done when it exits 0 after a `[shadcn-customize] restored from HEAD:` line and a `[shadcn-customize] patched:` line per patched file in Guards; a throw naming a file and `shape changed`, or ts-morph's `Expected to find function named`, names the guard to repair (step 4).
+Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming the files, and root `package.json`, which the sync resets, sits outside that check. Done when it exits 0 after a `[shadcn-customize] restored from HEAD:` line and a `[shadcn-customize] patched:` line per patched file in Guards; a throw naming its target and `shape changed`, or ts-morph's `Expected to find function named`, names the guard to repair (step 4).
 
 ## 2. Review the diff
 
-Read `git diff`. Done when it is empty or every hunk is a registry change in what the sync re-scaffolds (`ui/`, `globals.css`, `components.json`); a hunk that drops an override is a guard whose target moved (step 4).
+Read `git diff`. Done when it is empty or every hunk is a registry change in what the sync re-scaffolds (`components.json`, `globals.css`, `ui/`); a hunk that drops an override is a guard whose target moved (step 4).
 
 ## 3. Type-check
 

@@ -1,6 +1,6 @@
 ---
 name: design
-description: Follow and maintain the app's UI conventions. Use when doing UI, styling, or component work (spacing, color, cursor, layout, typography), or when making or changing a design-system convention.
+description: Follow and maintain the app's UI conventions. Use when doing UI, styling, or component work (color, cursor, layout, spacing, typography), or when making or changing a design-system convention.
 source: local
 ---
 
@@ -35,7 +35,7 @@ Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and
 - A page that renders its own `main` (marketing, docs, blog, `not-found`) puts footer content in a `footer` beside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer. A page inside `SidebarShell` has no page footer, since the shell owns `main` and a `footer` inside it is only a section footer.
 - A `section` with a visible heading is named by `aria-labelledby` on that heading's id, since a hand-written `aria-label` leaks authoring vocabulary ("Hero") into the accessibility tree; a wrapper with no visible heading (a `role="region"` scroll container) takes `aria-label`.
 - A scrollable region (a code block, a wide table) carries `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
-- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page whose table has to fill the viewport: it passes `flex h-svh flex-col` to `PageShell` and `flex-1 min-h-0` down to the scroll region, since a `min-h-svh` ancestor is not a definite height.
+- A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page hosting a full-height table: it passes `flex h-svh flex-col` to `PageShell` and `flex-1 min-h-0` down to the scroll region, since a `min-h-svh` ancestor is not a definite height.
 
 ## Motion
 
@@ -43,22 +43,22 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 
 ## Components
 
-- **Loading:** a wait is `<Spinner />`, bare, inside the surface that is waiting. The authed route groups carry no route `loading.tsx`: a segment's boundary wraps its page, not the slow layout above it, so the fallback would cover a page that was never the wait.
+- **Badges and identity:** a pill is `Badge` (a variant, plus a className for a semantic color like `text-success`); an identity row (avatar, name, email) is `Item` with `ItemMedia` and `ItemContent`. Two stay hand-rolled: the sidebar trigger identity inside `SidebarMenuButton`, where the chevron is a sibling, and the landing page's larger `Eyebrow` pill, since `Badge` is sized for compact UI.
 - **Dialogs:** `DialogContent` renders bare at its default width; a dialog that needs more (the auth dialog's `max-w-md`) is the exception that earns its class.
 - **Empty states:** an empty state is `Empty`.
-- **Badges and identity:** a pill is `Badge` (a variant, plus a className for a semantic color like `text-success`); an identity row (avatar, name, email) is `Item` with `ItemMedia` and `ItemContent`. Two stay hand-rolled: the sidebar trigger identity inside `SidebarMenuButton`, where the chevron is a sibling, and the landing page's larger `Eyebrow` pill, since `Badge` is sized for compact UI.
 - **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack (`FieldError` takes `errors={field.state.meta.errors}`).
-- **Toasts:** `toast.add({ title, type })` from `@/components/ui/toast`, rendered by the `Toaster` in `providers.tsx` and used as the component ships (no wrapper, no toast library), so a sync carries nothing for it; the surface stays neutral and the kind shows in the icon, red for an error.
 - **Icons:** `@remixicon/react`.
+- **Loading:** a wait is `<Spinner />`, bare, inside the surface that is waiting. The authed route groups carry no route `loading.tsx`: a segment's boundary wraps its page, not the slow layout above it, so the fallback would cover a page that was never the wait.
 - **Primitives (`components/ui/*`):** extending one is a `shadcn-sync` override.
+- **Toasts:** `toast.add({ title, type })` from `@/components/ui/toast`, rendered by the `Toaster` in `providers.tsx` and used as the component ships (no wrapper, no toast library), so a sync carries nothing for it; the surface stays neutral and the kind shows in the icon, red for an error.
 
 ## Data tables
 
-A table composes the `components/data-table.tsx` family; its leading comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region, features register once in `lib/data-table-features.ts`, so every table shares them, and a table's own files carry `"use no memo"`, as the reference does.
+A table composes the `components/data-table.tsx` family; its leading comments and `lib/data-table-layout.ts` hold the mechanics (in the canonical starter, the `manage/data-tables` docs page too), and the console users table is the reference. Every table scrolls infinitely in its region. Features register once in `lib/data-table-features.ts`, so every table shares them, and a table's own files carry `"use no memo"`, as the reference does.
 
 - A column id says what the column shows, not the backing field (`status` over `banned`). A sortable column takes `extra` over `width`: the auto path reserves room for the sort button, a fixed width clips the header.
 - A select column exists only with a selection action and stays left-aligned; those actions go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.
-- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). The last column takes the remaining width, so no spacer column is added.
+- Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). A column marked `flex` takes the remaining width (the last one that can grow), so no spacer column is added.
 - Sort UI is a plain label plus a bare icon-only button toggling asc and desc (icon before the label on a right-aligned column); hiding lives in `DataTableViewOptions`. Every table shows a single `defaultSorting`.
 - A time column reads relative through `relativeTime(value, now)` from `@/lib/time` (`5 min. ago`, `just now` under a minute), since a reader scanning a log wants how long ago; an absolute time is for what leaves the screen (a copy, an export, an API response). A row with nothing to show renders `-`.
 
