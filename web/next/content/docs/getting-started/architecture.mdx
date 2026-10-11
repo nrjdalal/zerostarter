@@ -71,7 +71,7 @@ The root `package.json` catalog: every workspace references it, so it cannot dri
 
 - Rename a column in `packages/db/src/schema/` and `bun run check-types` fails in `api/hono`, naming the router that selects it.
 - Rename a key in a route's response and the same command fails in `web/next`, naming the component that reads it.
-- Both hold from the repo root, where `check-types` rebuilds the API's declaration file first; run inside `web/next` alone, the check reads the API's last build and a fresh rename passes.
+- `bun run check-types` from the repo root reports either failure on its first run, since it rebuilds the API's declaration file before `web/next` reads it.
 
 ## Next
 

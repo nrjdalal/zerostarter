@@ -29,7 +29,7 @@ The run ends on `<name> is ready` and a **Next steps** note. With a database, th
 
 <Callout type="warn" title="If Docker was down">
 
-`init` leaves `POSTGRES_URL` empty, and the note says so: `set POSTGRES_URL in .env`, then `bun run db:migrate`. Until both are done, `bun run dev` fails the API's env check with `Invalid environment variables` naming `POSTGRES_URL`. Any Postgres works, a hosted one like [Neon](https://neon.com) included; the migrate script builds what Drizzle Kit needs first, so it runs on a fresh scaffold.
+`init` leaves `POSTGRES_URL` empty, and the note says so: `set POSTGRES_URL in .env`, then `bun run db:migrate`. Until both are done, `bun run dev` fails the API's env check with `Invalid environment variables` naming `POSTGRES_URL`. Any Postgres works, a hosted one like [Neon](https://neon.com) included; the migrate script builds the env package first, and Drizzle Kit talks to the database through the Node `postgres` driver that `packages/db` carries, since it cannot use `bun:sql`, so the command runs on a fresh scaffold.
 
 </Callout>
 
@@ -54,7 +54,7 @@ A fresh scaffold has no OAuth configured, so **Login** in the navbar opens a dia
 
 **Can I run it with `npx`?** Not without Bun installed: `npx zerostarter init` on a machine without it used to die on the first spawn with `spawnSync bunx ENOENT`. It now stops before any prompt, prints the `bunx --bun zerostarter init` re-run, and offers to install Bun.
 
-**What happens when I run `init` again?** The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, and forces a fresh one only if the reused database rejects the migrations. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
+**What happens when I run `init` again?** The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, while `-c` on pglaunch is the only thing that forces a fresh one; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
 
 **Can two checkouts run `bun run dev` at once?** Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.zerostarter.localhost:1355` and `zerostarter.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
 
