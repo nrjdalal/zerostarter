@@ -59,7 +59,7 @@ jobs:
         if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.0
+          bun-version: 1.4.3
 
       - name: Move the version forward to what the window has earned
         if: steps.release.outputs.window == 'open' && github.ref == 'refs/heads/canary'

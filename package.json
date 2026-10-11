@@ -69,7 +69,7 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "bun@1.4.0",
+  "packageManager": "bun@1.4.3",
   "catalog": {
     "@arcjet/ip": "^1.14.1",
     "@base-ui/react": "^1.9.0",

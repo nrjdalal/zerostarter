@@ -8,7 +8,7 @@ Two commands take you from nothing to a running, signed-in app.
 
 <Callout type="info" title="Prerequisites">
 
-- **Bun**, required. The repo pins `bun@1.4.0` via `packageManager` in the root `package.json`. If it is missing, the CLI shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you.
+- **Bun**, required. The repo pins `bun@1.4.3` via `packageManager` in the root `package.json`. If it is missing, the CLI shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you.
 - **`bunx`, not `npx`.** The CLI shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress.
 - **Docker**, optional. `init` uses it to provision a local Postgres automatically; without it you set `POSTGRES_URL` yourself.
 

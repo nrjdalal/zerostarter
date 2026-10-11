@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { exists } from "@/io"
 import { ok, run, runTail } from "@/spawn"
 
-const GITPICK = "gitpick@6.0.0"
+const GITPICK = "gitpick@6.1.1"
 
 // Install dependencies in `dir`, showing a rolling window of bun's output that collapses to a done step, keeping the tail (which carries bun's "N packages installed [time]" summary line). Runs the fork's lifecycle scripts (git hooks via prepare, catalog sync) as a normal `bun install` would.
 export const bunInstall = async (dir: string): Promise<void> => {
