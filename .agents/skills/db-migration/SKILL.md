@@ -17,10 +17,10 @@ Post the table or the altered columns and name the choices that are hard to reve
 Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so the worktree needs its own `.env` first:
 
 ```bash
-bunx pglaunch -k    # disposable Postgres, kept across restarts
+bunx pglaunch -k    # disposable Postgres; -k keeps it and names it after the directory, so each worktree gets its own
 ```
 
-Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`, one container per worktree. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `pg_isready -h localhost -p <port>` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers and the worktree `.env` names the container, with the shared URL nowhere in the worktree.
+Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `pg_isready -h localhost -p <port>` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers and the worktree `.env` names the container, with the shared URL nowhere in the worktree.
 
 ## 2. Edit the schema
 
@@ -44,7 +44,7 @@ Read the generated `packages/db/drizzle/NNNN_<change>.sql`. An applied migration
 bun run db:migrate
 ```
 
-Local and ad hoc only: on canary and production deploys the API build applies pending migrations itself (`.github/scripts/migrate-on-deploy.ts`, PR previews skipped), so a migration merged to canary lands on the next deploy. Done when it exits 0 against the container and `bun run db:studio` shows the new shape.
+Local and ad hoc only: on canary and production deploys the API build applies pending migrations itself (`.github/scripts/migrate-on-deploy.ts`, PR previews skipped), so a migration merged to canary lands on the next deploy. Done when it exits 0 against the container and `docker exec <container> psql -U postgres -c '\d <table>'` shows the new shape (`bun run db:studio` shows it in a browser).
 
 ## 5. Make the running stack see it
 
@@ -52,4 +52,4 @@ Local and ad hoc only: on canary and production deploys the API build applies pe
 bunx turbo run build --filter=@packages/db
 ```
 
-The API consumes the built dist, and a new table or export needs a full restart of dev (the `dev` skill); with no stack running, the build alone is the step. Done when the built dist carries the change and, with dev running, the API answers for it.
+The API consumes the built dist, and a new table or export needs a full restart of dev (the `dev` skill); with no stack running, the build alone is the step. Done when `rg <column or table> packages/db/dist` finds the change and, with dev running, the API answers for it.
