@@ -8,7 +8,7 @@ files:
 
 # Skills Manager
 
-The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `.github/scripts/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
+This skill covers the catalog and provenance; the prose of a skill itself follows `writing-for-agents`. The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `.github/scripts/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
 
 Each skill carries its **provenance** in frontmatter:
 

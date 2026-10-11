@@ -52,7 +52,7 @@ Local-only (needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`) and requires
 
 ## Skills
 
-Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
+Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit). Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
 
 **Custom**
 
@@ -78,6 +78,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                              |
 | [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                                       |
 | [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                                   |
+| [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them.                   |
 
 <!-- /skills:custom -->
 
@@ -85,9 +86,10 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 <!-- skills:vendored -->
 
-| Skill                                                  | Description                                                                                                              |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| [agent-browser](.agents/skills/agent-browser/SKILL.md) | Browser automation CLI for AI agents.                                                                                    |
-| [portless](.agents/skills/portless/SKILL.md)           | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+| Skill                                                            | Description                                                                                                              |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [agent-browser](.agents/skills/agent-browser/SKILL.md)           | Browser automation CLI for AI agents.                                                                                    |
+| [portless](.agents/skills/portless/SKILL.md)                     | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+| [writing-for-agents](.agents/skills/writing-for-agents/SKILL.md) | Writing documents for agents.                                                                                            |
 
 <!-- /skills:vendored -->

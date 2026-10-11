@@ -1,0 +1,83 @@
+---
+name: writing-docs
+description: Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them. Use when adding a docs page, rewriting one, or when a review finds a page that pastes config, restates a skill, or never says when to read it.
+source: local
+---
+
+# Writing docs pages
+
+A docs page orients one reader around one subject: what it does for them, when they need it, how to tell it is working, and where it sits among its neighbours. The page is the reader's map; the runbook lives in a skill and the facts live in the code, and the page points at both. A page that pastes a config file or restates a skill's steps is a second copy that drifts the moment the first moves, so `doc-sync` spends its time chasing it.
+
+## 1. Pin the page
+
+One subject, one job, one kind. The kind sets the shape of the middle:
+
+| Kind | The reader wants | The middle is |
+| --- | --- | --- |
+| explanation | to understand why it is built this way | the reasoning, in the subject's own vocabulary |
+| how-to | to reach a goal they already understand | the steps, each ending on what the reader sees |
+| reference | to look something up | tables, A→Z, one row per option |
+| tutorial | to be walked through the first time | one path, in order, with the result of each step |
+
+A page that wants two kinds is two pages. Done when the first paragraph can state the job in one sentence.
+
+## 2. Hunt the questions
+
+Real questions beat invented ones, so look before writing:
+
+```bash
+gh issue list --search "<subject>" --state all
+gh pr list --search "<subject>" --state all
+rg -n -i "<subject>" CHANGELOG.md
+```
+
+A question filed twice is one the page owes an answer to; anything renamed or moved in the changelog raises a "where did it go". The count stays honest: a well-discussed subject earns several, an obscure one earns none, and padding teaches nothing. Done when every question comes from a thread, a changelog line, or a plain reading of the subject.
+
+## 3. Write the frame
+
+The frame is the same on every page; the middle is the page's own.
+
+- **Opening, no heading.** One or two paragraphs: what the subject does for the reader, then the defining constraint, the single fact that makes it behave differently from the obvious default, as a plain sentence rather than a labelled aside. This is the most valuable line on the page.
+- **`## When you need this`.** The trigger: reach for this page when. Where a sibling page is confusable, add the other half: for that, see the sibling.
+- **The middle**, one to three sections in the subject's vocabulary, shaped by its kind. Surface the subject's leading word (the term the reader will think with later: `catalog`, `envelope`, `window`) and use it throughout.
+- **`## Common questions`.** Each question in bold, the answer beneath it, sharpest first, no sub-headings. Say the unflattering thing where it is true. Omit the heading when step 2 found nothing.
+- **`## It's working if`.** Bullets the reader can check in their own app without opening the source: a URL that renders, an output line, a UI state, an error that names the cause. Omit the heading where the tells stay vague.
+- **`## Next`.** Two to four links that situate the page: the neighbour a reader usually needs next, with a because-clause each.
+
+Done when the frame's sections are present in that order, or consciously omitted.
+
+## 4. Point instead of pasting
+
+- A procedure that a skill holds is named and linked (`db-migration`, `docker-test`, `release`), with the page keeping only the why and the trap the skill guards against. The skill carries the steps.
+- A config file is linked by path with a one-line gist. An excerpt shows the lines the page is about and names the file; the whole file lives in the repo.
+- A branch (two artifacts, four situations, five options) goes in a table or a list, since the reader is scanning for the one row that matches them.
+- An operational trap goes in a `<Callout type="warn">`; everything else is prose. GitHub's `> [!NOTE]` syntax renders as a quote here.
+- Rationale that the page needs stays; a design argument the page does not need moves to `.github/notes/`.
+
+Done when no fenced block mirrors a repo file whole, and every skill the page touches is linked rather than restated.
+
+## 5. Keep the voice
+
+Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Hyphens, commas and colons carry pauses.
+
+## 6. Register and verify
+
+A new or renamed page is an entry in `web/next/docs.config.ts` first; the `.mdx` alone fails the strict gate. Then:
+
+```bash
+bun .github/scripts/docs.ts --strict
+cd web/next && bun run build
+```
+
+Open the rendered page (the `ui-verify` skill) and read it once as the reader would. Done when the strict gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
+
+## Done when
+
+- The opening states the job and the defining constraint as plain prose.
+- `## When you need this` names the trigger, and the sibling where one is confusable.
+- The middle surfaces the leading word and matches the page's kind.
+- `## Common questions` holds only what the hunt found; `## It's working if` holds only what the reader can check.
+- Every skill the page touches is linked, and no fenced block mirrors a repo file whole.
+- Every branch is a table or a list.
+- `## Next` has two to four links with a because-clause each.
+- The page is registered in `docs.config.ts`, the strict gate and the build pass, and the rendered page reads as one map.

@@ -37,9 +37,9 @@ rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .age
 
 ## 3. Sync, coupled surfaces included
 
-Fix each hit in the same change. Two couplings are easy to miss:
+Fix each hit in the same change: a page that needs more than a line follows `writing-docs`, and a skill follows `writing-for-agents`. Two couplings are easy to miss:
 
-- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog row. A vendored one also touches that page's count of how many skills are vendored, and `skills-lock.json` when it is a stub pinned for integrity (`agent-browser`); one copied in full (`portless`) has no lock entry.
+- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog row. A vendored one also touches that page's count of how many skills are vendored, and `skills-lock.json` when the `skills` CLI installed it (`agent-browser`, `writing-for-agents`); one copied by hand (`portless`) has no lock entry.
 - **Adding, removing, or renaming a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
 
 ## 4. Verify with the repo's own drift gate
