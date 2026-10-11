@@ -12,7 +12,7 @@ source: local
 
 `.gitignore` is the source of truth and `.dockerignore` follows it byte-for-byte. Every ignore rule and every `!` un-ignore that narrows one (`!.yarn/patches`) lives in the shared body of both: same entry, same section, same order, same commit.
 
-The one sanctioned divergence is the labeled tail at the end of each file (`# git overrides` versus `# docker overrides`), where a tool's own override goes; `!.env.example` sits in both tails, since each tool re-includes the example for its own reason, so the label is all that differs.
+The one sanctioned divergence is the labeled tail at the end of each file (`# git overrides` versus `# docker overrides`), where a tool's own override goes; `!.env.example` sits in both tails, so the example reaches git and the build context while `.env*` stays out of both, and the label is all that differs.
 
 ## .env stays out of the context
 
