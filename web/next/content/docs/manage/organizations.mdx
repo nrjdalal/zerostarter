@@ -5,31 +5,33 @@ title: Organizations & Teams
 description: "Multi-tenant from Better Auth: the org and team data model, roles, invitations, and active-org switching."
 ---
 
-Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/schema.ts`. The plugin backs the whole surface (organizations, members, teams, invitations, and an active org per session) with tables in the same Drizzle schema as the rest of your data, so a tenant is just rows you already own, not a separate service.
+Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/schema.ts`. Organizations, members, teams, invitations and an active organization per session are rows in the same Drizzle schema as the rest of your data (`packages/db/src/schema/auth.ts`, generated from that declaration), so a tenant is rows you already own, not a separate service.
 
-The starter wires the two flows a product needs on day one, creating an organization and switching between them, and leaves the rest of the plugin's capability (invitations, teams, member management) available but unwired, ready for your product logic.
+An org role on `member.role` governs one tenant; the console ladder on `user.role` never reads it. The `owner` of an organization is a plain `user` to `/console` until the ladder says otherwise, and a console `admin` holds no seat in any organization until a `member` row gives them one. The starter wires the two flows a product needs on day one, creating an organization and switching between them, and leaves the rest of the plugin (invitations, teams, member management) available but unwired, for your product logic.
+
+## When you need this
+
+Reach for this page when you are building a tenant feature: anything scoped to an organization, a team, or a seat in one. For platform roles, who reaches `/console` and what they may change there, see [Authentication](/docs/manage/authentication).
 
 ## The data model
 
-Five tables in `packages/db/src/schema/auth.ts` hold the tenancy, cascading from their organization or team on delete (`invitation.teamId` carries no foreign key):
+Five tables in `packages/db/src/schema/auth.ts` hold the tenancy. Rows cascade from their organization, team or user on delete; `invitation.teamId` alone carries no foreign key.
 
-| Table          | Holds                                                                                   |
-| -------------- | --------------------------------------------------------------------------------------- |
-| `organization` | The tenant: `name`, a unique `slug`, an optional `logo`, and free-form `metadata`.      |
-| `member`       | A user's membership in an org, carrying the org `role` (default `member`).              |
-| `team`         | A named group inside an org.                                                            |
-| `teamMember`   | A user's membership in a team (flat, no per-team role).                                 |
-| `invitation`   | A pending invite: `email`, target `role`, optional `teamId`, `status`, and `expiresAt`. |
+| Table          | Holds                                                                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organization` | The tenant: `name`, a unique `slug`, an optional `logo`, and free-form `metadata`.                                                                        |
+| `member`       | A user's seat in an organization, with the org `role` (default `member`).                                                                                 |
+| `team`         | A named group inside an organization; `memberCount` is kept current by the plugin on every seat change.                                                   |
+| `teamMember`   | A user's seat in a team, flat, with no per-team role; `membershipKey` is unique, written on every add and checked before one, so a seat is never doubled. |
+| `invitation`   | A pending invite: `email`, target `role`, optional `teamId`, `status`, `expiresAt`, and the `inviterId`.                                                  |
 
-The active organization and team ride on the session row itself as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup.
+The active organization and team ride on the session row as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup. `memberCount` and `membershipKey` arrived with Better Auth 1.7 (`packages/db/drizzle/0004_better_auth_1_7.sql`, which also backfills the count); a fork on an older migration takes them the way [Database](/docs/manage/database) describes.
 
-## Roles
+Three roles come with the plugin: `owner`, `admin` and `member`. Whoever creates an organization becomes its `owner`; everyone else joins as `member` unless an invitation names another role. Teams are flat, so membership is the only distinction inside one.
 
-An org has three roles from Better Auth's defaults: `owner`, `admin`, and `member`. Whoever creates an org becomes its `owner`; everyone else joins as `member` unless an invitation names a different role. These live on `member.role` and are entirely separate from the user-level `role` column that gates [`/console`](/docs/manage/authentication#the-console-role-ladder), which is a platform-wide rung, not an org role. Teams are flat: `teamMember` has no role column, so membership is the only distinction inside a team.
+## Wired and available
 
-## Reading the current context
-
-The client plugin (`web/next/src/lib/auth/client.ts`) exposes the org surface as hooks and methods on `authClient`. The starter's sidebar uses these:
+The client plugin in `web/next/src/lib/auth/client.ts` exposes the whole surface as hooks and methods on `authClient`; the dashboard sidebar's switcher (`web/next/src/components/dashboard/sidebar.tsx`) calls four of them:
 
 ```ts
 import { authClient } from "@/lib/auth/client"
@@ -41,39 +43,55 @@ await authClient.organization.create({ name, slug })
 await authClient.organization.setActive({ organizationId })
 ```
 
-The same plugin also provides everything the starter does not yet call: `organization.inviteMember`, `acceptInvitation`, `listInvitations`, `removeMember`, `updateMemberRole`, the team methods (`createTeam`, `setActiveTeam`, and friends, since teams are enabled), and permission checks (`hasPermission`). They work against the backend as soon as you build UI for them.
+Everything else works against the backend as soon as you build UI for it:
+
+| Capability                     | State                         | Build on                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create an organization         | wired, in the sidebar         | `organization.create`; the form takes a name of 2 to 32 characters and derives the slug from it                                                                                                                                                                                                                                                                                                                                     |
+| Switch the active organization | wired, in the sidebar         | `organization.setActive`; the choice survives a reload and a new sign-in                                                                                                                                                                                                                                                                                                                                                            |
+| Invitations                    | available, no UI and no email | the `invitation` table and the invite, accept and reject endpoints exist, but no `sendInvitationEmail` is configured, so an invite creates a row without delivering a link. Add `sendInvitationEmail` to the plugin in `packages/auth/src/schema.ts`, importing the sender inside the callback as [Authentication](/docs/manage/authentication) shows for magic link, then build the accept page on `organization.acceptInvitation` |
+| Teams                          | available, no UI              | `teams.enabled` is on and the tables are there, but nothing reads or writes `activeTeamId`; start from `createTeam` and `setActiveTeam`                                                                                                                                                                                                                                                                                             |
+| Member management              | available, no UI              | `removeMember`, `updateMemberRole` and `leave`                                                                                                                                                                                                                                                                                                                                                                                      |
+| Permission checks              | available                     | `hasPermission`                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## The active organization
 
-When a user switches orgs, the sidebar calls `setActive` and writes a per-user cookie, `last-active-org_<userId>`, so their choice survives a reload. On the next protected render, `web/next/src/app/(protected)/layout.tsx` reads that cookie and, if the session has no active org yet, POSTs to the org plugin's `set-active` endpoint to rehydrate it server-side. The result is that the active tenant is restored on login without a flash of the wrong org.
+When a user switches, the switcher calls `setActive` and writes a per-user cookie, `last-active-org_<userId>`, so the choice survives a reload. On the next protected render, `web/next/src/app/(protected)/layout.tsx` reads that cookie only when the session has no active organization yet, and POSTs to the plugin's `organization/set-active` endpoint with the request headers forwarded, so the session cookie goes along and the tenant is restored server-side before the page draws: no flash of the wrong organization.
 
-<Callout type="info" title="The active-org cookie is client-set">
+<Callout type="info" title="The cookie nominates; the session decides">
 
-`last-active-org_<userId>` is written with `document.cookie` (not `HttpOnly`), so it is a UI convenience, readable and writable in the browser, not a security boundary. The source of truth is `session.activeOrganizationId` on the row; the cookie only nominates which org to reactivate.
+`last-active-org_<userId>` is written with `document.cookie`, not `HttpOnly`, so it is a UI convenience the browser can read and rewrite, never a security boundary. The source of truth is `session.activeOrganizationId` on the row; the cookie only says which organization to reactivate.
+
+</Callout>
+
+<Callout type="warn" title="Role and org changes can lag five minutes">
+
+Better Auth caches the session in a cookie for `maxAge: 300` (`packages/auth/src/index.ts`), so a role or active-org change made elsewhere can take up to five minutes to show unless the cache is bypassed. The protected layout and the console gate both read the session with the cache disabled for exactly this reason, and the switcher refetches its queries after each mutation so its own view stays current.
 
 </Callout>
 
-## What is wired, and what is not
+## Common questions
 
-Working end to end in the app:
+**What does the server check when an organization is created?**
 
-- **Create an organization** from the dashboard sidebar (`organization.create`, slug derived from the name).
-- **Switch the active organization**, with the choice persisted and restored across sessions.
+Less than the form does. The plugin's own route accepts any non-empty `name` and `slug`, and the database adds only that the slug is unique; the 2 to 32 character limit and the slug derivation live in the sidebar form. A direct `POST /api/auth/organization/create` from curl bypasses both, so an unbounded name or an uppercase, non-URL-safe slug is possible today. The slug is not routed anywhere (organizations switch by id), so a collision is hygiene rather than a security hole. The backend rules, a `beforeCreateOrganization` hook sharing one schema with the form and `organizationLimit` for a per-user cap, are a backlog item in `.github/notes/plans/org-creation-restrictions.md`.
 
-Capable in the backend, but with no UI (and no email) yet:
+**The active organization did not come back after a reload. Where do I look?**
 
-- **Invitations.** The `invitation` table and the plugin's invite/accept/reject endpoints exist, but no `sendInvitationEmail` is configured, so an invite creates a row without delivering a link. Wire delivery by adding `sendInvitationEmail` to the plugin in `packages/auth/src/schema.ts`, importing the sender inside the callback as [Auth & Organizations](/docs/manage/authentication) shows for magic link, then build the accept page around `organization.acceptInvitation`.
-- **Teams.** `teams.enabled` is on and the tables are there, but nothing reads or writes `activeTeamId` yet. Build team UI on the `createTeam` / `setActiveTeam` methods.
-- **Member management.** `removeMember`, `updateMemberRole`, and `leave` are all available to build against.
+The web server's log. The restore is best-effort and never blocks the page: a non-2xx answer logs `failed to restore active organization: <status>` and a thrown fetch logs `failed to restore active organization` with the error, both from the protected layout. It runs only when the session has no active organization and the `last-active-org_<userId>` cookie is present, and it posts through `INTERNAL_API_URL` when that is set, so inside Docker a wrong internal URL is the usual cause.
 
-<Callout type="warn" title="Role and org changes can lag ~5 minutes">
+**Is there an organizations endpoint under `/api/v1`?**
 
-Better Auth caches the session in a cookie for `maxAge: 300`, so a role or active-org change made elsewhere can take up to five minutes to appear unless the cache is bypassed. The console gate reads the session with the cache disabled for exactly this reason; the org switcher refetches its queries after each mutation so the UI stays current.
+No. The organization surface is the plugin's own routes under `/api/auth/organization/*`, which `api/hono/src/routers/auth.ts` passes straight to Better Auth, so the typed client for it is the plugin's, not the RPC client. `/api/v1/session` leaves `activeOrganizationId` out of its response on purpose: it documents the session fields it names and nothing the plugins add. Read the active tenant from `authClient.useActiveOrganization()` in the browser, or `auth.api.getSession` on the server, as the protected layout does.
 
-</Callout>
+## It's working if
+
+- Creating an organization from the sidebar switcher ends in the toast `Organization created!`, and the switcher shows its name and slug as the active one.
+- A full reload, and a sign-out and sign-in, both come back with that organization active.
+- The creator's `member` row carries `role = owner`, and `session.active_organization_id` matches the organization's id.
 
 ## Next
 
-- [Authentication](/docs/manage/authentication): sign-in methods, sessions, and the `/console` role gate.
-- [Database](/docs/manage/database): the org and team tables, and how to add your own.
-- [Dashboard](/docs/manage/dashboard): the protected shell where the org switcher lives.
+- [Authentication](/docs/manage/authentication), because `user.role` and the console ladder are the other half of who may do what.
+- [Database](/docs/manage/database), because the tenancy tables are generated into `packages/db/src/schema/auth.ts`, and its example shows a table of your own referencing `organization.id`.
+- [Dashboard](/docs/manage/dashboard), because the switcher lives in its sidebar and the protected layout is where the restore runs.

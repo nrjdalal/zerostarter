@@ -4,49 +4,71 @@ title: Allowlist
 description: Grant console access by domain or address, without promoting people one at a time.
 ---
 
-Signing up is open to everyone, and every signed-in person gets the dashboard. The console is the separate, staff-facing area, and the allowlist is how you say who reaches it: a whole domain (`@example.com`) or a single address (`ada@example.com`).
+The console is the staff-facing area behind `/console`, and a rule here is how you let a whole domain (`@example.com`) or a single address (`ada@example.com`) into it without finding each person in the Users table. Signing up stays open to everyone and every signed-in person gets the dashboard; a rule decides only who reaches the console. Manage the list at **Console > Access > Allowlist**, admin and above.
 
-Manage it at **Console > Access > Allowlist**. A fresh fork ships with the `allowlist` [feature flag](/docs/manage/features) **off**, so console access is granted one person at a time until you turn it on; with it off the page 404s, the nav drops it, and the sign-in hook does nothing.
+A rule grants `member` once per account, on sign-in, only where `user.role_set_at` is empty. That column is the whole model: every deliberate rung change stamps it, by a rule or by a person, so a rule reaches someone nobody has ruled on, never overrules an admin, and never undoes a demotion, even while a rule still matches the account.
+
+## When you need this
+
+Reach for this page when a team at one domain should open the console and you do not want to promote them one at a time. A rule only ever grants the bottom rung; for lifting one person, or anyone to `admin` or `owner`, see the role ladder in [Authentication](/docs/manage/authentication#the-console-role-ladder).
+
+## Prerequisites
+
+The `allowlist` [feature](/docs/manage/features) on, in `packages/config/src/site.ts`. The starter ships it on; a fork made with `init` starts with it off unless you pass `--allowlist` or pick it in the prompt, so console access there is granted per person until you flip it. With it off the page renders the console's not-found page, the nav drops it, `/api/v1/admin/allowlist*` 404s, and the sign-in hook returns before reading a rule.
 
 ## What a rule does
 
-A rule grants **member**, the console's bottom rung: its holder opens the console and changes nothing. Member reaches what the starter puts there, which is the internal docs, and nothing under Access. Admin and owner stay deliberate, per-person promotions from the Users table, so no rule hands a whole domain either write access or sight of your users.
+A rule lifts a matching account to `member`, the console's bottom rung: its holder opens the console and changes nothing. Member reaches what the starter puts there, which is the internal docs, and nothing under Access, so no rule hands a whole domain write access or sight of your users. Admin and owner stay per-person promotions from the Users table.
 
-The grant is applied **on sign-in**, not only at sign-up, so adding `@example.com` covers colleagues who already have accounts, on their next sign-in, rather than only people who join later. It happens **once per account**: `user.role_set_at` records that a rung was decided, by a rule or by a person, and the hook only ever lifts an account carrying no such record. So a rule reaches someone nobody has ruled on, and never overrules an admin.
+The grant lands on sign-in, not only at sign-up, so adding `@example.com` covers colleagues who already have accounts on their next sign-in. One hook on session creation does it, so GitHub, Google and magic link are covered by the same rule. It never lowers anyone: someone already at admin or owner keeps their rung, and a rung granted by hand is untouched.
 
-It never lowers anyone. Someone already at admin or owner keeps their rung, and a role granted by hand is untouched by any rule.
+The grant is the one write around the console that is best effort: it sits on the sign-in path, so a database failure there is logged and skipped rather than stopping anyone signing in, and the next sign-in applies it. It still records itself in [Activity](/docs/manage/activity), naming the rule rather than a person, `Allowlist rule @example.com`, since nobody was signed in to do it.
+
+<Callout type="warn" title="A rule needs a verified address">
+
+Matching is by address, so a rule is only as strong as the proof behind the address, and the hook grants nothing to an account without `emailVerified`. GitHub and Google set it from the provider, and magic link, once you turn it on, proves possession. A fork that adds email and password without `requireEmailVerification` sees rules quietly stop granting, rather than turning a domain rule into self-service console access for anyone who can claim an address there.
+
+</Callout>
 
 ## How rules are read
 
 - **An empty list grants nothing.** A rule is a grant, so no rules means nobody is lifted, and adding your first one cannot hand the console to everyone by accident.
 - **A domain rule covers every address at that domain**, matched exactly. `@example.com` does not cover `@mail.example.com`, which needs its own rule.
 - **An address rule covers exactly one address.** Plus-addressing is not stripped, so a rule for `ada@example.com` does not cover `ada+test@example.com`, while a domain rule covers both.
-- **Case never matters.** Rules are normalized lowercase when saved, so one rule cannot be added twice in different cases.
+- **An address rule beats a domain rule** covering the same person. The specific rule is the one that grants, so the Activity line names it rather than whichever row the database returned first.
+- **Case never matters.** Rules are saved lowercase, so one rule cannot be added twice in different cases; the second attempt is refused as a `CONFLICT`.
 
-## Removing a rule
+The matching is `findAllowlistRule` in `packages/auth/src/access.ts`, a pure function with its own tests, and the sign-in hook asks it rather than deciding inline.
 
-Remove one rule from its row menu, or select several and remove them together. Either way, removing a rule stops future grants and nothing else. Anyone already promoted keeps their role, because a list edit that could silently demote a room full of people would make every edit dangerous.
+## Taking access away
 
-Adding and removing a rule are both recorded in [Console > History > Activity](/docs/manage/activity), which is the only place a removed rule leaves a trace, since removing it deletes the row that held who added it.
+Removing a rule stops future grants and nothing else. Remove one from its row menu or several from a selection, and anyone already lifted keeps their rung, because a list edit that could silently demote a room full of people would make every edit dangerous. The removal deletes the row that held who added it, so [Activity](/docs/manage/activity) is the only place it leaves a trace.
 
-To take console access away, demote the person in the Users table, in either order and whether or not a rule still matches them: the demotion is itself a decision, so no later sign-in undoes it. That holds for a rung a rule granted and for one granted by hand.
+To take the console away from a person, demote them in the Users table, in either order and whether or not a rule still matches them: the demotion stamps `role_set_at`, so no later sign-in undoes it. Offboarding is a [role change or a ban](/docs/manage/authentication#changing-a-role-banning-an-account), never a list edit.
 
-The one exception is an upgrade. `role_set_at` starts empty on every existing row, and an empty record reads as "nobody has decided yet", so an account you revoked to `user` **before** this shipped can be lifted once by a matching rule. There is no way to tell those apart in old data, which is the whole reason the column exists. If it matters on your install, re-run `bun run console:roles revoke <email>` after upgrading: it stamps the record, and the demotion is final from then on. Offboarding is a [role change or a ban](/docs/manage/authentication), never a list edit.
+## Common questions
 
-## Enforcement
+**Does a rule gate sign-up?**
 
-One hook on session creation, in `packages/auth`, so every sign-in path (email, GitHub, Google) is covered by the same rule with no per-provider wiring. It writes `user.role_set_at` alongside the rung and skips anyone already carrying it. Every other path that sets a rung stamps it too, so a demotion from the Users table or from `console:roles` is the last word. The grant records itself in Activity too, naming the rule rather than a person: `Allowlist rule @example.com`, since nobody was signed in to do it. The grant is best effort: a database failure there is logged and skipped rather than thrown, because that hook sits on the sign-in path and must never stop anyone signing in. A missed grant, and its line, is applied by the next sign-in.
+No. A rule decides who reaches the console and nothing about who may create an account; the starter has no sign-up gate. The two look like one list and are not: an empty console grant must admit nobody, while an empty sign-up gate must admit everybody, and one table carrying both is how an install locks itself out or opens itself up on a flag flip. If your fork needs a gate, `parseAllowlistRule` and `matchesAllowlist` in `@packages/auth/access` are pure and take any list, so the matching half exists and only the policy and its storage are yours; the canonical starter keeps the open shapes in `.github/notes/plans/signup-gating.md`.
 
-<Callout type="info" title="A rule needs a verified address">
+**Can a rule lift someone I revoked?**
 
-Matching is by address, so a rule is only as strong as the proof behind that address, and the hook requires `emailVerified` before it grants anything. The shipped sign-in methods all set it: OAuth comes from the provider, magic link proves possession. A fork that adds email and password without `requireEmailVerification` therefore sees rules quietly stop granting, rather than turning a domain rule into self-service console access for anyone who can claim an address there.
+Not once the revoke has stamped `role_set_at`, from the Users table or from `bun run console:roles revoke <email>`. The exception is history: the column starts empty on every row that existed before it did, and an empty record reads as "nobody has decided yet", so an account revoked to `user` before the allowlist shipped can be lifted once by a matching rule. Old data cannot tell those apart, which is why the column exists. If it matters on your install, re-run the revoke after upgrading; it stamps the record and the demotion is final from then on.
 
-</Callout>
+**I added the domain and a colleague still cannot open the console.**
 
-The Access section is an admin concern: reading and changing the list both require `admin`, enforced in the nav, on the page, and on every route behind it. A `member` does not see this page at all.
+Check, in order: they have not signed in again since the rule was added, because the grant lands on session creation and a session already open stays `user`; their address is not verified; their row already carries `role_set_at`, because someone once set or revoked their rung; the rule names the parent domain and they sign in from a subdomain; the `allowlist` feature is off.
+
+## It's working if
+
+- After adding `@yourdomain`, a colleague at that domain signs out and back in, and **Console** appears in their dashboard user menu.
+- Console > History > Activity shows `Set colleague@yourdomain to member` with the actor `Allowlist rule @yourdomain`, and `Added @yourdomain to the allowlist` under your own address just below it.
+- Adding `@YourDomain` a second time is refused with `@yourdomain is already on the list.` rather than saved as a second row.
+- With `allowlist: false`, Access shows no Allowlist entry and `/console/allowlist` renders the console's not-found page.
 
 ## Next
 
-- [Activity](/docs/manage/activity): the trail of rule edits and the grants they cause.
-- [Authentication](/docs/manage/authentication): the ladder a rule lifts people onto.
-- [Data Tables](/docs/manage/data-tables): the module this page is built from.
+- [Activity](/docs/manage/activity), because it is where a rule edit, and the grant it causes, leave their trace.
+- [Authentication](/docs/manage/authentication), because the ladder a rule lifts people onto, and the per-person promotions above `member`, are described there.
+- [Features](/docs/manage/features), because the `allowlist` flag is chosen there at `init` and flipped there later.
