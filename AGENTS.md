@@ -25,7 +25,7 @@ Guidance for AI coding agents in this repository: a Bun monorepo with the `web/n
 
 - ALWAYS: Follow the `design` skill for UI, styling, and design decisions, and update it in the same change when a convention changes.
 - NEVER: Hand-edit `web/next/src/components/ui/`; it is generated, and a customization goes through the post-sync script (`shadcn-sync`).
-- ALWAYS: Verify a frontend change in a real browser before opening or updating a PR, signed in as the agent, with before and after screenshots attached to the PR (`ui-verify`).
+- ALWAYS: Verify a frontend change in a real browser before opening or updating a PR, signed in as the agent where the page needs it, with before and after screenshots attached to the PR (`ui-verify`).
 
 ## Commits
 

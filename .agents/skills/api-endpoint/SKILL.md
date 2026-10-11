@@ -90,7 +90,7 @@ A client component reading REST data uses TanStack Query (see `components/common
 
 ## A route that returns a list
 
-Spread `pagingFields` into the response schema and `paging({ page, perPage, total })` into the payload, both from `api/hono/src/lib/paging.ts`, so every list answers the same four fields beside its collection and the end signal is computed once. The collection is named for what it holds (`users`, `events`, `rules`), not `data` or `items`, and comes first, with the paging fields sorted after it: relevance, then A→Z, as AGENTS.md states it.
+Spread `pagingFields` into the response schema and `paging({ page, perPage, total })` into the payload, both from `api/hono/src/lib/paging.ts`, so every list answers the same four fields beside its collection and the end signal is computed once. The collection is named for what it holds (`users`, `events`, `rules`) rather than `data` or `items`, and comes first, with the paging fields sorted A→Z after it: where one key is what the response is about and the rest describe it, that key leads and the others sort after it (`users`, then `hasNextPage`, `page`, `perPage`, `total`). Everything else, a row's own fields included, is plain A→Z with `id` in its alphabetical place rather than hoisted; sorting the subject too would put it in a different position on every endpoint.
 
 ## A route that acts on a set
 
