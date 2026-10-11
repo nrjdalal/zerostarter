@@ -63,10 +63,6 @@ No, and it is not the differentiator either: the typed architecture is, and the 
 
 The API never imports from the web app, so the frontend is replaceable by design, and a complete migration exists on the branch `web/cutover`, verified locally against the full end-to-end suite. It is parked on its deploy: TanStack Start's SSR emits Bun-only `direct` streams, which Vercel's Node runtime rejects, and Vercel's Bun runtime does not trace the OG renderer into the function. Self-hosting the Docker image is the path that works; the starter tracks the state in `.github/notes/plans/tanstack-start-migration.md`.
 
-**Which list is authoritative when this page and the README disagree?**
-
-The root `package.json` catalog: every workspace references it, so it cannot drift from what runs. This page names the layers and the reason for each; the README and the `llms-full.txt` preamble carry their own summaries, kept by hand, so a disagreement between the three is a docs bug and the catalog settles it.
-
 ## It's working if
 
 - Rename a column in `packages/db/src/schema/` and `bun run check-types` fails in `api/hono`, naming the router that selects it.
