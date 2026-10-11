@@ -5,7 +5,7 @@ title: Organizations & Teams
 description: "Multi-tenant from Better Auth: the org and team data model, roles, invitations, and active-org switching."
 ---
 
-Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/schema.ts`. Organizations, members, teams, invitations and an active organization per session are rows in the same Drizzle schema as the rest of your data (`packages/db/src/schema/auth.ts`, generated from that declaration), so a tenant is rows you already own, not a separate service.
+Multi-tenancy comes from the Better Auth [Organization plugin](https://www.better-auth.com/docs/plugins/organization), registered with `teams` enabled in `packages/auth/src/schema.ts`. Invitations, members, organizations and teams are rows in the same Drizzle schema as the rest of your data (`packages/db/src/schema/auth.ts`, generated from that declaration), and so is the active organization on each session, so a tenant is rows you already own, not a separate service.
 
 An org role on `member.role` governs one tenant and nothing on the [console ladder](/docs/manage/authentication#the-console-role-ladder), which reads `user.role` alone: an organization's `owner` is a plain `user` to `/console` until that ladder says otherwise, and a console `admin` holds no seat until a `member` row gives them one. The starter wires the two flows a product needs on day one, creating an organization and switching between them, and leaves the rest of the plugin (invitations, member management, teams) available but unwired, for your product logic.
 
@@ -19,13 +19,13 @@ Five tables in `packages/db/src/schema/auth.ts` hold the tenancy. Rows cascade f
 
 | Table          | Holds                                                                                                                                                     |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `organization` | The tenant: `name`, a unique `slug`, an optional `logo`, and free-form `metadata`.                                                                        |
+| `invitation`   | A pending invite: `email`, `expiresAt`, the `inviterId`, the target `role`, `status`, and an optional `teamId`.                                           |
 | `member`       | A user's seat in an organization, with the org `role` (default `member`).                                                                                 |
+| `organization` | The tenant: an optional `logo`, free-form `metadata`, a `name`, and a unique `slug`.                                                                      |
 | `team`         | A named group inside an organization; `memberCount` is kept current by the plugin on every seat change.                                                   |
 | `teamMember`   | A user's seat in a team, flat, with no per-team role; `membershipKey` is unique, written on every add and checked before one, so a seat is never doubled. |
-| `invitation`   | A pending invite: `email`, target `role`, optional `teamId`, `status`, `expiresAt`, and the `inviterId`.                                                  |
 
-The active organization and team ride on the session row as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup. `memberCount` and `membershipKey` arrived with Better Auth 1.7 (`packages/db/drizzle/0004_better_auth_1_7.sql`, which also backfills the count); a fork on an older migration takes them the way [Database](/docs/manage/database) describes.
+The active organization and team ride on the session row as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup. `memberCount` and `membershipKey` are Better Auth 1.7 columns, added by `packages/db/drizzle/0004_better_auth_1_7.sql`, which also backfills the count; a fork on an older migration takes them the way [Database](/docs/manage/database) describes.
 
 Three roles come with the plugin: `owner`, `admin` and `member`. Whoever creates an organization becomes its `owner`; everyone else joins as `member` unless an invitation names another role. Teams are flat, so membership is the only distinction inside one.
 

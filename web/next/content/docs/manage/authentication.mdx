@@ -12,10 +12,6 @@ description: "Better Auth sign-in, sessions and cookies, and the role ladder beh
 
 Reach for this page when you are configuring how people sign in, or deciding who reaches the console and what each rung may do there. For granting console access by rule rather than one account at a time, see [Allowlist](/docs/manage/allowlist); for a seat or a role inside an organization, see [Organizations & Teams](/docs/manage/organizations).
 
-## Prerequisites
-
-An OAuth app registered with GitHub or Google, or a magic-link sender, before a deploy exposes a login. A fresh clone needs neither: the local agent sign-in covers development, and it cannot exist in a deploy.
-
 ## Sign-in methods
 
 The sign-in dialog draws itself from `GET /api/auth/providers` (`api/hono/src/routers/auth.ts`), which lists the methods the api has enabled, so turning one on or off is an env or plugin change, never a UI change.
@@ -43,7 +39,7 @@ Each OAuth app takes your app's origin (GitHub's "Homepage URL", Google's "Autho
 | Local, `PORTLESS=0 bun run dev` (web `:3000`, api `:4000`)           | `http://localhost:3000`       | `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`             |
 | Two deployments on a public hosting suffix (two `*.vercel.app` apps) | `https://your-web.vercel.app` | `https://your-web.vercel.app/api/auth/callback/github` and `https://your-web.vercel.app/api/auth/callback/google` |
 
-The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a callback registered on the api in that setup ends every sign-in in `state_mismatch`. Under the default `bun run dev`, providers refuse the `.localhost` redirect URI, so OAuth round-trips only on the fixed ports; the question below has the detail.
+The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a callback on the api there is the `state_mismatch` in [common questions](#common-questions). Under the default `bun run dev`, providers refuse the `.localhost` redirect URI, so OAuth round-trips only on the fixed ports; the question below has the detail.
 
 ## The console role ladder
 
@@ -60,11 +56,11 @@ Access, History and Waitlist are admin and above, so a member's console is the s
 
 Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above and answers `notFound()` to everyone else, so the console is never advertised; the Access, History and Waitlist pages each assert `admin` themselves. The api's console router under `/api/v1/admin/*` requires `admin` throughout (`api/hono/src/middlewares/console.ts`; the envelope is in [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a grant, a demotion or a ban lands on the next request, and both refuse a banned user, which covers a ban written straight to the database.
 
-The plugin's own endpoints are switched off rather than gated: `/api/auth/admin/*` authorizes on access-control statements alone, with no notion of rank or of the last owner, so at the stock `adminAc` one `set-role` request promoted an admin to owner. Every rung is declared with no statements; `set-role`, `ban-user` and `unban-user` come back as the console's own routes with the rank rule attached, and the rest, impersonation included, stay off. The comment above `adminPlugin` in `packages/auth/src/schema.ts` records this, and that a fork wanting the plugin's endpoints widens one statement at a time and accepts that the ladder does not constrain them.
+The plugin's own endpoints are switched off rather than gated: `/api/auth/admin/*` authorizes on access-control statements alone, with no notion of rank or of the last owner, so at the stock `adminAc` one `set-role` request would let an admin make itself owner. Every rung is declared with no statements; `ban-user`, `set-role` and `unban-user` come back as the console's own routes with the rank rule attached, and the rest, impersonation included, stay off. The comment above `adminPlugin` in `packages/auth/src/schema.ts` records this, and that a fork wanting the plugin's endpoints widens one statement at a time and accepts that the ladder does not constrain them.
 
 ### Changing a role, banning an account
 
-Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request: your own account is refused, so is anyone at or above your rank, granting owner is owner-only, and the last owner cannot be demoted. A ban also ends the person's sessions, so they are signed out everywhere at once; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
+Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request: your own account is refused, and so is every request from below admin; past that, an owner may act on anyone, another owner included, an admin only on a rung below admin, and a role change may grant only a rung the actor could act on, so granting owner is owner-only; and the last owner cannot be demoted. A ban also ends the person's sessions, so they are signed out everywhere at once; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
 
 The first owner comes from the CLI, which is also how a fresh install gets its first way in:
 
@@ -95,11 +91,7 @@ Reading the session is one call on either side, both in `web/next/src/lib/auth/`
 
 **Why does sign-in between two `*.vercel.app` projects end in `state_mismatch`?**
 
-Because the callback is registered on the api, which on a public suffix never matches, for the reason [sessions and cookies](#sessions-and-cookies) gives: register it at the web origin (the last row of the [callback table](#callback-urls)) and set `HONO_WEB_URL` on the api when it cannot infer the web origin from `HONO_TRUSTED_ORIGINS`.
-
-**Is `HONO_APP_URL` still read?**
-
-Yes, by `packages/auth/src/index.ts`; [Environment Variables](/docs/manage/environment#common-questions) names each read.
+Because the provider returns the browser to the api, and the state cookie Better Auth checks there is on the web. On a public suffix sign-in starts on the web origin, through its `/api` proxy ([sessions and cookies](#sessions-and-cookies)), so the state cookie is set host-only on the web, and a callback that lands on the api arrives without it. Register the callback at the web origin (the last row of the [callback table](#callback-urls)), and set `HONO_WEB_URL` on the api when it cannot infer the web origin from `HONO_TRUSTED_ORIGINS`, since Better Auth builds the redirect URI it sends the provider from that origin.
 
 **Why does the sign-in dialog say "No sign-in options are configured yet"?**
 
@@ -128,4 +120,4 @@ An admin cannot grant owner, act on a peer, or unban another admin, so an instal
 - [Allowlist](/docs/manage/allowlist), because it grants `member` by domain instead of one account at a time.
 - [Organizations & Teams](/docs/manage/organizations), because tenant seats, invitations and the active organization on the session are described there.
 - [Activity](/docs/manage/activity), because every role change and ban on this page leaves a line there.
-- [Environment Variables](/docs/manage/environment), because the OAuth pairs, `BETTER_AUTH_SECRET` and `HONO_APP_URL` are declared and defaulted there.
+- [Environment Variables](/docs/manage/environment), because `BETTER_AUTH_SECRET`, the `GITHUB_*` and `GOOGLE_*` pairs and `HONO_APP_URL` are declared and validated there.

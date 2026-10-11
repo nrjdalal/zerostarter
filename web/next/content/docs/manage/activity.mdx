@@ -49,9 +49,9 @@ Two things are deliberately not recorded: reads, and everything outside the cons
 
 | `actor`                       | When                                                             |
 | ----------------------------- | ---------------------------------------------------------------- |
-| an email                      | a person did it from the console                                 |
-| `Allowlist rule @example.com` | the sign-in grant, naming the rule that matched                  |
 | `Agent sign-in`               | the local agent bootstrap granted itself `owner`                 |
+| `Allowlist rule @example.com` | the sign-in grant, naming the rule that matched                  |
+| an email                      | a person did it from the console                                 |
 | `console:roles`               | `bun run console:roles`, run from a terminal by nobody signed in |
 
 Only the actor has an id. The person a line is about is frozen in the text as they were addressed at the time, which is the right way round for a trail, but it means `summary` is not a way to look a target up. A `target_id` beside the text, the same pairing the actor uses, is where that would go.

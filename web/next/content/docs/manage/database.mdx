@@ -28,13 +28,13 @@ The `db` client in `packages/db/src/index.ts` is typed from these files and runs
 
 `bun run auth:schema` writes `auth.ts` as exactly what the Better Auth CLI emits for `packages/auth/src/schema.ts`: the plugins (admin, openAPI, organization with teams) and the app's own columns, in one declaration that the auth instance and the generator both read, so the two cannot disagree. After editing `packages/auth/src/schema.ts`, run `bun run auth:schema --check` (`packages/scripts/src/auth-schema.ts`): it fails when the committed file differs from a fresh generation. The canonical starter runs the same check automatically as `tests/packages/db/src/schema/auth.test.ts`, which a fork does not take.
 
-A column of your own on `user` or `session` is therefore an `additionalFields` entry in that declaration, not an edit to `auth.ts`. The console's `roleSetAt` is the example: declared there, regenerated with `bun run auth:schema`, then migrated like any other change. A Better Auth upgrade takes the same path: bump, regenerate, and `bun run db:generate` writes the migration from your own snapshot, which is how the 1.7 columns on `team` and `team_member` arrived.
+A column of your own on `user` or `session` is therefore an `additionalFields` entry in that declaration, not an edit to `auth.ts`. The console's `roleSetAt` is the example: declared there, regenerated with `bun run auth:schema`, then migrated like any other change. A Better Auth upgrade takes the same path: bump, regenerate, and `bun run db:generate` writes the migration from your own snapshot.
 
 The generator runs under Node on purpose: under Bun a function's text prints as `() => new Date` without the call, which is what the CLI inspects before emitting a database default, so a Bun run silently drops every `defaultNow()`. It loads `packages/auth/auth-schema.config.ts`, an instance with no database, because the real one imports Bun's SQL client and cannot load there.
 
 ## Conventions, and where they bend
 
-Outside `auth.ts`, every table follows one shape, with `waitlist.ts` as the plain example: `onDelete: "cascade"` with an index on every foreign-key column, `snake_case` column names, `text` primary keys filled by `crypto.randomUUID()`, and `timestamp("created_at").defaultNow().notNull()`. Inside `auth.ts` the generator writes what Better Auth declares: the library fills its own primary keys, and `created_at` has no database default on `member`, `organization` and `team` and allows null on `team_member`, because the library stamps it itself.
+Outside `auth.ts`, every table follows one shape, with `waitlist.ts` as the plain example: column names in `snake_case`, `created_at` as `timestamp("created_at").defaultNow().notNull()`, foreign keys `onDelete: "cascade"` with an index on every foreign-key column, and primary keys as `text` filled by `crypto.randomUUID()`. Inside `auth.ts` the generator writes what Better Auth declares: the library fills its own primary keys, and `created_at` has no database default on `member`, `organization` and `team` and allows null on `team_member`, because the library stamps it itself.
 
 Indexes are added when your own row counts and query plans ask for them, not in advance. The auth tables index most foreign-key columns plus `invitation.email` and `verification.identifier`, which are not foreign keys; `invitation.inviter_id` carries none. Where the choice shows:
 
@@ -59,7 +59,7 @@ No. `packages/db/drizzle/` and `packages/db/src/schema/` are restored after the 
 
 **Can the migrations be squashed into one baseline?**
 
-Only for a database treated as new. The starter did it once, regenerating `0000_zero_starter.sql` from the schema of the day; a fresh baseline carries a new timestamp, so `migrate` tries to apply it against tables that already exist and fails. Once a migration has been applied anywhere, keep appending.
+Only for a database treated as new. A fresh baseline carries a new timestamp, so `migrate` tries to apply it against tables that already exist and fails. Once a migration has been applied anywhere, keep appending.
 
 **Why does the auth schema check report drift when I did not touch `auth.ts`?**
 

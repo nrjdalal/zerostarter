@@ -16,7 +16,7 @@ Reach for this page when a surface has to update without a reload: a status badg
 
 A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter.
 
-The Vercel branch keeps the Node adapter although Vercel's Bun runtime serves `Bun.serve()` sockets too: the api deploys through Vercel's Hono preset (`api/hono/vercel.json`), not a `Bun.serve()` entrypoint, and Vercel's Bun socket path [differs from a standalone Bun server](https://vercel.com/docs/functions/websockets#bun) (headers passed to `server.upgrade()` are dropped, `drain` never fires, `send()` returns no backpressure status), so the `hono/bun` branch would meet a different server there than it does locally and in Docker.
+Each branch is the one its host deploys through. `api/hono/vercel.json` builds the api with Vercel's Hono preset (`"framework": "hono"`), and the Node adapter branch above serves its sockets there, the path the canonical starter runs in production; `Bun.serve()` is the self-host path, locally and in Docker. Folding both onto one path is an open evaluation the canonical starter tracks in `.github/notes/plans/vercel-bun-serve-websockets.md`.
 
 Inside a handler, `send` and `close` behave the same on both hosts, and `onClose` fires on every disconnect on both, so cleanup belongs there: the health route clears its heartbeat in `onClose` and nowhere else.
 
@@ -28,7 +28,7 @@ Its reconnect logic is the pattern to copy: capped exponential backoff after a d
 
 ## Beyond one instance
 
-A connection is pinned to one server or one function instance, and a reconnect may land on another. The health route is fine with that, since every instance answers the same snapshot, but a chat room, presence, or a feed that fans out across users keeps its shared state outside the process (Redis is the usual choice), with every instance publishing and subscribing, so a client connected anywhere sees every update. On Vercel a socket also needs Fluid compute and closes at the function's max duration ([Deploy to Vercel](/docs/deployment/vercel#websockets)).
+A connection is pinned to one server or one function instance, and a reconnect may land on another. The health route is fine with that, since every instance answers the same snapshot, but a chat room, presence, or a feed that fans out across users keeps its shared state outside the process (Redis is the usual choice), with every instance publishing and subscribing, so a client connected anywhere sees every update. For the platform's own limits on a socket, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
 
 ## Common questions
 
@@ -36,9 +36,9 @@ A connection is pinned to one server or one function instance, and a reconnect m
 
 The one socket route ships public and checks no session, since it streams what `/api/health` already answers, and `cors()` is no guard for it: a browser sends no preflight for a WebSocket and never blocks one on CORS. A fork that needs an authenticated socket checks the `Origin` header or a token inside the handler, the usual token being a short-lived single-use ticket the signed-in client fetches from an authenticated REST route and the server marks spent in a shared store.
 
-**Why is the badge green without the pulse on `*.vercel.app`?**
+**Which origin does the badge's socket open on?**
 
-Because on a public hosting suffix the socket goes through the web's `/api` rewrite, which does not carry the upgrade ([Deploy to Vercel](/docs/deployment/vercel#websockets)). The connect fails, the backoff settles into a gentle re-probe, and the badge runs on its REST heartbeat: green, without the pulse.
+The one every browser call from the web uses: `api-status.tsx` opens it with the same `apiClient`, and `web/next/src/lib/config.ts` points that client at `NEXT_PUBLIC_API_URL`, or at `NEXT_PUBLIC_APP_URL` on a public hosting suffix such as `*.vercel.app`. There the upgrade reaches the api only through the web's `/api` rewrite; on a custom domain it opens on the api origin directly. For the platform's terms on that path, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
 
 **Why does the upgrade route list 429 and 500 in the reference?**
 
@@ -53,5 +53,5 @@ Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error r
 ## Next
 
 - [The Type-Safe API](/docs/getting-started/type-safe-api), because `$ws()` hangs off the same client and the REST baseline is its `unwrap`.
-- [Deploy to Vercel](/docs/deployment/vercel#websockets), because the adapter, the proxy fallback and the max duration are the platform's terms.
+- [Deploy to Vercel](/docs/deployment/vercel#websockets), because the platform's terms for a socket live there.
 - [AI Skills](/docs/resources/ai-skills), because the `api-endpoint` skill's WebSocket section is the route and client recipe.

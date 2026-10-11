@@ -6,7 +6,7 @@ description: Layered rate limits keyed by user, API key, or IP, with a higher ti
 
 Every request to the API passes a rate limiter before any route runs, and a signed-in request passes a second, larger one on its way into `/api/v1`. Both come from one factory in `api/hono/src/middlewares/rate-limiter.ts`, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter).
 
-A request is keyed by who before where: user id, then API key, then IP, in a per-process store. An office behind one address stops sharing a budget the moment its people sign in, and a count lives on the instance that served the request, not across a fleet.
+A limiter keys a request by who before where: user id, then API key, then IP, in a per-process store. Signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and a count lives on the instance that served the request, not across a fleet.
 
 ## When you need this
 
