@@ -6,13 +6,15 @@ source: local
 
 # Docker Testing
 
-Full stack, the same Dockerfiles prod ships:
+Production's Dockerfiles, built and run through compose, then proved offline, single-libc, and golden. Compose names images after the checkout directory, so every command goes through compose rather than an image name.
+
+## 1. Build and up
 
 ```bash
 docker compose build --no-cache && docker compose up
 ```
 
-Scope to one service while iterating:
+One service while iterating:
 
 ```bash
 docker compose build --no-cache api && docker compose up -d api
@@ -21,75 +23,81 @@ docker compose logs -f api
 docker compose down
 ```
 
-## .env
+The build reads `.env` through the `dotenv` secret compose wires; a missing file fails it, and a clean checkout takes the dummy from section 5. With no daemon, `open -a Docker` and poll `docker info`. Done when health answers 200 on the compose port, `4000` for api and `3000` for web.
 
-- **Where it comes from.** The build reads `.env` as a BuildKit secret (compose wires `secrets: dotenv` from `./.env`; a plain build passes `--secret id=dotenv,src=.env`) and validates it in full; `up` loads it via `env_file: .env`. The secret mounts only during the build RUN and never lands in a layer. A missing `.env` fails fast: compose reports "secret file not found", docker build "secret not provided"; invalid runtime env crashes the container loudly at boot.
-- **Smoke build vs deploy image.** A clean checkout has no real `.env`, so give a smoke build a dummy from `.env.example` with the required blanks filled:
+## 2. Offline check
 
-  ```bash
-  sed -e 's|^BETTER_AUTH_SECRET=$|BETTER_AUTH_SECRET=dummy|' \
-      -e 's|^GITHUB_CLIENT_ID=$|GITHUB_CLIENT_ID=dummy|' \
-      -e 's|^GITHUB_CLIENT_SECRET=$|GITHUB_CLIENT_SECRET=dummy|' \
-      -e 's|^GOOGLE_CLIENT_ID=$|GOOGLE_CLIENT_ID=dummy|' \
-      -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
-      -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
-      -e 's|^AGENT_SIGNIN_ENABLED=$|AGENT_SIGNIN_ENABLED=true|' \
-      .env.example > .env
-  ```
-
-  Empty optionals (e.g. `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=`) pass via `emptyStringAsUndefined`. A smoke build is disposable: Next inlines `NEXT_PUBLIC_*` into the bundle at build, so a dummy-built web image carries dummy URLs forever. Deploy images build with the real `.env`.
-- **`--no-cache` after any `.env` edit.** Secret contents are not part of BuildKit's cache key, so a plain rebuild reuses the cached build RUN and silently ships stale baked values (web's `NEXT_PUBLIC_*`).
-- **Skip `SKIP_ENV_VALIDATION`.** Build and runtime both load a real `.env`, so both validate real values. The flag no longer bypasses validation anyway: it only substitutes shape-valid dummies for *missing* required vars while zod defaults and transforms still run (`HONO_PORT` defaults to 4000, `HONO_TRUSTED_ORIGINS` parses to an array). Reserve it for CI, which genuinely lacks a `.env`. The web deploy uses the narrower `SKIP_ENV_VALIDATION_SERVER`, which dummies only server secrets while still validating the `NEXT_PUBLIC_*` it inlines.
-- **`NODE_ENV` is read at runtime.** The API bundle is built with `bun build --env disable`, so bun does not bake `process.env.NODE_ENV` from the build shell, where `.env` is never sourced and the value would always be "development". What `up` loads from `.env` wins: `/api/health` reports it as `environment`, and `NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true` mounts the agent sign-in inside the container.
-- **Database.** Without a reachable `POSTGRES_URL`, DB-backed routes (e.g. `/api/v1/user`) return 500 while `/api/health` stays green. The end-to-end suite below needs one: a disposable container (`bunx pglaunch -k`), written into `.env` as `host.docker.internal:<port>` so the containers reach it, and migrated first with `POSTGRES_URL=<the localhost form> bun run db:migrate`.
-- **Direct `docker run --env-file`** does not strip inline comments: `HONO_RATE_LIMIT=60 # note` arrives as `"60 # note"`, coerces to NaN, and validation rejects it. Compose's parser strips them; for `docker run`, sanitize first: `sed 's/ #.*//' .env > .env.docker`.
-- **Ports** `4000` and `3000` collide with a running dev stack; for side-by-side testing bump the compose mappings (e.g. `14000:4000`) in a scratch checkout.
-
-## Self-containment check (catches runtime auto-install)
-
-The api runner ships only `bundle/`, so the bundle must resolve every import with no `node_modules`. When one is missing, Bun's runtime auto-install fetches it from npm, so a container that "works" online may be downloading packages at cold start or on a later request. The image runs `bun --no-install`, which turns that off: a missing import fails at once instead. Two probes prove both halves, offline:
+The api runner ships only `bundle/`, so an import the bundle does not carry would auto-install from npm at cold start or on a later request; the image runs `bun --no-install`, so it fails at once instead. Prove it with no network:
 
 ```bash
 sed 's/ #.*//' .env > .env.docker
-docker run -d --name t-offline --network=none --env-file .env.docker <image>
+docker run -d --name t-offline --network=none --env-file .env.docker "$(docker compose config --images api)"
 docker exec t-offline sh -c 'for i in $(seq 1 30); do wget -qO- http://localhost:4000/api/health && exit 0; sleep 1; done; exit 1'
-docker logs t-offline        # on failure: "Cannot find package 'X'" = an import the bundle needs and does not carry
-# the first sign-in is where Better Auth reaches for its optional telemetry import; it answers with the database error here (nothing is reachable), and it must answer at once
+docker logs t-offline   # on failure, "Cannot find package 'X'" names the import the bundle lacks
 time docker exec t-offline sh -c 'wget -qO- --post-data=x --header="Origin: http://localhost:3000" http://localhost:4000/api/agents/sign-in-as; echo'
-docker diff t-offline | grep .bun/install/cache   # must print nothing
+docker diff t-offline | grep .bun/install/cache
 docker rm -f t-offline
 ```
 
-Health alone proves nothing about sign-in: the telemetry import fires on the first Better Auth call, not at boot. Before `--no-install`, this container fetched `@opentelemetry/api` (some 640 files) on that call whenever it had a network, and stalled on it when it did not. Run the same `docker diff` on the online container after the golden suite; entries under `.bun/install/cache` mean a runtime install got past the flag (history: `--external hono` in the bundle build fetched hono from npm at cold start).
+Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first adapter call rather than boot, and the agent sign-in is that call. It answers an error here, since no database is reachable, and must answer at once. Done when health answers, sign-in answers at once, and the `docker diff` prints nothing.
 
-## Single-libc check (web image, catches silent re-bloat)
+## 3. Single-libc check
 
-The web build prunes the unused libc stack from standalone (libc is auto-detected at build; an alpine base means musl). Store-layout or dep-rename drift regresses it back into bloat silently, so assert after any web image build:
+The web build prunes the unused libc stack: `web/next/next.config.ts` detects the image's libc at build (alpine is musl), so the glibc `sharp` and `@takumi-rs` binaries leave output tracing. Drift in the store layout or a dependency rename re-bloats the image silently, so assert after every web build:
 
 ```bash
-docker run --rm --entrypoint sh zerostarter-web -c \
+docker compose run --rm --entrypoint sh web -c \
   'find /app/node_modules \( -name "*linux-*-gnu*" -o -name "*sharp-linux-*" -o -name "*libvips-linux-*" \) ! -type l | grep . && echo "FAIL: glibc stack shipped" && exit 1; echo OK'
 ```
 
-Expect `OK`. `! -type l` skips dangling glibc-named symlinks (expected leftovers); only real files count. Any hit means the excludes in `web/next/next.config.ts` stopped matching, so fix the patterns, never delete the assertion.
+`! -type l` skips the dangling glibc-named symlinks the pruning leaves; only real files count. Done when it prints `OK`; a hit means the excludes in `next.config.ts` stopped matching, so update the patterns until it does.
 
-## End-to-end golden suite
+## 4. Golden suite
 
-With the stack up on a fresh disposable database, run every `*.e2e.test.ts` under `tests/` against it:
+Canonical starter only (`tests/` is fork-excluded). With the stack up on a fresh disposable database, every `*.e2e.test.ts` under `tests/` drives it over HTTP:
 
 ```bash
 E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run test:e2e
 ```
 
-`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports. The suite signs in as `LocalAgent` and asserts the stage is `local` (so `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, plus both OAuth credential pairs set, the id and the secret of each, which the dummy `.env` above already does: left blank, the providers endpoint lists only `agent` and its snapshot fails; it is a suite for a local-stage stack, never a deployed one, and a URL whose host is not local is refused at load), drives the organization plugin, the console routes, the waitlist and the web pages, and snapshots every contract response after normalizing ids, timestamps and the build version. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. The users list assumes LocalAgent is the only account, which is why the database is fresh; `E2E_POSTGRES_URL` is what lets the suite seed and remove a second account for the role and ban flows, and it refuses any host that is not local and any database holding an account beyond the agent and the seed, so neither the shared database nor a populated local one can be seeded by mistake; the stack's own `POSTGRES_URL` must be disposable for the same reason, since the suite writes through the API. Done when it prints 0 fail twice in a row: the second run proves the goldens are deterministic and that a run removes what it created (its organization, rules, signups, seeded account and sessions; the audit log keeps its rows by design, and the goldens read only the entries a run adds).
+`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports. The suite signs in as `LocalAgent`, asserts the stage is `local`, snapshots the providers list, and writes through the API, so `.env` holds:
 
-In a browser against the images the **Login (agents)** button is absent: its guard is Next's build-time `NODE_ENV`, so a production build compiles it out. Submit the same form it posts from the page's console, and the 302 lands on the dashboard with the session (cookies on `localhost` do not isolate by port):
+- `AGENT_SIGNIN_ENABLED=true`
+- both OAuth pairs filled, id and secret (the dummy recipe does): a provider registers only with both halves, and the snapshot lists all three
+- `NODE_ENV=local`
+- a disposable `POSTGRES_URL` (`bunx pglaunch -k`), migrated first with `bun run db:migrate`, in the `localhost` form it prints: under compose's `INTERNAL_API_URL`, `@packages/env` rewrites that host to `host.docker.internal` so the containers reach it
+
+`tests/stack.ts` refuses an `E2E_*_URL` whose host is not local and an `E2E_POSTGRES_URL` holding any account beyond the agent and the seed; that variable unlocks the second-account role and ban flows. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. Done when it prints `0 fail` twice in a row; the second run proves the goldens deterministic and the cleanup complete.
+
+## 5. .env
+
+A clean checkout has no real `.env`; a smoke build takes a dummy from `.env.example` with the required blanks filled:
+
+```bash
+sed -e 's|^AGENT_SIGNIN_ENABLED=$|AGENT_SIGNIN_ENABLED=true|' \
+    -e 's|^BETTER_AUTH_SECRET=$|BETTER_AUTH_SECRET=dummy|' \
+    -e 's|^GITHUB_CLIENT_ID=$|GITHUB_CLIENT_ID=dummy|' \
+    -e 's|^GITHUB_CLIENT_SECRET=$|GITHUB_CLIENT_SECRET=dummy|' \
+    -e 's|^GOOGLE_CLIENT_ID=$|GOOGLE_CLIENT_ID=dummy|' \
+    -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
+    -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
+    .env.example > .env
+```
+
+Empty optionals pass through `emptyStringAsUndefined`. Three things no config confesses:
+
+- `--no-cache` after any `.env` edit: secret contents are not part of BuildKit's cache key, so a plain rebuild ships stale baked values (web's `NEXT_PUBLIC_*`, the cookie scope from `HONO_APP_URL`).
+- A dummy-built web image carries its `NEXT_PUBLIC_*` forever, since Next inlines them at build: a smoke build is disposable, and a deploy image builds with the real `.env`.
+- `docker run --env-file` keeps inline comments, so `HONO_RATE_LIMIT=60 # note` fails validation; compose strips them, and a direct run sanitizes first with `sed 's/ #.*//' .env > .env.docker`.
+
+Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side.
+
+## 6. Browser sign-in
+
+Against the images the **Login (agents)** button is absent: its guard is Next's build-time `NODE_ENV`, so a production build compiles it out. Submit the form it posts from the page's console instead:
 
 ```js
 document.body.appendChild(Object.assign(document.createElement("form"), { method: "POST", action: "http://localhost:4000/api/agents/sign-in-as" })).submit()
 ```
 
-## Notes
-
-- Start the daemon if needed: `open -a Docker`, then poll `docker info` until ready.
-- `.dockerignore` excludes real `.env*` from the build context (only `.env.example` enters), so the context itself carries no secret.
+Done when the 302 lands on the dashboard signed in as `LocalAgent`.
