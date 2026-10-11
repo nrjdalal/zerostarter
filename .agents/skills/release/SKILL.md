@@ -39,7 +39,7 @@ The production action: run it on the user's explicit go.
 
 ```bash
 gh pr ready <n>
-# a pull_request run the workflow token raised is held for approval instead of running; approve it
+# a head the workflow pushed has its pull_request build held for approval instead of running; approve it
 RUN=$(gh run list --branch canary --workflow auto-check-build.yml --json databaseId,conclusion,headSha \
   --jq "[.[] | select(.headSha == \"$(gh pr view <n> --json headRefOid --jq .headRefOid)\")][0] | select(.conclusion == \"action_required\") | .databaseId")
 [ -n "$RUN" ] && gh api -X POST "repos/{owner}/{repo}/actions/runs/$RUN/approve" && gh run watch "$RUN" --exit-status
@@ -47,7 +47,7 @@ gh pr review <n> --approve
 gh pr merge <n> --merge
 ```
 
-When the head is a commit the workflow pushed (the `ci(version)` bump, typically the window's first push), GitHub holds its `pull_request` build as `action_required`, and without the approval the PR merges with no build check, since `main`'s ruleset asks for one review and no status checks; a human-merged head builds by itself, and the lookup finds nothing. `--merge` because `main` keeps `canary`'s history, so the next release PR diffs only its own window; the ruleset allows no other method. If `canary` moves while the PR is open, the push dismisses the review and the new head brings its own run, held again when the workflow pushed it. A fork whose `main` requires status checks needs the held run approved before the merge state reads `CLEAN`. Done when `gh pr view <n> --json mergeStateStatus` reads `CLEAN` and the PR merges with a merge commit.
+When the head is a commit the workflow pushed (the `ci(version)` bump, typically the window's first push), GitHub holds its `pull_request` build as `action_required`, and without the approval the PR merges with no build check, since `main`'s ruleset asks for one review and no status checks; a human-merged head builds by itself, and the lookup finds nothing. `--merge` because `main` keeps `canary`'s history, so the next release PR diffs only its own window; the ruleset allows no other method. If `canary` moves while the PR is open, the push dismisses the review and the new head brings its own run, held again when the workflow pushed it. A fork whose `main` requires status checks needs the held run approved before the merge state reads `CLEAN`. Done when the held run, where there is one, passed under `gh run watch --exit-status`, `gh pr view <n> --json mergeStateStatus` reads `CLEAN`, and the PR merges with a merge commit.
 
 ## 5. Verify
 
@@ -59,7 +59,7 @@ git pull origin canary                          # the ci(changelog) commit and t
 
 Targets when the run stops short:
 
-- `No releasable commits since` or `No releasable changelog content` in its log means the window kept nothing: the changelog drops `ci` and non-breaking `chore(deps)`, so the types the `gh-commit` skill lists count, and a dependency refresh titled `build(deps)` releases where `chore(deps)` cannot. Land a releasable commit and merge the next release PR.
+- `No releasable commits since` or `No releasable changelog content` in its log means the window kept nothing the changelog counts (the `gh-commit` skill names the types that do). Land a releasable commit and merge the next release PR.
 - A failed run is re-run with `gh run rerun --failed <id>`: `auto-release` owns the tag (a hand-cut one moves the window's anchor or collides with the next run's), and a run that tagged but died before publishing is backfilled by the next one.
 - Canonical starter only: `cli-release.yml` publishes the CLI after a successful `auto-release`; a failed publish leg is re-published by `gh workflow run cli-release.yml --ref canary`, since a re-run replays its own workflow file.
 

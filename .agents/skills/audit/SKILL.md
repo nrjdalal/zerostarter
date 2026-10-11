@@ -97,4 +97,4 @@ Every ignored advisory needs a block under `## Ignored advisories` with the same
 
 ### 4. Ship
 
-`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.
+`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and, in the canonical starter, every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.
