@@ -1,65 +1,45 @@
 ---
 name: release
-description: Cut a production release by promoting canary to main. Use when asked to cut, ship, or publish a release, tag a version, or push canary to production.
+description: Cut a production release by promoting canary to main. Use when asked to cut, ship, or publish a release, pin or tag a version, push canary to production, or recover a failed release run.
 source: local
 ---
 
 # Release
 
-Releases ship by promoting `canary` to `main`. The release number is decided before the merge by `.github/workflows/auto-canary-into-main.yml`; everything after it (changelog, tag, GitHub release) is automated by `.github/workflows/auto-release.yml`, and `.github/workflows/cli-release.yml` publishes the CLI, from the tag once the release is cut and as a `canary` prerelease on pushes before it; cutting a release is one deliberate merge, because `main` deploys to production.
+Releases ship by promoting `canary` to `main` with a merge commit, and `main` deploys to production. `.github/workflows/auto-canary-into-main.yml` opens the draft release PR on every push to `canary` and moves the root `package.json` version to what the window has earned (`ci(version): bump to vX.Y.Z`); `auto-release.yml` writes the changelog, tags, and publishes the GitHub release after the merge; `packages/scripts/src/release-version.ts` decides the number, and its header holds the rules. In the canonical starter, `cli-release.yml` (fork-excluded) then publishes the CLI to npm from the tag.
 
-## How it works
-
-- Work reaches `canary` through squash-merged PRs (`canary` is the default branch).
-- Every push to `canary` runs `auto-canary-into-main.yml`, which opens (or reuses) a **draft** PR `canary -> main` titled `ci(release): 🚀 merge canary into main`, and then moves the root `package.json` version forward to what the window has earned so far (`bun run release:version --write`: changelogen's bump applied to the last tag's version, kept if the tree is already ahead), committing `ci(version): bump to vX.Y.Z` when it moves. It skips when `main` is missing or `canary` is not ahead of it.
-- Merging that PR into `main` with a **merge commit** fires `auto-release.yml` (trigger: a PR into `main` whose head branch is `canary`, merged). It then, working on `canary`:
-  - takes the version from the tree (`bun run release:version` prints the decision: the larger of the tree and what the window earned from the last tag) and runs `changelogen` from the last `v*` tag for the changelog section,
-  - regenerates `.github/assets/graph-build.svg` from a fresh production build,
-  - commits `ci(changelog): update changelog and bump version` directly to `canary`,
-  - tags `vX.Y.Z` at the merge boundary and pushes branch + tag atomically,
-  - publishes a GitHub release whose notes mirror the changelog section.
-
-The notes are derived after the merge; the version is already in the tree, so `main` and production carry the released number on the merge itself.
-
-## Versioning
-
-- **Default:** the bump `changelogen` computes from the window's commits, applied to the last tag's version: at 0.x a feature is a patch (`0.1.7 -> 0.1.8`) and a breaking commit a minor; past 1.0 the usual semver. The draft-PR workflow writes it into `package.json` on every human push to `canary` (`ci(version): bump to vX.Y.Z`), so previews show the upcoming number and production shows it on the release merge. A missing tag counts as `v0.0.0`, which is a fresh fork's first window.
-- **To ship a chosen version** (for example a minor `0.2.0`): hand-set `version` in the root `package.json` on `canary` before cutting the release. It stays as long as it is ahead of what the window earns; a breaking window lifts a smaller pin to the minor it earns. A tree below the last tag stops both workflows loudly (`package.json is at X, below the last release vY`), and a version equal to the last tag is treated as untouched.
-- The changelog drops `ci`-type commits (`changelog.config.json`). A release needs at least one commit that is neither `ci(changelog)` nor `ci(version)` and at least one `- ` entry in the new section, or `auto-release` no-ops (`No releasable changelog content`).
-
-## Cutting a release
-
-### 1. Confirm the content is on `canary`
-
-Every PR meant for this release is squash-merged into `canary`. Check nothing that should ship is still open:
+## 1. Confirm the content is on `canary`
 
 ```bash
 gh pr list --base canary --state open
 ```
 
-### 2. (Optional) Pin the version
+Done when nothing listed is meant to ship in this release.
 
-For anything bigger than the window earns, set `version` in the root `package.json` on `canary` first, via a normal PR, ahead of the last `v*` tag. Otherwise skip this: the tree already holds the number the window has earned.
+## 2. Pin the version when the window earns too little
 
-### 3. Find the release PR
+```bash
+bun run release:version    # {"current":..,"earned":..,"next":..}: next is what ships
+```
+
+A hand-set `version` in the root `package.json`, ahead of the last `v*` tag, ships as long as it is ahead of what the window earns, since the tree moves forward only. Land it on `canary` through a PR like any change. Done when `bun run release:version` prints the wanted `next`.
+
+## 3. Find the release PR
 
 ```bash
 gh pr list --head canary --base main --state open
+gh workflow run auto-canary-into-main.yml --ref canary    # when missing
 ```
 
-If it is missing (canary just became ahead, or the workflow has not run yet), trigger it and re-list:
+Done when exactly one open `canary` into `main` PR exists.
 
-```bash
-gh workflow run auto-canary-into-main.yml --ref canary
-```
+## 4. Merge to production
 
-### 4. Merge to production
-
-Mark it ready, let its build run, and merge with a **merge commit** (never squash). This is the production action; do it only on the user's explicit go-ahead.
+The production action: run it on the user's explicit go.
 
 ```bash
 gh pr ready <n>
-# the head was pushed by the workflow, so GitHub holds that commit's build for approval instead of running it
+# a pull_request run the workflow token raised is held for approval instead of running; approve it
 RUN=$(gh run list --branch canary --workflow auto-check-build.yml --json databaseId,conclusion,headSha \
   --jq "[.[] | select(.headSha == \"$(gh pr view <n> --json headRefOid --jq .headRefOid)\")][0] | select(.conclusion == \"action_required\") | .databaseId")
 [ -n "$RUN" ] && gh api -X POST "repos/{owner}/{repo}/actions/runs/$RUN/approve" && gh run watch "$RUN" --exit-status
@@ -67,23 +47,20 @@ gh pr review <n> --approve
 gh pr merge <n> --merge
 ```
 
-When the release PR's head is a commit the workflow pushed, the `ci(version)` bump or the changelog commit, its `pull_request` build lands as `action_required` and never runs on its own, and without it the PR merges with no build check at all. Approving the run starts it. When the last push was a human merge that moved no version, the head is that merge, the build runs by itself, and the lookup above finds nothing to approve. Wait for it to pass before merging: the merge state reads `CLEAN` once it does. If `canary` moves while the release PR is open, the new head brings a new held run and a stale approval, so approve both again.
+When the head is a commit the workflow pushed (the `ci(version)` bump, typically the window's first push), GitHub holds its `pull_request` build as `action_required`, and without the approval the PR merges with no build check, since `main`'s ruleset asks for one review and no status checks; a human-merged head builds by itself, and the lookup finds nothing. `--merge` because `main` keeps `canary`'s history, so the next release PR diffs only its own window; the ruleset allows no other method. If `canary` moves while the PR is open, the push dismisses the review and the new head brings its own run, held again when the workflow pushed it. A fork whose `main` requires status checks needs the held run approved before the merge state reads `CLEAN`. Done when `gh pr view <n> --json mergeStateStatus` reads `CLEAN` and the PR merges with a merge commit.
 
-### 5. Verify
+## 5. Verify
 
 ```bash
-gh run list --workflow=auto-release.yml -L 1     # wait for success
-gh release list -L 1                             # new vX.Y.Z, marked Latest
+gh run list --workflow=auto-release.yml -L 1    # success
+gh release list -L 1                            # the new vX.Y.Z, marked Latest
+git pull origin canary                          # the ci(changelog) commit and the tag land on canary, pushed together
 ```
 
-The `ci(changelog): ...` commit and the new tag land on `canary`, so pull `canary` to pick them up. Production deploys from `main`. Done when the `vX.Y.Z` tag exists, the GitHub release is published as latest, and production serves the new build.
+Targets when the run stops short:
 
-## Notes
+- `No releasable commits since` or `No releasable changelog content` in its log means the window kept nothing: the changelog drops `ci` and non-breaking `chore(deps)`, so the types the `gh-commit` skill lists count, and a dependency refresh titled `build(deps)` releases where `chore(deps)` cannot. Land a releasable commit and merge the next release PR.
+- A failed run is re-run with `gh run rerun --failed <id>`: `auto-release` owns the tag (a hand-cut one moves the window's anchor or collides with the next run's), and a run that tagged but died before publishing is backfilled by the next one.
+- Canonical starter only: `cli-release.yml` publishes the CLI after a successful `auto-release`; a failed publish leg is re-published by `gh workflow run cli-release.yml --ref canary`, since a re-run replays its own workflow file.
 
-- **Merge method is load-bearing.** `canary` PRs squash; the `canary -> main` release PR merges with a **merge commit** so `main` keeps shared history with `canary` and future release diffs stay clean. The `main` ruleset enforces this.
-- **The version bump is a token push.** The draft-PR workflow pushes `ci(version)` with the workflow token, which starts no further workflows: no loop, and the bump commit carries no checks of its own until the next human merge. `main`'s ruleset asks for a review, not status checks, so a window with a single PR still releases; a fork that requires status checks on `main` sees its release PR wait for one more merge.
-- **The CLI publishes through npm Trusted Publishing.** npm trusts `cli-release.yml` in this repo through `id-token: write` (OIDC); there is no `NPM_TOKEN` secret, so never add one back. When a release's publish leg fails, `gh workflow run cli-release.yml --ref canary` publishes the latest tag's version; a re-run of the failed run replays the workflow file it started with.
-- **Never tag or push a release by hand.** `auto-release` owns tagging and the atomic branch + tag push; a hand-cut tag collides and fails the next run.
-- **The changelog commit lands on `canary` directly, not through a PR** (it is mechanical, generated from already-reviewed PR titles). Pull `canary` after a release.
-- **Backfill is automatic.** If a prior run pushed the commit and tag but died before publishing, the next run recreates the missing GitHub release instead of double-bumping.
-- **A window of only `chore(deps)` commits cannot release.** changelogen hardcodes dropping non-breaking `chore(deps)` from the changelog (beyond what `changelog.config.json` can override), so the new section has no entries and `auto-release` no-ops with `No releasable changelog content`. Title dependency refreshes `build(deps)` (the `gh-commit` skill carries the rule), or land a releasable commit in the same window and re-run.
+Done when the run is a success, the new tag is latest, and `canary` is pulled.
