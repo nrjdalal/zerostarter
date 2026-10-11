@@ -1,88 +1,64 @@
 ---
 slug: /docs/manage/features
 title: Features
-description: Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.
+description: "One boolean per optional surface: off removes its routes, links, sitemap and search entries without deleting code."
 ---
 
-Not every product wants a public blog, a docs site, or a waitlist. ZeroStarter makes each optional surface a **feature flag**: one boolean in config that turns the whole surface on or off. The starter ships with every feature on (it demos them all); a fork picks its set at `init` and can change it at any time.
+Not every product wants a public blog, a docs site or a waitlist, so each optional surface is a **feature**: one boolean in `packages/config/src/site.ts`, read at runtime, so turning one off removes its routes, links, sitemap and search entries without deleting code. The starter ships with every feature on, since it demos them all; a fork picks its set at `init` and flips any of them later with a config edit.
+
+## When you need this
+
+Reach for this page when a surface you do not want is still showing, or one you do want answers 404, and you need the row that says what its flag covers. For the flags `init` takes and the fork defaults, see the [CLI](/docs/getting-started/cli#init); for what the allowlist does once it is on, see [Allowlist](/docs/manage/allowlist).
 
 ## The flags
 
-The flags live next to the brand in `packages/config/src/site.ts`, as a separate `features` export (typed `boolean`, not `as const`, so a fork can flip them and the runtime gates stay live):
+The `features` export is typed `boolean` rather than `as const`, so a fork can flip a value and the runtime gates stay live code. One row per flag:
 
-```ts
-export const features = {
-  allowlist: true,
-  apiDocs: true,
-  blog: true,
-  docs: true,
-  internalDocs: true,
-  waitlist: true,
-}
-```
+| Flag           | Surface                                                                                          | Off means                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `allowlist`    | Console > Access > Allowlist, `/api/v1/admin/allowlist*`, and the grant on sign-in               | the API 404s, the console page renders the not-found, the nav drops it, the sign-in hook does nothing, and console access is granted per person   |
+| `apiDocs`      | `/api/docs`, the Scalar reference, and the `/api/openapi.json` document it reads                 | both 404, and the navbar drops "API Docs"                                                                                                         |
+| `blog`         | `/blog` and its posts                                                                            | `/blog` 404s; the navbar link, `/og/blog`, the sitemap and the `llms.txt` blog entries drop                                                       |
+| `docs`         | `/docs`                                                                                          | `/docs` 404s; the navbar and dashboard links, `/og/docs`, search (`/api/search`), the sitemap and the `llms.txt` docs entries drop                |
+| `internalDocs` | `/console/docs`, the internal docs, member and above                                             | the page renders the not-found, the console nav drops it, and its search (`/api/console/search`) 404s                                             |
+| `waitlist`     | `/waitlist` and `/api/waitlist`, plus Console > Waitlist > Signups and `/api/v1/admin/waitlist*` | the page and both APIs 404, the console page renders the not-found, the nav drops the group, and a fresh fork's home becomes a plain landing page |
 
-| Flag           | Surface                                                                                       | Off means                                                                                                                                           |
-| -------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allowlist`    | Console > Access > Allowlist, `/api/v1/admin/allowlist*`, and the console grant it drives     | the API 404s, the console page renders the not-found, the nav drops it, and console access is granted per person only                               |
-| `apiDocs`      | `/api/docs` Scalar reference UI + the `/api/openapi.json` spec                                | both 404 and the navbar "API Docs" link is hidden                                                                                                   |
-| `blog`         | `/blog` and its posts                                                                         | `/blog` 404s, the navbar link, `/og/blog`, sitemap, and `llms.txt` blog entries all drop                                                            |
-| `docs`         | `/docs`                                                                                       | `/docs` 404s, the navbar link, `/og/docs`, search (`/api/search`), sitemap, and `llms.txt` docs entries all drop                                    |
-| `internalDocs` | `/console/docs` (internal docs, member and above)                                             | the console docs render the not-found page and their search (`/api/console/search`) 404s                                                            |
-| `waitlist`     | `/waitlist` page and its API, plus Console > Waitlist > Signups and `/api/v1/admin/waitlist*` | `/waitlist` and `/api/waitlist` 404, the console page renders the not-found, the nav drops it, and a fresh fork's home becomes a plain landing page |
-
-"Off" is not a stub: the route 404s (inside the console, as the not-found page below), the links and navigation entries disappear, and the surface is dropped from the sitemap, `llms.txt`, and search, so nothing points at a page that no longer exists.
+"Off" is not a stub: outside the console the route returns a real 404, inside it the page renders the console's not-found, and the surface leaves the nav, the sitemap, `llms.txt` and search. Content routes get this from one seam, `contentSource` in `web/next/src/lib/content.ts`, which reads as an empty collection when its kind is off; the API gets it from the `requireFeature` middleware. Auth, the dashboard, the console shell and organizations are not flags: they reach into the database, login and route protection.
 
 <Callout type="info" title="Soft 404s in the console">
 
-The console area is `force-dynamic` (its gate runs per request), and Next commits a 200 status before a page-level `notFound()` fires mid-stream, so a disabled console page renders the not-found page with an HTTP 200, not a 404. The same is true of any unknown console path, which a catch-all routes into the same boundary on purpose, so a forbidden page and a nonexistent one cannot be told apart. The area is gated and `noindex` with no content leak, and the console docs search still returns a hard 404. Every disabled page inside the console behaves this way; every disabled surface outside it returns a real 404.
+The console is `force-dynamic` and Next commits a 200 before a page-level `notFound()` fires, so a disabled console page renders the not-found with an HTTP 200. An unknown console path lands in the same boundary through a catch-all, on purpose, so a forbidden page and a nonexistent one cannot be told apart; the area is gated and `noindex`.
 
 </Callout>
 
-One nuance: the API routers stay mounted behind a runtime 404 guard so a fork can flip a flag on later without an `AppType` change. `apiDocs` gates the Scalar UI and the `/api/openapi.json` spec together, but the other flags do not rewrite the spec, so with `apiDocs` on and, say, `waitlist` off, `/api/waitlist` still appears in the document and returns 404 at runtime.
+## Set at `init`, changed in config
 
-## The home and the waitlist
+`zerostarter init` writes the `features` block from a flag per surface or an interactive picker; the [CLI](/docs/getting-started/cli#init) page owns the flags and the fork defaults. Turning a feature on later is a one-line edit to `site.ts`: `init` only writes the values, and every surface stays in the tree behind a runtime read. The waitlist's table stays too, since dropping it would be a migration.
 
-A fresh fork's home (`web/next/src/app/page.tsx`) reads `features.waitlist` at runtime:
+The fork's home follows the same rule: `init` writes `web/next/src/app/page.tsx` from `packages/cli/src/templates.ts`, and it reads `features.waitlist` per request, redirecting to `/waitlist` when on and rendering your name and tagline when off. The starter's marketing home under `(marketing)/` does not ship to a fork.
 
-- **on** it redirects to the `/waitlist` capture page;
-- **off** it renders a plain landing page (your product name and tagline).
+## Common questions
 
-Flip `features.waitlist` and the home re-themes on the next request. Nothing is regenerated. (The starter's own marketing home is separate and always renders; the landing branch is for forks.)
+**Are these per-user flags?**
 
-## Choosing at `init`
+No. `features` is configuration, read by the server and bundled into the client, so every visitor sees the same set and changing one is a deploy. Per-user flags from PostHog or a service are an idea on file in `.github/notes/plans/feature-flags.md`, not a feature.
 
-`zerostarter init` sets the fork's `features` for you. Non-interactively, pass a flag per surface (its `--no-` form turns it off); interactively, a checklist appears, pre-checked to the fork defaults:
+**Does `init` accept `--allowlist`?**
 
-```bash
-# flags: any --<flag>/--no-<flag> skips the picker
-bunx zerostarter init my-app --no-blog --waitlist
+Yes. For a while it did not: the picker knew the flag and the hand-written argument parser did not, so the documented command exited with "Unknown option". Both are now generated from the same list, so a flag cannot be listed in one place and rejected in another.
 
-# no flags + a TTY: pick from the checklist (space toggles, enter confirms)
-bunx zerostarter init my-app
-```
+**Why does `/api/openapi.json` still list a route whose flag is off?**
 
-The fork defaults are **the API reference, blog, docs, and internal docs on; the allowlist and the waitlist off** (so a fresh fork lands on a plain home). Skipping the picker keeps those defaults. `--yes` takes them without prompting.
+The routers stay mounted behind the runtime 404 so a fork can flip a flag on without an `AppType` change. `apiDocs` gates the document and the Scalar UI together, but the other flags do not rewrite the document, so with `waitlist` off, `/api/waitlist` appears in it and answers 404.
 
-## Enable anytime
+## It's working if
 
-Toggling a feature never strips code. `init` only writes the flags, and every surface stays in the tree gated behind a runtime read of `features`. So turning a feature back on is a one-line config edit, no re-scaffolding:
-
-```ts
-// packages/config/src/site.ts
-export const features = {
-  // ...
-  blog: true, // was false; the /blog, its nav link, sitemap, and llms entries all return
-}
-```
-
-<Callout type="info" title="Bigger surfaces stay on">
-
-Auth, the dashboard, the console shell, and organizations are foundational (they reach into the database, login, and route protection), so they are not feature-flagged. The waitlist's database table also stays when the flag is off; dropping it would be a migration.
-
-</Callout>
+- Set `blog: false` in `packages/config/src/site.ts` and restart the dev server: `/blog` returns a 404 and the navbar no longer shows Blog.
+- `/sitemap.xml` and `/llms.txt` list no `/blog/` URL while it is off.
+- With `waitlist: false`, `/waitlist` returns a real 404 and `/console/waitlist` renders the console's not-found page with a 200.
 
 ## Next
 
-- [Content (Blog & Docs)](/docs/manage/content): how the docs, blog, and console collections are authored behind these flags.
-- [SEO & Metadata](/docs/manage/seo): the sitemap and OG routes that read the flags.
-- [Quickstart](/docs/getting-started/setup): the `init` run that sets them.
+- [CLI](/docs/getting-started/cli), because `init` writes these flags and that page owns their defaults.
+- [Content](/docs/manage/content), because the docs, blog and console docs these flags gate are authored there.
+- [Allowlist](/docs/manage/allowlist), because the `allowlist` flag changes how console access is granted, not only whether a page shows.

@@ -4,29 +4,27 @@ title: SEO & Metadata
 description: "Dynamic OG images, sitemap, and robots: indexable and shareable by default."
 ---
 
-A fresh ZeroStarter is indexable by search engines and unfurls a rich preview on social the moment you deploy it, no configuration. Three metadata routes, driven by your content and `NEXT_PUBLIC_APP_URL` (the OG routes read `packages/config/src/site.ts` too), do the work:
+A fresh deploy is indexable and unfurls a rendered preview without configuration; three routes under `web/next/src/app/` do it, and the publish gate they share means nothing unpublished leaks. `robots.ts` serves `/robots.txt`, `sitemap.ts` serves `/sitemap.xml`, and `og/*` renders the Open Graph images, all driven by your content and `NEXT_PUBLIC_APP_URL`, with the OG routes reading `packages/config/src/site.ts` for the name and tagline.
 
-- `web/next/src/app/robots.ts` → `/robots.txt`
-- `web/next/src/app/sitemap.ts` → `/sitemap.xml`
-- `web/next/src/app/og/*` → dynamic Open Graph preview images
+The gate is `contentSource` in `web/next/src/lib/content.ts`: a kind whose feature is off behaves as an empty collection, and the blog kind hides drafts and scheduled posts, so a sitemap entry or a preview exists only for a page that is live.
+
+## When you need this
+
+Reach for this page when a shared link shows the wrong preview, a page is missing from the sitemap, or a crawler is indexing something it should not. For what makes a post public in the first place, see [Content](/docs/manage/content); for where `NEXT_PUBLIC_APP_URL` is set, see [Environment Variables](/docs/manage/environment).
 
 ## Indexable by default
 
-The starter ships with **no** `noindex` directive and no `X-Robots-Tag` header, so crawlers index it out of the box. `robots.ts` (a Next.js `MetadataRoute.Robots`) allows all public pages, disallows the routes that shouldn't be crawled, and points to the sitemap:
-
-- **Allowed:** `/` (all public content, including the OG images at `/og`).
-- **Disallowed:** `/api/`, `/console/`, `/dashboard/`.
-- **Sitemap:** `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`.
+The starter ships with no `noindex` directive and no `X-Robots-Tag` header, so crawlers index it out of the box. `robots.ts` allows `/` (every public page, the OG images included), disallows `/api/`, `/console/` and `/dashboard/`, and points at `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`.
 
 ## Sitemap
 
-`sitemap.ts` (a `MetadataRoute.Sitemap`) discovers pages from the Fumadocs sources instead of a hand-kept list: the home route, every page from `contentSource("docs")`, and the published posts from `getPublishedBlogPosts()`. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
+`sitemap.ts` discovers pages from the collections instead of a hand-kept list: the home route, every page the docs kind returns, and the published blog posts. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
 
-Priorities and change frequencies are set per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; blog entries use `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because `getPublishedBlogPosts()` returns only individual published posts. The sitemap does no filtering of its own, so unpublished posts never leak in. The docs and blog blocks follow their [feature flags](/docs/manage/features): turn one off and its entries drop from the sitemap.
+Priorities are per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; a blog entry uses `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because the published list holds posts only. Turn the docs or blog [feature](/docs/manage/features) off and its entries drop.
 
 ## OG images
 
-Each content type has its own Open Graph image route, rendered dynamically with [takumi](https://takumi.kane.tw):
+Each content kind has its own Open Graph route, rendered with [takumi](https://takumi.kane.tw):
 
 | Route                              | Preview                    |
 | ---------------------------------- | -------------------------- |
@@ -35,62 +33,39 @@ Each content type has its own Open Graph image route, rendered dynamically with 
 | `/og/blog/[[...slug]]`             | Blog posts                 |
 | `/og?section=&title=&description=` | Generic, from query params |
 
-<Callout type="info" title="Why /og, not /api/og">
+The docs route is prerendered at build (`force-static` with `generateStaticParams`); the blog route prebuilds the published posts and revalidates every 60 seconds, so a scheduled post gets its preview without a rebuild; `/og/home` is static and the generic `/og` is `force-dynamic`. `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx` wires each image into the page's metadata, and omits it for a console docs page rather than link a route that does not exist.
 
-These routes live at `/og` on purpose. `robots.txt` disallows `/api/`, so keeping them off it is what lets social unfurlers reach the images.
+Every route renders through `renderOgImage` in `web/next/src/lib/og-image.tsx`: a 1200x630 PNG with a section label, a title whose size steps down as it grows, and a description, in `system-ui`, since no font ships. The response carries a one-year immutable `Cache-Control`. A render failure during a production build throws, failing the build rather than shipping a broken image; at runtime it logs and returns a 500.
 
-</Callout>
+To add a kind, copy `web/next/src/app/og/blog/[[...slug]]/route.tsx`, register the kind in the `REGISTRY` in `web/next/src/lib/content.ts` with `og: true`, and keep `revalidate` when the kind is time-gated. `getPageOr404` and `params()` apply the kind's publish policy, so the route never hand-filters.
 
-The docs route is prerendered at build (`force-static` + `generateStaticParams`); the blog route prebuilds published posts and revalidates every 60s so scheduled posts appear without a rebuild; `/og/home` is static; and the generic `/og` route is `force-dynamic`. Page metadata wires each image in automatically through `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx`, so every docs and blog page gets a unique preview.
-
-All routes render through `renderOgImage` in `web/next/src/lib/og-image.tsx`, resolving the page through the [`contentSource`](/docs/manage/features) seam so the feature gate and publish policy apply for free. To add a section, register its kind in `web/next/src/lib/content.ts`, then create `web/next/src/app/og/<section>/[[...slug]]/route.tsx`:
-
-```tsx
-import { site } from "@packages/config/site"
-
-import { contentSource } from "@/lib/content"
-import { renderOgImage } from "@/lib/og-image"
-
-export const dynamic = "force-static"
-
-const section = contentSource("docs") // your content kind
-
-export async function GET(_req: Request, { params }: { params: Promise<{ slug?: string[] }> }) {
-  const { slug } = await params
-  const page = section.getPageOr404(slug)
-  return renderOgImage({
-    sectionName: "Your Section",
-    title: page.data.title || `${site.name} - Your Section`,
-    description: page.data.description || "Your default description",
-  })
-}
-
-export function generateStaticParams() {
-  return section.params()
-}
-```
-
-<Callout type="info" title="Publish gating is built in">
-
-`getPageOr404` and `params()` apply each kind's publish policy, so you never hand-filter: the blog kind excludes unpublished or scheduled posts (via `isPublicBlogPage`), and a `force-static` OG route therefore never prerenders a preview for a post that isn't live. Keep `revalidate = 60` for a time-gated kind so a scheduled post gets its preview without a rebuild, as `web/next/src/app/og/blog/[[...slug]]/route.tsx` does.
-
-</Callout>
-
-### How the images render
-
-Each image is a 1200x630 PNG. `renderOgImage` builds a plain flex layout (a section label, a title whose size steps down as it grows, and a description) and hands it to [takumi](https://takumi.kane.tw), which rasterizes the JSX to PNG. No custom font ships: the layout uses `system-ui` and takumi resolves it. The response carries a one-year immutable `Cache-Control`, and a render failure during a production build throws to fail the build rather than ship a broken image, while a runtime failure logs and returns a `500`.
-
-To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or the generic `/og?title=Hello&description=World&section=Demo` to tweak the text live.
-
-Because the images are cached hard, the page metadata appends a per-deploy `?t=` timestamp to each OG URL (`web/next/src/app/layout.tsx` for the home image, `web/next/src/lib/fumadocs.tsx` for docs and blog), so social and CDN scrapers refetch the regenerated image after each deploy instead of serving a stale one. To ship a hand-made landing image instead of the rendered one, drop a `public/og/home.png` and the home metadata uses it.
+To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or `/og?title=Hello&description=World&section=Demo` to tweak the text live. To ship a hand-made landing image instead, drop a `public/og/home.png` in place and the home metadata points at it.
 
 <Callout type="warn" title="Keep the takumi binary traced for /og on Vercel">
 
-Vercel traces `/og` into its own serverless function, and the takumi core is a native binary loaded dynamically (it sits in `serverExternalPackages`, so tracing can't follow the import). `next.config.ts` force-includes the matching-libc `@takumi-rs/core` binary for the `/og` function through `outputFileTracingIncludes`; remove it and `/og` returns a `500` at runtime. It is redundant only in Docker standalone, where the whole `node_modules` ships in one image.
+Vercel traces `/og` into its own function, and takumi's core is a native binary loaded dynamically, so tracing cannot follow the import. `next.config.ts` force-includes the matching-libc `@takumi-rs/core` binary for `/og` through `outputFileTracingIncludes`; remove it and `/og` returns a 500 at runtime. It looks removable because it is redundant in Docker standalone, where the whole `node_modules` ships in one image.
 
 </Callout>
 
+## Common questions
+
+**Why `/og` and not `/api/og`, and why the `?t=` on every image URL?**
+
+`robots.txt` disallows `/api/`, and an unfurler that honors it would never fetch the image, so the routes live at `/og`. The timestamp is the cache-bust: the image is cached for a year, so without a query string that changes per deploy a scraper keeps the old picture. `generatePageMetadata` builds the URL once, slug first and timestamp last; an earlier hand-built URL put the timestamp before the slug and shipped a malformed tag.
+
+**Does the home image use the same renderer as docs and blog?**
+
+Yes. `og/home/route.tsx` calls `renderOgImage` with the site tagline and description, so a brand change in `og-image.tsx` reaches all four routes. It used to rebuild the same layout from the raw layer, which meant making every brand change twice.
+
+## It's working if
+
+- `/robots.txt` lists `Disallow: /api/`, `/console/` and `/dashboard/`, and a `Sitemap:` line with your app URL.
+- `/og/home` renders a 1200x630 PNG, and `/og?title=Hello&description=World&section=Demo` renders those words.
+- `/sitemap.xml` omits a post dated tomorrow and lists it within about a minute once the date passes.
+- A docs page's `og:image` meta tag ends in `?t=` and a number.
+
 ## Next
 
-- [Content](/docs/manage/content): the docs and blog posts these routes describe.
-- [Environment Variables](/docs/manage/environment): where `NEXT_PUBLIC_APP_URL` is set.
+- [Content](/docs/manage/content), because the publish gate these routes share is defined there.
+- [Analytics & Feedback](/docs/manage/analytics), because once pages are indexed the next question is who reads them.
+- [Deploy to Vercel](/docs/deployment/vercel), because `/og` runs as its own function there and the tracing include above is that project's to keep.

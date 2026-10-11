@@ -5,45 +5,38 @@ title: Content
 description: Author docs and blog posts in MDX, with full-text search and draft/publish built in.
 ---
 
-Everything you publish is MDX, and it lives in one place: `web/next/content/`. Under it, `docs/` and `blog/` are two [Fumadocs](https://fumadocs.dev) collections that split on a single axis: **who owns each page's metadata.**
+Everything you publish is MDX under `web/next/content/`, split on one axis: docs take their metadata from `docs.config.ts`, blog posts carry their own. `docs/` and `blog/` are two [Fumadocs](https://fumadocs.dev) collections; a third, `console/docs/`, holds internal docs that render only behind the console.
 
-- **Docs** declare their structure and metadata _centrally_, in `web/next/docs.config.ts`. You write only the body.
-- **Blog** posts carry their own metadata in frontmatter, and the listing builds itself from the posts.
+A docs page is declared centrally, so you write only its body and a generator keeps the frontmatter and reading order in step; a blog post owns its frontmatter, and the listing builds itself from the posts. Each collection is a [feature](/docs/manage/features): off, its routes 404 and it drops from the nav, search, sitemap and `llms.txt`.
 
-Docs, the blog, and the private console docs are each an optional [feature](/docs/manage/features): turn one off and its routes 404 and it drops from the nav and search; docs and blog also drop from the sitemap and `llms.txt` (console docs are never in those by construction). The rest of this page assumes they are on.
+## When you need this
+
+Reach for this page when you are adding a docs page or a blog post, or when one is missing from the sidebar, the listing or the search and you want the file that decides. For the flags that turn a collection off, see [Features](/docs/manage/features); for how the docs become `/llms.txt`, see [llms.txt](/docs/manage/llms-txt).
 
 ## Docs: the config is the source of truth
 
-`web/next/docs.config.ts` is the single source for docs structure and metadata. Each collection maps to ordered sidebar groups, and every entry is keyed by the page's URL:
+`web/next/docs.config.ts` is the single source for the docs' structure and metadata; its header comment is the spec. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
 
-```ts
-Manage: [
-  {
-    "/docs/manage/content": { title: "Content", label: "Content (Blog & Docs)", description: "…" },
-  },
-]
-```
-
-`title` and `description` are the page metadata; `label` overrides the sidebar text when it should differ from the title. A generator (`.github/scripts/docs.ts`) runs inside the `web/next` build and dev and, from that config:
+A generator, `.github/scripts/docs.ts`, runs inside the `web/next` build and dev and, from that config:
 
 - writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
-- generates `content/docs/meta.json`: the reading order and prev/next;
-- scaffolds a stub MDX in dev for any page declared in the config but missing on disk;
-- fails a `--strict` build if the config and the files on disk have drifted.
+- generates `content/docs/meta.json`, the reading order behind prev/next and `llms.txt`;
+- scaffolds a stub `.mdx` in dev for a page declared but missing on disk;
+- under `--strict`, the production build's mode, fails on any drift between the config and the files, and never writes.
 
-So adding a page is three steps: add the entry to `docs.config.ts`, run the dev server (or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone; it is regenerated on every build.
+Adding a page is three steps: add the entry to `docs.config.ts`, run the dev server (or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone; it is regenerated on every build.
 
 <Callout type="warn" title="Don't edit meta.json">
 
-`content/docs/meta.json` is generated and git-ignored. The generator overwrites it, so hand edits are lost.
+`content/docs/meta.json` is generated and git-ignored. The generator overwrites it, so a hand edit is lost on the next build.
 
 </Callout>
 
 ## Blog: one file per post
 
-A blog post is a single MDX file in `web/next/content/blog/`, and it owns its metadata in frontmatter. There is no list and no `meta.json` to maintain by hand; the `/blog` listing derives itself from the posts, newest first.
+A blog post is a single MDX file in `web/next/content/blog/` that owns its metadata in frontmatter. There is no list to maintain; `/blog` derives itself from the posts, newest first.
 
-Two timestamps decide visibility: `createdAt` is bookkeeping; `publishedAt` is consent to publish. **A post is public only when it is not a draft and `publishedAt` is set and not in the future.**
+Two timestamps decide visibility: `createdAt` is bookkeeping and `publishedAt` is consent to publish. **A post is public only when it is not a draft and `publishedAt` is set and not in the future.**
 
 ```yaml
 ---
@@ -54,22 +47,44 @@ publishedAt: 2026-06-11
 ---
 ```
 
-Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. Timestamps are either `YYYY-MM-DD` (the start of that UTC day) or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for a post that should go live at an exact time. Scheduled posts need no rebuild: every public blog surface re-evaluates publishing on render, so a post appears within about 60 seconds of its `publishedAt` as ISR regenerates. Post images are committed under `web/next/public/marketing/blog/<slug>/images/` and referenced by absolute path.
+Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. The schema also takes `updatedAt` (rendered on the post, and the modified time in the sitemap and article metadata), `author` and `tags` (article Open Graph metadata). A timestamp is `YYYY-MM-DD`, the start of that day in UTC, or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for an exact release time.
 
-Each post page renders its own publish and update dates and emits article Open Graph metadata from that same frontmatter. Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post file and prints what it wrote, so validation always has one. Review and commit that line.
+Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post and prints what it wrote; review and commit that line. `--strict` only warns and never touches a post.
 
-The publishing rule lives in one place (`web/next/src/lib/blog-policy.ts`) and the listing, sitemap, `llms.txt`, and OG routes all read it, so they can never disagree about what is public.
+The starter's post images sit under `web/next/public/marketing/blog/<slug>/images/`, referenced by absolute path; `web/next/public/` does not ship to a fork, which keeps its images under its own `public/`.
+
+The publishing rule lives in one place, `web/next/src/lib/blog-policy.ts`, and the listing, sitemap, `llms.txt` and OG routes all read it, so they can never disagree about what is public.
 
 ## Search
 
-Full-text search is powered by [Orama](https://orama.com) through Fumadocs, built by the route handler at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page to open it. That public index holds the `docs` collection only. The blog is not indexed, and the private console docs have an index of their own at `/api/console/search`, which answers `404` to anyone the console would not admit, so nothing in it leaks.
+Full-text search runs on [Orama](https://orama.com) through Fumadocs, at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page; the sidebar's search button sends the same keystroke. The index holds the `docs` collection only: the blog is not indexed, and the console docs have their own at `/api/console/search`, which answers 404 to anyone the console would not admit. Both 404 when their feature is off.
 
 ## The private console docs
 
-`web/next/source.config.ts` defines a third collection, `consoleDocs` (`content/console/docs/`), served only under the auth-gated `/console` area. Its source is deliberately never referenced by a public route, so it is excluded from the public search, the sitemap, and `llms.txt` by construction (its own search is gated like the pages are): a home for internal docs that ship with the repo but stay behind the console.
+`web/next/source.config.ts` defines the third collection, `consoleDocs`, served at `/console/docs` under the auth-gated console. No public route references its source, so it is outside the public search, the sitemap and `llms.txt` by construction.
+
+## Common questions
+
+**What decides the order of pages?**
+
+For docs, the order of `docs.config.ts`: the sidebar reads it directly, and the generator writes it into `meta.json`, which prev/next, `/llms.txt` and `/llms-full.txt` read, so they cannot disagree. For the blog, newest `publishedAt` first, with `createdAt` as the fallback and the slug as the tiebreak; nothing is hand-ordered.
+
+**Which timezone does `publishedAt` use?**
+
+UTC, on both ends: a bare date is the start of that day in UTC, not on your machine, and dates render in UTC too, so the date you wrote is the date readers see. For a release at a local hour, use the datetime form with its offset.
+
+**Can a post go live without a rebuild?**
+
+Yes. `/blog`, the post pages, the sitemap, `llms.txt` and the OG images are static with a sixty-second revalidation that re-evaluates the publish rule, so a scheduled post appears within about a minute. Only the prev/next links wait for the next deploy, since `meta.json` lists the posts published at build time.
+
+## It's working if
+
+- Add an entry to `docs.config.ts` and run `bun .github/scripts/docs.ts`: the stub `.mdx` appears on disk, and the page shows in the sidebar in that position.
+- A post with `publishedAt` set to tomorrow is absent from `/blog`, `/sitemap.xml` and `/llms.txt/blog` today, and `/blog/<slug>` answers 404.
+- `bun .github/scripts/docs.ts --strict` exits 0; a page on disk that the config does not list fails it with "exists but is not listed in docs.config".
 
 ## Next
 
-- [Features](/docs/manage/features): turn the docs, blog, or console docs on or off per fork.
-- [SEO & Metadata](/docs/manage/seo): the OG images, sitemap, and robots that cover everything you publish.
-- [llms.txt](/docs/manage/llms-txt): how the docs collection becomes agent-readable context.
+- [llms.txt](/docs/manage/llms-txt), because the docs collection becomes agent-readable context in the same order.
+- [Features](/docs/manage/features), because each collection is a flag a fork can turn off.
+- [SEO & Metadata](/docs/manage/seo), because the sitemap and OG images read the same publish gate.
