@@ -19,7 +19,7 @@ Guidance for AI coding agents in this repository: a Bun monorepo with the `web/n
 - ALWAYS: Version every root `catalog` entry with a caret range; `postinstall` rewrites exact and tilde pins back, so a deliberate pin means changing that rule and recording why (`audit`).
 - Comment only where the code cannot say it, on one line.
 - NEVER: Use an em-dash (U+2014) in code, comments, docs, or copy; a comma, colon, or period carries the pause, and a hyphen is fine.
-- NEVER: Use an `unstable_` framework API; every fork inherits the choice, so stable APIs only.
+- NEVER: Use an `unstable_` framework API; stable APIs only, so an upgrade never strands a feature on one.
 
 ## UI
 

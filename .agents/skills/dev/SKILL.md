@@ -6,7 +6,7 @@ source: local
 
 # Dev Stack
 
-`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the branch name in a linked worktree, so parallel worktrees never collide on a port. They share the auth session, since the cookie is scoped to `.localhost`. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
+`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the branch name in a linked worktree, so parallel worktrees never collide on a port. They share the auth session, since the cookie is scoped to the base `zerostarter.localhost` host. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
 
 ## Start
 
