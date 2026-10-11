@@ -38,9 +38,9 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Build    | `portless`       | Set up and use portless for stable named `.localhost` dev URLs instead of `localhost:PORT`.                                                                             |
 | Build    | `runtime-apis`   | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                                                                   |
 | Operate  | `agent-browser`  | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                                                                |
-| Operate  | `audit`          | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
 | Operate  | `docker-test`    | Build and smoke-test the Docker images with `docker compose`, and run the golden end-to-end suite against them.                                                         |
 | Operate  | `ui-verify`      | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                                                                       |
+| Maintain | `audit`          | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
 | Maintain | `fonts`          | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                                                  |
 | Maintain | `ignore-sync`    | Keep `.dockerignore` in step with `.gitignore`.                                                                                                                         |
 | Maintain | `shadcn-sync`    | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                                                                        |
