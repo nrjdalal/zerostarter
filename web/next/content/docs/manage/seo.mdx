@@ -39,7 +39,7 @@ Every route renders through `renderOgImage` in `web/next/src/lib/og-image.tsx`: 
 
 To add a kind, copy `web/next/src/app/og/blog/[[...slug]]/route.tsx`, register the kind in the `REGISTRY` in `web/next/src/lib/content.ts` with `og: true`, and keep `revalidate` when the kind is time-gated. `getPageOr404` and `params()` apply the kind's publish policy, so the route never hand-filters.
 
-To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or `/og?title=Hello&description=World&section=Demo` to tweak the text live. To ship a hand-made landing image instead, drop a `public/og/home.png` in place and the home metadata points at it.
+To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or `/og?section=Demo&title=Hello&description=World` to tweak the text live; this page lists those params in the order the image draws them, top to bottom. To ship a hand-made landing image instead, drop a `public/og/home.png` in place and the home metadata points at it.
 
 <Callout type="warn" title="Keep the takumi binary traced for /og on Vercel">
 
@@ -56,7 +56,7 @@ Vercel traces `/og` into its own function, and takumi's core is a native binary 
 ## It's working if
 
 - `/robots.txt` lists `Disallow: /api/`, `/console/` and `/dashboard/`, and a `Sitemap:` line with your app URL.
-- `/og/home` renders a 1200x630 PNG, and `/og?title=Hello&description=World&section=Demo` renders those words.
+- `/og/home` renders a 1200x630 PNG, and `/og?section=Demo&title=Hello&description=World` renders those words.
 - `/sitemap.xml` omits a post dated tomorrow and lists it within about a minute once the date passes.
 - A docs page's `og:image` meta tag ends in `?t=` and a number.
 

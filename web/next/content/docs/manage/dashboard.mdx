@@ -6,7 +6,7 @@ description: "The protected app shell: sidebar, org switcher, and the layout wra
 
 `/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. Its description reads "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
 
-The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome with its own header, nav and footer slots, a "Console" badge and `/console` as its home link.
+The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome and fills its slots its own way ([The sidebar](#the-sidebar) compares the two).
 
 ## When you need this
 
@@ -16,7 +16,7 @@ Reach for this page when you are about to build the first product page, or want 
 
 `app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none, so an unauthenticated request never renders the page. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
 
-When the session carries no active organization, the layout restores the last one: the org switcher writes a `last-active-org_{userId}` cookie on every switch, and the layout posts that id to `/api/auth/organization/set-active` before rendering. A failed restore logs and renders anyway.
+When the session carries no active organization, the layout restores, before it renders, the one the user last switched to; [Organizations](/docs/manage/organizations#the-active-organization) describes how.
 
 ## The sidebar
 
@@ -46,7 +46,7 @@ Home, the first item in the user menu. The sidebar brand links to `/dashboard` (
 
 **Where did `DashboardShell` go?**
 
-It is `PageShell`, and `DashboardHeader` is `PageHeader`, both under `components/shell/` since the components were regrouped by feature; the console wraps its pages in the same two, so a dashboard-prefixed name no longer fit.
+It is `PageShell`, and `DashboardHeader` is `PageHeader`, both in `components/shell/`, which holds the chrome the dashboard and the console share; the console wraps its pages in the same two, so neither name carries a dashboard prefix.
 
 ## It's working if
 

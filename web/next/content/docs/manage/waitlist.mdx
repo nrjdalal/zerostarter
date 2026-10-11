@@ -10,7 +10,7 @@ The public `/waitlist` page takes an address and reports an approximate count, r
 
 ## When you need this
 
-Reach for this page when you are launching before the product and want somewhere to collect addresses, or when signups have arrived and you need to reach, count or remove them. The surface is the `waitlist` [feature](/docs/manage/features), on in the starter and off in a fresh fork; for who reaches the console at all, see [Allowlist](/docs/manage/allowlist).
+Reach for this page when you are launching before the product and want somewhere to collect addresses, or when signups have arrived and you need to reach, count or remove them. The surface is the `waitlist` [feature](/docs/manage/features), and the [CLI](/docs/getting-started/cli#init) lists its default in a new fork; for who reaches the console at all, see [Allowlist](/docs/manage/allowlist).
 
 ## What you can do with it
 
@@ -35,7 +35,7 @@ There is no way to add a signup from the console, and no `POST` on the admin rou
 
 ## The one console table that can get big
 
-Every other console list is the size of your staff. A waitlist is the one that plausibly holds six figures, and this page is built like the others: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it. The one that bites first is neither: every batch runs its own `count(*)` beside the rows, because the table shows a total and paging needs one, so scrolling ten batches counts the whole table ten times.
+Every other console list is the size of your staff. A waitlist is the one that plausibly holds six figures, and the console's Signups page is built like the others: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it. The one that bites first is neither: every batch runs its own `count(*)` beside the rows, because the table shows a total and paging needs one, so scrolling ten batches counts the whole table ten times.
 
 That is fine for thousands and slow for hundreds of thousands. Three independent fixes when your own numbers ask for them, and not before: a `pg_trgm` GIN index on `waitlist.email`, keyset paging instead of the offset, and counting only on the first page. See [Database](/docs/manage/database).
 

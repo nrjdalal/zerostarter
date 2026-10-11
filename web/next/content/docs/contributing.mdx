@@ -24,7 +24,7 @@ git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch>
 
 Two skills shape what goes in. `doc-sync`: docs move with code, so a changed command, path, convention or skill is fixed across every documented surface in the same change. `gh-commit`: one logical unit per commit in the [Conventional Commits](https://www.conventionalcommits.org) format, which commitlint checks on the `commit-msg` hook.
 
-The pre-commit hook formats, lints and builds but runs no `check-types`, so run `bun run check-types` (and, in the canonical starter, `bun run test`) before pushing; the pre-push hook on `canary` runs `bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm`; the pull request reruns the full gate on GitHub.
+The pre-commit hook formats, lints and builds but runs no `check-types`, so run `bun run check-types` (and, in the canonical starter, `bun run test`) before pushing. The pre-push audit runs only on a push from `canary`, so a feature branch pushed from your worktree meets the audit in the pull request's CI, which reruns the full gate on GitHub; [Code Quality](/docs/manage/code-quality#the-gates-in-order) lists what each hook and CI step runs.
 
 ## Open the PR
 
@@ -40,14 +40,12 @@ lint-staged formats only the staged files; CI runs `bun run format:check` over t
 
 `GHSA-vfj7-8cjw-p6xm` covers every release of `braces`, has no patched version, and reaches only dev tooling (`shadcn`, `globby`). With no release to move to, none of the `audit` skill's fixes can lift it, so the gate ignores it by ID, the skill's route for that case; its exit criteria are in `.github/notes/dependencies.md` (canonical starter).
 
-**Why does the audit run on push, not on every commit?**
-
-Because it queries the registry. It runs on pre-push, gated to `canary`, so a commit never needs the network or waits on a new transitive advisory, and a vulnerable dependency still cannot leave your machine.
-
 ## It's working if
 
-- `git commit -m "add page"` is refused with `type may not be empty`; `docs: add page` lands.
-- A pull request into `canary` shows the **Audit, Lint, and Build** check.
+- `git log --oneline origin/canary..HEAD` in your worktree lists only your own commits.
+- Your pull request names `canary` as its base branch.
+
+The hook and CI tells are on [Code Quality](/docs/manage/code-quality#its-working-if), whose Common questions also answer why the audit waits for a push.
 
 ## Next
 

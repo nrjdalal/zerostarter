@@ -22,13 +22,13 @@ Colors live in the `:root` and `.dark` blocks as [OKLCH](https://oklch.com) valu
 
 ## Fonts
 
-Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles under `components/ui/` (`rg -l font-heading web/next/src/components/ui` lists every reader), not by page headings, which take the sans through `html`. It is a registry token too, so pointing it at a separate face reverts on the next sync unless that line becomes a guard in `.github/scripts/shadcn-customize.ts`, the `shadcn-sync` skill's route for an override. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
+Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles under `components/ui/` (`rg -l font-heading web/next/src/components/ui` lists every reader), not by page headings, which take the sans through `html`. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans. Giving those titles a face of their own means pointing `--font-heading` at it and, since the registry writes that line, guarding it in `.github/scripts/shadcn-customize.ts` as the skill's "Wire the role" step does, or the next sync puts the sans back.
 
 ## Common questions
 
 **Why did my sidebar color revert?**
 
-Because `bun run shadcn:update` rewrote `globals.css`. `--sidebar` is a registry token, hardcoded in light and dark by shadcn's template, so the sync resets it and the guard in `shadcn-customize.ts` puts back `var(--background)`, not your value. Your own override goes in that script the same way; the `shadcn-sync` skill's Guards list is the complete set.
+Because `--sidebar` is one of the guarded registry tokens above, and its guard in `shadcn-customize.ts` restores `var(--background)` in both themes, not your value. Put your value in that guard instead; the `shadcn-sync` skill's Guards list is the complete set.
 
 **Why do Caveat and Lora live in a different file?**
 
@@ -37,7 +37,7 @@ Because preload follows the import graph. The root layout imports `lib/fonts.ts`
 ## It's working if
 
 - A token edited in both `:root` and `.dark` shows on the next render in both themes, and the `ModeToggle` flips between them.
-- `bun run shadcn:update` on a clean tree leaves a registry-token edit in place once its guard is in `shadcn-customize.ts`; without one, `git diff` shows the registry value back.
+- After `bun run shadcn:update` on a clean tree, every token you guarded still reads your value in `globals.css`.
 
 ## Next
 
