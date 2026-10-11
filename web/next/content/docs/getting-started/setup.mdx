@@ -23,7 +23,7 @@ bunx zerostarter init
 
 Run it in an empty directory of its own: the directory name becomes the project name. A directory with files in it prompts for a name and scaffolds into a subdirectory of that name, and a directory inside an existing workspace stops before writing anything, because `bun install` would climb into the parent lockfile.
 
-One run fetches the latest starter without its sample content, rebrands it to the project name (the agent skills and `AGENTS.md` included), asks which optional surfaces to ship (allowlist, API docs, blog, docs, internal docs, waitlist: all on by default except the allowlist and the waitlist, each flippable later in [Features](/docs/manage/features)), installs with Bun, commits on a `canary` branch with `main` seeded behind it, and writes `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`. Then it asks whether to provision a local Postgres, defaulting to yes when Docker is up: [pglaunch](https://github.com/nrjdalal/pglaunch) starts a container, `init` waits for it to accept connections, points `POSTGRES_URL` at it, and applies the migrations. `--db` skips that prompt, and `--yes` takes every default.
+One run fetches the latest starter without its sample content, rebrands it to the project name (the agent skills and `AGENTS.md` included), asks which optional surfaces to ship (the [CLI page](/docs/getting-started/cli) lists the flags and their defaults; each is flippable later in [Features](/docs/manage/features)), installs with Bun, commits on a `canary` branch with `main` seeded behind it, and writes `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`. Then it asks whether to provision a local Postgres, defaulting to yes when Docker is up: [pglaunch](https://github.com/nrjdalal/pglaunch) starts a container, `init` waits for it to accept connections, points `POSTGRES_URL` at it, and applies the migrations. `--db` skips that prompt, and `--yes` takes every default.
 
 The run ends on `<name> is ready` and a **Next steps** note. With a database, that note is `bun run dev` alone.
 
@@ -52,11 +52,17 @@ A fresh scaffold has no OAuth configured, so **Login** in the navbar opens a dia
 
 ## Common questions
 
-**Can I run it with `npx`?** Not without Bun installed: `npx zerostarter init` on a machine without it used to die on the first spawn with `spawnSync bunx ENOENT`. It now stops before any prompt, prints the `bunx --bun zerostarter init` re-run, and offers to install Bun.
+**Can I run it with `npx`?**
 
-**What happens when I run `init` again?** The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, while `-c` on pglaunch is the only thing that forces a fresh one; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
+Not without Bun installed: `npx zerostarter init` on a machine without it used to die on the first spawn with `spawnSync bunx ENOENT`. It now stops before any prompt, prints the `bunx --bun zerostarter init` re-run, and offers to install Bun.
 
-**Can two checkouts run `bun run dev` at once?** Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.zerostarter.localhost:1355` and `zerostarter.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
+**What happens when I run `init` again?**
+
+The database step is idempotent. pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, while `-c` on pglaunch is the only thing that forces a fresh one; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`.
+
+**Can two checkouts run `bun run dev` at once?**
+
+Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.zerostarter.localhost:1355` and `zerostarter.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
 
 ## It's working if
 
