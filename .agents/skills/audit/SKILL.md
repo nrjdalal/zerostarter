@@ -20,7 +20,7 @@ bun install        # once more: postinstall rewrote ranges, so bun.lock is one i
 bun outdated -r    # expect no rows
 ```
 
-`postinstall` (`.github/scripts/deps-manager.ts`) rewrites exact and tilde specs back to carets and reports the rest for a manual fix, so a deliberate pin means changing that rule in the script and recording why in `.github/notes/dependencies.md` (canonical starter only). For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. Done when `bun outdated -r` prints no rows.
+`postinstall` (`.github/scripts/deps-manager.ts`) rewrites exact and tilde specs back to carets and reports the rest for a manual fix, so a deliberate pin means changing that rule in the script and recording why in `.github/notes/dependencies.md` (canonical starter only). For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. A row left after the second install is a release newer than the update ran, so run the update again. Done when `bun outdated -r` prints no rows.
 
 ### 2. Move the pins outside npm
 
@@ -93,8 +93,8 @@ Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run 
 
 ### 3. Record every override and ignore (canonical starter only)
 
-Every ignored advisory needs a block under `## Ignored advisories` with the same four fields, and leaves all four places together. Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
+Every ignored advisory needs a block under `## Ignored advisories` with the same four fields (**Why an ignore** in place of **Why an override**), and leaves all four places together. Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
 
 ### 4. Ship
 
-`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and every block in `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.
+`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.

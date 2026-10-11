@@ -14,12 +14,12 @@ Releases ship by promoting `canary` to `main` with a merge commit, and `main` de
 gh pr list --base canary --state open
 ```
 
-Done when nothing listed is meant to ship in this release.
+A draft never ships; a ready PR meant for this release merges first. Done when nothing listed and ready is meant to ship in this release.
 
 ## 2. Pin the version when the window earns too little
 
 ```bash
-bun run release:version    # {"current":..,"earned":..,"next":..}: next is what ships
+bun run release:version    # prints current, earned, moved, next and tag: next is what ships
 ```
 
 A hand-set `version` in the root `package.json`, ahead of the last `v*` tag, ships as long as it is ahead of what the window earns, since the tree moves forward only. Land it on `canary` through a PR like any change. Done when `bun run release:version` prints the wanted `next`.
