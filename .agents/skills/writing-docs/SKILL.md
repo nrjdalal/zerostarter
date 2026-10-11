@@ -39,7 +39,7 @@ A page outlives the code it describes, so every claim is re-read at the source b
 
 ## 4. Write the frame
 
-Every page takes this frame as it is rewritten, and the middle is the page's own; today the pages carry only `## Next`, so the frame is what a rewrite converges on.
+Every page takes this frame as it is rewritten, and the middle is the page's own.
 
 - **Opening, no heading.** One or two paragraphs: what the subject does for the reader, then the defining constraint, the single fact that makes it behave differently from the obvious default, as a plain sentence rather than a labeled aside. This is the most valuable line on the page.
 - **`## When you need this`.** The trigger: reach for this page when. Where a sibling page is confusable, add the other half: for that, see the sibling.
