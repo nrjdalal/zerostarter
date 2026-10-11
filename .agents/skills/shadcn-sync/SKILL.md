@@ -6,11 +6,11 @@ source: local
 
 # Shadcn Sync
 
-`bun run shadcn:update` wipes `web/next/src/components/ui`, re-scaffolds it from the registry (`shadcn init`, then `add -a`), and re-applies every override in `.github/scripts/shadcn-customize.ts`. A clean tree goes in; the only diff out is the residual, a genuine upstream change to a component.
+`bun run shadcn:update` wipes `web/next/src/components/ui` and `components.json`, re-scaffolds both from the registry (`shadcn init`, then `add -a`), re-applies every override in `.github/scripts/shadcn-customize.ts`, formats, and reinstalls. A clean tree goes in; the only diff out is the residual, a genuine upstream change to a component.
 
 ## 1. Run the sync
 
-Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming the files, and root `package.json`, which the sync resets, sits outside that check. Done when it exits 0 after a `[shadcn-customize] restored from HEAD:` line and a `[shadcn-customize] patched:` line per patched file in Guards; a thrown `shape changed` names the guard to repair (step 4).
+Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming the files, and root `package.json`, which the sync resets, sits outside that check. Done when it exits 0 after a `[shadcn-customize] restored from HEAD:` line and a `[shadcn-customize] patched:` line per patched file in Guards; a throw naming a file and `shape changed`, or ts-morph's `Expected to find function named`, names the guard to repair (step 4).
 
 ## 2. Review the diff
 
@@ -18,7 +18,7 @@ Read `git diff`. Done when it is empty or every hunk is a registry change under 
 
 ## 3. Type-check
 
-`cd web/next && bun run check-types`, which covers every `ui/*.tsx`, used or not. Done when it exits 0; a missing-module error is a registry dependency to add to the root `catalog` by hand, since the sync resets the three manifests to HEAD.
+`bunx turbo run check-types --filter=@web/next`, which builds the packages it depends on first and covers every `ui/*.tsx`, used or not. Done when it exits 0; a missing module from the registry's imports is a dependency to add to the root `catalog` by hand, since the sync resets the three manifests to HEAD.
 
 ## 4. Add or repair an override
 
