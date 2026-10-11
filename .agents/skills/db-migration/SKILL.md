@@ -17,7 +17,7 @@ Post the table or the altered columns and name the choices that are hard to reve
 Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so the worktree needs its own `.env` first:
 
 ```bash
-bunx pglaunch -k    # disposable Postgres; -k keeps it and names it after the directory, so each worktree gets its own
+bunx pglaunch -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
 ```
 
 Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `pg_isready -h localhost -p <port>` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers and the worktree `.env` names the container, with the shared URL nowhere in the worktree.
