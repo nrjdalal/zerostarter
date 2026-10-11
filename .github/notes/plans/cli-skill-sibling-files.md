@@ -1,7 +1,7 @@
 # Skills with more than one file do not sync to forks
 
 - Status: icebox
-- Links: the cluster-2 plan for the skills rewrite (PR #871's follow-up), `packages/cli/src/skills.ts`
+- Links: PR #872 (the wiring cluster of the skills rewrite), `packages/cli/src/skills.ts`
 
 ## The concern
 
