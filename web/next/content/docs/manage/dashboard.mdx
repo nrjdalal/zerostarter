@@ -4,75 +4,58 @@ title: Dashboard
 description: "The protected app shell: sidebar, org switcher, and the layout wrappers to build on."
 ---
 
-<Callout type="warn" title="This is a shell, not a product">
+`/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. Its heading says "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
 
-The `/dashboard` page renders a single "Dashboard" heading with its "Intentionally empty." description and nothing else. It is an empty, auth-gated starting point. The sidebar, org switching, and layout wrappers are real and wired; the _content_ is yours to build.
+The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome with two props flipped.
 
-</Callout>
+## When you need this
 
-`/dashboard` is a route group at `web/next/src/app/(protected)/`. Its `layout.tsx` does two things: it guards the group behind a session, and wraps every page in the shared sidebar. The privileged `/console` area reuses the exact same chrome.
+Reach for this page when you are about to build the first product page, or want to know what a signed-in user sees. For who can sign in and the ladder behind the Console link, see [Authentication](/docs/manage/authentication); for what the org switcher switches, see [Organizations](/docs/manage/organizations).
 
 ## The guard
 
-The layout checks the session server-side and bounces anyone without one:
+`app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none, so an unauthenticated request never renders the page. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
 
-```ts
-const session = await auth.api.getSession({ disableCookieCache: true })
-if (!session?.user) redirect("/")
-```
-
-`auth.api.getSession()` (in `web/next/src/lib/auth/index.ts`) calls the API with the request cookies. The redirect happens on the server, so an unauthenticated request never renders the protected page; there is no client-side flash.
+When the session carries no active organization, the layout restores the last one: the org switcher writes a `last-active-org_{userId}` cookie on every switch, and the layout posts that id to `/api/auth/organization/set-active` before rendering. A failed restore logs and renders anyway.
 
 ## The sidebar
 
-The chrome is not inlined in the layout. It lives in `SidebarShell` (`web/next/src/components/shell/sidebar-shell.tsx`), a shadcn/ui `Sidebar` wrapped in `SidebarAdaptive`, an icon rail in the app and offcanvas inside the docs area, shared by both the dashboard and console layouts. The layout fills three slots:
+The chrome is `SidebarShell` (`web/next/src/components/shell/sidebar-shell.tsx`), a shadcn `Sidebar` that collapses to an icon rail in the app and offcanvas inside the docs area, with three slots the layout fills:
 
-- **Header**: the brand (`site.name`, linking to `homeHref`, which stays inside the app: `/dashboard` by default), the collapse trigger, and a caller node: for the dashboard, the org switcher.
-- **Content**: a caller `nav` node. Empty for the dashboard; add your navigation items here.
-- **Footer**: a caller node: for the dashboard, the user actions.
+| Slot            | Dashboard                                                                              | Console                                                    |
+| --------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Header          | the brand linking to `homeHref` (`/dashboard`), the collapse trigger, the org switcher | the same, with a "Console" badge and `homeHref="/console"` |
+| Content (`nav`) | empty: your navigation goes here                                                       | the console navigation                                     |
+| Footer          | a Documentation link with the version (when `features.docs` is on), then the user menu | the user menu                                              |
 
-The console layout is the same shell with two props flipped: a `badge` ("Console") and `homeHref="/console"`; both default to dashboard values. A `SidebarRail` gives the sidebar edge a click target that toggles it, and open/closed state persists in a `sidebar_state` cookie.
-
-### Org switcher and active-org persistence
-
-The org switcher (`web/next/src/components/dashboard/sidebar.tsx`) lists the user's organizations, switches between them, and offers a Create Organization dialog (the slug is auto-generated from the name). The active org survives reloads:
-
-1. On switch, the component writes a `last-active-org_{userId}` cookie.
-2. On load, the dashboard reads that cookie and calls `POST /api/auth/organization/set-active` to restore it.
-
-So a user returns to the same org context every session.
-
-### User actions
-
-The footer (`web/next/src/components/dashboard/sidebar.tsx`) holds a docs link with a version badge (only when the docs feature is on) and the shared `SidebarUserMenu`, which carries the cross-link to `/console` for anyone the ladder admits, meaning `member` and above (`canAccessConsole`) (`web/next/src/components/shell/sidebar-user-menu.tsx`): avatar, name, email, a Home link back to `/` (the sidebar brand stays inside the app, so this is the one way back to the landing page), an optional feedback link (only when `NEXT_PUBLIC_USERJOT_URL` is set), and sign-out (which returns to the home page).
+Open or closed persists in a `sidebar_state` cookie, read on the server so the first paint matches. The org switcher (`components/dashboard/sidebar.tsx`) lists the user's organizations and offers a Create dialog whose slug comes from `slugify(name)`; the user menu (`components/shell/sidebar-user-menu.tsx`) carries avatar, name and email, a Home link to `/`, the Console cross-link, Feedback when `NEXT_PUBLIC_USERJOT_URL` is set, and Log out.
 
 ## Page content
 
-Pages never hand-roll centering, width, or padding. They wrap content in two components:
+A page wraps its content in `PageShell` (centering, width and padding through a `size` variant: `sm`, `md`, `lg`, `full`) and opens with `PageHeader`, which renders the page's one `h1` plus an optional description and actions row; both live in `components/shell/`. `app/(protected)/dashboard/page.tsx` is the whole pattern, and the `design` skill's "Spacing and page frame" section is the rule it follows.
 
-- **`PageShell`** (`web/next/src/components/shell/page-shell.tsx`): the container. Owns `mx-auto`, width, and `p-4 sm:p-6` via a `size` variant: `sm`, `md` (default), `lg`, `full`.
-- **`PageHeader`** (`web/next/src/components/shell/page-header.tsx`): the title row. Takes `title`, an optional `description`, and optional `actions`, and renders the page's single `<h1>`.
+## Common questions
 
-A new protected page is just a file under `(protected)/` (it inherits the guard and sidebar automatically) with its content wrapped in the shell:
+**Why does every dashboard load read the session fresh?**
 
-```tsx
-import { PageHeader } from "@/components/shell/page-header"
-import { PageShell } from "@/components/shell/page-shell"
+Because the Console link is drawn from it. The browser holds a session snapshot for the cookie cache window, so a cached read would leave someone just promoted to `member` with no way into the console they can already open; the gates on `/console` and the API read past the cache, and the dashboard matches them, at the cost of one session lookup on a round trip the layout makes anyway.
 
-export default function Page() {
-  return (
-    <PageShell>
-      <PageHeader
-        title="Dashboard"
-        description="Intentionally empty. Auth, orgs, and the API are wired; this page is where your product begins."
-      />
-      {/* your content here */}
-    </PageShell>
-  )
-}
-```
+**How do I get back to the landing page?**
+
+Home, the first item in the user menu. The sidebar brand links to `/dashboard` (and `/console` in the console) so a signed-in reader stays in the app, which leaves the menu as the one way out.
+
+**Where did `DashboardShell` go?**
+
+It is `PageShell`, and `DashboardHeader` is `PageHeader`, both under `components/shell/` since the components were regrouped by feature; the console wraps its pages in the same two, so a dashboard-prefixed name no longer fit.
+
+## It's working if
+
+- After the agent login (`AGENT_SIGNIN_ENABLED=true`, then **Login (agents)**), `/dashboard` renders the sidebar with your name in the footer and "Intentionally empty" under the heading.
+- The user menu shows Console only for `member` and above; a `user` sees Home and Log out, plus Feedback when the URL is set.
+- Collapse the sidebar and reload: it stays collapsed.
 
 ## Next
 
-- [Authentication](/docs/manage/authentication): the sessions, orgs, and roles behind the guard.
-- [Theming](/docs/manage/theming): restyle the shell with design tokens.
+- [Authentication](/docs/manage/authentication), because the guard and the Console link both come from the session it describes.
+- [Organizations](/docs/manage/organizations), because the switcher in the header is its UI.
+- [Data Tables](/docs/manage/data-tables), because the console's tables are the first thing to copy onto this page.

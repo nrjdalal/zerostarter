@@ -4,83 +4,47 @@ title: Theming
 description: "Dark mode, OKLCH design tokens, and Tailwind v4: restyle without fighting the system."
 ---
 
-You restyle ZeroStarter by editing tokens, not components. Colors, fonts, and radii are CSS custom properties in `web/next/src/app/globals.css`; Tailwind v4's `@theme` binds them to utility classes; every component references the utility, never a raw color. Change a token once and it flows to every surface, in both light and dark mode.
+You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and every component reaches for the utility, never a raw color, so one edit flows to every surface in both themes.
+
+That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` regenerates `globals.css` from the registry template, and only the edits `.github/scripts/shadcn-customize.ts` re-applies survive, today `--font-sans` and the two `--sidebar` lines. A token changed without a guard holds until the next sync, then reverts.
+
+## When you need this
+
+Reach for this page when you are restyling: a brand color, the sans, a radius, the dark palette. A new component or a layout decision is the `design` skill ([AI Skills](/docs/resources/ai-skills)); a change to a `ui/*` primitive is a `shadcn-sync` override.
 
 ## Dark mode
 
-[next-themes](https://github.com/pacocoursey/next-themes) toggles a `.dark` class on `<html>` and follows the OS by default:
+[next-themes](https://github.com/pacocoursey/next-themes) toggles a `.dark` class on `<html>` and follows the OS until the reader picks a side; `InnerProvider` in `web/next/src/app/providers.tsx` configures it, and `@custom-variant dark (&:is(.dark *))` in `globals.css` makes that class what `dark:` keys on. The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) cycles three states: from `system` to the opposite of the OS preference, between `light` and `dark` while they diverge, and back to `system` once the choice matches the OS.
 
-```tsx
-// web/next/src/app/providers.tsx
-<NextThemesProvider
-  attribute="class"
-  defaultTheme="system"
-  enableSystem
-  disableTransitionOnChange
->
-```
+## Tokens
 
-The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) is a smart three-state toggle: from `system` it jumps to the opposite of the OS preference, flips between `light` and `dark` while they diverge, and snaps back to `system` once the explicit choice matches the OS again.
-
-## Design tokens
-
-Colors live in `:root` and `.dark` blocks as [OKLCH](https://oklch.com) values:
-
-```css
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --border: oklch(0.922 0 0);
-  --success: oklch(0.627 0.194 149.214);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-}
-```
-
-OKLCH is perceptually uniform. Its first channel is lightness, so a dark variant is often the same hue with the L flipped, and edits stay balanced instead of shifting hue unexpectedly.
-
-## Wiring tokens to Tailwind
-
-Two declarations in `globals.css` connect the custom properties to Tailwind v4. A custom variant teaches Tailwind that `.dark` triggers `dark:` utilities, and an `@theme inline` block maps `--color-*` utilities onto the tokens:
-
-```css
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-border: var(--border);
-  --color-success: var(--success);
-  --font-sans: var(--font-dm-sans), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
-  --font-heading: var(--font-sans);
-}
-```
-
-That mapping is what makes `bg-background`, `text-foreground`, `border-border`, and `text-success` (plus `bg-success/10`, `border-success/20`) resolve to the tokens above.
-
-## Use semantic tokens, not raw colors
-
-Style with the semantic utility (`bg-card`, `text-muted-foreground`, `border-border`), never a literal like `bg-white` or `bg-[#111]`. Semantic tokens are the whole point: they carry the light/dark pair and let a rebrand happen in one file. A raw color hard-codes one theme and breaks the other.
+Colors live in the `:root` and `.dark` blocks as [OKLCH](https://oklch.com) values (`--background` is `oklch(1 0 0)` in light and `oklch(0.145 0 0)` in dark), and since OKLCH's first channel is lightness, a dark variant is often the same hue with L flipped. The `@theme inline` block maps `--color-background` onto `var(--background)` and its siblings, which is what makes `bg-background` and `text-success` resolve; a new token is one line in each block and one in the map. A component names the token, never a literal, since `bg-white` hard-codes one theme and breaks the other; the `design` skill's Color section owns that rule.
 
 ## Fonts
 
-Fonts are self-hosted, not fetched at runtime, localized through `next/font/local` and each exposing a CSS variable. The core faces live in `web/next/src/lib/fonts.ts` (`.woff2` in `web/next/src/fonts/`):
+Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles (`components/ui/card.tsx`, `empty.tsx`, `alert-dialog.tsx`, `drawer.tsx`), not by page headings, which take the sans through `html`. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
 
-- **DM Sans** → `--font-sans`: body and headings.
-- **JetBrains Mono** → `--font-mono`: code.
+## Common questions
 
-**Caveat** and **Lora** (`--font-caveat`, `--font-lora`) are author-only accents for `/hire` and `/resume`, applied via their `.className`. They live in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`.woff2` in `web/next/src/fonts/marketing/`), kept out of `lib/fonts.ts` so their preload stays scoped to those two pages.
+**Why did my sidebar color revert?**
 
-Headings track `--font-sans` unless you repoint `--font-heading`. To add or swap a font, follow the [`fonts` skill](/docs/resources/ai-skills): it fetches the variable woff2 and wires the preload so you don't ship layout shift.
+Because `bun run shadcn:update` rewrote `globals.css`. shadcn's template hardcodes `--sidebar` in light and dark, the starter flushes both to `var(--background)`, and for a while the sync restored only `--font-sans`, so every run reverted the sidebar. Both lines are guarded now; the `shadcn-sync` skill's Guards list is the complete set, and your own override goes in `shadcn-customize.ts` the same way.
+
+**Why do Caveat and Lora live in a different file?**
+
+Because preload follows the import graph. The root layout imports `lib/fonts.ts`, so every face there preloads on every page; Caveat and Lora render only on `/hire` and `/resume`, so they sit in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`--font-caveat`, `--font-lora`, applied by `.className`), which only those two pages import.
+
+**What renders while the code font is loading?**
+
+A fallback face `next/font/local` generates from the font's metrics, matched against Arial or Times New Roman, the only bases it has, so code shows in a proportional face until the woff2 lands. `adjustFontFallback: false` on the export hands the wait to the generic `monospace` the `--font-mono` role ends in, which looks like code throughout and moves the page less on the swap.
+
+## It's working if
+
+- A token edited in both `:root` and `.dark` shows on the next render in both themes, and the `ModeToggle` flips between them.
+- `bun run shadcn:update` on a clean tree leaves the edit in place once its guard is in `shadcn-customize.ts`; without one, `git diff` shows the registry value back.
 
 ## Next
 
-- [AI Skills](/docs/resources/ai-skills): the `fonts` and `design` skills for font and UI work.
-- [Dashboard](/docs/manage/dashboard): the shell these tokens style.
+- [Data Tables](/docs/manage/data-tables), because a table measures its headers from the sans, so swapping the font re-measures every column.
+- [Dashboard](/docs/manage/dashboard), because the shell is the first surface these tokens style.
+- [AI Skills](/docs/resources/ai-skills), because `design`, `fonts` and `shadcn-sync` hold the procedures this page points at.
