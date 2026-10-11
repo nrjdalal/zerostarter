@@ -4,9 +4,9 @@ title: Theming
 description: "Dark mode, OKLCH design tokens, and Tailwind v4: restyle without fighting the system."
 ---
 
-You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and every component reaches for the utility, never a raw color, so one edit flows to every surface in both themes.
+You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and every component reaches for the utility, never a raw color (the `design` skill's Color rule), so one edit flows to every surface in both themes.
 
-That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` runs `shadcn init` over `globals.css`, so a token the registry template writes (`--background`, `--font-sans`, `--sidebar` and the rest) resets to the registry value, a token it does not know (`--font-heading`, `--font-mono`, `--success`) survives, and `.github/scripts/shadcn-customize.ts` restores its guarded lines afterwards. A registry token changed without a guard holds until the next sync, then reverts.
+That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` runs `shadcn init` over `globals.css`, so a token the registry writes (`--background`, `--font-heading`, `--font-sans`, `--sidebar` and the rest) takes the registry's value back, the overrides the `shadcn-sync` skill lists under Guards then restore their lines, and a token the registry does not write (`--font-mono`, `--success`) survives. A registry token changed without a guard holds until the next sync, then reverts.
 
 ## When you need this
 
@@ -18,11 +18,11 @@ Reach for this page when you are restyling: a brand color, the sans, a radius, t
 
 ## Tokens
 
-Colors live in the `:root` and `.dark` blocks as [OKLCH](https://oklch.com) values (`--background` is `oklch(1 0 0)` in light and `oklch(0.145 0 0)` in dark), and since OKLCH's first channel is lightness, a dark variant is often the same hue with L flipped. The `@theme inline` block maps `--color-background` onto `var(--background)` and its siblings, which is what makes `bg-background` and `text-success` resolve; a new token is one line in each block and one in the map. A component names the token, never a literal, since `bg-white` hard-codes one theme and breaks the other; the `design` skill's Color section owns that rule.
+Colors live in the `:root` and `.dark` blocks as [OKLCH](https://oklch.com) values (`--background` is `oklch(1 0 0)` in light and `oklch(0.145 0 0)` in dark), and since OKLCH's first channel is lightness, a dark variant is often the same hue with L flipped. The `@theme inline` block maps `--color-background` onto `var(--background)` and its siblings, which is what makes `bg-background` and `text-success` resolve; a new token is one line in each block and one in the map.
 
 ## Fonts
 
-Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles under `components/ui/` (`rg -l font-heading web/next/src/components/ui` lists every reader), not by page headings, which take the sans through `html`. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
+Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles under `components/ui/` (`rg -l font-heading web/next/src/components/ui` lists every reader), not by page headings, which take the sans through `html`. It is a registry token too, so pointing it at a separate face reverts on the next sync unless that line becomes a guard in `.github/scripts/shadcn-customize.ts`, the `shadcn-sync` skill's route for an override. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
 
 ## Common questions
 

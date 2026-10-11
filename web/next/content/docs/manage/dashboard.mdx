@@ -6,7 +6,7 @@ description: "The protected app shell: sidebar, org switcher, and the layout wra
 
 `/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. Its description reads "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
 
-The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome with two props flipped.
+The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome with its own header, nav and footer slots, a "Console" badge and `/console` as its home link.
 
 ## When you need this
 

@@ -4,7 +4,7 @@ title: Analytics & Feedback
 description: Optional PostHog analytics and a feedback link, plus Speed Insights on every Vercel deploy.
 ---
 
-[PostHog](https://posthog.com) gives the web app product analytics, session replay and feature flags; a feedback link puts any URL in the docs sidebar and the dashboard user menu; Speed Insights reports real Core Web Vitals on Vercel. PostHog and the feedback link stay off until an environment variable is set, so out of the box neither runs. Speed Insights is the reverse: no key and no variable, it renders wherever `VERCEL` is set, and it goes away by deleting one line.
+[PostHog](https://posthog.com) gives the web app product analytics, session replay and feature flags; a feedback link puts any URL in the docs sidebar and the dashboard user menu; Speed Insights reports real Core Web Vitals on Vercel. PostHog and the feedback link stay off until an environment variable is set, so out of the box neither runs. Speed Insights is the reverse: no key and no variable, it renders wherever `VERCEL` is set until you remove it.
 
 ## When you need this
 
@@ -46,16 +46,16 @@ One variable and no SDK: `NEXT_PUBLIC_USERJOT_URL`. The name points at [UserJot]
 
 **Why `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and not `_KEY`?**
 
-It is the name PostHog's docs use; the starter renamed it from `NEXT_PUBLIC_POSTHOG_KEY` when it adopted PostHog's current App Router setup and dropped the provider. The token is optional, so a deployment still setting the old name gets no error and no analytics.
+It is the name PostHog's docs use; the starter renamed it from `NEXT_PUBLIC_POSTHOG_KEY`. The token is optional, so a deployment still setting the old name gets no error and no analytics.
 
 **Where did the UserJot widget go?**
 
-The starter once injected UserJot's SDK as a floating widget keyed by `NEXT_PUBLIC_USERJOT_ID`. It became a plain link so no third-party script loads on every page and the destination can be any form. The ID variable is gone; set the URL.
+It is the **Feedback** link now: set `NEXT_PUBLIC_USERJOT_URL`, since `NEXT_PUBLIC_USERJOT_ID` and the floating widget it keyed are gone. A plain link loads no third-party script on every page, and its destination can be any form.
 
 ## It's working if
 
 - With the token set, the first page load sends a request to your PostHog host, visible in the network tab; with it empty, none.
-- On Vercel the page requests `/_vercel/speed-insights/script.js`; on Docker nothing under `/_vercel/` is requested.
+- On Vercel the page requests `/_vercel/speed-insights/script.js` by default; on Docker nothing under `/_vercel/` is requested.
 - With `NEXT_PUBLIC_USERJOT_URL` set, **Feedback** shows in the docs sidebar footer and the user menu.
 
 ## Next

@@ -38,11 +38,11 @@ lint-staged formats only the staged files; CI runs `bun run format:check` over t
 
 **Why does the audit ignore one advisory?**
 
-`GHSA-vfj7-8cjw-p6xm` covers every release of `braces`, has no patched version, and reaches only dev tooling (`shadcn`, `globby`). An ignore is what the `audit` skill falls back to when none of its three rungs (update the dependency, update its parent, override) can lift an advisory; its exit criteria are in `.github/notes/dependencies.md` (canonical starter).
+`GHSA-vfj7-8cjw-p6xm` covers every release of `braces`, has no patched version, and reaches only dev tooling (`shadcn`, `globby`). With no release to move to, none of the `audit` skill's fixes can lift it, so the gate ignores it by ID, the skill's route for that case; its exit criteria are in `.github/notes/dependencies.md` (canonical starter).
 
 **Why does the audit run on push, not on every commit?**
 
-It queries the registry, so on pre-commit it failed offline commits and a new transitive advisory blocked every commit on `canary`. Pre-push, gated to `canary`, still stops a vulnerable dependency leaving your machine.
+Because it queries the registry. It runs on pre-push, gated to `canary`, so a commit never needs the network or waits on a new transitive advisory, and a vulnerable dependency still cannot leave your machine.
 
 ## It's working if
 

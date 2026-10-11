@@ -14,6 +14,8 @@ Reach for this page when you are launching before the product and want somewhere
 
 ## What you can do with it
 
+In the order you reach for them, finding signups first and acting on them after:
+
 - **Search** by address, and sort by address or by when they signed up. Newest first by default, because the question is usually who arrived since you last looked.
 - **Copy** a selection. The addresses come back one per line, oldest first, because a copy here exists to be pasted into whatever sends the mail. Not JSON: field names would only be in the way, the opposite of [Activity](/docs/manage/activity), whose rows go into a ticket where the field names carry the meaning.
 
@@ -39,7 +41,7 @@ That is fine for thousands and slow for hundreds of thousands. Three independent
 
 ## The flag takes the whole surface
 
-`waitlist` in `packages/config/src/site.ts` governs the public page, its API and the console surface together. With it off, `/waitlist` and `/api/waitlist` return 404, `/console/waitlist` renders the console's not-found page (with a 200, like every disabled console page), the nav drops the group, and a fresh fork's home, which `init` writes to redirect here, becomes a plain landing page. The table survives: dropping it would be a migration, and a fork that turns the waitlist back on should find its signups where it left them.
+`waitlist` in `packages/config/src/site.ts` governs the public page, its API and the console surface together; what each does while it is off, and when a fork's home picks up the change, is on [Features](/docs/manage/features). The table survives: dropping it would be a migration, and a fork that turns the waitlist back on should find its signups where it left them.
 
 ## Common questions
 
@@ -53,7 +55,7 @@ Access is Users and Allowlist: who may reach the console and what they may do th
 
 **Is the signup form the form pattern to copy?**
 
-Copy the `design` skill's Forms section instead; it holds the convention. The signup form is self-contained and works, on the same `@tanstack/react-form` and zod stack, but its one inline field skips the `FieldGroup` the convention puts around every form, so it is an instance, not the template.
+Copy the Forms convention in the `design` skill instead. The signup form is self-contained and works, on the same `@tanstack/react-form` and zod stack, but its one inline field skips the `FieldGroup` the convention puts around every form, so it is an instance, not the template.
 
 ## It's working if
 

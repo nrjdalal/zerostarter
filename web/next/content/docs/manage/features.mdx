@@ -31,7 +31,7 @@ The console's 404 is soft: the area is `force-dynamic` and Next commits a 200 be
 
 `zerostarter init` writes the `features` block from a flag per surface or an interactive picker; the [CLI](/docs/getting-started/cli#init) page owns the flags and the fork defaults. Turning a feature on later is a one-line edit to `site.ts`: `init` only writes the values, and every surface stays in the tree behind a runtime read. What a surface keeps while it is off is its own page's to say: the [Waitlist](/docs/manage/waitlist) keeps its table.
 
-The fork's home follows the same rule: `init` writes `web/next/src/app/page.tsx` from `packages/cli/src/templates.ts`, which redirects to `/waitlist` when `features.waitlist` is on and renders your name and tagline when off. It exports no `dynamic` and reads no request API, so it prerenders at build and a flipped flag reaches it only with a redeploy. The starter's marketing home under `(marketing)/` does not ship to a fork.
+The fork's home follows the same rule: a fork's `web/next/src/app/page.tsx` is written by `init` (from `packages/cli/src/templates.ts`, a canonical starter file a fork does not take), and it redirects to `/waitlist` when `features.waitlist` is on and renders your name and tagline when off. It exports no `dynamic` and reads no request API, so it prerenders at build and a flipped flag reaches it only with a redeploy. The starter's marketing home under `(marketing)/` does not ship to a fork.
 
 ## Common questions
 

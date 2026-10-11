@@ -82,7 +82,7 @@ For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableS
 
 ## Filling the viewport
 
-The table takes all the height below the page header, which needs a definite height at the top of the chain: `h-svh` on `PageShell` and `flex-1 min-h-0` down to the region, the rule the `design` skill's "Layout and landmarks" section holds. Without a definite ancestor the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
+The table takes all the height below the page header, so it needs a definite height to scroll in its region; the classes that give it one are in the `design` skill's "Layout and landmarks" section. Without a definite ancestor the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
 
 <Callout type="warn" title="TanStack Table and the React Compiler">
 
@@ -102,7 +102,7 @@ Because the shadcn recipe this module is modelled on ships it, and v8 became the
 
 **Why is there no numbered pagination?**
 
-Because a fixed region that streams batches keeps the toolbar and header in view while the reader scans, and never resizes with its content. `DataTablePagination` went with that switch and `useDataTableState` dropped `page` and `perPage`. The endpoint still pages by both, so a numbered UI could be built on it, but nothing in the module renders one.
+Because a fixed region that streams batches keeps the toolbar and header in view while the reader scans, and never resizes with its content. The module exports no pagination component, and `useDataTableState` keeps only `q`, `sort` and the filters in the URL, no page. The endpoint still takes `page` and `perPage`, so a numbered UI could be built on it, but nothing in the module renders one.
 
 **Can a row be skipped or repeat while I scroll?**
 
