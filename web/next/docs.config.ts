@@ -81,7 +81,7 @@ const docsConfig = {
         "/docs/manage/authentication": {
           title: "Auth & Organizations",
           description:
-            "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
+            "Better Auth sign-in, sessions and cookies, and the role ladder behind /console: user.role is the only truth, re-read past the cookie cache.",
         },
       },
       {
