@@ -6,7 +6,7 @@ source: local
 
 # Dev Stack
 
-`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the branch name in a linked worktree, so parallel worktrees never collide on a port. They share the auth session, since the cookie is scoped to the base `zerostarter.localhost` host. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
+`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the last segment of the branch name in a linked worktree, so parallel worktrees never collide on a port. They share the auth session, since the cookie is scoped to the base `zerostarter.localhost` host. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
 
 ## Start
 
@@ -17,7 +17,8 @@ unset NODE_ENV SKIP_ENV_VALIDATION
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 for i in $(seq 1 60); do WEB=$(bunx portless get zerostarter 2>/dev/null); [ -n "$WEB" ] && break; sleep 1; done
 API=$(bunx portless get api.zerostarter)
-curl -sf --retry 60 --retry-delay 1 --retry-connrefused "$API/api/health" > /dev/null
+# The proxy answers 404 for a host whose app has not registered yet, and curl --retry skips 404s, so poll
+for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
 curl -sS "$API/api/health"                        # {"data":{"message":"ok",...}}
 curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 ```
@@ -26,7 +27,7 @@ curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 
 ## Restart
 
-The API dev task runs `bun --hot`, which never picks up a newly created file: a new router or schema export answers `{"error":{"code":"NOT_FOUND"}}` until a full restart. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
+The API dev task runs `bun --hot`, which misses a file created after the modules that import it reloaded: a new router or schema export can answer `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
 
 ```bash
 # Kill this checkout's dev processes by their working directory; a worktree under .claude/worktrees/ is skipped
@@ -44,7 +45,7 @@ done
 sleep 2
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 API=$(bunx portless get api.zerostarter)
-curl -sf --retry 60 --retry-delay 1 --retry-connrefused "$API/api/health" > /dev/null
+for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
 ```
 
 Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its port (the next start dies with "Another next dev server is already running") and the portless supervisors holding the route, and a bare `pkill` is worktree-blind. `/api/health` can report a build SHA one commit behind after a restart, since turbo replays `@packages/env`'s cached build; `bunx turbo run build --filter=@packages/env --force` refreshes it. Done when `bunx portless list` shows no route for this branch after the kill, and the route that was NOT_FOUND responds after the start.
@@ -59,4 +60,4 @@ curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
 curl -sS -b cookies.txt "$API/api/v1/user"
 ```
 
-In the browser: **Login** in the top navbar (hidden on `/console` and `/dashboard`), then **Login (agents)**. Done when `/api/v1/user` returns `LocalAgent`.
+The first call answers a redirect and prints nothing; the second prints the user. In the browser: **Login** in the top navbar (hidden on `/console` and `/dashboard`, and rendered after hydration), then **Login (agents)** in the dialog. Done when `/api/v1/user` returns `LocalAgent`.

@@ -14,19 +14,21 @@ Start the stack and resolve `$WEB` and `$API` the way the `dev` skill does. Done
 
 ## 2. Drive the affected route
 
-Load the `agent-browser` skill, then open the route you changed and act on it:
+Load the `agent-browser` skill, then open the route you changed in a named session and act on it:
 
 ```bash
-agent-browser open "$WEB/<route>"
-agent-browser snapshot   # read the page, then click/type/verify
+agent-browser --session <task> open "$WEB/<route>"
+agent-browser --session <task> snapshot   # read the page, then click/type/verify
 ```
+
+The navbar's controls render after hydration, so a snapshot taken on load can lack them; take it again a moment later.
 
 Behind auth, sign in first as the agent (the `dev` skill's login). For an end-to-end change, or whenever asked, drive the whole flow rather than the one screen you touched. Done when you have watched the change render and behave, beyond the route merely loading.
 
 ## 3. Check it holds up
 
 - **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state: the production page, or the pre-change commit checked out in another worktree, as `before.png`; then your change as `after.png`.
-- **Responsive:** check mobile, tablet, and desktop with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
+- **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
 - **Theme:** toggle the app's theme control and check light and dark whenever the change touches either.
 
 Done when Visual, Responsive, and Theme are each exercised (or consciously marked N/A) for the surfaces this change touches.
