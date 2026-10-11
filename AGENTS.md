@@ -62,7 +62,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                             |
 | [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                |
 | [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                            |
-| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                     |
+| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                               |
 | [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                 |
 | [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them. |
 
