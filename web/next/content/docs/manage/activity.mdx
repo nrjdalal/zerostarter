@@ -10,7 +10,7 @@ A line and its change share a transaction, because `recordActivity` takes the tr
 
 ## When you need this
 
-Reach for this page when you need to answer "who did that, and when" for a role change, a ban, an allowlist edit or a removed waitlist signup, or when a feature of your own makes a write that deserves a line. One write is best effort relative to sign-in, the grant the [allowlist](/docs/manage/allowlist) makes: its rung and its line still share one transaction, but a failure there is logged and skipped so nobody is stopped from signing in, and the next sign-in repairs it.
+Reach for this page when you need to answer "who did that, and when" for a role change, a ban, an allowlist edit or a removed waitlist signup, or when a feature of your own makes a write that deserves a line. For the one write that can be skipped rather than fail, the sign-in grant, see [Allowlist](/docs/manage/allowlist#what-a-rule-does).
 
 ## What a line holds
 
@@ -100,6 +100,6 @@ Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over
 ## Next
 
 - [Authentication](/docs/manage/authentication), because the role ladder these lines record changes to lives there.
-- [Allowlist](/docs/manage/allowlist), because the grant it makes on sign-in is the one write that may be skipped rather than fail.
+- [Allowlist](/docs/manage/allowlist), because the rule an `Allowlist rule` actor names is added and removed there.
 - [Database](/docs/manage/database), because `schema/console.ts` and the `set null` on `actor_id` are explained there.
 - [API Conventions](/docs/manage/api-conventions), because the activity route is paged and enveloped like every other.

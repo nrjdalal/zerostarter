@@ -31,20 +31,18 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.health.$get())
 ```
 
-Exactly one side is non-null and `unwrap` never throws. `data` is the payload inside `{ data }`, typed from the route; `error.code` is a closed set you can `switch` on, the list [API Conventions](/docs/manage/api-conventions#the-envelope-and-its-codes) defines plus the two transport codes `unwrap` adds there. The client sends `credentials: "include"`, so a route behind `authMiddleware` is the same call with the session cookie along. A client component reads it through TanStack Query as `web/next/src/components/common/access.tsx` does: the `queryFn` unwraps and throws on `error`.
+Exactly one side is non-null and `unwrap` never throws. `data` is the payload inside `{ data }`, typed from the route; `error.code` is a closed set you can `switch` on: the server's codes plus the two transport codes `unwrap` adds on the client, all listed in [API Conventions](/docs/manage/api-conventions#the-envelope-and-its-codes). The client sends `credentials: "include"`, so a route behind `authMiddleware` is the same call with the session cookie along. A client component reads it through TanStack Query as `web/next/src/components/common/access.tsx` does: the `queryFn` unwraps and throws on `error`.
 
 ## What the type does not cover
 
 `AppType` types what Hono sees. Two surfaces in the chain hand their bodies to something else:
 
-| Surface          | Typed                                                                                                                      | Not typed                                                                                       | For a typed read                                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `/api/auth/*`    | the path: `apiClient.auth.providers.$get()` is a typed envelope, and `apiClient.auth["get-session"].$url()` builds the URL | Better Auth's own bodies: `/get-session` and the wildcard pass its `Response` through untouched | `apiClient.v1.session.$get()` on the client; the helper in `web/next/src/lib/auth/index.ts` on the server |
-| `/api/health/ws` | the path: `apiClient.health.ws.$ws()` derives the socket URL from the same base                                            | the frames: a plain `WebSocket`, no envelope, listed in the reference as a `101`                | parse each frame and read only what you need, per [Realtime](/docs/getting-started/realtime)              |
+- **`/api/auth/*`**: the path is typed, so `apiClient.auth.providers.$get()` returns a typed envelope and `apiClient.auth["get-session"].$url()` builds the URL, but Better Auth's own bodies are not: `/get-session` and the wildcard pass its `Response` through untouched. For a typed session read, call `apiClient.v1.session.$get()` on the client, or the helper in `web/next/src/lib/auth/index.ts` on the server.
+- **`/api/health/ws`**: the path is typed, so `apiClient.health.ws.$ws()` derives the socket URL from the same base, but the frames are not: a plain `WebSocket`, no envelope, listed in the reference as a `101`. Parse each frame and read only what you need, per [Realtime](/docs/getting-started/realtime).
 
 ## Common questions
 
-**I added a route and `apiClient` does not have it.**
+**Why does `apiClient` not have the route I just added?**
 
 The type travels through `@api/hono`'s built `dist`, so the web app sees a new route once that package is rebuilt: `bun run check-types` from the repo root does that first, `bunx turbo run check-types --filter=@web/next` does it for the one app, and `tsc` inside `web/next` reads the last build. The route also has to sit inside the `routes` chain in `api/hono/src/index.ts`, since `AppType` is `typeof routes`. If the type is there and the call still answers `NOT_FOUND`, the API's `bun --hot` missed the new file: restart the stack (the `dev` skill).
 

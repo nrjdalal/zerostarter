@@ -15,7 +15,7 @@ Reach for this page when you are adding a variable, setting one for a new stage 
 
 ## The slices
 
-Four slices under `packages/env/src/`, each a Zod schema that declares only what its consumer reads, plus `NODE_ENV` in every one:
+Four slices under `packages/env/src/`, each a Zod schema named for the consumer that imports it, plus `NODE_ENV` in every one. A variable two slices declare (`HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`) is validated by both and read through whichever slice its reader imports:
 
 | Slice                    | File          | Loads `.env` | Holds                                                                                            |
 | ------------------------ | ------------- | ------------ | ------------------------------------------------------------------------------------------------ |
@@ -66,7 +66,7 @@ Two flags, both read in `packages/env/src/lib/polyfill.ts`, let a build pass wit
 - `SKIP_ENV_VALIDATION=true` covers every variable, server and client: the CI escape hatch (`.github/workflows/auto-check-build.yml` sets it), for a build before any real secret exists. The Docker images do not use it: each mounts the real `.env` as a build secret and validates it in full.
 - `SKIP_ENV_VALIDATION_SERVER=true` covers only the server variables; the `NEXT_PUBLIC_*` client variables stay required and validated, because the web build inlines and ships them. The web's Vercel build command sets it (`web/next/vercel.json`): it compiles the server packages for their types without their secrets.
 
-`BETTER_AUTH_SECRET` is the exception to the dummy: under either flag `serverSecret` in `lib/polyfill.ts` turns its schema optional and leaves the value `undefined`, because a secret that resolved to a constant would be a secret everyone knows; the auth package still constructs for a build.
+`BETTER_AUTH_SECRET` is the exception to the dummy: under either flag `serverSecret` in `lib/polyfill.ts` turns its schema optional and leaves the value `undefined`, because a secret that resolved to a constant would be a secret everyone knows; the auth package still constructs for a build. Without a flag the schema stays required, so a missing secret fails at boot with `Invalid environment variables` rather than running.
 
 <Callout type="warn" title="Never set a skip flag on a running app">
 
@@ -78,14 +78,14 @@ The server would start against dummy URLs and an undefined `BETTER_AUTH_SECRET`.
 
 A variable lives on more surfaces than the schema, and a surface left out fails quietly rather than loudly. `HONO_RATE_LIMIT` is the full set:
 
-| Surface                            | For `HONO_RATE_LIMIT`                                                                       | Because                                                                                                                                                                    |
-| ---------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The slice: schema and `runtimeEnv` | `packages/env/src/api-hono.ts`                                                              | the schema types and validates it; the `runtimeEnv` entry is what reads `process.env`                                                                                      |
-| The root `.env`                    | `.env`                                                                                      | your value                                                                                                                                                                 |
-| `.env.example`                     | `.env.example`                                                                              | what a fresh checkout and `init` start from, defaults included (`HONO_RATE_LIMIT=60` sits there); only the variables the [table's lead-in](#every-variable) names stay out |
-| `globalEnv` in `turbo.json`        | `turbo.json`                                                                                | Turbo hashes it, so a changed value misses the cache instead of replaying a stale build                                                                                    |
-| The consumer                       | `api/hono/src/middlewares/rate-limiter.ts` and `auth.ts`                                    | where the typed value is read                                                                                                                                              |
-| The docs and skills that name it   | the table on this page, and whatever `rg -n HONO_RATE_LIMIT web/next/content .agents` finds | so the table a reader scans still matches the schema                                                                                                                       |
+| Surface                            | For `HONO_RATE_LIMIT`                                                                       | Because                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The slice: schema and `runtimeEnv` | `packages/env/src/api-hono.ts`                                                              | the schema types and validates it; the `runtimeEnv` entry is what reads `process.env`                                                                                  |
+| The root `.env`                    | `.env`                                                                                      | your value                                                                                                                                                             |
+| `.env.example`                     | `.env.example`                                                                              | what a fresh checkout and `init` start from, defaults included, `HONO_RATE_LIMIT` among them; only the variables the [table's lead-in](#every-variable) names stay out |
+| `globalEnv` in `turbo.json`        | `turbo.json`                                                                                | Turbo hashes it, so a changed value misses the cache instead of replaying a stale build                                                                                |
+| The consumer                       | `api/hono/src/middlewares/rate-limiter.ts` and `auth.ts`                                    | where the typed value is read                                                                                                                                          |
+| The docs and skills that name it   | the table on this page, and whatever `rg -n HONO_RATE_LIMIT web/next/content .agents` finds | so the table a reader scans still matches the schema                                                                                                                   |
 
 <Callout type="warn" title="runtimeEnv is mandatory">
 
@@ -97,15 +97,11 @@ A variable declared in the schema but missing from the slice's `runtimeEnv` map 
 
 **What reads `HONO_APP_URL`?**
 
-Not the api's routers, which is why it looks removable: nothing under `api/hono/src` reads it. `packages/auth/src/index.ts` does, three times. The cookie scope derives from its host (parsed at build by `generate-env.ts`, overridden at runtime for a `.localhost` dev host so web and api share the cookie), its origin is what separates the api from the web entries in `HONO_TRUSTED_ORIGINS`, and Better Auth's `baseURL` falls back to it off a public hosting suffix. So it stays required.
+Not the api's routers, which is why it looks removable: the `api-hono` slice declares it, but nothing under `api/hono/src` reads it. `packages/auth/src/index.ts` does, through `@packages/env/auth`, three times. The cookie scope derives from its host (parsed at build by `generate-env.ts`, overridden at runtime for a `.localhost` dev host so web and api share the cookie), its origin is what separates the api from the web entries in `HONO_TRUSTED_ORIGINS`, and Better Auth's `baseURL` falls back to it off a public hosting suffix. So it stays required.
 
 **Why does the `web-next` slice not load `.env` itself?**
 
 Because client components import it. The loader needs `dotenv` and `node:path`, and a module shared with `web-next` would drag the browserified node graph behind `dotenv` into every page that imports the slice, so the load lives in `load-dotenv.ts`, which only the server slices import. A fork adding a slice of its own (a `mail` target, say) adds `import "@/load-dotenv"` to it; the `add-package` skill carries the step.
-
-**What happens to `BETTER_AUTH_SECRET` under a skip flag?**
-
-Nothing is substituted; [Skipping validation](#skipping-validation) says why the value stays `undefined` instead. Without a flag the schema is required, so a missing secret fails closed at boot with `Invalid environment variables` rather than running.
 
 **Is `INTERNAL_API_URL` how two Vercel projects talk?**
 

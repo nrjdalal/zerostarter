@@ -56,14 +56,14 @@ No. A rule decides who reaches the console and nothing about who may create an a
 
 Not once the revoke has stamped `role_set_at`, from the Users table or from `bun run console:roles revoke <email>`. The exception is history: the column starts empty on every row that existed before it did, and an empty record reads as "nobody has decided yet", so an account revoked to `user` before the allowlist shipped can be lifted once by a matching rule. Old data cannot tell those apart, which is why the column exists. If it matters on your install, re-run the revoke after upgrading; it stamps the record and the demotion is final from then on.
 
-**I added the domain and a colleague still cannot open the console.**
+**Why can a colleague still not open the console after I added their domain?**
 
 Check, in order: they have not signed in again since the rule was added, because the grant lands on session creation and a session already open stays `user`; their address is not verified; their row already carries `role_set_at`, because someone once set or revoked their rung; the rule names the parent domain and they sign in from a subdomain; the `allowlist` feature is off.
 
 ## It's working if
 
 - After adding `@yourdomain`, a colleague at that domain signs out and back in, and **Console** appears in their dashboard user menu.
-- Console > History > Activity shows `Set colleague@yourdomain to member` with the actor `Allowlist rule @yourdomain`, and `Added @yourdomain to the allowlist` under your own address just below it.
+- Console > History > Activity shows `Changed colleague@yourdomain from user to member` with the actor `Allowlist rule @yourdomain`, and `Added @yourdomain to the allowlist` under your own address just below it.
 - Adding `@YourDomain` a second time is refused with `@yourdomain is already on the list.` rather than saved as a second row.
 - With `allowlist: false`, Access shows no Allowlist entry and `/console/allowlist` renders the console's not-found page.
 

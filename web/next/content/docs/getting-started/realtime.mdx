@@ -14,7 +14,9 @@ Reach for this page when a surface has to update without a reload: a status badg
 
 ## One route, two hosts
 
-A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter. The split stays because the Node adapter is the setup Vercel documents for Hono WebSockets, and the one this route is proven on.
+A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter.
+
+The Vercel branch keeps the Node adapter although Vercel's Bun runtime serves `Bun.serve()` sockets too: the api deploys through Vercel's Hono preset (`api/hono/vercel.json`), not a `Bun.serve()` entrypoint, and Vercel's Bun socket path [differs from a standalone Bun server](https://vercel.com/docs/functions/websockets#bun) (headers passed to `server.upgrade()` are dropped, `drain` never fires, `send()` returns no backpressure status), so the `hono/bun` branch would meet a different server there than it does locally and in Docker.
 
 Inside a handler, `send` and `close` behave the same on both hosts, and `onClose` fires on every disconnect on both, so cleanup belongs there: the health route clears its heartbeat in `onClose` and nowhere else.
 
@@ -22,11 +24,11 @@ Inside a handler, `send` and `close` behave the same on both hosts, and `onClose
 
 A socket can drop: a tab backgrounds, a network blips, a serverless function reaches its max duration. The canonical starter's badge, `web/next/src/components/marketing/api-status.tsx`, therefore never depends on the socket alone. It polls `GET /api/health` through TanStack Query whenever no frame is live and overlays a pulse only while frames arrive, so the badge is right before the socket connects and after it drops; only the pulse is socket-only.
 
-Its reconnect logic is the pattern to copy: capped exponential backoff after a drop; a watchdog that treats a silent socket as dropped and closes it, so the server's `onClose` clears its heartbeat instead of streaming to a dead peer; and an immediate reconnect, backoff reset, when the tab becomes visible again. The three constants sit at the top of `api-status.tsx`. It reads one field per frame (`message === "ok"`) and nothing else, because nothing types a frame.
+Its reconnect logic is the pattern to copy: capped exponential backoff after a drop; a watchdog that treats a silent socket as dropped and closes it, so the server's `onClose` clears its heartbeat instead of streaming to a dead peer; and an immediate reconnect, backoff reset, when the tab becomes visible again. Its three timings, `HEARTBEAT_TIMEOUT_MS`, `RECONNECT_BASE_MS` and `RECONNECT_MAX_MS`, sit at the top of `api-status.tsx`. It reads one field per frame (`message === "ok"`) and nothing else, because nothing types a frame.
 
 ## Beyond one instance
 
-A connection is pinned to one server or one function instance, and a reconnect may land on another. The health route is fine with that, since every instance answers the same snapshot, but a chat room, presence, or a feed that fans out across users keeps its shared state outside the process (Redis is the usual choice), with every instance publishing and subscribing, so a client connected anywhere sees every update. On Vercel, WebSockets are in beta and need Fluid compute, on by default for projects created on or after April 23, 2025; [Deploy to Vercel](/docs/deployment/vercel#websockets) carries the max duration and the rest of the platform's terms.
+A connection is pinned to one server or one function instance, and a reconnect may land on another. The health route is fine with that, since every instance answers the same snapshot, but a chat room, presence, or a feed that fans out across users keeps its shared state outside the process (Redis is the usual choice), with every instance publishing and subscribing, so a client connected anywhere sees every update. On Vercel a socket also needs Fluid compute and closes at the function's max duration ([Deploy to Vercel](/docs/deployment/vercel#websockets)).
 
 ## Common questions
 
@@ -36,11 +38,11 @@ The one socket route ships public and checks no session, since it streams what `
 
 **Why is the badge green without the pulse on `*.vercel.app`?**
 
-On a public hosting suffix the browser reaches the api through the web's `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why), and a Next rewrite does not forward a WebSocket upgrade. The connect fails, the backoff settles into a gentle re-probe, and the badge runs on its REST heartbeat: green, without the pulse. A custom domain, where the browser reaches the api directly, keeps the socket.
+Because on a public hosting suffix the socket goes through the web's `/api` rewrite, which does not carry the upgrade ([Deploy to Vercel](/docs/deployment/vercel#websockets)). The connect fails, the backoff settles into a gentle re-probe, and the badge runs on its REST heartbeat: green, without the pulse.
 
 **Why does the upgrade route list 429 and 500 in the reference?**
 
-Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error responses to every documented method, the WebSocket `GET` included, so Scalar shows them beside the `101`. The 429 is reachable, since the limiter runs on the upgrade request; the 500 is the shared default; neither arrives as JSON on an open socket. Cosmetic, known, and parked.
+Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error responses to every documented method, the WebSocket `GET` included, so Scalar shows them beside the `101`. The 429 can happen, since the limiter runs on the upgrade request, and a browser sees it as a failed connect rather than a body; the 500 is the shared default. Once the socket is open, neither arrives on it.
 
 ## It's working if
 

@@ -79,7 +79,7 @@ const docsConfig = {
       },
       {
         "/docs/manage/authentication": {
-          title: "Auth & Organizations",
+          title: "Authentication",
           description:
             "Better Auth sign-in, sessions and cookies, and the role ladder behind /console: user.role is the only truth, re-read past the cookie cache.",
         },
