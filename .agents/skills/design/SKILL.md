@@ -32,7 +32,7 @@ Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and
 ## Layout and landmarks
 
 - One `main` per page, from the route-group layout where one renders it (`SidebarShell` for dashboard and console, docs, blog) and from the page itself elsewhere; the root layout renders none, or landmarks nest.
-- Footer content renders in a `footer` beside `main`, never a `div` inside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer.
+- A page that renders its own `main` (marketing, docs, blog, `not-found`) puts footer content in a `footer` beside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer. A page inside `SidebarShell` has no page footer, since the shell owns `main` and a `footer` inside it is only a section footer.
 - A `section` with a visible heading is named by `aria-labelledby` on that heading's id, since a hand-written `aria-label` leaks authoring vocabulary ("Hero") into the accessibility tree; a wrapper with no visible heading (a `role="region"` scroll container) takes `aria-label`.
 - A scrollable region (a code block, a wide table) carries `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
 - A top-level full-height surface (the body, a marketing page, the `SidebarShell` root) is `min-h-svh`, matching the shadcn sidebar; a surface nested in the shell's content pane (a route `error`, page content) fills it with `flex-1`, since that `main` is already full height. The one place `h-svh` is written is a console page whose table has to fill the viewport: it passes `flex h-svh flex-col` to `PageShell` and `flex-1 min-h-0` down to the scroll region, since a `min-h-svh` ancestor is not a definite height.
@@ -47,7 +47,7 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 - **Dialogs:** `DialogContent` renders bare at its default width; a dialog that needs more (the auth dialog's `max-w-md`) is the exception that earns its class.
 - **Empty states:** an empty state is `Empty`.
 - **Badges and identity:** a pill is `Badge` (a variant, plus a className for a semantic color like `text-success`); an identity row (avatar, name, email) is `Item` with `ItemMedia` and `ItemContent`. Two stay hand-rolled: the sidebar trigger identity inside `SidebarMenuButton`, where the chevron is a sibling, and the landing page's larger `Eyebrow` pill, since `Badge` is sized for compact UI.
-- **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack.
+- **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack (`FieldError` takes `errors={field.state.meta.errors}`).
 - **Toasts:** `toast.add({ title, type })` from `@/components/ui/toast`, rendered by the `Toaster` in `providers.tsx` and used as the component ships (no wrapper, no toast library), so a sync carries nothing for it; the surface stays neutral and the kind shows in the icon, red for an error.
 - **Icons:** `@remixicon/react`.
 - **Primitives (`components/ui/*`):** extending one is a `shadcn-sync` override.
@@ -60,7 +60,7 @@ A table composes the `components/data-table.tsx` family; its leading comments an
 - A select column exists only with a selection action and stays left-aligned; those actions go in `selectionActions`, the bar that floats over the table while rows are selected and ends in Cancel. The toolbar's `actions` slot holds table-level actions.
 - Cells are plain text through `DataTableCellText` (truncate with a tooltip by default, `wrap: true` to fold), with no badge in a cell for now; one control only where it is the row's primary action (the role `Select`). The last column takes the remaining width, so no spacer column is added.
 - Sort UI is a plain label plus a bare icon-only button toggling asc and desc (icon before the label on a right-aligned column); hiding lives in `DataTableViewOptions`. Every table shows a single `defaultSorting`.
-- A time column reads relative through `relativeTime` from `@/lib/time` (`5 min. ago`, `just now` under a minute), since a reader scanning a log wants how long ago; an absolute time is for what leaves the screen (a copy, an export, an API response). A row with nothing to show renders `-`.
+- A time column reads relative through `relativeTime(value, now)` from `@/lib/time` (`5 min. ago`, `just now` under a minute), since a reader scanning a log wants how long ago; an absolute time is for what leaves the screen (a copy, an export, an API response). A row with nothing to show renders `-`.
 
 ## Naming
 
