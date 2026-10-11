@@ -58,7 +58,7 @@ const appDevHost = (() => {
 })()
 
 const nextConfig: NextConfig = {
-  // Off because this repo writes its own agent guides: the root AGENTS.md is hand-written apart from its skills tables, which skills-manager generates, and CLAUDE.md is a symlink to it, so a second writer would fight both. Left on, `next dev` upserts a managed block whenever it detects an AI agent, and its own text says removing it from a diff only re-creates it. The installed Next docs it points at are worth reading; see "Managed blocks in AGENTS.md" in web/next/content/docs/getting-started/working-with-agents.mdx.
+  // Off because the root AGENTS.md (CLAUDE.md links to it) is the one agent guide, hand-written apart from the skills tables skills-manager generates: left on, `next dev` writes a managed block pointing at the installed Next docs (node_modules/next/dist/docs/) whenever it detects an AI agent, into a second AGENTS.md here in web/next, and re-adds it when a diff drops it.
   agentRules: false,
   env: { NEXT_PUBLIC_IS_PRIVATE: String(isPrivate) },
   // Standalone is the Docker runner's input only. Vercel builds through a Next adapter, and since 16.3.0 an adapter build writes no .nft.json trace files, so the standalone copy step reads next-server.js.nft.json and fails the build with ENOENT.

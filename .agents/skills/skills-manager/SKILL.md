@@ -45,7 +45,7 @@ Reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (cu
 
 ## Re-vendor
 
-Re-vendoring rewrites the folder: `bunx skills@1.7.2 update` for the skills `skills-lock.json` records, a fresh copy from upstream for `portless`. Then put back what this repo adds:
+Re-vendoring rewrites the folder: `bunx skills@1.7.2 update -p -y` for the skills `skills-lock.json` records (`-p` keeps it to project skills, `-y` skips the scope prompt the bare command opens), a fresh copy from upstream for `portless`. Then put back what this repo adds:
 
 - the `source:` line on each vendored skill;
 - the `## Viewport` section on `agent-browser`;

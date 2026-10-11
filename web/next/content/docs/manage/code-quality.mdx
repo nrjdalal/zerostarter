@@ -6,7 +6,7 @@ description: Which check runs on the commit, the push and the pull request, and 
 
 One Rust toolchain, [Oxc](https://oxc.rs), lints and formats the monorepo through `oxlint` and `oxfmt`, and [Lefthook](https://github.com/evilmartians/lefthook) runs it on every commit beside a build and a message check, so a commit that lands is formatted, linted and building.
 
-The hooks see only your staged files and your machine, so the pull request re-runs the audit, `format:check`, `lint` and `build` over the whole tree and adds two no hook runs, `check-types` and the test suite. Commitlint and `skills-manager` run only in the hooks and nothing in the pull request repeats them, so skipping a hook skips both for that commit.
+The hooks see only your staged files and your machine, so the pull request re-runs its checks over the whole tree. Commitlint (`commit-msg`) and `skills-manager` (`pre-commit`) run only in the hooks and nothing in the pull request repeats them, so a commit made with `--no-verify` or `LEFTHOOK=0` skips both.
 
 ## When you need this
 
@@ -42,7 +42,7 @@ CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.
 
 **Why does the audit run on push and not on commit?**
 
-It needs the network, and a new advisory in a dependency nobody touched would block every commit on `canary`, offline included, along with the build piped behind it. On push it still catches the advisory before the branch leaves your machine.
+It needs the network, and a new advisory in a dependency nobody touched would block every commit, offline included, along with the build piped behind it. The pre-push audit runs only on a push from `canary`, where it catches the advisory before `canary` leaves your machine; a feature branch meets the audit in its pull request's CI.
 
 **Why did commitlint reject a message that looks conventional?**
 

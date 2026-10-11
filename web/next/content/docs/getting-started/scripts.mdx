@@ -24,26 +24,26 @@ The release workflows run `release:version`; by hand it previews ([Releases](/do
 
 ### Quality
 
-| Script                 | In PR CI | What it does                                                                                           |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
-| `bun run check-types`  | yes      | `tsc --noEmit` in every workspace, then over `.github/scripts`, then once per `tests/**/tsconfig.json` |
-| `bun run format`       | no       | Oxfmt, writing fixes                                                                                   |
-| `bun run format:check` | yes      | Oxfmt, report only                                                                                     |
-| `bun run lint`         | yes      | Oxlint over the tree                                                                                   |
-| `bun run test`         | yes      | Build `packages/*`, regenerate the data-table font metrics, then run the suite under `tests/`          |
-| `bun run test:e2e`     | no       | Every `*.e2e.test.ts` against a stack already running on the compose ports                             |
+| Script                 | What it does                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `bun run check-types`  | `tsc --noEmit` in every workspace, then over `.github/scripts`, then once per `tests/**/tsconfig.json` |
+| `bun run format`       | Oxfmt, writing fixes                                                                                   |
+| `bun run format:check` | Oxfmt, report only                                                                                     |
+| `bun run lint`         | Oxlint over the tree                                                                                   |
+| `bun run test`         | Build `packages/*`, regenerate the data-table font metrics, then run the suite under `tests/`          |
+| `bun run test:e2e`     | Every `*.e2e.test.ts` against a stack already running on the compose ports                             |
 
-`tests/` belongs to the canonical starter, so in a fork `test` and `test:e2e` no-op. `test` builds the shared packages first because a test imports one through its `exports`, which point at `dist`. The end-to-end suite skips itself when no stack is named, so `test` stays green without one and no CI job runs it; the `docker-test` skill runs it against the images.
+[Code Quality](/docs/manage/code-quality#the-gates-in-order) says which of these the hooks and the pull request run. `tests/` belongs to the canonical starter, so in a fork `test` and `test:e2e` no-op. `test` builds the shared packages first because a test imports one through its `exports`, which point at `dist`. The end-to-end suite skips itself when no stack is named, so `test` stays green without one and no CI job runs it; the `docker-test` skill runs it against the images.
 
-## Console
+## Develop
+
+### Console
 
 | Script                                                       | What it does                                                                                        |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `bun run console:roles <grant\|revoke\|list> [email] [role]` | Set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
 
-It writes to the database `POSTGRES_URL` names; its defaults, `revoke` and the activity line it leaves are in [Authentication](/docs/manage/authentication#the-console-role-ladder).
-
-## Develop
+It writes to the database `POSTGRES_URL` names. The usage header of `.github/scripts/console-roles.ts` holds each action and the defaults it takes.
 
 ### Database
 

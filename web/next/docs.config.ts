@@ -134,7 +134,7 @@ const docsConfig = {
         "/docs/manage/llms-txt": {
           title: "llms.txt",
           description:
-            "Auto-generated, whole-codebase context for LLMs at /llms.txt and /llms-full.txt.",
+            "The docs and blog as markdown for LLMs, generated at build: an index at /llms.txt and the full text at /llms-full.txt.",
         },
       },
     ],

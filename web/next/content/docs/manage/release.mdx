@@ -34,7 +34,7 @@ A window that keeps no releasable commit cannot release; [Commit messages](/docs
 
 ## From push to release
 
-**A window opens.** Every push to `canary` runs `.github/workflows/auto-canary-into-main.yml`: with `canary` ahead of `main` it opens the draft PR `ci(release): 🚀 merge canary into main` if none is open, then pushes the `ci(version)` commit with the workflow token, which starts no further workflow, so the next human push recomputes.
+**A window opens.** Every push to `canary` runs `.github/workflows/auto-canary-into-main.yml`: with `canary` ahead of `main` it opens the draft PR `ci(release): 🚀 merge canary into main` if none is open, then pushes the `ci(version)` commit with the workflow token. That push starts no push-triggered workflow, so nothing loops and the next human push recomputes; the release PR's `pull_request` build on it is created but held for approval (below).
 
 **One merge.** Mark the PR ready, review it, and merge with a merge commit, so `main` keeps `canary`'s history and the next release PR diffs only its own window. In the canonical starter, `.github/rulesets/main.json` records merge as the one method `main` allows, with one approving review and no required status check, and the `release` skill passes `--merge` explicitly because the history depends on it.
 

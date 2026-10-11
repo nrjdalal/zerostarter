@@ -1,7 +1,7 @@
 ---
 slug: /docs/manage/llms-txt
 title: llms.txt
-description: Auto-generated, whole-codebase context for LLMs at /llms.txt and /llms-full.txt.
+description: "The docs and blog as markdown for LLMs, generated at build: an index at /llms.txt and the full text at /llms-full.txt."
 ---
 
 An LLM doesn't browse; it ingests. HTML docs and the interactive [Scalar reference](/docs/getting-started/type-safe-api) at `/api/docs` are built for a human clicking around; `/llms.txt` hands an agent the same knowledge as flat markdown it can read top to bottom, with no JavaScript and no navigation to crawl.
@@ -20,7 +20,7 @@ Reach for this page when you are pointing an agent at the project, or when the i
 | `/llms-full.txt`                          | everything in one file: the site name and description, `llmsFullPreamble` from `packages/config/src/site.ts` (the canonical starter's layout, import map, stack and conventions; a fork's starts empty, since `init` regenerates that file), then every docs page and published post, `---` between them |
 | any docs or blog URL plus `.md` or `.txt` | that page as markdown, a docs page with a footer pointing back to `/llms.txt`; `/docs.md` is the docs root page and `/blog.md` the blog index                                                                                                                                                            |
 
-The aliases are rewrites in `web/next/next.config.ts` onto the `/llms.txt/docs/...` and `/llms.txt/blog/...` routes. In development, `curl "$(bunx portless get zerostarter)/llms-full.txt"` hands an agent the whole project as one file before it writes a line, which is how the `codebase-map` skill orients.
+The aliases are rewrites in `web/next/next.config.ts` onto the `/llms.txt/docs/...` and `/llms.txt/blog/...` routes. In development, `curl "$(bunx portless get zerostarter)/llms-full.txt"` hands an agent the docs, the published posts and the preamble as one file before it writes a line, which is how the `codebase-map` skill orients.
 
 ## How they're generated
 

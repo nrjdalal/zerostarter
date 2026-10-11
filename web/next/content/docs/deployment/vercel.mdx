@@ -7,7 +7,7 @@ description: Ship web and api as two Vercel projects on one database; migrations
 
 Deploy `web/next` and `api/hono` as two Vercel projects on the same repository. Each ships a `vercel.json` naming its install command, build command, framework preset and function runtime, so a project needs two things from you: its **Root Directory** and its variables.
 
-One Postgres ties the two together, and the api build migrates it: production and `canary` deploys apply pending migrations before they bundle, and every other deploy, a PR preview included, skips the step, so an unmerged migration never reaches the shared database.
+One Postgres ties the two together, and the api build migrates it, on production and `canary` deploys only.
 
 ## When you need this
 
@@ -47,7 +47,7 @@ The web needs the api's URL, so the backend goes up first.
 "buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono"
 ```
 
-`.github/scripts/migrate-on-deploy.ts` reads `VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`: on `production` or the ref `canary` it runs `bun run db:migrate`, otherwise it logs a skip and exits.
+`.github/scripts/migrate-on-deploy.ts` reads `VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`: on `production` or the ref `canary` it runs `bun run db:migrate` before the bundle, and every other deploy, a PR preview included, logs a skip and goes on to bundle, so an unmerged migration never reaches the shared database.
 
 ### The api first
 
@@ -83,7 +83,7 @@ Variables never propagate between the projects: a custom domain means updating t
 
 ## Public suffix
 
-`vercel.app` is a public suffix, where the browser refuses a `Domain` cookie shared between sibling sites, so two `*.vercel.app` projects cannot share a session the way subdomains of one custom domain do. The build detects the shape (`packages/scripts/src/generate-env.ts` runs tldts over `HONO_APP_URL` for the api and `NEXT_PUBLIC_API_URL` for the web, once at build and never in a shipped bundle) and the client routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web. It follows that:
+Two `*.vercel.app` projects cannot share a session cookie, since `vercel.app` is a public suffix ([Sessions and cookies](/docs/manage/authentication#sessions-and-cookies) has the reasoning). The build detects the shape (`packages/scripts/src/generate-env.ts` runs tldts over `HONO_APP_URL` for the api and `NEXT_PUBLIC_API_URL` for the web, once at build and never in a shipped bundle) and the client routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web. It follows that:
 
 - **OAuth registers at the web origin.** Sign-in completes on the web, so the app origin and the callback are both the web, not the api ([Callback URLs](/docs/manage/authentication#callback-urls)); a custom domain, where web and api share a parent, switches back to the api host on its next build.
 - **The api infers the web origin** as the first `HONO_TRUSTED_ORIGINS` entry that is not itself. Set `HONO_WEB_URL` on the api project when that will not do: more than one trusted origin, or none that differs from the api, where the log warns `[auth] HONO_APP_URL is a public-suffix host` and sign-in cannot complete until you set it.
@@ -91,10 +91,10 @@ Variables never propagate between the projects: a custom domain means updating t
 
 ## WebSockets
 
-The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute). It switches to the Node adapter (`@hono/node-server` + `ws`) when `VERCEL` is set (`api/hono/src/lib/server.ts`) and keeps `Bun.serve()` everywhere else; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) says why the split stays. On Vercel:
+The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute), the default for a new project; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) states which adapter each host takes. On Vercel:
 
-- **On a public suffix the socket falls back to REST**, since a Next rewrite does not forward the upgrade ([Realtime](/docs/getting-started/realtime#common-questions)); a custom domain keeps the socket.
-- **A connection closes at the function's [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, and a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
+- **A connection is pinned to one function instance and closes at its [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, so a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
+- **On a public suffix**, [Realtime](/docs/getting-started/realtime#common-questions) covers the REST fallback; a custom domain connects the socket to the api directly.
 
 ## Common questions
 
@@ -120,4 +120,4 @@ The deployed one: the `version` suffix comes from `VERCEL_GIT_COMMIT_SHA` at run
 
 - [Deploy with Docker](/docs/deployment/docker), because it is the same stack with no build-time migration, so `db:migrate` is yours to run.
 - [Environment Variables](/docs/manage/environment), because every variable above is validated there, with the app that reads it.
-- [Releases](/docs/manage/release), because `main` and `canary` are the two branches this build migrates for, and that page is how a commit reaches them.
+- [Releases](/docs/manage/release), because that page is how a commit reaches `canary` and then `main`.
