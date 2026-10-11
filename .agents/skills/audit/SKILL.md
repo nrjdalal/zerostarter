@@ -20,7 +20,7 @@ bun install        # once more: postinstall rewrote ranges, so bun.lock is one i
 bun outdated -r    # expect no rows
 ```
 
-`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. Done when `bun outdated -r` prints no rows.
+`--latest` crosses majors and rewrites the catalog; `postinstall` (`.github/scripts/deps-manager.ts`) rewrites exact and tilde specs back to carets and reports the rest for a manual fix, so a deliberate pin means changing that rule in the script and recording why in `.github/notes/dependencies.md` (canonical starter only). For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. Done when `bun outdated -r` prints no rows.
 
 ### 2. Move the pins outside npm
 

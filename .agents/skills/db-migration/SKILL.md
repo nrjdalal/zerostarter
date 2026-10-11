@@ -12,7 +12,17 @@ PostgreSQL with Drizzle ORM: schema in `packages/db/src/schema/`, migrations in 
 
 Post the table or the altered columns and name the choices that are hard to reverse: nullability and what a null means, foreign keys and their delete behavior, indexes, derived or generated values, retention. Then stop. A shape is cheap to argue about and expensive to change once rows exist, and `canary` and production share one database, so applying reaches production the moment it runs. Done when the user has said go on the posted shape.
 
-## 1. Edit the schema
+## 1. Point the worktree at a throwaway database
+
+Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so the worktree needs its own `.env` first:
+
+```bash
+bunx pglaunch -k    # disposable Postgres, kept across restarts
+```
+
+Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`, one container per worktree. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `pg_isready -h localhost -p <port>` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers and the worktree `.env` names the container, with the shared URL nowhere in the branch.
+
+## 2. Edit the schema
 
 - `auth.ts` is generated: declare a plugin or an `additionalFields` column in `packages/auth/src/schema.ts`, run `bun run auth:schema`, and continue with the regenerated file (a hand edit fails `tests/packages/db/src/schema/auth.test.ts`).
 - Files group by concern: `auth.ts` holds the Better Auth tables, `console.ts` the ones the console owns. A new table joins its concern's file, or starts one, and that file needs `export * from "@/schema/<name>"` in `index.ts`, or the table never reaches a migration.
@@ -20,21 +30,13 @@ Post the table or the altered columns and name the choices that are hard to reve
 
 Done when the file exports from `index.ts` and every column follows a convention or names its reason.
 
-## 2. Generate and review
+## 3. Generate and review
 
 ```bash
-bun run db:generate
+bun run db:generate --name <change>    # named like the existing ones, 0001_waitlist
 ```
 
-Read the generated `packages/db/drizzle/NNNN_*.sql`. An applied migration is immutable; a fix is a new one. Done when the SQL, its `meta/NNNN_snapshot.json` and a new `meta/_journal.json` entry all appear and the SQL matches the edit.
-
-## 3. Point the worktree at a throwaway database
-
-```bash
-bunx pglaunch -k    # disposable Postgres, kept across restarts
-```
-
-Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, one container per worktree. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes `drizzle-kit migrate` exit 1 with no message. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when the worktree `.env` names the container and the shared URL appears nowhere in the branch.
+Read the generated `packages/db/drizzle/NNNN_<change>.sql`. An applied migration is immutable; a fix is a new one. Done when the SQL, its `meta/NNNN_snapshot.json` and a new `meta/_journal.json` entry all appear and the SQL matches the edit.
 
 ## 4. Apply
 
@@ -42,7 +44,7 @@ Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, one contai
 bun run db:migrate
 ```
 
-Local and ad hoc only: on canary and production deploys the API build applies pending migrations itself (`.github/scripts/migrate-on-deploy.ts`, PR previews skipped), so a migration merged to canary lands on the next deploy. Done when it exits 0 against the container.
+Local and ad hoc only: on canary and production deploys the API build applies pending migrations itself (`.github/scripts/migrate-on-deploy.ts`, PR previews skipped), so a migration merged to canary lands on the next deploy. Done when it exits 0 against the container and `bun run db:studio` shows the new shape.
 
 ## 5. Make the running stack see it
 
@@ -50,4 +52,4 @@ Local and ad hoc only: on canary and production deploys the API build applies pe
 bunx turbo run build --filter=@packages/db
 ```
 
-The API consumes the built dist, and a new table or export needs a full restart of dev (the `dev` skill). `bun run db:studio` shows the rows. Done when the API answers for the new table.
+The API consumes the built dist, and a new table or export needs a full restart of dev (the `dev` skill); with no stack running, the build alone is the step. Done when the built dist carries the change and, with dev running, the API answers for it.
