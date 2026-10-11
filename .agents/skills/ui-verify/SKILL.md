@@ -21,13 +21,13 @@ agent-browser --session <task> open "$WEB/<route>"
 agent-browser --session <task> snapshot   # read the page, then click/type/verify
 ```
 
-The navbar's controls render after hydration, so a snapshot taken on load can lack them; take it again a moment later.
+The navbar's controls render after hydration, so a snapshot or screenshot taken on load can lack them; take it again a moment later.
 
 Behind auth, sign in first as the agent (the `dev` skill's login). For an end-to-end change, or whenever asked, drive the whole flow rather than the one screen you touched. Done when you have watched the change render and behave, beyond the route merely loading.
 
 ## 3. Check it holds up
 
-- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state: the production page, or the pre-change commit checked out in another worktree, as `before.png`; then your change as `after.png`.
+- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after: the deployed site, or the pre-change commit checked out in another worktree, as `before.png`; then your change as `after.png`.
 - **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
 - **Theme:** toggle the app's theme control and check light and dark whenever the change touches either.
 

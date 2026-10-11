@@ -19,6 +19,7 @@ for i in $(seq 1 60); do WEB=$(bunx portless get zerostarter 2>/dev/null); [ -n 
 API=$(bunx portless get api.zerostarter)
 # The proxy answers 404 for a host whose app has not registered yet, and curl --retry skips 404s, so poll
 for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
+for i in $(seq 1 60); do [ "$(curl -s -o /dev/null -w '%{http_code}' "$WEB/")" = 200 ] && break; sleep 1; done   # web compiles after the API answers
 curl -sS "$API/api/health"                        # {"data":{"message":"ok",...}}
 curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 ```
@@ -30,7 +31,7 @@ curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 The API dev task runs `bun --hot`, which misses a file created after the modules that import it reloaded: a new router or schema export can answer `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
 
 ```bash
-# Kill this checkout's dev processes by their working directory; a worktree under .claude/worktrees/ is skipped
+# Kill this checkout's dev processes by their working directory: ROOT is the worktree when run from one, and a worktree nested under it is skipped
 ROOT=$(git rev-parse --show-toplevel)
 # The shared proxy is spared by port, since whichever stack started first hosts it for every worktree
 PROXY=$(lsof -nP -iTCP:"${PORTLESS_PORT:-1355}" -sTCP:LISTEN -t 2>/dev/null | tr '\n' ' ')
@@ -43,6 +44,7 @@ for p in $(pgrep -f "turbo run dev|bun run dev|dev:app|next dev|next-server|src/
   esac
 done
 sleep 2
+bunx portless list   # no route for this branch
 (bun run dev --ui stream > /tmp/zerostarter-dev.log 2>&1 &)
 API=$(bunx portless get api.zerostarter)
 for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
