@@ -43,6 +43,7 @@ The frame is the same on every page; the middle is the page's own.
 
 - **Opening, no heading.** One or two paragraphs: what the subject does for the reader, then the defining constraint, the single fact that makes it behave differently from the obvious default, as a plain sentence rather than a labelled aside. This is the most valuable line on the page.
 - **`## When you need this`.** The trigger: reach for this page when. Where a sibling page is confusable, add the other half: for that, see the sibling.
+- **`## Prerequisites`**, only when something must already be in place (a running Docker daemon, a Vercel project, an Infisical workspace); a page that runs on a fresh clone has no such section.
 - **The middle**, one to three sections in the subject's vocabulary, shaped by its kind. Surface the subject's leading word (the term the reader will think with later: `catalog`, `envelope`, `window`) and use it throughout.
 - **`## Common questions`.** Each question in bold, the answer beneath it, sharpest first, no sub-headings. Say the unflattering thing where it is true. Omit the heading when step 2 found nothing.
 - **`## It's working if`.** Bullets the reader can check in their own app without opening the source: a URL that renders, an output line, a UI state, an error that names the cause. Omit the heading where the tells stay vague.
@@ -62,7 +63,7 @@ Done when no fenced block mirrors a repo file whole, and every skill the page to
 
 ## 6. Keep the voice
 
-Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Hyphens, commas and colons carry pauses.
+Third person about the system, `you` for the reader, present tense, a because-clause where a choice needs one: "Your database schema is TypeScript." Humans and agents read the same page, so it names things as the reader meets them (the dashboard, the console, the catalog) and keeps the plumbing to the code links. Specifics over counts that drift ("the console pages" over "the five console pages"). Every claim stands on its own: a finding from a thread keeps its substance and drops who said it, since the reader is choosing a tool and an attribution dates as soon as the position moves. Hyphens, commas and colons carry pauses.
 
 ## 7. Register and verify
 
@@ -80,6 +81,8 @@ Open the rendered page (the `ui-verify` skill) and read it once as the reader wo
 - Every path, command, env var and behaviour on the page is checked against the current source.
 - The opening states the job and the defining constraint as plain prose.
 - `## When you need this` names the trigger, and the sibling where one is confusable.
+- `## Prerequisites` is present where something must be in place first, and absent where nothing must.
+- Every claim stands on its own, with no author named or quoted.
 - The middle surfaces the leading word and matches the page's kind.
 - `## Common questions` holds only what the hunt found; `## It's working if` holds only what the reader can check.
 - Every skill the page touches is linked, and no fenced block mirrors a repo file whole.
