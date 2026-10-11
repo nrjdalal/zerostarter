@@ -4,7 +4,7 @@ title: Dashboard
 description: "The protected app shell: sidebar, org switcher, and the layout wrappers to build on."
 ---
 
-`/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. Its heading says "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
+`/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. Its description reads "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
 
 The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome with two props flipped.
 
@@ -22,17 +22,17 @@ When the session carries no active organization, the layout restores the last on
 
 The chrome is `SidebarShell` (`web/next/src/components/shell/sidebar-shell.tsx`), a shadcn `Sidebar` that collapses to an icon rail in the app and offcanvas inside the docs area, with three slots the layout fills:
 
-| Slot            | Dashboard                                                                              | Console                                                    |
-| --------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Header          | the brand linking to `homeHref` (`/dashboard`), the collapse trigger, the org switcher | the same, with a "Console" badge and `homeHref="/console"` |
-| Content (`nav`) | empty: your navigation goes here                                                       | the console navigation                                     |
-| Footer          | a Documentation link with the version (when `features.docs` is on), then the user menu | the user menu                                              |
+| Slot            | Dashboard                                                                                                              | Console                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header          | `OrgSwitcher`, below the brand (linking to `homeHref`, `/dashboard`) and the collapse trigger the shell renders itself | `ConsoleHeader`, a link to the console home, or the docs search under `/console/docs`, below the same brand with a "Console" badge and `homeHref="/console"` |
+| Content (`nav`) | empty: your navigation goes here                                                                                       | the console navigation                                                                                                                                       |
+| Footer          | a Documentation link with the version (when `features.docs` is on), then the user menu                                 | the user menu                                                                                                                                                |
 
-Open or closed persists in a `sidebar_state` cookie, read on the server so the first paint matches. The org switcher (`components/dashboard/sidebar.tsx`) lists the user's organizations and offers a Create dialog whose slug comes from `slugify(name)`; the user menu (`components/shell/sidebar-user-menu.tsx`) carries avatar, name and email, a Home link to `/`, the Console cross-link, Feedback when `NEXT_PUBLIC_USERJOT_URL` is set, and Log out.
+Open or closed persists in a `sidebar_state` cookie, read on the server so the first paint matches. The org switcher (`components/dashboard/sidebar.tsx`) lists the user's organizations and offers a Create dialog whose slug is `slugify(name, 4)`, the name slugified with a four-character random suffix; the user menu (`components/shell/sidebar-user-menu.tsx`) carries avatar, name and email, a Home link to `/`, the Console cross-link, Feedback when `NEXT_PUBLIC_USERJOT_URL` is set, and Log out.
 
 ## Page content
 
-A page wraps its content in `PageShell` (centering, width and padding through a `size` variant: `sm`, `md`, `lg`, `full`) and opens with `PageHeader`, which renders the page's one `h1` plus an optional description and actions row; both live in `components/shell/`. `app/(protected)/dashboard/page.tsx` is the whole pattern, and the `design` skill's "Spacing and page frame" section is the rule it follows.
+A page wraps its content in `PageShell` and opens with `PageHeader`, both in `components/shell/`; what each owns, the frame and the page's one `h1`, is the `design` skill's "Spacing and page frame" and "Typography" sections. `app/(protected)/dashboard/page.tsx` is the whole pattern.
 
 ## Common questions
 

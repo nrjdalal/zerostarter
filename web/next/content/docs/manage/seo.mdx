@@ -14,13 +14,13 @@ Reach for this page when a shared link shows the wrong preview, a page is missin
 
 ## Indexable by default
 
-The starter ships with no `noindex` directive and no `X-Robots-Tag` header, so crawlers index it out of the box. `robots.ts` allows `/` (every public page, the OG images included), disallows `/api/`, `/console/` and `/dashboard/`, and points at `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`.
+No public page carries a `noindex` and nothing sets an `X-Robots-Tag` header, so crawlers index the site out of the box; the console layout alone sets `robots: { index: false, follow: false }` in its metadata. `robots.ts` allows `/` (every public page, the OG images included), disallows `/api/`, `/console/` and `/dashboard/`, and points at `${baseUrl}/sitemap.xml`, where `baseUrl` is `NEXT_PUBLIC_APP_URL`.
 
 ## Sitemap
 
 `sitemap.ts` discovers pages from the collections instead of a hand-kept list: the home route, every page the docs kind returns, and the published blog posts. It is `force-static` with `revalidate = 60`, so it regenerates at most once a minute, and its URLs are sorted alphabetically.
 
-Priorities are per type: the home page at `1.0`, docs and blog pages at `0.9`; home and docs refresh weekly, blog posts monthly. Home and docs entries set `lastModified` to the build time; a blog entry uses `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because the published list holds posts only. Turn the docs or blog [feature](/docs/manage/features) off and its entries drop.
+Each entry's `changeFrequency` and `priority` are per type, set in `sitemap.ts`. Home and docs entries set `lastModified` to the time of the regeneration that produced them (`new Date()`); a blog entry uses `updatedAt` when present, else `publishedAt`. The `/blog` index is absent because the published list holds posts only. Turn the docs or blog [feature](/docs/manage/features) off and its entries drop.
 
 ## OG images
 
@@ -28,9 +28,9 @@ Each content kind has its own Open Graph route, rendered with [takumi](https://t
 
 | Route                              | Preview                    |
 | ---------------------------------- | -------------------------- |
-| `/og/home`                         | Landing page               |
-| `/og/docs/[[...slug]]`             | Docs pages                 |
 | `/og/blog/[[...slug]]`             | Blog posts                 |
+| `/og/docs/[[...slug]]`             | Docs pages                 |
+| `/og/home`                         | Landing page               |
 | `/og?section=&title=&description=` | Generic, from query params |
 
 The docs route is prerendered at build (`force-static` with `generateStaticParams`); the blog route prebuilds the published posts and revalidates every 60 seconds, so a scheduled post gets its preview without a rebuild; `/og/home` is static and the generic `/og` is `force-dynamic`. `generatePageMetadata()` in `web/next/src/lib/fumadocs.tsx` wires each image into the page's metadata, and omits it for a console docs page rather than link a route that does not exist.
@@ -51,11 +51,7 @@ Vercel traces `/og` into its own function, and takumi's core is a native binary 
 
 **Why `/og` and not `/api/og`, and why the `?t=` on every image URL?**
 
-`robots.txt` disallows `/api/`, and an unfurler that honors it would never fetch the image, so the routes live at `/og`. The timestamp is the cache-bust: the image is cached for a year, so without a query string that changes per deploy a scraper keeps the old picture. `generatePageMetadata` builds the URL once, slug first and timestamp last; an earlier hand-built URL put the timestamp before the slug and shipped a malformed tag.
-
-**Does the home image use the same renderer as docs and blog?**
-
-Yes. `og/home/route.tsx` calls `renderOgImage` with the site tagline and description, so a brand change in `og-image.tsx` reaches all four routes. It used to rebuild the same layout from the raw layer, which meant making every brand change twice.
+`robots.txt` disallows `/api/`, and an unfurler that honors it would never fetch the image, so the routes live at `/og`. The timestamp is the cache-bust: the image is cached for a year, so without a query string that changes per deploy a scraper keeps the old picture. `generatePageMetadata` builds the URL once, slug first and timestamp last.
 
 ## It's working if
 

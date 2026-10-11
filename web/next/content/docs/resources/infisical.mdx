@@ -12,7 +12,7 @@ When a team is sharing and rotating secrets and wants one place to do it. Workin
 
 ## Prerequisites
 
-An Infisical workspace holding the keys `.env.example` names, and the CLI from npm (`bun add -g @infisical/cli`) or Homebrew (`brew install infisical/get-cli/infisical`).
+An Infisical workspace holding the keys `.env.example` names, and the CLI, installed the way Infisical documents: `npm install -g @infisical/cli`, or `brew install infisical/get-cli/infisical` on macOS.
 
 ## How the repo wires it
 
@@ -33,7 +33,7 @@ infisical export --env=dev --output-file=./.env
 
 ## It's working if
 
-- `infisical export` with no output file prints `KEY=value` lines for the keys `.env.example` names.
+- `infisical export` with no output file prints a single-quoted `KEY='value'` line for each key `.env.example` names.
 - After the export, `bun run dev` starts without an environment validation error.
 
 ## Next

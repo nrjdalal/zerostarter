@@ -6,7 +6,7 @@ description: "Dark mode, OKLCH design tokens, and Tailwind v4: restyle without f
 
 You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and every component reaches for the utility, never a raw color, so one edit flows to every surface in both themes.
 
-That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` regenerates `globals.css` from the registry template, and only the edits `.github/scripts/shadcn-customize.ts` re-applies survive, today `--font-sans` and the two `--sidebar` lines. A token changed without a guard holds until the next sync, then reverts.
+That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` runs `shadcn init` over `globals.css`, so a token the registry template writes (`--background`, `--font-sans`, `--sidebar` and the rest) resets to the registry value, a token it does not know (`--font-heading`, `--font-mono`, `--success`) survives, and `.github/scripts/shadcn-customize.ts` restores its guarded lines afterwards. A registry token changed without a guard holds until the next sync, then reverts.
 
 ## When you need this
 
@@ -14,7 +14,7 @@ Reach for this page when you are restyling: a brand color, the sans, a radius, t
 
 ## Dark mode
 
-[next-themes](https://github.com/pacocoursey/next-themes) toggles a `.dark` class on `<html>` and follows the OS until the reader picks a side; `InnerProvider` in `web/next/src/app/providers.tsx` configures it, and `@custom-variant dark (&:is(.dark *))` in `globals.css` makes that class what `dark:` keys on. The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) cycles three states: from `system` to the opposite of the OS preference, between `light` and `dark` while they diverge, and back to `system` once the choice matches the OS.
+[next-themes](https://github.com/pacocoursey/next-themes) toggles a `.dark` class on `<html>` and follows the OS until the reader picks a side; `InnerProvider` in `web/next/src/app/providers.tsx` configures it, and `@custom-variant dark (&:is(.dark *))` in `globals.css` makes that class what `dark:` keys on. The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) cycles three states: from `system` to the opposite of the OS preference, from a choice that matches the OS to its opposite, and from a choice that diverges from the OS back to `system`.
 
 ## Tokens
 
@@ -22,26 +22,22 @@ Colors live in the `:root` and `.dark` blocks as [OKLCH](https://oklch.com) valu
 
 ## Fonts
 
-Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles (`components/ui/card.tsx`, `empty.tsx`, `alert-dialog.tsx`, `drawer.tsx`), not by page headings, which take the sans through `html`. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
+Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, woff2 in `web/next/src/fonts/`), each a variable that `globals.css` binds to a role: `--font-sans` is DM Sans through `--font-dm-sans`, `--font-mono` is JetBrains Mono through `--font-jetbrains-mono`, and `--font-heading` reuses the sans. That last role is read by the shadcn titles under `components/ui/` (`rg -l font-heading web/next/src/components/ui` lists every reader), not by page headings, which take the sans through `html`. Adding, swapping or removing a face is the `fonts` skill, which also moves the two scripts that name the sans.
 
 ## Common questions
 
 **Why did my sidebar color revert?**
 
-Because `bun run shadcn:update` rewrote `globals.css`. shadcn's template hardcodes `--sidebar` in light and dark, the starter flushes both to `var(--background)`, and for a while the sync restored only `--font-sans`, so every run reverted the sidebar. Both lines are guarded now; the `shadcn-sync` skill's Guards list is the complete set, and your own override goes in `shadcn-customize.ts` the same way.
+Because `bun run shadcn:update` rewrote `globals.css`. `--sidebar` is a registry token, hardcoded in light and dark by shadcn's template, so the sync resets it and the guard in `shadcn-customize.ts` puts back `var(--background)`, not your value. Your own override goes in that script the same way; the `shadcn-sync` skill's Guards list is the complete set.
 
 **Why do Caveat and Lora live in a different file?**
 
 Because preload follows the import graph. The root layout imports `lib/fonts.ts`, so every face there preloads on every page; Caveat and Lora render only on `/hire` and `/resume`, so they sit in the fork-excluded `web/next/src/lib/marketing/fonts.ts` (`--font-caveat`, `--font-lora`, applied by `.className`), which only those two pages import.
 
-**What renders while the code font is loading?**
-
-A fallback face `next/font/local` generates from the font's metrics, matched against Arial or Times New Roman, the only bases it has, so code shows in a proportional face until the woff2 lands. `adjustFontFallback: false` on the export hands the wait to the generic `monospace` the `--font-mono` role ends in, which looks like code throughout and moves the page less on the swap.
-
 ## It's working if
 
 - A token edited in both `:root` and `.dark` shows on the next render in both themes, and the `ModeToggle` flips between them.
-- `bun run shadcn:update` on a clean tree leaves the edit in place once its guard is in `shadcn-customize.ts`; without one, `git diff` shows the registry value back.
+- `bun run shadcn:update` on a clean tree leaves a registry-token edit in place once its guard is in `shadcn-customize.ts`; without one, `git diff` shows the registry value back.
 
 ## Next
 

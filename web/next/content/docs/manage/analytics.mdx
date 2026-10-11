@@ -14,7 +14,7 @@ When you want to see what visitors do, hear from them, or measure what they expe
 
 PostHog initializes in `web/next/instrumentation-client.ts`, Next.js's client-instrumentation entry, which runs once before the app hydrates. `posthog.init` sits behind a check on `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, so with the token empty nothing initializes. With it set, `NEXT_PUBLIC_POSTHOG_HOST` picks the region: EU Cloud (`https://eu.i.posthog.com`) by default, `https://us.i.posthog.com` for US Cloud, or a self-hosted URL. Both are optional in `packages/env/src/web-next.ts`.
 
-`defaults: "2026-05-30"` turns on PostHog's current defaults, pageview capture on history changes included, so there is no provider and no pageview component. The starter stops there: it never calls `capture` or `identify` and reads no flag. Pageviews begin the moment the token is set; every event beyond them is yours, from the shared singleton:
+The `defaults` option in that call pins PostHog's defaults to a dated snapshot, pageview capture on history changes included, so there is no provider and no pageview component. The starter stops there: it never calls `capture` or `identify` and reads no flag. Pageviews begin the moment the token is set; every event beyond them is yours, from the shared singleton:
 
 ```ts
 import posthog from "posthog-js"
@@ -48,10 +48,6 @@ One variable and no SDK: `NEXT_PUBLIC_USERJOT_URL`. The name points at [UserJot]
 
 It is the name PostHog's docs use; the starter renamed it from `NEXT_PUBLIC_POSTHOG_KEY` when it adopted PostHog's current App Router setup and dropped the provider. The token is optional, so a deployment still setting the old name gets no error and no analytics.
 
-**Why does Speed Insights render only on Vercel?**
-
-The first attempt mounted it unconditionally, shipping the beacon from every Docker and self-hosted deploy to a route that does not exist there. The gate on `VERCEL` replaced it; the api picks its server adapter on the same variable.
-
 **Where did the UserJot widget go?**
 
 The starter once injected UserJot's SDK as a floating widget keyed by `NEXT_PUBLIC_USERJOT_ID`. It became a plain link so no third-party script loads on every page and the destination can be any form. The ID variable is gone; set the URL.
@@ -59,7 +55,7 @@ The starter once injected UserJot's SDK as a floating widget keyed by `NEXT_PUBL
 ## It's working if
 
 - With the token set, the first page load sends a request to your PostHog host, visible in the network tab; with it empty, none.
-- On Vercel the page loads a script from `va.vercel-scripts.com`; on Docker nothing under `/_vercel/` is requested.
+- On Vercel the page requests `/_vercel/speed-insights/script.js`; on Docker nothing under `/_vercel/` is requested.
 - With `NEXT_PUBLIC_USERJOT_URL` set, **Feedback** shows in the docs sidebar footer and the user menu.
 
 ## Next

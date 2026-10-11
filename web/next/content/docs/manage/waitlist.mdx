@@ -53,7 +53,7 @@ Access is Users and Allowlist: who may reach the console and what they may do th
 
 **Is the signup form the form pattern to copy?**
 
-Not yet. The page is self-contained and works; a rebuild on the pattern the shadcn and TanStack Form guides describe (one validator source, on blur, and a success state that takes focus) is open as PR #746 and has not merged. Copy it as a working form, not as the convention.
+Copy the `design` skill's Forms section instead; it holds the convention. The signup form is self-contained and works, on the same `@tanstack/react-form` and zod stack, but its one inline field skips the `FieldGroup` the convention puts around every form, so it is an instance, not the template.
 
 ## It's working if
 

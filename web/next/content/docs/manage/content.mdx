@@ -17,14 +17,15 @@ Reach for this page when you are adding a docs page or a blog post, or when one 
 
 `web/next/docs.config.ts` is the single source for the docs' structure and metadata; its header comment is the spec. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
 
-A generator, `.github/scripts/docs.ts`, runs inside the `web/next` build and dev and, from that config:
+A generator, `.github/scripts/docs.ts`, reads that config. An unflagged run, which `dev:app` and `check-types` make and `bun .github/scripts/docs.ts` makes by hand, writes:
 
-- writes each page's frontmatter (`slug`, `title`, `description`, and `label` when set), so you only author the body;
-- generates `content/docs/meta.json`, the reading order behind prev/next and `llms.txt`;
-- scaffolds a stub `.mdx` in dev for a page declared but missing on disk;
-- under `--strict`, the production build's mode, fails on any drift between the config and the files, and never writes.
+- each page's frontmatter (`slug`, `label` only when it differs from `title`, `title`, `description`), so you only author the body;
+- `content/docs/meta.json`, the reading order behind prev/next and `llms.txt`;
+- a stub `.mdx` for a page declared but missing on disk.
 
-Adding a page is three steps: add the entry to `docs.config.ts`, run the dev server (or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone; it is regenerated on every build.
+Under `--strict`, the mode the production build runs (the `build` script in `web/next/package.json`), it still writes `meta.json` but never touches an `.mdx`. It reports frontmatter out of step with the config, a declared page with no file, a file the config does not list, and a blog post with a missing `createdAt`, an invalid timestamp, or neither `publishedAt` nor `draft: true`, then exits 1 if it found any.
+
+Adding a page is three steps: add the entry to `docs.config.ts`, run the generator (the dev server does, or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone: every unflagged run rewrites it, and the build fails on a hand edit.
 
 <Callout type="warn" title="Don't edit meta.json">
 
@@ -49,7 +50,7 @@ publishedAt: 2026-06-11
 
 Set `draft: true` to hide a post regardless of its timestamps, and omit `publishedAt` for a draft with no release time yet. The schema also takes `updatedAt` (rendered on the post, and the modified time in the sitemap and article metadata), `author` and `tags` (article Open Graph metadata). A timestamp is `YYYY-MM-DD`, the start of that day in UTC, or an ISO datetime with an offset (`"2026-06-18T09:00:00+05:30"`) for an exact release time.
 
-Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post and prints what it wrote; review and commit that line. `--strict` only warns and never touches a post.
+Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's date on a new post and prints what it wrote; review and commit that line. `--strict` reports the missing field and exits 1 instead, so the line is there before the build.
 
 The starter's post images sit under `web/next/public/marketing/blog/<slug>/images/`, referenced by absolute path; `web/next/public/` does not ship to a fork, which keeps its images under its own `public/`.
 
