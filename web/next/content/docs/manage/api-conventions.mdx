@@ -18,20 +18,20 @@ A success is `{ data }`. A failure is `{ error: { code, message } }` plus whatev
 
 `errorHandler` (registered with `app.onError` in `api/hono/src/index.ts`) dispatches in order: an `ApiError` keeps its status and code; a `ZodError` becomes a 400 `VALIDATION_ERROR`; any other `HTTPException` keeps its status, mapped to a code where one exists and `ERROR` where none does; anything else is a 500 `INTERNAL_SERVER_ERROR`. Two answers never reach a handler: a path nothing matches is a 404 from `app.notFound`, and a route behind a feature that is off answers the same 404 from `requireFeature` (`api/hono/src/middlewares/feature.ts`), so a disabled surface looks absent.
 
-The codes are the `ERROR_CODES` list in `lib/error.ts`, one `as const` array the `ErrorCode` union, the OpenAPI schema and the web client all derive from. Adding a code means extending that list, which keeps this table honest:
+The codes are the `ERROR_CODES` list in `lib/error.ts`, one `as const` array the `ErrorCode` union, the OpenAPI schema and the web client all derive from. On the web, `unwrap` adds two transport codes of its own, `NETWORK_ERROR` and `UNKNOWN_ERROR`, so `error.code` there is this list plus those two and nothing else. Adding a code means extending that list, which keeps this table honest:
 
-| Code                    | Status   | When                                                       |
-| ----------------------- | -------- | ---------------------------------------------------------- |
-| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`routers/agents.ts`)           |
-| `BAD_REQUEST`           | 400      | Malformed JSON or form body (Hono's own `HTTPException`)   |
-| `CONFLICT`              | 409      | The value already exists, or the row changed mid-request   |
-| `ERROR`                 | (varies) | An `HTTPException` whose status maps to no code            |
-| `FORBIDDEN`             | 403      | Below the rung a route asks for (`/headers` outside local) |
-| `INTERNAL_SERVER_ERROR` | 500      | An unhandled error                                         |
-| `NOT_FOUND`             | 404      | No such route, resource, or feature                        |
-| `TOO_MANY_REQUESTS`     | 429      | Over the rate limit                                        |
-| `UNAUTHORIZED`          | 401      | No session, or an invalid one                              |
-| `VALIDATION_ERROR`      | 400      | The request failed its schema; `issues` names the fields   |
+| Code                    | Status   | When                                                                          |
+| ----------------------- | -------- | ----------------------------------------------------------------------------- |
+| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`routers/agents.ts`)                              |
+| `BAD_REQUEST`           | 400      | Malformed JSON or form body (Hono's own `HTTPException`)                      |
+| `CONFLICT`              | 409      | The value already exists, or the row changed mid-request                      |
+| `ERROR`                 | (varies) | An `HTTPException` whose status maps to no code                               |
+| `FORBIDDEN`             | 403      | Below the rung a route asks for; `/headers` outside `local` and `development` |
+| `INTERNAL_SERVER_ERROR` | 500      | An unhandled error                                                            |
+| `NOT_FOUND`             | 404      | No such route, resource, or feature                                           |
+| `TOO_MANY_REQUESTS`     | 429      | Over the rate limit                                                           |
+| `UNAUTHORIZED`          | 401      | No session, or an invalid one                                                 |
+| `VALIDATION_ERROR`      | 400      | The request failed its schema; `issues` names the fields                      |
 
 ## Lists and sets
 
@@ -48,14 +48,14 @@ Flat siblings beside the collection, not a nested paging object, is the shape mo
 
 A set route acts on rows the caller picked: ban a selection, change a role across it, remove several rules. Every guard runs per target, so one request can change three rows and refuse two, and `api/hono/src/lib/batch.ts` holds the shape that answers that:
 
-| Rule                               | What it means                                                                                                                           |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Ids travel in the body             | `{ ids: string[], ...fields }`, with no `/users/:id/role` beside `PATCH /api/v1/admin/users/role`; a single row is a set of one         |
-| 200 with one outcome per id        | `{ data: { results } }`, each `{ id, ok: true }` or `{ id, ok: false, code, message }`, in the order asked, never 207                   |
-| `{ error }` means nothing happened | The request was refused as a whole (no session, not an admin, a malformed body, more than `MAX_BATCH` ids), so there are no outcomes    |
-| A refusal code is narrower         | A row can be `CONFLICT`, `FORBIDDEN` or `NOT_FOUND`; anything else is a whole-request failure the envelope already covers               |
-| Capped at `MAX_BATCH`              | 100 ids per request (`packages/config/src/console.ts`), deduplicated; the console splits a larger selection into serial chunks          |
-| One transaction per request        | Another admin's write cannot interleave with the ids in it, and the guarantee is per request: a 250-row selection is three transactions |
+| Rule                               | What it means                                                                                                                                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ids travel in the body             | `{ ids: string[], ...fields }` on `DELETE /allowlist`, `PATCH /users/role`, `PATCH /users/status` and `DELETE /waitlist` under `/api/v1/admin`, with no `/users/:id/role` beside them; a single row is a set of one |
+| 200 with one outcome per id        | `{ data: { results } }`, each `{ id, ok: true }` or `{ id, ok: false, code, message }`, in the order asked, never 207                                                                                               |
+| `{ error }` means nothing happened | The request was refused as a whole (no session, not an admin, a malformed body, more than `MAX_BATCH` ids), so there are no outcomes                                                                                |
+| A refusal code is narrower         | A row can be `CONFLICT`, `FORBIDDEN` or `NOT_FOUND`; anything else is a whole-request failure the envelope already covers                                                                                           |
+| Capped at `MAX_BATCH`              | 100 ids per request (`packages/config/src/console.ts`), deduplicated; the console splits a larger selection into serial chunks                                                                                      |
+| One transaction per request        | Another admin's write cannot interleave with the ids in it, and the guarantee is per request: a 250-row selection is three transactions                                                                             |
 
 The `api-endpoint` skill's set-route section carries the steps, from `batchInput` to `runBatched` on the web.
 
@@ -63,14 +63,14 @@ The `api-endpoint` skill's set-route section carries the steps, from `batchInput
 
 The first three rows run on every request, in that order, from `api/hono/src/index.ts`; the rest attach where their row says. Each refuses in the envelope, and the handler never sees the request it refused:
 
-| Middleware       | Where                                                                                   | What it refuses                                                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cors()`         | Every route                                                                             | A browser on an origin outside `HONO_TRUSTED_ORIGINS` is stopped by its own CORS check; `curl` has none and passes                                |
-| `logger()`       | Every route                                                                             | Nothing; one line per request on the api's stdout                                                                                                 |
-| Rate limiter     | Every route                                                                             | 429 `TOO_MANY_REQUESTS`, keyed by user id, then API key, then IP                                                                                  |
-| `requireFeature` | `/api/waitlist`, `/api/openapi.json`, `/api/docs`, the console's allowlist and waitlist | 404 `NOT_FOUND` while the feature in `packages/config/src/site.ts` is off; `/api/agents/*` 404s the same way while `AGENT_SIGNIN_ENABLED` is off  |
-| `authMiddleware` | `/api/v1/*`                                                                             | 401 `UNAUTHORIZED` without a session; otherwise sets `user` and `session` on the context and swaps in the per-user limiter at twice the budget    |
-| Console gate     | `/api/v1/admin/*`                                                                       | 403 `FORBIDDEN` below `admin` on the role ladder; it re-reads the session past the cookie cache, so a demotion or a ban lands on the next request |
+| Middleware       | Where                                                                                              | What it refuses                                                                                                                                                                                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cors()`         | Every route                                                                                        | A browser on an origin outside `HONO_TRUSTED_ORIGINS` is stopped by its own CORS check; `curl` has none and passes                                                                                                                                                                          |
+| `logger()`       | Every route                                                                                        | Nothing; one line per request on the api's stdout                                                                                                                                                                                                                                           |
+| Rate limiter     | Every route                                                                                        | 429 `TOO_MANY_REQUESTS`, keyed by user id, then API key, then IP                                                                                                                                                                                                                            |
+| `requireFeature` | `/api/docs`, `/api/openapi.json`, `/api/waitlist`, and the console's allowlist and waitlist routes | 404 `NOT_FOUND` while the feature in `packages/config/src/site.ts` is off; `/api/agents/*` 404s the same way while `AGENT_SIGNIN_ENABLED` is off                                                                                                                                            |
+| `authMiddleware` | `/api/v1/*`                                                                                        | 401 `UNAUTHORIZED` without a session; otherwise sets `user` and `session` on the context and swaps in the per-user limiter at twice the budget                                                                                                                                              |
+| Console gate     | `/api/v1/admin/*`                                                                                  | 403 `FORBIDDEN` below `admin` on the role ladder, read past the [cookie cache](/docs/manage/authentication#sessions-and-cookies) so a demotion or a ban lands on the next request; that is one uncached session read per admin request, paid per batch by a surface that fetches in batches |
 
 ## Common questions
 
@@ -86,17 +86,13 @@ Because an unhandled error's real message reaches the envelope only when `NODE_E
 
 Because the two can disagree. A client inferring the end from `total` compares what it has loaded against a count that moves when rows are deleted mid-scroll, and under an infinite list a stale one keeps asking for a page that no longer exists. The server knows, so the server says.
 
-**Why is `users` before `hasNextPage` when the repo sorts keys A→Z?**
-
-Relevance first, then A→Z: where one key is what the response is about and the rest describe it, that key leads. Sorting the subject too would put it in a different position on every endpoint, which is the drift the alphabetical rule exists to prevent.
-
 **Can a route add its own error code?**
 
-Only by extending `ERROR_CODES` in `lib/error.ts`. The web client's `error.code` is that union plus the transport codes `unwrap` adds (`NETWORK_ERROR`, `UNKNOWN_ERROR`), so a code outside the list cannot be thrown and a `switch` over it stays exhaustive. A set route's per-row codes are a `satisfies`-checked subset of the same list, so there is no second vocabulary.
+Only by extending `ERROR_CODES` in `lib/error.ts`, so a code outside the list cannot be thrown and a `switch` over it stays exhaustive. A set route's per-row codes are a `satisfies`-checked subset of the same list, so there is no second vocabulary.
 
 ## It's working if
 
-With `API=$(bunx portless get api.zerostarter)` from a running stack (the `dev` skill):
+With `API=$(bunx portless get api.<your project name>)` from a running stack (the `dev` skill; the starter's own name is `api.zerostarter`):
 
 - `curl "$API/api/nope"` answers `{"error":{"code":"NOT_FOUND","message":"Not Found"}}`.
 - `curl -X POST -H "Content-Type: application/json" -d '{"email":"nope"}' "$API/api/waitlist"` answers a 400 `VALIDATION_ERROR` whose `issues` names `email`.

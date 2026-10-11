@@ -27,7 +27,7 @@ The global limiter passes no resolver, so it always keys on address; the per-use
 
 <Callout type="warn" title="Anonymous limiting is off on a bare Bun deploy">
 
-`findIp` runs bare, with no `platform` and no trusted `proxies`. Where Bun owns the socket with nothing in front (Docker, any self-host), the request carries no peer address, so the library reads client-controllable headers: a forged `x-forwarded-for` names its own bucket, and a client that sends none lands on the random tier, one bucket per request. Vercel [overwrites `x-forwarded-for`](https://vercel.com/docs/headers/request-headers#x-forwarded-for), so the direct path there is unaffected. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host; the starter tracks the fix in `.github/notes/plans/rate-limit-ip-resolution.md`.
+`findIp` runs bare, with no `platform` and no trusted `proxies`. Where Bun owns the socket with nothing in front (Docker, any self-host), the request carries no peer address, so the library reads client-controllable headers: a forged `x-forwarded-for` names its own bucket, and a client that sends none lands on the random tier, one bucket per request. Vercel [overwrites `x-forwarded-for`](https://vercel.com/docs/headers/request-headers#x-forwarded-for), so the direct path there is unaffected. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host; the canonical starter tracks the fix in `.github/notes/plans/rate-limit-ip-resolution.md`.
 
 </Callout>
 
@@ -50,7 +50,7 @@ A `429` in the standard envelope, `{ "error": { "code": "TOO_MANY_REQUESTS", "me
 
 **Why do all anonymous visitors on a `*.vercel.app` host share one bucket?**
 
-On a public hosting suffix the browser cannot share a cookie with a sibling site, so the web app sends its calls to its own origin and a Next rewrite proxies them to the API ([Deploy to Vercel](/docs/deployment/vercel)). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Whether Vercel stamps the original client anywhere on the rewrite path is unverified, so the limiter does not read one yet. Until it does, raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
+On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Whether Vercel stamps the original client anywhere on the rewrite path is unverified, so the limiter does not read one yet. Until it does, raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
 
 **Are the limits shared across instances?**
 

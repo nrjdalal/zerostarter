@@ -4,7 +4,7 @@ title: Realtime
 description: "WebSockets on Hono: one typed client, a Bun and Node adapter split for Vercel, and a REST-baseline fallback."
 ---
 
-The typed client that reaches the REST API reaches WebSockets too: Hono serves the upgrade, the RPC object exposes it as `$ws()`, and `/api/health/ws` ships as a working route that sends a status snapshot on connect and a heartbeat every five seconds. The live badge on the landing page runs on it.
+The typed client that reaches the REST API reaches WebSockets too: Hono serves the upgrade, the RPC object exposes it as `$ws()`, and `/api/health/ws` ships as a working route that sends a status snapshot on connect and a heartbeat every five seconds. The canonical starter's landing-page badge runs on it; a fork takes the route and not the badge, since `web/next/src/components/marketing/` is on the `.gitpickignore` list.
 
 Frames are untyped and a socket can drop, so a realtime UI here polls REST as its baseline and treats the socket as an overlay. `$ws()` types the route's path, not the messages on it: a frame is a string, there is no `{ data }` envelope on the wire, and OpenAPI cannot schema a frame, so the route lists in the reference as a `101` with its frame shape in prose. Everything below follows from that.
 
@@ -14,15 +14,15 @@ Reach for this page when a surface has to update without a reload: a status badg
 
 ## One route, two hosts
 
-A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter. The split has outlived its first reason, since Vercel's Bun runtime can now run `Bun.serve()` in beta with documented differences from a standalone server, and the Node path stays because it is the one proven here.
+A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter. The split stays because the Node adapter is the setup Vercel documents for Hono WebSockets, and the one this route is proven on.
 
 Inside a handler, `send` and `close` behave the same on both hosts, and `onClose` fires on every disconnect on both, so cleanup belongs there: the health route clears its heartbeat in `onClose` and nowhere else.
 
 ## Overlay, not source of truth
 
-A socket can drop: a tab backgrounds, a network blips, a serverless function reaches its max duration. The reference badge, `web/next/src/components/marketing/api-status.tsx`, therefore never depends on the socket alone. It polls `GET /api/health` through TanStack Query whenever no frame is live and overlays a pulse only while frames arrive, so the badge is right before the socket connects and after it drops; only the pulse is socket-only.
+A socket can drop: a tab backgrounds, a network blips, a serverless function reaches its max duration. The canonical starter's badge, `web/next/src/components/marketing/api-status.tsx`, therefore never depends on the socket alone. It polls `GET /api/health` through TanStack Query whenever no frame is live and overlays a pulse only while frames arrive, so the badge is right before the socket connects and after it drops; only the pulse is socket-only.
 
-Its reconnect logic is the pattern to copy: capped exponential backoff after a drop, from 3 seconds doubling to a 30 second ceiling; a watchdog that treats a socket silent for 12 seconds as dropped and closes it, so the server's `onClose` clears its heartbeat instead of streaming to a dead peer; and an immediate reconnect, backoff reset, when the tab becomes visible again. It reads one field per frame (`message === "ok"`) and nothing else, because nothing types a frame.
+Its reconnect logic is the pattern to copy: capped exponential backoff after a drop; a watchdog that treats a silent socket as dropped and closes it, so the server's `onClose` clears its heartbeat instead of streaming to a dead peer; and an immediate reconnect, backoff reset, when the tab becomes visible again. The three constants sit at the top of `api-status.tsx`. It reads one field per frame (`message === "ok"`) and nothing else, because nothing types a frame.
 
 ## Beyond one instance
 
@@ -32,11 +32,11 @@ A connection is pinned to one server or one function instance, and a reconnect m
 
 **How do I authenticate a socket?**
 
-Not with the trusted-origins allowlist: `cors()` runs on the upgrade `GET`, but a browser sends no preflight for a WebSocket and never blocks one on CORS, so the allowlist that guards every REST route does nothing for a socket. A sensitive route checks the `Origin` header or a token inside the handler; the usual token is a short-lived single-use ticket the signed-in client fetches from an authenticated REST endpoint and presents on connect. The starter's one socket route is public on purpose, since it streams what `/api/health` already answers, and ships no authenticated socket: a single-use ticket needs a shared store to record that it was spent, and the starter has none yet.
+The one socket route ships public and checks no session, since it streams what `/api/health` already answers, and `cors()` is no guard for it: a browser sends no preflight for a WebSocket and never blocks one on CORS. A fork that needs an authenticated socket checks the `Origin` header or a token inside the handler, the usual token being a short-lived single-use ticket the signed-in client fetches from an authenticated REST route and the server marks spent in a shared store.
 
 **Why is the badge green without the pulse on `*.vercel.app`?**
 
-On a public hosting suffix the browser reaches the api through the web's `/api` rewrite, so the [session cookie stays first-party](/docs/manage/authentication), and a Next rewrite does not forward a WebSocket upgrade. The connect fails, the backoff settles into a gentle re-probe, and the badge runs on its REST heartbeat: green, without the pulse. A custom domain, where the browser reaches the api directly, keeps the socket.
+On a public hosting suffix the browser reaches the api through the web's `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why), and a Next rewrite does not forward a WebSocket upgrade. The connect fails, the backoff settles into a gentle re-probe, and the badge runs on its REST heartbeat: green, without the pulse. A custom domain, where the browser reaches the api directly, keeps the socket.
 
 **Why does the upgrade route list 429 and 500 in the reference?**
 
@@ -44,9 +44,9 @@ Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error r
 
 ## It's working if
 
-- On the landing page locally, the devtools Network tab filtered to WS shows `/api/health/ws` at `101` with a JSON frame carrying `"message":"ok"` every five seconds.
-- The green dot on the status badge pulses. Green without the pulse means REST is carrying the badge and the socket is not connected.
-- Background the tab for a minute and return: frames resume at once rather than after the backoff.
+- In the devtools console on any page of the web app, `new WebSocket("<api origin, http swapped for ws>/api/health/ws").onmessage = (e) => console.log(e.data)` logs a JSON frame carrying `"message":"ok"` at once and another every five seconds, and the Network tab filtered to WS shows the route at `101`.
+- `curl` on the api origin's `/api/health` answers `{"data":{"message":"ok",...}}`, the REST baseline a socket overlays.
+- In the canonical starter, the green dot on the landing-page badge pulses; green without the pulse means REST is carrying the badge and the socket is not connected. Background the tab for a minute and return: frames resume at once rather than after the backoff.
 
 ## Next
 

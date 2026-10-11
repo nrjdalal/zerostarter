@@ -38,7 +38,7 @@ Matching is by address, so a rule is only as strong as the proof behind the addr
 - **An address rule beats a domain rule** covering the same person. The specific rule is the one that grants, so the Activity line names it rather than whichever row the database returned first.
 - **Case never matters.** Rules are saved lowercase, so one rule cannot be added twice in different cases; the second attempt is refused as a `CONFLICT`.
 
-The matching is `findAllowlistRule` in `packages/auth/src/access.ts`, a pure function with its own tests, and the sign-in hook asks it rather than deciding inline.
+The matching is `findAllowlistRule` in `packages/auth/src/access.ts`, a pure function the canonical starter covers in `tests/packages/auth/src/access.test.ts`, and the sign-in hook asks it rather than deciding inline.
 
 ## Taking access away
 

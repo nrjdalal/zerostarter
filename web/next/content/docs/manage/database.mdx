@@ -18,15 +18,15 @@ Files group by concern, not by table, so a new table joins the file its neighbou
 
 | File          | Tables                                                                                                                                                                                                                  | Owner                                                                            |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `auth.ts`     | `user`, `session`, `account`, `verification`, `organization`, `member`, `team`, `teamMember`, `invitation`, with their relations and foreign-key indexes                                                                | Better Auth's generator; see [Auth & Organizations](/docs/manage/authentication) |
+| `auth.ts`     | `account`, `invitation`, `member`, `organization`, `session`, `team`, `teamMember`, `user`, `verification`, with their relations and foreign-key indexes                                                                | Better Auth's generator; see [Auth & Organizations](/docs/manage/authentication) |
 | `console.ts`  | `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so a row stores only the rule `value`; `activity` behind [Console > History](/docs/manage/activity), who changed what | the console                                                                      |
 | `waitlist.ts` | `waitlist`, no foreign keys, behind the public `/waitlist` page and [Console > Waitlist](/docs/manage/waitlist)                                                                                                         | the waitlist                                                                     |
 
 The `db` client in `packages/db/src/index.ts` is typed from these files and runs on Bun's SQL driver; Drizzle Kit runs from the `db:*` scripts on the `postgres` driver the package declares for it alone.
 
-## What is generated, and how your own column enters
+## The generated auth schema
 
-`bun run auth:schema` writes `auth.ts` as exactly what the Better Auth CLI emits for `packages/auth/src/schema.ts`: the plugins (organization with teams, admin, openAPI) and the app's own columns, in one declaration that the auth instance and the generator both read, so the two cannot disagree. A test fails when the committed file differs from a fresh generation, so a hand edit cannot survive.
+`bun run auth:schema` writes `auth.ts` as exactly what the Better Auth CLI emits for `packages/auth/src/schema.ts`: the plugins (admin, openAPI, organization with teams) and the app's own columns, in one declaration that the auth instance and the generator both read, so the two cannot disagree. `bun run auth:schema --check` (`packages/scripts/src/auth-schema.ts`) fails when the committed file differs from a fresh generation, so a hand edit cannot survive; the canonical starter runs the same check as a test in `tests/`, its second gate, which a fork does not take.
 
 A column of your own on `user` or `session` is therefore an `additionalFields` entry in that declaration, not an edit to `auth.ts`. The console's `roleSetAt` is the example: declared there, regenerated with `bun run auth:schema`, then migrated like any other change. A Better Auth upgrade takes the same path: bump, regenerate, and `bun run db:generate` writes the migration from your own snapshot, which is how the 1.7 columns on `team` and `team_member` arrived.
 
@@ -39,7 +39,7 @@ Outside `auth.ts`, every table follows one shape, with `waitlist.ts` as the plai
 Indexes are added when your own row counts and query plans ask for them, not in advance. The auth tables index most foreign-key columns plus `verification.identifier` and `invitation.email`, which are not foreign keys; `invitation.inviter_id` carries none. Where the choice shows:
 
 - **`user.role` has no index and no database default.** The console filters and sorts by it, and a handful of rungs over a table the size of your staff list is a sequential scan either way. The default is absent because the admin plugin stamps `user` on every account it creates, and the generated schema says only what the plugin declares.
-- **The console tables bend the delete rule and the index rule.** Their `actor_id` is `set null`, not `cascade`, because deleting the admin who added a rule must not delete the rule, nor the history they made. Neither carries an index beyond its primary key, because at console sizes the sequential scan wins. Each stores an `actor` text beside the id, so a row stays readable once the id is null and can name an actor that was never an account.
+- **The console tables bend the delete rule and the index rule.** Their `actor_id` is `set null`, not `cascade`, because deleting the admin who added a rule must not delete the rule, nor the history they made. Beyond the primary key, `allowlist.value` carries the unique index its constraint creates and `activity` carries none, because at console sizes the sequential scan wins. Each stores an `actor` text beside the id, so a row stays readable once the id is null and can name an actor that was never an account.
 
 ## From an edit to a running table
 
@@ -69,7 +69,7 @@ Something upstream of it changed: a plugin or an `additionalFields` entry in `pa
 
 - `bun run auth:schema --check` prints `auth schema is in sync` and exits 0.
 - `bun run db:generate` after a schema edit writes a numbered `.sql` into `packages/db/drizzle/` with a matching `meta/` snapshot, and with nothing changed says `No schema changes, nothing to migrate`.
-- `bun run check-types` from the repo root fails in `api/hono` after you rename a column that a router selects.
+- `bun run db:studio` opens Drizzle Studio on `POSTGRES_URL` with `activity`, `allowlist`, `waitlist` and the auth tables listed, the same set `packages/db/src/schema/index.ts` exports.
 
 ## Next
 

@@ -10,7 +10,7 @@ A line and its change share a transaction, because `recordActivity` takes the tr
 
 ## When you need this
 
-Reach for this page when you need to answer "who did that, and when" for a role change, a ban, an allowlist edit or a removed waitlist signup, or when a feature of your own makes a write that deserves a line. One line is best effort rather than transactional, the grant the allowlist makes on sign-in; see [Allowlist](/docs/manage/allowlist) for why.
+Reach for this page when you need to answer "who did that, and when" for a role change, a ban, an allowlist edit or a removed waitlist signup, or when a feature of your own makes a write that deserves a line. One write is best effort relative to sign-in, the grant the [allowlist](/docs/manage/allowlist) makes: its rung and its line still share one transaction, but a failure there is logged and skipped so nobody is stopped from signing in, and the next sign-in repairs it.
 
 ## What a line holds
 
@@ -28,16 +28,16 @@ The table renders `createdAt` as a relative time and `action` through a label (`
 
 | Action         | Summary                                                                                                  |
 | -------------- | -------------------------------------------------------------------------------------------------------- |
+| Added rule     | `Added @example.com to the allowlist`                                                                    |
+| Banned         | `Banned katherine@example.com, ending their sessions`                                                    |
+| Removed rule   | `Removed @example.com from the allowlist`                                                                |
+| Removed signup | `Removed ada@example.com from the waitlist`                                                              |
 | Set role       | `Changed ada@example.com from member to admin`                                                           |
 | Set role       | `Set ada@example.com to member` (had no rung yet)                                                        |
 | Set role       | `Confirmed ada@example.com at member` (set to the rung it already had, which still stamps `role_set_at`) |
-| Banned         | `Banned katherine@example.com, ending their sessions`                                                    |
 | Unbanned       | `Unbanned katherine@example.com`                                                                         |
-| Added rule     | `Added @example.com to the allowlist`                                                                    |
-| Removed rule   | `Removed @example.com from the allowlist`                                                                |
-| Removed signup | `Removed ada@example.com from the waitlist`                                                              |
 
-Every sentence is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences and `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone.
+Every sentence is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
 
 Two things are deliberately not recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers what the console did, not what your product does.
 
@@ -82,24 +82,24 @@ An actor that is not a person passes `{ label }` in place of `{ email, id }`, th
 
 No, and it is not called one on purpose. An audit log is a compliance word that promises completeness, retention and tamper-evidence, and this does none of the three: nothing is append-only at the database level, nothing stops an admin with a `psql` connection from editing a row, and nothing is pruned. It is a readable trail of the console's own writes, good enough to answer "who did that, and when". If you need the compliance version, start from the shape rather than the promise: revoke `UPDATE` and `DELETE` on the table from the application role, ship the rows off-box, and decide a retention window.
 
-**How big does the table get, and does it need an index?**
+**Does anything prune the table?**
 
-It grows without bound. Nothing prunes it, because how long a trail is worth keeping is a policy call, and a starter that silently deleted your history after ninety days would be worse than one that grows. It ships with no index beyond the primary key, because at the sizes a console generates a sequential scan beats an index read. The list is ordered by `created_at`, so that is the index to add first when your numbers say so, and a composite `(action, created_at)` is the answer if a filtered page ever feels slow. The canonical starter keeps the argument in `.github/notes/plans/console-activity-log.md`.
+No. It grows without bound, because how long a trail is worth keeping is a policy call, and a starter that silently deleted your history after ninety days would be worse than one that grows. The list is ordered by `created_at`, so that is the index to add first when your numbers say so ([Database](/docs/manage/database) says why it ships without one), and a composite `(action, created_at)` is the answer if a filtered page ever feels slow. The canonical starter keeps the argument in `.github/notes/plans/console-activity-log.md`.
 
 **How do I get a line into a ticket?**
 
-Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over JSON, oldest first, with the fields in reading order (actor, action, summary, when) and the two ids trailing, carrying absolute timestamps and stored action codes rather than the relative time and label on screen. The same rows come from `GET /api/v1/admin/activity`, admin and above, paged and enveloped like every other route in [API Conventions](/docs/manage/api-conventions). Search matches the summary, the stored `actor` text and the linked account's current email, so someone who has changed their address is found under either.
+Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over JSON, oldest first, with the fields in reading order (actor, action, summary, when) and the two ids trailing, carrying absolute timestamps and stored action codes rather than the relative time and label on screen. The same rows come from `GET /api/v1/admin/activity`, admin and above, paged and enveloped like every other route in [API Conventions](/docs/manage/api-conventions); it is the trail's only route, since nothing edits or deletes a line. Search matches the summary, the stored `actor` text and the linked account's current email, so someone who has changed their address is found under either.
 
 ## It's working if
 
 - A role change at Console > Access > Users appears at Console > History > Activity with your email as the actor and a sentence such as `Changed ada@example.com from member to admin`.
 - Setting a rung to the one it already has leaves `Confirmed ada@example.com at member`, not a line claiming a change.
 - `bun run console:roles grant you@example.com admin` leaves a line whose actor is `console:roles`.
-- Adding a verb to `ACTIVITY_ACTIONS` without a label fails `bun run check-types` in `web/next`, pointing at `ACTION_LABELS`.
+- **Copy event** on a row hands over JSON whose `action` is the stored code (`role.change`) and whose `createdAt` is absolute, not the label and the relative time the table shows.
 
 ## Next
 
 - [Authentication](/docs/manage/authentication), because the role ladder these lines record changes to lives there.
-- [Allowlist](/docs/manage/allowlist), because the one best-effort line is the grant it makes on sign-in.
+- [Allowlist](/docs/manage/allowlist), because the grant it makes on sign-in is the one write that may be skipped rather than fail.
 - [Database](/docs/manage/database), because `schema/console.ts` and the `set null` on `actor_id` are explained there.
 - [API Conventions](/docs/manage/api-conventions), because the activity route is paged and enveloped like every other.

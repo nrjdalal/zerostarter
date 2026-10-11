@@ -31,7 +31,7 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.health.$get())
 ```
 
-Exactly one side is non-null and `unwrap` never throws. `data` is the payload inside `{ data }`, typed from the route; `error.code` is the API's `ErrorCode` union plus the two transport codes `unwrap` adds, `NETWORK_ERROR` and `UNKNOWN_ERROR`, so it is a closed set you can `switch` on. The client sends `credentials: "include"`, so a route behind `authMiddleware` is the same call with the session cookie along. A client component reads it through TanStack Query as `web/next/src/components/common/access.tsx` does: the `queryFn` unwraps and throws on `error`.
+Exactly one side is non-null and `unwrap` never throws. `data` is the payload inside `{ data }`, typed from the route; `error.code` is a closed set you can `switch` on, the list [API Conventions](/docs/manage/api-conventions#the-envelope-and-its-codes) defines plus the two transport codes `unwrap` adds there. The client sends `credentials: "include"`, so a route behind `authMiddleware` is the same call with the session cookie along. A client component reads it through TanStack Query as `web/next/src/components/common/access.tsx` does: the `queryFn` unwraps and throws on `error`.
 
 ## What the type does not cover
 
@@ -50,7 +50,7 @@ The type travels through `@api/hono`'s built `dist`, so the web app sees a new r
 
 ## It's working if
 
-- Misspell a key in a call, say `data.mesage` after `unwrap(apiClient.health.$get())`, and `bunx turbo run check-types --filter=@web/next` fails naming the file.
+- In the editor, `data` after `unwrap(apiClient.health.$get())` completes to `environment`, `message` and `version`, the fields the route declares in `api/hono/src/index.ts`, and nothing else.
 - `/api/docs` renders the reference and `/api/openapi.json` lists your route with a 429 on it while `apiDocs` is on; both 404 when it is off.
 
 ## Next
