@@ -38,12 +38,12 @@ jobs:
         working-directory: packages/cli
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.0
+          bun-version: 1.4.3
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -78,12 +78,12 @@ jobs:
         working-directory: packages/cli
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # 24 bundles npm >= 11.5.1, the floor for npm Trusted Publishing
           node-version: 24
@@ -93,7 +93,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.0
+          bun-version: 1.4.3
 
       - name: Release Package
         run: |
