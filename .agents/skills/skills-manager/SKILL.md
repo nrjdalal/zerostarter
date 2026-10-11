@@ -31,7 +31,7 @@ Each cell is the sentence before `Use ...`, so keep that `<summary>. Use when <t
 
 - A sync rewrites only the skills sourced from the starter; the `> Synced from <upstream>.` line inside the stamped `[!CAUTION]` note is the opt-in, and removing that line hands the skill to the fork.
 - A skill the fork edited keeps the fork's version, and the sync summary names it.
-- `.agents/skills/.sync.json` records what the CLI wrote (`ref`, `upstream`, `written` per skill, and `AGENTS.md` under its own path); a fork commits it after its first sync, and the canonical starter has none.
+- `.agents/skills/.sync.json` records what the CLI wrote (`ref`, `upstream`, `written` per skill, and `AGENTS.md` under its own path); a fork carries it from `init` and commits it with every sync, and the canonical starter has none.
 - A custom skill is one file, since the CLI syncs only `SKILL.md`.
 - `packages/cli/src/skills.ts` holds the rules and `getting-started/cli.mdx` the human narrative, both in the canonical starter only.
 
