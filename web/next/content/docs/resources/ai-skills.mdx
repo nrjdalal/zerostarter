@@ -10,11 +10,11 @@ Only the description is scanned. An agent matches its task against each skill's 
 
 ## When you need this
 
-Reach for this page to find the skill for a task, or to add one. For what a fork's `sync` does with the skills it inherits, see the [CLI](/docs/getting-started/cli).
+Reach for this page to find the skill for a task, or to add one. For what a fork's `sync` does with the skills it inherits, see [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
 
 ## The catalog
 
-Each cell is the skill's own summary, the sentence before `Use` in its description, so you see what the agent sees; the stage is this page's. Read `codebase-map` before you have a task.
+Each cell is the skill's own summary, the sentence before `Use` in its description, so you see what the agent sees. The stage is where in the loop a skill fires: navigate before a task, build while making the change, operate to prove it in the running app, maintain the tooling around the repo, ship the result. Read `codebase-map` before you have a task.
 
 | Stage    | Skill                | What it does                                                                                                                                                      |
 | -------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -43,9 +43,9 @@ Each cell is the skill's own summary, the sentence before `Use` in its descripti
 
 ## Vendored skills
 
-`agent-browser`, `portless` and `writing-for-agents` are copied verbatim from the upstream their `source:` line names; every other skill is `source: local`. [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) ships a discovery stub pointing at the live workflow (`agent-browser skills get core`), so install the CLI first: `npm i -g agent-browser && agent-browser install`. [`vercel-labs/portless`](https://github.com/vercel-labs/portless) is copied in full, as is `writing-for-agents` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
+`agent-browser`, `portless` and `writing-for-agents` are copied from upstream, and their `source:` line names the tool that re-vendors them (`agent-browser`, `portless`, `skills`); every other skill is `source: local`. [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) ships a discovery stub pointing at the live workflow (`agent-browser skills get core`), so install the CLI first: `npm i -g agent-browser && agent-browser install`. `portless` is the whole skill from [`vercel-labs/portless`](https://github.com/vercel-labs/portless), as is `writing-for-agents` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
-`skills-lock.json` records `agent-browser` and `writing-for-agents` with the hash installed, so `bunx skills update` re-vendors them; `portless` is re-vendored by copying it again. A re-vendor rewrites the folder, so what this repo adds goes back in afterwards: the `source:` line on each, the `## Viewport` section on `agent-browser`, and a sweep of the em-dashes upstream writes, which `AGENTS.md` forbids.
+A re-vendor rewrites the folder, and this repo adds to each copy afterwards; the `skills-manager` skill holds the command and what goes back in.
 
 ## Writing your own
 
@@ -56,20 +56,6 @@ Make `.agents/skills/<name>/SKILL.md` with `source: local`; the symlinks carry i
 - Keep it one file: the CLI syncs only `SKILL.md`, so a sibling file reaches a fork unrebranded and unnamed.
 
 Write the body with `writing-for-agents` loaded; when a convention changes, change its skill in the same commit, and the pre-commit hook regenerates the tables (the `skills-manager` skill).
-
-## Common questions
-
-**Does a fork get these skills?**
-
-Every skill and the agent guide ship at `init`, rebranded to the fork's name, and `sync` keeps the ones you have not edited current. The first CLI stripped them all, so a fork from that era has none until its first `sync`.
-
-**Will `sync` overwrite a skill I customized?**
-
-Not any more: sync rewrites only a skill whose `source` is the starter and whose body is what the CLI last wrote, so a fork-authored, vendored or edited skill keeps your version, named in the summary, and provenance is never restamped. An earlier CLI did both.
-
-**Why does `--outdated` report `DIFFERS from upstream` for a skill I never touched?**
-
-An older checker compared prose, which a sync rebrands and prefixes with a note, so every synced skill read as drifted. The check now reads the ledger, `.agents/skills/.sync.json`, a hash per skill of the upstream file at the synced ref and of the file as written, and reports `edited here` separately; a skill with no entry is `untracked`.
 
 ## It's working if
 

@@ -14,11 +14,11 @@ Reach for this page when you are pointing an agent at the project, or when the i
 
 ## Two files and an alias
 
-| Route                                     | What it holds                                                                                                                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/llms.txt`                               | the index: every docs page in sidebar order, each linked as its `.md` alias with its description, then a link to the blog                                                                                                             |
-| `/llms-full.txt`                          | everything in one file: the site name and description, `llmsFullPreamble` from `packages/config/src/site.ts` (the layout, the import map, the stack and the conventions), then every docs page and published post, `---` between them |
-| any docs or blog URL plus `.md` or `.txt` | that page as markdown, a docs page with a footer pointing back to `/llms.txt`; `/docs.md` is the docs root page and `/blog.md` the blog index                                                                                         |
+| Route                                     | What it holds                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/llms.txt`                               | the index: every docs page in sidebar order, each linked as its `.md` alias with its description, then a link to the blog                                                                                                                                                                                |
+| `/llms-full.txt`                          | everything in one file: the site name and description, `llmsFullPreamble` from `packages/config/src/site.ts` (the canonical starter's layout, import map, stack and conventions; a fork's starts empty, since `init` regenerates that file), then every docs page and published post, `---` between them |
+| any docs or blog URL plus `.md` or `.txt` | that page as markdown, a docs page with a footer pointing back to `/llms.txt`; `/docs.md` is the docs root page and `/blog.md` the blog index                                                                                                                                                            |
 
 The aliases are rewrites in `web/next/next.config.ts` onto the `/llms.txt/docs/...` and `/llms.txt/blog/...` routes. In development, `curl "$(bunx portless get zerostarter)/llms-full.txt"` hands an agent the whole project as one file before it writes a line, which is how the `codebase-map` skill orients.
 
@@ -34,7 +34,7 @@ Docs and blog are [features](/docs/manage/features): turn one off and its pages,
 
 **Why is `/llms.txt` in a different order from the sidebar?**
 
-It is not, any more: both routes share `sortByMeta`, so the docs follow `docs.config.ts`. A page at the tail is one that file does not list, which the strict docs gate fails the build for; in dev it means a stale `meta.json`, and `bun .github/scripts/docs.ts` regenerates it.
+Both routes share `sortByMeta`, so the docs follow `docs.config.ts`, and a page at the tail is one that file does not list, which the strict docs gate fails the build for; in dev it means a stale `meta.json`, and `bun .github/scripts/docs.ts` regenerates it.
 
 **Why is `/docs.md` a page while `/blog.md` is a list?**
 
@@ -43,7 +43,7 @@ The docs have a root page, the introduction at `/docs`, so its alias serves that
 ## It's working if
 
 - `/llms.txt` lists the docs pages in the sidebar's order, the introduction first.
-- `/llms-full.txt` opens with the site name and description, then the preamble's first line, `## Instructions for AI Assistants`.
+- `/llms-full.txt` opens with a heading ending in `LLM Context File`, the site description as a quote, then the first docs page after a `---`; in the canonical starter the preamble sits between them, opening with `## Instructions for AI Assistants`.
 - `curl -s -o /dev/null -w "%{content_type}" "$WEB/docs/manage/llms-txt.md"` prints `text/markdown; charset=utf-8`, and the body ends with the footer pointing at `/llms.txt`.
 
 ## Next

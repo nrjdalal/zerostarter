@@ -11,7 +11,7 @@ The prose of a skill itself follows `writing-for-agents`; this skill covers the 
 `source` is a skill's provenance, and decides its table:
 
 - `local`: authored here, under **Custom**.
-- A bare tool name (`agent-browser`, `portless`, `skills`): vendored, named after the upstream repo, under **Vendored**. Re-vendoring rewrites the folder, so the `source:` line goes back in afterward.
+- A bare tool name (`agent-browser`, `portless`, `skills`): vendored, under **Vendored**. Re-vendoring rewrites the folder (`bunx skills@1.7.2 update` for the skills `skills-lock.json` records, a fresh copy for `portless`), so what this repo adds goes back in afterward: the `source:` line on each, the `## Viewport` section on `agent-browser`, and a sweep of the em-dashes upstream writes, which `AGENTS.md` forbids.
 - A GitHub URL or `owner/repo`: synced from that upstream, which the CLI stamps on a fork.
 
 A sync never rewrites provenance: a fork's `local` or vendored skill stays so.

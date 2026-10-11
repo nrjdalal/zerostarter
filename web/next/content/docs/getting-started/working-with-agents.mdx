@@ -24,52 +24,41 @@ Scaffold, run, sign in, build, verify; the skill holds the commands:
 | Build    | a route, a migration or a page, by its recipe                          | `api-endpoint`, `db-migration`, `design` |
 | Verify   | drive the running app in a real browser, screenshot the result         | `ui-verify`, with `agent-browser`        |
 
-## Skills
+### Skills
 
 One `SKILL.md` per task in `.agents/skills/`: a trigger and a literal procedure with this repo's conventions and traps, not a vague prompt. `.claude/skills` and `.github/skills` are symlinks to it, so every agent tool reads the same files. The `dev` skill, for instance, holds the trap that stalls agents most: `bun --hot` misses a file created after its importers reloaded, so a new router answers `NOT_FOUND` until a full restart.
 
-A fork inherits all of it, rebranded: `init` ships every skill and `AGENTS.md`, and `sync` updates only the ones you have not edited; see [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
+A fork inherits all of it, rebranded: `init` ships every skill and `AGENTS.md`, and `sync` reconciles them per skill, keeping the ones you have edited; the rules, and the one case where an edit is replaced, are under [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
+
+### agent-browser
+
+With the session in place, the vendored `agent-browser` skill drives the real app: open a page, read the accessibility tree as a snapshot with element refs, click, type, screenshot. The `ui-verify` skill is the procedure around it, before and after included.
 
 ## Local sign-in
 
 Anything behind auth normally needs an OAuth round-trip an agent cannot complete. `POST /api/agents/sign-in-as` returns a real session in one request; the curl pair and the browser path (**Login**, then **Login (agents)**) are the `dev` skill's Agent login. The sign-in that creates the account makes it an `owner`; after that its rung stands, so you can demote it to see what a lower rung sees, and `bun run console:roles grant agent@local.host owner` puts it back.
 
-<Callout type="warn" title="Local only, by construction">
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true` (one predicate, `api/hono/src/lib/agent-signin.ts`). The stage alone would not do: `.env.example` ships `NODE_ENV=local`, so a self-host that copies it as it is would keep an admin-minting route reachable. The flag is the second lock: it ships blank in `.env.example` and defaults to false, and `init` turns it on only in the gitignored `.env`, so a fresh clone and any deployed default env answer `404` on the route, a deploy's `NODE_ENV` keeps it down regardless, and exposure takes two misconfigurations. The same predicate gates the route's `/api/auth/providers` advertisement, so the **Login (agents)** button never points at a route that is not there, and the button exists only in a dev build, which is why the `docker-test` skill submits the form by hand. A trusted `Origin` still guards each request.
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true` (one predicate, `api/hono/src/lib/agent-signin.ts`). The flag ships blank in `.env.example` and defaults to false, so a fresh clone and any deployed default env expose no session-minting route: it answers `404`. `init` sets it only in the gitignored `.env`, and a deploy's `NODE_ENV` is not `local`, so there the route stays down regardless. The **Login (agents)** button renders only when the API advertises the route, and only in a dev build: a production build compiles it out, which is why the `docker-test` skill submits the form by hand. A trusted `Origin` still guards each request.
+## The context an agent reads
 
-</Callout>
+### llms.txt
 
-## agent-browser
+`/llms.txt` and `/llms-full.txt` are generated from the docs at build. In the canonical starter the full file's preamble hands an agent the layout, the import map, the stack and the conventions before it crawls the tree, which is how `codebase-map` orients; a fork's preamble starts empty. See [llms.txt](/docs/manage/llms-txt).
 
-With the session in place, the vendored `agent-browser` skill drives the real app: open a page, read the accessibility tree as a snapshot with element refs, click, type, screenshot. The `ui-verify` skill is the procedure around it, before and after included.
+### Managed blocks in AGENTS.md
 
-## llms.txt
-
-`/llms.txt` and `/llms-full.txt` are generated from the docs at build; the full file's preamble hands an agent the layout, the import map, the stack and the conventions before it crawls the tree, which is how `codebase-map` orients. See [llms.txt](/docs/manage/llms-txt).
-
-## AI agents note: the guide has one writer
-
-`AGENTS.md` (`CLAUDE.md` is a symlink to it) is generated, with `skills-manager` owning its tables, so the two tools that write their own block for AI coding agents are off: a second writer would fight both files, and in a fork its block reads as an edit that stops the guide syncing. Since 16.3, `next dev` upserts a managed block into `AGENTS.md` when it detects an agent, creating `AGENTS.md` and a `CLAUDE.md` of `@AGENTS.md` where neither exists, which from `web/next/` means a second pair; `agentRules: false` in `web/next/next.config.ts` turns it off. Since 2.11.5, `turbo` writes one into the root `AGENTS.md` before any repository-scoped command; `"agentGuidance": false` in the root `turbo.json` turns that off. Their docs match the installed versions, under `node_modules` at `next/dist/docs/` and `turbo/docs/`.
+`AGENTS.md` (`CLAUDE.md` is a symlink to it) is hand-written apart from its two skills tables, which the `skills-manager` skill generates, and a fork's `sync` tracks edits to the rest, so an edited guide stays the fork's. Two tools would write a block of their own into it for AI coding agents, and both are off: a second writer would fight the generated tables, and in a fork its block reads as an edit that stops the guide syncing. `next dev` upserts a managed block pointing at the installed Next docs when it detects an agent, creating `AGENTS.md` where none exists, which from `web/next/` means a second file; `agentRules: false` in `web/next/next.config.ts` turns it off. `turbo` writes one into the root `AGENTS.md` before any repository-scoped command; `"agentGuidance": false` in the root `turbo.json` turns that off. Their docs match the installed versions, under `node_modules` at `next/dist/docs/` and `turbo/docs/`.
 
 ## Common questions
 
-**Why a flag on top of `NODE_ENV`?**
-
-`.env.example` ships `NODE_ENV=local`, so a self-host that copies it as it is would keep an admin-minting route reachable on the stage gate alone. The flag is a second lock that ships off and that `init` turns on only in the gitignored `.env`, so exposure takes two misconfigurations. One predicate gates the route and its `/api/auth/providers` advertisement, so the button never points at a route that is not there.
-
-**Will `sync` overwrite a skill I customized?**
-
-No. Early CLIs shipped a fork with no skills, and a later one overwrote customized bodies and restamped vendored skills as upstream's. Now `sync` reads the ledger in `.agents/skills/.sync.json`: a skill you edited keeps your version and is named in the summary; one whose `source` is `local`, a tool or another upstream is left as it is.
-
 **Why did a managed block appear in `AGENTS.md`?**
 
-Both writers above are on by default, so a block in a diff means a switch was removed, not that the block belongs there; deleting the block alone re-creates it on the next run.
+Both writers are on by default, so a block in a diff means one of the switches above was removed, not that the block belongs there. Put the switch back: Next removes its block on the next `next dev`, while Turbo leaves its block for you to delete.
 
 ## It's working if
 
 - After the `dev` skill's Agent login, `curl -sS -b cookies.txt "$API/api/v1/user"` returns a user named `LocalAgent`.
-- `bun .github/scripts/docs.ts --strict` exits 0, and names the page when one has drifted from `docs.config.ts`.
 - In a dev build, **Login** opens a dialog with **Login (agents)** while `AGENT_SIGNIN_ENABLED=true`; blank it and restart, and the button is gone and the route answers `404`.
 
 ## Next
