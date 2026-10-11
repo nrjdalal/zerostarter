@@ -28,7 +28,7 @@ Real questions beat invented ones, so look before writing:
 ```bash
 gh issue list --search "<subject>" --state all
 gh pr list --search "<subject>" --state all
-rg -n -i "<subject>" CHANGELOG.md
+rg -n -i "<subject>" CHANGELOG.md   # where a changelog exists
 ```
 
 A question filed twice is one the page owes an answer to; anything renamed or moved in the changelog raises a "where did it go". The count stays honest: a well-discussed subject earns several, an obscure one earns none, and padding teaches nothing. Done when every question comes from a thread, a changelog line, or a plain reading of the subject.
@@ -67,4 +67,4 @@ Third person about the system, `you` for the reader, present tense, a because-cl
 
 ## 7. Register and verify
 
-A new or renamed page is an entry in `web/next/docs.config.ts` first; the `.mdx` alone fails the strict gate. Run the gate and the build the way `doc-sync` step 4 says, then open the rendered page (the `ui-verify` skill) and read it once as the reader would, with the production page beside it as the before. Done when the gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.
+A new or renamed page is an entry in `web/next/docs.config.ts` first (`doc-sync` step 3); the `.mdx` alone fails the strict gate. Run the gate and the build the way `doc-sync` step 4 says, then open the rendered page (the `ui-verify` skill) and read it once as the reader would, with the production page beside it as the before. Done when the gate and the build pass, the page renders, and `doc-sync` finds no other surface that still says what this page used to.

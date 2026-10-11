@@ -13,7 +13,7 @@ This skill covers the catalog and provenance; the prose of a skill itself follow
 Each skill carries its **provenance** in frontmatter:
 
 - `source: local` is authored here (this repo is the origin).
-- `source: <tool>` is vendored: re-synced by re-running the tool, never hand-edited. The `source:` line is the one line this repo adds, so it goes back in after a re-vendor, or the generator throws.
+- `source: <tool>` is vendored, named after the upstream repo it came from (`agent-browser`, `portless`, `skills` for mattpocock/skills): re-synced by re-running the tool, never hand-edited. The `source:` line is the one line this repo adds, so it goes back in after a re-vendor, or the generator throws.
 - `source: https://github.com/<owner>/<repo>` marks a skill a fork syncs from upstream (the CLI stamps this, with a `[!CAUTION]` sync note, when it scaffolds a fork).
 
 Provenance is never rewritten by a sync: a `local` or vendored skill in a fork stays that way, because a wrong `source` is a silent, self-propagating loss of where a skill actually came from.
