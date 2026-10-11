@@ -43,7 +43,7 @@ Each cell is the skill's own summary, the sentence before `Use` in its descripti
 
 ## Vendored skills
 
-`agent-browser`, `portless` and `writing-for-agents` are copied from upstream, and a bare tool name on the `source:` line (`agent-browser`, `portless`, `skills`) is what marks a skill vendored; every other skill is `source: local`. [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) ships a discovery stub pointing at the live workflow (`agent-browser skills get core`), so install the CLI first: `npm i -g agent-browser@0.39.0 && agent-browser install`. `portless` is the whole skill from [`vercel-labs/portless`](https://github.com/vercel-labs/portless), as is `writing-for-agents` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
+`agent-browser`, `portless` and `writing-for-agents` are copied from upstream, and a bare tool name on the `source:` line (`agent-browser`, `portless`, `skills`) is what marks a skill vendored; every other skill in the canonical starter is `source: local`, and a fork's synced skills carry the upstream URL instead. [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) ships a discovery stub pointing at the live workflow (`agent-browser skills get core`), so install the CLI first: `npm i -g agent-browser@0.39.0 && agent-browser install`. `portless` is the whole skill from [`vercel-labs/portless`](https://github.com/vercel-labs/portless), as is `writing-for-agents` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
 A re-vendor rewrites the folder, and this repo adds to each copy afterwards; the `skills-manager` skill's Re-vendor section holds how each one is re-vendored and what goes back in.
 

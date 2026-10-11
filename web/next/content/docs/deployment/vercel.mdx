@@ -94,7 +94,7 @@ Two `*.vercel.app` projects cannot share a session cookie, since `vercel.app` is
 The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute), the default for a new project; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) states which adapter each host takes. On Vercel:
 
 - **A connection is pinned to one function instance and closes at its [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, so a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
-- **On a public suffix**, [Realtime](/docs/getting-started/realtime#common-questions) covers the REST fallback; a custom domain connects the socket to the api directly.
+- **On a public suffix** the socket opens on the web origin, and on a custom domain on the api directly ([Realtime](/docs/getting-started/realtime#common-questions)); either way REST stays the baseline it overlays.
 
 ## Common questions
 

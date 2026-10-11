@@ -39,9 +39,9 @@ The release workflows run `release:version`; by hand it previews ([Releases](/do
 
 ### Console
 
-| Script                                                       | What it does                                                                                        |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
+| Script                                                       | What it does                                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Grant, list or revoke a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
 
 It writes to the database `POSTGRES_URL` names. The usage header of `.github/scripts/console-roles.ts` holds each action and the defaults it takes.
 
