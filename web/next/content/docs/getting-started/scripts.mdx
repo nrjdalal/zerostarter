@@ -10,7 +10,9 @@ Every script you run is `bun run <name>` from the root `package.json`, and most 
 
 Reach for this page to look up what a script does and when it runs, or to place a new one. The `dev` skill holds the dev loop; [Code Quality](/docs/manage/code-quality) says what the hooks and CI run.
 
-## Build and release
+## Check and ship
+
+### Build and release
 
 | Script                    | What it does                                                                                                                      |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -20,34 +22,7 @@ Reach for this page to look up what a script does and when it runs, or to place 
 
 The release workflows run `release:version`; by hand it previews ([Releases](/docs/manage/release)).
 
-## Console
-
-| Script                                                       | What it does                                                                                        |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
-
-`grant` takes `admin`, `member` or `owner` and defaults to `admin`, or to `owner` while the install has none, which is how a fresh install gets its first way in; `revoke` sets `user`; `list` shows who has console access. It writes to the database `POSTGRES_URL` names and records each change in [Activity](/docs/manage/activity) as `console:roles`.
-
-## Database
-
-| Script                | What it does                                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `bun run auth:schema` | Regenerate `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts`; `--check` only compares |
-| `bun run db:generate` | Generate a migration from schema changes                                                                |
-| `bun run db:migrate`  | Apply pending migrations                                                                                |
-| `bun run db:studio`   | Open Drizzle Studio                                                                                     |
-
-Each `db:*` script builds `@packages/env` first, which `drizzle.config.ts` imports built, then runs Drizzle Kit in `packages/db`. [Database](/docs/manage/database) holds the loop and the `db-migration` skill the steps.
-
-## Dev loop
-
-| Script             | What it does                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `bun run clean`    | Remove build output, caches, generated files and every `node_modules`; `bun install` again afterward                      |
-| `bun run dev`      | Both apps on named `.localhost` URLs through portless, branch-prefixed in a worktree; `PORTLESS=0` uses `3000` and `4000` |
-| `bun run devtools` | The Turborepo package graph in the browser                                                                                |
-
-## Quality
+### Quality
 
 | Script                 | In PR CI | What it does                                                                                           |
 | ---------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
@@ -60,7 +35,36 @@ Each `db:*` script builds `@packages/env` first, which `drizzle.config.ts` impor
 
 `tests/` belongs to the canonical starter, so in a fork `test` and `test:e2e` no-op. `test` builds the shared packages first because a test imports one through its `exports`, which point at `dist`. The end-to-end suite skips itself when no stack is named, so `test` stays green without one and no CI job runs it; the `docker-test` skill runs it against the images.
 
-## shadcn
+## Console
+
+| Script                                                       | What it does                                                                                        |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
+
+It writes to the database `POSTGRES_URL` names; its defaults, `revoke` and the activity line it leaves are in [Authentication](/docs/manage/authentication#the-console-role-ladder).
+
+## Develop
+
+### Database
+
+| Script                | What it does                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `bun run auth:schema` | Regenerate `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts`; `--check` only compares |
+| `bun run db:generate` | Generate a migration from schema changes                                                                |
+| `bun run db:migrate`  | Apply pending migrations                                                                                |
+| `bun run db:studio`   | Open Drizzle Studio                                                                                     |
+
+Each `db:*` script builds `@packages/env` first, which `drizzle.config.ts` imports built, then runs Drizzle Kit in `packages/db`. [Database](/docs/manage/database) holds the loop and the `db-migration` skill the steps.
+
+### Dev loop
+
+| Script             | What it does                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `bun run clean`    | Remove build output, caches, generated files and every `node_modules`; `bun install` again afterward                      |
+| `bun run dev`      | Both apps on named `.localhost` URLs through portless, branch-prefixed in a worktree; `PORTLESS=0` uses `3000` and `4000` |
+| `bun run devtools` | The Turborepo package graph in the browser                                                                                |
+
+### shadcn
 
 | Script                  | What it does                                                                                                |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -95,11 +99,11 @@ The pull-request workflow, Vercel and the Dockerfiles install with `--ignore-scr
 
 ## Common questions
 
-**`postinstall` rewrote the version I pinned.**
+**Why did `postinstall` rewrite the version I pinned?**
 
 Every root `catalog` entry is a caret range, and the dependency manager restores one on every install with no opt-out: a deliberate pin means changing that rule in `deps-manager.ts` and recording why (in the canonical starter, `.github/notes/dependencies.md`). A range it cannot convert is reported for a manual fix.
 
-**`release:version` stops with `v* tags exist but none is reachable from HEAD`.**
+**Why does `release:version` stop with `v* tags exist but none is reachable from HEAD`?**
 
 The clone fetched without its tags: `git fetch --tags`, then run it again. Computing from `v0.0.0` would answer wrong, so it refuses.
 

@@ -239,7 +239,7 @@ const docsConfig = {
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: `What ${site.name} ships in a fresh scaffold, what a fork adds itself, and what is planned.`,
+          description: `What ${site.name} ships, what a fork adds itself, and what is considered but not scheduled.`,
         },
       },
     ],

@@ -38,7 +38,7 @@ Canonical starter only: audits and plans live under `.github/notes/`, laid out b
 
 ## Skills
 
-Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` whose `description` is the trigger and whose body is the procedure; only the description is scanned until a skill matches. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit). Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
+Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` whose `description` is the trigger and whose body is the procedure; only the description is scanned until a skill matches. **Custom** skills are maintained in this repo; **vendored** skills are copied from upstream; re-vendor to update, then put back what the `skills-manager` skill lists. Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
 
 **Custom**
 
@@ -68,7 +68,7 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 <!-- /skills:custom -->
 
-**Vendored** (upstream, copied verbatim)
+**Vendored** (from upstream)
 
 <!-- skills:vendored -->
 

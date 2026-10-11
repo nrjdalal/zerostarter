@@ -30,15 +30,21 @@ A window earns changelogen's reading of the commits it keeps, applied to the las
 
 The tree moves forward only. For a minor or a major, set the `version` in the root `package.json` on `canary` through a PR: a hand-set number ahead of the window stays, one the window outgrows is lifted, and a tree below the last tag stops the run loudly.
 
-A commit counts when its type is enabled in `changelog.config.json`, which turns `ci` off, and is not a non-breaking `chore(deps)`, which changelogen drops by itself. A window that keeps nothing cannot release, so a dependency refresh is `build(deps)` and pipeline work is `fix(ci)`, never a bare `ci:`; the `gh-commit` skill holds the table.
+A window that keeps no releasable commit cannot release; [Commit messages](/docs/manage/code-quality#commit-messages) names the types that count.
 
 ## From push to release
 
 **A window opens.** Every push to `canary` runs `.github/workflows/auto-canary-into-main.yml`: with `canary` ahead of `main` it opens the draft PR `ci(release): 🚀 merge canary into main` if none is open, then pushes the `ci(version)` commit with the workflow token, which starts no further workflow, so the next human push recomputes.
 
-**One merge.** Mark the PR ready, review it, and merge with a merge commit, so `main` keeps `canary`'s history and the next release PR diffs only its own window. `.github/rulesets/main.json` (fork-excluded, with the rest of `.github/rulesets/`) records that as the one method `main` allows, with one approving review and no required status check; the live ruleset is re-exported from the file when they differ. The missing status check is the trap: when the head is a commit the workflow pushed, the `ci(version)` bump most often, GitHub holds its `pull_request` build for approval, so the PR reads mergeable with no build at all. Approve the held run and let it pass first; a head you pushed yourself builds on its own.
+**One merge.** Mark the PR ready, review it, and merge with a merge commit, so `main` keeps `canary`'s history and the next release PR diffs only its own window. In the canonical starter, `.github/rulesets/main.json` records merge as the one method `main` allows, with one approving review and no required status check, and the `release` skill passes `--merge` explicitly because the history depends on it.
 
-**Changelog, tag, release.** The merge fires `auto-release.yml`, which checks out `canary`, generates `CHANGELOG.md` from the last tag, refreshes `.github/assets/graph-build.svg`, and commits `ci(changelog): update changelog and bump version` straight onto `canary`: mechanical, from PR titles already reviewed, so no second PR, and nothing flows from `main` back. It tags `v<version>` on the merged head, pushes branch and tag atomically, and publishes a GitHub release whose notes mirror the new section. A failed run is re-run with `gh run rerun --failed`, never re-tagged by hand, and a run that tagged but died before publishing is backfilled by the next.
+<Callout type="warn" title="A head the workflow pushed merges unbuilt">
+
+GitHub holds the `pull_request` build of a workflow-pushed head, the `ci(version)` bump most often, as `action_required`, and without a required status check the PR reads mergeable with no build at all. Approve the held run and let it pass before merging; the `release` skill's step 4 has the commands.
+
+</Callout>
+
+**Changelog, tag, release.** The merge fires `auto-release.yml`, which checks out `canary`, generates `CHANGELOG.md` from the last tag, refreshes `.github/assets/graph-build.svg`, and commits `ci(changelog): update changelog and bump version` straight onto `canary`: mechanical, from PR titles already reviewed, so no second PR, and nothing flows from `main` back. It tags `v<version>` on the merged head, pushes branch and tag atomically, and publishes a GitHub release whose notes mirror the new section. The tag is the workflow's alone, so a run that stops short is recovered by the `release` skill's step 5, never by tagging by hand.
 
 ## The CLI rides the same release
 
@@ -50,21 +56,21 @@ Canonical starter only: `packages/cli/`, `tests/` and `cli-release.yml` are fork
 | a push to `canary` touching `packages/cli`, `packages/scripts` or `tests`                                      | `<next version>-canary.<n>`           | `canary` |
 | the repository owner comments `/release` on a same-repo PR                                                     | `0.0.0-<short sha>` of that PR's head | `test`   |
 
-Every path but `/release` runs the suite on Linux, macOS and Windows first; `/release` is for a package to try in seconds, `bunx zerostarter@0.0.0-<short sha> init`. Publishing is [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) through `id-token: write`, so there is no token to leak and every version carries provenance; the manual run re-publishes a failed publish leg, since a re-run replays its own workflow file.
+Every path but `/release` runs the suite on Linux, macOS and Windows first; `/release` is for a package to try in seconds, `bunx zerostarter@0.0.0-<short sha> init`. Publishing is [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) through `id-token: write`, so there is no token to leak and every version carries provenance; a failed publish leg is recovered by the `release` skill's step 5.
 
 ## Common questions
 
 **The run logged `No releasable changelog content`. Why did nothing ship?**
 
-The window kept nothing the changelog counts, usually because it holds only a `chore(deps)` refresh or bare `ci:` commits. Land a releasable commit, `build(deps)` for the refresh, and merge the next release PR; the earlier commits ride along.
+The window kept no commit the changelog counts: [Commit messages](/docs/manage/code-quality#commit-messages) names the types that do, and the `release` skill's step 5 holds the recovery.
 
-**No release PR opened on my fork.**
+**Why did no release PR open on my fork?**
 
 In order: the Actions token is still read-only, `main` is not on the remote yet, or `canary` is not ahead of `main`. The workflow's log names which.
 
 ## It's working if
 
-- `gh pr list --head canary --base main --state open` lists one draft titled `ci(release): 🚀 merge canary into main`, its head the `ci(version)` commit.
+- `gh pr list --head canary --base main --state open` lists one draft titled `ci(release): 🚀 merge canary into main`, its head the `ci(version)` commit when the last push moved the version.
 - After the merge, `gh release list -L 1` shows `vX.Y.Z` marked Latest and `git pull origin canary` brings the `ci(changelog)` commit and the tag together.
 - Canonical starter: `npm view zerostarter version` matches the tag.
 

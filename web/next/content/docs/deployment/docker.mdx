@@ -74,15 +74,11 @@ The `docker-test` skill ([AI Skills](/docs/resources/ai-skills)) holds the check
 
 ## Common questions
 
-**Which `NODE_ENV` does the api report?**
-
-The one `.env` holds when the container starts, as `environment` on `/api/health`. A bundle built before `--env disable` inlined the build shell's value and reported `development` whatever `.env` said, so a container that disagrees with its `.env` is an old image: rebuild with `--no-cache`.
-
 **Why does the api run with `--no-install`?**
 
-Better Auth carries an optional telemetry import, guarded to fall back, that fires on the first sign-in rather than at boot; with auto-install on, a running container reached npm for it then, and stalled offline. With the flag the import fails at once and the guard falls back. A `Cannot find package 'X'` in the api logs names an import the bundle genuinely lacks.
+Better Auth carries an optional telemetry import, guarded to fall back, that fires on the first sign-in rather than at boot. With auto-install on, Bun fetches it from npm at that moment, which stalls a container with no network; with the flag the import fails at once and the guard falls back. A `Cannot find package 'X'` in the api logs names an import the bundle genuinely lacks.
 
-**`bun run db:migrate` asks for a `pg` or `postgres` driver, or cannot find `@packages/env/dist`.**
+**Why does `bun run db:migrate` ask for a `pg` or `postgres` driver, or fail to find `@packages/env/dist`?**
 
 Drizzle Kit does not speak Bun's SQL driver, so `packages/db` carries `postgres` as a dev dependency for the CLI alone, and `drizzle.config.ts` imports the built `@packages/env`, which the script builds first. Either error means the install never ran: `bun install`, then the script.
 

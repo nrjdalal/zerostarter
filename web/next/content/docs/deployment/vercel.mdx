@@ -15,7 +15,7 @@ Reach for this page when you first put the starter on Vercel, or add a custom do
 
 ## Prerequisites
 
-- A Postgres reachable from Vercel's build, not only at runtime, since the api build migrates there; a preview skips the step and needs no database to build.
+- A Postgres reachable from Vercel's build, not only at runtime.
 
 ## Two projects, one runtime
 
@@ -37,7 +37,7 @@ Pin the web functions to Bun while building for Node and every function crashes 
 
 ## Deploy
 
-The web needs the api's URL, so the backend goes up first, and its build migrates before it bundles.
+The web needs the api's URL, so the backend goes up first.
 
 ### The api build migrates
 
@@ -85,16 +85,7 @@ Variables never propagate between the projects: a custom domain means updating t
 
 `vercel.app` is a public suffix, where the browser refuses a `Domain` cookie shared between sibling sites, so two `*.vercel.app` projects cannot share a session the way subdomains of one custom domain do. The build detects the shape (`packages/scripts/src/generate-env.ts` runs tldts over `HONO_APP_URL` for the api and `NEXT_PUBLIC_API_URL` for the web, once at build and never in a shipped bundle) and the client routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web. It follows that:
 
-- **OAuth registers at the web origin.** Sign-in completes on the web, so the app origin and the callback are both the web, not the api:
-
-  ```txt
-  https://your-web.vercel.app
-  https://your-web.vercel.app/api/auth/callback/github
-  https://your-web.vercel.app/api/auth/callback/google
-  ```
-
-  A custom domain, where web and api share a parent, switches back on its next build, with the callback on the api host.
-
+- **OAuth registers at the web origin.** Sign-in completes on the web, so the app origin and the callback are both the web, not the api ([Callback URLs](/docs/manage/authentication#callback-urls)); a custom domain, where web and api share a parent, switches back to the api host on its next build.
 - **The api infers the web origin** as the first `HONO_TRUSTED_ORIGINS` entry that is not itself. Set `HONO_WEB_URL` on the api project when that will not do: more than one trusted origin, or none that differs from the api, where the log warns `[auth] HONO_APP_URL is a public-suffix host` and sign-in cannot complete until you set it.
 - **The rate limiter sees a Vercel hop** behind the rewrite, so proxied visitors share one anonymous bucket ([Rate Limiting](/docs/manage/rate-limiting)).
 
@@ -102,14 +93,14 @@ Variables never propagate between the projects: a custom domain means updating t
 
 The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute). It switches to the Node adapter (`@hono/node-server` + `ws`) when `VERCEL` is set (`api/hono/src/lib/server.ts`) and keeps `Bun.serve()` everywhere else; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) says why the split stays. On Vercel:
 
-- **On a public suffix the socket falls back to REST.** A Next rewrite does not forward the upgrade, so the `/api/health/ws` example runs on its REST heartbeat there (green, without the live pulse). A custom domain keeps the socket.
-- **A connection is pinned to one function instance** and closes at its [max duration](https://vercel.com/docs/functions/limitations#max-duration), 300 seconds by default under Fluid compute, so keep shared socket state external and let clients reconnect.
+- **On a public suffix the socket falls back to REST**, since a Next rewrite does not forward the upgrade ([Realtime](/docs/getting-started/realtime#common-questions)); a custom domain keeps the socket.
+- **A connection closes at the function's [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, and a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
 
 ## Common questions
 
-**Sign-in ends in `state_mismatch` between two `*.vercel.app` projects.**
+**Why does sign-in between two `*.vercel.app` projects end in `state_mismatch`?**
 
-Either the OAuth app is registered at the api origin (it belongs at the web, above), or `NEXT_PUBLIC_API_URL` points at the web. It stays the api's URL even though the browser never calls it directly: it is the target of the web's `/api` rewrite, so pointing it at the web makes the rewrite call itself and every `/api/*` request answers `508 Loop Detected`. `INTERNAL_API_URL` is not the fix; it is Docker's and stays unset here.
+The OAuth app is registered at the api origin, where it never matches on a public suffix ([Authentication](/docs/manage/authentication#common-questions)). If every `/api/*` request answers `508 Loop Detected` instead, `NEXT_PUBLIC_API_URL` points at the web rather than the api ([Environment Variables](/docs/manage/environment#common-questions)).
 
 **Is there a deploy mode to set?**
 

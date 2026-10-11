@@ -1,43 +1,37 @@
 ---
 slug: /docs/getting-started/roadmap
 title: Roadmap
-description: What ZeroStarter ships in a fresh scaffold, what a fork adds itself, and what is planned.
+description: What ZeroStarter ships, what a fork adds itself, and what is considered but not scheduled.
 ---
 
-A fresh scaffold runs every row of the first table, each with a page of its own. The starter stops where a product decision starts: anything that picks a vendor, payments, email, AI, background jobs or translations, is a fork's own choice, so none of it is wired. Read both tables literally.
+The first table is what the starter ships, each row linked to the page that covers it; a fresh scaffold leaves the allowlist and the waitlist off until you pick them at `init` or flip them in config ([Features](/docs/manage/features)). The starter stops where a product decision starts: anything that picks a vendor, payments, email, AI, background jobs or translations, is a fork's own choice, so none of it is wired, with no dependency, no env var and no stub.
 
 ## When you need this
 
-Reach for this page when weighing the starter, before building something that may already ship, or before asking for something that may be planned or left to forks on purpose.
+Reach for this page when weighing the starter, before building something that may already ship, or before asking for something that may already be considered or left to forks on purpose.
 
 ## Shipped
 
-| Capability                                                   | What ships                                                                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| [Activity](/docs/manage/activity)                            | A line per console write that changes access or deletes a row, in the same transaction.                            |
-| [Allowlist](/docs/manage/allowlist)                          | Console access by domain or address on sign-in, never lowering anyone; optional, off in a fresh fork.              |
-| [Analytics](/docs/manage/analytics)                          | PostHog when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set; Vercel Speed Insights only where `VERCEL` is set.         |
-| [API reference](/docs/getting-started/type-safe-api)         | Scalar at `/api/docs` from `/api/openapi.json`, both behind the `apiDocs` feature.                                 |
-| [Authentication](/docs/manage/authentication)                | Better Auth on your Postgres: GitHub and Google OAuth, and magic link once its plugin is declared.                 |
-| [CLI](/docs/getting-started/cli)                             | `init` scaffolds a rebranded fork with its features picked and a local Postgres offered; `sync` re-baselines it.   |
-| [Console role ladder](/docs/getting-started/scripts#console) | `owner > admin > member > user` on `user.role`, gating `/console`; set from Console > Access or the CLI.           |
-| [Data tables](/docs/manage/data-tables)                      | Composable pieces on TanStack Table, server-driven, with infinite scroll and virtualized rows.                     |
-| [Features](/docs/manage/features)                            | Allowlist, API reference, blog, docs, internal docs and waitlist as booleans, set at `init`, flipped in config.    |
-| [llms.txt](/docs/manage/llms-txt)                            | The index and the full corpus, generated from the docs and the blog.                                               |
-| [OG images](/docs/manage/seo)                                | Open Graph images rendered on request with takumi from the `/og` routes.                                           |
-| [Organizations and teams](/docs/manage/organizations)        | The Better Auth organization plugin with teams; creating and switching wired, the rest available.                  |
-| [Rate limiting](/docs/manage/rate-limiting)                  | Per user when signed in, per address otherwise; `HONO_RATE_LIMIT` and `HONO_RATE_LIMIT_WINDOW_MS` tune it.         |
-| [Realtime](/docs/getting-started/realtime)                   | A WebSocket route on the typed client, on Bun and on Vercel, with a reconnecting example.                          |
-| [SEO routes](/docs/manage/seo)                               | `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.                                                |
-| [Waitlist](/docs/manage/waitlist)                            | `/waitlist` on `POST /api/waitlist`, read at Console > Waitlist > Signups; optional, a fresh fork's home while on. |
+| Capability                                                                 | What ships                                                                                                               |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [Activity](/docs/manage/activity)                                          | A line per console write that changes access or deletes a row, in the same transaction.                                  |
+| [Allowlist](/docs/manage/allowlist)                                        | Console access by domain or address on sign-in, never lowering anyone; optional, off in a fresh fork.                    |
+| [Analytics](/docs/manage/analytics)                                        | PostHog when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set; Vercel Speed Insights only where `VERCEL` is set.               |
+| [API reference](/docs/getting-started/type-safe-api)                       | Scalar at `/api/docs` from `/api/openapi.json`, both behind the `apiDocs` feature.                                       |
+| [Authentication](/docs/manage/authentication)                              | Better Auth on your Postgres: GitHub and Google OAuth, and magic link once its plugin is declared.                       |
+| [CLI](/docs/getting-started/cli)                                           | `init` scaffolds a rebranded fork with its features picked and a local Postgres offered; `sync` re-baselines it.         |
+| [Console role ladder](/docs/manage/authentication#the-console-role-ladder) | `owner > admin > member > user` on `user.role`, gating `/console`; set from Console > Access or `bun run console:roles`. |
+| [Data tables](/docs/manage/data-tables)                                    | Composable pieces on TanStack Table, server-driven, with infinite scroll and virtualized rows.                           |
+| [Features](/docs/manage/features)                                          | Allowlist, API reference, blog, docs, internal docs and waitlist as booleans, set at `init`, flipped in config.          |
+| [llms.txt](/docs/manage/llms-txt)                                          | The index and the full corpus, generated from the docs and the blog.                                                     |
+| [OG images](/docs/manage/seo)                                              | Open Graph images rendered on request with takumi from the `/og` routes.                                                 |
+| [Organizations and teams](/docs/manage/organizations)                      | The Better Auth organization plugin with teams; creating and switching wired, the rest available.                        |
+| [Rate limiting](/docs/manage/rate-limiting)                                | Per user when signed in, per address otherwise; `HONO_RATE_LIMIT` and `HONO_RATE_LIMIT_WINDOW_MS` tune it.               |
+| [Realtime](/docs/getting-started/realtime)                                 | A WebSocket route on the typed client, on Bun and on Vercel, with a reconnecting example.                                |
+| [SEO routes](/docs/manage/seo)                                             | `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.                                                      |
+| [Waitlist](/docs/manage/waitlist)                                          | `/waitlist` on `POST /api/waitlist`, read at Console > Waitlist > Signups; optional, a fresh fork's home while on.       |
 
 ## What a fork adds itself
-
-<Callout type="warn" title="None of this is wired">
-
-No dependency, no env var, no stub. An agent reading this page must not assume any of it exists.
-
-</Callout>
 
 | Integration                                   | Area                 |
 | --------------------------------------------- | -------------------- |
@@ -57,15 +51,15 @@ No dependency, no env var, no stub. An agent reading this page must not assume a
 | [Razorpay](https://razorpay.com)              | Payments             |
 | [Stripe](https://stripe.com)                  | Payments             |
 
-## Planned
+## Considered, not scheduled
 
-Each has a next step and no date:
+Each is an idea with no date:
 
 - Activity log retention and indexes; today it grows without bound.
 - Deployment targets beyond Vercel and Docker.
 - Feature-flag management over PostHog or another service.
 - Organization creation rules: names and limits.
-- Passkey sign-in and management, built close to done and parked, so it resumes from that work.
+- Passkey sign-in and management; a near-complete build waits on the unmerged `feat/passkey` branch.
 - Security headers and a content security policy by default, and a rate-limit store that survives a restart; today the counters live in process memory.
 
 ## Undecided
@@ -74,24 +68,24 @@ Raised and kept with no verdict, so nothing here is scheduled:
 
 - An authenticated WebSocket pattern; the one shipped socket is public.
 - Keyset pagination for the data tables; a batch loaded mid-scroll can skip or repeat a row.
-- The rate limiter's reading of the client address where Bun owns the socket; a request without a readable address gets a fresh key each time.
+- How the rate limiter reads the client address where Bun owns the socket; [Rate Limiting](/docs/manage/rate-limiting#how-a-request-is-keyed) states the gap.
 
 ## Common questions
 
-**Where did passkeys go?**
+**Can users sign in with a passkey?**
 
-Parked close to done, so sign-in ships with two OAuth providers and magic link rather than a third method half-finished.
+No, passkeys are an idea above. Sign-in ships with GitHub and Google OAuth, and magic link works once its plugin is declared and an email sender is added (the comment above `magicLinkEnabled` in `packages/auth/src/index.ts` names the line).
 
 **Does the starter have feature flags?**
 
-The `features` export in `packages/config/src/site.ts` switches whole surfaces per fork and is not a flag service; PostHog's flags reach the browser once analytics is on. Managing them is planned.
+The `features` export in `packages/config/src/site.ts` switches whole surfaces per fork and is not a flag service; PostHog's flags reach the browser once analytics is on. Managing them is an idea above, not scheduled.
 
 **Is there an RSS feed?**
 
-Not today. One was built and removed; shipping it, putting it behind a feature, or leaving it to forks is undecided.
+No. Shipping one, putting it behind a feature, or leaving it to forks is undecided.
 
 ## Next
 
 - [Architecture](/docs/getting-started/architecture), because it shows how the shipped rows connect.
 - [Features](/docs/manage/features), because the optional rows are switched there.
-- [Contributing](/docs/contributing), because a planned item is where a contribution lands first.
+- [Contributing](/docs/contributing), because picking up an idea here starts with an issue to agree on the approach.

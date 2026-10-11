@@ -6,7 +6,7 @@ description: Which check runs on the commit, the push and the pull request, and 
 
 One Rust toolchain, [Oxc](https://oxc.rs), lints and formats the monorepo through `oxlint` and `oxfmt`, and [Lefthook](https://github.com/evilmartians/lefthook) runs it on every commit beside a build and a message check, so a commit that lands is formatted, linted and building.
 
-The hooks see only your staged files and your machine, so the pull request repeats every check over the whole tree and adds the two no hook runs, `check-types` and the test suite. A skipped hook changes your branch, never what reaches `canary`.
+The hooks see only your staged files and your machine, so the pull request re-runs the audit, `format:check`, `lint` and `build` over the whole tree and adds two no hook runs, `check-types` and the test suite. Commitlint and `skills-manager` run only in the hooks and nothing in the pull request repeats them, so skipping a hook skips both for that commit.
 
 ## When you need this
 
@@ -23,7 +23,7 @@ Reach for this page when a hook or a pull-request check fails, or to find which 
 | `pre-push`   | each push                                 | `bun audit --audit-level high` on `canary` only, accepted advisories ignored by id; `ensure-remote-branches.ts` seeds `main` on a fresh GitHub remote                                    |
 | pull request | each push to a PR into `canary` or `main` | the audit, `format:check`, `lint`, `check-types`, `test` and `build`                                                                                                                     |
 
-The pre-commit hook is `piped`, so the first failure stops the rest, and a new push cancels the pull-request run in progress, which shows as a cancelled check. Canonical starter only: `cli-release.yml` also runs the suite on Linux, macOS and Windows when a `canary` push touches `packages/cli`, `packages/scripts` or `tests`, and `.github/notes/dependencies.md` records each audit override and ignore (the `audit` skill).
+The pre-commit hook is `piped`, so the first failure stops the rest, and a new push cancels the pull-request run in progress, which shows as a cancelled check. The pre-commit build type-checks `web/next` only, through `next build`; the api and package builds emit without checking types, so run `bun run check-types`, which covers every workspace, before you push. Canonical starter only: `cli-release.yml` also runs the suite on Linux, macOS and Windows when a `canary` push touches `packages/cli`, `packages/scripts` or `tests`, and `.github/notes/dependencies.md` records each audit override and ignore (the `audit` skill).
 
 <Callout type="warn" title="The local build sees your real .env">
 
@@ -33,7 +33,7 @@ CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.
 
 ## Commit messages
 
-`<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure, and no commit carries a `Co-authored-by` trailer. Two types the release reads specially:
+`<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure. No commit carries a `Co-authored-by` trailer, a repo rule in `AGENTS.md` rather than a hook check. Two types the release reads specially:
 
 - **`ci` is reserved.** `changelog.config.json` turns it off and `packages/scripts/src/release-version.ts` counts only enabled types, so a `ci:` commit earns no version and no changelog line. It belongs to the pipeline's own `ci(version)` and `ci(changelog)`; real CI work is `fix(ci)`, `feat(ci)` or `docs(ci)`.
 - **A dependency refresh is `build(deps)`.** changelogen drops a non-breaking `chore(deps)`, so a window holding only one never releases.
@@ -44,13 +44,13 @@ CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.
 
 It needs the network, and a new advisory in a dependency nobody touched would block every commit on `canary`, offline included, along with the build piped behind it. On push it still catches the advisory before the branch leaves your machine.
 
-**Commitlint rejected a message that looks conventional.**
+**Why did commitlint reject a message that looks conventional?**
 
-A capitalized subject (`feat: Add user page` fails `subject-case`), a trailing period, or a header or body line over 100 characters; a message with no type fails `type-empty`.
+The `gh-commit` skill lists the subject and body rules the hook enforces, and the error names the rule that failed, such as `subject-case` or `type-empty`.
 
 **How do I skip a hook, or get them back?**
 
-`LEFTHOOK_EXCLUDE=build git commit` drops one command, `LEFTHOOK=0` drops every hook, and `git commit --no-verify` is git's own switch; the pull request re-checks it all. Hooks that never fire were skipped by an install with `--ignore-scripts`, and `bun run prepare` installs them.
+`LEFTHOOK_EXCLUDE=build git commit` drops one command, `LEFTHOOK=0` drops every hook, and `git commit --no-verify` is git's own switch. Hooks that never fire were skipped by an install with `--ignore-scripts`, and `bun run prepare` installs them.
 
 ## It's working if
 

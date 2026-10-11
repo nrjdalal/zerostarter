@@ -47,7 +47,7 @@ gh pr review <n> --approve
 gh pr merge <n> --merge
 ```
 
-When the head is a commit the workflow pushed (the `ci(version)` bump, typically the window's first push), GitHub holds its `pull_request` build as `action_required`, and without the approval the PR merges with no build check, since `main`'s ruleset asks for one review and no status checks; a human-merged head builds by itself, and the lookup finds nothing. `--merge` because `main` keeps `canary`'s history, so the next release PR diffs only its own window; `.github/rulesets/main.json` records it as the one method `main` allows, and the live ruleset is re-exported from that file when they differ. If `canary` moves while the PR is open, the push dismisses the review and the new head brings its own run, held again when the workflow pushed it. A fork whose `main` requires status checks needs the held run approved before the merge state reads `CLEAN`. Done when the held run, where there is one, passed under `gh run watch --exit-status`, `gh pr view <n> --json mergeStateStatus` reads `CLEAN`, and the PR merges with a merge commit.
+When the head is a commit the workflow pushed (the `ci(version)` bump, typically the window's first push), GitHub holds its `pull_request` build as `action_required`, and without the approval the PR merges with no build check wherever `main` requires none, as the committed `.github/rulesets/main.json` does; a human-merged head builds by itself, and the lookup finds nothing. The step passes `--merge` explicitly because the history depends on it: `main` keeps `canary`'s history, so the next release PR diffs only its own window, and the committed file records merge as the one method `main` allows. If `canary` moves while the PR is open, the push dismisses the review and the new head brings its own run, held again when the workflow pushed it. A fork whose `main` requires status checks needs the held run approved before the merge state reads `CLEAN`. Done when the held run, where there is one, passed under `gh run watch --exit-status`, `gh pr view <n> --json mergeStateStatus` reads `CLEAN`, and the PR merges with a merge commit.
 
 ## 5. Verify
 
@@ -60,7 +60,7 @@ git pull origin canary                          # the ci(changelog) commit and t
 Targets when the run stops short:
 
 - `No releasable commits since` or `No releasable changelog content` in its log means the window kept nothing the changelog counts (the `gh-commit` skill names the types that do). Land a releasable commit and merge the next release PR.
-- A failed run is re-run with `gh run rerun --failed <id>`: `auto-release` owns the tag (a hand-cut one moves the window's anchor or collides with the next run's), and a run that tagged but died before publishing is backfilled by the next one.
+- A failed run is re-run with `gh run rerun --failed <id>`: `auto-release` owns the tag (a hand-cut one moves the window's anchor or collides with the next run's), and a run that pushed its tag but died before publishing gets its GitHub release only from a later run that finds nothing releasable since that tag, so re-run it before another releasable commit lands on `canary`.
 - Canonical starter only: `cli-release.yml` publishes the CLI after a successful `auto-release`; a failed publish leg is re-published by `gh workflow run cli-release.yml --ref canary`, since a re-run replays its own workflow file.
 
 Done when the run is a success, the new tag is latest, and `canary` is pulled.
