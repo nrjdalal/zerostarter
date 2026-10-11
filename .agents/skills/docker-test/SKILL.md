@@ -23,7 +23,7 @@ docker compose logs -f api
 docker compose down
 ```
 
-The build reads `.env` through the `dotenv` secret compose wires; a missing file fails it, and a clean checkout takes the dummy from section 5. With no daemon, `open -a Docker` and poll `docker info`. Done when health answers 200 on the compose port, `4000` for api and `3000` for web.
+The build reads `.env` through the `dotenv` secret compose wires; a missing file fails it, and a clean checkout takes the dummy from section 5. With no daemon, `open -a Docker` and poll `docker info`. Done when api's health answers 200 on `4000` and, with both services up, web's `/` answers 200 on `3000`.
 
 ## 2. Offline check
 
@@ -39,7 +39,7 @@ docker diff t-offline | grep .bun/install/cache
 docker rm -f t-offline
 ```
 
-Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first adapter call rather than boot, and the agent sign-in is that call. It answers an error here, since no database is reachable, and must answer at once. Done when health answers, sign-in answers at once, and the `docker diff` prints nothing.
+Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first adapter call rather than boot, and the agent sign-in is that call. It answers an error here, since no database is reachable, and answers within a second; a stall is the auto-install. Done when health answers, sign-in answers within a second, and the `docker diff` prints nothing.
 
 ## 3. Single-libc check
 
