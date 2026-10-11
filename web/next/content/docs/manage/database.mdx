@@ -4,100 +4,76 @@ title: Database
 description: "PostgreSQL with Drizzle: the schema, and the generate-then-migrate loop."
 ---
 
-Your database schema is TypeScript. The tables in `packages/db/src/schema/` are the single source of truth: Drizzle Kit generates the SQL migration from them, and Drizzle types every query against them, so a renamed column is a compile error in the API, not a `null` in production.
+Your database schema is TypeScript. The tables in `packages/db/src/schema/` are the only source of truth: Drizzle Kit writes each SQL migration by diffing them against the last snapshot, and Drizzle types every query against them, so a renamed column is a compile error in the API rather than a `null` in production.
 
-You never write DDL by hand or edit the database directly. You edit the schema, generate the SQL, review it, and apply it.
+One file in that directory is not yours. `auth.ts` is the output of Better Auth's generator for the plugins and columns the app declares, and it is never edited by hand; every other table is yours to shape.
 
-## Why Drizzle
+## When you need this
 
-Drizzle is not a query builder wrapped around SQL strings. Because the schema is plain TypeScript, the `db` client in `packages/db/src/index.ts` is fully typed from it, every `select` and `insert` returns typed rows, and Drizzle Kit writes each migration by diffing your schema against the last snapshot, so you review real SQL instead of trusting an ORM to guess.
+Reach for this page when you are adding a table or a column, or working out which file a table lives in and why it is shaped the way it is. For the steps (a throwaway database, generate, review, apply, rebuild), the `db-migration` skill in [AI Skills](/docs/resources/ai-skills) carries them; for what the auth tables hold, see [Auth & Organizations](/docs/manage/authentication).
 
-## The schema
+## The schema by concern
 
-The schema lives in `packages/db/src/schema/`, all re-exported from `index.ts`. Files group by **concern, not by table**, so a table joins the file its neighbours are in rather than getting one of its own:
+Files group by concern, not by table, so a new table joins the file its neighbours are in rather than getting one of its own. `index.ts` re-exports each file, and a file it does not export never reaches a migration.
 
-- **`auth.ts`**, the Better Auth tables: `user`, `session`, `account`, `verification`, plus `organization`, `member`, `team`, `teamMember`, and `invitation`, with their Drizzle relations and foreign-key indexes. See [Auth & Organizations](/docs/manage/authentication) for what each one holds. This file is [generated, never edited](#authts-is-generated).
-- **`console.ts`**, the console's own tables: `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so the rule `value` is the only thing a row stores, and `activity` behind [Console > History](/docs/manage/activity), the trail of who changed what. They share a file because they are one concern, the same way the auth tables do.
-- **`waitlist.ts`**: a standalone `waitlist` table (no foreign keys) behind the public `/waitlist` page and [Console > Waitlist](/docs/manage/waitlist).
+| File          | Tables                                                                                                                                                                                                                  | Owner                                                                            |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `auth.ts`     | `user`, `session`, `account`, `verification`, `organization`, `member`, `team`, `teamMember`, `invitation`, with their relations and foreign-key indexes                                                                | Better Auth's generator; see [Auth & Organizations](/docs/manage/authentication) |
+| `console.ts`  | `allowlist` behind [Console > Access](/docs/manage/allowlist), whose `kind` is a generated column so a row stores only the rule `value`; `activity` behind [Console > History](/docs/manage/activity), who changed what | the console                                                                      |
+| `waitlist.ts` | `waitlist`, no foreign keys, behind the public `/waitlist` page and [Console > Waitlist](/docs/manage/waitlist)                                                                                                         | the waitlist                                                                     |
 
-### `auth.ts` is generated
+The `db` client in `packages/db/src/index.ts` is typed from these files and runs on Bun's SQL driver; Drizzle Kit runs from the `db:*` scripts on the `postgres` driver the package declares for it alone.
 
-`bun run auth:schema` writes exactly what the Better Auth CLI emits for the plugins and columns declared in `packages/auth/src/schema.ts`. What follows from that:
+## What is generated, and how your own column enters
 
-- **Never edit it by hand.** A test fails when the committed file differs from a fresh generation (line endings aside, so a Windows checkout passes).
-- **A column of your own** on `user` or `session` is an `additionalFields` entry in `packages/auth/src/schema.ts` (the console's `roleSetAt` is one), regenerated and then migrated like any other change.
-- **The generator runs under Node on purpose.** Bun prints `() => new Date` for a function's text, which is the check the CLI makes before it emits a database default, so a Bun run silently drops every `defaultNow()`. The CLI loads `packages/auth/auth-schema.config.ts`, which wraps the declaration in an instance with no database.
+`bun run auth:schema` writes `auth.ts` as exactly what the Better Auth CLI emits for `packages/auth/src/schema.ts`: the plugins (organization with teams, admin, openAPI) and the app's own columns, in one declaration that the auth instance and the generator both read, so the two cannot disagree. A test fails when the committed file differs from a fresh generation, so a hand edit cannot survive.
 
-A fork keeps its own `drizzle/` and schema across `sync`, so when the starter's auth tables move (a Better Auth upgrade adds a column, as 1.7 did for teams), take it the same way: bump the package, run `bun run auth:schema`, then `bun run db:generate` reproduces the migration from your own snapshot.
+A column of your own on `user` or `session` is therefore an `additionalFields` entry in that declaration, not an edit to `auth.ts`. The console's `roleSetAt` is the example: declared there, regenerated with `bun run auth:schema`, then migrated like any other change. A Better Auth upgrade takes the same path: bump, regenerate, and `bun run db:generate` writes the migration from your own snapshot, which is how the 1.7 columns on `team` and `team_member` arrived.
 
-### Conventions
+The generator runs under Node on purpose: under Bun a function's text prints as `() => new Date` without the call, which is what the CLI inspects before emitting a database default, so a Bun run silently drops every `defaultNow()`. It loads `packages/auth/auth-schema.config.ts`, an instance with no database, because the real one imports Bun's SQL client and cannot load there.
 
-Across the schema:
+## Conventions, and where they bend
 
-- `text` primary keys and `snake_case` column names.
-- `timestamp("created_at").defaultNow().notNull()` for creation times.
-- `CASCADE` on foreign-key deletes.
-- An index on most foreign-key columns, plus `verification.identifier` and `invitation.email`, which are not foreign keys; `invitation.inviter_id` carries none.
+Outside `auth.ts`, every table follows one shape, with `waitlist.ts` as the plain example: `text` primary keys filled by `crypto.randomUUID()`, `snake_case` column names, `timestamp("created_at").defaultNow().notNull()`, and `onDelete: "cascade"` with an index on every foreign-key column. Inside `auth.ts` the generator writes what Better Auth declares: the library fills its own primary keys, and `created_at` has no database default on `organization`, `team` and `member` and allows null on `team_member`, because the library stamps it itself.
 
-Add indexes when your own row counts and query plans ask for them, not in advance. Where that choice shows:
+Indexes are added when your own row counts and query plans ask for them, not in advance. The auth tables index most foreign-key columns plus `verification.identifier` and `invitation.email`, which are not foreign keys; `invitation.inviter_id` carries none. Where the choice shows:
 
-- **`user.role` has no index and no database default.** The console filters and sorts by it, and four distinct values over a table the size of your staff list is a sequential scan either way. The default is absent because the admin plugin stamps `user` on every account it creates, and the generated schema says only what the plugin declares.
-- **The `console.ts` tables break both rules above.** Their `actor_id` is `SET NULL`, not `CASCADE`, because deleting the admin who added a rule must not delete the rule, nor the history they made. Neither carries an index beyond its primary key, because at console sizes the sequential scan wins. Each also stores an `actor` text alongside the id, so a row stays readable once the id is null, and can name an actor that was never an account (a matching rule, or a script run from a terminal).
+- **`user.role` has no index and no database default.** The console filters and sorts by it, and a handful of rungs over a table the size of your staff list is a sequential scan either way. The default is absent because the admin plugin stamps `user` on every account it creates, and the generated schema says only what the plugin declares.
+- **The console tables bend the delete rule and the index rule.** Their `actor_id` is `set null`, not `cascade`, because deleting the admin who added a rule must not delete the rule, nor the history they made. Neither carries an index beyond its primary key, because at console sizes the sequential scan wins. Each stores an `actor` text beside the id, so a row stays readable once the id is null and can name an actor that was never an account.
 
-## The generate → migrate loop
+## From an edit to a running table
 
-```bash
-# 1. edit the schema in packages/db/src/schema/
-# 2. generate a SQL migration from the diff
-bun run db:generate
-# 3. review the SQL in packages/db/drizzle/, then apply it
-bun run db:migrate
-```
+The loop is edit, generate, review, apply. `bun run db:generate` diffs the schema against the snapshot in `packages/db/drizzle/meta/` and writes a numbered `.sql` beside a fresh snapshot, never touching the database; `bun run db:migrate` runs the pending files against `POSTGRES_URL`. You read the SQL in between because it is the exact DDL that will run against your data, and an applied migration is immutable: a fix is a new one. The `db-migration` skill in [AI Skills](/docs/resources/ai-skills) carries the steps and the two traps around them: every step runs against a throwaway database, because `canary` and production share one, and the running stack does not see a new table until `@packages/db` is rebuilt and dev restarted.
 
-`db:generate` diffs your schema against the snapshot in `packages/db/drizzle/meta/` and writes a numbered `.sql` file plus a fresh snapshot; it never touches the database. `db:migrate` runs the pending files against `POSTGRES_URL`. You review the SQL in between because it is the exact DDL that will run against your data.
+In production the schema, the SQL and the snapshot travel in the commit that needs them, and the API build on Vercel applies pending migrations on production and canary deploys (`.github/scripts/migrate-on-deploy.ts`), skipping PR previews. `bun run db:studio` opens Drizzle Studio on whatever `POSTGRES_URL` names.
 
-Adding a table is the same loop. Create the file, export it, generate, migrate:
+## Common questions
 
-```ts
-// packages/db/src/schema/project.ts
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+**Drizzle Kit says to install `pg` or `postgres`, but the app runs on Bun's driver.**
 
-import { organization } from "@/schema/auth"
+Both are true. Drizzle Kit cannot use Bun's driver, so `postgres` is a dev dependency of `packages/db` for the `db:*` scripts; the message means it is not installed, and `bun install` fixes it. A fresh clone needs no build first, because each `db:*` script builds `@packages/env` before Drizzle Kit reads the config.
 
-export const project = pgTable("project", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name").notNull(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
-```
+**Does `sync` overwrite my migrations and schema?**
 
-Add `export * from "@/schema/project"` to `packages/db/src/schema/index.ts`, then run the two commands. The [`db-migration`](/docs/resources/ai-skills) skill hands an agent this exact procedure, including the trap below.
+No. `packages/db/drizzle/` and `packages/db/src/schema/` are restored after the overlay, so a fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync: the auth tables regenerate with `bun run auth:schema` once the new `packages/auth/src/schema.ts` lands, and the rest you port and migrate yourself. See [CLI](/docs/getting-started/cli).
 
-<Callout type="warn" title="The running stack won't see a new table until you rebuild">
+**Can the migrations be squashed into one baseline?**
 
-The API imports `@packages/db`'s built output, and `bun --hot` does not reliably pick up new files. After generating and migrating, rebuild the package (`bunx turbo run build --filter=@packages/db`) and restart `bun run dev`. Never edit an applied migration; generate a new one instead.
+Only for a database treated as new. The starter did it once, regenerating `0000_zero_starter.sql` from the schema of the day; a fresh baseline carries a new timestamp, so `migrate` tries to apply it against tables that already exist and fails. Once a migration has been applied anywhere, keep appending.
 
-</Callout>
+**The auth schema check reports drift, and I did not touch `auth.ts`.**
 
-## In production
+Something upstream of it changed: a plugin or an `additionalFields` entry in `packages/auth/src/schema.ts`, or a Better Auth bump whose generator now emits something new. Run `bun run auth:schema`, read the diff, and if it adds or alters a column, generate a migration for it. Line endings are not drift: the check compares with both sides normalized, so a Windows checkout passes.
 
-The schema, the SQL, and the snapshot travel together in the same commit as the change that needs them. On Vercel, the API build applies pending migrations automatically on production and canary deploys (`.github/scripts/migrate-on-deploy.ts`); PR previews are skipped. Point `POSTGRES_URL` at any managed Postgres: Neon, Supabase, Railway. For a throwaway local database, `bunx pglaunch -k` creates one instantly.
+## It's working if
 
-## Browsing data
-
-```bash
-bun run db:studio
-```
-
-Drizzle Studio opens a browser UI to read and edit rows directly.
+- `bun run auth:schema --check` prints `auth schema is in sync` and exits 0.
+- `bun run db:generate` after a schema edit writes a numbered `.sql` into `packages/db/drizzle/` with a matching `meta/` snapshot, and with nothing changed says `No schema changes, nothing to migrate`.
+- `bun run check-types` from the repo root fails in `api/hono` after you rename a column that a router selects.
 
 ## Next
 
-- [Auth & Organizations](/docs/manage/authentication): what the tables in `auth.ts` actually do.
-- [Environment Variables](/docs/manage/environment): where `POSTGRES_URL` comes from.
-- [AI Skills](/docs/resources/ai-skills): the `db-migration` skill and the rest of the catalog.
+- [AI Skills](/docs/resources/ai-skills), because `db-migration` holds the steps this page only names.
+- [Auth & Organizations](/docs/manage/authentication), because it says what the tables in `auth.ts` do.
+- [Environment Variables](/docs/manage/environment), because `POSTGRES_URL` is where the `db:*` scripts and the client find their database.
+- [Activity](/docs/manage/activity), because it is the table whose `set null` and missing index are explained above.
