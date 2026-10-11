@@ -219,26 +219,27 @@ const docsConfig = {
         "/docs/manage/code-quality": {
           title: "Code Quality",
           description:
-            "Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.",
+            "Which check runs on the commit, the push and the pull request, and the commit message rules the release reads.",
         },
       },
       {
         "/docs/manage/release": {
           title: "Releases",
           description:
-            "The automated canary-to-main flow that versions the repo and drafts the changelog.",
+            "One merge promotes canary to main: the version lands before it, the changelog, tag and GitHub release after.",
         },
       },
       {
         "/docs/getting-started/scripts": {
           title: "Scripts",
-          description: "Every bun script, grouped by when you'd reach for it.",
+          description:
+            "Every bun run script and the tooling behind it: what each does, when it runs, and where a new one goes.",
         },
       },
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: `What ${site.name} ships today, and where it's headed.`,
+          description: `What ${site.name} ships in a fresh scaffold, what a fork adds itself, and what is planned.`,
         },
       },
     ],

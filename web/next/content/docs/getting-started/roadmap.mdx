@@ -1,37 +1,41 @@
 ---
 slug: /docs/getting-started/roadmap
 title: Roadmap
-description: What ZeroStarter ships today, and where it's headed.
+description: What ZeroStarter ships in a fresh scaffold, what a fork adds itself, and what is planned.
 ---
 
-A lot of ZeroStarter is already wired and working. The integrations further down (AI, background jobs, email, payments, i18n) are **planned**, not built. Read the two lists below literally.
+A fresh scaffold runs every row of the first table, each with a page of its own. The starter stops where a product decision starts: anything that picks a vendor, payments, email, AI, background jobs or translations, is a fork's own choice, so none of it is wired. Read both tables literally.
 
-## Shipped today
+## When you need this
 
-Available out of the box in a fresh scaffold:
+Reach for this page when weighing the starter, before building something that may already ship, or before asking for something that may be planned or left to forks on purpose.
 
-- **[Better Auth organizations](/docs/manage/authentication)**: multi-tenant orgs and teams, member roles, and invitations, with the backing tables.
-- **[A role ladder + gated `/console`](/docs/getting-started/scripts#console)**: `owner > admin > member > user` on `user.role`, gating the route server-side; manage it from Console > Access, or with `bun run console:roles`, with every change recorded in [Console > History > Activity](/docs/manage/activity).
-- **[An allowlist for the console](/docs/manage/allowlist)**: grant the console's bottom rung to a whole domain or a single address, applied on sign-in, never lowering anyone. An optional [feature](/docs/manage/features), off in a fresh fork.
-- **[An activity trail](/docs/manage/activity)**: every console write that changes who gets in, or destroys a row, records a readable line in the same transaction as the change.
-- **[Data tables](/docs/manage/data-tables)**: one module of composable pieces on TanStack Table, server-driven with infinite scroll and virtualized rows; the console's tables are the pattern to copy.
-- **[Realtime over WebSockets](/docs/getting-started/realtime)**: the typed client reaches sockets too, on Bun and on Vercel, with a reconnecting, REST-backed example.
-- **Rate limiting**: [hono-rate-limiter](https://github.com/rhinobase/hono-rate-limiter) with [@arcjet/ip](https://arcjet.com), per-user when authenticated and per-IP otherwise, tuned via `HONO_RATE_LIMIT`.
-- **[Scalar API docs](/docs/getting-started/type-safe-api)**: an interactive reference at `/api/docs`, generated from the OpenAPI spec at `/api/openapi.json`.
-- **[Dynamic OG images](/docs/manage/seo)**: on-the-fly Open Graph images with [takumi-js](https://github.com/kane50613/takumi), served from the `/og` routes.
-- **[llms.txt + llms-full.txt](/docs/manage/llms-txt)**: auto-generated AI context routes: the index and the full corpus.
-- **[SEO routes](/docs/manage/seo)**: `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.
-- **[PostHog analytics](/docs/manage/analytics)**: product analytics, feature flags, and session replay. Optional; on only when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` are set.
-- **[Vercel Speed Insights](/docs/manage/analytics#vercel-speed-insights)**: real Core Web Vitals from your visitors. No key and no env var; the root layout renders it only when `VERCEL` is set, so it is absent on Docker and every other host.
-- **[Waitlist](/docs/manage/waitlist)**: a `/waitlist` page backed by `POST /api/waitlist`, read back at Console > Waitlist > Signups where the addresses can be searched, copied or removed; an optional [feature](/docs/manage/features) that becomes a fresh fork's home when enabled.
-- **[Configurable features](/docs/manage/features)**: turn the allowlist, API reference, blog, docs, internal docs, or waitlist on or off per fork, from `init` flags or an interactive picker, and flip any of them later in config.
-- **[The `zerostarter` CLI](/docs/getting-started/cli)**: `bunx zerostarter init` scaffolds a rebranded fork, strips the sample content, installs dependencies, and provisions a local Postgres; `sync` re-baselines that fork on the latest starter and keeps what it owns. A fork inherits every [skill](/docs/resources/ai-skills) and the starter's own `AGENTS.md`, rebranded.
+## Shipped
 
-## Planned
+| Capability                                                   | What ships                                                                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [Activity](/docs/manage/activity)                            | A line per console write that changes access or deletes a row, in the same transaction.                            |
+| [Allowlist](/docs/manage/allowlist)                          | Console access by domain or address on sign-in, never lowering anyone; optional, off in a fresh fork.              |
+| [Analytics](/docs/manage/analytics)                          | PostHog when `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set; Vercel Speed Insights only where `VERCEL` is set.         |
+| [API reference](/docs/getting-started/type-safe-api)         | Scalar at `/api/docs` from `/api/openapi.json`, both behind the `apiDocs` feature.                                 |
+| [Authentication](/docs/manage/authentication)                | Better Auth on your Postgres: GitHub and Google OAuth, and magic link once its plugin is declared.                 |
+| [CLI](/docs/getting-started/cli)                             | `init` scaffolds a rebranded fork with its features picked and a local Postgres offered; `sync` re-baselines it.   |
+| [Console role ladder](/docs/getting-started/scripts#console) | `owner > admin > member > user` on `user.role`, gating `/console`; set from Console > Access or the CLI.           |
+| [Data tables](/docs/manage/data-tables)                      | Composable pieces on TanStack Table, server-driven, with infinite scroll and virtualized rows.                     |
+| [Features](/docs/manage/features)                            | Allowlist, API reference, blog, docs, internal docs and waitlist as booleans, set at `init`, flipped in config.    |
+| [llms.txt](/docs/manage/llms-txt)                            | The index and the full corpus, generated from the docs and the blog.                                               |
+| [OG images](/docs/manage/seo)                                | Open Graph images rendered on request with takumi from the `/og` routes.                                           |
+| [Organizations and teams](/docs/manage/organizations)        | The Better Auth organization plugin with teams; creating and switching wired, the rest available.                  |
+| [Rate limiting](/docs/manage/rate-limiting)                  | Per user when signed in, per address otherwise; `HONO_RATE_LIMIT` and `HONO_RATE_LIMIT_WINDOW_MS` tune it.         |
+| [Realtime](/docs/getting-started/realtime)                   | A WebSocket route on the typed client, on Bun and on Vercel, with a reconnecting example.                          |
+| [SEO routes](/docs/manage/seo)                               | `robots.ts` and `sitemap.ts` generate `robots.txt` and the sitemap.                                                |
+| [Waitlist](/docs/manage/waitlist)                            | `/waitlist` on `POST /api/waitlist`, read at Console > Waitlist > Signups; optional, a fresh fork's home while on. |
 
-<Callout type="warn" title="Not implemented yet">
+## What a fork adds itself
 
-Nothing in this table ships today. Do not assume any of it is available; if you (or an AI agent) need one, you're building it. Track detail and progress on [GitHub issues](https://github.com/nrjdalal/zerostarter/issues).
+<Callout type="warn" title="None of this is wired">
+
+No dependency, no env var, no stub. An agent reading this page must not assume any of it exists.
 
 </Callout>
 
@@ -53,7 +57,41 @@ Nothing in this table ships today. Do not assume any of it is available; if you 
 | [Razorpay](https://razorpay.com)              | Payments             |
 | [Stripe](https://stripe.com)                  | Payments             |
 
+## Planned
+
+Each has a next step and no date:
+
+- Activity log retention and indexes; today it grows without bound.
+- Deployment targets beyond Vercel and Docker.
+- Feature-flag management over PostHog or another service.
+- Organization creation rules: names and limits.
+- Passkey sign-in and management, built close to done and parked, so it resumes from that work.
+- Security headers and a content security policy by default, and a rate-limit store that survives a restart; today the counters live in process memory.
+
+## Undecided
+
+Raised and kept with no verdict, so nothing here is scheduled:
+
+- An authenticated WebSocket pattern; the one shipped socket is public.
+- Keyset pagination for the data tables; a batch loaded mid-scroll can skip or repeat a row.
+- The rate limiter's reading of the client address where Bun owns the socket; a request without a readable address gets a fresh key each time.
+
+## Common questions
+
+**Where did passkeys go?**
+
+Parked close to done, so sign-in ships with two OAuth providers and magic link rather than a third method half-finished.
+
+**Does the starter have feature flags?**
+
+The `features` export in `packages/config/src/site.ts` switches whole surfaces per fork and is not a flag service; PostHog's flags reach the browser once analytics is on. Managing them is planned.
+
+**Is there an RSS feed?**
+
+Not today. One was built and removed; shipping it, putting it behind a feature, or leaving it to forks is undecided.
+
 ## Next
 
-- [Architecture](/docs/getting-started/architecture): everything under "Shipped today," and how it's wired together.
-- [Contributing](/docs/contributing): pick up one of the planned integrations.
+- [Architecture](/docs/getting-started/architecture), because it shows how the shipped rows connect.
+- [Features](/docs/manage/features), because the optional rows are switched there.
+- [Contributing](/docs/contributing), because a planned item is where a contribution lands first.
