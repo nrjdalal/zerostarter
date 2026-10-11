@@ -70,7 +70,7 @@ curl -sS -X POST -H "Content-Type: application/json" -H "Origin: $WEB" \
   -d '{"email":"you@example.com"}' "$API/api/<name>"
 ```
 
-Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/openapi.json` names the path.
+Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/openapi.json` names the path (the document is served while `apiDocs` in `packages/config/src/site.ts` is on).
 
 ## 4. Call it from the web app
 
@@ -79,7 +79,7 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 ```
 
-`unwrap` never throws: exactly one of `data` and `error` is non-null, with `NETWORK_ERROR` and `UNKNOWN_ERROR` covering the transport. A client component reads through TanStack Query as `components/common/access.tsx` does: the `queryFn` unwraps the call and throws on `error`. Done when `bunx turbo run check-types --filter=@web/next` exits 0, after a deliberately wrong key in the call failed it first.
+`unwrap` never throws: exactly one of `data` and `error` is non-null, with `NETWORK_ERROR` and `UNKNOWN_ERROR` covering the transport. The API's types reach the web app through `@api/hono`'s built `dist`, which turbo's `check-types` builds first (`^build`), so a stale type means a stale build. A client component reads through TanStack Query as `components/common/access.tsx` does: the `queryFn` unwraps the call and throws on `error`. Done when `bunx turbo run check-types --filter=@web/next` exits 0, after a deliberately wrong key in the call failed it first.
 
 ## Response shape
 
@@ -87,7 +87,7 @@ Where one key is what the response is about and the rest describe it, that key l
 
 ## A route that acts on a set
 
-`api/hono/src/lib/batch.ts` holds the shape. **Ids go in the body**, never in the path: `batchInput({ ...fields })` adds a capped, non-empty `ids` array, and a single row is a set of one, so one route serves both. **Answer 200 with `batchResponseSchema`**, never 207: a per-id outcome inside `{ data }`, since 207 reads as 2xx to `unwrap` and `{ error }` keeps meaning nothing happened. One transaction for the set, `uniqueIds` on the input, writes in sorted id order, and `answerFor` to answer in the order asked. A guard that counts (the last owner) counts once under a `for("update")` lock taken whenever the set writes a row the guard covers, and stays in step as the loop writes. Refuse per row with `refused(id, code, message)` or `raced(id)`; throw `ApiError` for the request. `responses` carries validation, auth and forbidden, while 404 and 409 arrive per row. `recordActivity(tx, records)` once after the loop. On the web, `runBatched` in `web/next/src/lib/api/bulk.ts` splits a selection at `MAX_BATCH` and folds the answers for `toastBulk`.
+`api/hono/src/lib/batch.ts` holds the shape. **Ids go in the body**, never in the path: `batchInput({ ...fields })` adds a capped, non-empty `ids` array, and a single row is a set of one, so one route serves both. **Answer 200 with `batchResponseSchema`**, never 207: a per-id outcome inside `{ data }`, since 207 reads as 2xx to `unwrap` and `{ error }` keeps meaning nothing happened. One transaction for the set, `uniqueIds` on the input, writes in sorted id order, and `answerFor` to answer in the order asked. A guard that counts (the last owner) counts once under a `for("update")` lock taken whenever the set writes a row the guard covers, and stays in step as the loop writes. Refuse per row with `refused(id, code, message)` or `raced(id)`; throw `ApiError` for the request. `responses` carries validation, auth and forbidden, while 404 and 409 arrive per row. `recordActivity(tx, records)` (`packages/db/src/console.ts`) once after the loop. On the web, `runBatched` in `web/next/src/lib/api/bulk.ts` splits a selection at `MAX_BATCH` (`@packages/config/console`) and folds the answers for `toastBulk`.
 
 ## A WebSocket route
 
