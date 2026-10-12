@@ -36,12 +36,14 @@ bunx zerostarter <command> [dir] [options]
 
 Scaffold a new product. Run it in an empty directory (its name becomes the project name), or pass a name: `bunx zerostarter init my-app`.
 
-| Option         | Description                                                           |
-| -------------- | --------------------------------------------------------------------- |
-| `-y`, `--yes`  | Skip prompts, taking defaults (provisions Postgres when Docker is up) |
-| `--db`         | Provision a local Postgres (via pglaunch) and migrate; needs Docker   |
-| `--dry-run`    | Print the plan without writing anything                               |
-| `-h`, `--help` | Display help                                                          |
+| Option                          | Description                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-y`, `--yes`                   | Skip prompts, taking defaults (provisions Postgres when Docker is up)                                                                                                                         |
+| `--canary`                      | Scaffold from the `canary` branch instead of `main` (for testing)                                                                                                                             |
+| `--db`                          | Provision a local Postgres (via pglaunch) and migrate; needs Docker                                                                                                                           |
+| `--dry-run`                     | Print the plan without writing anything                                                                                                                                                       |
+| `--<feature>`, `--no-<feature>` | Turn an optional surface on or off: `allowlist`, `api-docs`, `blog`, `docs`, `internal-docs`, `waitlist` (on by default except `allowlist` and `waitlist`); any feature flag skips the picker |
+| `-h`, `--help`                  | Display help                                                                                                                                                                                  |
 
 ### `reinit`
 

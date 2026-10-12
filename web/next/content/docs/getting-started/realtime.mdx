@@ -4,84 +4,54 @@ title: Realtime
 description: "WebSockets on Hono: one typed client, a Bun and Node adapter split for Vercel, and a REST-baseline fallback."
 ---
 
-The same typed client that reaches the REST API reaches WebSockets too. Hono serves the upgrade, the RPC object exposes it as `$ws()`, and the health endpoint ships a working example at `/api/health/ws`: on connect it pushes a status snapshot, then a heartbeat every five seconds. The live badge on the landing page runs on it.
+The typed client that reaches the REST API reaches WebSockets too: Hono serves the upgrade, the RPC object exposes it as `$ws()`, and `/api/health/ws` ships as a working route that sends a status snapshot on connect and a heartbeat every five seconds. The canonical starter's landing-page badge runs on it; a fork takes the route and not the badge, since `web/next/src/components/marketing/` is on the `.gitpickignore` list.
 
-## Two adapters, one route
+Frames are untyped and a socket can drop, so a realtime UI here polls REST as its baseline and treats the socket as an overlay. `$ws()` types the route's path, not the messages on it: a frame is a string, there is no `{ data }` envelope on the wire, and OpenAPI cannot schema a frame, so the route lists in the reference as a `101` with its frame shape in prose. Everything below follows from that.
 
-The route is a `GET` upgraded with `upgradeWebSocket`, but the socket owner depends on where it runs. Bun (local, Docker, self-host) runs `Bun.serve()`, so the socket comes from `hono/bun`. On Vercel the upgrade goes through the Node adapter (`@hono/node-server` + `ws`), which is the setup [Vercel documents for Hono](https://vercel.com/docs/functions/websockets#node.js-server-frameworks). `api/hono/src/lib/server.ts` picks the adapter at boot from `process.env.VERCEL` and exports the matching server, so `index.ts` only registers routes:
+## When you need this
 
-```ts
-// api/hono/src/lib/server.ts
-const onVercel = process.env.VERCEL === "1"
+Reach for this page when a surface has to update without a reload: a status badge, presence, a feed that moves while someone watches it. For the request-and-response half, see [The Type-Safe API](/docs/getting-started/type-safe-api); for the route and client steps, the `api-endpoint` skill's WebSocket section under [AI Skills](/docs/resources/ai-skills).
 
-export const upgradeWebSocket = onVercel
-  ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
-  : bunUpgradeWebSocket
-```
+## One route, two hosts
 
-The route sends a snapshot on open and clears its heartbeat on close, which fires on every disconnect on both adapters:
+A WebSocket route is a `GET` upgraded with `upgradeWebSocket`, imported from `@/lib/server` rather than from an adapter, because the socket's owner depends on the host. `api/hono/src/lib/server.ts` reads `process.env.VERCEL` once at boot: on Vercel it exports the `@hono/node-server` upgrade and a Node `http.Server` with a `ws` server attached, the setup Vercel documents for Hono, so the platform drives the upgrade; everywhere else it exports the `hono/bun` upgrade and the `Bun.serve()` shape, so Bun owns `fetch` and the socket. `index.ts` registers the route against the exported function and never names an adapter.
 
-```ts
-// api/hono/src/index.ts
-app.basePath("/api").get(
-  "/health/ws",
-  upgradeWebSocket(() => {
-    let heartbeat: ReturnType<typeof setInterval> | null = null
-    return {
-      onOpen(_event, ws) {
-        ws.send(snapshot())
-        heartbeat = setInterval(() => ws.send(snapshot()), 5000)
-      },
-      onClose() {
-        if (heartbeat) clearInterval(heartbeat)
-      },
-    }
-  }),
-)
-```
+Each branch is the one its host deploys through. A Vercel deploy builds the api with the Hono preset (`"framework": "hono"` in `api/hono/vercel.json`) and takes the Node adapter branch; a self-host, locally and in Docker, takes `Bun.serve()`.
 
-<Callout type="info" title="Why two adapters, still">
+Inside a handler, `send` and `close` behave the same on both hosts, and `onClose` fires on every disconnect on both, so cleanup belongs there: the health route clears its heartbeat in `onClose` and nowhere else.
 
-When this shipped, a Vercel Function could not run `Bun.serve()` at all, which is why the split exists. Vercel's Bun runtime has since gained a [native `Bun.serve()` WebSocket path](https://vercel.com/docs/functions/websockets#bun), with documented differences (headers passed to `server.upgrade()` are not applied, `drain` never fires, `send()` reports no backpressure). The starter has not moved to it: the Node adapter is proven here, and both WebSockets and the Bun runtime are still in beta on Vercel.
+## Overlay, not source of truth
 
-</Callout>
+A socket can drop: a tab backgrounds, a network blips, a serverless function reaches its max duration. The canonical starter's badge, `web/next/src/components/marketing/api-status.tsx`, therefore never depends on the socket alone. It polls `GET /api/health` through TanStack Query whenever no frame is live and overlays a pulse only while frames arrive, so the badge is right before the socket connects and after it drops; only the pulse is socket-only.
 
-## Connecting from the client
+Its reconnect logic is the pattern to copy: capped exponential backoff after a drop; a watchdog that treats a silent socket as dropped and closes it, so the server's `onClose` clears its heartbeat instead of streaming to a dead peer; and an immediate reconnect, backoff reset, when the tab becomes visible again. Its three timings, `HEARTBEAT_TIMEOUT_MS`, `RECONNECT_BASE_MS` and `RECONNECT_MAX_MS`, sit at the top of `api-status.tsx`. It reads one field per frame (`message === "ok"`) and nothing else, because nothing types a frame.
 
-The RPC object exposes `$ws()` on the route, so the socket URL derives from the same configured API base (`http` becomes `ws`), with no second client to keep in sync:
+## Beyond one instance
 
-```ts
-import { apiClient } from "@/lib/api/client"
+A connection is pinned to one server or one function instance, and a reconnect may land on another. The health route is fine with that, since every instance answers the same snapshot, but a chat room, presence, or a feed that fans out across users keeps its shared state outside the process (Redis is the usual choice), with every instance publishing and subscribing, so a client connected anywhere sees every update. For the platform's own limits on a socket, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
 
-const socket = apiClient.health.ws.$ws()
-socket.addEventListener("message", (event) => {
-  const health = JSON.parse(event.data)
-})
-```
+## Common questions
 
-<Callout type="info" title="Frames are not RPC-typed">
+**How do I authenticate a socket?**
 
-`$ws()` types the route _path_, not the messages on the wire: `ws.send()` takes a raw string and the client hands back a standard `WebSocket`, so frame data arrives untyped. Parse defensively and read only what you need. A WebSocket carries no `{ data }` envelope either, and OpenAPI can't schema-type its frames, so the route is listed in the [reference](/docs/getting-started/type-safe-api) as a `101` upgrade with the frame shape described in prose, not as a typed response.
+The one socket route ships public and checks no session, since it streams what `/api/health` already answers, and `cors()` is no guard for it: a browser sends no preflight for a WebSocket and never blocks one on CORS. A fork that needs an authenticated socket checks the `Origin` header or a token inside the handler, the usual token being a short-lived single-use ticket the signed-in client fetches from an authenticated REST route and the server marks spent in a shared store.
 
-</Callout>
+**Which origin does the badge's socket open on?**
 
-## Treat the socket as an enhancement
+The one every browser call from the web uses: `api-status.tsx` opens it with the same `apiClient`, and `web/next/src/lib/config.ts` points that client at `NEXT_PUBLIC_API_URL`, or at `NEXT_PUBLIC_APP_URL` on a public hosting suffix such as `*.vercel.app`. So on a custom domain the socket opens on the api origin, and on a public suffix on the web origin. For what Vercel requires of a socket, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
 
-A socket can drop: a tab backgrounds, a network blips, or a serverless function reaches its [max duration](/docs/deployment/vercel#websockets) and closes the connection. So the reference badge (`web/next/src/components/marketing/api-status.tsx`) never depends on the socket alone. It polls REST `/api/health` whenever no frame is live and overlays a live pulse only while the socket streams, so the status is always current before the socket connects or after it drops; only the pulse is socket-only.
+**Why does the upgrade route list 429 and 500 in the reference?**
 
-The reconnect logic is worth copying for your own realtime UI: capped exponential backoff (3s, doubling to a 30s ceiling) after a drop, a heartbeat watchdog that treats a silent-but-open socket as dropped, and an immediate reconnect when the tab becomes visible again.
+Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error responses to every documented method, the WebSocket `GET` included, so Scalar shows them beside the `101`. The 429 can happen, since the [rate limiter](/docs/manage/rate-limiting) runs on the upgrade request, and a browser sees it as a failed connect rather than a body; the 500 is the shared default. Once the socket is open, neither arrives on it.
 
-<Callout type="warn" title="On a public hosting suffix, the socket falls back to REST">
+## It's working if
 
-When web and api deploy as separate `*.vercel.app` projects, the browser talks to the api through the web's `/api` proxy (so the [session cookie stays first-party](/docs/manage/authentication)). A Next rewrite does not forward a WebSocket upgrade, so the socket can't connect there and the badge runs on its REST heartbeat instead (green, without the live pulse). A custom domain, where the browser reaches the api directly, keeps the socket. See [Deploy to Vercel](/docs/deployment/vercel#websockets).
-
-</Callout>
-
-## Scaling beyond one instance
-
-A single connection is pinned to one server (or one serverless function) instance. That is fine for the health example, but for real fan-out (a chat room, presence, live updates across users) keep the shared state external, for example in Redis, and let each instance publish and subscribe, so a client connected to any instance sees every update and can reconnect anywhere. On Vercel, WebSockets need [Fluid compute](https://vercel.com/docs/fluid-compute), on by default for projects created on or after April 23, 2025.
+- In the devtools console on any page of the web app, `new WebSocket("<api origin, http swapped for ws>/api/health/ws").onmessage = (e) => console.log(e.data)` logs a JSON frame carrying `"message":"ok"` at once and another every five seconds, and the Network tab filtered to WS shows the route at `101`.
+- `curl` on the api origin's `/api/health` answers `{"data":{"message":"ok",...}}`, the REST baseline a socket overlays.
+- In the canonical starter, the green dot on the landing-page badge pulses; green without the pulse means REST is carrying the badge and the socket is not connected. Background the tab for a minute and return: frames resume at once rather than after the backoff.
 
 ## Next
 
-- [The Type-Safe API](/docs/getting-started/type-safe-api): the typed client `$ws()` extends.
-- [Deploy to Vercel](/docs/deployment/vercel): the Node adapter and the proxy fallback in context.
+- [The Type-Safe API](/docs/getting-started/type-safe-api), because `$ws()` hangs off the same client and the REST baseline is its `unwrap`.
+- [Deploy to Vercel](/docs/deployment/vercel#websockets), because the platform's terms for a socket live there.
+- [AI Skills](/docs/resources/ai-skills), because the `api-endpoint` skill's WebSocket section is the route and client recipe.
