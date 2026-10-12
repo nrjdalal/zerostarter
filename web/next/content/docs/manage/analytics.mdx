@@ -4,100 +4,62 @@ title: Analytics & Feedback
 description: Optional PostHog analytics and a feedback link, plus Speed Insights on every Vercel deploy.
 ---
 
-PostHog and the feedback link are **optional** and stay off until you set an environment variable, so out of the box neither one runs and you opt in when you need them. Speed Insights works the other way round: it takes no key and no variable, and it renders on every Vercel deployment, so you turn it off by removing it, not on by adding something.
+[PostHog](https://posthog.com) gives the web app product analytics, session replay and feature flags; a feedback link puts any URL in the docs sidebar and the dashboard user menu; Speed Insights reports real Core Web Vitals on Vercel. PostHog and the feedback link stay off until an environment variable is set, so out of the box neither runs. Speed Insights is the reverse: no key and no variable, it renders wherever `VERCEL` is set until you remove it.
+
+## When you need this
+
+When you want to see what visitors do, hear from them, or measure what they experience, and want none of it running where you have not asked. For how the variables are declared, see [Environment Variables](/docs/manage/environment); for the rest a Vercel deploy turns on by itself, see [Deploy to Vercel](/docs/deployment/vercel).
 
 ## PostHog analytics
 
-[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates), following PostHog's current App Router setup. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present.
+PostHog initializes in `web/next/instrumentation-client.ts`, Next.js's client-instrumentation entry, which runs once before the app hydrates. `posthog.init` sits behind a check on `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, so with the token empty nothing initializes. With it set, `NEXT_PUBLIC_POSTHOG_HOST` picks the region: EU Cloud (`https://eu.i.posthog.com`) by default, `https://us.i.posthog.com` for US Cloud, or a self-hosted URL. Both are optional in `packages/env/src/web-next.ts`.
 
-Turn it on with two env vars (the key enables it, the host picks your region):
-
-```
-NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=
-```
-
-Use `https://us.i.posthog.com` for US Cloud, `https://eu.i.posthog.com` for EU, or your self-hosted URL. Both are declared optional in `packages/env/src/web-next.ts`, so an empty key simply means PostHog never initializes, which is also how you disable it.
-
-<Callout type="info" title="Wired, but not called for you">
-
-The starter sets up initialization, but it does **not** call `capture`, `identify`, or read a feature flag anywhere. Pageviews and session replay begin once the key is set; everything below is yours to add where it makes sense.
-
-</Callout>
-
-Capture events and identify users from the shared client:
+The `defaults` option in that call pins PostHog's defaults to a dated snapshot, pageview capture on history changes included, so there is no provider and no pageview component. The starter stops there: it never calls `capture` or `identify` and reads no flag. Pageviews begin the moment the token is set; every event beyond them is yours, from the shared singleton:
 
 ```ts
 import posthog from "posthog-js"
 
 posthog.capture("signup_clicked", { plan: "pro" })
-posthog.identify(user.id, { email: user.email, name: user.name })
+posthog.identify(user.id, { email: user.email })
+posthog.isFeatureEnabled("new-dashboard")
 ```
-
-Inside components, reach the same singleton and read flags off it (`isFeatureEnabled` resolves once flags have loaded):
-
-```tsx
-import posthog from "posthog-js"
-
-function Dashboard() {
-  const showNew = posthog.isFeatureEnabled("new-dashboard")
-  return showNew ? <New onClick={() => posthog.capture("used_new")} /> : <Old />
-}
-```
-
-PostHog is privacy-configurable: the host picks EU or US data residency, session recordings can be masked or turned off, and its built-in opt-out honors users who decline tracking.
 
 ## Vercel Speed Insights
 
-[Speed Insights](https://vercel.com/docs/speed-insights) reports real Core Web Vitals from your actual visitors, rather than the synthetic numbers a Lighthouse run gives you. It needs no environment variable and no key, because it only reports to the platform it is deployed on.
+[Speed Insights](https://vercel.com/docs/speed-insights) reports Core Web Vitals from real visitors rather than a Lighthouse run's synthetic numbers. It needs no key because it reports only to the platform it runs on, and that is also why it is conditional: the beacon posts to `/_vercel/speed-insights/vitals` by default, a route only Vercel serves, so anywhere else it would fire requests that can never arrive. The root layout, `web/next/src/app/layout.tsx`, renders `{onVercel && <SpeedInsights />}`, where `onVercel` is `process.env.VERCEL === "1"`.
 
-That is also why it is conditional. The beacon posts to `/_vercel/speed-insights/vitals`, a route only Vercel serves, so on Docker or any self-host it would fire requests that can never arrive. The root layout gates it on the platform instead:
+`VERCEL` is injected by the platform, so it sits outside the schema the way [Environment Variables](/docs/manage/environment) describes. The check stays in the layout, a server component, because Next inlines only `NEXT_PUBLIC_*` variables into client bundles: inside the client-side `SpeedInsights` the same check would read `undefined` and silently never render. Off Vercel the component is never rendered and the beacon never loads, though the static import still ships in the bundle, unexecuted. There is no enable step: the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through.
 
-```tsx
-// web/next/src/app/layout.tsx
-const onVercel = process.env.VERCEL === "1"
-```
+<Callout type="warn" title="Previews count against your allocation">
 
-```tsx
-<body className="min-h-svh">
-  <InnerProvider>
-    <Navbar />
-    {children}
-  </InnerProvider>
-  {onVercel && <SpeedInsights />}
-</body>
-```
-
-`VERCEL` is injected by the platform rather than configured by you, which is why it appears in neither `packages/env` nor `.env.example`. The check has to stay in the layout, a server component: `SpeedInsights` is a `"use client"` component, and Next only inlines `NEXT_PUBLIC_*` variables into client bundles, so the same check inside a client component would read `undefined` and silently never render.
-
-What the gate does and does not do: off Vercel the component is never rendered, so the beacon script never loads and no request is made. The package's own module is a static import, so it still ships in the client bundle either way, where nothing executes it. Make it a dynamic import if you want it gone from the bundle too.
-
-There is no enable step. Deploy to Vercel and it starts collecting, because every deployment already serves the collection routes; the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through. Nothing else to wire.
-
-<Callout type="info" title="Previews count against your allocation">
-
-Every deployment reports, previews included, and Vercel [meters Speed Insights by event](https://vercel.com/docs/speed-insights/limits-and-pricing): the free tier's allocation is shared across the whole team, and Vercel pauses ingestion for a project once the team goes past it. Narrowing to `process.env.VERCEL_ENV === "production"` drops PR previews, but it drops `canary` too, since canary deploys as a preview. To keep canary and lose the rest, test the branch as well, the way `.github/scripts/migrate-on-deploy.ts` already picks its deploy branches:
-
-```ts
-const onVercel =
-  process.env.VERCEL_ENV === "production" || process.env.VERCEL_GIT_COMMIT_REF === "canary"
-```
+Every deployment reports, previews included, and Vercel [meters Speed Insights by event](https://vercel.com/docs/speed-insights/limits-and-pricing) per team. Narrowing the gate to `VERCEL_ENV === "production"` drops PR previews but drops `canary` too, since canary deploys as a preview; to keep it, also test `VERCEL_GIT_COMMIT_REF === "canary"`, the way `.github/scripts/migrate-on-deploy.ts` picks its deploy branches.
 
 </Callout>
 
-To remove it entirely, delete the import, the `onVercel` line with its comment, and the one line that renders it, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
+To remove it, delete the import, the `onVercel` line and the render line, then drop `@vercel/speed-insights` from `web/next/package.json` and the root catalog.
 
 ## User feedback
 
-The feedback link is simpler still (one env var, no SDK):
+One variable and no SDK: `NEXT_PUBLIC_USERJOT_URL`. The name points at [UserJot](https://userjot.com), but the value is any URL. Set it and a **Feedback** link appears in the docs sidebar footer beside the version label and in the dashboard user menu above **Log out**, each opening in a new tab. Leave it empty and neither renders; the footer still shows the version.
 
-```
-NEXT_PUBLIC_USERJOT_URL=
-```
+## Common questions
 
-The name points at [UserJot](https://userjot.com), but the value is just a URL: set it to any feedback destination you like. When it is set, a link appears in two places: the **docs sidebar footer** (next to the `v{version}` label) and the **dashboard user menu**, directly above "Log out". Both open the URL in a new tab. Leave the variable empty and neither renders; the footer still shows the version.
+**Why `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and not `_KEY`?**
+
+It is the name PostHog's docs use; the starter renamed it from `NEXT_PUBLIC_POSTHOG_KEY`. The token is optional, so a deployment still setting the old name gets no error and no analytics.
+
+**Where did the UserJot widget go?**
+
+It is the **Feedback** link now: set `NEXT_PUBLIC_USERJOT_URL`, since `NEXT_PUBLIC_USERJOT_ID` and the floating widget it keyed are gone. A plain link loads no third-party script on every page, and its destination can be any form.
+
+## It's working if
+
+- With the token set, the first page load sends a request to your PostHog host, visible in the network tab; with it empty, none.
+- On Vercel the page requests `/_vercel/speed-insights/script.js` by default; on Docker nothing under `/_vercel/` is requested.
+- With `NEXT_PUBLIC_USERJOT_URL` set, **Feedback** shows in the docs sidebar footer and the user menu.
 
 ## Next
 
-- [Environment Variables](/docs/manage/environment): how these optional keys are declared and validated.
-- [Dashboard](/docs/manage/dashboard): the app shell where the feedback link and user menu live.
+- [Environment Variables](/docs/manage/environment), because it declares the three variables above and says why `VERCEL` is not among them.
+- [Deploy to Vercel](/docs/deployment/vercel), because Speed Insights is one of the things a Vercel deploy turns on by itself.
+- [SEO & Metadata](/docs/manage/seo), because it is the other half of what every public page carries without configuration.

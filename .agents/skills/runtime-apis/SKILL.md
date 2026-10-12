@@ -9,22 +9,20 @@ source: local
 Two rules, in order:
 
 1. **Bun-first.** When the file runs under Bun and a native equivalent exists, use it: `Bun.file`, `Bun.write`, `Bun.spawn`/`Bun.spawnSync`, `Bun.Glob`, `Bun.YAML`, `Bun.serve`.
-2. **Else the `node:` prefix.** Reach for the Node built-in with its protocol prefix: `import { join } from "node:path"`, `require("node:fs")`. Never the bare specifier: write `node:path`, not `path`.
+2. **Else the `node:` prefix.** The Node built-in with its protocol prefix: `import { join } from "node:path"`, `require("node:fs")`. The prefix holds in Bun-only code too: it marks the import as a built-in rather than an npm package, so resolution is identical under every runtime.
 
-The prefix is mandatory even in Bun-only code: it marks the import as a built-in rather than an npm package, so resolution is identical under every runtime.
+## Where Node runs
 
-## Not everything runs under Bun
-
-`Bun.*` exists only on the Bun runtime. These areas run on **Node** in at least one of their environments, so `node:` is load-bearing and `Bun.*` is a crash, not a style choice:
+`Bun.*` exists only on the Bun runtime. These areas run on Node in at least one of their environments, so `node:` is load-bearing there and `Bun.*` is a crash:
 
 | Area | Runtime | Rule |
 | --- | --- | --- |
-| `packages/cli/**` | Node | `node:` only. Published to npm, launched via `npx` (bin shebang `#!/usr/bin/env node`); `Bun.*` breaks every npx user. |
-| `web/next/**` | Node + Bun | `node:` only. `next dev` runs under the system Node locally; Docker (`bun server.js`) and Vercel (`bunVersion`, built via `bun run --bun`) run it under Bun. Stays portable. |
-| `packages/env/**` | Node + Bun | `node:` only. Imported by web (Node and Bun) and api (Bun); stays portable. Stricter for `web-next.ts` and the package index: client components import them, so they carry no `node:*` at all, prefixed or not. The `.env` load (`node:path` + `dotenv`) lives in `load-dotenv.ts`, which only the server targets import; a new server target imports `@/load-dotenv` first, and a script that reaches env through `web-next` or the index imports `@packages/env/load-dotenv` itself. |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
+| `packages/cli/**` (canonical starter only) | Node | `node:` only: published to npm and launched through `npx`, so `Bun.*` breaks every user. |
+| `packages/env/**` | Node + Bun | `node:` only, imported by web and api alike. `web-next.ts` and the package index are imported by client components, so they carry no `node:*` at all, prefixed or not (`codebase-map` holds the env entrypoints). |
+| `web/next/**` | Node + Bun | `node:` only: `next dev` runs under the system Node, while Docker and Vercel serve the build under Bun. |
 
-Bun-first therefore applies to the Bun-only files: `.github/scripts/*.ts`, `packages/scripts/src/*.ts` (`bun x.ts`) and the end-to-end helper `tests/stack.ts` (`bun test`). The CLI test files run under `bun test` but mirror the CLI's `node:` style on purpose.
+Bun-first applies to the Bun-only files: `.github/scripts/*.ts`, `packages/scripts/src/*.ts` and, in the canonical starter, the end-to-end helper `tests/stack.ts`; the CLI's tests mirror the CLI's `node:` style on purpose.
 
 ## Bun equivalents
 
@@ -45,15 +43,9 @@ Bun-first therefore applies to the Bun-only files: `.github/scripts/*.ts`, `pack
 
 ## Audit
 
-No bare (unprefixed) built-in specifier may exist anywhere. The `$B` alternation is the full Node built-in list, so a new bare import cannot slip through; extend it only when Node ships a new module. This prints nothing when clean:
+No bare built-in specifier exists anywhere. `$B` is the full Node built-in list, so a new bare import cannot slip through; extend it only when Node ships a new module. Done when this prints nothing:
 
 ```bash
 B='assert|async_hooks|buffer|child_process|cluster|console|constants|crypto|dgram|diagnostics_channel|dns|domain|events|fs|http|http2|https|inspector|module|net|os|path|perf_hooks|process|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|trace_events|tty|url|util|v8|vm|wasi|worker_threads|zlib'
 rg -n "from ['\"]($B)(/[a-z_]+)?['\"]|require\(['\"]($B)(/[a-z_]+)?['\"]\)" -g '!**/dist/**' -g '!.claude/worktrees/**' --hidden
-```
-
-The full per-file inventory lives in [`index.md`](index.md): every file, its runtime, and the `node:` modules it imports. Regenerate it when the surface changes:
-
-```bash
-rg -n "node:[a-z/_]+" -g '!**/dist/**' -g '!.claude/worktrees/**' --hidden
 ```

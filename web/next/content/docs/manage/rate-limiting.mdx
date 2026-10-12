@@ -1,67 +1,67 @@
 ---
 slug: /docs/manage/rate-limiting
 title: Rate Limiting
-description: Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.
+description: "Layered rate limits keyed by user, API key, or IP: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it."
 ---
 
-Every request to the API passes a rate limiter, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter) in `api/hono/src/middlewares/rate-limiter.ts`. It runs in two tiers from one factory: a global limit on every request keyed by client, and a higher per-user limit on the authenticated `/api/v1/*` routes. An authenticated request passes through both, so a signed-in user is bounded by their own budget and still counts against the shared IP budget.
+Every request to the API passes a rate limiter before any route runs, and a signed-in request passes a second, larger one on its way into `/api/v1`. Both come from one factory in `api/hono/src/middlewares/rate-limiter.ts`, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter).
+
+A limiter keys a request by who before where: user id, then API key, then IP, in a per-process store. The two limiters stack rather than replace: signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and the larger per-user budget binds first only for a user spread across addresses. A count lives on the instance that served the request, not across a fleet.
+
+## When you need this
+
+Reach for this page when you are seeing 429s, or deciding what the limits should be for your deployment. For the envelope a throttled request gets and the code to `switch` on, see [API Conventions](/docs/manage/api-conventions).
 
 ## How a request is keyed
 
-The limiter buckets each request by the first of these it can resolve:
+The key is the first of these the limiter can resolve (`generateRateLimitKey` in `rate-limiter.ts`):
 
-1. **User id**, when the request carries a session (`userid:<id>`).
-2. **API key**, hashed, when one is supplied (`apikey:<hash>`).
-3. **IP address**, detected from request headers with [`@arcjet/ip`](https://github.com/arcjet/arcjet-js) (`ip:<addr>`).
-4. A **random per-request id** if no IP can be found, which effectively leaves that request unbounded.
+| Tier    | Key              | Comes from                                                                                            |
+| ------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| User    | `userid:<id>`    | the session `authMiddleware` sets on `/api/v1/*` before its limiter runs                              |
+| API key | `apikey:<hash>`  | a resolver no limiter passes, since the starter has no API-key auth; a fork that adds it supplies one |
+| Address | `ip:<address>`   | `findIp` from `@arcjet/ip`, a header parser with no account and no network call                       |
+| Random  | `ip:<random id>` | a fresh `randomUUIDv7()` per request when no address resolves, which leaves that request unbounded    |
 
-The global limiter passes no user or key resolver, so it always falls to the IP (or random) tier. The auth middleware installs the per-user limiter that supplies the session's user id, so authenticated traffic is bucketed by account rather than by shared network address.
+The global limiter passes no resolver, so it keys on address, falling to the random tier when none resolves; the per-user limiter supplies the session's user id.
 
-## Limits and window
+<Callout type="warn" title="Anonymous limiting is off on a bare Bun deploy">
 
-Two environment variables set the budget, both read in `packages/env/src/api-hono.ts`:
+`findIp` runs bare, with no `platform` and no trusted `proxies`. Where Bun owns the socket with nothing in front (Docker, any self-host), the request carries no peer address, so the library reads client-controllable headers: a forged `x-forwarded-for` holding a public address names its own bucket (a loopback or private one resolves to nothing), and a client that sends none lands on the random tier, one bucket per request. Vercel [overwrites `x-forwarded-for`](https://vercel.com/docs/headers/request-headers#x-forwarded-for), so the direct path there is unaffected. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host; the canonical starter tracks the fix in `.github/notes/plans/rate-limit-ip-resolution.md`.
 
-| Variable                    | Default | Controls                                  |
-| --------------------------- | ------- | ----------------------------------------- |
-| `HONO_RATE_LIMIT`           | `60`    | Requests allowed per window (anonymous).  |
-| `HONO_RATE_LIMIT_WINDOW_MS` | `60000` | Window length in milliseconds (1 minute). |
+</Callout>
 
-Authenticated users get **twice** the base limit: the auth middleware constructs its per-user limiter with `HONO_RATE_LIMIT * 2`. So out of the box an anonymous caller gets 60 requests per minute per IP, and a signed-in user gets 120 per minute for their account.
+## Two tiers from one factory
+
+`createRateLimiter` wraps the library's middleware with the key above and the envelope as its handler. Two instances exist:
+
+| Limiter                                       | Runs on                                                             | Budget per window                     | Keyed by |
+| --------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------- | -------- |
+| `rateLimiterMiddleware`                       | every request, after CORS and the logger in `api/hono/src/index.ts` | `HONO_RATE_LIMIT`, 60 by default      | address  |
+| the per-user limiter in `middlewares/auth.ts` | `/api/v1/*`, once the session is set                                | `HONO_RATE_LIMIT * 2`, 120 by default | user id  |
+
+Both windows are `HONO_RATE_LIMIT_WINDOW_MS`, 60000 by default, and both variables are validated in `packages/env/src/api-hono.ts` ([Environment Variables](/docs/manage/environment)). On a deploy where the address tier resolves nothing (the callout above), the per-user tier is the only limit a signed-in request meets.
 
 ## What a throttled request sees
 
-Exceeding a limit returns `429` in the standard [error envelope](/docs/manage/api-conventions):
+A `429` in the standard envelope, `{ "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }`, with a `Retry-After` header. Every response, throttled or not, carries the `draft-6` headers (`RateLimit-Limit`, `RateLimit-Policy`, `RateLimit-Remaining`, `RateLimit-Reset`), the library's default, so a client can back off without guessing. The `429` is documented on every method in the OpenAPI document, so the [reference](/docs/getting-started/type-safe-api) shows it on each route.
 
-```json
-{ "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }
-```
+## Common questions
 
-Every response also carries the `draft-6` standard headers (`RateLimit-Limit`, `RateLimit-Policy`, `RateLimit-Remaining`, and `RateLimit-Reset`), the limiter's default, and a throttled one adds `Retry-After`, so a client can back off without guessing. The `429` is documented on every route in the OpenAPI spec, so it shows up in the [Scalar reference](/docs/getting-started/type-safe-api) too.
+**Why do all anonymous visitors on a `*.vercel.app` host share one bucket?**
 
-<Callout type="info" title="Arcjet here is just IP detection">
+On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Nothing in the limiter recovers the original client on that path, so raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
 
-`@arcjet/ip` is a standalone header-parsing utility for finding a request's originating IP, not the Arcjet SaaS product. It needs no API key and no environment variable, and makes no network calls. It only reads forwarded/platform headers to resolve the address the IP tier keys on.
+**Are the limits shared across instances?**
 
-</Callout>
+No. The store is the library's `MemoryStore`, one per process, so each replica, and each serverless instance on Vercel, counts on its own: a client's 60 is 60 per instance it reaches. That is right for one container and for local work; behind a load balancer or on serverless, hand `rateLimiter` a shared `store` inside `createRateLimiter`, since the package exports `RedisStore` and `UnstorageStore`.
 
-<Callout type="warn" title="The IP tier trusts forwarding headers">
+## It's working if
 
-`findIp` is called bare, with no `platform` and no trusted `proxies`, so it walks its generic header list. Its own README is blunt about that: the IP "should not be trusted as it can be spoofed in most cases", and the guards it offers apply only when a `platform` is passed. On Vercel the headers can be trusted anyway, because Vercel [overwrites `x-forwarded-for`](https://vercel.com/docs/headers/request-headers#x-forwarded-for) and does not forward a client-supplied one. On a deploy where Bun owns the socket with nothing in front (a bare Docker host), a client can name its own bucket by sending `x-forwarded-for`, and one that sends nothing lands on the random tier above. Put a proxy you control in front, or pass `platform` and `proxies` to `findIp` for your host.
-
-</Callout>
-
-<Callout type="warn" title="The store is in-process">
-
-Each limiter uses an in-memory store scoped to one server instance, so limits are per-process, not shared across replicas. That is fine for a single instance or for local development; behind a load balancer or on serverless, back the limiter with a shared store (for example Redis) so the budget is enforced globally.
-
-</Callout>
-
-## The API-key tier is a stub
-
-The key resolver has an API-key branch, but nothing supplies it: no limiter passes a key resolver, and the starter has no API-key authentication at all. Auth is session-based (a cookie or session token resolved by Better Auth), so in practice requests key by user id or IP. To add API-key auth, validate the key in a middleware and pass a resolver into the limiter so the `apikey:` tier starts firing.
+- The 61st anonymous request to `/api/health` inside one minute returns `429` with `TOO_MANY_REQUESTS` in the envelope and a `Retry-After` header, and the 60 before it carried `RateLimit-Remaining` counting down. Against a Bun-served stack, send the same public address on every request (`x-forwarded-for: 1.1.1.1`), since nothing else resolves there and a loopback or private one never does (the callout above).
 
 ## Next
 
-- [API Conventions](/docs/manage/api-conventions): the error envelope the `429` uses, and the rest of the middleware chain.
-- [Environment Variables](/docs/manage/environment): where `HONO_RATE_LIMIT` and its window are validated.
-- [Authentication](/docs/manage/authentication): the sessions the per-user tier keys on.
+- [API Conventions](/docs/manage/api-conventions), because the `429` is the one envelope every error uses, and the code list lives there.
+- [Deploy to Vercel](/docs/deployment/vercel), because the same-origin proxy on a public suffix changes who is "where".
+- [Environment Variables](/docs/manage/environment), because the two limits are env vars validated there.
