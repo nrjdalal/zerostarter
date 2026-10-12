@@ -1,55 +1,54 @@
 ---
 name: skills-manager
-description: Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream. Use after editing a skill's frontmatter, when adding or removing a skill, or when the AGENTS.md skills-table check fails.
+description: Keep the AGENTS.md skills tables generated from skill descriptions. Use after editing a skill's frontmatter, when adding or removing a skill, when the skills-table check fails, or when asked whether a fork's skills are up to date.
 source: local
-files:
-  - .github/scripts/skills-manager.ts
 ---
 
 # Skills Manager
 
-This skill covers the catalog and provenance; the prose of a skill itself follows `writing-for-agents`. The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `.github/scripts/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
+The prose of a skill itself follows `writing-for-agents`; this skill covers the catalog and provenance. `.github/scripts/skills-manager.ts` generates the AGENTS.md skills tables from each skill's `name`, `description`, and `source`; a missing one makes it throw rather than emit a half-built table.
 
-Each skill carries its **provenance** in frontmatter:
+`source` is a skill's provenance, and decides its table:
 
-- `source: local` is authored here (this repo is the origin).
-- `source: <tool>` is vendored, named after the upstream repo it came from (`agent-browser`, `portless`, `skills` for mattpocock/skills): re-synced by re-running the tool, never hand-edited. The `source:` line is the one line this repo adds, so it goes back in after a re-vendor, or the generator throws.
-- `source: https://github.com/<owner>/<repo>` marks a skill a fork syncs from upstream (the CLI stamps this, with a `[!CAUTION]` sync note, when it scaffolds a fork).
+- `local`: authored here, under **Custom**.
+- A bare tool name (`agent-browser`, `portless`, `skills`): vendored from upstream, under **Vendored**; [Re-vendor](#re-vendor) updates one.
+- A GitHub URL or `owner/repo`: synced from that upstream, which the CLI stamps on a fork.
 
-Provenance is never rewritten by a sync: a `local` or vendored skill in a fork stays that way, because a wrong `source` is a silent, self-propagating loss of where a skill actually came from.
+A sync never rewrites provenance: a fork's `local` or vendored skill stays so.
 
-## Regenerate the tables
+## Regenerate
 
-The hook handles this on commit, but to run it by hand:
+The pre-commit hook runs the manager whenever a skill or the manager itself is staged. By hand:
 
 ```bash
-bun .github/scripts/skills-manager.ts          # rewrite the tables from the skills
-bun .github/scripts/skills-manager.ts --check  # fail on drift instead of writing (the gate)
+bun .github/scripts/skills-manager.ts          # rewrite the tables
+bun .github/scripts/skills-manager.ts --check  # fail on drift instead of writing
 ```
 
-Each cell is the description's summary, the sentence before `Use ...`, so keep every description in the `<summary>. Use when <triggers>` shape and edit the description, not the table. Done when `--check` passes.
+Each cell is the sentence before `Use ...`, so keep that `<summary>. Use when <triggers>` shape and edit the description; the hook rewrites the table. Quote a description holding `: `, or the manager throws. Done when `--check` passes.
 
 ## How a fork syncs
 
-A fork inherits its skills from the scaffold. On `init` and `sync` the CLI rebrands each skill's prose to the fork's project name (read from `package.json`). A skill this repo authored (`source: local`) becomes `source: <upstream repo>` with a `[!CAUTION]` note at the top; a skill this repo vendored keeps its tool as `source` and takes no note, so the fork re-vendors it the same way and it stays in that fork's **Vendored** table.
+- A sync rewrites only the skills sourced from the starter; the `> Synced from <upstream>.` line inside the stamped `[!CAUTION]` note is the opt-in, and removing that line hands the skill to the fork.
+- A skill the fork edited keeps the fork's version, and the sync summary names it.
+- `.agents/skills/.sync.json` records what the CLI wrote (`ref`, `upstream`, `written` per skill, and `AGENTS.md` under its own path); a fork carries it from `init` and commits it with every sync, and the canonical starter has none.
+- A custom skill is one file, since the CLI syncs only `SKILL.md`.
+- `packages/cli/src/skills.ts` holds the rules and `getting-started/cli.mdx` the human narrative, both in the canonical starter only.
 
-Provenance decides what a later `sync` may touch: it rewrites only the skills sourced from here, and leaves every other one exactly as the fork has it.
-
-That note is the contract: `bunx zerostarter` updates a skill only while the note is intact and the body still matches what the CLI last wrote. Customize the skill or drop the note and the fork owns it, and sync names it in the summary instead of replacing it.
-
-Prose cannot be compared directly (sync rebrands the body to the fork's name, so a synced skill never matches upstream byte for byte), so the CLI records what it wrote in `.agents/skills/.sync.json`: per skill, the ref it came from plus a hash of the upstream file and of the file as written. That ledger is what separates "the fork edited this" from "upstream moved". The ref is recorded because the CLI syncs a fork from `main` while this repo's default branch is `canary`, so comparing against the wrong one would report every skill canary is ahead on as drifted. A fork commits the ledger like any other synced file; this repo has none, since no skill here is synced from an upstream repo: every skill is `source: local` or vendored under its tool's own name.
-
-`AGENTS.md` ships the same way and is tracked in the same ledger, under its own path. `init` rebrands it; `sync` hands the fork the update only while its copy is still what the CLI last wrote, and keeps an edited one. The generated skills tables are left out of that comparison, since the fork's own `skills-manager` rewrites them. It carries no note: editing it is the opt-out. A guide with no sync record is replaced only when it is the untouched stub an older CLI scaffolded; anything else is the fork's own work and stays. `AGENTS.md` is also a `PRESERVE_ON_SYNC` path, which is what keeps an older CLI from overwriting it.
-
-Check state from inside a fork with:
+## Check state
 
 ```bash
 bun .github/scripts/skills-manager.ts --outdated
 ```
 
-which reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (customized there, or synced before the ledger existed), or, for a tracked skill, `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork has since changed it.
+Reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (customized, or synced before the ledger), `not in <source>`, `upstream fetch failed (HTTP <n>)`, or `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork changed it since. Done when every skill reports as expected.
 
-## Notes
+## Re-vendor
 
-- Adding or removing a skill changes the tables; the hook regenerates them, and `--check` is the gate if it is ever bypassed.
-- `name`, `description`, and `source` are the contract the manager reads; a missing one makes it throw rather than emit a half-built table.
+Re-vendoring rewrites the folder: `bunx skills@1.7.2 update -p -y` for the skills `skills-lock.json` records (`-p` keeps it to project skills, `-y` skips the scope prompt the bare command opens), a fresh copy from upstream for `portless`. Then put back what this repo adds:
+
+- the `source:` line on each vendored skill;
+- the `## Viewport` section on `agent-browser`;
+- a sweep of the em-dashes upstream writes, which `AGENTS.md` forbids.
+
+Done when each vendored skill carries its `source:` line, `agent-browser` has its `## Viewport` section, `rg -n '\x{2014}' .agents/skills` prints nothing, and `--check` passes.

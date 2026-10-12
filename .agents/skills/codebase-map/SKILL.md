@@ -21,7 +21,7 @@ packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init s
 tests/            # the whole suite, mirroring each subject's path; *.e2e.test.ts drive a running stack (canonical repo only; forks take no tests)
 ```
 
-Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the whole codebase as one context file.
+Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the docs and published posts as one context file.
 
 ## Where to edit for X
 

@@ -4,43 +4,48 @@ title: Contributing
 description: "How to propose a change to ZeroStarter: branch off canary, keep docs in sync, open a PR."
 ---
 
-ZeroStarter develops on `canary` (the default branch, and the one every PR targets). `main` is release-only: changes reach it through the release process, never a direct commit. So a contribution has one shape: branch off `canary`, keep the docs in the same commit as the code, and open a PR back into `canary`.
+ZeroStarter develops on `canary`, the default branch and the one every pull request targets; `main` is release-only, written by the release flow and never by a direct commit. So a contribution has one shape: a worktree off `canary`, docs in the same change, a pull request back into `canary`.
+
+## When you need this
+
+Before your first pull request to the starter. When a hook or a pull-request check refuses your change, see [Code Quality](/docs/manage/code-quality).
 
 ## Where to start
 
-Read `AGENTS.md` (symlinked to `CLAUDE.md`) first. It holds the repo's load-bearing conventions for humans and agents alike: `@/` imports, single-line comments, and the `design` skill for anything UI. Then run the `codebase-map` skill to orient; it maps where things live and how a change flows across the stack. From there, load the task skill that fits (`api-endpoint`, `db-migration`, ...).
+Read `AGENTS.md` (`CLAUDE.md` symlinks to it): the rules humans and agents work under, and a skills table naming a procedure for every recurring task. Run `codebase-map` to orient, then load the task skill that fits.
 
 ## Make the change
 
-Branch off `canary` with a descriptive name (`feat/...`, `fix/...`), then run the checks before you push:
+Work in a git worktree under `.claude/worktrees/`, one per change, branched from freshly fetched `origin/canary`, so the primary checkout stays clean and the change builds on current `canary`:
 
 ```bash
-bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm   # the first CI gate
-bun run format
-bun run lint
-bun run check-types
-bun run test
-bun run build
+git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary
 ```
 
-Two rules from `AGENTS.md` are non-negotiable:
+Two skills shape what goes in. `doc-sync`: docs move with code, so a changed command, path, convention or skill is fixed across every documented surface in the same change. `gh-commit`: one logical unit per commit in the [Conventional Commits](https://www.conventionalcommits.org) format, which commitlint checks on the `commit-msg` hook.
 
-- **Docs move with code.** When you change a convention, structure, or tooling, update its doc and skill in the _same_ change. Docs must never drift: it's the rule the whole agent workflow rests on.
-- **No co-author trailer.** Never add `Co-authored-by` to a commit message.
-
-Commit with [Conventional Commits](https://www.conventionalcommits.org): `feat`, `fix`, `docs`, `refactor`, `chore`, and the rest. Commitlint enforces the type on the `commit-msg` hook, so a malformed message is rejected before it lands.
+Run `bun run check-types` (and, in the canonical starter, `bun run test`) before pushing, and expect the audit in the pull request's CI rather than on your push; [Code Quality](/docs/manage/code-quality#the-gates-in-order) says why for both.
 
 ## Open the PR
 
-<Callout type="warn" title="Target canary, not main">
+Describe the change and its motivation, note any migration step, and link related issues; for a breaking change or a large feature, open an issue first. By contributing you agree to the [MIT license](https://github.com/nrjdalal/zerostarter/blob/canary/LICENSE.md).
 
-Open your PR against `canary`, the default development branch. Branch off it (don't commit to `canary` directly) and never target `main`.
+## Common questions
 
-</Callout>
+**My commit passed the hook, so why did CI fail on formatting?**
 
-Describe the change and its motivation, note any migration steps, and link related issues. For a breaking change or a large feature, open an issue first to agree on the approach. By contributing you agree to the [MIT license](https://github.com/nrjdalal/zerostarter/blob/canary/LICENSE.md).
+lint-staged formats only the staged files; CI runs `bun run format:check` over the whole tree, so drift in a file you never touched fails the pull request. Run `bun run format`, commit, push.
+
+**Why does the audit ignore an advisory?**
+
+Because it has no patched version, so none of the `audit` skill's fixes has a release to move to, and the skill's route for that case is to ignore it by ID. The comment above the audit command in `lefthook.yml` names each ignored package and why; each one's exit criteria are in `.github/notes/dependencies.md` (canonical starter).
+
+## It's working if
+
+- `git log --oneline origin/canary..HEAD` in your worktree lists only your own commits.
+- Your pull request names `canary` as its base branch.
 
 ## Next
 
-- [Code Quality](/docs/manage/code-quality): the lint, format, and commit hooks your PR runs through.
-- [Release Management](/docs/manage/release): how canary becomes a versioned main release.
+- [AI Skills](/docs/resources/ai-skills), because `codebase-map`, `doc-sync` and `gh-commit` live there.
+- [CLI](/docs/getting-started/cli), because a fork made with it inherits these hooks and skills, and `sync` takes later changes.

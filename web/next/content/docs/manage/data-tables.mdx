@@ -1,60 +1,61 @@
 ---
 slug: /docs/manage/data-tables
 title: Data Tables
-description: "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery."
+description: "Compose a table from one module: URL state, virtualized infinite scroll, and headers that size themselves."
 ---
 
-Tables are built the way the [shadcn data-table guide](https://ui.shadcn.com/docs/components/base/data-table) recommends: there is no all-in-one `<DataTable data={...} />` prop machine. The page owns its [TanStack Table](https://tanstack.com/table) instance and composes the pieces, all exported from one module, `components/data-table.tsx` (the `sidebar.tsx` pattern: one file, many exports, hooks included). Every table scrolls infinitely inside its own region with virtualized rows; there is no numbered pagination.
+A table here is composed, not configured: the page owns its [TanStack Table](https://tanstack.com/table) instance, and one module, `web/next/src/components/data-table.tsx`, supplies every piece, the way the [shadcn data-table guide](https://ui.shadcn.com/docs/components/base/data-table) builds one. A page picks the exports it needs and wires them to its own columns, fetcher and layout; there is no prop machine to outgrow.
+
+Every table scrolls infinitely inside its own region with virtualized rows, its state lives in the URL, and a column's width is arithmetic over the sans's metrics rather than a number someone eyeballed. The console users table at `app/(console)/console/(access)/users/components/` is the reference every other table copies.
+
+## When you need this
+
+Reach for this page when you are adding a table, or when a column sizes, sorts or selects in a way you did not expect. The `design` skill holds the conventions a table follows (cells, ids, sort UI, time columns); this page holds the mechanics beneath them. For the endpoint a server-driven table talks to, see [API Conventions](/docs/manage/api-conventions).
 
 ## The exports
 
-| Export                                | Provides                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DataTable`                           | The virtualized infinite-scroll region: sticky header, windowed rows, load-more on approach, a spinner while loading, an `Empty` fallback, an inline retry when a refresh fails, a selection/total status line, and the floating selection bar                                                                                                      |
-| `DataTableCellText`                   | Text-cell overflow from the column config: truncate (one line, ellipsis, tooltip only when actually cut) or wrap (multi-line; the measured virtual row grows)                                                                                                                                                                                       |
-| `DataTableColumnHeader`               | A sortable header: a plain title with a bare sort icon toggling asc and desc (hiding lives in the view options)                                                                                                                                                                                                                                     |
-| `DataTableFacetedFilter`              | A multi-select value filter in a command palette. Counts render only where the faceted row models are registered, which the shared `features` deliberately leaves out: the console's tables filter on the server, so a count over the rows loaded so far would understate the real total                                                            |
-| `DataTableToolbar`                    | The search box (global filter), a children slot for filters, reset, column visibility, and an `actions` slot for table-level actions like adding a row                                                                                                                                                                                              |
-| `DataTableViewOptions`                | The column show/hide dropdown, labeled from `columnDef.meta.label`                                                                                                                                                                                                                                                                                  |
-| `selectColumn`                        | The checkbox column, taking the label that names each row for a screen reader                                                                                                                                                                                                                                                                       |
-| `useDataTable`                        | The whole server-driven wiring in one call: URL state, the infinite query, the manual-mode table instance, and the current selection                                                                                                                                                                                                                |
-| `useDataTableState`                   | The URL layer alone (`q`, `sort`, filter arrays via [nuqs](https://nuqs.dev)); client-side tables use this directly. Takes the filter ids, a default sorting, and optionally the set of sortable column ids, which drops a URL sort naming a column the table does not have                                                                         |
-| `features`                            | The registered TanStack features and row-model slots, re-exported from `lib/data-table-features.ts`. v9 bundles nothing by default, so a method is only on the instance when its feature is registered and a row model only exists when its slot is filled; every `ColumnDef`, `Column`, and `Table` type in the app is generic over this one value |
-| `ColumnConfig` + `applyColumnManager` | The per-column layout contract and the fold that applies a table's config onto its defs. Re-exported from `lib/data-table-layout.ts`, which also holds the sort-whitelist lookup (`resolveSort`) and the facet-option builder (`facetOptions`): no React, no DOM, unit-tested in `tests/web/next/src/lib`                                           |
+| Export                               | Provides                                                                                                                                                                                                                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `applyColumnManager`, `ColumnConfig` | The fold that applies the per-column layout contract onto the defs, and the contract's type, from `lib/data-table-layout.ts`, which also holds `acceptedFacet`, `facetOptions` and `resolveSort`: no React, no DOM, tested under `tests/web/next/src/lib/` in the canonical starter |
+| `DataTable`                          | The virtualized infinite-scroll region: sticky header, windowed rows, load-more near the bottom, a spinner, an `Empty` fallback, an inline Retry when a batch fails, the status line, and the floating selection bar                                                                |
+| `DataTableCellText`                  | A text cell shaped by its column config: truncate with a tooltip only when cut, or wrap and let the measured row grow                                                                                                                                                               |
+| `DataTableColumnHeader`              | A sortable header; how it reads is the `design` skill's sort UI rule, and hiding lives in the view options                                                                                                                                                                          |
+| `DataTableFacetedFilter`             | A multi-select value filter in a command palette; counts render only where faceted row models are registered, which the shared `features` leaves out, since a count over loaded rows would understate a server-filtered total                                                       |
+| `DataTableToolbar`                   | The search box, a children slot for filters, reset, column visibility, and an `actions` slot for table-level actions                                                                                                                                                                |
+| `DataTableViewOptions`               | The show/hide dropdown, labeled from `meta.label`                                                                                                                                                                                                                                   |
+| `features`                           | The registered TanStack features and row-model slots, from `lib/data-table-features.ts`; v9 bundles nothing by default, so every `ColumnDef`, `Column` and `Table` type is generic over this one value                                                                              |
+| `selectColumn`                       | The checkbox column, taking the label that names each row for a screen reader                                                                                                                                                                                                       |
+| `useDataTable`                       | The whole server-driven wiring in one call: URL state, the infinite query, the manual-mode instance, and the current selection                                                                                                                                                      |
+| `useDataTableState`                  | The URL layer alone (`q`, `sort`, filter arrays through [nuqs](https://nuqs.dev)) for a client-side table; given the sortable ids, it drops a URL sort naming a column the table does not have                                                                                      |
 
 ## Column config
 
-Layout is data that colocates with each table: its `data-columns.tsx` exports the column defs (content: header, cell, `meta.label`) and a `Record<string, ColumnConfig>` written in column order. There is no central registry; the file location is the namespace.
+Layout is data that lives beside each table: its `data-columns.tsx` exports the column defs (header, cell, `meta.label`) and a `Record<string, ColumnConfig>` written in column order.
 
 ```ts
 type ColumnConfig = {
   align?: "center" | "left" | "right" // default left
-  extra?: number // allowance over a measured title (default 10)
+  extra?: number // allowance over a measured label, default 10
   flex?: boolean // default false
-  width?: number // spacing units; omit = measure the header
-  wrap?: boolean // default false = truncate with tooltip; true = multi-line wrap
+  width?: number // spacing units; omit to measure the header
+  wrap?: boolean // default false: truncate with a tooltip
 }
 ```
 
-- Widths are Tailwind spacing units (1 = `0.25rem`, so 12 = 48px at the default scale) rendered through `calc(var(--spacing) * n)`, so tables ride the theme token and user font-size. On a fixed column the width is exact (`shrink-0`); on a flex column it is the floor (`min-width` + `flex-1`).
-- Omit `width` and the column sizes as header title + `extra`, snapped up to the 3-unit grid. The header font ships as bundled data: a build step (`packages/scripts/src/data-table-metrics.ts`, wired into the web build, dev, and check-types chains) parses the app's own woff2 and emits per-character advances plus kerning-pair deltas at the header font size into `.generated/data-table-metrics.json` (imported as `generated/*`), so any label measures by pure arithmetic, identically on the server and the client, and SSR renders final widths with no settle. It costs ~5KB gzipped, in whichever chunk imports the module: today that is the console routes rendering a table, but importing any `data-table` export from a widely-shared module would pull the metrics along with it. Swapping the font (see [Fonts](/docs/manage/theming#fonts)) re-measures on the next run.
-- `meta.label` is the one source for a column's header text, its measured width, and its view-options entry, so the three can never desync.
-- An explicit `width` is exact and the header cell clips: the auto path reserves `extra` for the sort control, a fixed one reserves nothing, so size a sortable column with `extra` rather than `width` unless the number already accounts for the icon.
-- Names follow what the column says, never the backing field: the column headed Status keys as `status` with `accessorKey: "banned"` underneath.
-- Numbers live in the config map, never inline in the defs. A column with no entry still gets the defaults (auto width from its label, left-aligned, fixed), so an unconfigured column can never inherit a stray pixel-minded size.
+Widths are Tailwind spacing units (one unit is `0.25rem`, 4px at the default scale) rendered through `calc(var(--spacing) * n)`, so a table rides the theme token. A fixed column is exact; a flex column treats the number as a floor and grows. A column with no entry takes the defaults, so it cannot inherit TanStack's pixel-minded `size` of 150.
 
-## Slack (who grows)
+Omit `width` and the column sizes itself: the label's advance in the header font plus `extra`, rounded up to a multiple of three units (12px at the default scale). The font is bundled data, not a canvas measurement: `packages/scripts/src/data-table-metrics.ts` runs ahead of `build`, `check-types` and `dev:app`, parses the sans woff2 at the header's weight and size, and writes per-character advances and kerning deltas to `.generated/data-table-metrics.json` (the `generated/*` alias), so a label measures identically on server and client and SSR ships final widths. `lib/data-table-layout.ts` imports that file and `data-table.tsx` re-exports the layout, so the metrics land in whichever chunk imports any `data-table` export: a widely shared module that imported one would carry them onto every page. `meta.label` is the one source for the header text, its width and its view-options entry. Swapping the sans is the `fonts` skill, whose "Wire the role" step moves the `FONT` path that script reads.
 
-`flex` marks a column and reaches capability back to every column before it; of the visible capable columns, only the last grows, so hiding the growing column hands growth to the previous one (a left-aligned select reads well when it inherits growth: the checkbox pins left and its empty box is the gap, with the remaining columns docked right). A table with no flex column spreads its widthless columns instead. Explicitly centered columns drop their horizontal padding so the shadcn checkbox-cell padding quirk cannot skew them. Dead space never trails the row.
+`flex` decides who grows: it reaches capability back to every column before it, and of the visible capable columns only the last grows, so hiding that column hands growth to the one before it. A table with no flex column spreads its widthless columns instead, and dead space never trails a row. A centered column drops its horizontal padding, since the shadcn cell strips its right padding when it holds a checkbox and a padded center would skew. When a column takes `extra` over `width`, how an id is named, and where a select column earns its place are the `design` skill's rules.
 
 ## Server-driven tables
 
-The console users table (`app/(console)/console/(access)/users/components/`) is the reference: sorting, search, and filters resolve on the API, and 25-row batches stream in on scroll through [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries):
+The users table resolves sorting, search and filters on the API and streams rows in on scroll through [TanStack Query's infinite pattern](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries). Its wiring, from `app/(console)/console/(access)/users/components/data-table.tsx`:
 
 ```tsx
-const { table, tableProps } = useDataTable({
+const { selected, table, tableProps } = useDataTable({
   columnConfig: usersColumnConfig,
-  columns: usersColumns,
+  columns,
   defaultSorting: DEFAULT_SORTING,
   enableRowSelection: true,
   fetchPage: fetchUsers, // (input: DataTablePageInput) => Promise<DataTablePage<Row>>
@@ -63,57 +64,63 @@ const { table, tableProps } = useDataTable({
   queryKey: "console-users",
 })
 
-<DataTableToolbar table={table} searchMaxLength={254} searchPlaceholder="Search users...">
+<DataTableToolbar table={table} searchMaxLength={Q_MAX} searchPlaceholder="Search users...">
   <DataTableFacetedFilter column={table.getColumn("role")} options={ROLE_OPTIONS} title="Role" />
 </DataTableToolbar>
-<DataTable {...tableProps} aria-label="Users" />
+<DataTable {...tableProps} aria-label="Users" selectionActions={/* Ban, Unban, Set role */} />
 ```
 
-- `DataTable` owns its own failure state: a first load that errors renders the message with a Retry rather than "No results", so the snippet above needs no `empty`. Pass `empty` for the genuine zero-row case.
-- Selection covers loaded rows: under infinite scroll the header checkbox selects what has been fetched so far, so "12 of 25 row(s) selected" can sit next to a larger total. Pass the endpoint's own `q` cap as `searchMaxLength` on the toolbar so a long paste cannot fail the request.
-- What can be done to a selection goes in `selectionActions` on `DataTable`, not in the toolbar. It renders as a bar that floats in over the bottom of the table while anything is selected, ending in a Cancel that clears the selection, so the actions sit with the rows they act on rather than up among the filters. A select column only earns its place once a table has one: the action sends the selection to a [set route](/docs/manage/api-conventions) in one request, splitting it at the cap when a selection has outgrown it, and the result reports what actually happened (`2 removed, 1 failed`) rather than claiming the whole selection succeeded.
-- `fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, hasNextPage, page, total }`, passing the endpoint's own end signal and page number straight through (`perPage` is the table's own, so it is not echoed back); the console maps column ids onto the endpoint's sort whitelist through a `satisfies`-checked record, so a server rename becomes a compile error, and the row type derives from `InferResponseType`.
-- `getNextPageParam` reads `hasNextPage` off the last page rather than comparing what has loaded against a total, so a total that moves mid-scroll cannot loop the load-more effect and no guard is needed for it. `placeholderData: keepPreviousData` keeps rows on screen while a sort or filter refetches, and the search term passes through `useDeferredValue`.
-- `defaultSorting` applies as real table state when the URL carries no sort, so the header chevron and `aria-sort` show it while the URL stays clean. Tables sort by one column, so a hand-written multi-sort URL clamps to its first entry.
-- The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns (nullable ones coalesced so rows group with the labels they display), escapes `LIKE` wildcards, filters roles with null-as-"user", adds an id tiebreaker against page-boundary drift, and sits behind the console gate (see [API Conventions](/docs/manage/api-conventions)).
+- `fetchPage` receives `{ filters, page, perPage, search, sorting }` and returns `{ rows, hasNextPage, page, total }`: `getNextPageParam` reads `hasNextPage` off the last page rather than comparing what has loaded against a total that can move mid-scroll. Column ids map onto the endpoint's sort whitelist through a `satisfies`-checked record read by `resolveSort`, so a server rename is a compile error, and the row type derives from `InferResponseType`.
+- `selected` is the filtered selection model as rows, which is what a selection action acts on. Selection covers loaded rows only, so "12 of 25 row(s) selected" can sit next to a larger total, and it resets when search, sort or a filter changes. The toolbar's `searchMaxLength` mirrors the endpoint's `q` cap so a long paste cannot fail the request.
+- `defaultSorting` applies as real table state when the URL carries no sort, so the header chevron and `aria-sort` show it while the URL stays clean; a hand-written multi-sort URL clamps to its first entry. `keepPreviousData` holds rows on screen while a sort or filter refetches.
+- A first load that errors renders the message with a Retry rather than "No results", so an outage never reads as an empty table, and a failed batch parks load-more rather than retrying forever. `DataTable`'s optional `empty` prop, the page's own message for a table that holds nothing, is kept for that genuine zero-row case: it shows only while no search or filter is active, since a filter that matches nothing gets "No results".
+- The endpoint (`api/hono/src/routers/admin.ts`) whitelists sort columns and appends `nulls last` to every one, escapes `LIKE` wildcards through `escapeLike`, filters roles with null as `user`, breaks ties on `asc(user.id)`, counts the total on every batch, and sits behind the console gate.
 
 ## Client-side tables
 
-For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units; tanstack's pixel-minded default clamp would inflate them), and the shared `features` (v9 fills row-model slots at registration, and the shared value carries `sortedRowModel` and `filteredRowModel`; add `facetedRowModel` and `facetedUniqueValues` there if the table wants per-value counts in its facets). All rows exist up front, the virtualizer windows them, and there is no `onLoadMore`. Naming a filter or sort function by string means registering it first: v9 resolves `globalFilterFn` and `filterFn` against the `filterFns` map on `features` and `sortFn` against `sortFns`, and anything unregistered is a compile error rather than a silent fallback. The console's tables resolve both on the server, so `data-table-features.ts` registers neither map; add the entries a client-side table names:
-
-```ts
-import {
-  createFacetedRowModel,
-  createFacetedUniqueValues,
-  filterFn_arrIncludesSome,
-  filterFn_includesString,
-  sortFn_alphanumeric,
-} from "@tanstack/react-table"
-
-export const features = tableFeatures({
-  // ...
-  facetedRowModel: createFacetedRowModel(),
-  facetedUniqueValues: createFacetedUniqueValues(),
-  filterFns: { arrIncludesSome: filterFn_arrIncludesSome, includesString: filterFn_includesString },
-  sortFns: { alphanumeric: sortFn_alphanumeric },
-})
-```
+For a payload that fits in the browser, skip `useDataTable`: wire `useDataTableState`, `applyColumnManager`, `defaultColumn: { minSize: 0 }` (sizes are spacing units, and TanStack's pixel clamp would inflate them) and the shared `features`. All rows exist up front, the virtualizer windows them, and `DataTable` gets no `onLoadMore`, the callback `useDataTable` hands it to fetch the next batch near the bottom. Naming a filter or sort function by string means registering it first: v9 resolves `filterFn` against `filterFns` on `features` and `sortFn` against `sortFns`, and anything unregistered is a compile error. The console resolves both on the server, so `data-table-features.ts` registers neither map and no faceted row model; a client-side table adds what it names there, once, for every table.
 
 ## Filling the viewport
 
-The table takes all available height below the page header. That needs a definite height at the top of the chain: the page passes `className="flex h-svh flex-col"` to `PageShell`, and everything between it and the region carries `flex-1 min-h-0` (the console Users page is the reference). Without a definite ancestor height the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
+The table takes all the height below the page header, so it needs a definite height to scroll in its region; the classes that give it one are in the `design` skill's "Layout and landmarks" section. Without a definite ancestor the region grows with its content, the page scrolls instead of the table, and the always-near bottom loads every batch at once.
 
 <Callout type="warn" title="TanStack Table and the React Compiler">
 
-`useTable` mutates one stable table instance during render, so compiler-memoized components comparing the instance identity never see sorting, selection, or row updates. The data-table module carries the `"use no memo"` directive once at the top, and so must every file that reads a `table` or `column` instance; drop it and the table freezes one render behind. Still true on v9: removing the directive there leaves the faceted filter rendering its options with no counts, while sorting and selection keep working, so a partial break is the symptom to expect rather than a dead table.
+`useTable` mutates one stable instance during render, so a compiler-memoized component comparing that identity freezes one render behind and misses a sort, a selection or a new batch. The module carries `"use no memo"` at the top, and so must every file that reads a `table` or `column` instance.
 
 </Callout>
 
 ## Accessibility
 
-Grid/flex display strips implicit table semantics, so `DataTable` restates every structural role (`table`/`rowgroup`/`row`/`columnheader`/`cell`) and reports `aria-rowcount` for the full virtualized set with per-row `aria-rowindex`. The scroll region is named and focusable (`role="region"`, `tabIndex={0}`), sorted headers set `aria-sort`, the sort icons are labeled native buttons, the toolbar search is labeled, and tooltips mirror truncated values.
+Grid and flex display strip implicit table semantics, so `DataTable` restates every structural role and reports `aria-rowcount` for the full set with per-row `aria-rowindex`. The scroll region is named and focusable (`role="region"`, `tabIndex={0}`), sorted headers set `aria-sort`, the sort icons are labeled native buttons, the search is labeled, and tooltips mirror truncated values.
+
+## Common questions
+
+**Why TanStack Table v9?**
+
+Because the shadcn recipe this module is modelled on is written for v9, so the guide stays a working reference for the module. v9 is a rewrite rather than a rename: nothing is bundled by default, a method exists on the instance only when its feature is registered and a row model only when its slot is filled, and `lib/data-table-features.ts` is where both happen.
+
+**Why is there no numbered pagination?**
+
+Because a fixed region that streams batches keeps the toolbar and header in view while the reader scans, and never resizes with its content. The module exports no pagination component, and `useDataTableState` keeps only `q`, `sort` and the filters in the URL, no page. The endpoint still takes `page` and `perPage`, so a numbered UI could be built on it, but nothing in the module renders one.
+
+**Can a row be skipped or repeat while I scroll?**
+
+Yes. The endpoint pages by offset, so a row inserted or deleted above the current window between two batches shifts every later row by one: the next batch can start one row late, or repeat the row that was last. A repeat is a duplicate `getRowId`, so a duplicate React key and a selection that aliases. Keyset pagination is the remedy, and the sort order already ends on the unique tiebreaker it needs; the canonical starter keeps the change's open shape in `.github/notes/plans/data-table-offset-pagination.md`.
+
+**How many requests does a bulk action send?**
+
+One per `MAX_BATCH` ids, the set route's cap in `packages/config/src/console.ts`. The selection goes to a [set route](/docs/manage/api-conventions#lists-and-sets) as `{ ids }` and each id answers with its own outcome, so "2 changed, 1 refused" is reported rather than claimed. `runBatched` in `web/next/src/lib/api/bulk.ts` sends a larger selection as sequential slices of that size, and a request refused as a whole stops the rest, counting their ids as failed, rather than spending the rate limit on requests doomed the same way.
+
+## It's working if
+
+- `/console/users` fills the viewport with the table scrolling inside its region and the page itself never scrolling; the status line counts up (`25 of 61`) as you reach the bottom.
+- A new column with only a `meta.label` and no config entry gets a header wide enough for its label and sort icon, with no manual width.
+- Sort, search or filter, then reload: the URL carries the state and the table comes back the same.
 
 ## Next
 
-- [API Conventions](/docs/manage/api-conventions): the envelope and middleware behind the users endpoint.
-- [Authentication](/docs/manage/authentication): the role ladder that gates `/console` and `/api/v1/admin/*`.
+- [Theming](/docs/manage/theming), because the header widths are measured from the sans the tokens name.
+- [Dashboard](/docs/manage/dashboard), because the shell and page frame a table fills are its.
+- [API Conventions](/docs/manage/api-conventions), because the paging envelope and the set routes are what a server-driven table talks to.
+- [AI Skills](/docs/resources/ai-skills), because the `design` skill holds the conventions a new table follows.

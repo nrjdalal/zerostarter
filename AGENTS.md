@@ -38,7 +38,7 @@ Canonical starter only: audits and plans live under `.github/notes/`, laid out b
 
 ## Skills
 
-Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` whose `description` is the trigger and whose body is the procedure; only the description is scanned until a skill matches. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit). Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
+Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` whose `description` is the trigger and whose body is the procedure; only the description is scanned until a skill matches. **Custom** skills are maintained in this repo; **vendored** skills are copied from upstream; re-vendor to update, then put back what the `skills-manager` skill lists. Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
 
 **Custom**
 
@@ -62,13 +62,13 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 | [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                             |
 | [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                |
 | [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                            |
-| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                     |
+| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                               |
 | [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                 |
 | [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them. |
 
 <!-- /skills:custom -->
 
-**Vendored** (upstream, copied verbatim)
+**Vendored** (from upstream)
 
 <!-- skills:vendored -->
 
