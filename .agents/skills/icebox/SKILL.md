@@ -6,7 +6,7 @@ source: local
 
 # Icebox
 
-Some concerns are real yet not decidable right now. Forcing one into a plan overstates it; closing it loses the context. **Ice** is the third option: park the concern verbatim, with no verdict, until someone can rule on it. It sits between the plans backlog and a closed issue. The full definition and the standing index live in `.github/notes/plans/README.md`.
+Some concerns are real yet not decidable right now. Forcing one into a plan overstates it; closing it loses the context. **Ice** is the third option: park the concern verbatim, with no verdict, until someone can rule on it. The definition and the standing index live in `.github/notes/plans/README.md`, which does not ship to a fork, so this is the canonical starter's procedure; a fork keeps its own notes where it chooses.
 
 ## What belongs on ice
 
@@ -26,4 +26,4 @@ A known next action belongs in the plans backlog; a confident verdict gets shipp
 
 ## Thaw
 
-An item leaves ice only by being decided. When that happens, check its box in #707, record the outcome (shipped, dismissed, or moved to the backlog), and graduate its write-up to the plans backlog or delete it.
+An item leaves ice only by being decided. When that happens, check its box in #707, record the outcome (shipped, dismissed, or moved to the backlog), and graduate its write-up to the plans backlog or delete it. Done when the box is checked with its outcome and the file is in the backlog or gone.

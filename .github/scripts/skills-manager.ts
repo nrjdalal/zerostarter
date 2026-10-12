@@ -5,7 +5,7 @@ import { $, Glob } from "bun"
 
 // Skill maintainer: the AGENTS.md skills tables duplicate each skill's own description, so they are GENERATED from .agents/skills/*/SKILL.md frontmatter instead of hand-kept.
 //   bun .github/scripts/skills-manager.ts            rewrite the AGENTS.md tables from the skills (default)
-//   bun .github/scripts/skills-manager.ts --check    fail on drift instead of writing (the pre-commit gate)
+//   bun .github/scripts/skills-manager.ts --check    fail on drift instead of writing (the pre-commit hook runs the rewrite)
 //   bun .github/scripts/skills-manager.ts --outdated fetch each skill's source upstream and report drift
 // A skill's source is its provenance: a full github link it was inherited from (checked by --outdated), a bare tool name (vendored, re-run the tool), or local (authored here).
 
