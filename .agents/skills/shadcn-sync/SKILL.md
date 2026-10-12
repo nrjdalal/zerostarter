@@ -22,7 +22,7 @@ Read `git diff`. Done when it is empty or every hunk is a registry change in wha
 
 ## 4. Add or repair an override
 
-In `shadcn-customize.ts` only: extend `RESTORE`, or add a shape-keyed ts-morph patch (a guarded string swap for CSS) that throws when its target is absent. Done when a second run on the committed tree leaves an empty diff.
+In `shadcn-customize.ts` only: extend `RESTORE`, or add a shape-keyed ts-morph patch (a guarded string swap for CSS) that throws when its target is absent, then list it under Guards. Done when a second run on the committed tree leaves an empty diff and Guards names the override.
 
 ## 5. Commit the residual
 

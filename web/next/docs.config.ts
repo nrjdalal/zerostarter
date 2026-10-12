@@ -150,7 +150,7 @@ const docsConfig = {
         "/docs/manage/data-tables": {
           title: "Data Tables",
           description:
-            "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
+            "Compose a table from one module: URL state, virtualized infinite scroll, and headers that size themselves.",
         },
       },
       {
@@ -179,7 +179,7 @@ const docsConfig = {
         "/docs/manage/features": {
           title: "Features",
           description:
-            "Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.",
+            "One boolean per optional surface: off removes its routes, links, sitemap and search entries without deleting code.",
         },
       },
       {
