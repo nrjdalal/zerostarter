@@ -134,7 +134,7 @@ const docsConfig = {
         "/docs/manage/llms-txt": {
           title: "llms.txt",
           description:
-            "Auto-generated, whole-codebase context for LLMs at /llms.txt and /llms-full.txt.",
+            "The docs and blog as markdown for LLMs, generated at build: an index at /llms.txt and the full text at /llms-full.txt.",
         },
       },
     ],
@@ -150,7 +150,7 @@ const docsConfig = {
         "/docs/manage/data-tables": {
           title: "Data Tables",
           description:
-            "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
+            "Compose a table from one module: URL state, virtualized infinite scroll, and headers that size themselves.",
         },
       },
       {
@@ -179,7 +179,7 @@ const docsConfig = {
         "/docs/manage/features": {
           title: "Features",
           description:
-            "Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.",
+            "One boolean per optional surface: off removes its routes, links, sitemap and search entries without deleting code.",
         },
       },
       {
@@ -219,26 +219,27 @@ const docsConfig = {
         "/docs/manage/code-quality": {
           title: "Code Quality",
           description:
-            "Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.",
+            "Which check runs on the commit, the push and the pull request, and the commit message rules the release reads.",
         },
       },
       {
         "/docs/manage/release": {
           title: "Releases",
           description:
-            "The automated canary-to-main flow that versions the repo and drafts the changelog.",
+            "One merge promotes canary to main: the version lands before it, the changelog, tag and GitHub release after.",
         },
       },
       {
         "/docs/getting-started/scripts": {
           title: "Scripts",
-          description: "Every bun script, grouped by when you'd reach for it.",
+          description:
+            "Every bun run script and the tooling behind it: what each does, when it runs, and where a new one goes.",
         },
       },
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: `What ${site.name} ships today, and where it's headed.`,
+          description: `What ${site.name} ships, what a fork adds itself, and what is considered but not scheduled.`,
         },
       },
     ],

@@ -11,7 +11,7 @@ The prose of a skill itself follows `writing-for-agents`; this skill covers the 
 `source` is a skill's provenance, and decides its table:
 
 - `local`: authored here, under **Custom**.
-- A bare tool name (`agent-browser`, `portless`, `skills`): vendored, named after the upstream repo, under **Vendored**. Re-vendoring rewrites the folder, so the `source:` line goes back in afterward.
+- A bare tool name (`agent-browser`, `portless`, `skills`): vendored from upstream, under **Vendored**; [Re-vendor](#re-vendor) updates one.
 - A GitHub URL or `owner/repo`: synced from that upstream, which the CLI stamps on a fork.
 
 A sync never rewrites provenance: a fork's `local` or vendored skill stays so.
@@ -42,3 +42,13 @@ bun .github/scripts/skills-manager.ts --outdated
 ```
 
 Reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (customized, or synced before the ledger), `not in <source>`, `upstream fetch failed (HTTP <n>)`, or `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork changed it since. Done when every skill reports as expected.
+
+## Re-vendor
+
+Re-vendoring rewrites the folder: `bunx skills@1.7.2 update -p -y` for the skills `skills-lock.json` records (`-p` keeps it to project skills, `-y` skips the scope prompt the bare command opens), a fresh copy from upstream for `portless`. Then put back what this repo adds:
+
+- the `source:` line on each vendored skill;
+- the `## Viewport` section on `agent-browser`;
+- a sweep of the em-dashes upstream writes, which `AGENTS.md` forbids.
+
+Done when each vendored skill carries its `source:` line, `agent-browser` has its `## Viewport` section, `rg -n '\x{2014}' .agents/skills` prints nothing, and `--check` passes.
