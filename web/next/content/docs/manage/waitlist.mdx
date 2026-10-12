@@ -25,7 +25,7 @@ In the order you reach for them, finding signups first and acting on them after:
 
 <Callout type="warn" title="Removing does not erase the address">
 
-The row leaves `waitlist`, and `activity` keeps the sentence that names it: `Removed ada@example.com from the waitlist`. That is deliberate for an allowlist rule, which an admin authored, and a different thing for a signup a member of the public typed into a public form. Someone asking to be taken off your list is asking to be forgotten, and by default this moves their address rather than deleting it.
+The row leaves `waitlist`, and `activity` keeps the sentence that names it: `Removed ada@example.com from the waitlist`. Removing an allowlist rule leaves the same kind of line, `Removed @example.com from the allowlist`, and there that is deliberate, since an admin authored the rule; it is a different thing for a signup a member of the public typed into a public form. Someone asking to be taken off your list is asking to be forgotten, and by default this moves their address rather than deleting it.
 
 Nothing prunes `activity` either, so decide before you launch. Two ways out, both small: word the summary without the address (`waitlistRemoveSummary` in `packages/db/src/console.ts` is the only place it is written), or delete the matching `activity` rows in the same transaction as the signup.
 
