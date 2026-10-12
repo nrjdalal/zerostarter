@@ -20,7 +20,7 @@ Reach for this page when a hook or a pull-request check fails, or to find which 
 | ------------ | ----------------- | -------------------------------------------------------------------- |
 | `pre-commit` | each commit       | `skills-manager`, `oxfmt` then `oxlint`, `bun run build`             |
 | `commit-msg` | each commit       | Commitlint                                                           |
-| `pre-push`   | each push         | `bun audit` (from `canary` only), `ensure-remote-branches.ts`        |
+| `pre-push`   | each push         | `bun audit` (on `canary` only), `ensure-remote-branches.ts`          |
 | pull request | each push to a PR | the audit, `format:check`, `lint`, `check-types`, `test` and `build` |
 
 The pre-commit hook is `piped`, so the first failure stops the rest. `skills-manager` runs only when a skill is staged, `oxfmt` and `oxlint` see only the staged files and re-stage what the formatter fixed, and a staged `package.json` also goes through the dependency manager. The build type-checks `web/next` only, through `next build`; the api and package builds emit without checking types, so run `bun run check-types`, which covers every workspace, before you push.

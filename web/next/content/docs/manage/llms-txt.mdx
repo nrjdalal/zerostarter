@@ -34,7 +34,7 @@ Docs and blog are [features](/docs/manage/features): turn one off and its pages,
 
 **Why is `/llms.txt` in a different order from the sidebar?**
 
-Both routes share `sortByMeta`, so the docs follow `docs.config.ts`, and a page at the tail is one that file does not list. The web build runs `bun .github/scripts/docs.ts --strict`, which fails on that drift ([Content](/docs/manage/content#docs-the-config-is-the-source-of-truth)); in dev the tail means a stale `meta.json`, which `bun .github/scripts/docs.ts` regenerates, or a page `docs.config.ts` does not list, which only an entry there moves.
+Both routes order the docs by `meta.json`, which `bun .github/scripts/docs.ts` generates from `docs.config.ts`, while the sidebar reads `docs.config.ts` directly, so a page missing from `meta.json` falls to the tail. The dev script generates it once at startup and nothing watches the config, so after editing `docs.config.ts` run `bun .github/scripts/docs.ts` again; a page the config does not list needs its entry first. The web build runs `bun .github/scripts/docs.ts --strict`, which fails on that drift ([Content](/docs/manage/content#docs-the-config-is-the-source-of-truth)).
 
 **Why is `/docs.md` a page while `/blog.md` is a list?**
 
