@@ -9,7 +9,7 @@
 
 ## Context
 
-`writing-for-agents` asks for exactly this shape: material only some branches reach goes behind a pointer, into a sibling file. The rewrites so far keep every custom skill in one file and carry a branch as a short section at the end, which keeps fork sync correct at the cost of a longer main file. The vendored skill is unaffected, since sync leaves vendored skills alone.
+`writing-for-agents` asks for exactly this shape: material only some branches reach goes behind a pointer, into a sibling file. The rewrites so far keep every custom skill in one file and carry a branch as a short section at the end, which keeps fork sync correct at the cost of a longer main file. The vendored skill shares half of it: sync restores a vendored `SKILL.md` from the fork's snapshot, but the overlay rewrites `writing-for-agents/SKILL-MECHANICS.md` with the starter's copy, so a fork that re-vendored at another version is left with a mismatched pair.
 
 ## Open question
 

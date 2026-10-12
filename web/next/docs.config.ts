@@ -68,7 +68,7 @@ const docsConfig = {
         "/docs/manage/rate-limiting": {
           title: "Rate Limiting",
           description:
-            "Layered rate limits keyed by user, API key, or IP: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it.",
+            "Layered rate limits: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it.",
         },
       },
       {

@@ -44,7 +44,7 @@ The docs have a root page, the introduction at `/docs`, so its alias serves that
 
 - `/llms.txt` lists the docs pages in the sidebar's order, the introduction first.
 - `/llms-full.txt` opens with a heading ending in `LLM Context File`, the site description as a quote, then the first docs page after a `---`; in the canonical starter the preamble sits between them, opening with `## Instructions for AI Assistants`.
-- `curl -s -o /dev/null -w "%{content_type}" "$WEB/docs/manage/llms-txt.md"`, with `$WEB` the web URL (`bunx portless get zerostarter` in development), prints `text/markdown; charset=utf-8`, and the body ends with the footer pointing at `/llms.txt`.
+- `curl -s -o /dev/null -w "%{content_type}" "$WEB/docs/manage/llms-txt.md"`, with `$WEB` the web URL (`bunx portless get <name>` in development, `<name>` being the project's slug and `zerostarter` in the starter), prints `text/markdown; charset=utf-8`, and the body ends with the footer pointing at `/llms.txt`.
 
 ## Next
 

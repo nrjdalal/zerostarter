@@ -39,10 +39,10 @@ The run ends on `<name> is ready` and a **Next steps** note. With a database, th
 bun run dev
 ```
 
-Turborepo starts both apps through [portless](https://portless.sh), one proxy on `:1355` serving named `.localhost` hosts, so the URLs never depend on which port a process won:
+Turborepo starts both apps through [portless](https://portless.sh), one proxy on `:1355` serving named `.localhost` hosts, so the URLs never depend on which port a process won. `init` names the hosts after the project, lowercased with every other character run turned into a hyphen (`My App` serves `my-app.localhost`); `<name>` below is that slug, and `zerostarter` in the starter itself:
 
-- **web** (Next.js) at `http://zerostarter.localhost:1355`
-- **api** (Hono) at `http://api.zerostarter.localhost:1355`, with the API reference at `/api/docs`
+- **web** (Next.js) at `http://<name>.localhost:1355`
+- **api** (Hono) at `http://api.<name>.localhost:1355`, with the API reference at `/api/docs`
 
 `PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`), which is what OAuth callback URLs expect, since providers reject `.localhost` redirect URIs (see [Callback URLs](/docs/manage/authentication#callback-urls)). `bunx portless list` prints the active hosts. Restarting, the `bun --hot` trap where a new route answers `NOT_FOUND`, and the detached start an agent needs are the `dev` skill in [AI Skills](/docs/resources/ai-skills).
 
@@ -62,14 +62,14 @@ The database step is idempotent. pglaunch names its container after the director
 
 **Can two checkouts run `bun run dev` at once?**
 
-Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.zerostarter.localhost:1355` and `zerostarter.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
+Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.<name>.localhost:1355` and `<name>.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
 
 ## It's working if
 
 - `init` ends on `<name> is ready` and its **Next steps** note lists only `bun run dev`; a `set POSTGRES_URL in .env` line there means the database step was skipped.
-- `bunx portless list` shows `zerostarter` and `api.zerostarter` (branch-prefixed in a worktree).
-- `curl http://api.zerostarter.localhost:1355/api/health` prints `"message":"ok"`, and `http://zerostarter.localhost:1355/` answers 200.
-- `http://api.zerostarter.localhost:1355/api/docs` renders the Scalar API reference.
+- `bunx portless list` shows `<name>` and `api.<name>` (branch-prefixed in a worktree).
+- `curl http://api.<name>.localhost:1355/api/health` prints `"message":"ok"`, and `http://<name>.localhost:1355/` answers 200.
+- `http://api.<name>.localhost:1355/api/docs` renders the Scalar API reference.
 - **Login (agents)** lands on `/dashboard`.
 
 ## Next

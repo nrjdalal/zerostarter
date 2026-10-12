@@ -4,7 +4,7 @@ title: API Conventions
 description: The { data } / { error } envelope, error codes, and middleware every route shares.
 ---
 
-Every response the API sends is one of two shapes: a success carries `data`, a failure carries `error` with a stable `code` and a human `message`. One envelope means one way to read a response and one closed set of codes to `switch` on, on the server and in the web client alike.
+Every response from the api's own routes is one of two shapes: a success carries `data`, a failure carries `error` with a stable `code` and a human `message`. Three answer in their own formats: Better Auth's `/api/auth/*` (all but `/api/auth/providers`), the `/api/docs` reference and the `/api/openapi.json` document. One envelope means one way to read a response and one closed set of codes to `switch` on, on the server and in the web client alike.
 
 A handler never builds `{ error }`: it throws, and `errorHandler` in `api/hono/src/lib/error.ts` shapes every failure. A route returns `c.json({ data })` and otherwise throws an `ApiError` (a domain code) or Hono's `HTTPException`, so a new route cannot invent an error shape, and the one function that decides what a failure looks like also decides what a 500 is allowed to say.
 

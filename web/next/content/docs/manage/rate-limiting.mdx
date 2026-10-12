@@ -1,7 +1,7 @@
 ---
 slug: /docs/manage/rate-limiting
 title: Rate Limiting
-description: "Layered rate limits keyed by user, API key, or IP: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it."
+description: "Layered rate limits: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it."
 ---
 
 Every request to the API passes a rate limiter before any route runs, and a signed-in request passes a second, larger one on its way into `/api/v1`. Both come from one factory in `api/hono/src/middlewares/rate-limiter.ts`, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter).

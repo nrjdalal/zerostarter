@@ -34,7 +34,7 @@ A connection is pinned to one server or one function instance, and a reconnect m
 
 **How do I authenticate a socket?**
 
-The one socket route ships public and checks no session, since it streams what `/api/health` already answers, and `cors()` is no guard for it: a browser sends no preflight for a WebSocket and never blocks one on CORS. A fork that needs an authenticated socket checks the `Origin` header or a token inside the handler, the usual token being a short-lived single-use ticket the signed-in client fetches from an authenticated REST route and the server marks spent in a shared store.
+The one socket route ships public and checks no session, since it streams what `/api/health` already answers, and `cors()` is no guard for it: a browser sends no preflight for a WebSocket and never blocks one on CORS. A fork that needs an authenticated socket authenticates the upgrade with a token checked inside the handler, the usual one being a short-lived single-use ticket the signed-in client fetches from an authenticated REST route and the server marks spent in a shared store. An `Origin` check belongs beside it, not in its place: it keeps other sites' pages from opening the socket in a visitor's browser, but a client outside a browser sends any `Origin` it likes, so it authenticates no one.
 
 **Which origin does the badge's socket open on?**
 

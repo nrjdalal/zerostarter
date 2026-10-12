@@ -39,7 +39,7 @@ The table renders `createdAt` as a relative time and `action` through a label (`
 
 Every sentence is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
 
-Two things are deliberately not recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers what the console did, not what your product does.
+Two things are deliberately not recorded: reads, and what your product does. Opening the Users table writes nothing, and the trail covers the console's writes, the sign-in grant and `console:roles`, not your own routes.
 
 ## Who the actor is
 

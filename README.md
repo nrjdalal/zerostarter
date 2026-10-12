@@ -29,7 +29,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Authorization**: a console at `/console` on a four-rung role ladder (`owner > admin > member > user`), with an allowlist that grants access by domain or address, and an activity trail of every change the console makes
 - **Public Waitlist**: a waitlist landing + signup API (`/api/waitlist`) with an approximate count, read back at Console > Waitlist > Signups; an optional surface that, when enabled, becomes a fresh fork's home
 - **Configurable Features**: toggle the allowlist, API reference, blog, docs, internal docs, and waitlist per fork from one config, chosen at `init` and flippable anytime
-- **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) keyed per user, API key, or IP (with [Arcjet](https://arcjet.com) IP detection)
+- **Rate Limiting**: [hono-rate-limiter](https://www.npmjs.com/package/hono-rate-limiter) with a per-address budget on every request and a per-user one for signed-in API routes (with [Arcjet](https://arcjet.com) IP detection)
 - **Data & Forms**: [TanStack Query](https://tanstack.com/query) for server state and [TanStack Form](https://tanstack.com/form) for forms
 - **Data Tables**: [TanStack Table](https://tanstack.com/table) and [TanStack Virtual](https://tanstack.com/virtual), server-driven with infinite scroll, their state in the URL through [nuqs](https://nuqs.dev)
 - **Realtime**: WebSockets through the same typed client, on Bun and on Vercel
