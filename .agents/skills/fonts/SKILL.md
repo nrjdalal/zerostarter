@@ -45,4 +45,4 @@ The route's stylesheet carries a face whose name ends in `Fallback` with `size-a
 
 ## 6. Remove a font
 
-Delete the woff2, the `localFont`, the `.variable` or `.className` use, and the role, with its guard and its `shadcn-sync` Guards entry for a registry-written role; for the sans, repoint the role, `FONT` and `FONT_TO` at the replacement instead. Done when `rg -- "--font-<name>|<file>" .github/scripts packages/scripts web/next/src` is empty, the `shadcn-sync` Guards list names no swap for the role, and `bun run check-types` passes.
+Delete the woff2, the `localFont`, and the `.variable` or `.className` use, then hand the role on: the sans repoints the role, `FONT` and `FONT_TO` at the replacement; a registry-written role (`--font-heading`) returns to the registry's value, `var(--font-sans)`, and drops its guarded swap and its `shadcn-sync` Guards entry; any other role repoints at its replacement or its generic family. Done when `rg -- "--font-<name>|<file>" .github/scripts packages/scripts web/next/src .agents/skills/shadcn-sync` is empty and `bun run check-types` passes.
