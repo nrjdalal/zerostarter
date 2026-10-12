@@ -25,7 +25,7 @@ Generated from the surfaces above, so fixed at the source rather than in the out
 
 ## 1. Scope the change
 
-List what the diff touched: paths, commands, script names, env vars, conventions, tooling, and whether the skill set changed, starting from `git diff --stat` and the code diff. A changed skill description counts, since the catalog table and the docs row paraphrase it; so does a removed section or a rule shrunk to a pointer. Done when every path, command, symbol and skill-set change in the diff is on the list.
+List what the diff touched: paths, commands, script names, env vars, conventions, tooling, and whether the skill set changed, starting from `git diff --stat` and the code diff. A changed skill description counts, since the `AGENTS.md` table and the docs catalog row quote it; so does a removed section or a rule shrunk to a pointer. Done when every path, command, symbol and skill-set change in the diff is on the list.
 
 ## 2. Hunt drift
 

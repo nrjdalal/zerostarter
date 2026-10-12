@@ -40,7 +40,7 @@ docker diff t-offline | grep .bun/install/cache
 docker rm -f t-offline
 ```
 
-Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first adapter call rather than boot, and the agent sign-in is that call. It answers an error here, since no database is reachable, and answers within a second; a stall means the `--no-install` guard left the image's command. Done when health answers, sign-in answers within a second, and the `docker diff` prints nothing.
+Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first auth API call rather than boot (every endpoint runs inside one), and the agent sign-in is that call here. It answers an error here, since no database is reachable, and answers within a second; a stall means the `--no-install` guard left the image's command. Done when health answers, sign-in answers within a second, and the `docker diff` prints nothing.
 
 ## 3. Single-libc check
 
