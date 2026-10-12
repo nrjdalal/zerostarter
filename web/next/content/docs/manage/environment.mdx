@@ -17,12 +17,12 @@ Reach for this page when you are adding a variable, setting one for a new stage 
 
 Four slices, each a Zod schema in `packages/env/src/<slice>.ts`, imported as `@packages/env/<slice>` and named for the consumer that imports it, plus `NODE_ENV` in every one. A variable two slices declare (`HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`) is validated by both and read through whichever slice its reader imports:
 
-| Slice      | Holds                                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------ |
-| `api-hono` | `AGENT_SIGNIN_ENABLED`, `HONO_APP_URL`, `HONO_PORT`, the rate-limit pair, `HONO_TRUSTED_ORIGINS` |
-| `auth`     | `BETTER_AUTH_SECRET`, the OAuth pairs, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, `HONO_WEB_URL`    |
-| `db`       | `POSTGRES_URL`                                                                                   |
-| `web-next` | `INTERNAL_API_URL` on the server, and the `NEXT_PUBLIC_*` variables the browser sees             |
+| Slice      | Holds                                                                                                                                                                |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api-hono` | `AGENT_SIGNIN_ENABLED`, `HONO_APP_URL`, `HONO_PORT`, `HONO_RATE_LIMIT`, `HONO_RATE_LIMIT_WINDOW_MS`, `HONO_TRUSTED_ORIGINS`                                          |
+| `auth`     | `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`, `HONO_WEB_URL` |
+| `db`       | `POSTGRES_URL`                                                                                                                                                       |
+| `web-next` | `INTERNAL_API_URL` on the server, and the `NEXT_PUBLIC_*` variables the browser sees                                                                                 |
 
 An app imports its slice (`import { env } from "@packages/env/api-hono"`) and reads typed values from it: `env.HONO_PORT` is a number, already defaulted. The three server slices import `packages/env/src/load-dotenv.ts`, which reads the root `.env` once and layers `.env.<stage>` over it; `web-next` does not, because client components import it (see the questions below), so a build-time consumer that reads `web-next` imports `@packages/env/load-dotenv` itself, above the slice import, since a slice validates the moment it evaluates. `web/next/next.config.ts` does, and so does `packages/scripts/src/generate-env.ts`, whose `web` target reads `web-next` and whose `auth` target reads `@packages/env/auth`.
 
@@ -30,7 +30,7 @@ An app imports its slice (`import { env } from "@packages/env/api-hono"`) and re
 
 ## Every variable
 
-`.env.example` holds the ones you are expected to set. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: each has a default or is wired for you. The Schema column is the slice file's own word for it; a default makes a variable optional, and the row names it first. Which slice declares each is in [the slices](#the-slices) table.
+`.env.example` holds the ones you are expected to set. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: each has a default or is wired for you. The Schema column says whether the slice file requires the variable; a default makes a variable optional, and the row names it first. Which slice declares each is in [the slices](#the-slices) table.
 
 | Variable                            | Schema   | What it does                                                                                                                                                                |
 | ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
