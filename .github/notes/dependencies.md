@@ -33,7 +33,7 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Ignored advisories
 
-An advisory with no patched version anywhere cannot be cleared by any of the three rungs, so the gate ignores it by ID instead. Each `--ignore` sits in both gates, `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and in the two docs pages that quote them (`manage/code-quality.mdx`, `contributing.mdx`). Remove it from all four when its exit criteria are met.
+An advisory with no patched version anywhere cannot be cleared by any of the three rungs, so the gate ignores it by ID instead. Each `--ignore` sits in both gates, `lefthook.yml` and `.github/workflows/auto-check-build.yml`; no docs page quotes the command. Remove it from both, and its entry here, when its exit criteria are met.
 
 ### `braces` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm))
 

@@ -4,109 +4,102 @@ title: Activity
 description: "A readable trail of every console write: who changed a role, banned an account, edited the allowlist, or removed a signup."
 ---
 
-The console's writes all overwrite something. A role change replaces `user.role`, a ban flips a flag, and removing an allowlist rule deletes the row that recorded who added it. Without a trail, the state tells you what is true now and nothing about how it got that way.
+The console's writes all overwrite something: a role change replaces `user.role`, a ban flips a flag, and removing an allowlist rule deletes the row that recorded who added it. Activity is the trail those writes leave, one readable line per change in the `activity` table, read back at **Console > History > Activity**, admin and above like the changes themselves. It is not behind a feature flag, because a flag on a log means silent gaps in it.
 
-Every path that changes who gets in, and every console write that destroys a row, appends a line to the `activity` table, and **Console > History > Activity** reads it back, `admin` and above like the changes themselves.
+A line and its change share a transaction, because `recordActivity` takes the transaction as its first argument. There is no way to call it outside the transaction doing the work, so a line always means the change happened and a change cannot happen unrecorded: if the insert fails, the role change rolls back with it.
+
+## When you need this
+
+Reach for this page when you need to answer "who did that, and when" for a role change, a ban, an allowlist edit or a removed waitlist signup, or when a feature of your own makes a write that deserves a line. For the one write that can be skipped rather than fail, the sign-in grant, see [Allowlist](/docs/manage/allowlist#what-a-rule-does).
 
 ## What a line holds
 
-Five fields, flat on purpose:
+| Field       | Holds                                                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `action`    | a code the list filters by: `allowlist.add`, `allowlist.remove`, `role.change`, `user.ban`, `user.unban`, `waitlist.remove` |
+| `actor`     | who did it, as text                                                                                                         |
+| `actorId`   | the acting account, when there was one                                                                                      |
+| `createdAt` | when                                                                                                                        |
+| `summary`   | the sentence the table shows, already written for a reader                                                                  |
 
-| Field       | Holds                                                                                                          |
-| ----------- | -------------------------------------------------------------------------------------------------------------- |
-| `action`    | what happened: `role.change`, `user.ban`, `user.unban`, `allowlist.add`, `allowlist.remove`, `waitlist.remove` |
-| `actor`     | who did it, as text                                                                                            |
-| `actorId`   | the acting account, when there was one                                                                         |
-| `createdAt` | when                                                                                                           |
-| `summary`   | the sentence the table shows, already written for a reader                                                     |
+The table renders `createdAt` as a relative time and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one, because a trail that invents entries is worse than one with a code you have to look up.
 
-The table renders `createdAt` as a relative time (`5 min. ago`), and `action` through a label (`Set role`), so the column reads as English while the row keeps the stored code. A code with no label, a fork's own verb or one retired after rows already carried it, renders as the code. Nothing rewrites a stored action into a known one: a trail that invents entries is worse than one with a code you have to look up.
+`summary` is prose, not a payload. There is no before/after JSON and no target column, because a flat table you can read at a glance is the thing being built. Each sentence stands on its own, since the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
 
-`summary` is prose, not a payload. There is no `before`/`after` JSON, no `target_type`, no `metadata` column, because a flat table you can read at a glance is the thing being built here. Each one is a sentence that stands on its own, because the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
+| Action         | Summary                                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| Added rule     | `Added @example.com to the allowlist`                                                                    |
+| Banned         | `Banned katherine@example.com, ending their sessions`                                                    |
+| Removed rule   | `Removed @example.com from the allowlist`                                                                |
+| Removed signup | `Removed ada@example.com from the waitlist`                                                              |
+| Set role       | `Changed ada@example.com from member to admin`                                                           |
+| Set role       | `Set ada@example.com to member` (had no rung yet)                                                        |
+| Set role       | `Confirmed ada@example.com at member` (set to the rung it already had, which still stamps `role_set_at`) |
+| Unbanned       | `Unbanned katherine@example.com`                                                                         |
 
-| Action         | Summary                                                                                                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Set role       | `Changed ada@example.com from member to admin`                                                                                                                      |
-| Set role       | `Set ada@example.com to member` (had no rung yet)                                                                                                                   |
-| Set role       | `Confirmed ada@example.com at member` (set to the rung it already had: the rung does not move, but `role_set_at` is stamped, which is the decision worth recording) |
-| Banned         | `Banned katherine@example.com, ending their sessions`                                                                                                               |
-| Unbanned       | `Unbanned katherine@example.com`                                                                                                                                    |
-| Added rule     | `Added @example.com to the allowlist`                                                                                                                               |
-| Removed rule   | `Removed @example.com from the allowlist`                                                                                                                           |
-| Removed signup | `Removed ada@example.com from the waitlist`                                                                                                                         |
+Every sentence is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
 
-Every one of these sentences is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant all word an event the same way, and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences inline and a test compares the two files, failing if either side is reworded alone.
-
-The trade that buys is worth knowing: only the **actor** has an id, so only the actor follows a rename. The person a line was about is frozen in the text as they were addressed at the time, and if they later change their address, an old line names the old one. That is the right way round for a trail, which is meant to say what was true when it was written, but it means `summary` is not a way to look a target up. If you need that, the place to add it is a `target_id` beside the text, the same pairing `actor` and `actorId` already use.
+Two things are deliberately not recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers what the console did, not what your product does.
 
 ## Who the actor is
 
-`actor` and `actorId` are a pair, and both are load-bearing.
+`actor` and `actorId` are a pair, and both carry weight. `actorId` links the account, so the list resolves it to the person's current email: rename an account and its old lines show the new address rather than the one on the day they acted. It is `set null` on delete, so deleting a person keeps the history they made, and `actor` still says which address the line came from.
 
-`actorId` links the account, so the list can resolve it to the person's **current** email. Rename or re-address an account and its old lines show the new address, rather than freezing whatever it was on the day they acted. It is `SET NULL` on delete, so deleting a person keeps the history they made.
-
-`actor` holds the text to fall back on, which is what lets a line have an actor that is not an account at all:
+`actor` is also what lets a line have an actor that is not an account at all:
 
 | `actor`                       | When                                                             |
 | ----------------------------- | ---------------------------------------------------------------- |
-| an email                      | a person did it from the console                                 |
-| `Allowlist rule @example.com` | the sign-in grant, naming the rule that matched                  |
 | `Agent sign-in`               | the local agent bootstrap granted itself `owner`                 |
+| `Allowlist rule @example.com` | the sign-in grant, naming the rule that matched                  |
+| an email                      | a person did it from the console                                 |
 | `console:roles`               | `bun run console:roles`, run from a terminal by nobody signed in |
 
-It is also what survives a deleted account: `actorId` goes null, `actor` still says which address the line came from.
+Only the actor has an id. The person a line is about is frozen in the text as they were addressed at the time, which is the right way round for a trail, but it means `summary` is not a way to look a target up. A `target_id` beside the text, the same pairing the actor uses, is where that would go.
 
-## Why not an audit log
+## Recording your own
 
-It is called `activity`, and not an audit log, deliberately. An audit log is a compliance word, and it promises three things this does not do: completeness, retention, and tamper-evidence. Nothing here is append-only at the database level, nothing prevents an `admin` with a `psql` connection from editing a row, and there is no retention policy. What it is instead: a readable trail of the console's own writes, good enough to answer "who did that, and when".
-
-If you need the compliance version, the shape is the place to start, not the promise. Revoke `UPDATE` and `DELETE` on the table from the application role, ship the rows off-box, and decide a retention window.
-
-## What is guaranteed
-
-An event and the change it describes **share a transaction**. So an event always means the change happened, and a change cannot happen unrecorded: if the insert fails, the role change rolls back with it.
-
-The one exception is the [allowlist sign-in grant](/docs/manage/allowlist), which is best effort, because it sits on the sign-in path and must never stop anyone signing in. A failure there is logged and skipped, and the account is lifted on their next sign-in, recorded then.
-
-Two things are deliberately **not** recorded: reads, and everything outside the console. Opening the Users table writes nothing, and the trail covers what the console did, not what your product does. Removing a waitlist signup is recorded for the same reason a removed allowlist rule is: the row is gone afterwards, so the record is the only place the address survives. A feature of your own that wants a trail calls the same writer:
+A feature of your own that wants a trail calls the same writer, inside the transaction doing the work:
 
 ```ts
-// 1. add the verb to ACTIVITY_ACTIONS in packages/config/src/console.ts
-// 2. label it in ACTION_LABELS in web/next/src/lib/activity.ts
-// 3. write its sentence beside the others in packages/db/src/console.ts:
-//      export const projectArchiveSummary = (name: string) => `Archived ${name}`
-// 4. record it inside the transaction doing the work
-import { projectArchiveSummary, recordActivity } from "@packages/db"
-
-await db.transaction(async (tx) => {
-  await tx.update(project).set({ archived: true }).where(eq(project.id, id))
-  await recordActivity(tx, {
-    action: "project.archive",
-    actor: { email: session.user.email, id: session.user.id },
-    summary: projectArchiveSummary(name),
-  })
+await recordActivity(tx, {
+  action: "project.archive",
+  actor: { email: session.user.email, id: session.user.id },
+  summary: projectArchiveSummary(name),
 })
 ```
 
-The writer takes the transaction as its **first argument** rather than reaching for a connection itself. That is what makes the guarantee above true rather than aspirational: there is no way to call it outside the transaction doing the work. Steps 1 and 2 are not optional bookkeeping: the action union is what the label map is keyed on, so a verb without a label is a compile error rather than a blank cell in the table. Step 3 is a convention rather than a rule, and the reason to follow it is that the sentence is the thing a reader reads: keeping them together is what lets you see whether a new one sounds like the rest.
+Three edits go with it:
 
-## Reading it
+1. Add the verb to `ACTIVITY_ACTIONS` in `packages/config/src/console.ts`.
+2. Label it in `ACTION_LABELS` in `web/next/src/lib/activity.ts`. The map is keyed by the action union, so a verb without a label is a type error rather than a blank cell.
+3. Write its sentence beside the others in `packages/db/src/console.ts`. This one is a convention rather than a rule, and the reason to follow it is that keeping the sentences together is what lets you hear whether a new one sounds like the rest.
 
-The page is a [data table](/docs/manage/data-tables): newest first, filterable by action, and searchable across the summary and the actor. Search matches the stored `actor` text **and** the linked account's current email, so someone who has since changed their address is found under either. Time is the only sort, oldest or newest first, because that is the one axis a log has. It is read-only, with no route that edits or deletes a line.
+An actor that is not a person passes `{ label }` in place of `{ email, id }`, the shape the rule, the bootstrap and the CLI use.
 
-Select rows and **Copy** hands them over as JSON, oldest first, or copy one from its row menu. Fields come in reading order (actor, action, summary, when) with the two ids trailing, so a pasted line reads as the sentence it is, and the copy carries absolute timestamps and stored action codes rather than the relative time and label on screen.
+## Common questions
 
-The API is `GET /api/v1/admin/activity`, `admin` and above, paged and enveloped like every other route ([API Conventions](/docs/manage/api-conventions)).
+**Is this an audit log?**
 
-## Left open
+No, and it is not called one on purpose. An audit log is a compliance word that promises completeness, retention and tamper-evidence, and this does none of the three: nothing is append-only at the database level, nothing stops an admin with a `psql` connection from editing a row, and nothing is pruned. It is a readable trail of the console's own writes, good enough to answer "who did that, and when". If you need the compliance version, start from the shape rather than the promise: revoke `UPDATE` and `DELETE` on the table from the application role, ship the rows off-box, and decide a retention window.
 
-Two decisions the starter does not make for you:
+**Does anything prune the table?**
 
-- **Retention.** The table grows without bound. Nothing prunes it, because how long a trail is worth keeping is a policy call, and a starter that silently deleted your history after 90 days would be worse than one that grows.
-- **Indexes.** There are none beyond the primary key. At the sizes a console generates, the sequential scan is faster than an index read; add one on `created_at` or `action` when your own numbers say so.
+No. It grows without bound, because how long a trail is worth keeping is a policy call, and a starter that silently deleted your history after ninety days would be worse than one that grows. The list is ordered by `created_at`, so that is the index to add first when your numbers say so ([Database](/docs/manage/database) says why it ships without one), and a composite `(action, created_at)` is the answer if a filtered page ever feels slow. The canonical starter keeps the argument in `.github/notes/plans/console-activity-log.md`.
+
+**How do I get a line into a ticket?**
+
+Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over JSON, oldest first, with the fields in reading order (actor, action, summary, when) and the two ids trailing, carrying absolute timestamps and stored action codes rather than the relative time and label on screen. The same rows come from `GET /api/v1/admin/activity`, admin and above, paged and enveloped like every other route in [API Conventions](/docs/manage/api-conventions); it is the trail's only route, since nothing edits or deletes a line. Search matches the summary, the stored `actor` text and the linked account's current email, so someone who has changed their address is found under either.
+
+## It's working if
+
+- A role change at Console > Access > Users appears at Console > History > Activity with your email as the actor and a sentence such as `Changed ada@example.com from member to admin`.
+- Setting a rung to the one it already has leaves `Confirmed ada@example.com at member`, not a line claiming a change.
+- `bun run console:roles grant you@example.com admin` leaves a line whose actor is `console:roles`.
+- **Copy event** on a row hands over JSON whose `action` is the stored code (`role.change`) and whose `createdAt` is absolute, not the label and the relative time the table shows.
 
 ## Next
 
-- [Authentication](/docs/manage/authentication): the role ladder these lines record changes to.
-- [Allowlist](/docs/manage/allowlist): the rules that grant console access, and the grant that records itself.
-- [Database](/docs/manage/database): the schema, and how to add a table of your own.
+- [Authentication](/docs/manage/authentication), because the role ladder these lines record changes to lives there.
+- [Allowlist](/docs/manage/allowlist), because the rule an `Allowlist rule` actor names is added and removed there.
+- [Database](/docs/manage/database), because `schema/console.ts` and the `set null` on `actor_id` are explained there.
+- [API Conventions](/docs/manage/api-conventions), because the activity route is paged and enveloped like every other.
