@@ -14,32 +14,44 @@ Reach for this page to find the skill for a task, or to add one. For what a fork
 
 ## The catalog
 
-Each cell is the skill's own summary, the sentence before `Use` in its description, so you see what the agent sees. The stage is where in the loop a skill fires: navigate before a task, build while making the change, operate to prove it in the running app, maintain the tooling around the repo, ship the result. Read `codebase-map` before you have a task.
+Each entry is the skill's own summary, the sentence before `Use` in its description, so you see what the agent sees. Entries group by the stage where in the loop a skill fires, in that order: navigate before a task, build while making the change, operate to prove it in the running app, maintain the tooling around the repo, ship the result. Read `codebase-map` before you have a task.
 
-| Stage    | Skill                | What it does                                                                                                                                                      |
-| -------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Navigate | `codebase-map`       | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                          |
-| Build    | `add-package`        | Add a new shared workspace package under packages/\*.                                                                                                             |
-| Build    | `api-endpoint`       | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                               |
-| Build    | `db-migration`       | Create and apply a Drizzle schema change.                                                                                                                         |
-| Build    | `design`             | Follow and maintain the app's UI conventions.                                                                                                                     |
-| Build    | `dev`                | Start, restart, and verify the dev stack, and sign in as the agent.                                                                                               |
-| Build    | `portless`           | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000).                                          |
-| Build    | `runtime-apis`       | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                |
-| Operate  | `agent-browser`      | Browser automation CLI for AI agents.                                                                                                                             |
-| Operate  | `docker-test`        | Build and smoke-test the Docker images with docker compose, and run the golden end-to-end suite against them.                                                     |
-| Operate  | `ui-verify`          | Verify a frontend or UI change in a real browser.                                                                                                                 |
-| Maintain | `audit`              | Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md.                    |
-| Maintain | `fonts`              | Add, swap, or remove a self-hosted web font.                                                                                                                      |
-| Maintain | `ignore-sync`        | Mirror .gitignore to .dockerignore.                                                                                                                               |
-| Maintain | `shadcn-sync`        | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                            |
-| Maintain | `skills-manager`     | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                               |
-| Maintain | `writing-for-agents` | Writing documents for agents.                                                                                                                                     |
-| Ship     | `doc-sync`           | Sync docs and skills so they never drift from the code.                                                                                                           |
-| Ship     | `gh-commit`          | Create atomic commits in the conventional format.                                                                                                                 |
-| Ship     | `icebox`             | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                               |
-| Ship     | `release`            | Cut a production release by promoting canary to main.                                                                                                             |
-| Ship     | `writing-docs`       | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them. |
+### Navigate
+
+- `codebase-map`: Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.
+
+### Build
+
+- `add-package`: Add a new shared workspace package under packages/\*.
+- `api-endpoint`: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.
+- `db-migration`: Create and apply a Drizzle schema change.
+- `design`: Follow and maintain the app's UI conventions.
+- `dev`: Start, restart, and verify the dev stack, and sign in as the agent.
+- `portless`: Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000).
+- `runtime-apis`: Prefer Bun-native APIs, else Node built-ins with the node: prefix.
+
+### Operate
+
+- `agent-browser`: Browser automation CLI for AI agents.
+- `docker-test`: Build and smoke-test the Docker images with docker compose, and run the golden end-to-end suite against them.
+- `ui-verify`: Verify a frontend or UI change in a real browser.
+
+### Maintain
+
+- `audit`: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md.
+- `fonts`: Add, swap, or remove a self-hosted web font.
+- `ignore-sync`: Mirror .gitignore to .dockerignore.
+- `shadcn-sync`: Run and reconcile the shadcn component sync (`bun run shadcn:update`).
+- `skills-manager`: Keep the AGENTS.md skills tables generated from skill descriptions.
+- `writing-for-agents`: Writing documents for agents.
+
+### Ship
+
+- `doc-sync`: Sync docs and skills so they never drift from the code.
+- `gh-commit`: Create atomic commits in the conventional format.
+- `icebox`: Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.
+- `release`: Cut a production release by promoting canary to main.
+- `writing-docs`: Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them.
 
 ## Vendored skills
 

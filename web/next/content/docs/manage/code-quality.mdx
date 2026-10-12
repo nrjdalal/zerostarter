@@ -16,14 +16,16 @@ Reach for this page when a hook or a pull-request check fails, or to find which 
 
 `lefthook.yml` holds the hooks, `.lintstagedrc.json` what runs on a staged file, and `auto-check-build.yml` the pull request's run. Oxc reads `.oxlintrc.jsonc`, every rule at its default, and `.oxfmtrc.jsonc`: no semicolons, sorted imports and Tailwind classes, `.agents/**` left alone.
 
-| Gate         | Runs                                      | What has to pass                                                                                                                                                                         |
-| ------------ | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pre-commit` | each commit                               | `skills-manager` when a skill is staged; `oxfmt` then `oxlint` on the staged files, re-staging what the formatter fixed (plus the dependency manager on `package.json`); `bun run build` |
-| `commit-msg` | each commit                               | Commitlint                                                                                                                                                                               |
-| `pre-push`   | each push                                 | `bun audit --audit-level high` on `canary` only, accepted advisories ignored by id; `ensure-remote-branches.ts` seeds `main` on a fresh GitHub remote                                    |
-| pull request | each push to a PR into `canary` or `main` | the audit, `format:check`, `lint`, `check-types`, `test` and `build`                                                                                                                     |
+| Gate         | Runs              | What has to pass                                                     |
+| ------------ | ----------------- | -------------------------------------------------------------------- |
+| `pre-commit` | each commit       | `skills-manager`, `oxfmt` then `oxlint`, `bun run build`             |
+| `commit-msg` | each commit       | Commitlint                                                           |
+| `pre-push`   | each push         | `bun audit`, `ensure-remote-branches.ts`                             |
+| pull request | each push to a PR | the audit, `format:check`, `lint`, `check-types`, `test` and `build` |
 
-The pre-commit hook is `piped`, so the first failure stops the rest, and a new push cancels the pull-request run in progress, which shows as a cancelled check. The pre-commit build type-checks `web/next` only, through `next build`; the api and package builds emit without checking types, so run `bun run check-types`, which covers every workspace, before you push. Canonical starter only: `cli-release.yml` also runs the suite on Linux, macOS and Windows when a `canary` push touches `packages/cli`, `packages/scripts` or `tests`, and `.github/notes/dependencies.md` records each audit override and ignore (the `audit` skill).
+The pre-commit hook is `piped`, so the first failure stops the rest. `skills-manager` runs only when a skill is staged, `oxfmt` and `oxlint` see only the staged files and re-stage what the formatter fixed, and a staged `package.json` also goes through the dependency manager. The build type-checks `web/next` only, through `next build`; the api and package builds emit without checking types, so run `bun run check-types`, which covers every workspace, before you push.
+
+The pre-push audit is `bun audit --audit-level high` on `canary` only, with accepted advisories ignored by id, and `ensure-remote-branches.ts` seeds `main` on a fresh GitHub remote. The pull request's run covers a PR into `canary` or `main`, and a new push cancels the run in progress, which shows as a cancelled check. Canonical starter only: `cli-release.yml` also runs the suite on Linux, macOS and Windows when a `canary` push touches `packages/cli`, `packages/scripts` or `tests`, and `.github/notes/dependencies.md` records each audit override and ignore (the `audit` skill).
 
 <Callout type="warn" title="The local build sees your real .env">
 

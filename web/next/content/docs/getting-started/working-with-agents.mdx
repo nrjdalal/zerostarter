@@ -58,7 +58,7 @@ Both writers are on by default, so a block in a diff means one of the switches a
 
 ## It's working if
 
-- After the `dev` skill's Agent login, `curl -sS -b cookies.txt "$API/api/v1/user"` returns a user named `LocalAgent`.
+- After the `dev` skill's Agent login, which sets `$API` to the api URL and saves the session in `cookies.txt`, `curl -sS -b cookies.txt "$API/api/v1/user"` returns a user named `LocalAgent`.
 - In a dev build, **Login** opens a dialog with **Login (agents)** while `AGENT_SIGNIN_ENABLED=true`; blank it and restart, and the button is gone and the route answers `404`.
 
 ## Next

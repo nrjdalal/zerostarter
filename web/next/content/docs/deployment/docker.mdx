@@ -70,7 +70,7 @@ The images never run migrations. Apply them yourself with `bun run db:migrate` f
 
 ## Checking the images
 
-The `docker-test` skill ([AI Skills](/docs/resources/ai-skills)) holds the checks: one service at a time while iterating (its first step), the offline run that proves the api bundle resolves every import, the single-libc assertion on the web image, the golden end-to-end suite under `tests/` against the running stack (canonical starter only, since that directory is fork-excluded), and the `.env` traps a direct `docker run` and a running dev stack hit. Compose names images after the checkout directory, so every command there goes through compose.
+The `docker-test` skill ([AI Skills](/docs/resources/ai-skills)) holds the checks: one service at a time while iterating (its first step), the offline run that proves the api bundle resolves every import, the single-libc assertion on the web image, and the golden end-to-end suite under `tests/` against the running stack (canonical starter only, since that directory is fork-excluded). Its `.env` section builds a dummy `.env` for a clean checkout and names the traps around it, among them the inline comments a direct `docker run --env-file` keeps where compose strips them. Compose names images after the checkout directory, so every command there goes through compose.
 
 ## Common questions
 
