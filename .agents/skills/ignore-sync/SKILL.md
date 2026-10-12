@@ -6,17 +6,17 @@ source: local
 
 # Ignore Sync
 
-`.dockerignore` does not inherit from `.gitignore`. Whatever git ignores but `.dockerignore` misses still enters the Docker build context (`COPY . .` in the `prepare` stage of `web/next/Dockerfile` and `api/hono/Dockerfile`), and on this repo that has meant gigabytes: `web/next/.next` alone hit 3GB and `.turbo` 23GB.
+`.dockerignore` does not inherit from `.gitignore`. Whatever git ignores but `.dockerignore` misses still enters the Docker build context (`COPY . .` in the `prepare` stage of both Dockerfiles), build caches included, which is how a context grows to gigabytes.
 
 ## The two files are mirrors
 
-`.gitignore` is the source of truth and `.dockerignore` follows it byte-for-byte. Every ignore rule and every shared `!` un-ignore (e.g. `!.yarn/patches`) lives in the shared body of both: same entry, same section, same order, same commit.
+`.gitignore` is the source of truth and `.dockerignore` follows it byte-for-byte. Every ignore rule and every `!` un-ignore that narrows one (`!.yarn/patches`) lives in the shared body of both: same entry, same section, same order, same commit.
 
-The one sanctioned divergence is the labeled tail at the end of each file, for a git-only or docker-only override. There the label is all that differs, `# git overrides` versus `# docker overrides`, and today each tail carries only `!.env.example`.
+The one sanctioned divergence is the labeled tail at the end of each file (`# git overrides` versus `# docker overrides`), where a tool's own override goes; `!.env.example` sits in both tails, so the example reaches git and the build context while `.env*` stays out of both, and the label is all that differs.
 
 ## .env stays out of the context
 
-Real `.env*` files never enter the Docker context. Each build mounts the host file as a required BuildKit secret (`--mount=type=secret,id=dotenv,target=/app/.env,required=true`; compose supplies it via `secrets.dotenv.file: .env`), so it is validated in full during the build yet never lands in a layer. A diff that re-includes `.env*` to feed a builder-stage `COPY` is drift; sync it away.
+The build reads `.env` as a BuildKit secret (the Dockerfiles and compose wire it), so it is validated in full during the build and never lands in a layer. A diff that re-includes `.env*` to feed a builder-stage `COPY` is drift; sync it away.
 
 ## Audit
 

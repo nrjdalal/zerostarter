@@ -25,7 +25,7 @@ Generated from the surfaces above, so fixed at the source rather than in the out
 
 ## 1. Scope the change
 
-List what the diff touched: paths, commands, script names, env vars, conventions, tooling, and whether the skill set changed, starting from `git diff --stat` and the code diff. A changed skill description counts, since the catalog table and the docs row paraphrase it; so does a removed section or a rule shrunk to a pointer. Done when every path, command, symbol and skill-set change in the diff is on the list.
+List what the diff touched: paths, commands, script names, env vars, conventions, tooling, and whether the skill set changed, starting from `git diff --stat` and the code diff. A changed skill description counts, since the `AGENTS.md` table and the docs catalog entry quote it; so does a removed section or a rule shrunk to a pointer. Done when every path, command, symbol and skill-set change in the diff is on the list.
 
 ## 2. Hunt drift
 
@@ -39,9 +39,10 @@ Done when every surface has been grepped for every item.
 
 ## 3. Sync, coupled surfaces included
 
-Fix each hit in the same change: a page that needs more than a line follows `writing-docs`, and a skill follows `writing-for-agents`. A skill the change makes obsolete is removed, and a gap it reveals gets one. Two couplings are easy to miss:
+Fix each hit in the same change: a page that needs more than a line follows `writing-docs`, and a skill follows `writing-for-agents`. A skill the change makes obsolete is removed, and a gap it reveals gets one. Three couplings are easy to miss:
 
-- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog row. A vendored one also touches that page's list of vendored skills, and `skills-lock.json` when the `skills` CLI installed it (`agent-browser`, `writing-for-agents`); one copied by hand (`portless`) has no lock entry.
+- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog entry. A vendored one also touches that page's list of vendored skills, and `skills-lock.json` when the `skills` CLI installed it (`agent-browser`, `writing-for-agents`); one copied by hand (`portless`) has no lock entry.
+- **Changing a skill's description** regenerates its `AGENTS.md` cell, and in the canonical starter the `resources/ai-skills.mdx` catalog quotes that cell word for word, so its entry changes with it.
 - **Adding, removing, or renaming a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
 
 A rule shrunk to a pointer is read at its target once, since a pointer at a skill that never states the rule is drift with a nicer name. Done when every hit is fixed or consciously kept, every pointer's target holds its rule, and the skill set matches the change.
