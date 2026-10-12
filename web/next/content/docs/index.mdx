@@ -8,11 +8,11 @@ ZeroStarter is a small, strictly typed SaaS monorepo: Bun, Turborepo, and one ty
 
 Everything listed here is wired together and running, not installed and waiting; the dashboard is the one deliberate blank. A human and an AI agent get the same footing: executable [skills](/docs/resources/ai-skills), an API that rejects a wrong call at compile time, a one-request local sign-in, and generated [llms.txt](/docs/manage/llms-txt) context, so Claude Code, Cursor, or your own agent can build a real feature here.
 
-These docs describe the canonical starter, the `nrjdalal/zerostarter` repository itself. A fork that `zerostarter init` scaffolds leaves some of it behind, such as the test suite, the CLI and these docs ([the fork boundary](/docs/getting-started/cli#the-fork-boundary) lists all of it), so a fact that holds only in the canonical starter says so.
-
 ## When you need this
 
 Read this page to decide whether to adopt ZeroStarter: what is already built, what is left blank on purpose, and where each piece is documented. To run it, go to [Quickstart](/docs/getting-started/setup); it is two commands.
+
+These docs describe the canonical starter, the `nrjdalal/zerostarter` repository itself. A fork that `zerostarter init` scaffolds leaves some of it behind, such as the test suite, the CLI's source (`packages/cli`) and these docs ([the fork boundary](/docs/getting-started/cli#the-fork-boundary) lists all of it), so a fact that holds only in the canonical starter says so.
 
 ## What ships
 
@@ -29,7 +29,7 @@ Read this page to decide whether to adopt ZeroStarter: what is already built, wh
 
 ## What is deliberately empty
 
-The dashboard at `/dashboard` is an auth-gated shell: a signed-in page whose only content is a heading that says it is intentionally empty. The sidebar, the organization switcher, and the layout wrappers around it are real and wired, and the console next door holds the worked examples, so you build your product on the shell with the console's data tables as the pattern to copy. [Dashboard](/docs/manage/dashboard) walks through its guard and layout.
+The dashboard at `/dashboard` is an auth-gated shell: a signed-in page whose only content is its heading and a description saying it is intentionally empty. The sidebar, the organization switcher, and the layout wrappers around it are real and wired, and the console next door holds the worked examples, so you build your product on the shell with the console's data tables as the pattern to copy. [Dashboard](/docs/manage/dashboard) walks through its guard and layout.
 
 ## Next
 

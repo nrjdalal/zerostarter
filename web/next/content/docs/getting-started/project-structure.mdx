@@ -23,12 +23,12 @@ Reach for this page when you know what to change and need the file: a route, a p
 ├─ web/next/         # frontend (Next.js): app router, components, content/
 ├─ packages/
 │  ├─ auth/          # Better Auth instance, the role ladder, the allowlist grant
-│  ├─ cli/           # the zerostarter CLI (canonical repo only; a fork does not take it)
+│  ├─ cli/           # the zerostarter CLI (canonical starter only; a fork does not take it)
 │  ├─ config/        # TS base, tsdown factory, site.ts (the brand), console.ts
 │  ├─ db/            # Drizzle schema, client, migrations
 │  ├─ env/           # type-safe, validated environment variables
 │  └─ scripts/       # build tooling, never bundled
-├─ tests/            # the whole suite, mirroring each subject's path (canonical repo only)
+├─ tests/            # the whole suite, mirroring each subject's path (canonical starter only)
 └─ AGENTS.md         # the rules every agent reads first (CLAUDE.md symlinks to it)
 ```
 
@@ -101,4 +101,4 @@ It is the output of Better Auth's own generator for the plugins `packages/auth/s
 
 - [Architecture](/docs/getting-started/architecture): why the graph is shaped this way, before you add a package to it.
 - [The Type-Safe API](/docs/getting-started/type-safe-api): how `AppType` crosses from api to web, the one app-to-app edge, and why it costs nothing at runtime.
-- [The fork boundary](/docs/getting-started/cli#the-fork-boundary): which of these paths a fork takes, because the tree above is the canonical repo's.
+- [The fork boundary](/docs/getting-started/cli#the-fork-boundary): which of these paths a fork takes, because the tree above is the canonical starter's.
