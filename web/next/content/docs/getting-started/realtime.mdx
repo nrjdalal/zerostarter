@@ -42,7 +42,7 @@ The one every browser call from the web uses: `api-status.tsx` opens it with the
 
 **Why does the upgrade route list 429 and 500 in the reference?**
 
-Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error responses to every documented method, the WebSocket `GET` included, so Scalar shows them beside the `101`. The 429 can happen, since the limiter runs on the upgrade request, and a browser sees it as a failed connect rather than a body; the 500 is the shared default. Once the socket is open, neither arrives on it.
+Because `openAPIRouteHandler` in `api/hono/src/index.ts` adds the global error responses to every documented method, the WebSocket `GET` included, so Scalar shows them beside the `101`. The 429 can happen, since the [rate limiter](/docs/manage/rate-limiting) runs on the upgrade request, and a browser sees it as a failed connect rather than a body; the 500 is the shared default. Once the socket is open, neither arrives on it.
 
 ## It's working if
 

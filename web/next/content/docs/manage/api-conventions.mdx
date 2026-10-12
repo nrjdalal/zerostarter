@@ -35,7 +35,7 @@ The codes are the `ERROR_CODES` list in `lib/error.ts`, one `as const` array the
 
 ## Lists and sets
 
-A list names its collection for what it holds (`events`, `rules`, `users`) and spreads the paging fields beside it, both from `api/hono/src/lib/paging.ts`:
+A list names its collection for what it holds (`events`, `rules`, `signups`, `users`) and spreads the paging fields beside it, both from `api/hono/src/lib/paging.ts`:
 
 | Field         | Meaning                                                   |
 | ------------- | --------------------------------------------------------- |
@@ -44,7 +44,7 @@ A list names its collection for what it holds (`events`, `rules`, `users`) and s
 | `perPage`     | The page size asked for, echoed                           |
 | `total`       | Every matching row, counted                               |
 
-Flat siblings beside the collection, not a nested paging object, is the shape most REST frameworks answer and the one a reader expects. `total` stays because these tables are staff-sized and the console shows the count; on a large table counting is the expensive half and it would go. Keys order by relevance first, then A→Z: the collection is what the response is about, so it leads and the paging fields follow, the same on every list, while a row's own fields are plain A→Z with `id` among them. Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row when rows shift between requests; the shape is additive, so a `nextCursor` can join it without moving anything.
+Flat siblings beside the collection, not a nested paging object, is the shape most REST frameworks answer and the one a reader expects. `total` stays because every list reads a staff-sized database table (`activity`, `allowlist`, `user`, `waitlist`) and the console shows the count; on a large table counting is the expensive half and it would go. Keys order by relevance first, then A→Z: the collection is what the response is about, so it leads and the paging fields follow, the same on every list, while a row's own fields are plain A→Z with `id` among them. Paging is by offset (`?page=2&perPage=25`), which can skip or repeat a row when rows shift between requests; the shape is additive, so a `nextCursor` can join it without moving anything.
 
 A set route acts on rows the caller picked: ban a selection, change a role across it, remove several rules. Every guard runs per target, so one request can change three rows and refuse two, and `api/hono/src/lib/batch.ts` holds the shape that answers that, in the order a request meets it: what it sends, what comes back, then the limits it runs under:
 

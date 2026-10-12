@@ -6,7 +6,7 @@ description: "Better Auth sign-in, sessions and cookies, and the role ladder beh
 
 [Better Auth](https://better-auth.com) owns sign-in, sessions and roles as one config in `packages/auth`: `src/schema.ts` declares the plugins and the columns they add, and the Drizzle auth schema is generated from it; `src/index.ts` adds the providers, the cookie scope and the sign-in hook. It runs in-process against your own Postgres, so no user record leaves your database and there is no separate auth service to keep in sync.
 
-`user.role` is the only truth for the console (an organization role, on `member.role`, is never read here), and every gate re-reads it past the five-minute cookie cache. There is no env allow-list and no second list to keep in step: a rung granted or revoked, by the console, the CLI or an allowlist rule, is the whole decision, and it lands on the next request.
+`user.role` is the only truth for the console, the privileged area at `/console` (an organization role, on `member.role`, is never read here). Its value is a rung on the [role ladder](#the-console-role-ladder), from `owner` down to `user`, and every gate re-reads it past the [five-minute cookie cache](#sessions-and-cookies), Better Auth's copy of the session in the cookie. There is no env allow-list and no second list to keep in step: a rung granted or revoked, in the console, with `bun run console:roles` or by an [allowlist](/docs/manage/allowlist) rule, is the whole decision, and it lands on the next request.
 
 ## When you need this
 

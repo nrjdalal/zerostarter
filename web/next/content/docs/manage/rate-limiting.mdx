@@ -21,9 +21,9 @@ The key is the first of these the limiter can resolve (`generateRateLimitKey` in
 | User    | `userid:<id>`    | the session `authMiddleware` sets on `/api/v1/*` before its limiter runs                              |
 | API key | `apikey:<hash>`  | a resolver no limiter passes, since the starter has no API-key auth; a fork that adds it supplies one |
 | Address | `ip:<address>`   | `findIp` from `@arcjet/ip`, a header parser with no account and no network call                       |
-| None    | `ip:<random id>` | a fresh id per request when no address resolves, which leaves that request unbounded                  |
+| Random  | `ip:<random id>` | a fresh `randomUUIDv7()` per request when no address resolves, which leaves that request unbounded    |
 
-The global limiter passes no resolver, so it always keys on address; the per-user limiter supplies the session's user id.
+The global limiter passes no resolver, so it keys on address, falling to the random tier when none resolves; the per-user limiter supplies the session's user id.
 
 <Callout type="warn" title="Anonymous limiting is off on a bare Bun deploy">
 
