@@ -8,7 +8,7 @@ ZeroStarter develops on `canary`, the default branch and the one every pull requ
 
 ## When you need this
 
-Before your first pull request to the starter, or when a hook refuses a commit or a push you thought was fine.
+Before your first pull request to the starter. When a hook or a pull-request check refuses your change, see [Code Quality](/docs/manage/code-quality).
 
 ## Where to start
 
@@ -24,7 +24,7 @@ git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch>
 
 Two skills shape what goes in. `doc-sync`: docs move with code, so a changed command, path, convention or skill is fixed across every documented surface in the same change. `gh-commit`: one logical unit per commit in the [Conventional Commits](https://www.conventionalcommits.org) format, which commitlint checks on the `commit-msg` hook.
 
-The pre-commit hook formats, lints and builds but runs no `check-types`, so run `bun run check-types` (and, in the canonical starter, `bun run test`) before pushing. The pre-push audit runs only on a push from `canary`, so a feature branch pushed from your worktree meets the audit in the pull request's CI, which reruns the full gate on GitHub; [Code Quality](/docs/manage/code-quality#the-gates-in-order) lists what each hook and CI step runs.
+Run `bun run check-types` (and, in the canonical starter, `bun run test`) before pushing, and expect the audit in the pull request's CI rather than on your push; [Code Quality](/docs/manage/code-quality#the-gates-in-order) says why for both.
 
 ## Open the PR
 
@@ -36,19 +36,16 @@ Describe the change and its motivation, note any migration step, and link relate
 
 lint-staged formats only the staged files; CI runs `bun run format:check` over the whole tree, so drift in a file you never touched fails the pull request. Run `bun run format`, commit, push.
 
-**Why does the audit ignore one advisory?**
+**Why does the audit ignore an advisory?**
 
-`GHSA-vfj7-8cjw-p6xm` covers every release of `braces`, has no patched version, and reaches only dev tooling (`shadcn`, `globby`). With no release to move to, none of the `audit` skill's fixes can lift it, so the gate ignores it by ID, the skill's route for that case; its exit criteria are in `.github/notes/dependencies.md` (canonical starter).
+Because it has no patched version, so none of the `audit` skill's fixes has a release to move to, and the skill's route for that case is to ignore it by ID. The comment above the audit command in `lefthook.yml` names each ignored package and why; each one's exit criteria are in `.github/notes/dependencies.md` (canonical starter).
 
 ## It's working if
 
 - `git log --oneline origin/canary..HEAD` in your worktree lists only your own commits.
 - Your pull request names `canary` as its base branch.
 
-The hook and CI tells are on [Code Quality](/docs/manage/code-quality#its-working-if), whose Common questions also answer why the audit waits for a push.
-
 ## Next
 
-- [Code Quality](/docs/manage/code-quality), because it lists what each hook and CI step runs, in order.
 - [AI Skills](/docs/resources/ai-skills), because `codebase-map`, `doc-sync` and `gh-commit` live there.
 - [CLI](/docs/getting-started/cli), because a fork made with it inherits these hooks and skills, and `sync` takes later changes.

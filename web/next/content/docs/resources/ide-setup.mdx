@@ -14,7 +14,7 @@ The first time you open the repo in VS Code or Cursor, or when a file looks fine
 
 Two files do all of it: `.vscode/extensions.json` recommends one extension, `oxc.oxc-vscode`, and `.vscode/settings.json` makes it the default formatter and turns on format-on-save. Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints with Oxlint and formats with Oxfmt inline; lint-staged runs the same binaries over the staged files on every commit, which catches an editor without it.
 
-The extension reads the root config, so the editor and the CLI cannot disagree: `.oxlintrc.jsonc` is a schema line with every rule at its default, and `.oxfmtrc.jsonc` turns off semicolons, sorts imports, sorts Tailwind classes, and ignores `.agents/**`, so the skill docs stay as written.
+The extension reads the root `.oxlintrc.jsonc` and `.oxfmtrc.jsonc`, the same config the hooks and CI read, so the editor and the CLI cannot disagree; [Code Quality](/docs/manage/code-quality#the-gates-in-order) says what each sets.
 
 ## Cursor
 

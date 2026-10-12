@@ -39,7 +39,7 @@ Every route renders through `renderOgImage` in `web/next/src/lib/og-image.tsx`: 
 
 To add a kind, copy `web/next/src/app/og/blog/[[...slug]]/route.tsx`, register the kind in the `REGISTRY` in `web/next/src/lib/content.ts` with `og: true`, and keep `revalidate` when the kind is time-gated. `getPageOr404` and `params()` apply the kind's publish policy, so the route never hand-filters.
 
-To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or `/og?section=Demo&title=Hello&description=World` to tweak the text live; this page lists those params in the order the image draws them, top to bottom. To ship a hand-made landing image instead, drop a `public/og/home.png` in place and the home metadata points at it.
+To preview one, open its route while the dev server runs: `/og/home`, `/og/docs/manage/seo`, or `/og?section=Demo&title=Hello&description=World` to tweak the text live; the route reads `section`, `title` and `description`, the order the image draws them, top to bottom. To ship a hand-made landing image instead, drop a `public/og/home.png` in place and the home metadata points at it.
 
 <Callout type="warn" title="Keep the takumi binary traced for /og on Vercel">
 

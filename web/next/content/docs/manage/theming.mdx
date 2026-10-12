@@ -28,7 +28,7 @@ Fonts are self-hosted through `next/font/local` (`web/next/src/lib/fonts.ts`, wo
 
 **Why did my sidebar color revert?**
 
-Because `--sidebar` is one of the guarded registry tokens above, and its guard in `shadcn-customize.ts` restores `var(--background)` in both themes, not your value. Put your value in that guard instead; the `shadcn-sync` skill's Guards list is the complete set.
+Because `bun run shadcn:update` re-scaffolds `globals.css`, and `--sidebar` is a registry token with a guard: once the sync runs, the guard in `shadcn-customize.ts` restores `var(--background)` in both themes, not your value. Put your value in that guard instead; the `shadcn-sync` skill's Guards list says which tokens are guarded.
 
 **Why do Caveat and Lora live in a different file?**
 

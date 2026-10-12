@@ -16,7 +16,7 @@ Reach for this page when you are about to build the first product page, or want 
 
 `app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none, so an unauthenticated request never renders the page. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
 
-When the session carries no active organization, the layout restores, before it renders, the one the user last switched to; [Organizations](/docs/manage/organizations#the-active-organization) describes how.
+When the session carries no active organization, the layout restores, before it renders, the one the user last switched to, and a restore that fails logs the error and renders the page without one; [Organizations](/docs/manage/organizations#the-active-organization) describes how.
 
 ## The sidebar
 
@@ -58,4 +58,4 @@ It is `PageShell`, and `DashboardHeader` is `PageHeader`, both in `components/sh
 
 - [Authentication](/docs/manage/authentication), because the guard and the Console link both come from the session it describes.
 - [Organizations](/docs/manage/organizations), because the switcher in the header is its UI.
-- [Data Tables](/docs/manage/data-tables), because the console's tables are the first thing to copy onto this page.
+- [Data Tables](/docs/manage/data-tables), because the console's tables are the first thing to copy onto `/dashboard`.
