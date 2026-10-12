@@ -76,7 +76,7 @@ The `docker-test` skill ([AI Skills](/docs/resources/ai-skills)) holds the check
 
 **Why does the api run with `--no-install`?**
 
-Better Auth carries a guarded `@opentelemetry/api` import that fires inside its first span, the first auth API call (a sign-in or a session lookup alike, since every endpoint runs inside a span) rather than boot. With auto-install on, Bun fetches it from npm at that moment, which stalls a container with no network; with the flag the import fails at once and the guard falls back. A `Cannot find package 'X'` in the api logs names an import the bundle genuinely lacks.
+Better Auth carries a guarded `@opentelemetry/api` import that fires inside its first span, the first auth call of any kind rather than boot, since every auth endpoint and every database adapter call opens one. With auto-install on, Bun fetches it from npm at that moment, which stalls a container with no network; with the flag the import fails at once and the guard falls back. A `Cannot find package 'X'` in the api logs names an import the bundle genuinely lacks.
 
 **Why does `bun run db:migrate` ask for a `pg` or `postgres` driver, or fail to find `@packages/env/dist`?**
 
