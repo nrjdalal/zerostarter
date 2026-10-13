@@ -22,7 +22,7 @@ Reach for this page when you self-host on any Docker host, or want the productio
 - Docker with BuildKit and Compose v2 (`docker compose`): the Dockerfiles mount a build secret.
 - A root `.env`: both builds validate the full env and fail without it ([Environment Variables](/docs/manage/environment)).
 - A Postgres the containers can reach, already migrated. A `localhost` URL is rewritten for you, which reaches your host under Docker Desktop but not, as `docker-compose.yml` stands, on Linux ([How the containers talk](#how-the-containers-talk)).
-- Under `NODE_ENV=production`, TLS on that Postgres with a certificate the api can verify: the production client in `packages/db/src/index.ts` connects no other way, so against a Postgres without TLS, such as a plain container on your host, every api query fails while `bun run db:migrate` and `/api/health` still pass. `staging` connects without TLS, and also leaves off Better Auth's own rate limit on `/api/auth`, which only `production` turns on.
+- Under `NODE_ENV=production`, TLS on that Postgres with a certificate the api can verify: the production client in `packages/db/src/index.ts` connects no other way, so against a Postgres without TLS, such as a plain container on your host, every api query fails while `bun run db:migrate` and `/api/health` still pass. `staging`, like every stage but `production`, follows the URL's `sslmode`: TLS when it asks for it (`?sslmode=require`), none when it sets none, so a Postgres without TLS works there. It also leaves off Better Auth's own rate limit on `/api/auth`, which only `production` turns on.
 
 <Callout type="warn" title="A deploy's .env is not the one init wrote">
 

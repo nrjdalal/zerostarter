@@ -4,7 +4,7 @@ title: Analytics & Feedback
 description: Optional PostHog analytics and a feedback link, plus Speed Insights on every Vercel deploy.
 ---
 
-[PostHog](https://posthog.com) gives the web app product analytics, session replay and feature flags; a feedback link puts any URL in the docs sidebar and the dashboard user menu; Speed Insights reports real Core Web Vitals on Vercel. PostHog and the feedback link stay off until an environment variable is set, so out of the box neither runs. Speed Insights is the reverse: no key and no variable, it renders wherever `VERCEL` is set until you remove it.
+[PostHog](https://posthog.com) gives the web app product analytics, session replay and feature flags; a feedback link puts any URL in the docs sidebar and the user menu the dashboard and the console share; Speed Insights reports real Core Web Vitals on Vercel. PostHog and the feedback link stay off until an environment variable is set, so out of the box neither runs. Speed Insights is the reverse: no key and no variable, it renders wherever `VERCEL` is set until you remove it.
 
 ## When you need this
 
@@ -40,7 +40,7 @@ To remove it, delete the import, the `onVercel` line and the render line, then d
 
 ## User feedback
 
-One variable and no SDK: `NEXT_PUBLIC_USERJOT_URL`. The name points at [UserJot](https://userjot.com), but the value is any URL. Set it and a **Feedback** link appears in the docs sidebar footer beside the version label and in the dashboard user menu above **Log out**, each opening in a new tab. Leave it empty and neither renders; the footer still shows the version.
+One variable and no SDK: `NEXT_PUBLIC_USERJOT_URL`. The name points at [UserJot](https://userjot.com), but the value is any URL. Set it and a **Feedback** link appears in the docs sidebar footer beside the version label and, above **Log out**, in the user menu the dashboard and the console share (`web/next/src/components/shell/sidebar-user-menu.tsx`), each opening in a new tab. Leave it empty and none of them renders; the footer still shows the version.
 
 ## Common questions
 

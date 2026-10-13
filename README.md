@@ -84,7 +84,7 @@ const { data, error } = await unwrap(apiClient.health.$get())
 
 - **End-to-end type safety**: one type flows from the database through the API to the frontend, so breaking changes fail at compile time, not in production.
 - **Modular by design**: shared packages for auth, database, env, and config that you can swap or extend without fighting the system.
-- **Production-ready**: Docker and Vercel configs, migrations on Vercel deploys, rate limiting, and SEO are set up from the first commit. A Docker deploy migrates by hand, and its per-address limit holds only behind a proxy you control that is the api's only way in ([Rate Limiting](https://zerostarter.dev/docs/manage/rate-limiting)).
+- **Production-ready**: Docker and Vercel configs, migrations on Vercel deploys, rate limiting, and SEO are set up from the first commit. A Docker deploy migrates by hand, and its per-address limit holds only behind a proxy you control in front of both published ports, since the web's `/api` rewrite passes the client's `x-forwarded-for` (or none) to the api unchanged ([Rate Limiting](https://zerostarter.dev/docs/manage/rate-limiting)).
 - **Forkable**: the brand the app shows is centralized in `@packages/config/site`, and `bunx zerostarter init` writes it for your project name.
 
 📖 **[Read more →](https://zerostarter.dev)**

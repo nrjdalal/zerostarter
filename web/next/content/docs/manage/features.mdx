@@ -37,7 +37,7 @@ The fork's home follows the same rule: a fork's `web/next/src/app/page.tsx` is w
 
 **Are these per-user flags?**
 
-No. `features` is configuration, read by the server and bundled into the client, so every visitor sees the same set and changing one is a deploy. Per-user flags from PostHog or a service are an idea on file in `.github/notes/plans/feature-flags.md` (canonical starter), not a feature.
+No. `features` is configuration, read by the server and bundled into the client, so every visitor sees the same set and changing one is a deploy. Per-user flags are PostHog's: once its token is set, posthog-js loads them in the browser, though nothing in the starter reads one ([Analytics](/docs/manage/analytics)). Managing flags, through PostHog or another service, is an idea on file in `.github/notes/plans/feature-flags.md` (canonical starter), not a feature.
 
 **Does `init` accept `--allowlist`?**
 

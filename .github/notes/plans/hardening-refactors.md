@@ -17,7 +17,7 @@ The PR gate (`auto-check-build.yml`) ran `audit + lint + build` only, so a type 
 
 `api/hono/src/routers/agents.ts` `/api/agents/sign-in-as` (the local-only agent login) was gated on `NODE_ENV=local`, which is the `.env.example` default, so it could stay reachable in a default self-host. Add an `AGENT_SIGNIN_ENABLED` toggle (off by default) and mount the route only when it is true, so agent login is opted into deliberately in dev and a default env never exposes it. Thread it through `packages/env`, `.env.example`, `AGENTS.md`, and the `dev`/docs. The deferred route test lands with the product-test harness below.
 
-To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `AGENT_SIGNIN_ENABLED=true` in the scaffolded project's `.env` alongside a generated `BETTER_AUTH_SECRET`, so `bunx zerostarter init` yields working agent login out of the box. This only touches the gitignored `.env`, never the committed `.env.example`, so clone/deploy defaults stay off and the `isLocal(NODE_ENV)` gate keeps the toggle inert on a real deploy.
+To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `AGENT_SIGNIN_ENABLED=true` in the scaffolded project's `.env` alongside a generated `BETTER_AUTH_SECRET`, so `bunx zerostarter init` yields working agent login out of the box. This only touches the gitignored `.env`, never the committed `.env.example`, so a clone's default stays off. The `isLocal(NODE_ENV)` gate keeps the toggle inert only on a deploy whose `.env` sets another stage: one run on `init`'s own `.env` (`NODE_ENV=local`, the flag `true`), a `docker compose up` included, serves the route.
 
 ## Larger, tracked separately
 

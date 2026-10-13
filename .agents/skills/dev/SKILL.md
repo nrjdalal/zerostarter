@@ -10,7 +10,7 @@ source: local
 
 ## Start
 
-Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone. The stage then comes from `.env`, and `/api/health` names it. Run it detached in stream mode, logging to a file (`--ui stream` holds even where a user config or `TURBO_UI` picks turbo's interactive UI):
+Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone, and the database client requires TLS with a verified certificate, so every query against a Postgres without TLS, the pglaunch container included, fails with `ERR_POSTGRES_TLS_NOT_AVAILABLE`. The stage then comes from `.env`, and `/api/health` names it. Run it detached in stream mode, logging to a file (`--ui stream` holds even where a user config or `TURBO_UI` picks turbo's interactive UI):
 
 ```bash
 unset NODE_ENV SKIP_ENV_VALIDATION

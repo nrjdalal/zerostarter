@@ -91,7 +91,7 @@ Under the `marketing/` directory of its kind: `web/next/src/components/marketing
 
 **Why is `packages/db/src/schema/auth.ts` never edited by hand?**
 
-It is the output of Better Auth's own generator for the plugins `packages/auth/src/schema.ts` declares, byte for byte after the formatter, and `bun run auth:schema --check` fails whenever the committed file differs from a fresh generation; the canonical starter also runs that check as a test, which a fork does not take. A column on `user` or `session` goes into `schema.ts` as an `additionalFields` entry, then `bun run auth:schema` and a migration. The generator runs under Node on purpose: under Bun, a `() => new Date` default loses its call when the generator inspects it, and every `.defaultNow()` would silently vanish.
+It is the output of Better Auth's own generator for the plugins `packages/auth/src/schema.ts` declares, byte for byte after the formatter, and `bun run auth:schema --check` fails whenever the committed file differs from a fresh generation; the canonical starter also runs that check as a test, which a fork does not take. A column on `user` goes into `schema.ts` as a `user.additionalFields` entry, then `bun run auth:schema` and a migration. A column on `session` takes more, because that declaration admits only `plugins` and `user`, and the auth instance spreads it after its own `session` options: [The generated auth schema](/docs/manage/database#the-generated-auth-schema) says how. The generator runs under Node on purpose: under Bun, a `() => new Date` default loses its call when the generator inspects it, and every `.defaultNow()` would silently vanish.
 
 ## It's working if
 

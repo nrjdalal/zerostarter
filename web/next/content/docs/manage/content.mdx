@@ -15,7 +15,7 @@ Reach for this page when you are adding a docs page or a blog post, or when one 
 
 ## Docs: the config is the source of truth
 
-`web/next/docs.config.ts` is the single source for the docs' structure and metadata; its header comment is the spec. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
+`web/next/docs.config.ts` is the single source for the docs' structure and metadata, typed by `DocsConfig` in `web/next/src/lib/docs.ts`. In the canonical starter its header comment is the spec; a fork's `init` writes the file as a stub without that comment, and the shape is the one this section describes. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
 
 A generator, `.github/scripts/docs.ts`, reads that config. An unflagged run, which `dev:app` and `check-types` make and `bun .github/scripts/docs.ts` makes by hand, writes:
 

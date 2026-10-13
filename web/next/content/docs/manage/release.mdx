@@ -22,7 +22,7 @@ Until it has write access the release workflows fail with `403 Resource not acce
 
 ![GitHub Workflow permissions settings](/marketing/docs/release/workflow-permissions.png)
 
-`main` must also exist on the remote. Into a target with no `.git`, `init` creates it locally at its scaffold commit, and the pre-push hook pushes that `main` on the push after `canary`'s, so `canary` stays the default branch. The scaffold commit is the fetched starter before the rebrand writes `packages/config/src/site.ts`, so a fork's `main` does not build until the first release PR merges `canary` into it. A target that already had `.git` gets `init`'s one commit on its current branch and neither branch is created: create whichever of `canary` and `main` it lacks before the first push.
+`main` must also exist on the remote. Into a target with no `.git`, `init` creates it locally at its scaffold commit, and the pre-push hook pushes that `main` on the push after `canary`'s, so `canary` stays the default branch. The scaffold commit is the fetched starter before the rebrand writes `packages/config/src/site.ts`, so a fork's `main` does not build until the first release PR merges `canary` into it. A checkout that already holds the starter and its `.git` (a clone of it, or an existing fork), which `init` converts in place, gets `init`'s one commit on its current branch and neither branch is created: create whichever of `canary` and `main` it lacks before the first push.
 
 ## The window
 

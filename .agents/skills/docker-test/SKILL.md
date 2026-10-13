@@ -1,6 +1,6 @@
 ---
 name: docker-test
-description: Build and smoke-test the Docker images with docker compose, and run the golden end-to-end suite against them. Use when touching a Dockerfile, the bundle build, compose config, or a *.e2e.test.ts.
+description: Build and smoke-test the Docker images with docker compose, and in the canonical starter run the golden end-to-end suite against them. Use when touching a Dockerfile, the bundle build, compose config, or a *.e2e.test.ts.
 source: local
 ---
 

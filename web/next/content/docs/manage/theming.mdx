@@ -4,7 +4,7 @@ title: Theming
 description: "Dark mode, OKLCH design tokens, and Tailwind v4: restyle without fighting the system."
 ---
 
-You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and components reach for the utility rather than a raw color (the `design` skill's Color rule), so one edit flows to every surface that follows the rule, in both themes. The few literals left keep their color through a token edit: the OG image, the shadcn overlays and slider thumb under `components/ui/`, the dev tools bar, the `/waitlist` avatars, and the canonical starter's marketing page.
+You restyle ZeroStarter by editing tokens, not components. Colors, fonts and radii are CSS custom properties in `web/next/src/app/globals.css`, Tailwind v4's `@theme inline` block binds each to a utility class, and components reach for the utility rather than a raw color (the `design` skill's Color rule), so one edit flows to every surface that follows the rule, in both themes. The few literals left keep their color through a token edit: the OG image, the shadcn overlays and slider thumb under `components/ui/`, the dev tools bar, the `/waitlist` avatars, and the canonical starter's marketing page. So do the page bodies of the docs, the blog and the console docs: their prose, callouts, cards, code blocks and table of contents are Fumadocs components colored from its own `--color-fd-*` palette, fixed HSL values `globals.css` imports from `fumadocs-ui/css/neutral.css`, which no token edit reaches. Import `fumadocs-ui/css/shadcn.css` in its place to map that palette onto these tokens.
 
 That file is also one the shadcn sync re-scaffolds: `bun run shadcn:update` runs `shadcn init` over `globals.css`, so a token the registry writes (`--background`, `--font-heading`, `--font-sans`, `--sidebar` and the rest) takes the registry's value back, the overrides the `shadcn-sync` skill lists under Guards then restore their lines, and a token the registry does not write (`--font-mono`, `--success`) survives. A registry token changed without a guard holds until the next sync, then reverts.
 
@@ -36,7 +36,7 @@ Because preload follows the import graph. The root layout imports `lib/fonts.ts`
 
 ## It's working if
 
-- A token edited in both `:root` and `.dark` shows on the next render in both themes, and the `ModeToggle` flips between them.
+- A token edited in both `:root` and `.dark` shows on the next render in both themes on every surface but the literals and the Fumadocs page bodies above, and the `ModeToggle` flips between them.
 - After `bun run shadcn:update` on a clean tree, every token you guarded still reads your value in `globals.css`.
 
 ## Next

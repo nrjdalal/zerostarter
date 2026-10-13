@@ -20,7 +20,7 @@ Reach for this page to look up what a script does and when it runs, or to place 
 | `bun run release:version` | Print the release window's version decision as JSON, writing nothing and needing no network; `--write` moves `package.json` to it |
 | `bun run start`           | Serve the production builds: the web's standalone server and the api bundle                                                       |
 
-The release workflows run `release:version`; by hand it previews ([Releases](/docs/manage/release)).
+The release workflows run `release:version`; by hand it previews ([Releases](/docs/manage/release)). Run locally, `start` serves the web without its assets: only `web/next/Dockerfile` copies `.next/static` and `public` into the standalone output, so they 404 until you copy them in the same way.
 
 ### Quality
 

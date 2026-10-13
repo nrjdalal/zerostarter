@@ -44,27 +44,27 @@ Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skil
 
 <!-- skills:custom -->
 
-| Skill                                                    | Description                                                                                                                                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [add-package](.agents/skills/add-package/SKILL.md)       | Add a new shared workspace package under packages/*.                                                                                                              |
-| [api-endpoint](.agents/skills/api-endpoint/SKILL.md)     | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                               |
-| [audit](.agents/skills/audit/SKILL.md)                   | Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md.                    |
-| [codebase-map](.agents/skills/codebase-map/SKILL.md)     | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                          |
-| [db-migration](.agents/skills/db-migration/SKILL.md)     | Create and apply a Drizzle schema change.                                                                                                                         |
-| [design](.agents/skills/design/SKILL.md)                 | Follow and maintain the app's UI conventions.                                                                                                                     |
-| [dev](.agents/skills/dev/SKILL.md)                       | Start, restart, and verify the dev stack, and sign in as the agent.                                                                                               |
-| [doc-sync](.agents/skills/doc-sync/SKILL.md)             | Sync docs and skills so they never drift from the code.                                                                                                           |
-| [docker-test](.agents/skills/docker-test/SKILL.md)       | Build and smoke-test the Docker images with docker compose, and run the golden end-to-end suite against them.                                                     |
-| [fonts](.agents/skills/fonts/SKILL.md)                   | Add, swap, or remove a self-hosted web font.                                                                                                                      |
-| [gh-commit](.agents/skills/gh-commit/SKILL.md)           | Create atomic commits in the conventional format.                                                                                                                 |
-| [icebox](.agents/skills/icebox/SKILL.md)                 | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                               |
-| [ignore-sync](.agents/skills/ignore-sync/SKILL.md)       | Mirror .gitignore to .dockerignore.                                                                                                                               |
-| [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                             |
-| [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                |
-| [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                            |
-| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                               |
-| [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                 |
-| [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them. |
+| Skill                                                    | Description                                                                                                                                                             |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [add-package](.agents/skills/add-package/SKILL.md)       | Add a new shared workspace package under packages/*.                                                                                                                    |
+| [api-endpoint](.agents/skills/api-endpoint/SKILL.md)     | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                     |
+| [audit](.agents/skills/audit/SKILL.md)                   | Refresh every dependency and version pin to its latest release, run the dependency security audit, and in the canonical starter maintain .github/notes/dependencies.md. |
+| [codebase-map](.agents/skills/codebase-map/SKILL.md)     | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                |
+| [db-migration](.agents/skills/db-migration/SKILL.md)     | Create and apply a Drizzle schema change.                                                                                                                               |
+| [design](.agents/skills/design/SKILL.md)                 | Follow and maintain the app's UI conventions.                                                                                                                           |
+| [dev](.agents/skills/dev/SKILL.md)                       | Start, restart, and verify the dev stack, and sign in as the agent.                                                                                                     |
+| [doc-sync](.agents/skills/doc-sync/SKILL.md)             | Sync docs and skills so they never drift from the code.                                                                                                                 |
+| [docker-test](.agents/skills/docker-test/SKILL.md)       | Build and smoke-test the Docker images with docker compose, and in the canonical starter run the golden end-to-end suite against them.                                  |
+| [fonts](.agents/skills/fonts/SKILL.md)                   | Add, swap, or remove a self-hosted web font.                                                                                                                            |
+| [gh-commit](.agents/skills/gh-commit/SKILL.md)           | Create atomic commits in the conventional format.                                                                                                                       |
+| [icebox](.agents/skills/icebox/SKILL.md)                 | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                     |
+| [ignore-sync](.agents/skills/ignore-sync/SKILL.md)       | Mirror .gitignore to .dockerignore.                                                                                                                                     |
+| [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                                   |
+| [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                      |
+| [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                  |
+| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                                     |
+| [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                       |
+| [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them.       |
 
 <!-- /skills:custom -->
 

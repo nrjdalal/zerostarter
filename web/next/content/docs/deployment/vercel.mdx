@@ -16,7 +16,7 @@ Reach for this page when you first put the starter on Vercel, or add a custom do
 ## Prerequisites
 
 - A Postgres reachable from Vercel's build, not only at runtime, serving TLS with a certificate the api can verify, since under `NODE_ENV=production` its client connects no other way ([Deploy with Docker](/docs/deployment/docker#prerequisites)).
-- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork's default is `canary` ([Releases](/docs/manage/release#prerequisites) says when `main` lands, and why a fork's does not build before its first release PR merges). Import after that merge, or every production deploy fails until it lands. A project imported earlier tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
+- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork's default is `canary` ([Releases](/docs/manage/release#prerequisites) says when `main` lands, and why a fork's does not build before its first release PR merges). Import after that merge. A project imported once `main` reached the remote but before the merge fails every production deploy until it lands, and one imported before `main` reached the remote tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
 
 ## Two projects, one runtime
 
@@ -88,7 +88,7 @@ Two `*.vercel.app` projects cannot share a session cookie, since `vercel.app` is
 
 - **OAuth registers at the web origin.** Sign-in completes on the web, so the app origin and the callback are both the web, not the api ([Callback URLs](/docs/manage/authentication#callback-urls)); a custom domain, where web and api share a parent, switches back to the api host on its next build.
 - **The api infers the web origin** as the first `HONO_TRUSTED_ORIGINS` entry that is not itself. Set `HONO_WEB_URL` on the api project when that will not do: more than one trusted origin, or none that differs from the api, where the log warns `[auth] HONO_APP_URL is a public-suffix host` and sign-in cannot complete until you set it.
-- **The rate limiter sees a Vercel hop** behind the rewrite, so proxied visitors share one anonymous bucket ([Rate Limiting](/docs/manage/rate-limiting)).
+- **The rate limiters see a Vercel hop** behind the rewrite, so proxied visitors share one anonymous bucket ([Rate Limiting](/docs/manage/rate-limiting#common-questions)). [Better Auth's limiter](/docs/manage/rate-limiting#better-auths-limiter), on under `NODE_ENV=production`, keys on the same `x-forwarded-for`, so those visitors share its budgets too, three sign-in requests per 10 seconds among them, and `HONO_RATE_LIMIT` does not change them.
 
 ## WebSockets
 

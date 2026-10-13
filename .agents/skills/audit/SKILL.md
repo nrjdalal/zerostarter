@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
+description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and in the canonical starter maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 source: local
 ---
 
