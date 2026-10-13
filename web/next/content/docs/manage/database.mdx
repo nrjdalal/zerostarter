@@ -57,7 +57,7 @@ Because Drizzle Kit cannot use Bun's driver, so `postgres` is a dev dependency o
 
 No. `packages/db/drizzle/` and `packages/db/src/schema/` are restored after the overlay, so a fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync: you port and migrate it yourself.
 
-`packages/auth/src/schema.ts` is not restored: the overlay replaces it with the starter's copy like any shared starter file, so your own plugins and `additionalFields` are gone from it after a sync. Put them back from the sync's diff before running `bun run auth:schema`; regenerating from the starter's copy removes your columns from `auth.ts`, and the next `bun run db:generate` writes a migration that drops them. See [CLI](/docs/getting-started/cli).
+`packages/auth/src/schema.ts` is not restored: the overlay replaces it with the starter's copy like any shared starter file, so your own plugins and `additionalFields` are gone from it after a sync. The auth instance reads that same declaration at runtime, so until you put them back from the sync's diff they are gone from the running app too; restore them before you commit the sync. Regenerating from the starter's copy also removes your columns from `auth.ts`, and the next `bun run db:generate` writes a migration that drops them. See [CLI](/docs/getting-started/cli#common-questions).
 
 **Can the migrations be squashed into one baseline?**
 

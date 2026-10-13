@@ -16,19 +16,19 @@ Reach for this page when you are handing the repo to an agent, or when one stall
 
 Scaffold, run, sign in, build, verify; the skill holds the commands:
 
-| Step     | What happens                                                           | Skill                                    |
-| -------- | ---------------------------------------------------------------------- | ---------------------------------------- |
-| Scaffold | `bunx zerostarter init` writes `AGENT_SIGNIN_ENABLED=true` into `.env` | [the CLI](/docs/getting-started/cli)     |
-| Run      | `bun run dev`, named `.localhost` URLs, branch-prefixed in a worktree  | `dev`                                    |
-| Sign in  | one request mints a session as `LocalAgent`, no OAuth                  | `dev`, under Agent login                 |
-| Build    | a route, a migration or a page, by its recipe                          | `api-endpoint`, `db-migration`, `design` |
-| Verify   | drive the running app in a real browser, screenshot the result         | `ui-verify`, with `agent-browser`        |
+| Step     | What happens                                                                                   | Skill                                    |
+| -------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Scaffold | `bunx zerostarter init` (and `reinit`) sets a blank `AGENT_SIGNIN_ENABLED` in `.env` to `true` | [the CLI](/docs/getting-started/cli)     |
+| Run      | `bun run dev`, named `.localhost` URLs, branch-prefixed in a worktree                          | `dev`                                    |
+| Sign in  | one request mints a session as `LocalAgent`, no OAuth                                          | `dev`, under Agent login                 |
+| Build    | a route, a migration or a page, by its recipe                                                  | `api-endpoint`, `db-migration`, `design` |
+| Verify   | drive the running app in a real browser, screenshot the result                                 | `ui-verify`, with `agent-browser`        |
 
 ### Skills
 
 Each step's skill is a procedure an agent loads by its description, with this repo's conventions and traps; [AI Skills](/docs/resources/ai-skills) says how they load and lists them all. The `dev` skill, for instance, holds the trap that stalls agents most: `bun --hot` misses a file created after its importers reloaded, so a new router answers `NOT_FOUND` until a full restart.
 
-A fork inherits all of it, rebranded: `init` ships every skill and `AGENTS.md`, and `sync` reconciles them per skill, keeping the ones you have edited; the rules, and the one case where an edit is replaced, are under [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
+A fork inherits all of it, rebranded: `init` ships every skill and `AGENTS.md`, and `sync` reconciles them per skill, keeping the ones you have edited; the rules, and the cases where an edit is still replaced, are under [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
 
 ### agent-browser
 
@@ -38,7 +38,7 @@ With the session in place, the vendored `agent-browser` skill drives the real ap
 
 Anything behind auth normally needs an OAuth round-trip an agent cannot complete. `POST /api/agents/sign-in-as` returns a real session in one request; the curl pair and the browser path (**Login**, then **Login (agents)**) are the `dev` skill's Agent login. The sign-in that creates the account makes it an `owner`; after that its rung stands, so you can demote it to see what a lower rung sees, and `bun run console:roles grant agent@local.host owner` puts it back.
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true` (one predicate, `api/hono/src/lib/agent-signin.ts`). `.env.example` ships `NODE_ENV=local` with the flag blank, which defaults to false, so a fresh clone answers `404` on the route. The `.env` that `init` writes turns the flag on, so that one file opens both locks: a deploy closes the route by setting `NODE_ENV` to any other stage or leaving the flag blank, and a self-host that runs on the `.env` `init` wrote serves it to anyone who can reach the api, with an `owner` session from the call that creates the account. The trusted-`Origin` check on each request stops a page on another site from calling it from a visitor's browser, not a direct HTTP client, which sends whatever `Origin` it likes. The same predicate gates the route's `/api/auth/providers` advertisement, so the **Login (agents)** button never points at a route that is not there, and the button exists only in a dev build.
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true` (one predicate, `api/hono/src/lib/agent-signin.ts`). `.env.example` ships `NODE_ENV=local` with the flag blank, which defaults to false, so a fresh clone answers `404` on the route. `init` and `reinit` set a blank flag to `true` in the `.env` they seed, so that one file opens both locks. A deploy closes the route by setting `NODE_ENV` to any other stage or the flag to `false`; a blank flag closes it too until `init` or `reinit` runs in that checkout again. A self-host that runs on the `.env` `init` wrote serves the route to anyone who can reach the api, with an `owner` session from the call that creates the account, and so does `bun run dev` on a shared network, since the api listens on every interface (Bun's default). The trusted-`Origin` check on each request stops a page on another site from calling it from a visitor's browser, not a direct HTTP client, which sends whatever `Origin` it likes. The same predicate gates the route's `/api/auth/providers` advertisement, so the **Login (agents)** button never points at a route that is not there, and the button exists only in a dev build.
 
 ## The context an agent reads
 

@@ -10,7 +10,7 @@ source: local
 
 ## Start
 
-Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone. The stage then comes from `.env`, and `/api/health` names it. Bare `bun run dev` opens turbo's TUI, so run stream mode detached:
+Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone. The stage then comes from `.env`, and `/api/health` names it. Run it detached in stream mode, logging to a file (`--ui stream` holds even where a user config or `TURBO_UI` picks turbo's interactive UI):
 
 ```bash
 unset NODE_ENV SKIP_ENV_VALIDATION
@@ -54,7 +54,7 @@ Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its
 
 ## Agent login
 
-The route mounts only when the stage is `local` and `.env` sets `AGENT_SIGNIN_ENABLED=true`. `.env.example` leaves the flag blank, but `init` writes `true` beside `NODE_ENV=local`, so a server started from that `.env` serves the route, a Docker deploy included (compose reads the same file); a deploy's `.env` sets `NODE_ENV=production` and leaves the flag blank. The route requires a trusted `Origin`, which stops a page on another site, not a client that sets the header itself, as this curl does:
+The route mounts only when the stage is `local` and `.env` sets `AGENT_SIGNIN_ENABLED=true`. `.env.example` leaves the flag blank, but `init` and `reinit` turn a blank flag into `true` beside `NODE_ENV=local`, so a server started from that `.env` serves the route, a Docker deploy included (compose reads the same file); a deploy's `.env` sets `NODE_ENV` to `production` or `staging` and the flag to `false`, which survives a re-seed. The api listens on every network interface, dev included, and the route requires a trusted `Origin`, which stops a page on another site, not a client that sets the header itself, as this curl does, so any host on the network that reaches the api port can sign in:
 
 ```bash
 WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)

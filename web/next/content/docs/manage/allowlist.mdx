@@ -14,7 +14,7 @@ Reach for this page when a team at one domain should open the console and you do
 
 ## Prerequisites
 
-The `allowlist` [feature](/docs/manage/features) on, in `packages/config/src/site.ts`. The starter ships it on; a fork made with `init` starts with it off unless you pass `--allowlist` or pick it in the prompt, so console access there is granted per person until you flip it. With it off the page renders the console's not-found page, the nav drops it, `/api/v1/admin/allowlist*` 404s, and the sign-in hook returns before reading a rule.
+The `allowlist` [feature](/docs/manage/features) on, in `packages/config/src/site.ts`. The starter ships it on; a fork made with `init` starts with it off unless you pass `--allowlist` or pick it in the prompt, so console access there is granted per person until you flip it. With it off the page renders the console's not-found page, the nav drops it, `/api/v1/admin/allowlist*` 404s for an admin (a caller without a session gets the 401 and a non-admin the 403 first, [API Conventions](/docs/manage/api-conventions#what-runs-before-your-handler) says why), and the sign-in hook returns before reading a rule.
 
 ## What a rule does
 

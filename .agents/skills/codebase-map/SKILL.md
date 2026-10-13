@@ -32,14 +32,14 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add/change a page | `web/next/src/app/`, route groups: `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors, `(protected)` dashboard. The public home is `app/page.tsx` in a fork; in the canonical starter it is the `(marketing)` group, with `/hire` and `/resume` | - |
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, customized through the post-sync script | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
-| Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
+| Rebrand (name, description, socials) | `packages/config/src/site.ts` for what the app shows; a fork's `sync` rebrands its portless hosts, skills and `AGENTS.md` from the root `package.json` `name` | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`, read through `@packages/env/*`. The root `.env` is loaded by `src/load-dotenv.ts`, relative to the working directory: the server targets import it first, and `web-next` and the package index never do, since client components import them, so a script that reads env through either imports `@packages/env/load-dotenv` itself first, as `packages/scripts/src/generate-env.ts` does. A variable the platform injects (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`) is read from `process.env` at the point of use and stays out of the schema and `.env.example` | - |
 | Configure auth (providers, cookies, hooks) | `packages/auth/src/index.ts` | - |
 | Add or change an auth plugin, or a column on `user`/`session` | `packages/auth/src/schema.ts` (`additionalFields` for a column) → `bun run auth:schema` regenerates `packages/db/src/schema/auth.ts` | `db-migration` skill |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |
 | Add a test (canonical starter only) | `tests/<path of the file under test>.test.ts`, mirroring the subject's path; `bun run test` builds `packages/*` first, since a test reaches a package through its `exports`, which point at `dist`. `bun test` skips dot-directories, which is why `.github/scripts` tests live under `tests/github/scripts/`. An end-to-end test is `tests/<path of the router or page it drives>.e2e.test.ts` on the `tests/stack.ts` helper, run against a stack by `bun run test:e2e` | `docker-test` skill |
 | Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package; output to `.generated/` | `add-package` skill |
-| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
+| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`), and `bun run console:roles` restates the grantable rungs in `.github/scripts/console-roles.ts`, so a new rung lands in both; `assertConsoleAccess` in `web/next/src/lib/auth/console.ts` is the page check, which the console layout calls at member and each admin page calls again at admin. Next does not re-run a layout on a client navigation, so a page that must stay private calls it itself (the console docs pages do not). `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 
@@ -72,4 +72,4 @@ ls .agents/skills                                     # every task skill availab
 
 ## Then
 
-Load the task skill (the table's right column); `dev` runs and restarts the stack, and concept docs live under `/docs`.
+Load the task skill (the table's right column); `dev` runs and restarts the stack. In the canonical starter, concept docs live under `/docs`; a fork's `/docs` holds its own.

@@ -2,7 +2,7 @@
 slug: /docs/deployment/vercel
 label: Vercel
 title: Deploy to Vercel
-description: Ship web and api as two Vercel projects on one database; migrations run on deploy.
+description: Ship web and api as two Vercel projects on one database; the api build migrates on production and canary deploys.
 ---
 
 Deploy `web/next` and `api/hono` as two Vercel projects on the same repository. Each ships a `vercel.json` naming its install command, build command, framework preset and function runtime, so a project needs two things from you: its **Root Directory** and its variables.
@@ -15,8 +15,8 @@ Reach for this page when you first put the starter on Vercel, or add a custom do
 
 ## Prerequisites
 
-- A Postgres reachable from Vercel's build, not only at runtime.
-- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork's default is `canary` ([Releases](/docs/manage/release#prerequisites) says when `main` lands). A project imported earlier tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
+- A Postgres reachable from Vercel's build, not only at runtime, serving TLS with a certificate the api can verify, since under `NODE_ENV=production` its client connects no other way ([Deploy with Docker](/docs/deployment/docker#prerequisites)).
+- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork's default is `canary` ([Releases](/docs/manage/release#prerequisites) says when `main` lands, and why a fork's does not build before its first release PR merges). Import after that merge, or every production deploy fails until it lands. A project imported earlier tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
 
 ## Two projects, one runtime
 
@@ -95,7 +95,7 @@ Two `*.vercel.app` projects cannot share a session cookie, since `vercel.app` is
 The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute), the default for a new project; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) states which adapter each host takes. On Vercel:
 
 - **A connection is pinned to one function instance and closes at its [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, so a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
-- **On a public suffix** the socket opens on the web origin, and on a custom domain on the api directly ([Realtime](/docs/getting-started/realtime#common-questions)); either way REST stays the baseline it overlays.
+- **On a public suffix** the client points the socket at the web origin, as it does REST, and on a custom domain at the api directly ([Realtime](/docs/getting-started/realtime#common-questions)); either way REST stays the baseline it overlays.
 
 ## Common questions
 

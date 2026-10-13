@@ -57,7 +57,7 @@ Done when the frame's sections are present in that order, or consciously omitted
 - A config file is linked by path with a one-line gist. An excerpt shows the lines the page is about and names the file; the whole file lives in the repo.
 - A branch (two artifacts, four situations, five options) goes in a table or a list, since the reader is scanning for the one row that matches them.
 - An operational trap goes in a `<Callout type="warn">`; everything else is prose. GitHub's `> [!NOTE]` syntax renders as a quote here.
-- Rationale that the page needs stays; a design argument the page does not need moves to `.github/notes/`.
+- Rationale that the page needs stays; a design argument the page does not need moves out of it, in the canonical starter to `.github/notes/`.
 
 Done when no fenced block mirrors a repo file whole, and every skill the page touches is linked rather than restated.
 

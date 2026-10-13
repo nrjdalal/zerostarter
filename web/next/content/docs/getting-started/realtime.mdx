@@ -38,7 +38,7 @@ The one socket route ships public and checks no session, since it streams what `
 
 **Which origin does the badge's socket open on?**
 
-The one every browser call from the web uses: `api-status.tsx` opens it with the same `apiClient`, and `web/next/src/lib/config.ts` points that client at `NEXT_PUBLIC_API_URL`, or at `NEXT_PUBLIC_APP_URL` on a public hosting suffix such as `*.vercel.app`. So on a custom domain the socket opens on the api origin, and on a public suffix on the web origin. For what Vercel requires of a socket, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
+The one every browser call from the web uses: `api-status.tsx` dials it with the same `apiClient`, and `web/next/src/lib/config.ts` points that client at `NEXT_PUBLIC_API_URL`, or at `NEXT_PUBLIC_APP_URL` on a public hosting suffix such as `*.vercel.app`. So on a custom domain the upgrade goes straight to the api origin, and on a public suffix to the web origin, which reaches the api only if the web's `/api` rewrite carries the upgrade. Next's own server proxies an upgrade to an external rewrite target (`upgradeHandler` in `next/dist/server/lib/router-server.js`); on Vercel the platform applies the rewrite instead, so check the Network tab's WS filter on a `*.vercel.app` deploy before building on it. Where no frame arrives, REST alone carries the badge. For what Vercel requires of a socket, see [Deploy to Vercel](/docs/deployment/vercel#websockets).
 
 **Why does the upgrade route list 429 and 500 in the reference?**
 

@@ -14,7 +14,7 @@ Reach for this page when you are about to build the first product page, or want 
 
 ## The guard
 
-`app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none. That redirect is not a page's guard: Next renders a layout beside its page rather than before it, and does not re-run it on client navigation, so a page that reads data checks the session itself or reads through the API, whose `authMiddleware` checks every request. The starter's dashboard page reads nothing. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
+`app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none. That redirect is not a page's guard: Next renders a layout beside its page rather than before it, and does not re-run it on client navigation, so a page that reads data checks the session itself or reads through `/api/v1`, whose `authMiddleware` checks every request under it through the [cookie cache](/docs/manage/authentication#sessions-and-cookies); a route mounted outside `/api/v1`, such as the public `/api/waitlist`, gets no session check from it. The starter's dashboard page reads nothing. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
 
 When the session carries no active organization, the layout restores, before it renders, the one the user last switched to, and a restore that fails logs the error and renders the page without one; [Organizations](/docs/manage/organizations#the-active-organization) describes how.
 
@@ -38,7 +38,7 @@ A page wraps its content in `PageShell` and opens with `PageHeader`, both in `co
 
 **Why does every dashboard load read the session fresh?**
 
-Because the Console link is drawn from it. The browser holds a session snapshot for the cookie cache window, so a cached read would leave someone just promoted to `member` with no way into the console they can already open; the gates on `/console` and the API read past the cache, and the dashboard matches them, at the cost of one session lookup on a round trip the layout makes anyway.
+Because the Console link is drawn from it. The browser holds a session snapshot for the cookie cache window, so a cached read would leave someone just promoted to `member` with no way into the console they can already open; the console's gates, on its pages and on `/api/v1/admin`, read past the cache, and the dashboard matches them, at the cost of one session lookup on a round trip the layout makes anyway.
 
 **How do I get back to the landing page?**
 

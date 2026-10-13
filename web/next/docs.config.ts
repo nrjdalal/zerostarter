@@ -68,7 +68,7 @@ const docsConfig = {
         "/docs/manage/rate-limiting": {
           title: "Rate Limiting",
           description:
-            "Layered rate limits: a per-address budget on every request, and a second, per-user budget for signed-in /api/v1 requests on top of it.",
+            "Layered rate limits: a per-address budget on every request, a second, per-user budget for signed-in /api/v1 requests on top of it, and Better Auth's own limiter on its routes in production.",
         },
       },
       {
@@ -202,7 +202,7 @@ const docsConfig = {
         "/docs/deployment/vercel": {
           title: "Deploy to Vercel",
           description:
-            "Ship web and api as two Vercel projects on one database; migrations run on deploy.",
+            "Ship web and api as two Vercel projects on one database; the api build migrates on production and canary deploys.",
           label: "Vercel",
         },
       },

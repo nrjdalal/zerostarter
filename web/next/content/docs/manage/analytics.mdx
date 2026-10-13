@@ -26,7 +26,7 @@ posthog.isFeatureEnabled("new-dashboard")
 
 ## Vercel Speed Insights
 
-[Speed Insights](https://vercel.com/docs/speed-insights) reports Core Web Vitals from real visitors rather than a Lighthouse run's synthetic numbers. It needs no key because it reports only to the platform it runs on, and that is also why it is conditional: the beacon posts to `/_vercel/speed-insights/vitals` by default, a route only Vercel serves, so anywhere else it would fire requests that can never arrive. The root layout, `web/next/src/app/layout.tsx`, renders `{onVercel && <SpeedInsights />}`, where `onVercel` is `process.env.VERCEL === "1"`.
+[Speed Insights](https://vercel.com/docs/speed-insights) reports Core Web Vitals from real visitors rather than a Lighthouse run's synthetic numbers. It needs no key because it reports only to the platform it runs on, and that is also why it is conditional: the script and the beacon live on routes only Vercel serves, a per-project path Vercel inlines at build through `NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG` (`/<hash>/script.js` and `/<hash>/vitals`), falling back to `/_vercel/speed-insights/*` where that config is absent, so anywhere else it would fire requests that can never arrive. The root layout, `web/next/src/app/layout.tsx`, renders `{onVercel && <SpeedInsights />}`, where `onVercel` is `process.env.VERCEL === "1"`.
 
 `VERCEL` is injected by the platform, so it sits outside the schema the way [Environment Variables](/docs/manage/environment) describes. The check stays in the layout, a server component, because Next inlines only `NEXT_PUBLIC_*` variables into client bundles: inside the client-side `SpeedInsights` the same check would read `undefined` and silently never render. Off Vercel the component is never rendered and the beacon never loads, though the static import still ships in the bundle, unexecuted. There is no enable step: the numbers appear under **Speed Insights** in the project dashboard once real visitors have been through.
 
@@ -55,7 +55,7 @@ It is the **Feedback** link now: set `NEXT_PUBLIC_USERJOT_URL`, since `NEXT_PUBL
 ## It's working if
 
 - With the token set, the first page load sends a request to your PostHog host, visible in the network tab; with it empty, none.
-- On Vercel the page requests `/_vercel/speed-insights/script.js` by default; on Docker nothing under `/_vercel/` is requested.
+- On Vercel the page loads a `script.js` from a hashed path (`/<hash>/script.js`) and posts vitals beside it; on Docker no Speed Insights script loads.
 - With `NEXT_PUBLIC_USERJOT_URL` set, **Feedback** shows in the docs sidebar footer and the user menu.
 
 ## Next

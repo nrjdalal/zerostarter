@@ -58,7 +58,7 @@ Every item below is wired and working out of the box, not just a dependency in `
     └── cli/       # The `zerostarter` npm binary: init, reinit, sync (stripped from a fork)
 ```
 
-Two deployable apps (`api/hono` and `web/next`), shared `packages/*` (auth, config, db, env, scripts), and the `cli` that scaffolds a fork. Brand identity lives in one place, `@packages/config/site`, so a fork rebrands by editing a single file.
+Two deployable apps (`api/hono` and `web/next`), shared `packages/*` (auth, config, db, env, scripts), and the `cli` that scaffolds a fork. The app reads its brand identity (name, description, socials) from one file, `@packages/config/site`; a fork's sync rebrands its dev URLs, skills and `AGENTS.md` from the root `package.json` `name`.
 
 📖 **[Full project structure →](https://zerostarter.dev/docs/getting-started/project-structure)**
 
@@ -84,8 +84,8 @@ const { data, error } = await unwrap(apiClient.health.$get())
 
 - **End-to-end type safety**: one type flows from the database through the API to the frontend, so breaking changes fail at compile time, not in production.
 - **Modular by design**: shared packages for auth, database, env, and config that you can swap or extend without fighting the system.
-- **Production-ready**: Docker and Vercel configs, migrations on Vercel deploys, rate limiting, and SEO are set up from the first commit. A Docker deploy migrates by hand, and its per-address limit holds only behind a proxy you control ([Rate Limiting](https://zerostarter.dev/docs/manage/rate-limiting)).
-- **Forkable**: brand identity is centralized in `@packages/config/site`, so making it your own is a one-file change.
+- **Production-ready**: Docker and Vercel configs, migrations on Vercel deploys, rate limiting, and SEO are set up from the first commit. A Docker deploy migrates by hand, and its per-address limit holds only behind a proxy you control that is the api's only way in ([Rate Limiting](https://zerostarter.dev/docs/manage/rate-limiting)).
+- **Forkable**: the brand the app shows is centralized in `@packages/config/site`, and `bunx zerostarter init` writes it for your project name.
 
 📖 **[Read more →](https://zerostarter.dev)**
 
@@ -144,7 +144,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 ZeroStarter ships as two deployable apps that share one PostgreSQL database.
 
 - **Vercel**: deploy `web/next` and `api/hono` as separate projects. The API build applies pending migrations on production and `canary` deploys; PR previews skip them.
-- **Docker**: `docker compose up` builds and runs both apps from the included multi-stage Dockerfiles. The images never migrate, so run `bun run db:migrate` against their database yourself, and give them a `.env` with `NODE_ENV=production`, since the one `init` writes (`NODE_ENV=local`, `AGENT_SIGNIN_ENABLED=true`) mounts the agent sign-in route ([Docker guide](https://zerostarter.dev/docs/deployment/docker)).
+- **Docker**: `docker compose up` builds and runs both apps from the included multi-stage Dockerfiles. The images never migrate, so run `bun run db:migrate` against their database yourself, and give them a `.env` with `NODE_ENV=production` or `staging`, since the one `init` writes (`NODE_ENV=local`, `AGENT_SIGNIN_ENABLED=true`) mounts the agent sign-in route. `production` also makes the api's database client require TLS with a verified certificate, so a Postgres without TLS takes `staging` ([Docker guide](https://zerostarter.dev/docs/deployment/docker)).
 
 📖 **[Deployment guides →](https://zerostarter.dev/docs/deployment/vercel)**
 

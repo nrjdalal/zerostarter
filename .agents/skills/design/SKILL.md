@@ -27,7 +27,7 @@ Exactly one `h1` per page, the page title (`PageHeader` renders it in the app sh
 
 ## Color
 
-Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and friends), in classNames and inline styles alike; the takumi OG image (`lib/og-image.tsx`) carries literals by design, having no theme context. Palette classes still sit in the devtools dividers (`bg-zinc-500`), the waitlist avatars (`text-white`) and, in the canonical starter, the marketing footer's heart (`text-red-500/70`), each one waiting to move onto a token. Every `dark:` pairs with a token. Success is the `--success` token, mirroring `--destructive` and foreground-less like it: `text-success`, `bg-success/10`, `border-success/20`.
+Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and friends), in classNames and inline styles alike; the takumi OG image (`lib/og-image.tsx`) carries literals by design, having no theme context. Palette classes still sit in the devtools dividers (`bg-zinc-500`), the waitlist avatars (`text-white`) and, in the canonical starter, the marketing footer's heart (`text-red-500/70`), each one waiting to move onto a token; the registry's overlays (`bg-black/10`) and slider thumb (`bg-white`) under `ui/` carry literals too, and the shadcn sync owns those. Every `dark:` pairs with a token. Success is the `--success` token, mirroring `--destructive` and foreground-less like it: `text-success`, `bg-success/10`, `border-success/20`.
 
 ## Layout and landmarks
 

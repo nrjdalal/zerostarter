@@ -24,7 +24,7 @@ docker compose logs -f api
 docker compose down
 ```
 
-The build reads `.env` through the `dotenv` secret compose wires; a missing file fails it, and a clean checkout takes the dummy from section 5. With no daemon, `open -a Docker` and poll `docker info`. Done when api's health answers 200 on `4000` and, with both services up, web's `/` answers 200 on `3000`.
+The build reads `.env` through the `dotenv` secret compose wires; a missing file fails it, and a clean checkout takes the dummy from section 5. With no daemon, `open -a Docker` and poll `docker info`. Done when api's health answers 200 on `4000` and, with both services up, web's `/` answers 200 on `3000` after its redirect where it has one (`curl -L`: a fork with the waitlist feature on sends `/` to `/waitlist`).
 
 ## 2. Offline check
 
@@ -66,7 +66,7 @@ E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run 
 - `AGENT_SIGNIN_ENABLED=true`
 - both OAuth pairs filled, id and secret (the dummy recipe does): a provider registers only with both halves, and the snapshot lists all three
 - `NODE_ENV=local`
-- a disposable `POSTGRES_URL` (`bunx pglaunch -k`), migrated first with `bun run db:migrate`, in the `localhost` form it prints: under compose's `INTERNAL_API_URL`, `@packages/env` rewrites that host to `host.docker.internal` so the containers reach it. The URL is read at boot, so after the swap `docker compose up -d` recreates the containers; a rebuild is only for a value the build bakes in
+- a disposable `POSTGRES_URL` (`bunx pglaunch -k`), migrated first with `bun run db:migrate`, in the `localhost` form it prints: under compose's `INTERNAL_API_URL`, `@packages/env` rewrites that host to `host.docker.internal` so the api container reaches it. Docker Desktop resolves that name; Linux Docker Engine resolves it only with `extra_hosts: ["host.docker.internal:host-gateway"]` on the api service, which `docker-compose.yml` does not set, so add it there in a scratch checkout. The URL is read at boot, so after the swap `docker compose up -d` recreates the containers; a rebuild is only for a value the build bakes in
 
 `tests/stack.ts` refuses an `E2E_*_URL` whose host is not local and an `E2E_POSTGRES_URL` holding any account beyond the agent and the seed; that variable unlocks the second-account role and ban flows. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. Done when it prints `0 fail` twice in a row; the second run proves the goldens deterministic and the cleanup complete.
 

@@ -21,11 +21,12 @@ Reach for this page when you self-host on any Docker host, or want the productio
 
 - Docker with BuildKit and Compose v2 (`docker compose`): the Dockerfiles mount a build secret.
 - A root `.env`: both builds validate the full env and fail without it ([Environment Variables](/docs/manage/environment)).
-- A Postgres the containers can reach, already migrated; a `localhost` URL is rewritten for you (below).
+- A Postgres the containers can reach, already migrated. A `localhost` URL is rewritten for you, which reaches your host under Docker Desktop but not, as `docker-compose.yml` stands, on Linux ([How the containers talk](#how-the-containers-talk)).
+- Under `NODE_ENV=production`, TLS on that Postgres with a certificate the api can verify: the production client in `packages/db/src/index.ts` connects no other way, so against a Postgres without TLS, such as a plain container on your host, every api query fails while `bun run db:migrate` and `/api/health` still pass. `staging` connects without TLS, and also leaves off Better Auth's own rate limit on `/api/auth`, which only `production` turns on.
 
 <Callout type="warn" title="A deploy's .env is not the one init wrote">
 
-The `.env` that `init` writes sets `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, which together mount `POST /api/agents/sign-in-as` ([Local sign-in](/docs/getting-started/working-with-agents#local-sign-in)), and Compose publishes both ports on every interface. That route's only check is the `Origin` header, which a client outside a browser sets to anything it likes, so on a host others can reach it signs anyone in as `LocalAgent`, an `owner` when that call creates the account. Anywhere but your own machine, set `NODE_ENV=production` (or `staging`) and leave `AGENT_SIGNIN_ENABLED` blank. Either one alone unmounts the route; the stage also hides raw error messages and closes `/headers`, which echoes every request header, cookies included.
+The `.env` that `init` writes sets `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, which together mount `POST /api/agents/sign-in-as` ([Local sign-in](/docs/getting-started/working-with-agents#local-sign-in)). Compose publishes both ports on every interface, and the web's `/api` rewrite forwards to the api, so anyone who can reach the host on either port reaches the route, your own machine on a shared network included. That route's only check is the `Origin` header, which a client outside a browser sets to anything it likes, so it signs anyone in as `LocalAgent`, an `owner` when that call creates the account. For a deploy, set `NODE_ENV` to `production` or `staging`, and `AGENT_SIGNIN_ENABLED=false` rather than blank, because `init` and `reinit` set a blank or missing flag to `true`. Either one alone unmounts the route; the stage also hides raw error messages and closes `/headers`, which echoes every request header, cookies included.
 
 </Callout>
 
@@ -35,7 +36,7 @@ Inside the Compose network the web container cannot reach the api at `localhost`
 
 - **web, build time**: the Next rewrite in `next.config.ts` sends `/api/*` to `http://api:4000`.
 - **web, runtime**: server-side calls (`src/lib/config.ts`) hit the api container directly.
-- **api, runtime**: its presence flips a `localhost` `POSTGRES_URL` to `host.docker.internal` (`dockerHostUrl` in `packages/env/src/lib/postgres-url.ts`), so the container reaches a database on your host.
+- **api, runtime**: its presence flips a `localhost` `POSTGRES_URL` to `host.docker.internal` (`dockerHostUrl` in `packages/env/src/lib/postgres-url.ts`), so the container reaches a database on your host. Docker Desktop resolves that name; Docker Engine on Linux resolves it only once the api service adds `extra_hosts: ["host.docker.internal:host-gateway"]`, which `docker-compose.yml` does not, and even then a Postgres listening only on `127.0.0.1` stays out of reach. Otherwise give `POSTGRES_URL` an address the container can reach.
 
 External clients keep the mapped ports. You never set it by hand, and it belongs to no other topology.
 

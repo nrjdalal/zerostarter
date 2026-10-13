@@ -5,7 +5,7 @@ title: Content
 description: Author docs and blog posts in MDX, with full-text search and draft/publish built in.
 ---
 
-Everything you publish is MDX under `web/next/content/`, split on one axis: docs take their metadata from `docs.config.ts`, blog posts carry their own. `docs/` and `blog/` are two [Fumadocs](https://fumadocs.dev) collections; a third, `console/docs/`, holds internal docs that render only behind the console.
+Everything you publish is MDX under `web/next/content/`, split on one axis: docs take their metadata from `docs.config.ts`, blog posts carry their own. `docs/` and `blog/` are two [Fumadocs](https://fumadocs.dev) collections; a third, `console/docs/`, holds internal docs served inside the console, [unlisted rather than private](/docs/manage/authentication#the-console-role-ladder).
 
 A docs page is declared centrally, so you write only its body and a generator keeps the frontmatter and reading order in step; a blog post owns its frontmatter, and the listing builds itself from the posts. Each collection is a [feature](/docs/manage/features): off, its routes 404 and it drops from the nav, search, sitemap and `llms.txt`.
 
@@ -60,9 +60,9 @@ The publishing rule lives in one place, `web/next/src/lib/blog-policy.ts`, and t
 
 Full-text search runs on [Orama](https://orama.com) through Fumadocs, at `web/next/src/app/api/search/route.ts`. Press `Cmd+K` (or `Ctrl+K`) on any docs page; the sidebar's search button sends the same keystroke. The index holds the `docs` collection only: the blog is not indexed, and the console docs have their own at `/api/console/search`, which answers 404 to anyone the console would not admit. Both 404 when their feature is off.
 
-## The private console docs
+## The console docs
 
-`web/next/source.config.ts` defines the third collection, `consoleDocs`, served at `/console/docs` under the auth-gated console. No public route references its source, so it is outside the public search, the sitemap and `llms.txt` by construction.
+`web/next/source.config.ts` defines the third collection, `consoleDocs`, served at `/console/docs` under the console layout's `member` check. The page asserts nothing of its own, so that layout is its only check; [Authentication](/docs/manage/authentication#the-console-role-ladder) says what a layout's check leaves open. No public route references its source, so it is outside the public search, the sitemap and `llms.txt` by construction.
 
 ## Common questions
 

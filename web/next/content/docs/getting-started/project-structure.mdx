@@ -44,11 +44,13 @@ The App Router under `src/app/` is grouped by concern, and each group carries it
 
 | Route group    | Serves                                       | Gate                                                              |
 | -------------- | -------------------------------------------- | ----------------------------------------------------------------- |
-| `(console)/`   | `/console` and its pages                     | the `member` rung and above; anyone below it gets a 404           |
+| `(console)/`   | `/console` and its pages                     | the `member` rung and above, asserted in the layout; below, a 404 |
 | `(content)/`   | `/docs`, `/blog`                             | the `docs` and `blog` feature flags; off means every page 404s    |
 | `(llms.txt)/`  | `/llms.txt`, `/llms-full.txt`                | the flag of the content each section mirrors                      |
 | `(marketing)/` | `/`, plus the author's `/hire` and `/resume` | none; `init` replaces the whole group with a fresh `app/page.tsx` |
 | `(protected)/` | `/dashboard`                                 | a session; without one it redirects to `/`                        |
+
+A layout does not stop the pages under it from rendering (Next's own authentication guide says so), so a console page that needs more than `member` asserts its rung itself: Access, Activity and Waitlist assert `admin`, while the console home and the console docs pages rely on the layout alone.
 
 Outside the groups sit `waitlist/` (`/waitlist`, behind the `waitlist` flag), `og/` (the generated social images) and `api/` (the search route handlers). The typed API client is one file, `src/lib/api/client.ts`, and MDX content lives under `content/docs/` and `content/blog/`.
 
@@ -60,7 +62,7 @@ Outside the groups sit `waitlist/` (`/waitlist`, behind the `waitlist` flag), `o
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `auth`    | The Better Auth instance (`src/index.ts`), the schema declaration (`src/schema.ts`), the role ladder (`src/access.ts`) and the allowlist grant (`src/allowlist.ts`). Exports session types |
 | `cli`     | The `zerostarter` npm CLI: `init`, `reinit`, `sync`. Canonical repo only; a fork does not take it                                                                                          |
-| `config`  | The TypeScript base every package extends, the `tsdown` factory, `src/site.ts` (the one file a fork edits to rebrand) and `src/console.ts` (the console's shared vocabulary)               |
+| `config`  | The TypeScript base every package extends, the `tsdown` factory, `src/site.ts` (the brand every app surface reads) and `src/console.ts` (the console's shared vocabulary)                  |
 | `db`      | The Drizzle schema under `src/schema/`, the client, `src/console.ts` (the activity recorder) and the generated migrations under `drizzle/`                                                 |
 | `env`     | Every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per consumer                                                                                    |
 | `scripts` | Bun build tooling. Never bundled, never imported at runtime                                                                                                                                |
@@ -89,7 +91,7 @@ Under the `marketing/` directory of its kind: `web/next/src/components/marketing
 
 **Why is `packages/db/src/schema/auth.ts` never edited by hand?**
 
-It is the output of Better Auth's own generator for the plugins `packages/auth/src/schema.ts` declares, byte for byte after the formatter, and a test fails whenever the committed file differs from a fresh generation. A column on `user` or `session` goes into `schema.ts` as an `additionalFields` entry, then `bun run auth:schema` and a migration. The generator runs under Node on purpose: under Bun, a `() => new Date` default loses its call when the generator inspects it, and every `.defaultNow()` would silently vanish.
+It is the output of Better Auth's own generator for the plugins `packages/auth/src/schema.ts` declares, byte for byte after the formatter, and `bun run auth:schema --check` fails whenever the committed file differs from a fresh generation; the canonical starter also runs that check as a test, which a fork does not take. A column on `user` or `session` goes into `schema.ts` as an `additionalFields` entry, then `bun run auth:schema` and a migration. The generator runs under Node on purpose: under Bun, a `() => new Date` default loses its call when the generator inspects it, and every `.defaultNow()` would silently vanish.
 
 ## It's working if
 

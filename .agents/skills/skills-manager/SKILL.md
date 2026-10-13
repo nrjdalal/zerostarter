@@ -30,7 +30,7 @@ Each cell is the sentence before `Use ...`, so keep that `<summary>. Use when <t
 ## How a fork syncs
 
 - A sync rewrites only the skills sourced from the starter; the `> Synced from <upstream>.` line inside the stamped `[!CAUTION]` note is the opt-in, and removing that line hands the skill to the fork.
-- A skill the fork edited keeps the fork's version, and the sync summary names it.
+- A skill the fork edited keeps the fork's version, and the sync summary names it. Two cases take the update instead: a starter-sourced skill with no ledger entry (a fork last synced by a CLI older than the ledger), and every skill after `init` is run again in the fork, which rebuilds the ledger from the files as they stand, so the next sync reads earlier edits as the CLI's own.
 - `.agents/skills/.sync.json` records what the CLI wrote (`ref`, `upstream`, `written` per skill, and `AGENTS.md` under its own path); a fork carries it from `init` and commits it with every sync, and the canonical starter has none.
 - A custom skill is one file, since the CLI rebrands, records and protects only `SKILL.md`: a file beside it reaches a fork through the sync overlay unrebranded and is overwritten by every sync, a vendored skill's siblings included, even when the fork keeps its own `SKILL.md`.
 - `packages/cli/src/skills.ts` holds the rules and `getting-started/cli.mdx` the human narrative, both in the canonical starter only.
