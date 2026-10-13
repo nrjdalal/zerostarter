@@ -80,20 +80,20 @@ A hand edit there is lost on the next sync; a durable customization goes in `.gi
 
 Lifecycle scripts, and the files builds, hooks and workflows call by path:
 
-| Script                                            | When                                             | What it does                                                                     |
-| ------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `.github/scripts/build-sizes.ts`                  | after `build`; the release, with `--graph`       | the size table; `.github/assets/graph-build.svg`                                 |
-| `.github/scripts/changelog-manager.ts`            | the release                                      | the changelog's compare links and contributor names                              |
-| `.github/scripts/compress-images.ts`              | the web build                                    | compress `web/next/public` in place                                              |
-| `.github/scripts/docs.ts`                         | the web build (`--strict`), `check-types`, `dev` | `meta.json` and each page's frontmatter from `docs.config.ts`                    |
-| `.github/scripts/ensure-remote-branches.ts`       | the pre-push hook                                | seed `main` on a fresh GitHub remote                                             |
-| `.github/scripts/migrate-on-deploy.ts`            | the api's Vercel build                           | `db:migrate`, on production and `canary` deploys only                            |
-| `.github/scripts/portless.ts`                     | `dev`                                            | each app's portless URLs, injected before its dev command                        |
-| `.github/scripts/skills-manager.ts`               | the pre-commit hook, when a skill is staged      | the `AGENTS.md` skills tables                                                    |
-| `packages/scripts/src/data-table-metrics.ts`      | the web build, `check-types`, `dev`, `test`      | the header font's metrics, into `.generated/`                                    |
-| `packages/scripts/src/generate-env.ts`            | the auth and web builds                          | the app host's breakdown (cookie scope, private-host signal), into `.generated/` |
-| `postinstall` (`.github/scripts/deps-manager.ts`) | `bun install`; a staged `package.json`           | sort the `catalog`, move a dependency into it, caret every exact or tilde pin    |
-| `prepare`                                         | `bun install`                                    | install the Lefthook hooks                                                       |
+| Script                                            | When                                                                  | What it does                                                                     |
+| ------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `.github/scripts/build-sizes.ts`                  | after `build`; the release, with `--graph`                            | the size table; `.github/assets/graph-build.svg`                                 |
+| `.github/scripts/changelog-manager.ts`            | the release                                                           | the changelog's compare links and contributor names                              |
+| `.github/scripts/compress-images.ts`              | the web build                                                         | compress `web/next/public` in place                                              |
+| `.github/scripts/docs.ts`                         | the web build (`--strict`), `check-types`, `dev`                      | `meta.json` and each page's frontmatter from `docs.config.ts`                    |
+| `.github/scripts/ensure-remote-branches.ts`       | the pre-push hook                                                     | seed `main` on a fresh GitHub remote                                             |
+| `.github/scripts/migrate-on-deploy.ts`            | the api's Vercel build                                                | `db:migrate`, on production and `canary` deploys only                            |
+| `.github/scripts/portless.ts`                     | `dev`                                                                 | each app's portless URLs, injected before its dev command                        |
+| `.github/scripts/skills-manager.ts`               | the pre-commit hook, when a skill's Markdown or this script is staged | the `AGENTS.md` skills tables                                                    |
+| `packages/scripts/src/data-table-metrics.ts`      | the web build, `check-types`, `dev`, `test`                           | the header font's metrics, into `.generated/`                                    |
+| `packages/scripts/src/generate-env.ts`            | the auth and web builds                                               | the app host's breakdown (cookie scope, private-host signal), into `.generated/` |
+| `postinstall` (`.github/scripts/deps-manager.ts`) | `bun install`; a staged `package.json`                                | sort the `catalog`, move a dependency into it, caret every exact or tilde pin    |
+| `prepare`                                         | `bun install`                                                         | install the Lefthook hooks                                                       |
 
 The pull-request workflow, Vercel and the Dockerfiles install with `--ignore-scripts`, so neither lifecycle script runs there.
 

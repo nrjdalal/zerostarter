@@ -22,7 +22,7 @@ Work in a git worktree under `.claude/worktrees/`, one per change, branched from
 git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary
 ```
 
-`.gitignore` does not list `.claude/worktrees/`, so the primary checkout's `git status` shows it as untracked until you add that line to `.git/info/exclude`.
+`.gitignore` does not list `.claude/worktrees/`, so the primary checkout's `git status` shows it as untracked until you add that line to `.git/info/exclude`. It does list `node_modules/` and `.env*`, so a new worktree has neither: run `bun install` in it and give it its own `.env` before `bun run dev`, with `POSTGRES_URL` on a disposable container for database work (the `db-migration` skill).
 
 Two skills shape what goes in. `doc-sync`: docs move with code, so a changed command, path, convention or skill is fixed across every documented surface in the same change. `gh-commit`: one logical unit per commit in the [Conventional Commits](https://www.conventionalcommits.org) format, which commitlint checks on the `commit-msg` hook.
 

@@ -25,7 +25,7 @@ The `features` export is typed `boolean` rather than `as const`, so a fork can f
 
 "Off" is not a stub: outside the console the route returns a real 404, inside it the page renders the console's not-found, and the surface leaves the nav, the sitemap, `llms.txt` and search. Content routes get this from one seam, `contentSource` in `web/next/src/lib/content.ts`, which reads as an empty collection when its kind is off; the API gets it from the `requireFeature` middleware, which on a console route runs after the auth and console gates, so only an admin meets that 404 ([API Conventions](/docs/manage/api-conventions#what-runs-before-your-handler)). Auth, the console shell, the dashboard and organizations are not flags: they reach into the database, login and route protection.
 
-The console's 404 is soft: the area is `force-dynamic` and Next commits a 200 before a page-level `notFound()` fires, so a disabled console page renders the not-found with an HTTP 200. An unknown console path lands in the same boundary through a catch-all, on purpose, so a forbidden page and a nonexistent one cannot be told apart; the area is gated and `noindex`.
+Inside the console, a page that is off renders the console's not-found within the console shell. An unknown console path lands in the same boundary through a catch-all, on purpose, so a forbidden page and a nonexistent one cannot be told apart; the area is gated and `noindex`. On a production build that catch-all answers an HTTP 404, which the canonical starter's end-to-end suite checks (`tests/web/next/src/app/(console)/console/[...unmatched]/page.e2e.test.ts`).
 
 ## Set at `init`, changed in config
 
@@ -51,7 +51,7 @@ The routers stay mounted behind the runtime 404 so a fork can flip a flag on wit
 
 - Set `blog: false` in `packages/config/src/site.ts` and restart the dev server: `/blog` returns a 404 and the navbar no longer shows Blog.
 - `/sitemap.xml` and `/llms.txt` list no `/blog/` URL while it is off.
-- With `waitlist: false`, `/waitlist` returns a real 404 and `/console/waitlist` renders the console's not-found page with a 200.
+- With `waitlist: false`, `/waitlist` returns a real 404 and `/console/waitlist` renders the console's not-found page inside the console shell.
 
 ## Next
 

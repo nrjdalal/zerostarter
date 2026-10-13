@@ -15,7 +15,7 @@ Reach for this page when you are adding a docs page or a blog post, or when one 
 
 ## Docs: the config is the source of truth
 
-`web/next/docs.config.ts` is the single source for the docs' structure and metadata, typed by `DocsConfig` in `web/next/src/lib/docs.ts`. In the canonical starter its header comment is the spec; a fork's `init` writes the file as a stub without that comment, and the shape is the one this section describes. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
+`web/next/docs.config.ts` is the single source for the docs' structure and metadata, typed by `DocsConfig` in `web/next/src/lib/docs.ts`, and in a fork `init` writes it as a stub of that shape. Groups are ordered arrays of single-key records, keyed by a page URL (its metadata) or a subgroup label (nested items), and a group's name is independent of the URL, so pages regroup without changing links. `label` overrides the sidebar text when it should differ from `title`.
 
 A generator, `.github/scripts/docs.ts`, reads that config. An unflagged run, which `dev:app` and `check-types` make and `bun .github/scripts/docs.ts` makes by hand, writes:
 
@@ -68,7 +68,7 @@ Full-text search runs on [Orama](https://orama.com) through Fumadocs, at `web/ne
 
 **What decides the order of pages?**
 
-For docs, the order of `docs.config.ts`: the sidebar reads it directly, and the generator writes it into `meta.json`, which prev/next, `/llms.txt` and `/llms-full.txt` read, so they cannot disagree. For the blog, newest `publishedAt` first, with `createdAt` as the fallback and the slug as the tiebreak; nothing is hand-ordered.
+For docs, the order of `docs.config.ts`: the sidebar reads it directly, and the generator writes it into `meta.json`, which prev/next, `/llms.txt` and `/llms-full.txt` read. A build regenerates `meta.json` before it compiles, so a build's orders agree; in a running dev server, those three keep the old order after a config edit until the generator runs again ([above](#docs-the-config-is-the-source-of-truth)). For the blog, newest `publishedAt` first, with `createdAt` as the fallback and the slug as the tiebreak; nothing is hand-ordered.
 
 **Which timezone does `publishedAt` use?**
 

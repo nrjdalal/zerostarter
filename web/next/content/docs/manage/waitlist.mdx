@@ -35,9 +35,9 @@ There is no way to add a signup from the console, and no `POST` on the admin rou
 
 ## When the list gets big
 
-The waitlist grows with your audience rather than your staff, as Console > Access > Users does over `user`, which holds every account. A waitlist can plausibly hold six figures, and the console's Signups page is built like the other lists: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it. The one that bites first is neither: every batch runs its own `count(*)` beside the rows, because the table shows a total and paging needs one, so scrolling ten batches counts the whole table ten times.
+The waitlist grows with your audience rather than your staff, as Console > Access > Users does over `user`, which holds every account. A waitlist can plausibly hold six figures, and the console's Signups page is built like the other lists: search is `ILIKE '%term%'`, which cannot use the unique index on the address, and paging is by offset, so a deep page counts past every row before it. Two more things count the whole table. Every batch the Signups page loads runs its own `count(*)` beside the rows, because the table shows a total and paging needs one, so scrolling ten batches counts the whole table ten times. And the public `/waitlist` page asks `GET /api/waitlist` for its badge on every visit, a route that checks no session, caches nothing and runs a `count(*)` each time (`api/hono/src/routers/waitlist.ts`), so that count grows with your traffic as well as your list; a fresh fork's home redirects to that page while the waitlist is on.
 
-That is fine for thousands and slow for hundreds of thousands. Three independent fixes when your own numbers ask for them, and not before: a `pg_trgm` GIN index on `waitlist.email`, keyset paging instead of the offset, and counting only on the first page. See [Database](/docs/manage/database).
+That is fine for thousands and slow for hundreds of thousands. Four independent fixes when your own numbers ask for them, and not before: a cached or estimated count on the public route, a `pg_trgm` GIN index on `waitlist.email`, keyset paging instead of the offset, and counting only on the first page. See [Database](/docs/manage/database).
 
 ## The flag takes the whole surface
 

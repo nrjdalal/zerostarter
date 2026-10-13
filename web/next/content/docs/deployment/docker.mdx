@@ -55,13 +55,19 @@ base → prepare → builder → runner
 
 ### The .env build secret
 
-Both builds need `.env` at build time but never bake it into a layer: it is mounted as a BuildKit secret for the build step only:
+Both builds need `.env` at build time, and as the code stands neither bakes it into a layer: it is mounted as a BuildKit secret for the build step only:
 
 ```txt
 --mount=type=secret,id=dotenv,target=/app/.env,required=true
 ```
 
-Compose wires it from `secrets: dotenv`; a plain `docker build` passes `--secret id=dotenv,src=.env`. The secret never enters the build context, and `.dockerignore` excludes every `.env*` file and lets only `.env.example` in. At runtime, compose's `env_file` hands the same `.env` to the containers.
+Compose wires it from `secrets: dotenv`; a plain `docker build` passes `--secret id=dotenv,src=.env`. `.dockerignore` keeps the root `.env` out of the build context: its `.env*` and `!.env.example` let only the example in. Docker reads each pattern from the root of the context, though, so a nested `.env`, such as a worktree's under `.claude/worktrees/`, still enters the context and the `prepare` stage's `COPY . .`; build from a checkout that holds none. At runtime, compose's `env_file` hands the same `.env` to the containers.
+
+<Callout type="warn" title="One web import can copy .env into the image">
+
+The web image stays free of `.env` only while no server module under `web/next` reaches `@packages/env/load-dotenv`, directly or through a server slice, `@packages/db` or the main `@packages/auth` entry ([Environment Variables](/docs/manage/environment#common-questions) says why). One that does lets Next's file tracer copy the mounted secret to `.next/standalone/.env`, the runner stage ships it as `/app/.env` with every secret in it, and nothing fails. Have the web read server data through the api, and after a build check that `web/next/.next/standalone/.env` does not exist.
+
+</Callout>
 
 The api bundle bakes no `NODE_ENV` either: it is built with `bun build --env disable`, so the stage is whatever `.env` says at runtime and `/api/health` reports it as `environment`. Without the flag Bun would inline the build shell's value, never what the mounted file says.
 

@@ -24,7 +24,7 @@ The aliases are rewrites in `web/next/next.config.ts` onto the `/llms.txt/docs/.
 
 ## How they're generated
 
-Two `force-static` route handlers under `web/next/src/app/(llms.txt)/`, revalidated every 60 seconds, read the Fumadocs collections through the same `contentSource` the pages use. Docs sort with `sortByMeta` against `content/docs/meta.json`, derived from `web/next/docs.config.ts`, so the index, the full file and the sidebar agree; the blog lists published posts, newest first. Console docs are a collection no public route reads, so they are out by construction.
+Two `force-static` route handlers under `web/next/src/app/(llms.txt)/`, revalidated every 60 seconds, read the Fumadocs collections through the same `contentSource` the pages use. Docs sort with `sortByMeta` against `content/docs/meta.json`, which `bun .github/scripts/docs.ts` derives from `web/next/docs.config.ts` and the web build regenerates before it compiles, so in a build the index, the full file and the sidebar agree; a running dev server can disagree after a config edit, as [Common questions](#common-questions) says. The blog lists published posts, newest first. Console docs are a collection no public route reads, so they are out by construction.
 
 Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. Every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`, so a page's rendered markdown is there to read; `decodeHTML` undoes Fumadocs' HTML escaping, and a `# [title](url)` heading links back to the live page.
 

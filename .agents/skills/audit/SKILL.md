@@ -57,7 +57,7 @@ A refresh touches every surface, so verify every surface:
 3. **Docker:** when Bun or anything in the image moved, build both images with `--no-cache` and run the single-libc and offline checks (the `docker-test` skill).
 4. **Browser:** drive the pages built on the packages that moved (the `ui-verify` skill), for example the docs search after Fumadocs moves, or the console tables and their menus after Base UI moves.
 
-When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Fix the code where the fix is ours; a group that has to stay back keeps its older catalog range, with the reason in the PR body, and its packages are the only rows `bun outdated -r` is then expected to print. Done when every gate is green, the suite passes twice, and the browser pass is clean.
+When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Fix the code where the fix is ours; a group that has to stay back keeps its older catalog range, with the reason in the PR body, and its packages are the only rows `bun outdated -r` is then expected to print. Done when every gate is green, the suite passes twice in the canonical starter, and the browser pass is clean.
 
 ### 5. Ship
 

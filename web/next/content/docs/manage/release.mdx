@@ -22,7 +22,7 @@ Until it has write access the release workflows fail with `403 Resource not acce
 
 ![GitHub Workflow permissions settings](/marketing/docs/release/workflow-permissions.png)
 
-`main` must also exist on the remote. Into a target with no `.git`, `init` creates it locally at its scaffold commit, and the pre-push hook pushes that `main` on the push after `canary`'s, so `canary` stays the default branch. The scaffold commit is the fetched starter before the rebrand writes `packages/config/src/site.ts`, so a fork's `main` does not build until the first release PR merges `canary` into it. A checkout that already holds the starter and its `.git` (a clone of it, or an existing fork), which `init` converts in place, gets `init`'s one commit on its current branch and neither branch is created: create whichever of `canary` and `main` it lacks before the first push.
+`main` must also exist on the remote. Into a target with no `.git`, `init` creates it locally at its scaffold commit. Pushed to an empty GitHub repository, the pre-push hook pushes that `main` on the push after `canary`'s, so `canary` stays the default branch, and the first release PR opens on the first `canary` push that moves `canary` once `main` is there ([Common questions](#common-questions)). A repository created with a README, a license or a `.gitignore` already has a commit on its default branch, and that branch stays the default; when it is `main`, it shares no history with `canary`, the hook leaves it as it is, and no release PR opens, so create the repository empty. The scaffold commit is the fetched starter before the rebrand writes `packages/config/src/site.ts`, so a fork's `main` does not build until the first release PR merges `canary` into it. A checkout that already holds the starter and its `.git` (a clone of it, or an existing fork), which `init` converts in place, gets `init`'s one commit on its current branch and neither branch is created: create whichever of `canary` and `main` it lacks before the first push.
 
 ## The window
 
@@ -66,7 +66,7 @@ The window kept no commit the changelog counts: [Commit messages](/docs/manage/c
 
 **Why did no release PR open on my fork?**
 
-In order: the Actions token is still read-only, `main` is not on the remote yet, or `canary` is not ahead of `main`. The workflow's log names which.
+The latest `auto-canary-into-main` run's log names which of these stopped it, in order: the Actions token is still read-only, `main` is not on the remote yet, or `canary` is not ahead of `main`. With no run since `main` reached the remote, nothing has asked yet: the hook pushes `main` on its own, which starts no workflow, so a push that seeded `main` without a new `canary` commit ran none. Push a commit to `canary`, or run `gh workflow run auto-canary-into-main.yml --ref canary`. A `main` the repository was created with shares no history with `canary` and never takes one ([Prerequisites](#prerequisites)).
 
 **The run stopped with `package.json is at 0.0.0, below the last release`. Why?**
 
@@ -80,6 +80,6 @@ In order: the Actions token is still read-only, `main` is not on the remote yet,
 
 ## Next
 
-- [Code Quality](/docs/manage/code-quality), because the commits the hooks enforce are what the window reads.
+- [Code Quality](/docs/manage/code-quality#commit-messages), because the window reads the headers of `canary`'s squash commits, and that section says which count and where a squash commit's header comes from.
 - [Deploy to Vercel](/docs/deployment/vercel), because `main` and `canary` are the refs that deploy and migrate.
 - [CLI](/docs/getting-started/cli), because `init` and the first two pushes wire this flow in a fork.

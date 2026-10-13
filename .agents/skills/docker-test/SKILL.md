@@ -61,7 +61,7 @@ Canonical starter only (`tests/` is fork-excluded). With the stack up on a fresh
 E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run test:e2e
 ```
 
-`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports, and the suite runs from the worktree, so `bun install` first. It signs in as `LocalAgent`, asserts the stage is `local`, snapshots the providers list, and writes through the API, so `.env` holds:
+`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports, and the suite runs from the worktree, so `bun install` first. It signs in as `LocalAgent`, asserts the stage is `local`, snapshots the providers list, and writes through the API, so `.env` holds the following, which opens the agent sign-in to the network (section 5 has the exposure):
 
 - `AGENT_SIGNIN_ENABLED=true`
 - both OAuth pairs filled, id and secret (the dummy recipe does): a provider registers only with both halves, and the snapshot lists all three
@@ -91,7 +91,7 @@ Empty optionals pass through `emptyStringAsUndefined`. Three things no config co
 - A dummy-built web image carries its `NEXT_PUBLIC_*` forever, since Next inlines them at build: a smoke build is disposable, and a deploy image builds with the real `.env`.
 - `docker run --env-file` keeps inline comments, so `HONO_RATE_LIMIT=60 # note` fails validation; compose strips them, and a direct run sanitizes first with `sed 's/ #.*//' .env > .env.docker`.
 
-Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side.
+Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side. Compose publishes both on every network interface, and this dummy, like the suite's `.env` in section 4, mounts the agent sign-in (`NODE_ENV=local` with the flag `true`), whose trusted-`Origin` check stops only browser pages, so any host on the network can sign in as `LocalAgent`, an owner on a fresh database: run the stack on a network you trust, or publish `127.0.0.1:3000:3000` and `127.0.0.1:4000:4000` in a scratch checkout.
 
 ## 6. Browser sign-in
 

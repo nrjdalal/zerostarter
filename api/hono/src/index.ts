@@ -159,7 +159,7 @@ socket.addEventListener("message", (event) => {
           description: site.apiReferenceDescription,
         },
       },
-      // Always-reachable errors (429/500) on every method the API serves; routes add 400/401 in their own responses. Add a method here the day a route starts using it, or its responses ship undocumented.
+      // Always-reachable errors (429/500) on every method the API serves; routes add the 400, 401, 403 or 409 they can answer in their own responses. Add a method here the day a route starts using it, or its responses ship undocumented.
       defaultOptions: {
         DELETE: { responses: globalErrorResponses },
         GET: { responses: globalErrorResponses },

@@ -10,6 +10,8 @@ source: local
 
 ## Start
 
+A new worktree has neither `node_modules` nor `.env`, since git ignores both, and the env loader reads the `.env` at the worktree's own root. Run `bun install`, copy the primary checkout's `.env` in, and point its `POSTGRES_URL` at the worktree's own container (`db-migration`); without a `.env`, `bun run dev` stops on `Invalid environment variables`.
+
 Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone, and the database client requires TLS with a verified certificate, so every query against a Postgres without TLS, the pglaunch container included, fails with `ERR_POSTGRES_TLS_NOT_AVAILABLE`. The stage then comes from `.env`, and `/api/health` names it. Run it detached in stream mode, logging to a file (`--ui stream` holds even where a user config or `TURBO_UI` picks turbo's interactive UI):
 
 ```bash
@@ -24,7 +26,7 @@ curl -sS "$API/api/health"                         # {"data":{"message":"ok",...
 curl -sSL -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 ```
 
-`-L` follows a fork's home to `/waitlist` when the waitlist feature is on. `bunx portless list` shows every active route, the API docs are at `$API/api/docs`, and the log is `/tmp/zerostarter-dev.log`. Done when health prints `"message":"ok"` and `/` returns 200, after its redirect where it has one.
+`-L` follows a fork's home to `/waitlist` when the waitlist feature is on. `bunx portless list` shows every active route, the API docs are at `$API/api/docs` while the `apiDocs` feature is on (off, the route answers 404), and the log is `/tmp/zerostarter-dev.log`. Done when health prints `"message":"ok"` and `/` returns 200, after its redirect where it has one.
 
 ## Restart
 
@@ -50,7 +52,7 @@ API=$(bunx portless get api.zerostarter)
 for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
 ```
 
-Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its port (the next start dies with "Another next dev server is already running") and the portless supervisors holding the route, and a bare `pkill` is worktree-blind. `/api/health` can report a build SHA one commit behind after a restart, since turbo replays `@packages/env`'s cached build; `bunx turbo run build --filter=@packages/env --force` refreshes it. Done when `bunx portless list` shows no route for this branch after the kill, and the route that was NOT_FOUND responds after the start.
+Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its port (the next start dies with "Another next dev server is already running") and the portless supervisors holding the route, and a bare `pkill` is worktree-blind. `/api/health` can report the SHA of the last commit that rebuilt `@packages/env`, any number of commits behind `HEAD`, since turbo replays that cached build until the package's own files or the root `package.json` change; `bunx turbo run build --filter=@packages/env --force` refreshes it. Done when `bunx portless list` shows no route for this branch after the kill, and the route that was NOT_FOUND responds after the start.
 
 ## Agent login
 
