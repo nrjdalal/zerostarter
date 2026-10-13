@@ -35,10 +35,13 @@ CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.
 
 ## Commit messages
 
-`<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure. No commit carries a `Co-authored-by` trailer, a repo rule in `AGENTS.md` rather than a hook check. Two types the release reads specially:
+`<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure. No commit carries a `Co-authored-by` trailer, a repo rule in `AGENTS.md` rather than a hook check.
 
-- **`ci` is reserved.** `changelog.config.json` turns it off and `packages/scripts/src/release-version.ts` counts only enabled types, so a `ci:` commit earns no version and no changelog line. It belongs to the pipeline's own `ci(version)` and `ci(changelog)`; real CI work is `fix(ci)`, `feat(ci)` or `docs(ci)`.
-- **A dependency refresh is `build(deps)`.** changelogen drops a non-breaking `chore(deps)`, so a window holding only one never releases.
+The release counts a commit only when changelogen has its type enabled (`packages/scripts/src/release-version.ts`). Of the types commitlint accepts, those are `build`, `chore`, `docs`, `feat`, `fix`, `perf`, `refactor`, `style` and `test`; what each earns is [the window](/docs/manage/release#the-window). Three kinds of commit earn no version and no changelog line:
+
+- **A non-breaking `chore(deps)`.** changelogen drops it, so a dependency refresh is `build(deps)`.
+- **`ci`, which is reserved.** `changelog.config.json` turns it off. It belongs to the pipeline's own `ci(version)` and `ci(changelog)`; real CI work is `fix(ci)`, `feat(ci)` or `docs(ci)`.
+- **`revert`.** changelogen has no entry for it, so a window holding only reverts never releases.
 
 ## Common questions
 

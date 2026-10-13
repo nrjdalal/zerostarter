@@ -6,7 +6,7 @@ source: local
 
 # Dependency Refresh and Audit
 
-Two jobs share one record. A **refresh** moves everything to its latest release; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override and ignored advisory, and it stays in place even when there are none.
+Two jobs share one record. A **refresh** moves everything to its latest release; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). In the canonical starter, `.github/notes/dependencies.md` is the record of every active override and ignored advisory, and it stays in place even when there are none; a fork takes no `.github/notes/`.
 
 ## Refresh
 
@@ -85,11 +85,11 @@ Fix each advisory on the highest rung that lifts the whole tree; drop a rung onl
    "overrides": { "<vulnerable-package>": "<patched-version>" }
    ```
 
-When the advisory lists no patched version at all, none of the three can lift it. Then the gate ignores that one advisory by ID: add `--ignore <GHSA-id>`, with a one-line comment naming the package and why (the notes below do not ship to a fork), to the audit command in both `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and record it under `## Ignored advisories` in `.github/notes/dependencies.md`. Those three are the whole list: no docs page quotes the command or names an advisory. It is a security exception that ships to every fork, so it needs the user's go.
+When the advisory lists no patched version at all, none of the three can lift it. Then the gate ignores that one advisory by ID: add `--ignore <GHSA-id>`, with a one-line comment naming the package and why (the notes below do not ship to a fork), to the audit command in both `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and in the canonical starter record it under `## Ignored advisories` in `.github/notes/dependencies.md`. Those are the whole list: no docs page quotes the command or names an advisory. It is a security exception that ships to every fork, so it needs the user's go.
 
 `bun audit fix` applies the first two rungs mechanically when a patched version exists within the ranges parents allow; `--dry-run` previews and `--latest` also crosses majors, so review what it picks before accepting. Read the advisory's affected ranges before reaching for a lower rung: the audit header lists every installed version of the package, not only the vulnerable ones. Follow with `bun dedupe` to collapse duplicate versions the tree accumulated.
 
-Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
+Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and the audit command `lefthook.yml` runs, its `--ignore` flags included, exits 0.
 
 ### 3. Record every override and ignore (canonical starter only)
 
@@ -97,4 +97,4 @@ Every ignored advisory needs a block under `## Ignored advisories` with the same
 
 ### 4. Ship
 
-`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and, in the canonical starter, every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.
+`package.json`, `bun.lock`, and in the canonical starter `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and, in the canonical starter, every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.

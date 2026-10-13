@@ -57,7 +57,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 
 **Is Bun a lock-in?**
 
-No, and it is not the differentiator either: the typed architecture is, and the stack is meant to evolve rather than freeze. The honest cost of leaving Bun today is a set of named files rather than a flag: the database client is Bun's SQL driver (`packages/db/src/index.ts`), the server adapter imports `hono/bun` (`api/hono/src/lib/server.ts`), and the rate limiter hashes API keys with Bun's `hash` (`api/hono/src/middlewares/rate-limiter.ts`). `web/next` already runs under Node in `next dev`; Docker and Vercel serve it under Bun.
+No, and it is not the differentiator either: the typed architecture is, and the stack is meant to evolve rather than freeze. The honest cost of leaving Bun today is a set of named files rather than a flag: the database client is Bun's SQL driver (`packages/db/src/index.ts`), the server adapter imports `hono/bun` (`api/hono/src/lib/server.ts`), and the rate limiter imports `hash` and `randomUUIDv7` from `bun` (`api/hono/src/middlewares/rate-limiter.ts`). `web/next` already runs under Node in `next dev`; Docker and Vercel serve it under Bun.
 
 **Can the frontend be swapped for TanStack Start?**
 

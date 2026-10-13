@@ -10,7 +10,7 @@ A green type-check and a clean lint prove the code compiles, not that the page r
 
 ## 1. Run the stack
 
-Start the stack and resolve `$WEB` and `$API` the way the `dev` skill does. Done when `$WEB/` returns 200 and `$API/api/health` answers ok.
+Start the stack and resolve `$WEB` and `$API` the way the `dev` skill does. Done when `$WEB/` returns 200 (after its redirect, where it has one) and `$API/api/health` answers ok.
 
 ## 2. Drive the affected route
 
@@ -27,7 +27,7 @@ Behind auth, sign in first as the agent (the `dev` skill's login). For an end-to
 
 ## 3. Check it holds up
 
-- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after: the production deployment, or the pre-change commit checked out in another worktree, as `before.png`; then your change as `after.png`.
+- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after, as `before.png`; then your change as `after.png`. For a public page the before can be the production deployment; for a page behind sign-in it is the pre-change commit checked out in another worktree against the same seeded throwaway database, since production renders real people. Every screenshot shows seeded rows only.
 - **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
 - **Theme:** check light and dark whenever the change touches either, through the navbar's theme toggle, or `agent-browser set media dark` and `light` on a page without the navbar.
 
@@ -42,7 +42,7 @@ gh pr comment <n> --body-file body.md \
   --attach './before.png#Before: what it shows' --attach './after.png#After: what it shows'
 ```
 
-`--attach` takes `<file>#<alt text>`, repeats, and needs gh 2.100 or newer. A `![alt](./before.png)` in the body is rewritten to the uploaded asset; files the body does not reference are appended. On an older gh, fall back to a temporary host and embed the URL it prints:
+`--attach` takes `<file>#<alt text>`, repeats, and needs gh 2.100 or newer. A `![alt](./before.png)` in the body is rewritten to the uploaded asset; files the body does not reference are appended. On an older gh, fall back to a temporary public host and embed the URL it prints; anyone with the link sees the file, which is one more reason a screenshot holds seeded rows only:
 
 ```bash
 curl -sS -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@screenshot.png" \

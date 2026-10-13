@@ -10,7 +10,7 @@ PostgreSQL with Drizzle ORM: schema in `packages/db/src/schema/`, migrations in 
 
 ## 0. Show the schema and wait
 
-Post the table or the altered columns and name the choices that are hard to reverse: nullability and what a null means, foreign keys and their delete behavior, indexes, derived or generated values, retention. Then stop. A shape is cheap to argue about and expensive to change once rows exist, and `canary` and production share one database, so applying reaches production the moment it runs. Done when the user has said go on the posted shape.
+Post the table or the altered columns and name the choices that are hard to reverse: nullability and what a null means, foreign keys and their delete behavior, indexes, derived or generated values, retention. Then stop. A shape is cheap to argue about and expensive to change once rows exist, and applied to a deployed database it is live under running code the moment it runs (in the canonical starter `canary` and production share one, so applying there reaches production). Done when the user has said go on the posted shape.
 
 ## 1. Point the worktree at a throwaway database
 
@@ -20,13 +20,13 @@ Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so t
 bunx pglaunch -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
 ```
 
-Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; the shared database holds real people, and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers from the container (its suffixed name is on pglaunch's `started` line) and the worktree `.env` carries its URL, with the shared URL nowhere in the worktree.
+Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; a deployed database holds real people (in the canonical starter, the shared one), and a screenshot or response body from it stays out of every PR. Done when `pg_isready` answers from the container (its suffixed name is on pglaunch's `started` line) and the worktree `.env` carries its URL, with no deployed database's URL anywhere in the worktree.
 
 ## 2. Edit the schema
 
 - `auth.ts` is generated: declare a plugin or an `additionalFields` column in `packages/auth/src/schema.ts`, run `bun run auth:schema`, and continue with the regenerated file (in the canonical starter a hand edit fails `tests/packages/db/src/schema/auth.test.ts`).
 - Files group by concern: `auth.ts` holds the Better Auth tables, `console.ts` the ones the console owns. A new table joins its concern's file, or starts one. drizzle-kit migrates every file in `src/schema/` whatever `index.ts` says, but a new file needs `export * from "@/schema/<name>"` in `index.ts`, or the typed `db` client and every `@packages/db` import never see its tables.
-- Every file names its columns in snake_case. Outside the generated `auth.ts`, with `waitlist.ts` as the example, `created_at` is `timestamp("created_at").defaultNow().notNull()` and the primary key is `text` filled by `.$defaultFn(() => crypto.randomUUID())`. A new table's foreign key is `onDelete: "cascade"` with an index on its column. That rule comes from the generated `auth.ts`, where every foreign key cascades and all but `invitation.inviter_id` are indexed; `waitlist.ts` has no foreign key, and the console tables bend it for their `actor_id`. A provenance column like that bends both halves: `onDelete: "set null"` when the row outlives the reference, and no index when nothing queries by the column and the table stays small, with the readable actor text stored beside it (`activity.actor`, `allowlist.actor`) so a row never goes anonymous.
+- Every file names its columns in snake_case. Outside the generated `auth.ts`, with `waitlist.ts` as the example, `created_at` is `timestamp("created_at").defaultNow().notNull()` and the primary key is `text` filled by `.$defaultFn(() => crypto.randomUUID())`. A new table's foreign key is `onDelete: "cascade"` with an index on its column. That rule comes from the generated `auth.ts`, where every foreign key cascades and all but `invitation.inviter_id` are indexed; `waitlist.ts` has no foreign key, and the console tables bend it for their `actor_id`. A provenance column like that bends both halves: `onDelete: "set null"` when the row outlives the reference, and no index when nothing queries by the column and the table stays small, with the readable actor text stored beside it, so a row still names its actor once the account is gone (`activity.actor`, never null; `allowlist.actor`, null only for a rule seeded outside the console).
 
 Done when the file exports from `index.ts` and every column follows a convention or names its reason.
 
@@ -44,7 +44,7 @@ Read the generated `packages/db/drizzle/NNNN_<change>.sql`. An applied migration
 bun run db:migrate
 ```
 
-Local and ad hoc only: on canary and production deploys the API build applies pending migrations itself (`.github/scripts/migrate-on-deploy.ts`, PR previews skipped), so a migration merged to canary lands on the next deploy. Done when it exits 0 against the container and `docker exec <container> psql -U postgres -c '\d <table>'` shows the new shape (`bun run db:studio` shows it in a browser).
+Local and ad hoc only on Vercel: there the API build applies pending migrations on production and `canary` deploys (`api/hono/vercel.json` runs `.github/scripts/migrate-on-deploy.ts`, and PR previews skip it), so a migration merged to canary lands on the next deploy. The Docker images never migrate, so a Docker deploy runs `bun run db:migrate` against the database its containers read. Done when it exits 0 against the container and `docker exec <container> psql -U postgres -c '\d <table>'` shows the new shape (`bun run db:studio` shows it in a browser).
 
 ## 5. Make the running stack see it
 

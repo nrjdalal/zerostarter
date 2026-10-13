@@ -41,7 +41,7 @@ Done when every surface has been grepped for every item.
 
 Fix each hit in the same change: a page that needs more than a line follows `writing-docs`, and a skill follows `writing-for-agents`. A skill the change makes obsolete is removed, and a gap it reveals gets one. Three couplings are easy to miss:
 
-- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog entry. A vendored one also touches that page's list of vendored skills, and `skills-lock.json` when the `skills` CLI installed it (`agent-browser`, `writing-for-agents`); one copied by hand (`portless`) has no lock entry.
+- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and, in the canonical starter, the `resources/ai-skills.mdx` catalog entry. A vendored one also touches that page's list of vendored skills, and `skills-lock.json` when the `skills` CLI installed it (`agent-browser`, `writing-for-agents`); one copied by hand (`portless`) has no lock entry.
 - **Changing a skill's description** regenerates its `AGENTS.md` cell, and in the canonical starter the `resources/ai-skills.mdx` catalog quotes that cell word for word, so its entry changes with it.
 - **Adding, removing, or renaming a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
 
@@ -53,4 +53,4 @@ A rule shrunk to a pointer is read at its target once, since a pointer at a skil
 bun .github/scripts/docs.ts --strict
 ```
 
-This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `cd web/next && bun run build` once: it reruns this check inside the full build, and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.
+This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `bunx turbo run build --filter=@web/next` once, through turbo so the shared packages `next.config.ts` imports are built first: it reruns this check inside the full build, and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.

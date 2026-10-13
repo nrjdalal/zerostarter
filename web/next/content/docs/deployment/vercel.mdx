@@ -16,6 +16,7 @@ Reach for this page when you first put the starter on Vercel, or add a custom do
 ## Prerequisites
 
 - A Postgres reachable from Vercel's build, not only at runtime.
+- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork's default is `canary` ([Releases](/docs/manage/release#prerequisites) says when `main` lands). A project imported earlier tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
 
 ## Two projects, one runtime
 
@@ -60,7 +61,7 @@ The web needs the api's URL, so the backend goes up first.
    NODE_ENV=production
    ```
 
-   The rest (`BETTER_AUTH_SECRET`, `POSTGRES_URL` and the optional OAuth pairs) are as `.env.example` describes them. `HONO_PORT` (default `4000`) stays unset: the api binds the `PORT` the platform injects.
+   The rest (`BETTER_AUTH_SECRET`, `POSTGRES_URL` and the OAuth pairs) are as `.env.example` describes them. Agent sign-in never mounts under `NODE_ENV=production`, so a deploy with no complete OAuth pair and no magic link offers no way to sign in ([Sign-in methods](/docs/manage/authentication#sign-in-methods)); register the OAuth app where [Public suffix](#public-suffix) says. `HONO_PORT` (default `4000`) stays unset: the api binds the `PORT` the platform injects.
 
 3. Deploy. The build log prints the migration line, then the bundle, and the deployment URL answers `/api/health`. Copy that URL for the web.
 
@@ -77,7 +78,7 @@ The web needs the api's URL, so the backend goes up first.
 
    The optional PostHog and UserJot variables are as `.env.example` describes them. `NEXT_PUBLIC_NODE_ENV` is derived from `NODE_ENV` (`packages/env/src/web-next.ts`), so you never set it, and `INTERNAL_API_URL` is Docker's and stays unset.
 
-3. Deploy. The landing page renders with its API status badge green, and Core Web Vitals arrive under the project's **Speed Insights** tab with nothing to enable: the root layout renders the beacon only when `process.env.VERCEL` is set ([Vercel Speed Insights](/docs/manage/analytics#vercel-speed-insights)).
+3. Deploy. `https://your-web.vercel.app/api/health` answers the api's body through the web's `/api` rewrite; in the canonical starter the landing page's API status badge also turns green, while a fork's home carries no badge. Core Web Vitals arrive under the project's **Speed Insights** tab with nothing to enable: the root layout renders the beacon only when `process.env.VERCEL` is set ([Vercel Speed Insights](/docs/manage/analytics#vercel-speed-insights)).
 
 Variables never propagate between the projects: a custom domain means updating the URL variables on both, and the OAuth callbacks to match.
 
@@ -114,7 +115,7 @@ The deployed one: the `version` suffix comes from `VERCEL_GIT_COMMIT_SHA` at run
 
 - The api build log on `canary` prints `[migrate-on-deploy] applying pending migrations, VERCEL_ENV=preview, ref=canary` and then `[migrate-on-deploy] done`; a preview build prints `[migrate-on-deploy] skip, VERCEL_ENV=preview, ref=<branch>` and goes on to bundle.
 - `https://your-api.vercel.app/api/health` answers `"environment":"production"` with a `version` suffixed by the deployed commit's short sha.
-- Sign-in from the web lands on `/dashboard`.
+- With an OAuth pair set on the api, sign-in from the web lands on `/dashboard`.
 
 ## Next
 

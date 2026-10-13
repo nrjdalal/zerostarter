@@ -6,7 +6,7 @@ description: "A readable trail of every console write: who changed a role, banne
 
 The console's writes all overwrite something: a role change replaces `user.role`, a ban flips a flag, and removing an allowlist rule deletes the row that recorded who added it. Activity is the trail those writes leave, one readable line per change in the `activity` table, read back at **Console > History > Activity**, admin and above like the changes themselves. It is not behind a feature flag, because a flag on a log means silent gaps in it.
 
-A line and its change share a transaction, because `recordActivity` takes the transaction as its first argument. There is no way to call it outside the transaction doing the work, so a line always means the change happened and a change cannot happen unrecorded: if the insert fails, the role change rolls back with it.
+A line and its change share a transaction: `recordActivity` takes a transaction as its first argument rather than a database handle, and every writer in the starter records inside the transaction doing the work (`console:roles`, which cannot import it, writes the same row by hand), so the two commit or roll back together. A line always means the change happened, and if the insert fails, the role change rolls back with it. The type requires a transaction, not that a write records at all: a route of your own that never calls it changes rows with no line.
 
 ## When you need this
 
@@ -37,9 +37,9 @@ The table renders `createdAt` as a relative time and `action` through a label (`
 | Set role       | `Confirmed ada@example.com at member` (set to the rung it already had, which still stamps `role_set_at`) |
 | Unbanned       | `Unbanned katherine@example.com`                                                                         |
 
-Every sentence is written in `packages/db/src/console.ts`, so the console routes and the sign-in grant word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
+Every sentence is written in `packages/db/src/console.ts`, so the console routes, the sign-in grant and the agent sign-in word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
 
-Two things are deliberately not recorded: reads, and what your product does. Opening the Users table writes nothing, and the trail covers the console's writes, the sign-in grant and `console:roles`, not your own routes.
+Two things are deliberately not recorded: reads, and what your product does. Opening the Users table writes nothing, and the trail covers the console's writes, the sign-in grant, the local agent sign-in's first `owner` grant and `console:roles`, not your own routes.
 
 ## Who the actor is
 
@@ -88,13 +88,13 @@ No. It grows without bound, because how long a trail is worth keeping is a polic
 
 **How do I get a line into a ticket?**
 
-Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over JSON, oldest first, with the fields in reading order (actor, action, summary, when) and the two ids trailing, carrying absolute timestamps and stored action codes rather than the relative time and label on screen. The same rows come from `GET /api/v1/admin/activity`, admin and above, paged and enveloped like every other route in [API Conventions](/docs/manage/api-conventions); it is the trail's only route, since nothing edits or deletes a line. Search matches the summary, the stored `actor` text and the linked account's current email, so someone who has changed their address is found under either.
+Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over JSON, oldest first, with the fields in reading order (actor, action, summary, when) and the two ids trailing, carrying absolute timestamps and stored action codes rather than the relative time and label on screen. The same rows come from `GET /api/v1/admin/activity`, admin and above, paged and enveloped as [API Conventions](/docs/manage/api-conventions#lists-and-sets) describes; it is the trail's only route, since nothing edits or deletes a line. Search matches the summary, the stored `actor` text and the linked account's current email, so someone who has changed their address is found under either.
 
 ## It's working if
 
 - A role change at Console > Access > Users appears at Console > History > Activity with your email as the actor and a sentence such as `Changed ada@example.com from member to admin`.
 - Setting a rung to the one it already has leaves `Confirmed ada@example.com at member`, not a line claiming a change.
-- `bun run console:roles grant you@example.com admin` leaves a line whose actor is `console:roles`.
+- `bun run console:roles grant ada@example.com member`, naming any account but your own, leaves a line whose actor is `console:roles`; a lower rung for yourself would demote you ([Authentication](/docs/manage/authentication#changing-a-role-banning-an-account) has what the script does not check).
 - **Copy event** on a row hands over JSON whose `action` is the stored code (`role.change`) and whose `createdAt` is absolute, not the label and the relative time the table shows.
 
 ## Next
@@ -102,4 +102,4 @@ Select rows and **Copy**, or **Copy event** from a row's menu. Either hands over
 - [Authentication](/docs/manage/authentication), because the role ladder these lines record changes to lives there.
 - [Allowlist](/docs/manage/allowlist), because the rule an `Allowlist rule` actor names is added and removed there.
 - [Database](/docs/manage/database), because `schema/console.ts` and the `set null` on `actor_id` are explained there.
-- [API Conventions](/docs/manage/api-conventions), because the activity route is paged and enveloped like every other.
+- [API Conventions](/docs/manage/api-conventions), because the activity route is paged and enveloped as the console's other lists are.

@@ -23,6 +23,12 @@ Reach for this page when you self-host on any Docker host, or want the productio
 - A root `.env`: both builds validate the full env and fail without it ([Environment Variables](/docs/manage/environment)).
 - A Postgres the containers can reach, already migrated; a `localhost` URL is rewritten for you (below).
 
+<Callout type="warn" title="A deploy's .env is not the one init wrote">
+
+The `.env` that `init` writes sets `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, which together mount `POST /api/agents/sign-in-as` ([Local sign-in](/docs/getting-started/working-with-agents#local-sign-in)), and Compose publishes both ports on every interface. That route's only check is the `Origin` header, which a client outside a browser sets to anything it likes, so on a host others can reach it signs anyone in as `LocalAgent`, an `owner` when that call creates the account. Anywhere but your own machine, set `NODE_ENV=production` (or `staging`) and leave `AGENT_SIGNIN_ENABLED` blank. Either one alone unmounts the route; the stage also hides raw error messages and closes `/headers`, which echoes every request header, cookies included.
+
+</Callout>
+
 ## How the containers talk
 
 Inside the Compose network the web container cannot reach the api at `localhost`: that address is its own container. `INTERNAL_API_URL=http://api:4000`, set on both services in `docker-compose.yml` and baked into the web image by `web/next/Dockerfile`, is the one Docker-specific knob, with three jobs:
@@ -66,7 +72,7 @@ Secret contents are not part of BuildKit's cache key, so a plain rebuild can rep
 
 ## Migrations: you run them
 
-The images never run migrations. Apply them yourself with `bun run db:migrate` from a checkout, before or alongside a rollout, against the same `POSTGRES_URL` the containers read; only the [Vercel](/docs/deployment/vercel) build migrates on deploy. Without a reachable database, routes that touch it such as `/api/v1/user` answer 500 while `/api/health` still passes.
+The images never run migrations. Apply them yourself with `bun run db:migrate` from a checkout, before or alongside a rollout, against the same `POSTGRES_URL` the containers read; only the [Vercel](/docs/deployment/vercel) build migrates on deploy. Without a reachable database, `/api/health` still passes and a route answers 500 only once it queries: a signed-in `/api/v1/user` after its five-minute cookie cache lapses, or `GET /api/waitlist` with the waitlist on. An anonymous `/api/v1/user` answers 401 before it reaches the database, so it proves nothing about the connection.
 
 ## Checking the images
 
@@ -87,6 +93,7 @@ Drizzle Kit does not speak Bun's SQL driver, so `packages/db` carries `postgres`
 - `curl localhost:4000/api/health` answers with `"environment"` set to the `NODE_ENV` your `.env` names.
 - `docker compose config --images` lists two images, named after the checkout directory.
 - `curl localhost:3000/api/health` answers the same body, which is the web container's rewrite reaching `http://api:4000`.
+- With a deploy's `.env`, `curl -X POST localhost:4000/api/agents/sign-in-as` answers `404`.
 
 ## Next
 

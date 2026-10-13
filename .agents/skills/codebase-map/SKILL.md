@@ -29,7 +29,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | --- | --- | --- |
 | Add/change an API route | `api/hono/src/routers/<name>.ts`, wired through `routers/index.ts` and the `.route()` chain in `src/index.ts` | `api-endpoint` skill |
 | Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts`; `auth.ts` is generated, see the row below | `db-migration` skill |
-| Add/change a page | `web/next/src/app/`, route groups: `(marketing)` public, `(protected)` dashboard, `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors | - |
+| Add/change a page | `web/next/src/app/`, route groups: `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors, `(protected)` dashboard. The public home is `app/page.tsx` in a fork; in the canonical starter it is the `(marketing)` group, with `/hire` and `/resume` | - |
 | Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, customized through the post-sync script | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |

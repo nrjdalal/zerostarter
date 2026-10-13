@@ -14,7 +14,7 @@ When you want to see what visitors do, hear from them, or measure what they expe
 
 PostHog initializes in `web/next/instrumentation-client.ts`, Next.js's client-instrumentation entry, which runs once before the app hydrates. `posthog.init` sits behind a check on `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, so with the token empty nothing initializes. With it set, `NEXT_PUBLIC_POSTHOG_HOST` picks the region: EU Cloud (`https://eu.i.posthog.com`) by default, `https://us.i.posthog.com` for US Cloud, or a self-hosted URL. Both are optional in `packages/env/src/web-next.ts`.
 
-The `defaults` option in that call pins PostHog's defaults to a dated snapshot, pageview capture on history changes included, so there is no provider and no pageview component. The starter stops there: it never calls `capture` or `identify` and reads no flag. Pageviews begin the moment the token is set; every event beyond them is yours, from the shared singleton:
+The `defaults` option in that call pins PostHog's defaults to a dated snapshot, pageview capture on history changes included, so there is no provider and no pageview component. The starter never calls `capture` or `identify` and reads no flag, but the call passes nothing beyond `api_host` and `defaults`, so PostHog's own defaults run the moment the token is set: pageviews, page leaves, autocapture of clicks and form submissions, and session recording whenever replay is on in your PostHog project. That includes the console pages, which render people's email addresses, so before setting the token on an install with real users, decide whether to add `autocapture: false` and `disable_session_recording: true` to that `posthog.init` call. Every named event and identity is yours, from the shared singleton:
 
 ```ts
 import posthog from "posthog-js"
@@ -32,7 +32,7 @@ posthog.isFeatureEnabled("new-dashboard")
 
 <Callout type="warn" title="Previews count against your allocation">
 
-Every deployment reports, previews included, and Vercel [meters Speed Insights by event](https://vercel.com/docs/speed-insights/limits-and-pricing) per team. Narrowing the gate to `VERCEL_ENV === "production"` drops PR previews but drops `canary` too, since canary deploys as a preview; to keep it, also test `VERCEL_GIT_COMMIT_REF === "canary"`, the way `.github/scripts/migrate-on-deploy.ts` picks its deploy branches.
+Every deployment reports, previews included, and Vercel [meters Speed Insights by event](https://vercel.com/docs/speed-insights/limits-and-pricing) per team. Narrowing the gate to `VERCEL_ENV === "production"` drops PR previews but drops `canary` too, since `canary` deploys as a preview while `main` is the project's Production Branch; to keep it, also test `VERCEL_GIT_COMMIT_REF === "canary"`, the way `.github/scripts/migrate-on-deploy.ts` picks its deploy branches.
 
 </Callout>
 

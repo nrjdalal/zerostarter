@@ -6,7 +6,7 @@ description: "Layered rate limits: a per-address budget on every request, and a 
 
 Every request to the API passes a rate limiter before any route runs, and a signed-in request passes a second, larger one on its way into `/api/v1`. Both come from one factory in `api/hono/src/middlewares/rate-limiter.ts`, built on [`hono-rate-limiter`](https://github.com/rhinobase/hono-rate-limiter).
 
-A limiter keys a request by who before where: user id, then API key, then IP, in a per-process store. The two limiters stack rather than replace: signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and the larger per-user budget binds first only for a user spread across addresses. A count lives on the instance that served the request, not across a fleet.
+Each limiter keys on one thing, in a per-process store: the global one on the client address, the per-user one on the session's user id. The two limiters stack rather than replace: signing in adds a per-user budget and never lifts the per-address one, so an office behind one address shares that budget whether or not its people sign in, and the larger per-user budget binds first only for a user spread across addresses. A count lives on the instance that served the request, not across a fleet.
 
 ## When you need this
 
@@ -44,13 +44,13 @@ Both windows are `HONO_RATE_LIMIT_WINDOW_MS`, 60000 by default, and both variabl
 
 ## What a throttled request sees
 
-A `429` in the standard envelope, `{ "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }`, with a `Retry-After` header. Every response, throttled or not, carries the `draft-6` headers (`RateLimit-Limit`, `RateLimit-Policy`, `RateLimit-Remaining`, `RateLimit-Reset`), the library's default, so a client can back off without guessing. The `429` is documented on every method in the OpenAPI document, so the [reference](/docs/getting-started/type-safe-api) shows it on each route.
+A `429` in the standard envelope, `{ "error": { "code": "TOO_MANY_REQUESTS", "message": "Too Many Requests" } }`, with a `Retry-After` header. Every response, throttled or not, carries the `draft-6` headers (`RateLimit-Limit`, `RateLimit-Policy`, `RateLimit-Remaining`, `RateLimit-Reset`), the library's default, and each limiter overwrites the last one's: on a signed-in `/api/v1` request they describe the per-user budget, though for a user on one address the per-address budget binds first. Browser code on another origin, such as the web on a custom domain, cannot read them or `Retry-After`, because the CORS config in `api/hono/src/index.ts` exposes only `content-length`; add them to `exposeHeaders` for a client that backs off on them. The `429` is documented on every method in the OpenAPI document, so the [reference](/docs/getting-started/type-safe-api) shows it on each route.
 
 ## Common questions
 
 **Why do all anonymous visitors on a `*.vercel.app` host share one bucket?**
 
-On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, where the browser reaches the API directly, the same request lands in the client's own bucket. Nothing in the limiter recovers the original client on that path, so raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
+On a public hosting suffix the web app proxies its calls to the API through its own `/api` rewrite ([sessions and cookies](/docs/manage/authentication#sessions-and-cookies) says why). The last forwarded address the API sees, the one `findIp` keys on, is then a Vercel hop rather than the client, so every visitor on that path draws from one anonymous budget of `HONO_RATE_LIMIT` per window, and a busy sign-in page can throttle itself; through a custom domain, a call the browser makes to the API directly lands in the client's own bucket. The web server's own call, the session read behind every dashboard and console render (`web/next/src/lib/auth/index.ts`), comes from the web host carrying the browser's headers, so its bucket depends on what your host does to `x-forwarded-for` on that hop, and a `429` there reads as signed out, because that read treats any answer that is not OK as no session. Nothing in the limiter recovers the original client on that path, so raise `HONO_RATE_LIMIT` on a public-suffix deploy, or move to a custom domain.
 
 **Are the limits shared across instances?**
 

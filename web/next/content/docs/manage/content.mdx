@@ -25,7 +25,7 @@ A generator, `.github/scripts/docs.ts`, reads that config. An unflagged run, whi
 
 Under `--strict`, the mode the production build runs (the `build` script in `web/next/package.json`), it still writes `meta.json` but never touches an `.mdx`. It reports frontmatter out of step with the config, a declared page with no file, a file the config does not list, and a blog post with a missing `createdAt`, an invalid timestamp, or neither `publishedAt` nor `draft: true`, then exits 1 if it found any.
 
-Adding a page is three steps: add the entry to `docs.config.ts`, run the generator (the dev server does, or `bun .github/scripts/docs.ts`) to scaffold the file, then write the body. Leave the frontmatter alone: every unflagged run rewrites it, and the build fails on a hand edit.
+Adding a page is three steps: add the entry to `docs.config.ts`, run `bun .github/scripts/docs.ts` to scaffold the file, then write the body. The dev server runs the generator only when it starts and nothing watches the config, so a running one scaffolds nothing until you run that command or restart it. Leave the frontmatter alone: every unflagged run rewrites it, and the build fails on a hand edit.
 
 <Callout type="warn" title="Don't edit meta.json">
 

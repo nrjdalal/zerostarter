@@ -7,7 +7,7 @@ description: One validated .env, read per-consumer so client code can never touc
 
 There is one `.env` at the repo root, and no app reads it through `process.env`: each imports a validated, typed slice of it from `@packages/env/<name>`, so a variable is set in one place and a wrong or missing one is caught once, at boot, instead of surfacing as `undefined` halfway through a request.
 
-Each consumer validates its own slice at boot, and the client slice is `NEXT_PUBLIC_*` only: `POSTGRES_URL` has no such name, so it is in no client schema and the bundler has nothing to inline into a page. Exposing a value to the browser is a deliberate rename, never an accident. The one thing outside the schema is a variable the host injects rather than you setting (`PORT`, `VERCEL`, `VERCEL_GIT_COMMIT_SHA`), read at its point of use and absent from `.env.example`.
+Each consumer validates its own slice at boot, and the client slice is `NEXT_PUBLIC_*` only: `POSTGRES_URL` has no such name, so it is in no client schema and the bundler has nothing to inline into a page. Exposing a value to the browser is a deliberate rename, never an accident. Outside the schema sit the variables the host injects (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_COMMIT_SHA`), the two [skip flags](#skipping-validation), and `GIT_SHA`, which you set off Vercel to suffix the build version; each is read at its point of use and absent from `.env.example`.
 
 ## When you need this
 
@@ -30,12 +30,12 @@ An app imports its slice (`import { env } from "@packages/env/api-hono"`) and re
 
 ## Every variable
 
-`.env.example` holds the ones you are expected to set. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: each has a default or is wired for you. The Schema column says whether the slice file requires the variable; a default makes a variable optional, and the row names it first. Which slice declares each is in [the slices](#the-slices) table.
+`.env.example` holds the ones you are expected to set. `HONO_PORT`, `HONO_WEB_URL` and `INTERNAL_API_URL` are valid but left out of it on purpose: `HONO_PORT` has a default, Compose sets `INTERNAL_API_URL`, and `HONO_WEB_URL` has neither, because you set it by hand only on a public hosting suffix where inference from `HONO_TRUSTED_ORIGINS` fails. The Schema column says whether the slice file requires the variable; a default makes a variable optional, and the row names it first. Which slice declares each is in [the slices](#the-slices) table.
 
 | Variable                            | Schema   | What it does                                                                                                                                                                |
 | ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AGENT_SIGNIN_ENABLED`              | optional | Defaults to `false`. Mounts the local [agent sign-in](/docs/getting-started/working-with-agents), and only while `NODE_ENV` is `local` (`api/hono/src/lib/agent-signin.ts`) |
-| `BETTER_AUTH_SECRET`                | required | Signs sessions; `init` generates one. Never dummied under a [skip flag](#skipping-validation)                                                                               |
+| `BETTER_AUTH_SECRET`                | required | Signs sessions; `init` generates one. A [skip flag](#skipping-validation) leaves it unset rather than dummied, with the risk that section names                             |
 | `GITHUB_CLIENT_ID` / `_SECRET`      | optional | GitHub sign-in registers only when both are set                                                                                                                             |
 | `GOOGLE_CLIENT_ID` / `_SECRET`      | optional | Google sign-in registers only when both are set                                                                                                                             |
 | `HONO_APP_URL`                      | required | The api's public origin; the cookie scope and Better Auth's `baseURL` derive from it in `packages/auth/src/index.ts`                                                        |
@@ -50,7 +50,7 @@ An app imports its slice (`import { env } from "@packages/env/api-hono"`) and re
 | `NEXT_PUBLIC_POSTHOG_HOST`          | optional | [PostHog](/docs/manage/analytics) region or self-hosted URL; unset, `web/next/instrumentation-client.ts` uses the EU cloud                                                  |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | optional | Turns PostHog on                                                                                                                                                            |
 | `NEXT_PUBLIC_USERJOT_URL`           | optional | Shows the [feedback link](/docs/manage/analytics#user-feedback)                                                                                                             |
-| `NODE_ENV`                          | required | The [stage](#stages); the web slice mirrors it to the browser as `NEXT_PUBLIC_NODE_ENV`, which you never set                                                                |
+| `NODE_ENV`                          | required | The [stage](#stages). The browser never sees it: its `NEXT_PUBLIC_NODE_ENV`, which you never set, holds Next's build mode                                                   |
 | `POSTGRES_URL`                      | required | The [database](/docs/manage/database); `init` fills it when it provisions one. A `localhost` host becomes `host.docker.internal` under `INTERNAL_API_URL`                   |
 
 ## Stages
@@ -59,18 +59,20 @@ An app imports its slice (`import { env } from "@packages/env/api-hono"`) and re
 
 To branch on the stage, `@packages/env` exports a checker per value (`isLocal`, `isProduction`, and the rest), so code reads `isProduction(env.NODE_ENV)` instead of comparing strings.
 
+The stage stops at the server. The `web-next` slice fills `NEXT_PUBLIC_NODE_ENV` from `process.env.NODE_ENV`, which Next inlines into client code as its build mode, so the browser reads `development` under `next dev` and `production` from any `next build`, a `staging` build included; `local` and `test` never reach it either.
+
 ## Skipping validation
 
-Two flags, both read in `packages/env/src/lib/polyfill.ts`, let a build pass without real values: a missing required variable falls back to a shape-valid dummy (`https://polyfill.url`, `postgres://polyfill.local:5432/db`). Validation otherwise still runs, so a present-but-invalid value fails either way.
+Two flags, both read in `packages/env/src/lib/polyfill.ts`, let a build pass without real values: a missing required variable falls back to a shape-valid dummy (`https://polyfill.url`, `postgres://polyfill.local:5432/db`). `NODE_ENV` has no dummy, since every slice reads it raw, so it must be set under either flag; the CI build sets `NODE_ENV: production` beside its flag. Validation otherwise still runs, so a present-but-invalid value fails either way.
 
-- `SKIP_ENV_VALIDATION=true` covers every variable, server and client: the CI escape hatch (`.github/workflows/auto-check-build.yml` sets it), for a build before any real secret exists. The Docker images do not use it: each mounts the real `.env` as a build secret and validates it in full.
+- `SKIP_ENV_VALIDATION=true` covers every server and client variable but `NODE_ENV`: the CI escape hatch (`.github/workflows/auto-check-build.yml` sets it), for a build before any real secret exists. The Docker images do not use it: each mounts the real `.env` as a build secret and validates it in full.
 - `SKIP_ENV_VALIDATION_SERVER=true` covers only the server variables; the `NEXT_PUBLIC_*` client variables stay required and validated, because the web build inlines and ships them. The web's Vercel build command sets it (`web/next/vercel.json`): it compiles the server packages for their types without their secrets.
 
-`BETTER_AUTH_SECRET` is the exception to the dummy: under either flag `serverSecret` in `lib/polyfill.ts` turns its schema optional and leaves the value `undefined`, because a secret that resolved to a constant would be a secret everyone knows; the auth package still constructs for a build. Without a flag the schema stays required, so a missing secret fails at boot with `Invalid environment variables` rather than running.
+`BETTER_AUTH_SECRET` is the exception to the dummy: under either flag `serverSecret` in `lib/polyfill.ts` turns its schema optional and leaves the value `undefined`, so the auth package still constructs for a build. Without a flag the schema stays required, so a missing secret fails at boot with `Invalid environment variables` rather than running.
 
 <Callout type="warn" title="Never set a skip flag on a running app">
 
-The server would start against dummy URLs and an undefined `BETTER_AUTH_SECRET`. The flags are for a build, and the error they silence is the one you want at boot.
+The server would start against dummy URLs, and without `BETTER_AUTH_SECRET` it signs sessions with a secret anyone can read: `packages/auth/src/index.ts` passes Better Auth no `secret`, so Better Auth reads the variable itself and, finding none, falls back to its own built-in default, a public constant. It refuses that default only when `NODE_ENV` is `production`; on `local`, `development`, `staging` and `test` it runs. The flags are for a build, and the error they silence is the one you want at boot.
 
 </Callout>
 
@@ -89,7 +91,7 @@ A variable lives on more surfaces than the schema, and a surface left out fails 
 
 <Callout type="warn" title="runtimeEnv is mandatory">
 
-A variable declared in the schema but missing from the slice's `runtimeEnv` map is silently `undefined` at runtime. Always add both.
+Nothing type-checks a slice's `runtimeEnv` map against its schema, so a variable declared in the schema but missing from the map reads as unset whatever `.env` says: a required one fails at boot, an optional one is silently `undefined`, and a defaulted one such as `HONO_RATE_LIMIT` silently keeps its default. Always add both.
 
 </Callout>
 

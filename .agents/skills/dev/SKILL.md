@@ -6,11 +6,11 @@ source: local
 
 # Dev Stack
 
-`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the last segment of the branch name in a linked worktree, so parallel worktrees never collide on a port. They share the auth session, since the cookie is scoped to the base `zerostarter.localhost` host. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
+`bun run dev` runs the web app and the API through portless: named `.localhost` URLs off one shared proxy on `:1355`, prefixed with the last segment of the branch name in a linked worktree, so parallel worktrees never collide on a port. They share one session cookie, scoped to the base `zerostarter.localhost` host with no per-worktree prefix, so a sign-in on one worktree replaces the cookie every other worktree reads. Fixed ports (`PORTLESS=0 bun run dev`, web on `:3000`, api on `:4000`) serve one stack at a time.
 
 ## Start
 
-Start from a shell without `NODE_ENV` exported: the commit recipe exports `NODE_ENV=production`, and a stack started under it boots in the production stage, where health still answers but the agent sign-in route is gone. The stage then comes from `.env`, and `/api/health` names it. Bare `bun run dev` opens turbo's TUI, so run stream mode detached:
+Start from a shell without `NODE_ENV` exported: an exported value wins over `.env`, so a shell that exported `NODE_ENV=production` (for a build, say) boots the stack in the production stage, where health still answers but the agent sign-in route is gone. The stage then comes from `.env`, and `/api/health` names it. Bare `bun run dev` opens turbo's TUI, so run stream mode detached:
 
 ```bash
 unset NODE_ENV SKIP_ENV_VALIDATION
@@ -19,12 +19,12 @@ for i in $(seq 1 60); do WEB=$(bunx portless get zerostarter 2>/dev/null); [ -n 
 API=$(bunx portless get api.zerostarter)
 # The proxy answers 404 for a host whose app has not registered yet, and curl --retry skips 404s, so poll
 for i in $(seq 1 60); do curl -sf "$API/api/health" > /dev/null && break; sleep 1; done
-for i in $(seq 1 60); do [ "$(curl -s -o /dev/null -w '%{http_code}' "$WEB/")" = 200 ] && break; sleep 1; done   # web compiles after the API answers
-curl -sS "$API/api/health"                        # {"data":{"message":"ok",...}}
-curl -sS -o /dev/null -w "%{http_code}" "$WEB/"   # 200
+for i in $(seq 1 60); do [ "$(curl -sL -o /dev/null -w '%{http_code}' "$WEB/")" = 200 ] && break; sleep 1; done   # web compiles after the API answers
+curl -sS "$API/api/health"                         # {"data":{"message":"ok",...}}
+curl -sSL -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 ```
 
-`bunx portless list` shows every active route, the API docs are at `$API/api/docs`, and the log is `/tmp/zerostarter-dev.log`. Done when health prints `"message":"ok"` and `/` returns 200.
+`-L` follows a fork's home to `/waitlist` when the waitlist feature is on. `bunx portless list` shows every active route, the API docs are at `$API/api/docs`, and the log is `/tmp/zerostarter-dev.log`. Done when health prints `"message":"ok"` and `/` returns 200, after its redirect where it has one.
 
 ## Restart
 
@@ -54,7 +54,7 @@ Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its
 
 ## Agent login
 
-The route is gated on `AGENT_SIGNIN_ENABLED=true` in `.env` (off by default, so a fresh clone and every deploy expose no session-minting route), runs only in the local stage, and requires a trusted `Origin`:
+The route mounts only when the stage is `local` and `.env` sets `AGENT_SIGNIN_ENABLED=true`. `.env.example` leaves the flag blank, but `init` writes `true` beside `NODE_ENV=local`, so a server started from that `.env` serves the route, a Docker deploy included (compose reads the same file); a deploy's `.env` sets `NODE_ENV=production` and leaves the flag blank. The route requires a trusted `Origin`, which stops a page on another site, not a client that sets the header itself, as this curl does:
 
 ```bash
 WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)

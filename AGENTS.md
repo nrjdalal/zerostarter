@@ -4,9 +4,9 @@ Guidance for AI coding agents in this repository: a Bun monorepo with the `web/n
 
 ## Workflow
 
-- ALWAYS: Work in a git worktree under `.claude/worktrees/`, one directory per change, branched from freshly fetched `origin/canary` (`git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary`), so the change builds on current canary and the primary checkout stays clean.
+- ALWAYS: Work in a git worktree under `.claude/worktrees/`, one directory per change, branched from freshly fetched `origin/canary` (`git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary`), so the change builds on current canary. `.gitignore` does not list `.claude/worktrees/`, so add it to `.git/info/exclude` once per clone: otherwise the primary checkout shows every worktree as untracked, and a fork's `sync` and `reinit` refuse that tree as dirty.
 - ALWAYS: Show the user a new or altered schema and wait for their go before generating or applying a migration, naming the choices that are costly to reverse (`db-migration`).
-- NEVER: Point local database work at the `POSTGRES_URL` in the root `.env`: `canary` and production both read that Neon database, so a migration applied there is applied to production under running code. Local work runs against a disposable container (`bunx pglaunch -k`) named in the worktree's own `.env`, seeded with fake rows (`db-migration`).
+- NEVER: Point local database work at a database a deployed environment reads, since a migration applied there is applied under running code; in the canonical starter that is the root `.env`'s `POSTGRES_URL`, the Neon database `canary` and production both read. Local work runs against a disposable container (`bunx pglaunch -k`) named in the worktree's own `.env`, seeded with fake rows (`db-migration`).
 - ALWAYS: Land the docs and the skills a change touches in the same change, and remove a skill the change makes obsolete (`doc-sync`).
 
 ## Code

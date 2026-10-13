@@ -65,7 +65,7 @@ Make `.agents/skills/<name>/SKILL.md` with `source: local`; the symlinks carry i
 
 - Keep the `<summary>. Use when <triggers>` shape: the manager cuts the `AGENTS.md` cell at `Use`.
 - Quote a description holding `: `, or the manager throws, since strict YAML like GitHub's rejects the bare colon.
-- Keep it one file: the CLI syncs only `SKILL.md`, so a sibling file reaches a fork unrebranded and unnamed.
+- Keep a skill that ships to forks to one file: the CLI rebrands, records and protects only `SKILL.md`, so a sibling file reaches a fork unrebranded and every sync overwrites it without naming it ([CLI](/docs/getting-started/cli#common-questions)).
 
 Write the body with `writing-for-agents` loaded; when a convention changes, change its skill in the same commit, and the pre-commit hook regenerates the tables (the `skills-manager` skill).
 

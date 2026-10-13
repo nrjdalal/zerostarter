@@ -19,11 +19,11 @@ Reach for this page when you are calling the API from the web app and want to kn
 
 The direction is one way: the API never imports from the web app, and the web app imports the API's declaration file, built into `@api/hono`'s `dist`. `bun run check-types` from the repo root rebuilds it first (turbo's `check-types` depends on `^build`), so the root command catches a rename that a check inside `web/next` alone would miss.
 
-The same routes feed the API reference: `describeRoute` and the Zod schemas on each route generate `/api/openapi.json`, which `/api/docs` renders with [Scalar](https://scalar.com), so the document cannot describe a route that does not exist. Both sit behind the `apiDocs` [feature](/docs/manage/features) in `packages/config/src/site.ts` and 404 while it is off; 429 and 500 are documented on every method, and a route adds its own 400 and 401.
+The same routes feed the API reference: `describeRoute` and the Zod schemas on each route generate `/api/openapi.json`, which `/api/docs` renders with [Scalar](https://scalar.com), so the document cannot describe a route that does not exist. Both sit behind the `apiDocs` [feature](/docs/manage/features#the-flags) in `packages/config/src/site.ts` and 404 while it is off (Better Auth's own reference under `/api/auth` is outside the flag, as its row says); 429 and 500 are documented on every method, and a route adds its own 400 and 401.
 
 ## Reading a response with `unwrap`
 
-Every route answers in the envelope, `{ data }` or `{ error: { code, message } }`, and `unwrap`, exported beside `apiClient`, reads it:
+Every route the api defines answers in the envelope, `{ data }` or `{ error: { code, message } }`, apart from the exceptions [API Conventions](/docs/manage/api-conventions) lists, and `unwrap`, exported beside `apiClient`, reads it:
 
 ```ts
 import { apiClient, unwrap } from "@/lib/api/client"
@@ -35,7 +35,7 @@ Exactly one side is non-null and `unwrap` never throws. `data` is the payload in
 
 ## What the type does not cover
 
-`AppType` types what Hono sees. Two surfaces in the chain hand their bodies to something else:
+`AppType` types what Hono sees. Two surfaces the web app calls through `apiClient` hand their bodies to something else:
 
 - **`/api/auth/*`**: the path is typed, so `apiClient.auth.providers.$get()` returns a typed envelope and `apiClient.auth["get-session"].$url()` builds the URL, but Better Auth's own bodies are not: `/get-session` and the wildcard pass its `Response` through untouched. For a typed session read, call `apiClient.v1.session.$get()` on the client, or the helper in `web/next/src/lib/auth/index.ts` on the server.
 - **`/api/health/ws`**: the path is typed, so `apiClient.health.ws.$ws()` derives the socket URL from the same base, but the frames are not: a plain `WebSocket`, no envelope, listed in the reference as a `101`. Parse each frame and read only what you need, per [Realtime](/docs/getting-started/realtime).

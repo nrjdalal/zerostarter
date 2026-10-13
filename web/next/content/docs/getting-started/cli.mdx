@@ -19,11 +19,11 @@ Scaffolding a product, re-scaffolding a repo that already has history and secret
 
 ## The commands
 
-| Command  | Fetches                             | Commits?                                           | Clean tree? | On failure                                                                                               |
-| -------- | ----------------------------------- | -------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
-| `init`   | `main`, or `canary` with `--canary` | Yes: two commits on `canary`, `main` seeded behind | No          | Stops where it failed; nothing is rolled back                                                            |
-| `reinit` | `main`                              | Yes, on the current branch                         | Yes         | Resets the tree to your last commit                                                                      |
-| `sync`   | `main`                              | No: the diff stays in your tree for review         | Yes         | Resets the tree to your last commit, except an install failure after the overlay, which leaves the files |
+| Command  | Fetches                             | Commits?                                                                                                                      | Clean tree? | On failure                                                                                               |
+| -------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| `init`   | `main`, or `canary` with `--canary` | Yes: two commits on `canary`, `main` seeded behind, when the target has no `.git`; otherwise one commit on the current branch | No          | Stops where it failed; nothing is rolled back                                                            |
+| `reinit` | `main`                              | Yes, on the current branch                                                                                                    | Yes         | Resets the tree to your last commit                                                                      |
+| `sync`   | `main`                              | No: the diff stays in your tree for review                                                                                    | Yes         | Resets the tree to your last commit, except an install failure after the overlay, which leaves the files |
 
 ### `init`
 
@@ -50,7 +50,7 @@ The feature flags are `--allowlist`, `--api-docs`, `--blog`, `--docs`, `--intern
 bunx zerostarter reinit [dir]
 ```
 
-Deletes every file except the top-level `.git` and any `.env*` at any depth, fetches the latest `main`, rebrands to the directory name, installs, and commits on the current branch; the next step it prints is `git push`. There is no picker, no `--canary` and no `--db`: it takes `main` and the default features. `--yes`/`-y` skips the confirmation and `--help`/`-h` prints usage.
+Deletes every file except the top-level `.git` and any `.env*` at any depth, fetches the latest `main`, rebrands to the directory name, installs, and commits on the current branch, then prints the next steps: `set POSTGRES_URL in .env` while `.env` has none, `bun run db:migrate`, `bun run dev` and `git push`, since it migrates nothing itself. There is no picker, no `--canary` and no `--db`: it takes `main` and the default features. `--yes`/`-y` skips the confirmation and `--help`/`-h` prints usage.
 
 <Callout type="warn" title="reinit deletes files">
 
@@ -76,22 +76,22 @@ The boundary is the starter's root `.gitpickignore`, fetched from GitHub's `main
 | The `(marketing)` route group (`/`, `/hire`, `/resume`) with `components/marketing/`, `lib/marketing/` and `fonts/marketing/`           | Never received on a fetch (an in-place `init` removes them); a fresh `app/page.tsx` is written and the Hire entry is stripped from `common/navbar.tsx` | Never fetched; the Hire entry is stripped again                                                                     |
 | `packages/config/src/site.ts`, `README.md`, the root `package.json` identity (name, version, author fields)                             | Regenerated from the project name                                                                                                                      | `site.ts` and `README.md` never fetched; `package.json` fetched, its identity re-merged over the starter's manifest |
 | `packages/cli/`, `tests/`, `.github/notes/`, the CLI release workflow, and the rest of the starter's own files `.gitpickignore` lists   | Never received on a fetch; an in-place `init` removes them                                                                                             | Never fetched                                                                                                       |
-| `AGENTS.md`, `bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, the favicon (`PRESERVE_ON_SYNC`) | Shipped whole                                                                                                                                          | Restored after the overlay, and a starter file the overlay added under one of them is removed                       |
+| `AGENTS.md`, `bun.lock`, `packages/db/drizzle/`, `packages/db/src/schema/`, `web/next/docs.config.ts`, the favicon (`PRESERVE_ON_SYNC`) | `AGENTS.md` shipped rebranded; `docs.config.ts` regenerated as a stub listing only the docs and console docs index pages; the rest shipped whole       | Restored after the overlay, and a starter file the overlay added under one of them is removed                       |
 | Everything else                                                                                                                         | Shipped, rebranded                                                                                                                                     | Overwritten by the upstream version                                                                                 |
 
 A clone that skips `init` draws the marketing line by hand: delete `web/next/src/app/(marketing)`, add an `app/page.tsx`, and remove the Hire link in `common/navbar.tsx`.
 
 ### Skills you have customized
 
-The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`. Each skill the CLI writes opens with a `[!CAUTION]` note whose `> Synced from` line is the opt-in, and sync decides per skill whether an update is yours to take:
+The overlaid skills in `.agents/skills/` are rebranded to your project name (read from `package.json`), matching `init`. Each skill the CLI writes opens with a `[!CAUTION]` note whose `> Synced from` line is the opt-in, and sync decides per skill, by its `SKILL.md` alone, whether an update is yours to take (any other file in the directory follows the overlay, as [Common questions](#common-questions) says):
 
-| The skill                                                                                  | Sync does                                                                                                        |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `source` is this repo, the `[!CAUTION]` note is intact, and the body is what the CLI wrote | Takes the update                                                                                                 |
-| `source: local`, a tool name (vendored), or another upstream                               | Leaves it exactly as it is, and never restamps its `source`                                                      |
-| That note, or its `> Synced from` line, removed                                            | Yours; left alone                                                                                                |
-| Edited since the CLI wrote it                                                              | Keeps your version and names it in the summary; delete the skill directory and sync again to take upstream's     |
-| No record in `.sync.json` (scaffolded by an older CLI)                                     | Takes the update and names it; `git restore --source=HEAD -- .agents/skills/<name>/SKILL.md` brings an edit back |
+| The skill                                                                                  | Sync does                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `source` is this repo, the `[!CAUTION]` note is intact, and the body is what the CLI wrote | Takes the update                                                                                                                                                    |
+| `source: local`, a tool name (vendored), or another upstream                               | Keeps its `SKILL.md` as it is, and never restamps its `source`                                                                                                      |
+| That note, or its `> Synced from` line, removed                                            | Yours; left alone                                                                                                                                                   |
+| Edited since the CLI wrote it                                                              | Keeps your version and names it in the summary; to take upstream's, delete the skill directory, commit that, and sync again, since sync refuses an uncommitted tree |
+| No record in `.sync.json` (scaffolded by an older CLI)                                     | Takes the update and names it; `git restore --source=HEAD -- .agents/skills/<name>/SKILL.md` brings an edit back                                                    |
 
 The ledger, `.agents/skills/.sync.json`, records per skill a hash of the upstream file and of the file as written to your fork; comparing the prose itself cannot work, since sync rebrands the body. Commit it with the rest of the sync. `bun .github/scripts/skills-manager.ts --outdated` reads it to say which synced skills upstream has moved on, and which you have edited.
 
@@ -99,9 +99,9 @@ The ledger, `.agents/skills/.sync.json`, records per skill a hash of the upstrea
 
 ## Rebrand: one edit, whole system
 
-`init` and `reinit` regenerate `packages/config/src/site.ts` from the project name (the name, plus a placeholder description, tagline and socials to fill in), rename the root package to a slug and drop its author fields, rebrand the [portless](/docs/getting-started/setup) dev-URL names to `<slug>` and `api.<slug>`, and strip the demo `/hire` nav entry. Every surface reads its identity from `@packages/config/site`, so that one file is your brand. The rebrand fails loud rather than half-applying when the starter's shape has drifted (a missing `portless` block, a marketing font in the shared `fonts.ts`, a Hire entry the strip did not catch), so a fork never ships a broken identity.
+`init` and `reinit` regenerate `packages/config/src/site.ts` from the project name (the name, plus a placeholder description, tagline and socials to fill in), rename the root package to a slug and drop its author fields, rebrand the [portless](/docs/getting-started/setup) dev-URL names to `<slug>` and `api.<slug>`, and strip the demo `/hire` nav entry. Every surface reads its identity from `@packages/config/site`, so that one file is your brand. The rebrand stops with an error when the starter's shape has drifted (a missing `portless` block, a marketing font in the shared `fonts.ts`, a Hire entry the strip did not catch) rather than commit a broken identity. `reinit` and `sync` then roll the tree back; `init` has no rollback, so it stops with the conversion half-applied and uncommitted.
 
-`init` also seeds git: `canary` as the working branch with `main` behind it. Your first `git push` publishes `canary` and the next seeds `main`, both through a pre-push hook that prompts for the Actions permissions the release flow needs. See [Releases](/docs/manage/release).
+Into a target with no `.git`, `init` also starts the repository: `canary` as the working branch with `main` behind it, and no remote. Add a GitHub remote, and the first `git push` publishes `canary` while the pre-push hook prints the Actions permissions the release flow needs; the next push seeds `main`. The hook does nothing for a remote that is not on GitHub, and a target that already had `.git` gets its one commit on the current branch and no `main`. See [Releases](/docs/manage/release#prerequisites).
 
 ## Common questions
 
@@ -111,7 +111,7 @@ It no longer does: sync rewrites only a skill whose `source` is this repo and wh
 
 **`--outdated` says every skill differs from upstream.**
 
-An older checker compared prose, which the rebrand guarantees never matches. It now compares the hash recorded in `.sync.json` against upstream at the ref the skill was synced from, and says separately when you have edited it. A skill with no record reads as untracked: customized here, or synced before tracking existed.
+A copy of `skills-manager.ts` from before the ledger compares prose, which the rebrand guarantees never matches; `sync` brings the current one. That one compares the hash recorded in `.sync.json` against upstream `main`, the ref every entry records (an `init --canary` fork included), and says separately when you have edited a skill: an edited skill keeps its record and prints `edited here (sync keeps your version)`. A skill with no record prints `untracked`: one last synced by a CLI older than the ledger, or one sourced from another repository. The `customized here` hint on that line does not hold, since an edit never drops the record.
 
 **Does a fork get the skills?**
 
@@ -119,16 +119,16 @@ Every skill and the agent guide ship to the fork, rebranded. The first CLI strip
 
 **Does sync overwrite my migrations and schema?**
 
-No: `packages/db/drizzle/` and `packages/db/src/schema/` are `PRESERVE_ON_SYNC`, restored after the overlay, and a starter migration the overlay added under them is removed, so the fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync: the auth tables regenerate with `bun run auth:schema` once the new `packages/auth/src/schema.ts` lands, and the rest you port and migrate yourself.
+No: `packages/db/drizzle/` and `packages/db/src/schema/` are `PRESERVE_ON_SYNC`, restored after the overlay, and a starter migration the overlay added under them is removed, so the fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync, and the auth tables come from a file sync does overwrite: `packages/auth/src/schema.ts` is a shared starter file, so the overlay replaces it with the starter's copy, without your own plugins and `additionalFields`. Put those back from the diff before `bun run auth:schema`; regenerated from the starter's copy alone, `packages/db/src/schema/auth.ts` loses your columns, and the next `bun run db:generate` writes a migration that drops them. The rest you port and migrate yourself.
 
 **Can a synced skill have more than one file?**
 
-Not yet. The CLI tracks `SKILL.md` alone, so a sibling file reaches the fork through the overlay unrebranded, is overwritten by the next sync without being named, and never shows in `--outdated`. The starter keeps each custom skill in one file for that reason.
+Not as one unit. The CLI rebrands, records and protects `SKILL.md` alone, so a file the starter ships beside one reaches the fork through the overlay unrebranded, is overwritten by every sync without being named, whichever row of the table the skill falls in, and never shows in `--outdated`. The starter keeps each custom skill in one file for that reason; the vendored `writing-for-agents` carries two more files, which take the starter's version on every sync.
 
 ## It's working if
 
 - `bunx zerostarter init <dir> --dry-run` prints `target`, `name`, `mode` (`fetch main` or `in place`) and `features`, and writes nothing.
-- After `init`, `git branch` lists `canary` (checked out) and `main`, and `git log` shows the scaffold commit and the re-baseline commit.
+- After `init` into a directory with no `.git`, `git branch` lists `canary` (checked out) and `main`, and `git log` shows the scaffold commit and the re-baseline commit.
 - After `sync`, `git status` lists the changed files, `.agents/skills/.sync.json` among them once any skill took an update, and the summary names every skill it left alone.
 
 ## Next

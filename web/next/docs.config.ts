@@ -61,7 +61,7 @@ const docsConfig = {
         "/docs/manage/api-conventions": {
           title: "API Conventions",
           description:
-            "The { data } / { error } envelope, error codes, and middleware every route shares.",
+            "The { data } / { error } envelope, the routes that answer outside it, error codes, and the middleware in front of every route.",
         },
       },
       {

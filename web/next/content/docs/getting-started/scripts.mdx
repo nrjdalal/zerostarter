@@ -105,7 +105,7 @@ Every root `catalog` entry is a caret range, and the dependency manager restores
 
 **Why does `release:version` stop with `v* tags exist but none is reachable from HEAD`?**
 
-The clone fetched without its tags: `git fetch --tags`, then run it again. Computing from `v0.0.0` would answer wrong, so it refuses.
+The clone holds `v*` tags that HEAD's history does not reach, usually because it is shallow: run `git fetch --unshallow --tags`, then run it again. The message's own advice falls short there, since fetching the tags into a shallow clone leaves the history between HEAD and them missing. A clone with no tags at all does not stop: it computes from `v0.0.0`, so fetch the tags before trusting its number.
 
 ## It's working if
 

@@ -32,7 +32,7 @@ Each cell is the sentence before `Use ...`, so keep that `<summary>. Use when <t
 - A sync rewrites only the skills sourced from the starter; the `> Synced from <upstream>.` line inside the stamped `[!CAUTION]` note is the opt-in, and removing that line hands the skill to the fork.
 - A skill the fork edited keeps the fork's version, and the sync summary names it.
 - `.agents/skills/.sync.json` records what the CLI wrote (`ref`, `upstream`, `written` per skill, and `AGENTS.md` under its own path); a fork carries it from `init` and commits it with every sync, and the canonical starter has none.
-- A custom skill is one file, since the CLI syncs only `SKILL.md`.
+- A custom skill is one file, since the CLI rebrands, records and protects only `SKILL.md`: a file beside it reaches a fork through the sync overlay unrebranded and is overwritten by every sync, a vendored skill's siblings included, even when the fork keeps its own `SKILL.md`.
 - `packages/cli/src/skills.ts` holds the rules and `getting-started/cli.mdx` the human narrative, both in the canonical starter only.
 
 ## Check state
@@ -41,7 +41,7 @@ Each cell is the sentence before `Use ...`, so keep that `<summary>. Use when <t
 bun .github/scripts/skills-manager.ts --outdated
 ```
 
-Reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (customized, or synced before the ledger), `not in <source>`, `upstream fetch failed (HTTP <n>)`, or `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork changed it since. Done when every skill reports as expected.
+Reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (no ledger entry: one the fork took from another repo, or one no ledger-keeping sync has written yet; the label's "customized here" is wrong, since sync keeps an edited skill's entry and reports it `edited here`), `not in <source>`, `upstream fetch failed (HTTP <n>)`, or `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork changed it since. Done when every skill reports as expected.
 
 ## Re-vendor
 

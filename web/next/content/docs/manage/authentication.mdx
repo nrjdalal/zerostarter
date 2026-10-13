@@ -6,7 +6,7 @@ description: "Better Auth sign-in, sessions and cookies, and the role ladder beh
 
 [Better Auth](https://better-auth.com) owns sign-in, sessions and roles as one config in `packages/auth`: `src/schema.ts` declares the plugins and the columns they add, and the Drizzle auth schema is generated from it; `src/index.ts` adds the providers, the cookie scope and the sign-in hook. It runs in-process against your own Postgres, so no user record leaves your database and there is no separate auth service to keep in sync.
 
-`user.role` is the only truth for the console, the privileged area at `/console` (an organization role, on `member.role`, is never read here). Its value is a rung on the [role ladder](#the-console-role-ladder), from `owner` down to `user`, and every gate re-reads it past the [five-minute cookie cache](#sessions-and-cookies), Better Auth's copy of the session in the cookie. There is no env allow-list and no second list to keep in step: a rung granted or revoked, in the console, with `bun run console:roles` or by an [allowlist](/docs/manage/allowlist) rule, is the whole decision, and it lands on the next request.
+`user.role` is the only truth for the console, the privileged area at `/console` (an organization role, on `member.role`, is never read here). Its value is a rung on the [role ladder](#the-console-role-ladder), from `owner` down to `user`, and every gate re-reads it past the [five-minute cookie cache](#sessions-and-cookies), Better Auth's copy of the session in the cookie. There is no env allow-list and no second list to keep in step: a rung set in the console or with `bun run console:roles` is the whole decision, and every gate reads it fresh ([the role ladder](#the-console-role-ladder) says when each one reads); an [allowlist](/docs/manage/allowlist) rule writes its rung at the person's next sign-in.
 
 ## When you need this
 
@@ -27,7 +27,7 @@ A fork ships with GitHub, Google, both or neither: `packages/auth/src/index.ts` 
 
 Magic link is off until its server plugin is registered, and the comment above `magicLinkEnabled` in `packages/auth/src/index.ts` names the line. The sender is yours (Postmark, Resend, SES), imported inside the `sendMagicLink` callback rather than at the top of `schema.ts`; that file's header says why: the Better Auth CLI loads it under Node to generate the tables, so nothing at its top may reach the database.
 
-Agent sign-in mints a real session as `LocalAgent`, an `owner` on the sign-in that creates the account and left at its rung after that (`api/hono/src/routers/agents.ts`). `AGENT_SIGNIN_ENABLED` is blank in `.env.example`, so a deployed default env exposes nothing. The curl pair is the `dev` skill's Agent login ([AI Skills](/docs/resources/ai-skills)), and [Working with Agents](/docs/getting-started/working-with-agents) says why the route cannot exist in a deploy.
+Agent sign-in mints a real session as `LocalAgent`, an `owner` on the sign-in that creates the account and left at its rung after that (`api/hono/src/routers/agents.ts`). `AGENT_SIGNIN_ENABLED` is blank in `.env.example`, but `init` sets it to `true` in the `.env` it writes, where `NODE_ENV` is `local`, so an api run from that file unchanged (a `docker compose up` on a reachable host, say) serves the route to anyone who can reach it. The trusted-`Origin` check stops another site's page in a visitor's browser, not a client that sets the header itself, so a deploy's env sets `NODE_ENV` to `staging` or `production` and leaves the flag blank. The curl pair is the `dev` skill's Agent login ([AI Skills](/docs/resources/ai-skills)), and [Working with Agents](/docs/getting-started/working-with-agents#local-sign-in) describes the two locks on the route.
 
 ### Callback URLs
 
@@ -39,53 +39,53 @@ Each OAuth app takes your app's origin (GitHub's "Homepage URL", Google's "Autho
 | Local, `PORTLESS=0 bun run dev` (web `:3000`, api `:4000`)           | `http://localhost:3000`       | `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`             |
 | Two deployments on a public hosting suffix (two `*.vercel.app` apps) | `https://your-web.vercel.app` | `https://your-web.vercel.app/api/auth/callback/github` and `https://your-web.vercel.app/api/auth/callback/google` |
 
-The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a sign-in there that comes back on the api is the `state_mismatch` question in [common questions](#common-questions). Under the default `bun run dev`, providers refuse the `.localhost` redirect URI, so OAuth round-trips only on the fixed ports; the question below has the detail.
+The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a sign-in there that comes back on the api is the `state_mismatch` question in [common questions](#common-questions). The local row uses the fixed ports rather than the default `bun run dev`'s `.localhost` hosts, which Google refuses as a redirect URI; the question below has the detail.
 
 ## The console role ladder
 
 `/console` is gated by the `role` column the Better Auth [Admin plugin](https://www.better-auth.com/docs/plugins/admin) adds to the `user` table.
 
-| Rung     | Reaches                                                       | May change                                          |
-| -------- | ------------------------------------------------------------- | --------------------------------------------------- |
-| `owner`  | the whole console                                             | anyone, including another owner, but not themselves |
-| `admin`  | the whole console                                             | anyone below admin: not a peer, not an owner        |
-| `member` | the console shell and Console > Docs, when that feature is on | nothing                                             |
-| `user`   | nothing                                                       | n/a                                                 |
+| Rung     | Reaches                                                                                                    | May change                                          |
+| -------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `owner`  | the whole console                                                                                          | anyone, including another owner, but not themselves |
+| `admin`  | the whole console                                                                                          | anyone below admin: not a peer, not an owner        |
+| `member` | the console shell and Console > Getting Started > Documentation (`/console/docs`), when that feature is on | nothing                                             |
+| `user`   | nothing                                                                                                    | n/a                                                 |
 
 Access, History and Waitlist are admin and above, so a member's console is the shell and the internal docs: the rung the [allowlist](/docs/manage/allowlist) grants, the one a fork builds its read-only surfaces on, and never sight of who your users are. Every gate asks `roleAtLeast` in `@packages/auth/access`, the only place the order is written, and anything unrecognized (a null, a legacy value, a crafted string) reads as `user`, so an unknown role can never grant access.
 
-Two gates enforce it. `web/next/src/lib/auth/console.ts` admits `member` and above and answers `notFound()` to everyone else, so the console is never advertised; the Access, History and Waitlist pages each assert `admin` themselves. The api's console router under `/api/v1/admin/*` requires `admin` throughout (`api/hono/src/middlewares/console.ts`; the envelope is in [API Conventions](/docs/manage/api-conventions)). Both re-read the session past the cookie cache, so a grant, a demotion or a ban lands on the next request, and both refuse a banned user, which covers a ban written straight to the database.
+Two gates enforce it. Both re-read the session past the cookie cache and refuse a banned user, which covers a ban written straight to the database. The api's console router under `/api/v1/admin/*` requires `admin` throughout (`api/hono/src/middlewares/console.ts`; its statuses are in [API Conventions](/docs/manage/api-conventions#what-runs-before-your-handler)) and checks every request, so a grant, a demotion or a ban lands there on the next one. The page gate, `assertConsoleAccess` in `web/next/src/lib/auth/console.ts`, admits `member` and above and answers `notFound()` to everyone else, so the console is never advertised. It runs in the console layout, which Next renders beside a page rather than before it and does not re-run on client navigation, so the Access, History and Waitlist pages each assert `admin` again themselves. The console docs pages assert nothing of their own, so someone demoted or banned with a console tab open can keep moving through the internal docs until a full page load.
 
 The plugin's own endpoints are switched off rather than gated: `/api/auth/admin/*` authorizes on access-control statements alone, with no notion of rank or of the last owner, so at the stock `adminAc` one `set-role` request would let an admin make itself owner. Every rung is declared with no statements; `ban-user`, `set-role` and `unban-user` come back as the console's own routes with the rank rule attached, and the rest, impersonation included, stay off. The comment above `adminPlugin` in `packages/auth/src/schema.ts` records this, and that a fork wanting the plugin's endpoints widens one statement at a time and accepts that the ladder does not constrain them.
 
 ### Changing a role, banning an account
 
-Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request. It enforces the ladder's "May change" column, plus two rules the table does not show: a role change may grant only a rung the actor could act on, and the last owner cannot be demoted. A ban also deletes the person's sessions: the console refuses them on the next request, and the rest of `/api/v1` once the five-minute [cookie cache](#sessions-and-cookies) on their other devices expires; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
+Both live at **Console > Access > Users**, on a row or across a selection. The guard is one pure function per decision in `@packages/auth/access` (`refuseBan`, `refuseRoleChange`), asked by the menu so it never offers what the server would refuse, and again by the api on every request. It enforces the ladder's "May change" column, plus two rules the table does not show: a role change may grant only a rung the actor could act on, and the last owner cannot be demoted. A ban also deletes the person's sessions: the console and the dashboard, which read past the cache, refuse them on their next load, while the rest of `/api/v1` keeps answering on each device they were signed in on until that device's five-minute [cookie cache](#sessions-and-cookies) expires; an unban clears the flag, the reason and the expiry and nothing else, so it restores exactly the access they had. The guard runs per account, so a selection is partly refusable by design and every id comes back with its own outcome. Every write leaves a line in [Console > History > Activity](/docs/manage/activity) inside the same transaction, because `user.role` is overwritten in place and nothing else would record what it used to say.
 
-The first owner comes from the CLI, which is also how a fresh install gets its first way in:
+The first owner comes from the CLI, run against the database `POSTGRES_URL` names. The script only changes an account that already exists, so sign in once first; in local dev, **Login (agents)** makes `LocalAgent` an owner on the sign-in that creates it, so that account needs no grant.
 
 ```bash
 bun run console:roles grant you@example.com owner
 ```
 
-The usage header of `.github/scripts/console-roles.ts` is the reference for `grant`, `list` and `revoke` and the defaults each takes; a grant or a revoke from it leaves the same activity line as the console.
+The usage header of `.github/scripts/console-roles.ts` is the reference for `grant`, `list` and `revoke` and the defaults each takes; a grant or a revoke from it leaves the same activity line as the console. It checks no rung rule: a `grant` that names the last owner with a lower rung demotes them, with no warning.
 
 ## Sessions and cookies
 
-Sessions live in the `session` table and travel as a secure cookie; the active `organizationId` and `teamId` ride along on the row. The cookie's scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown (`packages/auth/src/lib/utils.ts`), so it follows where you deploy rather than a setting you keep in step:
+Sessions live in the `session` table and travel as an `HttpOnly` cookie, marked `Secure` when Better Auth's `baseURL` is `https://`; the active `organizationId` and `teamId` ride along on the row. The cookie's scope is derived at build time from `HONO_APP_URL`'s public-suffix breakdown (`packages/auth/src/lib/utils.ts`), so it follows where you deploy rather than a setting you keep in step:
 
-| Where the api runs                                           | Cookie scope                                                                                                                                                           |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A subdomain of a parent you own (`api.example.com`)          | A cross-subdomain `Domain` cookie, shared by web and api                                                                                                               |
-| A public hosting suffix (`*.vercel.app` and the like)        | Host-only and first-party to the web, reached through the web's `/api` proxy (below)                                                                                   |
-| A bare or apex host, or a bare `localhost` (as under Docker) | Host-only; on `localhost` it holds across ports                                                                                                                        |
-| Local portless dev (`*.localhost`)                           | One `Domain` cookie shared by the web and api hosts. The exception to the build-time rule: the api re-derives the scope at runtime from the subdomain portless injects |
+| Where the api runs                                           | Cookie scope                                                                                                                                                                        |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A subdomain of a parent you own (`api.example.com`)          | A cross-subdomain `Domain` cookie on the parent (`.example.com`), which the browser sends to every host under it, not only web and api; keep hosts you do not trust off that parent |
+| A public hosting suffix (`*.vercel.app` and the like)        | Host-only and first-party to the web, reached through the web's `/api` proxy (below)                                                                                                |
+| A bare or apex host, or a bare `localhost` (as under Docker) | Host-only; on `localhost` it holds across ports                                                                                                                                     |
+| Local portless dev (`*.localhost`)                           | One `Domain` cookie shared by the web and api hosts. The exception to the build-time rule: the api re-derives the scope at runtime from the subdomain portless injects              |
 
 The public-suffix row is the one that changes who talks to whom. `vercel.app` is on the Public Suffix List, so web and api projects there are different sites: a `Domain=.vercel.app` cookie is refused, and a host-only cookie the api sets during a sign-in started from the web is cross-site, which the browser will not store either. The web build detects the shape and sends the browser's `/api` calls through its own rewrite to the api, so sign-in completes on the web origin, the cookie lands first-party there, and Better Auth's `baseURL` becomes the web origin; [Deploy to Vercel](/docs/deployment/vercel) has the matrix that works. A custom domain switches back to the shared `Domain` cookie on its own.
 
 Better Auth caches the session in the cookie for `maxAge: 300`, so a plain read can trail a role change by five minutes. Three reads skip the cache: the console page gate, the api's console middleware, and the dashboard layout (`web/next/src/app/(protected)/layout.tsx`). The first two are correctness. The third draws the Console link in the dashboard's user menu, and the direction that matters is promotion: on a cached read someone you just lifted to `member` could not find the console they already have. It costs one session lookup per dashboard render, on the api side of a round trip that happens anyway.
 
-Reading the session is one call on either side, both in `web/next/src/lib/auth/`: `index.ts` on the server (`auth.api.getSession`, with `disableCookieCache` for a gate), `client.ts` in a client component (`authClient.useSession`). The `(protected)` layout redirects anyone without a session to `/`; api routes behind `authMiddleware` (`api/hono/src/middlewares/auth.ts`) answer `401 UNAUTHORIZED`.
+Reading the session is one call on either side, both in `web/next/src/lib/auth/`: `index.ts` on the server (`auth.api.getSession`, with `disableCookieCache` for a gate), `client.ts` in a client component (`authClient.useSession`). The `(protected)` layout redirects anyone without a session to `/` ([Dashboard](/docs/manage/dashboard#the-guard) says what that redirect does not cover); api routes behind `authMiddleware` (`api/hono/src/middlewares/auth.ts`) answer `401 UNAUTHORIZED`.
 
 ## Common questions
 
@@ -97,23 +97,23 @@ Because the provider returns the browser to the api, and the state cookie Better
 
 Because the api reported no provider: neither OAuth pair is complete, the magic-link server plugin is not registered, and in a dev build `AGENT_SIGNIN_ENABLED` is unset, which the message says there. A deploy with nothing configured shows this to every visitor. "Could not load sign-in options" is different: the web could not reach `/api/auth/providers` at all.
 
-**Why does OAuth not round-trip under `bun run dev`?**
+**Why does the local OAuth setup use the fixed ports?**
 
-Portless serves `api.<name>.localhost`, and a provider refuses that redirect URI: Google requires a top-level domain on the public suffix list, which `localhost` is not, and allows plain `localhost` only for testing. Run `PORTLESS=0 bun run dev` for the fixed ports the local row expects, or use **Login (agents)**, which needs no provider.
+Portless serves `api.<name>.localhost`, and Google refuses that redirect URI: it requires a top-level domain on the public suffix list, which `localhost` is not, and allows plain `localhost` only for testing. The local row of the [callback table](#callback-urls) is written for the fixed ports, so run `PORTLESS=0 bun run dev` for an OAuth round-trip, or use **Login (agents)**, which needs no provider.
 
 **Why does `authClient.admin.*` return 403 for an owner?**
 
-By design: every endpoint the Admin plugin mounts refuses every rung, because the plugin cannot see rank. The console's routes under `/api/v1/admin/` are the replacements; a fork that ships UI on the plugin's client widens the statement it needs in `packages/auth/src/schema.ts`.
+By design: every endpoint the Admin plugin mounts refuses every rung, because the plugin cannot see rank. The console's routes under `/api/v1/admin/` are the replacements. A fork that ships UI on the plugin's client registers `adminClient()` in `web/next/src/lib/auth/client.ts`, which the starter leaves out, and widens the statement it needs in `packages/auth/src/schema.ts`.
 
 **How does an install with no owner get one back?**
 
-Only an owner may grant owner (the [role ladder](#the-console-role-ladder)), so an install with no owner is recoverable only from the CLI: `bun run console:roles grant <email> owner`. The [console's guard](#changing-a-role-banning-an-account) never leaves an install ownerless, so that state comes from the script, which warns when a `revoke` takes the last owner, or from a write straight to the database.
+Only an owner may grant owner (the [role ladder](#the-console-role-ladder)), so an install with no owner is recoverable only from the CLI: `bun run console:roles grant <email> owner`. The [console's guard](#changing-a-role-banning-an-account) never leaves an install ownerless, so that state comes from the script, which warns when a `revoke` takes the last owner but not when a `grant` demotes them, or from a write straight to the database.
 
 ## It's working if
 
-- `GET /api/auth/providers` answers `{"data":{"providers":["github"]}}` with your provider in the list, and the sign-in dialog draws that button and no other.
+- `GET /api/auth/providers` answers `{"data":{"providers":["github"]}}` with your provider in the list, plus `"agent"` under `bun run dev` with `AGENT_SIGNIN_ENABLED=true` (which `init` sets), and the sign-in dialog draws a button for each and no other.
 - `bun run console:roles list` prints you as `- owner  you@example.com (Your Name)`.
-- After `bun run console:roles revoke you@example.com`, your next request to `/console` is a 404 rather than a redirect, and the Console entry is gone from the dashboard's user menu, with no sign-out in between.
+- After `bun run console:roles revoke you@example.com`, your next request to `/console` is a 404 rather than a redirect, and the Console entry is gone from the dashboard's user menu, with no sign-out in between. `bun run console:roles grant you@example.com owner` puts you back, and when you were the last owner it is the only way back.
 
 ## Next
 

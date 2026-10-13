@@ -25,7 +25,7 @@ Five tables in `packages/db/src/schema/auth.ts` hold the tenancy. Rows cascade f
 | `team`         | A named group inside an organization; `memberCount` is kept current by the plugin on every seat change.                                                   |
 | `teamMember`   | A user's seat in a team, flat, with no per-team role; `membershipKey` is unique, written on every add and checked before one, so a seat is never doubled. |
 
-The active organization and team ride on the session row as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup. `memberCount` and `membershipKey` are Better Auth 1.7 columns, added by `packages/db/drizzle/0004_better_auth_1_7.sql`, which also backfills the count; a fork on an older migration takes them the way [Database](/docs/manage/database) describes.
+The active organization and team ride on the session row as `session.activeOrganizationId` and `session.activeTeamId`, so every request knows the current tenant without a second lookup. `memberCount` and `membershipKey` are Better Auth 1.7 columns, added by `packages/db/drizzle/0004_better_auth_1_7.sql`, which also backfills the count. A fork on an older migration takes them the way [Database](/docs/manage/database#the-generated-auth-schema) describes, but Drizzle Kit writes only the new columns: append that file's closing `UPDATE "team" SET "member_count" = ...` to the generated SQL by hand, or every existing team reads a `memberCount` of 0 whatever its seats.
 
 Three roles come with the plugin: `owner`, `admin` and `member`. Whoever creates an organization becomes its `owner`; everyone else joins as `member` unless an invitation names another role. Teams are flat, so membership is the only distinction inside one.
 
@@ -56,11 +56,11 @@ Everything else works against the backend as soon as you build UI for it. The wi
 
 ## The active organization
 
-When a user switches, the switcher calls `setActive` and writes a per-user cookie, `last-active-org_<userId>`, so the choice survives a reload. On the next protected render, `web/next/src/app/(protected)/layout.tsx` reads that cookie only when the session has no active organization yet, and POSTs to the plugin's `organization/set-active` endpoint with the request headers forwarded, so the session cookie goes along and the tenant is restored server-side before the page draws: no flash of the wrong organization.
+When a user switches, the switcher calls `setActive` and writes a per-user cookie, `last-active-org_<userId>`, so the choice survives a reload. On the next protected render, `web/next/src/app/(protected)/layout.tsx` reads that cookie only when the session has no active organization yet, and POSTs to the plugin's `organization/set-active` endpoint with the request headers forwarded, so the session cookie goes along and the session row is restored server-side before the page draws. The layout reads only whether that answer succeeded, so the cookies it carries, the refreshed cookie cache included, stay on the web server.
 
 The cookie nominates and the session decides. `last-active-org_<userId>` is written with `document.cookie`, not `HttpOnly`, so it is a UI convenience the browser can read and rewrite, never a security boundary; the source of truth is `session.activeOrganizationId` on the row, and the cookie only says which organization to reactivate.
 
-A role or active-org change made elsewhere can trail by the [cookie cache](/docs/manage/authentication#sessions-and-cookies); the protected layout reads past it, and the switcher refetches its queries after each mutation so its own view stays current.
+A role or active-org change made elsewhere, the server-side restore included, can trail by the [cookie cache](/docs/manage/authentication#sessions-and-cookies) in a client read; the protected layout reads past it, and the switcher refetches its queries after each mutation so its own view stays current.
 
 ## Common questions
 
@@ -79,7 +79,7 @@ No. The organization surface is the plugin's own routes under `/api/auth/organiz
 ## It's working if
 
 - Creating an organization from the sidebar switcher ends in the toast `Organization created!`, and the switcher shows its name and slug as the active one.
-- A full reload, and a sign-out and sign-in, both come back with that organization active.
+- A full reload comes back with that organization active, and after a sign-out and sign-in the first protected page sets `session.active_organization_id` back to it.
 - The creator's `member` row carries `role = owner`, and `session.active_organization_id` matches the organization's id.
 
 ## Next

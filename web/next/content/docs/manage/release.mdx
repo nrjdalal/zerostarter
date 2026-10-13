@@ -22,7 +22,7 @@ Until it has write access the release workflows fail with `403 Resource not acce
 
 ![GitHub Workflow permissions settings](/marketing/docs/release/workflow-permissions.png)
 
-`main` must also exist on the remote: `init` creates it locally and the pre-push hook seeds it on the push after `canary`'s, so `canary` stays the default branch.
+`main` must also exist on the remote. `init` creates it locally when it scaffolds a directory with no `.git`, and the pre-push hook seeds a local `main` on the push after `canary`'s, so `canary` stays the default branch; a checkout `init` converted in place has no `main` until you create one.
 
 ## The window
 
@@ -78,4 +78,4 @@ In order: the Actions token is still read-only, `main` is not on the remote yet,
 
 - [Code Quality](/docs/manage/code-quality), because the commits the hooks enforce are what the window reads.
 - [Deploy to Vercel](/docs/deployment/vercel), because `main` and `canary` are the refs that deploy and migrate.
-- [CLI](/docs/getting-started/cli), because `init` creates `main` and the first two pushes wire this flow in a fork.
+- [CLI](/docs/getting-started/cli), because `init` and the first two pushes wire this flow in a fork.

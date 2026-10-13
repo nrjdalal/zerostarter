@@ -27,11 +27,11 @@ Exactly one `h1` per page, the page title (`PageHeader` renders it in the app sh
 
 ## Color
 
-Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and friends), in classNames and inline styles alike; the takumi OG image (`lib/og-image.tsx`) alone carries literals, having no theme context. Every `dark:` pairs with a token. Success is the `--success` token, mirroring `--destructive` and foreground-less like it: `text-success`, `bg-success/10`, `border-success/20`.
+Color is a semantic token (`text-muted-foreground`, `bg-card`, `bg-sidebar`, and friends), in classNames and inline styles alike; the takumi OG image (`lib/og-image.tsx`) carries literals by design, having no theme context. Palette classes still sit in the devtools dividers (`bg-zinc-500`), the waitlist avatars (`text-white`) and, in the canonical starter, the marketing footer's heart (`text-red-500/70`), each one waiting to move onto a token. Every `dark:` pairs with a token. Success is the `--success` token, mirroring `--destructive` and foreground-less like it: `text-success`, `bg-success/10`, `border-success/20`.
 
 ## Layout and landmarks
 
-- One `main` per page, from the route-group layout where one renders it (`SidebarShell` for dashboard and console, docs, blog) and from the page itself elsewhere; the root layout renders none, or landmarks nest.
+- One `main` per page, from the route-group layout where one renders it (`SidebarShell` for dashboard and console) and from the page itself elsewhere; the root layout renders none, or landmarks nest. Fumadocs' `DocsPage` renders a `main` of its own, and the docs, blog and console docs layouts wrap it in another, so those pages nest two (`/console/docs`, inside `SidebarShell` too, nests three); a layout around `DocsPage` takes a `div`.
 - A page that renders its own `main` (marketing, docs, blog, `not-found`) puts footer content in a `footer` beside it, so the page exposes a `contentinfo` landmark; nothing to put there means no footer. A page inside `SidebarShell` has no page footer, since the shell owns `main` and a `footer` inside it is only a section footer.
 - A `section` with a visible heading is named by `aria-labelledby` on that heading's id, since a hand-written `aria-label` leaks authoring vocabulary ("Hero") into the accessibility tree; a wrapper with no visible heading (a `role="region"` scroll container) takes `aria-label`.
 - A scrollable region (a code block, a wide table) carries `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
@@ -44,7 +44,7 @@ A looping or auto-playing animation is gated on reduced motion: `motion-safe:` f
 ## Components
 
 - **Badges and identity:** a pill is `Badge` (a variant, plus a className for a semantic color like `text-success`); an identity row (avatar, name, email) is `Item` with `ItemMedia` and `ItemContent`. Two stay hand-rolled: the sidebar trigger identity inside `SidebarMenuButton`, where the chevron is a sibling, and the landing page's larger `Eyebrow` pill, since `Badge` is sized for compact UI.
-- **Dialogs:** `DialogContent` renders bare at its default width; a dialog that needs more (the auth dialog's `max-w-md`) is the exception that earns its class.
+- **Dialogs:** `DialogContent` renders bare at its default width, `sm:max-w-sm` with a `max-w-[calc(100%-2rem)]` gutter below `sm`. A dialog that needs more overrides at the same breakpoint (`sm:max-w-md`), since an unprefixed class survives the merge beside `sm:max-w-sm`: the auth dialog's `max-w-md` leaves it at the default width from `sm` up and replaces the gutter below it, so on a 390px phone it touches both edges.
 - **Empty states:** an empty state is `Empty`.
 - **Forms:** native `form`, then `FieldGroup`, then `form.Field`, then `Field` with `FieldLabel`, `Input` and a conditional `FieldError`, on `@tanstack/react-form` with zod; `FieldGroup` owns the vertical rhythm, and labels and errors come from the `Field` stack (`FieldError` takes `errors={field.state.meta.errors}`).
 - **Icons:** `@remixicon/react`.

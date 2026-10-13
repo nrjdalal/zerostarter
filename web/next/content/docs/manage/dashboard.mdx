@@ -6,7 +6,7 @@ description: "The protected app shell: sidebar, org switcher, and the layout wra
 
 `/dashboard` is a signed-in page with nothing on it: the guard, the sidebar and the page frame are wired, and the console next door is the worked example you copy. The line under its Dashboard heading, the page's `PageHeader` description, reads "Intentionally empty" because that is the design: auth, organizations and the API are in place, and this page is where your product begins.
 
-The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` guards everything beneath it and wraps every page in the shared sidebar, so a new page is one file under the group; the privileged `/console` area reuses the same chrome and fills its slots its own way ([The sidebar](#the-sidebar) compares the two).
+The route group at `web/next/src/app/(protected)/` is the unit. Its `layout.tsx` sends a request without a session to `/` and wraps every page in the shared sidebar, so a new page is one file under the group, plus a session check of its own once it reads data ([The guard](#the-guard) says why); the privileged `/console` area reuses the same chrome and fills its slots its own way ([The sidebar](#the-sidebar) compares the two).
 
 ## When you need this
 
@@ -14,7 +14,7 @@ Reach for this page when you are about to build the first product page, or want 
 
 ## The guard
 
-`app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none, so an unauthenticated request never renders the page. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
+`app/(protected)/layout.tsx` reads the session on the server with `auth.api.getSession({ disableCookieCache: true })` (`lib/auth/index.ts` wraps the API's `get-session` route) and redirects to `/` when there is none. That redirect is not a page's guard: Next renders a layout beside its page rather than before it, and does not re-run it on client navigation, so a page that reads data checks the session itself or reads through the API, whose `authMiddleware` checks every request. The starter's dashboard page reads nothing. The same read decides whether the user menu shows a Console link: `reachesConsole` from `@packages/auth/access` is passed as the `canAccessConsole` prop, true for `member` and above who are not banned.
 
 When the session carries no active organization, the layout restores, before it renders, the one the user last switched to, and a restore that fails logs the error and renders the page without one; [Organizations](/docs/manage/organizations#the-active-organization) describes how.
 
