@@ -39,6 +39,50 @@ you commit yourself.
 Options:
   -h, --help     Display help`
 
+// Name what the reconcile left alone or took on a guess, so the sync lands as a reviewable diff rather than a silent overwrite.
+export const reportReconcile = (skills: SkillReconcile, guide: GuideReconcile): void => {
+  const skillFiles = (names: string[]) => names.map((name) => `.agents/skills/${name}/SKILL.md`)
+  const plural = (names: string[]) => (names.length === 1 ? "" : "s")
+
+  if (skills.forkOwned.length > 0) {
+    logStep(
+      `Left ${skills.forkOwned.length} skill${plural(skills.forkOwned)} you own untouched:`,
+      skillFiles(skills.forkOwned),
+    )
+  }
+
+  if (skills.customized.length > 0) {
+    logWarn(
+      `Kept your edits to ${skills.customized.length} skill${plural(skills.customized)}, so they did not take the update:`,
+      skillFiles(skills.customized),
+    )
+    logStep("To take upstream's version instead, delete the skill directory and sync again.")
+  }
+
+  if (guide === "customized") {
+    logStep(
+      "Kept your AGENTS.md, which you have edited, so it did not take the update. To take the starter's version instead, delete it, commit that on its own, and sync again.",
+    )
+  }
+  // A guide with no sync record that is not the stub an older CLI wrote is the fork's own work, so it is never replaced on a guess.
+  if (guide === "forkOwned") {
+    logStep(
+      "Kept your AGENTS.md. The starter now ships its full agent guide; to take it, delete AGENTS.md, commit that on its own, and sync again.",
+    )
+  }
+
+  // A fork synced before the CLI started recording what it wrote has nothing to compare against, so these took the update on a guess. Naming them is the difference between a reviewable diff and a silent loss.
+  if (skills.unverified.length > 0) {
+    logWarn(
+      `Updated ${skills.unverified.length} skill${plural(skills.unverified)} with no sync record, so any edits of yours are in the diff rather than the file:`,
+      skillFiles(skills.unverified),
+    )
+    logStep(
+      "Restore any with: git restore --source=HEAD -- .agents/skills/<name>/SKILL.md. Later syncs track them.",
+    )
+  }
+}
+
 // Re-baseline a fork on the latest ZeroStarter, preserving its content, branding, and package.json.
 export const sync = async (argv: string[]) => {
   const { positionals, values } = parseArgsOrExit(helpMessage, {
@@ -128,46 +172,7 @@ export const sync = async (argv: string[]) => {
     )
   }
 
-  const skillFiles = (names: string[]) => names.map((name) => `.agents/skills/${name}/SKILL.md`)
-  const plural = (names: string[]) => (names.length === 1 ? "" : "s")
-
-  if (skills.forkOwned.length > 0) {
-    logStep(
-      `Left ${skills.forkOwned.length} skill${plural(skills.forkOwned)} you own untouched:`,
-      skillFiles(skills.forkOwned),
-    )
-  }
-
-  if (skills.customized.length > 0) {
-    logWarn(
-      `Kept your edits to ${skills.customized.length} skill${plural(skills.customized)}, so they did not take the update:`,
-      skillFiles(skills.customized),
-    )
-    logStep("To take upstream's version instead, delete the skill directory and sync again.")
-  }
-
-  if (guide === "customized") {
-    logStep(
-      "Kept your AGENTS.md, which you have edited, so it did not take the update. To take the starter's version instead, delete it, commit that on its own, and sync again.",
-    )
-  }
-  // A guide with no sync record that is not the stub an older CLI wrote is the fork's own work, so it is never replaced on a guess.
-  if (guide === "forkOwned") {
-    logStep(
-      "Kept your AGENTS.md. The starter now ships its full agent guide; to take it, delete AGENTS.md, commit that on its own, and sync again.",
-    )
-  }
-
-  // A fork synced before the CLI started recording what it wrote has nothing to compare against, so these took the update on a guess. Naming them is the difference between a reviewable diff and a silent loss.
-  if (skills.unverified.length > 0) {
-    logWarn(
-      `Updated ${skills.unverified.length} skill${plural(skills.unverified)} with no sync record, so any edits of yours are in the diff rather than the file:`,
-      skillFiles(skills.unverified),
-    )
-    logStep(
-      "Restore any with: git restore --source=HEAD -- .agents/skills/<name>/SKILL.md. Later syncs track them.",
-    )
-  }
+  reportReconcile(skills, guide)
 
   note(
     [

@@ -12,7 +12,7 @@ const DEP_SECTIONS: DepSection[] = [
 type JSONPrimitive = null | boolean | number | string
 type JSONValue = JSONPrimitive | JSONValue[] | { [key: string]: JSONValue }
 
-type PackageJson = {
+export type PackageJson = {
   catalog?: Record<string, JSONValue>
   catalogs?: Record<string, Record<string, JSONValue>>
 } & Partial<Record<DepSection, Record<string, string>>>
@@ -31,7 +31,7 @@ const PLAIN_VERSION = /^\d+(?:\.\d+){0,2}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+
 // resolved by something other than a plain semver range: workspace:/npm:/git+ssh:, urls, github owner/repo
 const isNonRangeSpec = (v: string) => v.includes(":") || v.includes("/")
 
-const toCaretRange = (spec: string) => {
+export const toCaretRange = (spec: string) => {
   if (PLAIN_VERSION.test(spec)) return `^${spec}`
   if (spec.startsWith("~") && PLAIN_VERSION.test(spec.slice(1))) return `^${spec.slice(1)}`
   return null
@@ -52,7 +52,7 @@ const eachCatalog = (pkg: PackageJson): Record<string, JSONValue>[] => {
 
 type RangeRewrite = { name: string; from: string; to: string }
 
-const normalizeCatalogRanges = (pkg: PackageJson) => {
+export const normalizeCatalogRanges = (pkg: PackageJson) => {
   const rewritten: RangeRewrite[] = []
   const manual: { name: string; spec: string }[] = []
 
@@ -77,7 +77,7 @@ const normalizeCatalogRanges = (pkg: PackageJson) => {
   return { rewritten, manual }
 }
 
-const sortObjectDeep = <T extends JSONValue>(value: T): T => {
+export const sortObjectDeep = <T extends JSONValue>(value: T): T => {
   if (Array.isArray(value)) return value.map(sortObjectDeep) as T
   if (isPlainObject(value)) {
     const out: Record<string, JSONValue> = {}
@@ -140,7 +140,7 @@ const getOrCreateRootCatalog = (rootPkg: PackageJson) => {
   return rootPkg.catalog as Record<string, JSONValue>
 }
 
-const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string, Set<string>>) => {
+export const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string, Set<string>>) => {
   const safeToMove: Map<string, string> = new Map()
   const unsafeMissing: string[] = []
 
@@ -287,7 +287,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+// Runs on postinstall; a test imports the helpers above without rewriting the repo's manifests.
+if (import.meta.main) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

@@ -1,3 +1,15 @@
+## v0.1.37
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.36...v0.1.37)
+
+### 🩹 Fixes
+
+- **ci:** Publish the CLI via npm trusted publishing, drop NPM_TOKEN ([#860](https://github.com/nrjdalal/zerostarter/pull/860))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.36
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.35...v0.1.36)

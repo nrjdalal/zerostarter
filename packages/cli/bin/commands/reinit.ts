@@ -34,6 +34,14 @@ Options:
   -y, --yes      Skip the confirmation prompt
   -h, --help     Display help`
 
+// What to run after a re-scaffold; the database URL step only while .env has none.
+export const nextSteps = (hasUrl: boolean): string[] => [
+  ...(hasUrl ? [] : ["set POSTGRES_URL in .env"]),
+  orange("bun run db:migrate"),
+  orange("bun run dev"),
+  orange("git push"),
+]
+
 export const reinit = async (argv: string[]) => {
   const { positionals, values } = parseArgsOrExit(helpMessage, {
     allowPositionals: true,
@@ -95,11 +103,6 @@ export const reinit = async (argv: string[]) => {
     },
   )
 
-  const steps: string[] = []
-  if (!hasPostgresUrl(target)) steps.push("set POSTGRES_URL in .env")
-  steps.push(orange("bun run db:migrate"))
-  steps.push(orange("bun run dev"))
-  steps.push(orange("git push"))
-  note(steps.join("\n"), "Next steps")
+  note(nextSteps(hasPostgresUrl(target)).join("\n"), "Next steps")
   outro(green(`${name} re-scaffolded; .git history, remote, and .env* files are intact`))
 }
