@@ -6,7 +6,7 @@ source: local
 
 # Codebase Map
 
-One Bun + Turborepo monorepo: two deployable apps over shared packages. Imports use `@api/hono`, `@packages/*`, and the `@/` alias, never deep relative paths.
+One Bun + Turborepo monorepo: two deployable apps over shared packages. Imports use `@api/hono`, `@packages/*`, and the `@/` alias.
 
 ```
 .generated/       # repo-root home for build-time generated assets (gitignored)
@@ -21,25 +21,25 @@ packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init s
 tests/            # the whole suite, mirroring each subject's path; *.e2e.test.ts drive a running stack (canonical repo only; forks take no tests)
 ```
 
-Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the whole codebase as one context file.
+Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/llms-full.txt"` dumps the docs and published posts as one context file.
 
 ## Where to edit for X
 
 | Goal | Edit here | Then |
 | --- | --- | --- |
-| Add/change an API route | `api/hono/src/routers/<name>.ts` → export from `routers/index.ts` → mount in `src/index.ts` `.route()` chain | `api-endpoint` skill |
+| Add/change an API route | `api/hono/src/routers/<name>.ts`, wired through `routers/index.ts` and the `.route()` chain in `src/index.ts` | `api-endpoint` skill |
 | Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts`; `auth.ts` is generated, see the row below | `db-migration` skill |
-| Add/change a page | `web/next/src/app/`, route groups: `(marketing)` public, `(protected)` dashboard, `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors | - |
-| Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
+| Add/change a page | `web/next/src/app/`, route groups: `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors, `(protected)` dashboard. The public home is `app/page.tsx` in a fork; in the canonical starter it is the `(marketing)` group, with `/hire` and `/resume` | - |
+| Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, customized through the post-sync script | `design`, `shadcn-sync` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
-| Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
-| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first. The exception is a variable the hosting platform injects rather than you configuring (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`): those are read from `process.env` at the point of use and belong in neither the schema nor `.env.example` | - |
+| Rebrand (name, description, socials) | `packages/config/src/site.ts` for what the app shows; a fork's `sync` rebrands its portless hosts, skills and `AGENTS.md` from the root `package.json` `name` | - |
+| Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`, read through `@packages/env/*`. The root `.env` is loaded by `src/load-dotenv.ts`, relative to the working directory: the server targets import it first, and `web-next` and the package index never do, since client components import them, so a script that reads env through either imports `@packages/env/load-dotenv` itself first, as `packages/scripts/src/generate-env.ts` does. A variable the platform injects (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`) is read from `process.env` at the point of use and stays out of the schema and `.env.example` | - |
 | Configure auth (providers, cookies, hooks) | `packages/auth/src/index.ts` | - |
-| Add or change an auth plugin, or a column on `user`/`session` | `packages/auth/src/schema.ts` (`additionalFields` for a column) → `bun run auth:schema` regenerates `packages/db/src/schema/auth.ts` | `db-migration` skill |
+| Add or change an auth plugin, or a column on `user`/`session` | `packages/auth/src/schema.ts` (`user.additionalFields` for a `user` column; a `session` column takes the extra step in `db-migration`) → `bun run auth:schema` regenerates `packages/db/src/schema/auth.ts` | `db-migration` skill |
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |
-| Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test`. An end-to-end test is `tests/<path of the router or page it drives>.e2e.test.ts` on the `tests/stack.ts` helper, run against a stack with `bun run test:e2e` | `docker-test` skill |
-| Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package | - |
-| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
+| Add a test (canonical starter only) | `tests/<path of the file under test>.test.ts`, mirroring the subject's path; `bun run test` builds `packages/*` first, since a test reaches a package through its `exports`, which point at `dist`. `bun test` skips dot-directories, which is why `.github/scripts` tests live under `tests/github/scripts/`. An end-to-end test is `tests/<path of the router or page it drives>.e2e.test.ts` on the `tests/stack.ts` helper, run against a stack by `bun run test:e2e` | `docker-test` skill |
+| Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package; output to `.generated/` | `add-package` skill |
+| Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested in the canonical starter, imported as `@packages/auth/access`), and `bun run console:roles` restates the grantable rungs in `.github/scripts/console-roles.ts`, so a new rung lands in both; `assertConsoleAccess` in `web/next/src/lib/auth/console.ts` is the page check, which the console layout calls at member and each admin page calls again at admin. Next does not re-run a layout on a client navigation, so a page that must stay private calls it itself (the console docs pages do not). `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |
 
@@ -72,4 +72,4 @@ ls .agents/skills                                     # every task skill availab
 
 ## Then
 
-Load the task skill (the table's right column); `dev` runs and restarts the stack, and concept docs live under `/docs`.
+Load the task skill (the table's right column); `dev` runs and restarts the stack. In the canonical starter, concept docs live under `/docs`; a fork's `/docs` holds its own.

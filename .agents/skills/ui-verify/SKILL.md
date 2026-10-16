@@ -10,41 +10,43 @@ A green type-check and a clean lint prove the code compiles, not that the page r
 
 ## 1. Run the stack
 
-Start the dev servers (`dev` skill). Under the default portless dev the base URLs are named and branch-prefixed, so resolve them once: `WEB=$(bunx portless get zerostarter)` and `API=$(bunx portless get api.zerostarter)` (or `PORTLESS=0 bun run dev` for the fixed `http://localhost:3000` / `http://localhost:4000`). Done when `$WEB/` returns 200 and `$API/api/health` responds ok.
+Start the stack and resolve `$WEB` and `$API` the way the `dev` skill does. Done when `$WEB/` returns 200 (after its redirect, where it has one) and `$API/api/health` answers ok.
 
 ## 2. Drive the affected route
 
-Load the `agent-browser` skill, then open the route you changed and act on it:
+Load the `agent-browser` skill, then open the route you changed in a named session and act on it:
 
 ```bash
-agent-browser open "$WEB/<route>"
-agent-browser snapshot   # read the page, then click/type/verify
+agent-browser --session <task> open "$WEB/<route>"
+agent-browser --session <task> snapshot   # read the page, then click/type/verify
 ```
 
-Behind auth, sign in first with the **Login (agents)** button (shown once `AGENT_SIGNIN_ENABLED=true`) or the local sign-in (`dev` skill). For an end-to-end change, or whenever asked, drive the whole flow, not just the screen you touched. Done when you have watched the change render and behave, not merely that the route loaded.
+The navbar's controls render after hydration, so a snapshot or screenshot taken on load can lack them; take it again a moment later.
+
+Behind auth, sign in first as the agent (the `dev` skill's login). For an end-to-end change, or whenever asked, drive the whole flow rather than the one screen you touched. Done when you have watched the change render and behave, beyond the route merely loading.
 
 ## 3. Check it holds up
 
-- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The "before" is the pre-change state: `git stash` (or check out the pre-change commit), `agent-browser screenshot before.png`, then restore your change and `agent-browser screenshot after.png`.
-- **Responsive:** check mobile, tablet, and desktop with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
-- **Theme:** toggle the app's theme control and check light and dark whenever the change touches either.
+- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after, as `before.png`; then your change as `after.png`. For a public page the before can be the production deployment; for a page behind sign-in it is the pre-change commit checked out in another worktree against the same seeded throwaway database, since production renders real people. Every screenshot shows seeded rows only.
+- **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
+- **Theme:** check light and dark whenever the change touches either, through the navbar's theme toggle, or `agent-browser set media dark` and `light` on a page without the navbar.
 
 Done when Visual, Responsive, and Theme are each exercised (or consciously marked N/A) for the surfaces this change touches.
 
 ## 4. Attach evidence to the PR
 
-Attach each screenshot with the GitHub CLI, which uploads it as an asset of the PR; never commit a binary screenshot.
+Attach each screenshot with the GitHub CLI, which uploads it as an asset of the PR, so the repo carries no binary screenshot:
 
 ```bash
 gh pr comment <n> --body-file body.md \
   --attach './before.png#Before: what it shows' --attach './after.png#After: what it shows'
 ```
 
-`--attach` takes `<file>#<alt text>`, repeats, and needs gh 2.100 or newer. A `![alt](./before.png)` in the body is rewritten to the uploaded asset; files the body does not reference are appended. On an older gh, fall back to a temporary host and embed the URL it prints:
+`--attach` takes `<file>#<alt text>`, repeats, and needs gh 2.100 or newer. A `![alt](./before.png)` in the body is rewritten to the uploaded asset; files the body does not reference are appended. On an older gh, fall back to a temporary public host and embed the URL it prints; anyone with the link sees the file, which is one more reason a screenshot holds seeded rows only:
 
 ```bash
 curl -sS -F "reqtype=fileupload" -F "time=72h" -F "fileToUpload=@screenshot.png" \
   https://litterbox.catbox.moe/resources/internals/api.php
 ```
 
-Done when every screenshot (before+after pairs for a visual change) is on the PR.
+Done when every screenshot (before and after pairs for a visual change) is on the PR.

@@ -1,4 +1,4 @@
-// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
+// The brand the app shows, read by web via lib/config.ts; a fork's sync rebrands its dev hosts, skills and AGENTS.md from the root package.json name instead.
 export const site = {
   name: "ZeroStarter",
   description:
@@ -74,7 +74,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 
 export type Site = typeof site
 
-// Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. waitlist off makes the home a plain landing page.
+// Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. In a fork, waitlist off makes the home a plain landing page; the canonical starter's marketing home ignores it.
 export const features = {
   allowlist: true,
   apiDocs: true,

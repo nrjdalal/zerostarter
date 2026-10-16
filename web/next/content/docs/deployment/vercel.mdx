@@ -2,136 +2,123 @@
 slug: /docs/deployment/vercel
 label: Vercel
 title: Deploy to Vercel
-description: Ship web and api as two Vercel projects on one database; migrations run on deploy.
+description: Ship web and api as two Vercel projects on one database; the api build migrates on production and canary deploys.
 ---
 
-Deploy `web/next` and `api/hono` as **two separate Vercel projects** pointed at the same repository. They share one Postgres, but each has its own root directory, env vars, and deploy lifecycle. The api project does one extra thing: its build runs pending database migrations first, on production and `canary` deploys only, never on PR previews.
+Deploy `web/next` and `api/hono` as two Vercel projects on the same repository. Each ships a `vercel.json` naming its install command, build command, framework preset and function runtime, so a project needs two things from you: its **Root Directory** and its variables.
 
-## The shape
+One Postgres ties the two together, and the api build migrates it, on production and `canary` deploys only.
 
-Both apps ship a `vercel.json`, so Vercel reads the install command, build command, framework, and function runtime automatically once you point a project at the right root. You set two things per project: the **Root Directory** and the **environment variables**.
+## When you need this
+
+Reach for this page when you first put the starter on Vercel, or add a custom domain to a pair that already runs. For the same stack in containers, where nothing migrates for you, see [Deploy with Docker](/docs/deployment/docker).
+
+## Prerequisites
+
+- A Postgres reachable from Vercel's build, not only at runtime, serving TLS with a certificate the api can verify, since under `NODE_ENV=production` its client connects no other way ([Deploy with Docker](/docs/deployment/docker#prerequisites)).
+- `main` on the GitHub remote before you import. Vercel makes `main` the Production Branch when the repository has it and the default branch otherwise, and a fork pushed to an empty repository has `canary` as its default ([Releases](/docs/manage/release#prerequisites) says when `main` lands, when the first release PR opens, and why a fork's `main` does not build before that PR merges). Import after that merge. A project imported once `main` reached the remote but before the merge fails every production deploy until it lands, and one imported before `main` reached the remote tracks `canary` as production until **Settings → Environments → Production → Branch Tracking** reads `main`.
+
+## Two projects, one runtime
 
 | Project  | Root Directory | Framework | Function runtime   |
 | -------- | -------------- | --------- | ------------------ |
 | Backend  | `api/hono`     | Hono      | Bun (`bunVersion`) |
 | Frontend | `web/next`     | Next.js   | Bun (`bunVersion`) |
 
-Vercel's [Bun runtime](https://vercel.com/docs/functions/runtimes/bun) is in beta.
+Both projects pin `"bunVersion": "1.4.x"` (Vercel accepts only `1.4.x` or `1.x` and manages patch versions itself); the [Bun runtime](https://vercel.com/docs/functions/runtimes/bun) is in beta. Both install from the repo root with `bun install --ignore-scripts`, so `postinstall` never runs there. Why each app is on Bun differs:
 
-Both projects pin `"bunVersion": "1.4.x"` (Vercel accepts only `1.4.x` or `1.x` and manages patch versions itself). Why each app is on Bun differs:
-
-- **The api** runs its own self-contained bundle, built with `bun build --target bun`, so Bun is the runtime it is compiled for.
-- **The web** has to build under Bun as well as run under it. Vercel's Bun runtime requires the Next build itself to run under Bun, so its `build:vercel` script wraps the regular build in `bun run --bun`, which shims `node` to Bun for every binary the script spawns, `next build` included.
+- **The api** runs a bundle built with `bun build --target bun`. Its `build:vercel` writes it to `vercel-bundle/` with `--external hono`, because Vercel's Hono preset finds the entrypoint by a literal `hono` import; the Docker bundle stays self-contained.
+- **The web** has to build under Bun as well as run under it: its `build:vercel` is `bun run --bun build`, which shims `node` to Bun for every binary the build spawns, `next build` included. The build command also sets `SKIP_ENV_VALIDATION_SERVER=true`, which validates only the `NEXT_PUBLIC_*` values the build inlines ([Skipping validation](/docs/manage/environment#skipping-validation)).
 
 <Callout type="warn" title="Bun at runtime needs Bun at build">
 
-Pinning the web functions to Bun while building for Node crashes every function on `next/dist/compiled/next-server`, and only prerendered output keeps serving, which hides the break until a dynamic route is hit. Docker and local builds keep the plain `build` script, since the standalone server picks its runtime at start, not at build.
+Pin the web functions to Bun while building for Node and every function crashes on `next/dist/compiled/next-server`; only prerendered output keeps serving, which hides the break until a dynamic route is hit. Docker and local builds keep the plain `build` script.
 
 </Callout>
 
-Deploy the **backend first**: the frontend needs its URL.
+## Deploy
 
-## Migrations run at build time
+The web needs the api's URL, so the backend goes up first.
 
-`api/hono/vercel.json` puts a migration step ahead of the build:
+### The api build migrates
+
+`api/hono/vercel.json` puts the migration ahead of the build:
 
 ```json
 "buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono"
 ```
 
-`migrate-on-deploy.ts` applies pending migrations with `bun run db:migrate`, but only when `VERCEL_ENV=production` or the branch is `canary`. Every other preview (a PR branch) skips it: an unmerged migration must not run against the shared database. The split is deliberate: `main` (production) and `canary` are the two branches allowed to change the shared schema; feature branches build and preview without touching it.
+`.github/scripts/migrate-on-deploy.ts` reads `VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`: on `production` or the ref `canary` it runs `bun run db:migrate` before the bundle, and every other deploy, a PR preview included, logs a skip and goes on to bundle, so an unmerged migration never reaches the shared database.
 
-<Callout type="warn" title="Production and canary need a build-time database">
+### The api first
 
-Because migrations run during the build, production and `canary` deploys need a reachable `POSTGRES_URL` available at BUILD time, not just at runtime. PR previews don't migrate, so they don't need it.
+1. **Add New Project**, select the repository, and set **Root Directory** to `api/hono`; Vercel reads the rest from its `vercel.json`.
+2. Add the variables. These are the ones whose value is not the local one:
 
-</Callout>
+   ```txt
+   HONO_APP_URL=https://your-api.vercel.app
+   HONO_TRUSTED_ORIGINS=https://your-web.vercel.app
+   NODE_ENV=production
+   ```
 
-## Backend project (deploy first)
+   The rest (`BETTER_AUTH_SECRET`, `POSTGRES_URL` and the OAuth pairs) are as `.env.example` describes them. Agent sign-in never mounts under `NODE_ENV=production`, so a deploy with no complete OAuth pair and no magic link offers no way to sign in ([Sign-in methods](/docs/manage/authentication#sign-in-methods)); register the OAuth app where [Public suffix](#public-suffix) says. `HONO_PORT` (default `4000`) stays unset: the api binds the `PORT` the platform injects.
 
-1. **Add New Project** and select your repository.
-2. Set **Root Directory** to `api/hono`.
-3. Add the backend env vars (below).
-4. Deploy, then copy the deployment URL: you need it for the frontend.
+3. Deploy. The build log prints the migration line, then the bundle, and the deployment URL answers `/api/health`. Copy that URL for the web.
 
-`.env.example` is the full list; at minimum set:
+### Then the web
 
-```
-NODE_ENV=production
-HONO_APP_URL=https://your-api.vercel.app
-HONO_TRUSTED_ORIGINS=https://your-web.vercel.app
-BETTER_AUTH_SECRET=your_secret_key
-POSTGRES_URL=your_postgres_connection_string
-# OAuth (optional; the buttons render only when set)
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-```
+1. **Add New Project**, select the **same** repository, and set **Root Directory** to `web/next`.
+2. Add the variables, with the api URL as `NEXT_PUBLIC_API_URL`:
 
-`HONO_PORT` (default 4000) is in the schema but unused on Vercel: the serverless runtime owns the port.
+   ```txt
+   NEXT_PUBLIC_API_URL=https://your-api.vercel.app
+   NEXT_PUBLIC_APP_URL=https://your-web.vercel.app
+   NODE_ENV=production
+   ```
 
-## Frontend project
+   The optional PostHog and UserJot variables are as `.env.example` describes them. `NEXT_PUBLIC_NODE_ENV` is derived from `NODE_ENV` (`packages/env/src/web-next.ts`), so you never set it, and `INTERNAL_API_URL` is Docker's and stays unset.
 
-1. **Add New Project** and select the **same** repository.
-2. Set **Root Directory** to `web/next`.
-3. Add the frontend env vars, using the backend URL from above for `NEXT_PUBLIC_API_URL`.
-4. Deploy.
+3. Deploy. `https://your-web.vercel.app/api/health` answers the api's body through the web's `/api` rewrite; in the canonical starter the landing page's API status badge also turns green, while a fork's home carries no badge. Core Web Vitals arrive under the project's **Speed Insights** tab with nothing to enable: the root layout renders the beacon only when `process.env.VERCEL` is set ([Vercel Speed Insights](/docs/manage/analytics#vercel-speed-insights)).
 
-```
-NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://your-web.vercel.app
-NEXT_PUBLIC_API_URL=https://your-api.vercel.app
-# Optional analytics / feedback
-NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=your_posthog_key
-NEXT_PUBLIC_USERJOT_URL=your_userjot_url
-```
+Variables never propagate between the projects: a custom domain means updating the URL variables on both, and the OAuth callbacks to match.
 
-`NEXT_PUBLIC_NODE_ENV` is required by the web env schema but derived from `NODE_ENV`, so you don't set it separately.
+## Public suffix
 
-<Callout type="info" title="Two projects, two env stores">
+Two `*.vercel.app` projects cannot share a session cookie, since `vercel.app` is a public suffix ([Sessions and cookies](/docs/manage/authentication#sessions-and-cookies) has the reasoning). The build detects the shape (`packages/scripts/src/generate-env.ts` runs tldts over `HONO_APP_URL` for the api and `NEXT_PUBLIC_API_URL` for the web, once at build and never in a shipped bundle) and the client routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web. It follows that:
 
-Env vars are set per project and don't propagate between them, and the two projects deploy independently. When you add a custom domain, update the URL vars on both projects, and update the OAuth callback URLs in GitHub/Google to match your production domains.
-
-</Callout>
-
-Because both projects sit on `*.vercel.app` (a public suffix, where the browser refuses a shared `Domain` cookie), the app detects this shape at build and routes sign-in **same-origin through the web's `/api` proxy**, so the session cookie lands first-party on the web with no extra setup.
-
-<Callout type="warn" title="Register the OAuth callback at the web origin">
-
-Sign-in completes on the web, so both the app origin and the callback are the web (swap in your web origin), not the api:
-
-```txt
-# origin (Homepage URL / Authorized origins)
-https://your-web.vercel.app
-# callback (callback URL / redirect URIs)
-https://your-web.vercel.app/api/auth/callback/github
-https://your-web.vercel.app/api/auth/callback/google
-```
-
-A custom domain (where web and api share a parent) switches back automatically, with the callback on the api host.
-
-</Callout>
-
-The api infers that web origin from `HONO_TRUSTED_ORIGINS`, taking the first trusted origin that isn't the api itself. Set `HONO_WEB_URL` on the api project to name it explicitly when that inference won't do: either because you trust more than one origin (say a preview URL) and don't want it to guess, or because no trusted origin differs from the api at all, in which case sign-in cannot complete until you set it.
+- **OAuth registers at the web origin.** Sign-in completes on the web, so the app origin and the callback are both the web, not the api ([Callback URLs](/docs/manage/authentication#callback-urls)); a custom domain, where web and api share a parent, switches back to the api host on its next build.
+- **The api infers the web origin** as the first `HONO_TRUSTED_ORIGINS` entry that is not itself. Set `HONO_WEB_URL` on the api project when that will not do: more than one trusted origin, or none that differs from the api, where the log warns `[auth] HONO_APP_URL is a public-suffix host` and sign-in cannot complete until you set it.
+- **The rate limiters see a Vercel hop** behind the rewrite, so proxied visitors share one anonymous bucket ([Rate Limiting](/docs/manage/rate-limiting#common-questions)). [Better Auth's limiter](/docs/manage/rate-limiting#better-auths-limiter), on under `NODE_ENV=production`, keys on the same `x-forwarded-for`, so those visitors share its budgets too, three sign-in requests per 10 seconds among them, and `HONO_RATE_LIMIT` does not change them.
 
 ## WebSockets
 
-The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute) (on by default for projects created on or after April 23, 2025). The api switches to the Node adapter (`@hono/node-server` + `ws`), the setup Vercel documents for Hono, when `process.env.VERCEL` is set; on Bun (local and Docker) it keeps the `Bun.serve()` path. See [Realtime](/docs/getting-started/realtime#two-adapters-one-route) for why the split is still there now that Vercel's Bun runtime can run `Bun.serve()` too. The live `/api/health/ws` example (see [Type-safe API](/docs/getting-started/type-safe-api#live-data-over-websockets)) works on both. Worth knowing on Vercel:
+The api serves WebSockets on Vercel through [Vercel's native support](https://vercel.com/docs/functions/websockets) (in beta), which needs [Fluid compute](https://vercel.com/docs/fluid-compute), the default for a new project; [Realtime](/docs/getting-started/realtime#one-route-two-hosts) states which adapter each host takes. On Vercel:
 
-- **On a public hosting suffix the socket falls back to REST.** The client talks to the api through the web's `/api` proxy, and a Next rewrite does not forward the WebSocket upgrade, so the example runs on its REST heartbeat there (the badge stays green, without live-over-socket updates). A custom domain, where the browser reaches the api directly, keeps the socket.
-- **A connection is pinned to one function instance** and closes when the function reaches its [max duration](https://vercel.com/docs/functions/limitations#max-duration) (300 seconds by default under Fluid compute), so keep any shared socket state external (for example Redis) and let clients reconnect.
+- **A connection is pinned to one function instance and closes at its [max duration](https://vercel.com/docs/functions/limitations#max-duration)**, 300 seconds by default under Fluid compute, so a client's reconnect may land on another instance ([Beyond one instance](/docs/getting-started/realtime#beyond-one-instance)).
+- **On a public suffix** the client points the socket at the web origin, as it does REST, and on a custom domain at the api directly ([Realtime](/docs/getting-started/realtime#common-questions)); either way REST stays the baseline it overlays.
 
-See [Realtime](/docs/getting-started/realtime) for the typed client and the reconnect pattern.
+## Common questions
 
-## Speed Insights
+**Why does sign-in between two `*.vercel.app` projects end in `state_mismatch`?**
 
-The web app ships [Speed Insights](https://vercel.com/docs/speed-insights) and turns it on by itself here, with no key and no environment variable: the root layout renders it only when `process.env.VERCEL` is set, the same platform check the api uses to pick its WebSocket adapter. There is no enable step, because every Vercel deployment already serves the collection routes under `/_vercel/speed-insights/*`, so real Core Web Vitals start arriving as soon as visitors do and show up under **Speed Insights** in the project dashboard. Deploy the same code to Docker or any other host and the beacon is never rendered, so nothing calls a Vercel-only endpoint that isn't there. See [Analytics](/docs/manage/analytics#vercel-speed-insights) for how to scope it to production or remove it.
+Because the provider sent the browser back to the api, and the state cookie Better Auth checks is on the web. Better Auth names the api as the callback when the api cannot infer the web origin, the case the log warns about under [Public suffix](#public-suffix): set `HONO_WEB_URL` on the api and register the callback at the web origin ([Authentication](/docs/manage/authentication#common-questions) has the mechanism). If every `/api/*` request answers `508 Loop Detected` instead, `NEXT_PUBLIC_API_URL` points at the web rather than the api ([Environment Variables](/docs/manage/environment#common-questions)).
+
+**Is there a deploy mode to set?**
+
+No. The build derives the shape from the two URLs ([Public suffix](#public-suffix)), so there is no suffix list to maintain and no variable to flip; moving to a custom domain is a change to those URLs plus a redeploy.
+
+**Which commit does `/api/health` report?**
+
+The deployed one: the `version` suffix comes from `VERCEL_GIT_COMMIT_SHA` at runtime (`getBuildVersion` in `packages/env/src/lib/constants.ts`), because the sha baked at build freezes under turbo's cache whenever `@packages/env` has not changed. Off Vercel, `GIT_SHA` does the same.
+
+## It's working if
+
+- The api build log on `canary` prints `[migrate-on-deploy] applying pending migrations, VERCEL_ENV=preview, ref=canary` and then `[migrate-on-deploy] done`; a preview build prints `[migrate-on-deploy] skip, VERCEL_ENV=preview, ref=<branch>` and goes on to bundle.
+- `https://your-api.vercel.app/api/health` answers `"environment":"production"` with a `version` suffixed by the deployed commit's short sha.
+- With an OAuth pair set on the api, sign-in from the web lands on `/dashboard`.
 
 ## Next
 
-- [Deploy with Docker](/docs/deployment/docker): the same stack in containers, where you run migrations yourself.
-- [Environment Variables](/docs/manage/environment): every variable, and which app validates it.
-- [Analytics & Feedback](/docs/manage/analytics): Speed Insights, optional PostHog, and the feedback link.
-- [Database](/docs/manage/database): the schema, `db:generate`, and `db:migrate`.
+- [Deploy with Docker](/docs/deployment/docker), because it is the same stack with no build-time migration, so `db:migrate` is yours to run.
+- [Environment Variables](/docs/manage/environment), because every variable above is validated there, with the app that reads it.
+- [Releases](/docs/manage/release), because that page is how a commit reaches `canary` and then `main`.

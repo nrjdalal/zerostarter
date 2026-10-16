@@ -4,78 +4,103 @@ title: Project Structure
 description: "How the monorepo fits together: two apps, their packages, one import graph."
 ---
 
-The whole repo is one mental model: two deployable apps, their packages, and a single import graph that ties them together.
+The repo is two deployable apps over a set of shared packages, and this page is the map of where each thing lives. Three aliases wire it together: `@api/hono` gives the frontend the API's types, `@packages/*` reaches a shared package, and `@/` is the alias inside one app.
 
-- **`web/next`**: the Next.js frontend (App Router, React 19).
-- **`api/hono`**: the Hono backend that owns every route and talks to the database.
-- **`packages/*`**, the shared code plus build tooling: the auth instance, the Drizzle schema, validated env, the brand config, and a build-only scripts package.
+Imports point one way: apps depend on packages and never the reverse, and `@api/hono` is a type-only import, so the web app compiles against the API's shape without bundling any of its code.
 
-Three import aliases wire it together: `@api/hono` gives the frontend its API types, `@packages/*` pulls in a shared package, and `@/` is the local-to-this-app alias. Imports only point _down_ that list: apps depend on packages, never the reverse.
+## When you need this
 
-```
+Reach for this page when you know what to change and need the file: a route, a page, a table, an env var. Why the graph has this shape is [Architecture](/docs/getting-started/architecture); the per-change recipe, with the skill to load once you have the file, is the `codebase-map` skill ([AI Skills](/docs/resources/ai-skills)).
+
+## The tree
+
+```txt
 .
-├─ .agents/skills/  # the agent skills (.claude/skills and .github/skills symlink here)
-├─ api/hono/        # backend (Hono): routes, middleware, error envelope
-├─ web/next/        # frontend (Next.js): app router, components, content/
+├─ .agents/skills/   # the agent skills (.claude/skills and .github/skills symlink here)
+├─ .generated/       # build-time output, gitignored: env breakdowns, font metrics
+├─ .github/scripts/  # the scripts the hooks and CI run (deps, docs, skills, release branches)
+├─ api/hono/         # backend (Hono): routers, middlewares, the error envelope
+├─ web/next/         # frontend (Next.js): app router, components, content/
 ├─ packages/
-│  ├─ auth/         # Better Auth instance + session types
-│  ├─ cli/          # the zerostarter CLI (canonical repo only; a fork does not take it)
-│  ├─ config/       # TS base, tsdown factory, and site.ts (the brand)
-│  ├─ db/           # Drizzle schema + migrations
-│  ├─ env/          # type-safe, validated environment variables
-│  └─ scripts/      # build tooling, auth schema regenerator; never bundled
-├─ tests/           # the whole suite, mirroring each subject's path (canonical repo only)
-└─ AGENTS.md        # the rules every agent reads first (CLAUDE.md symlinks to it)
+│  ├─ auth/          # Better Auth instance, the role ladder, the allowlist grant
+│  ├─ cli/           # the zerostarter CLI (canonical starter only; a fork does not take it)
+│  ├─ config/        # TS base, tsdown factory, site.ts (the brand), console.ts
+│  ├─ db/            # Drizzle schema, client, migrations
+│  ├─ env/           # type-safe, validated environment variables
+│  └─ scripts/       # build tooling, never bundled
+├─ tests/            # the whole suite, mirroring each subject's path (canonical starter only)
+└─ AGENTS.md         # the rules every agent reads first (CLAUDE.md symlinks to it)
 ```
 
-What a fork does and does not take is one file, the root `.gitpickignore`; see [the fork boundary](/docs/getting-started/cli#the-fork-boundary).
+The root `.gitpickignore` decides which of these paths a fork takes; see [the fork boundary](/docs/getting-started/cli#the-fork-boundary).
 
 ## `api/hono`
 
-The entry point is `src/index.ts`, which exports the `AppType` the frontend infers from. Routes live in `src/routers/` (auth, the local-only `agents` sign-in, protected `v1` with the console-only `admin` mounted under it, public `waitlist`), middleware in `src/middlewares/` (auth, console access, feature gating, rate limiting), and `src/lib/error.ts` holds the `onError` switchboard that shapes every failure into the `{ error: { code, message } }` envelope.
+The entry point is `src/index.ts`: its `.route()` chain mounts every router and exports the `AppType` the frontend infers from. Routers live in `src/routers/` (`auth`, the local-only `agents` sign-in, protected `v1` with the admin-only console router `admin` mounted under it, public `waitlist`), middlewares in `src/middlewares/` (auth, console access, feature gating, rate limiting), and `src/lib/error.ts` holds `jsonError`, which writes the `{ error: { code, message } }` envelope, and `errorHandler`, the `onError` hook that routes a thrown error through it. The auth middleware's 401, the rate limiter's 429 and the not-found 404 call `jsonError` directly, so a change to `errorHandler` alone misses them.
 
 ## `web/next`
 
-Standard App Router, grouped by concern: `(content)/` for docs and blog, `(protected)/` for the signed-in dashboard, `(console)/` for the staff console, and `(llms.txt)/` for the generated AI endpoints. The typed API client is one file (`src/lib/api/client.ts`), and MDX content lives under `content/docs/` and `content/blog/`.
+The App Router under `src/app/` is grouped by concern, and each group carries its own gate:
 
-<Callout type="info" title="A shell and a set of worked examples">
+| Route group    | Serves                                       | Gate                                                              |
+| -------------- | -------------------------------------------- | ----------------------------------------------------------------- |
+| `(console)/`   | `/console` and its pages                     | the `member` rung and above, asserted in the layout; below, a 404 |
+| `(content)/`   | `/docs`, `/blog`                             | the `docs` and `blog` feature flags; off means every page 404s    |
+| `(llms.txt)/`  | `/llms.txt`, `/llms-full.txt`                | the flag of the content each section mirrors                      |
+| `(marketing)/` | `/`, plus the author's `/hire` and `/resume` | none; `init` replaces the whole group with a fresh `app/page.tsx` |
+| `(protected)/` | `/dashboard`                                 | a session; without one it redirects to `/`                        |
 
-`(protected)/` (dashboard) and `(console)/` (staff, member and above) are both auth-gated. The dashboard is near-empty on purpose: it is where your product goes, not a finished feature. The console ships its Access section as the pattern to copy, `(access)/users/` and `(access)/allowlist/`, plus read-only [`activity/`](/docs/manage/activity) and [`waitlist/`](/docs/manage/waitlist), each a [data table](/docs/manage/data-tables) with its column defs and fetch wiring colocated in a `components/` folder beside the page.
+A layout does not stop the pages under it from rendering (Next's own authentication guide says so), so a console page that needs more than `member` asserts its rung itself: Access, Activity and Waitlist assert `admin`, while the console home and the console docs pages rely on the layout alone.
 
-</Callout>
+Outside the groups sit `waitlist/` (`/waitlist`, behind the `waitlist` flag), `og/` (the generated social images) and `api/` (the search route handlers). The typed API client is one file, `src/lib/api/client.ts`, and MDX content lives under `content/docs/` and `content/blog/`.
 
-<Callout type="info" title="Marketing routes">
-
-The `(marketing)/` route group under `src/app/` holds the marketing surfaces: the landing page (`/`) plus the author's own `/hire` and `/resume`. They stay in the canonical repo but `zerostarter init` strips the whole group and writes a fresh `app/page.tsx` in its place. A direct clone that skips init can delete `web/next/src/app/(marketing)`, add its own `app/page.tsx`, and remove the "Hire" link in `web/next/src/components/common/navbar.tsx`.
-
-</Callout>
-
-`src/components/` is grouped by domain the same way, one folder per area, so a component lives next to the surface it serves: `common/` (shared pieces like the navbar), `shell/` (the app frame: `PageShell`, `PageHeader`, and the `sidebar-*` parts), `dashboard/`, `console/`, `docs/`, `blog/`, `marketing/`, and `ui/`. Cross-domain families that follow the shadcn single-module pattern sit at the top level as one file, like `data-table.tsx` (see [Data Tables](/docs/manage/data-tables)). `ui/` is the generated shadcn registry: don't hand-edit it (the sync rewrites it); customize through the post-sync script instead.
+`src/components/` is grouped by surface the same way, one folder per area, so a component sits beside what it serves: `common/` (the navbar and other shared pieces), `shell/` (the app frame: `PageShell`, `PageHeader` and the `sidebar-*` parts), then `blog/`, `console/`, `dashboard/`, `docs/`, `marketing/`, and `ui/`, the generated shadcn registry that the sync rewrites, so it is customized through the post-sync script and never by hand. A family that follows the shadcn single-module pattern sits at the top level as one file, like `data-table.tsx`. A console page keeps its column defs and fetch wiring in a `components/` folder beside its `page.tsx`, which is the pattern a new table copies ([Data Tables](/docs/manage/data-tables)).
 
 ## The packages
 
-| Package   | Holds                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `auth`    | The Better Auth config and the console's access rules. Exports session types                                             |
-| `cli`     | The `zerostarter` npm CLI: `init`, `reinit`, `sync`. Canonical repo only; a fork does not take it                        |
-| `config`  | The TypeScript base every package extends, the `tsdown` factory, and `src/site.ts`, the one file a fork edits to rebrand |
-| `db`      | The Drizzle schema under `src/schema/` and the generated migrations under `drizzle/`                                     |
-| `env`     | Every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per consumer                  |
-| `scripts` | Bun build tooling. Never bundled, never imported at runtime                                                              |
+| Package   | Holds                                                                                                                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `auth`    | The Better Auth instance (`src/index.ts`), the schema declaration (`src/schema.ts`), the role ladder (`src/access.ts`) and the allowlist grant (`src/allowlist.ts`). Exports session types |
+| `cli`     | The `zerostarter` npm CLI: `init`, `reinit`, `sync`. Canonical repo only; a fork does not take it                                                                                          |
+| `config`  | The TypeScript base every package extends, the `tsdown` factory, `src/site.ts` (the brand every app surface reads) and `src/console.ts` (the console's shared vocabulary)                  |
+| `db`      | The Drizzle schema under `src/schema/`, the client, `src/console.ts` (the activity recorder) and the generated migrations under `drizzle/`                                                 |
+| `env`     | Every environment variable, validated with [@t3-oss/env-core](https://env.t3.gg) and split per consumer                                                                                    |
+| `scripts` | Bun build tooling. Never bundled, never imported at runtime                                                                                                                                |
 
 Some have a detail worth knowing before you edit:
 
-- **`auth`** declares its plugins and any extra column in `src/schema.ts`: optional GitHub/Google OAuth, organizations + teams, and the `admin` plugin, which supplies the `role` and ban columns while every one of its own endpoints is switched off. `packages/db/src/schema/auth.ts` is generated from that file (`bun run auth:schema`). The [role ladder](/docs/manage/authentication#the-console-role-ladder) that gates `/console` lives in `src/access.ts`, a second subpath export (`@packages/auth/access`), so the web can read the rules without pulling the auth runtime.
-- **`db`** groups its schema by concern rather than one file per table: `auth.ts`, `console.ts`, `waitlist.ts`. See [Database](/docs/manage/database).
+- **`auth`** declares everything that decides the database schema in `src/schema.ts`: the plugins (openAPI, organizations with teams, and `admin`, which supplies the `role` and ban columns while every one of its own endpoints is switched off) and the console's own `roleSetAt` column. `packages/db/src/schema/auth.ts` is generated from that file (`bun run auth:schema`). The OAuth providers are not in it: `src/index.ts` registers GitHub and Google, each only when both halves of its credential pair are set. The [role ladder](/docs/manage/authentication#the-console-role-ladder) that gates `/console` lives in `src/access.ts`, a second subpath export (`@packages/auth/access`) of pure functions, so the web reads the rules without pulling the auth runtime; `src/allowlist.ts` is the sign-in hook that lifts a matching address to the console's bottom rung.
+- **`config`** sits under every other package, which is why `src/console.ts` holds what the console's two sides share (the activity actions, the batch limit): the web reads it without dragging a database driver or an auth runtime into its build.
+- **`db`** groups its schema by concern rather than one file per table: `auth.ts`, `console.ts`, `waitlist.ts`. Its `src/console.ts` is `recordActivity`, which takes the caller's transaction, so a change and the Activity line recording it commit or roll back together; the type requires a transaction, not that a new writer records at all. See [Database](/docs/manage/database).
 - **`env`** has one slice per consumer: `api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`. See [Environment Variables](/docs/manage/environment).
-
-`scripts` holds build-time scripts and on-demand ones. The build-time ones write to the gitignored repo-root `.generated/`: the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, and the data-table font metrics. The on-demand ones write committed source or decide something: `auth-schema` (`bun run auth:schema`) writes `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned.
+- **`scripts`** holds build-time scripts and on-demand ones. The build-time ones write to the gitignored `.generated/`: the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, and the data-table font metrics. The on-demand ones write committed source or decide something: `auth-schema` (`bun run auth:schema`) writes `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned. A new build script lands here, not in `.github/scripts/`, which holds what the git hooks and CI run: the dependency normalizer, the docs gate, the skills-table generator, the pre-push branch seeder.
 
 ## Bun catalog
 
-The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
+The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts the entries on `postinstall` and whenever a `package.json` is staged, and rewrites an exact or tilde spec to a caret range, so a pin never survives an install.
+
+## Common questions
+
+**Where does a starter-only asset go, so a fork never sees it?**
+
+Under the `marketing/` directory of its kind: `web/next/src/components/marketing/`, `src/lib/marketing/`, `src/fonts/marketing/` and the `(marketing)` route group are each a fork-excluded line in `.gitpickignore`, and `web/next/public/` is excluded whole. A landing-only asset anywhere else ships to every fork. The CLI's rebrand checks the shared `src/lib/fonts.ts` for a marketing font and fails rather than ship one.
+
+**Where are the page wrappers?**
+
+`PageShell` and `PageHeader` in `src/components/shell/`, shared by the dashboard and the console. They began as `DashboardShell` and `DashboardHeader` under `components/dashboard/` and moved when the console took them up. A page composes the two instead of hand-rolling width and spacing, so pages do not drift from each other.
+
+**Why is `packages/db/src/schema/auth.ts` never edited by hand?**
+
+It is the output of Better Auth's own generator for the plugins `packages/auth/src/schema.ts` declares, byte for byte after the formatter, and `bun run auth:schema --check` fails whenever the committed file differs from a fresh generation; the canonical starter also runs that check as a test, which a fork does not take. A column on `user` goes into `schema.ts` as a `user.additionalFields` entry, then `bun run auth:schema` and a migration. A column on `session` takes more, because that declaration admits only `plugins` and `user`, and the auth instance spreads it after its own `session` options: [The generated auth schema](/docs/manage/database#the-generated-auth-schema) says how. The generator runs under Node on purpose: under Bun, a `() => new Date` default loses its call when the generator inspects it, and every `.defaultNow()` would silently vanish.
+
+## It's working if
+
+- `rg -n "\.route\(" api/hono/src/index.ts` lists every mounted router: `agents`, `auth`, `v1`, `waitlist`.
+- `ls packages/db/src/schema` prints `auth.ts console.ts index.ts waitlist.ts`.
+- `rg -n 'from "@api/hono"' web/next/src` shows only `import type` lines.
 
 ## Next
 
-- [Architecture](/docs/getting-started/architecture): why the graph is shaped this way.
-- [The Type-Safe API](/docs/getting-started/type-safe-api): how `AppType` crosses from api to web.
+- [Architecture](/docs/getting-started/architecture): why the graph is shaped this way, before you add a package to it.
+- [The Type-Safe API](/docs/getting-started/type-safe-api): how `AppType` crosses from api to web, the one app-to-app edge, and why it costs nothing at runtime.
+- [The fork boundary](/docs/getting-started/cli#the-fork-boundary): which of these paths a fork takes, because the tree above is the canonical starter's.

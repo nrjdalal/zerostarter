@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  // Single server-side gate for the entire /console area (every nested route).
+  // Asserts member on a full render only, since Next does not re-run a layout on client navigation: a page that needs more asserts it itself, and the console docs pages rely on this alone.
   const session = await assertConsoleAccess()
 
   return (

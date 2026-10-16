@@ -6,7 +6,7 @@ source: local
 
 # Git Commit
 
-ATOMIC commits, conventional format. Stage and commit only; never push unless the user explicitly asks.
+Atomic commits in the Conventional Commits format, on the worktree branch. The commit ends the task; a push follows only when the user asks for one.
 
 ## 1. Inspect
 
@@ -16,15 +16,15 @@ git diff
 git diff --staged
 ```
 
-Read the staged and unstaged changes before deciding what belongs together.
+Done when every hunk is assigned to a logical unit.
 
 ## 2. Stage
-
-One logical unit per commit (ATOMIC): split unrelated changes into separate commits so every staged file belongs to the same unit.
 
 ```bash
 git add <paths>
 ```
+
+One unit per commit, so unrelated hunks go in separate commits. Done when `git diff --staged` shows exactly one unit.
 
 ## 3. Commit
 
@@ -32,16 +32,14 @@ git add <paths>
 git commit -m "<type>(<scope>): <subject>"
 ```
 
-| Element     | Rule                                                                                                                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Type**    | `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`, `build`, `revert`. Type `ci` is RESERVED for pipeline-generated commits (`ci(changelog)`, `ci(version)`) and dropped from the changelog (`changelog.config.json`); real CI work uses `fix(ci)`/`feat(ci)`/`docs(ci)`. Dependency refreshes use `build(deps)`, never `chore(deps)`: changelogen hardcodes dropping non-breaking `chore(deps)` from the changelog, so a release window holding only one can never release (v0.1.25's notes silently lost the cn + zod bump this way). |
-| **Scope**   | Optional area in parentheses (package, component, feature).                                                                                                                             |
-| **Subject** | Imperative, lowercase, no period. The commit-msg hook rejects a header over 100 chars or a capitalized subject (`subject-case`).                                                          |
-| **Body**    | Optional; explain "why", not "what". Wrap lines at 100 (the hook rejects longer).                                                                                                       |
+| Element     | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Type**    | `build`, `chore`, `docs`, `feat`, `fix`, `perf`, `refactor`, `style`, `test`: each counts toward the release window's version and changelog, except a non-breaking `chore(deps)`, which changelogen drops, so a dependency refresh is `build(deps)`. `ci` and `revert` count for nothing, so a window holding only those never releases: `changelog.config.json` turns `ci` off for the pipeline's own commits (`ci(changelog)`, `ci(version)`), so real CI work is `fix(ci)`, `feat(ci)` or `docs(ci)`, and changelogen has no `revert` type. |
+| **Scope**   | Optional area in parentheses (package, component, feature).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **Subject** | Imperative, lowercase, no period; the hook rejects a header over 100 characters or a capitalized subject.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Body**    | Optional, the why rather than the what, wrapped at 100 characters; the hook rejects a longer line.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-Never add `Co-authored-by` (repo rule). The commit-msg hook runs commitlint (`@commitlint/config-conventional`); pre-commit regenerates the AGENTS.md skills tables when a skill changed, then runs lint-staged, then `bun run build`.
-
-**Examples**:
+The hooks in `lefthook.yml` run on every commit. Examples:
 
 ```
 feat(auth): add OAuth provider support
@@ -51,11 +49,4 @@ docs(readme): update installation steps
 build(deps): bump dependencies to latest versions
 ```
 
-## 4. Push (only when explicitly requested)
-
-Stop after the commit. Push only when the user says "commit and push", "push the changes", or confirms when asked.
-
-## Notes
-
-- Never commit directly to canary (the default branch); branch first, then PR.
-- The pre-commit build prints the size table only. Refresh the graph svg manually: `bun .github/scripts/build-sizes.ts --graph`.
+Done when the commit exits 0 with the hooks green.

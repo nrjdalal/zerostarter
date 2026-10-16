@@ -3,7 +3,7 @@ import { site } from "@packages/config/site"
 import type { DocsConfig } from "./src/lib/docs"
 
 // Single source of truth for docs structure and metadata. Groups are ordered arrays; each item is a single-key record keyed by a page URL (value = metadata) or a subgroup label (value = nested items). Keys are literal URLs ("/docs" = the docs index).
-// title/description are synced into each MDX's frontmatter by the web/next build/dev (.github/scripts/docs.ts); `label` overrides the sidebar label (defaults to title). Group name is independent of the page URL, so pages regroup without changing links.
+// title/description are written into each MDX's frontmatter by dev:app and check-types (.github/scripts/docs.ts) and checked by the build (--strict); `label` overrides the sidebar label (defaults to title). Group name is independent of the page URL, so pages regroup without changing links.
 const docsConfig = {
   docs: {
     "Get Started": [
@@ -61,14 +61,14 @@ const docsConfig = {
         "/docs/manage/api-conventions": {
           title: "API Conventions",
           description:
-            "The { data } / { error } envelope, error codes, and middleware every route shares.",
+            "The { data } / { error } envelope, the routes that answer outside it, error codes, and the middleware in front of every route.",
         },
       },
       {
         "/docs/manage/rate-limiting": {
           title: "Rate Limiting",
           description:
-            "Layered rate limits keyed by user, API key, or IP, with a higher tier for authenticated requests.",
+            "Layered rate limits: a per-address budget on every request, a second, per-user budget for signed-in /api/v1 requests on top of it, and Better Auth's own limiter on its routes in production.",
         },
       },
       {
@@ -79,9 +79,9 @@ const docsConfig = {
       },
       {
         "/docs/manage/authentication": {
-          title: "Auth & Organizations",
+          title: "Authentication",
           description:
-            "Better Auth with OAuth, organizations, teams, and the role gate behind /console.",
+            "Better Auth sign-in, sessions and cookies, and the role ladder behind /console: user.role is the only truth, re-read past the cookie cache.",
         },
       },
       {
@@ -134,7 +134,7 @@ const docsConfig = {
         "/docs/manage/llms-txt": {
           title: "llms.txt",
           description:
-            "Auto-generated, whole-codebase context for LLMs at /llms.txt and /llms-full.txt.",
+            "The docs and blog as markdown for LLMs, generated at build: an index at /llms.txt and the full text at /llms-full.txt.",
         },
       },
     ],
@@ -150,7 +150,7 @@ const docsConfig = {
         "/docs/manage/data-tables": {
           title: "Data Tables",
           description:
-            "One data-table module: TanStack Table composed the shadcn way, URL-synced state, and virtualized infinite scroll fed by useInfiniteQuery.",
+            "Compose a table from one module: URL state, virtualized infinite scroll, and headers that size themselves.",
         },
       },
       {
@@ -179,7 +179,7 @@ const docsConfig = {
         "/docs/manage/features": {
           title: "Features",
           description:
-            "Toggle optional surfaces (allowlist, API reference, blog, docs, internal docs, waitlist) from one config, chosen at init and flippable anytime.",
+            "One boolean per optional surface: off removes its routes, links, sitemap and search entries without deleting code.",
         },
       },
       {
@@ -202,7 +202,7 @@ const docsConfig = {
         "/docs/deployment/vercel": {
           title: "Deploy to Vercel",
           description:
-            "Ship web and api as two Vercel projects on one database; migrations run on deploy.",
+            "Ship web and api as two Vercel projects on one database; the api build migrates on production and canary deploys.",
           label: "Vercel",
         },
       },
@@ -219,26 +219,27 @@ const docsConfig = {
         "/docs/manage/code-quality": {
           title: "Code Quality",
           description:
-            "Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.",
+            "Which check runs on the commit, the push and the pull request, and the commit message rules the release reads.",
         },
       },
       {
         "/docs/manage/release": {
           title: "Releases",
           description:
-            "The automated canary-to-main flow that versions the repo and drafts the changelog.",
+            "One merge promotes canary to main: the version lands before it, the changelog, tag and GitHub release after.",
         },
       },
       {
         "/docs/getting-started/scripts": {
           title: "Scripts",
-          description: "Every bun script, grouped by when you'd reach for it.",
+          description:
+            "Every bun run script and the tooling behind it: what each does, when it runs, and where a new one goes.",
         },
       },
       {
         "/docs/getting-started/roadmap": {
           title: "Roadmap",
-          description: `What ${site.name} ships today, and where it's headed.`,
+          description: `What ${site.name} ships, what a fork adds itself, and what is considered but not scheduled.`,
         },
       },
     ],

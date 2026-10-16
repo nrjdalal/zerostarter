@@ -6,41 +6,37 @@ source: local
 
 # Database Migration
 
-PostgreSQL with Drizzle ORM. Schema lives in `packages/db/src/schema/`, migrations in `packages/db/drizzle/`. Schema, SQL, and snapshot travel together in one PR.
+PostgreSQL with Drizzle ORM: schema in `packages/db/src/schema/`, migrations in `packages/db/drizzle/`. Schema, SQL and snapshot travel together in one PR, and every step runs against a throwaway database until the change merges.
 
 ## 0. Show the schema and wait
 
-**Never generate or apply a migration before the user has seen the schema and said go.** Post the table or the altered columns, name the choices that are hard to reverse (nullability, what a null means, foreign keys and their delete behaviour, indexes, whether anything is derived or generated, retention), and stop there.
+Post the table or the altered columns and name the choices that are hard to reverse: nullability and what a null means, foreign keys and their delete behavior, indexes, derived or generated values, retention. Then stop. A shape is cheap to argue about and expensive to change once rows exist, and applied to a deployed database it is live under running code the moment it runs (in the canonical starter `canary` and production share one, so applying there reaches production). Done when the user has said go on the posted shape.
 
-Two reasons this is a hard stop rather than a courtesy. A shape is cheap to argue about and expensive to change once rows exist, so the review has to happen before the write. And `canary` and production share one database, so applying reaches production the moment it runs, not when the release ships.
+## 1. Point the worktree at a throwaway database
 
-## 1. Edit the schema
-
-- `auth.ts` is generated, never edited: declare a plugin or an `additionalFields` column in `packages/auth/src/schema.ts`, run `bun run auth:schema`, then continue below with the regenerated file. A hand edit fails `tests/packages/db/src/schema/auth.test.ts`.
-- Schema files group by concern, not one per table: `auth.ts` holds the Better Auth tables, `console.ts` the ones the console owns. A new table joins the file for its concern, or starts a new one when it is a new concern, and that file needs an export from `index.ts`: `export * from "@/schema/<name>"`. Miss that export and the table never reaches a migration.
-- For examples, read `auth.ts` (tables, relations, indexes) and `waitlist.ts` (a minimal non-auth table).
-- Conventions: `text` primary keys (`.$defaultFn(() => crypto.randomUUID())` on non-auth tables), `timestamp("created_at").defaultNow().notNull()`, snake_case columns, `onDelete: "cascade"` on FKs, and an `index()` on every FK column. Both bend for the same kind of column: use `onDelete: "set null"` when the row outlives the reference and the column is only provenance, and skip the index when nothing queries by it and the table is small enough that the delete-time scan is free. The `console.ts` tables are both: their `actor_id` must not take a rule or a history entry with it when an account is deleted, and although the lists join, search and sort through it, every one of those drives off `user`'s primary key rather than this column, so an index here would serve only the delete-time sweep. Index a FK when a query narrows on the column itself, or when the table is large enough for the sweep to matter. When a `set null` column is the only record of who acted, store the readable text beside it (`activity.actor`, `allowlist.actor`) so a row does not become anonymous, and can name an actor that was never an account at all.
-
-## 2. Generate and review
+Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, so the worktree needs its own `.env` first:
 
 ```bash
-bun run db:generate
+bunx pglaunch -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
 ```
 
-Read the generated `packages/db/drizzle/NNNN_*.sql`. Done when that SQL, its `meta/NNNN_snapshot.json`, and a new `meta/_journal.json` entry all appear and the SQL matches the schema edit.
+Write the URL it prints into the worktree's `.env` as `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; a deployed database holds real people (in the canonical starter, the shared one), and a screenshot or response body from it stays out of every PR. pglaunch publishes the container's port on every network interface with user and password `postgres`, so any host on the same network can read and write it: keep it to a network you trust. Done when `pg_isready` answers from the container (its suffixed name is on pglaunch's `started` line) and the worktree `.env` carries its URL, with no deployed database's URL anywhere in the worktree.
 
-## 3. Point at a throwaway database first
+## 2. Edit the schema
 
-**Local work runs against a disposable container, never the `POSTGRES_URL` in the root `.env`.** That URL is the shared Neon database, and `canary` and production both read it, so a migration applied there is applied to production, and a column renamed under running code takes that code down. This is not hypothetical: it has happened, and step 0 and this step both exist because of it.
+- `auth.ts` is generated: declare a plugin or a `user.additionalFields` column in `packages/auth/src/schema.ts`, run `bun run auth:schema`, and continue with the regenerated file (in the canonical starter a hand edit fails `tests/packages/db/src/schema/auth.test.ts`). A `session` column goes in the same declaration, but its `satisfies Pick<BetterAuthOptions, "plugins" | "user">` refuses a `session` key until `"session"` joins the Pick, and the instance in `packages/auth/src/index.ts` spreads `schemaOptions` after its own `session: { cookieCache }`, so merge the two there or the spread replaces the cookie cache.
+- Files group by concern: `auth.ts` holds the Better Auth tables, `console.ts` the ones the console owns. A new table joins its concern's file, or starts one. drizzle-kit migrates every file in `src/schema/` whatever `index.ts` says, but a new file needs `export * from "@/schema/<name>"` in `index.ts`, or the typed `db` client and every `@packages/db` import never see its tables.
+- Every file names its columns in snake_case. Outside the generated `auth.ts`, with `waitlist.ts` as the example, `created_at` is `timestamp("created_at").defaultNow().notNull()` and the primary key is `text` filled by `.$defaultFn(() => crypto.randomUUID())`. A new table's foreign key is `onDelete: "cascade"` with an index on its column. That rule comes from the generated `auth.ts`, where every foreign key cascades and all but `invitation.inviter_id` are indexed; `waitlist.ts` has no foreign key, and the console tables bend it for their `actor_id`. A provenance column like that bends both halves: `onDelete: "set null"` when the row outlives the reference, and no index until the table's row counts and query plans ask for one (`activity` grows without bound and still ships without one), with the readable actor text stored beside it, so a row still names its actor once the account is gone (`activity.actor`, never null; `allowlist.actor`, null only for a rule seeded outside the console).
+
+Done when the file exports from `index.ts` and every column follows a convention or names its reason.
+
+## 3. Generate and review
 
 ```bash
-bunx pglaunch -k                                    # disposable Postgres, -k keeps it across restarts
+bun run db:generate --name <change>    # named like the existing ones, 0001_waitlist
 ```
 
-Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, then migrate and seed into it. The output is colorized, so a script that captures it must strip the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the end of the URL makes `drizzle-kit migrate` exit 1 with no message at all. One container per worktree, so two branches with different migrations cannot corrupt each other. Two things follow:
-
-- Seed your own fake rows rather than copying real ones. The shared database holds real people, and a screenshot or a response body from it must never reach a PR.
-- Applying to the shared database is a deliberate, separately-authorized act. It happens when the change merges, not while it is being built.
+Read the generated `packages/db/drizzle/NNNN_<change>.sql`. An applied migration is immutable; a fix is a new one. Done when the SQL, its `meta/NNNN_snapshot.json` and a new `meta/_journal.json` entry all appear and the SQL matches the edit.
 
 ## 4. Apply
 
@@ -48,7 +44,7 @@ Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, then migra
 bun run db:migrate
 ```
 
-This is local or ad-hoc only. On production and canary deploys the API build auto-applies pending migrations (`.github/scripts/migrate-on-deploy.ts`, gated on `VERCEL_ENV`/`VERCEL_GIT_COMMIT_REF`, PR previews skipped), so a migration merged to canary applies itself on the next deploy.
+Local and ad hoc only on Vercel: there the API build applies pending migrations on production and `canary` deploys (`api/hono/vercel.json` runs `.github/scripts/migrate-on-deploy.ts`, and PR previews skip it), so a migration merged to canary lands on the next deploy. The Docker images never migrate, so a Docker deploy runs `bun run db:migrate` against the database its containers read. Done when it exits 0 against the container and `docker exec <container> psql -U postgres -c '\d <table>'` shows the new shape (`bun run db:studio` shows it in a browser).
 
 ## 5. Make the running stack see it
 
@@ -56,15 +52,4 @@ This is local or ad-hoc only. On production and canary deploys the API build aut
 bunx turbo run build --filter=@packages/db
 ```
 
-The API consumes `@packages/db`'s built dist. If dev is running and the API imports the new table, restart dev entirely: `bun --hot` does not pick up new files or exports reliably (see the `dev` skill).
-
-## 6. Inspect data
-
-```bash
-bun run db:studio
-```
-
-## Notes
-
-- `POSTGRES_URL` comes from the root `.env`, which is why step 3 overrides it per worktree: the value that ships in `.env` is the shared one.
-- Never edit an applied migration; generate a new one instead.
+The API consumes the built dist, and a new table or export needs a full restart of dev (the `dev` skill); with no stack running, the build alone is the step. Done when `rg <column or table> packages/db/dist` finds the change and, with dev running, the API answers for it.
