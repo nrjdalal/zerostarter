@@ -1,3 +1,32 @@
+## v0.1.38
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.37...v0.1.38)
+
+### 🩹 Fixes
+
+- **deps:** Ignore the unpatched braces advisory in the audit gate ([#866](https://github.com/nrjdalal/zerostarter/pull/866))
+
+### 💅 Refactors
+
+- **cli:** Keep the gitpick pin in one constant and test reinit and sync ([#864](https://github.com/nrjdalal/zerostarter/pull/864))
+
+### 📦 Build
+
+- **deps:** Update every dependency, Bun, Actions, and gitpick to latest ([#868](https://github.com/nrjdalal/zerostarter/pull/868))
+
+### 🏡 Chore
+
+- **hire:** Set the author pages' italic in lora ([#863](https://github.com/nrjdalal/zerostarter/pull/863))
+- **skills:** Fold the dependency refresh into the audit skill ([#869](https://github.com/nrjdalal/zerostarter/pull/869))
+
+### ✅ Tests
+
+- **scripts:** Pin the postinstall dependency manager's decisions ([#862](https://github.com/nrjdalal/zerostarter/pull/862))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.37
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.36...v0.1.37)

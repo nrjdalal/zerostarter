@@ -54,7 +54,7 @@
 <g id="node5" class="node">
 <title>@packages/env</title>
 <ellipse fill="none" stroke="#3b82f6" cx="434.3" cy="-162" rx="113.52" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="434.3" y="-157.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/env (5.19 KB)</text>
+<text xml:space="preserve" text-anchor="middle" x="434.3" y="-157.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@packages/env (5.20 KB)</text>
 </g>
 <!-- @api/hono&#45;&gt;@packages/env -->
 <g id="edge4" class="edge">
@@ -137,14 +137,14 @@
 <!-- @web/next -->
 <g id="node8" class="node">
 <title>@web/next</title>
-<ellipse fill="none" stroke="#3b82f6" cx="398.3" cy="-450" rx="108.17" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (102.11 MB)</text>
+<ellipse fill="none" stroke="#3b82f6" cx="398.3" cy="-450" rx="103.34" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="398.3" y="-445.8" font-family="Times,serif" font-size="14.00" fill="#3b82f6">@web/next (91.98 MB)</text>
 </g>
 <!-- @web/next&#45;&gt;@api/hono -->
 <g id="edge15" class="edge">
 <title>@web/next&#45;&gt;@api/hono</title>
-<path fill="none" stroke="#3b82f6" d="M428.24,-432.23C444.98,-422.86 466.04,-411.06 484.09,-400.96"/>
-<polygon fill="#3b82f6" stroke="#3b82f6" points="485.69,-404.07 492.71,-396.13 482.27,-397.96 485.69,-404.07"/>
+<path fill="none" stroke="#3b82f6" d="M427.92,-432.41C444.65,-423.04 465.78,-411.21 483.9,-401.06"/>
+<polygon fill="#3b82f6" stroke="#3b82f6" points="485.55,-404.15 492.56,-396.21 482.13,-398.04 485.55,-404.15"/>
 </g>
 <!-- @web/next&#45;&gt;@packages/auth -->
 <g id="edge16" class="edge">
@@ -155,7 +155,7 @@
 <!-- @web/next&#45;&gt;@packages/config -->
 <g id="edge17" class="edge">
 <title>@web/next&#45;&gt;@packages/config</title>
-<path fill="none" stroke="#3b82f6" d="M482.56,-438.32C527.58,-430.5 583.09,-417.4 629.3,-396 689.22,-368.24 748.3,-373.04 748.3,-307 748.3,-307 748.3,-307 748.3,-233 748.3,-155.31 654.56,-119.35 583.53,-103.25"/>
+<path fill="none" stroke="#3b82f6" d="M480.38,-438.69C525.78,-430.92 582.35,-417.75 629.3,-396 689.22,-368.24 748.3,-373.04 748.3,-307 748.3,-307 748.3,-307 748.3,-233 748.3,-155.31 654.56,-119.35 583.53,-103.25"/>
 <polygon fill="#3b82f6" stroke="#3b82f6" points="584.33,-99.84 573.82,-101.15 582.85,-106.69 584.33,-99.84"/>
 </g>
 <!-- @web/next&#45;&gt;@packages/env -->
@@ -167,7 +167,7 @@
 <!-- @web/next&#45;&gt;@packages/scripts -->
 <g id="edge19" class="edge">
 <title>@web/next&#45;&gt;@packages/scripts</title>
-<path fill="none" stroke="#3b82f6" d="M322.97,-436.76C259.19,-422 171.6,-390.31 129.3,-324 117.92,-306.17 119.56,-281.97 123.55,-263.31"/>
+<path fill="none" stroke="#3b82f6" d="M324.22,-437.05C260.34,-422.41 171.88,-390.75 129.3,-324 117.92,-306.17 119.56,-281.97 123.55,-263.31"/>
 <polygon fill="#3b82f6" stroke="#3b82f6" points="126.92,-264.26 125.96,-253.71 120.13,-262.56 126.92,-264.26"/>
 </g>
 </g>
