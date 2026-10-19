@@ -23,7 +23,7 @@ In `web/next/src/lib/fonts.ts`, which the root layout imports, so every font the
 
 ```ts
 export const <export> = localFont({
-  src: "../fonts/<file>",
+  src: "../fonts/<file>", // relative to this module
   variable: "--font-<name>",
   weight: "<min> <max>", // curl -s https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/index.css | grep font-weight
 })
@@ -45,8 +45,4 @@ The route's stylesheet carries a face whose name ends in `Fallback` with `size-a
 
 ## 6. Remove a font
 
-Delete each woff2 the `localFont` lists, the `localFont` itself, and the `.variable` or `.className` use, then hand the role on: the sans repoints the role, `FONT` and `FONT_TO` at the replacement; a registry-written role (`--font-heading`) returns to the registry's value, `var(--font-sans)`, and drops its guarded swap and its `shadcn-sync` Guards entry; any other role repoints at its replacement or its generic family. Done when:
-
-- for each file the font listed, `find web/next/src/fonts -name '<file>'` prints nothing and `rg -- "--font-<name>|<file>" .github/scripts packages/scripts web/next/src .agents/skills/shadcn-sync` is empty;
-- for a registry-written role other than the sans, `rg -- "--font-<role>" .github/scripts/shadcn-customize.ts .agents/skills/shadcn-sync/SKILL.md` is empty;
-- `bun run check-types` passes.
+Delete each woff2 the `localFont` lists, the `localFont` itself, and the `.variable` or `.className` use, then hand the role on: the sans repoints the role, `FONT` and `FONT_TO` at the replacement; a registry-written role (`--font-heading`) returns to the registry's value, `var(--font-sans)`, and drops its guarded swap and its `shadcn-sync` Guards entry; any other role repoints at its replacement or its generic family. Done when, for each file the font listed (`<file>` is its basename), `find web/next/src/fonts -name '<file>'` prints nothing and `rg -- "--font-<name>|<file>" .github/scripts packages/scripts web/next/src web/next/content .agents/skills/shadcn-sync` is empty; for a registry-written role other than the sans, `rg -- "--font-<role>" .github/scripts/shadcn-customize.ts .agents/skills/shadcn-sync/SKILL.md` is empty too; and `bun run check-types` passes.
