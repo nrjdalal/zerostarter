@@ -121,7 +121,7 @@ export const authErrorResponses: ResponsesWithResolver = {
 export const conflictErrorResponses: ResponsesWithResolver = {
   409: errorResponse("CONFLICT", "The value already exists"),
 }
-// Add to routes behind the console gate, the only thing that returns 403.
+// Add to routes behind the console gate, which returns 403.
 export const forbiddenErrorResponses: ResponsesWithResolver = {
   403: errorResponse("FORBIDDEN", "Forbidden"),
 }
