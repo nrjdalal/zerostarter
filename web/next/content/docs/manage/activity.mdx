@@ -26,16 +26,16 @@ The table renders `createdAt` as a relative time and `action` through a label (`
 
 `summary` is prose, not a payload. There is no before/after JSON and no target column, because a flat table you can read at a glance is the thing being built. Each sentence stands on its own, since the Action column is a filter rather than the other half of the sentence, and a line pasted into a ticket has no column beside it at all:
 
-| Action         | Summary                                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------------------------- |
-| Added rule     | `Added @example.com to the allowlist`                                                                    |
-| Banned         | `Banned katherine@example.com, ending their sessions`                                                    |
-| Removed rule   | `Removed @example.com from the allowlist`                                                                |
-| Removed signup | `Removed ada@example.com from the waitlist`                                                              |
-| Set role       | `Changed ada@example.com from member to admin`                                                           |
-| Set role       | `Set ada@example.com to member` (had no rung yet)                                                        |
-| Set role       | `Confirmed ada@example.com at member` (set to the rung it already had, which still stamps `role_set_at`) |
-| Unbanned       | `Unbanned katherine@example.com`                                                                         |
+| Action         | Summary                                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Added rule     | `Added @example.com to the allowlist`                                                                                                                                      |
+| Banned         | `Banned katherine@example.com, ending their sessions`                                                                                                                      |
+| Removed rule   | `Removed @example.com from the allowlist`                                                                                                                                  |
+| Removed signup | `Removed ada@example.com from the waitlist`                                                                                                                                |
+| Set role       | `Changed ada@example.com from member to admin`                                                                                                                             |
+| Set role       | `Set ada@example.com to member` (had no rung yet; the agent sign-in's first `owner` grant is worded this way too, though the account it just created already holds `user`) |
+| Set role       | `Confirmed ada@example.com at member` (set to the rung it already had, which still stamps `role_set_at`)                                                                   |
+| Unbanned       | `Unbanned katherine@example.com`                                                                                                                                           |
 
 Every sentence is written in `packages/db/src/console.ts`, so the console routes, the sign-in grant and the agent sign-in word an event the same way and rewording one is one edit. `bun run console:roles` is the exception: it runs from the repo root, where `@packages/db` does not resolve, so it restates the three rung sentences. The canonical starter's `tests/github/scripts/console-roles.test.ts` fails if either side is reworded alone; a fork takes no `tests/`, so it rewords both by hand.
 

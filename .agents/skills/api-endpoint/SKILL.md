@@ -58,7 +58,7 @@ export const exampleRouter = new Hono().post(
 
 ## 2. Wire it
 
-Export the router from `api/hono/src/routers/index.ts` and mount it with `.route("/<name>", exampleRouter)` in `src/index.ts`, inside the `routes` chain, since `AppType` is `typeof routes`; the chain keeps routers above `/openapi.json` by convention. Done when `rg -n '\.route\("/<name>"' api/hono/src/index.ts` hits once, inside the chain.
+A new public router is exported from `api/hono/src/routers/index.ts` and mounted with `.route("/<name>", exampleRouter)` in `src/index.ts`, inside the `routes` chain, since `AppType` is `typeof routes`; the chain keeps routers above `/openapi.json` by convention. A route added to `v1.ts` or `admin.ts` is already in that chain through `.route("/v1", v1Router)`, so it mounts nothing; a router of its own at `/<name>` would sit outside `authMiddleware`. Done when, for a public router, `rg -n '\.route\("/<name>"' api/hono/src/index.ts` hits once, inside the chain, or, for a `v1.ts` or `admin.ts` route, the file holds it and nothing new is mounted.
 
 ## 3. Restart and curl
 
@@ -79,7 +79,7 @@ import { apiClient, unwrap } from "@/lib/api/client"
 const { data, error } = await unwrap(apiClient.<name>.$post({ json: { ... } }))
 ```
 
-`unwrap` never throws: exactly one of `data` and `error` is non-null, with `NETWORK_ERROR` and `UNKNOWN_ERROR` covering the transport. The API's types reach the web app through `@api/hono`'s built `dist`, which turbo's `check-types` builds first (`^build`), so a stale type means a stale build. A client component reads through TanStack Query as `components/common/access.tsx` does: the `queryFn` unwraps the call and throws on `error`. Done when `bunx turbo run check-types --filter=@web/next` exits 0, after a deliberately wrong key in the call failed it first.
+The client follows the mount: `apiClient.<name>` for a public router, `apiClient.v1.<name>` for a `v1.ts` route and `apiClient.v1.admin.<name>` for a console one. `unwrap` never throws: exactly one of `data` and `error` is non-null, with `NETWORK_ERROR` and `UNKNOWN_ERROR` covering the transport. The API's types reach the web app through `@api/hono`'s built `dist`, which turbo's `check-types` builds first (`^build`), so a stale type means a stale build. A client component reads through TanStack Query as `components/common/access.tsx` does: the `queryFn` unwraps the call and throws on `error`. Done when `bunx turbo run check-types --filter=@web/next` exits 0, after a deliberately wrong key in the call failed it first.
 
 ## Response shape
 

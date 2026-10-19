@@ -4,7 +4,7 @@ The curated backlog of everything not yet done: in-progress work, planned featur
 
 Distinct from the dated code audits in `../audits/` (one file per audit, named `YYYY-MM-DD-<topic>.md`, transient, deleted once addressed) and the dependency-audit register in `../dependencies.md`. An item gets a full spec once it moves to `planned`.
 
-This is the internal, fork-excluded backlog. It is separate from the published `web/next/content/docs/getting-started/roadmap.mdx` (the curated public roadmap that ships to forks); keep the two from drifting.
+This is the internal, fork-excluded backlog. It is separate from the published `web/next/content/docs/getting-started/roadmap.mdx` (the curated public roadmap on zerostarter.dev; it stays in the canonical starter, since `web/next/content/` is fork-excluded); keep the two from drifting.
 
 ## In progress
 

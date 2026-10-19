@@ -32,17 +32,20 @@ export const site = {
 
 A Bun + Turborepo monorepo with two deployable apps and shared packages under \`packages/\`:
 - \`api/hono/\` - backend API (Hono). Routers live in \`src/routers/\` and are served under \`/api\`: \`/api/v1\` (app API), \`/api/auth\` (Better Auth handler), \`/api/agents\` (local-only dev sign-in), \`/api/waitlist\` (public waitlist signup + count), \`/api/docs\` (Scalar reference).
-- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(marketing)\` (public pages), \`(protected)\` (auth-gated dashboard), \`(console)\` (staff console, member and above), \`(content)\` (docs and blog) and \`(llms.txt)\` (their plain-text mirrors). Docs and blog are MDX under \`content/\`.
+- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(marketing)\` (public pages), \`(protected)\` (auth-gated dashboard), \`(console)\` (staff console; its layout admits member and above, but a page with no check of its own, such as the console docs, is readable by anyone who knows its path, because a request whose \`Next-Router-State-Tree\` header claims the layout is on screen skips it), \`(content)\` (docs and blog) and \`(llms.txt)\` (their plain-text mirrors). Docs and blog are MDX under \`content/\`.
 - \`packages/auth/\` - the Better Auth instance (shared server config + plugins).
+- \`packages/cli/\` - the \`zerostarter\` scaffolding CLI (init, reinit, sync).
+- \`packages/config/\` - shared config: the TypeScript/tsdown base configs, and \`site\` (brand identity + injectable content).
 - \`packages/db/\` - Drizzle ORM schema + client (PostgreSQL via Bun's SQL driver).
 - \`packages/env/\` - type-safe environment variables (t3-oss/env + Zod); one validated entrypoint per consumer.
-- \`packages/config/\` - shared config: the TypeScript/tsdown base configs, and \`site\` (brand identity + injectable content).
+- \`packages/scripts/\` - build-only Bun tooling (auth-schema, data-table-metrics, generate-env, release-version), never bundled; every new script lands here.
 
 ## Workspace Imports
 
 - Backend RPC types: \`import type { AppType } from "@api/hono"\`
 - Auth instance: \`import { auth } from "@packages/auth"\`
 - DB client + schema tables: \`import { db, user, session } from "@packages/db"\`
+- The web imports neither of those two (only \`@packages/auth/access\` and types): a web server module that reaches either lets Next's file tracer copy the root \`.env\` into the standalone build the Docker image ships, so the web reads that data through the api.
 - Env, per consumer: \`import { env } from "@packages/env/web-next"\` (also \`/api-hono\`, \`/db\`, \`/auth\`)
 - Brand/site config: \`import { site } from "@packages/config/site"\`
 
@@ -57,8 +60,8 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 ## Conventions & Rules
 
 **Environment variables:**
-- A single root \`.env\` (not per-package). Client code may only read \`NEXT_PUBLIC_*\` variables.
-- Read the app's variables through the validated \`@packages/env/*\` entrypoint for the consumer. \`process.env\` is read directly only for values the schemas leave out or Next inlines at build: what the host or Next injects (\`PORT\`, \`VERCEL*\`, \`NEXT_PHASE\`, and \`NODE_ENV\` in client code), \`GIT_SHA\` and the two skip flags.
+- A single root \`.env\` (not per-package). Client code may read only \`NEXT_PUBLIC_*\` variables and \`NODE_ENV\`, which Next inlines at build.
+- Read the app's variables through the validated \`@packages/env/*\` entrypoint for the consumer. \`process.env\` is read directly only for values the schemas leave out or Next inlines at build: what the host or Next injects (\`NEXT_PHASE\`, \`NODE_ENV\` in client code, \`PORT\`, \`VERCEL*\`), \`NEXT_PUBLIC_IS_PRIVATE\` (which \`next.config.ts\` inlines from \`generate-env.ts\` output), \`GIT_SHA\` and the two skip flags; the repo scripts under \`.github/scripts/\` read theirs directly.
 
 **API:**
 - Backend routes are defined in \`api/hono/src/routers/\`.

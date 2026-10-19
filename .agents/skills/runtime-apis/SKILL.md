@@ -18,7 +18,9 @@ Two rules, in order:
 | Area | Runtime | Rule |
 | --- | --- | --- |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
+| `packages/auth/src/{access,schema}.ts` | Node + Bun | `node:` only: `bun run auth:schema` loads both under Node through the Better Auth CLI. Client components import `access.ts`, so it carries no `node:*` at all. |
 | `packages/cli/**` (canonical starter only) | Node | `node:` only: published to npm and launched through `npx`, so `Bun.*` breaks every user. |
+| `packages/config/src/**` | Node + Bun | No `node:*` at all: the web imports `site` and `console`, client components included. |
 | `packages/env/**` | Node + Bun | `node:` only, imported by web and api alike. `web-next.ts` and the package index are imported by client components, so they carry no `node:*` at all, prefixed or not (`codebase-map` holds the env entrypoints). |
 | `web/next/**` | Node + Bun | `node:` only: `next dev` runs under the system Node, while Docker and Vercel serve the build under Bun. |
 

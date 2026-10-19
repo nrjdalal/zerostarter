@@ -33,10 +33,10 @@ List what the diff touched: paths, commands, script names, env vars, conventions
 Grep every surface for each item on the list, a removed section by its heading and a changed description by its old wording; every hit is a candidate:
 
 ```bash
-rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .agents/skills web/next/docs.config.ts packages/config/src/site.ts
+rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .agents/skills web/next/docs.config.ts packages/cli/README.md packages/config/src/site.ts
 ```
 
-Done when every surface has been grepped for every item.
+Where a path is absent, as `packages/cli/README.md` is outside the canonical starter, `rg` names it as missing and searches the rest. Done when every surface has been grepped for every item.
 
 ## 3. Sync, coupled surfaces included
 

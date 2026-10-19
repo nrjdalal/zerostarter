@@ -62,7 +62,7 @@ Full-text search runs on [Orama](https://orama.com) through Fumadocs, at `web/ne
 
 ## The console docs
 
-`web/next/source.config.ts` defines the third collection, `consoleDocs`, served at `/console/docs` under the console layout's `member` check. The page asserts nothing of its own, so that layout is its only check; [Authentication](/docs/manage/authentication#the-console-role-ladder) says what a layout's check leaves open. No public route references its source, so it is outside the public search, the sitemap and `llms.txt` by construction.
+`web/next/source.config.ts` defines the third collection, `consoleDocs`, served at `/console/docs` inside the console layout, whose `member` check is the only one its pages get, since they assert nothing of their own. A request that skips the layout skips that check, so anyone who knows a page's path can read it, signed in or not; [Authentication](/docs/manage/authentication#the-console-role-ladder) says how, and what a fork adds before it puts anything sensitive there. Only the console's own routes read its source, so it is outside the public search, the sitemap and `llms.txt` by construction.
 
 ## Common questions
 

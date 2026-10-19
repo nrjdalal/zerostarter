@@ -7,7 +7,7 @@ description: One validated .env, read per-consumer so client code can never touc
 
 There is one `.env` at the repo root, and no app reads it through `process.env`: each imports a validated, typed slice of it from `@packages/env/<name>`, so a variable is set in one place and a wrong or missing one is caught once, at boot, instead of surfacing as `undefined` halfway through a request.
 
-Each consumer validates its own slice at boot, and the client slice is `NEXT_PUBLIC_*` only: `POSTGRES_URL` has no such name, so it is in no client schema and the bundler has nothing to inline into a page. Exposing a value to the browser is a deliberate rename, never an accident. Outside the schema sit the variables the host injects (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_COMMIT_SHA`), the two [skip flags](#skipping-validation), and `GIT_SHA`, which you set off Vercel to suffix the build version; each is read at its point of use and absent from `.env.example`.
+Each consumer validates its own slice at boot, and the client slice is `NEXT_PUBLIC_*` only: `POSTGRES_URL` has no such name, so it is in no client schema and the bundler has nothing to inline into a page. Exposing a value to the browser is a deliberate rename, never an accident. Outside the schema sit the variables the host or Next sets (`NEXT_PHASE`, `PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_COMMIT_SHA`), `NEXT_PUBLIC_IS_PRIVATE`, which `next.config.ts` inlines from what `generate-env.ts` derives (see the questions below), the two [skip flags](#skipping-validation), and `GIT_SHA`, which you set off Vercel to suffix the build version; each is read at its point of use and absent from `.env.example`.
 
 ## When you need this
 

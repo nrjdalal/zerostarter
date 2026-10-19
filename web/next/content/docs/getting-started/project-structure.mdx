@@ -50,7 +50,7 @@ The App Router under `src/app/` is grouped by concern, and each group carries it
 | `(marketing)/` | `/`, plus the author's `/hire` and `/resume` | none; `init` replaces the whole group with a fresh `app/page.tsx` |
 | `(protected)/` | `/dashboard`                                 | a session; without one it redirects to `/`                        |
 
-A layout does not stop the pages under it from rendering (Next's own authentication guide says so), so a console page that needs more than `member` asserts its rung itself: Access, Activity and Waitlist assert `admin`, while the console home and the console docs pages rely on the layout alone.
+A layout does not stop the pages under it from rendering (Next's own authentication guide says so), so a console page that needs more than `member` asserts its rung itself: Access, Activity and Waitlist assert `admin`, while the console home and the console docs pages rely on the layout alone, which a crafted request can skip ([Authentication](/docs/manage/authentication#the-console-role-ladder) says how).
 
 Outside the groups sit `waitlist/` (`/waitlist`, behind the `waitlist` flag), `og/` (the generated social images) and `api/` (the search route handlers). The typed API client is one file, `src/lib/api/client.ts`, and MDX content lives under `content/docs/` and `content/blog/`.
 

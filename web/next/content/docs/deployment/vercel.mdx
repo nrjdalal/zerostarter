@@ -48,7 +48,13 @@ The web needs the api's URL, so the backend goes up first.
 "buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono"
 ```
 
-`.github/scripts/migrate-on-deploy.ts` reads `VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`: on `production` or the ref `canary` it runs `bun run db:migrate` before the bundle, and every other deploy, a PR preview included, logs a skip and goes on to bundle, so an unmerged migration never reaches the shared database.
+`.github/scripts/migrate-on-deploy.ts` reads `VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`: on `production` or the ref `canary` it runs `bun run db:migrate` before the bundle, and every other deploy, a PR preview included, logs a skip and goes on to bundle, so a migration applies once it is merged into `canary`, not while its PR is open.
+
+<Callout type="warn" title="A preview skips the migration, not the database">
+
+The skip is the branch's own copy of the script, and a preview builds and serves its branch's code with the project's Preview variables. `canary` deploys as a Preview, so the `POSTGRES_URL` it migrates with is a Preview variable, and unless that value is [scoped to the `canary` branch](https://vercel.com/docs/environment-variables#preview-environment-variables), every branch's preview runs against the shared database too: its code reads and writes the rows there, and a branch that edits the script or `api/hono/vercel.json` builds with its own version of them.
+
+</Callout>
 
 ### The api first
 

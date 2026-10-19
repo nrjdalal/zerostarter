@@ -78,7 +78,7 @@ The web server's log. The restore is best-effort and never blocks the page: a no
 
 **Is there an organizations endpoint under `/api/v1`?**
 
-No. The organization surface is the plugin's own routes under `/api/auth/organization/*`, which `api/hono/src/routers/auth.ts` passes straight to Better Auth, so the typed client for it is the plugin's, not the RPC client. `/api/v1/session` leaves `activeOrganizationId` out of its response on purpose: it documents the session fields it names and nothing the plugins add. Read the active tenant from `authClient.useActiveOrganization()` in the browser, or `auth.api.getSession` on the server, as the protected layout does.
+No. The organization surface is the plugin's own routes under `/api/auth/organization/*`, which `api/hono/src/routers/auth.ts` passes straight to Better Auth, so the typed client for it is the plugin's, not the RPC client. `/api/v1/session` leaves `activeOrganizationId` out of its response on purpose: it documents the session fields it names and nothing the plugins add. Read the active tenant from `authClient.useActiveOrganization()` in the browser, or `auth.api.getSession` from `@/lib/auth` on the server, as the protected layout does.
 
 ## It's working if
 
