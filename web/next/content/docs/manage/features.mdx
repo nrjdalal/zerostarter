@@ -50,7 +50,7 @@ The routers stay mounted behind the runtime 404 so a fork can flip a flag on wit
 ## It's working if
 
 - Set `blog: false` in `packages/config/src/site.ts` and restart the dev server: `/blog` returns a 404 and the navbar no longer shows Blog.
-- `/sitemap.xml` and `/llms.txt` list no `/blog/` URL while it is off.
+- While it is off, `/sitemap.xml` lists no `/blog/` URL and `/llms.txt` has no Blog link (`/blog.md`).
 - With `waitlist: false`, `/waitlist` returns a real 404 and `/console/waitlist` renders the console's not-found page inside the console shell.
 
 ## Next

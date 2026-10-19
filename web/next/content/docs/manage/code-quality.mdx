@@ -37,7 +37,7 @@ CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.
 
 `<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure. No commit carries a `Co-authored-by` trailer, a repo rule in `AGENTS.md` rather than a hook check.
 
-A PR lands on `canary` as one squash commit ([Releases](/docs/manage/release)), and under GitHub's default the PR title heads that commit whenever the PR holds more than one. No hook and no CI step checks the title, so write it as a Conventional Commit too.
+A PR squashed into `canary` lands as one commit (squash is the method [Releases](/docs/manage/release#from-push-to-release) asks for, and only the canonical starter enforces it), and under GitHub's default the PR title heads that commit whenever the PR holds more than one. No hook and no CI step checks the title, so write it as a Conventional Commit too.
 
 The release counts a commit only when changelogen has its type enabled (`packages/scripts/src/release-version.ts`). Of the types commitlint accepts, those are `build`, `chore`, `docs`, `feat`, `fix`, `perf`, `refactor`, `style` and `test`; what each earns is [the window](/docs/manage/release#the-window). Three kinds of commit earn no version and no changelog line:
 

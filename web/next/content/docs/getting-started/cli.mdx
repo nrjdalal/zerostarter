@@ -15,6 +15,7 @@ Scaffolding a product, re-scaffolding a repo that already has history and secret
 ## Prerequisites
 
 - Bun. The commands run under `bunx`, and when bun is missing the CLI offers to install it (`--yes` installs without asking; a non-interactive run without it prints the re-run line and exits).
+- Git with a commit identity: `user.name` and `user.email` set, or a machine whose host name git can build an address from. `init` and `reinit` treat a failed commit as nothing to commit, so without an identity `init` into a target with no `.git` stops at `git branch main` with the files fetched and nothing committed (delete the directory before running it again, since a re-run takes it for a non-empty directory), and an in-place `init` or a `reinit` finishes without its commit.
 - A clean working tree for `reinit` and `sync`. Both refuse uncommitted changes, because their rollback restores only what is committed.
 
 ## The commands
@@ -123,7 +124,7 @@ Every skill and the agent guide ship to the fork, rebranded. The first CLI strip
 
 **Does sync overwrite my migrations and schema?**
 
-No: `packages/db/drizzle/` and `packages/db/src/schema/` are `PRESERVE_ON_SYNC`, restored after the overlay, and a starter migration the overlay added under them is removed, so the fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync, and the auth tables come from a file sync does overwrite: `packages/auth/src/schema.ts` is a shared starter file, so the overlay replaces it with the starter's copy, without your own plugins and `additionalFields`. Put those back from the diff before you commit the sync: the auth instance spreads the same declaration, so until then the running app lacks your plugins and `additionalFields` too, and regenerated from the starter's copy alone, `packages/db/src/schema/auth.ts` loses your columns, and the next `bun run db:generate` writes a migration that drops them. The rest you port and migrate yourself.
+No: `packages/db/drizzle/` and `packages/db/src/schema/` are `PRESERVE_ON_SYNC`, restored after the overlay, and a starter migration the overlay added under them is removed, so the fork's migration history stays its own. The flip side is that an upstream schema change does not arrive through sync, and the auth side lives in two shared starter files the overlay replaces with the starter's copies: `packages/auth/src/schema.ts` comes back without your own plugins and `additionalFields`, and `packages/auth/src/index.ts` without any table you added to the adapter `schema` map it lists by hand. Put both back from the diff before you commit the sync: the auth instance spreads the same declaration, so until then the running app lacks your plugins and `additionalFields` too, a plugin restored without its table in the map throws on its first database call ([The generated auth schema](/docs/manage/database#the-generated-auth-schema)), and regenerated from the starter's copy alone, `packages/db/src/schema/auth.ts` loses your columns, and the next `bun run db:generate` writes a migration that drops them. The rest you port and migrate yourself.
 
 **Can a synced skill have more than one file?**
 

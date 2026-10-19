@@ -9,7 +9,7 @@ import { SidebarMenu } from "@/components/ui/sidebar"
 import { assertConsoleAccess } from "@/lib/auth/console"
 import { resolveDocsNav } from "@/lib/docs"
 
-// Force per-request rendering so the access check runs on every request and the console is never statically prerendered/cached for anonymous users.
+// Force per-request rendering so the console is never statically prerendered or cached for anonymous users; the access check below runs on every full render, not on client navigation.
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {

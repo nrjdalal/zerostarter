@@ -12,7 +12,7 @@ import {
 import type { DocsCollection, DocsItem, DocsMeta } from "../../web/next/src/lib/docs"
 
 // Derives content/<collection>/meta.json from docs.config and owns the full per-page MDX frontmatter, so authors only write the body. Page keys are full URLs; the collection base is stripped to find the .mdx and build meta.json.
-// Runs in the web/next build (--strict: validate only, fail on drift/missing) and dev (write meta.json + frontmatter, scaffold missing pages). meta.json is git-ignored; docs.config is the single source.
+// Runs in the web/next build (--strict: writes meta.json, never touches an .mdx, exits 1 on any warning such as drift or a missing page) and in dev:app and check-types (writes meta.json and frontmatter, scaffolds missing pages). meta.json is git-ignored; docs.config is the single source.
 
 const CONTENT = path.resolve(import.meta.dir, "../../web/next/content")
 
@@ -146,7 +146,7 @@ async function generateBlogMeta(warnings: string[], strict: boolean): Promise<vo
       : null
     let createdAt = normalizeBlogTimestamp(data?.createdAt)
     if (!createdAt) {
-      // Dev (non-strict) builds backfill a missing createdAt into the source .mdx and log it for review/commit; --strict only warns and never mutates files.
+      // Dev (non-strict) builds backfill a missing createdAt into the source .mdx and log it for review/commit; --strict leaves the .mdx untouched and records a warning, so the run exits 1.
       if (data?.createdAt === undefined && !strict) {
         createdAt = localIsoDate(now)
         await Bun.write(file, addBlogCreatedAt(text, createdAt))

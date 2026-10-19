@@ -44,7 +44,7 @@ Exactly one side is non-null and `unwrap` never throws. `data` is the payload in
 
 **Why does `apiClient` not have the route I just added?**
 
-The type travels through `@api/hono`'s built `dist`, so the web app sees a new route once that package is rebuilt: `bun run check-types` from the repo root does that first, `bunx turbo run check-types --filter=@web/next` does it for the one app, and `tsc` inside `web/next` reads the last build. The route also has to sit inside the `routes` chain in `api/hono/src/index.ts`, since `AppType` is `typeof routes`. If the type is there and the call still answers `NOT_FOUND`, the API's `bun --hot` missed the new file: restart the stack (the `dev` skill).
+The type travels through `@api/hono`'s built `dist`, so the web app sees a new route once that package is rebuilt: `bun run check-types` from the repo root does that first, `bunx turbo run check-types --filter=@web/next` does it for the one app, and `tsc` inside `web/next` reads the last build. The route also has to sit inside the `routes` chain in `api/hono/src/index.ts`, since `AppType` is `typeof routes`. If the type is there and the call still answers `NOT_FOUND`, the API's `bun --hot` missed the new file: restart the stack (the `dev` skill). Under `/api/v1` make that call signed in, because there a missing route answers 401 without a session, the same as a present one ([API Conventions](/docs/manage/api-conventions#the-envelope-and-its-codes)).
 
 ## It's working if
 

@@ -4,7 +4,7 @@ title: Releases
 description: "One merge promotes canary to main: the version lands before it, the changelog, tag and GitHub release after."
 ---
 
-Two long-lived branches carry the project: `canary` takes every feature PR as a squash, one Conventional Commit each, and `main` is production. A release is one merge of a pull request that opens itself, `canary` into `main`; the changelog, tag and GitHub release follow on their own.
+Two long-lived branches carry the project: `canary` takes each feature PR as a squash, one Conventional Commit each (a merge method only the canonical starter enforces, [From push to release](#from-push-to-release)), and `main` is production. A release is one merge of a pull request that opens itself, `canary` into `main`; the changelog, tag and GitHub release follow on their own.
 
 The number is decided before that merge: while a release is pending, every push to `canary` moves the root `package.json` to what the **window** (the commits since the last `v*` tag) has earned, as `ci(version): bump to vX.Y.Z`, so production carries the released number the moment the merge lands. The `release` skill holds the procedure; this page holds the why.
 
@@ -14,9 +14,9 @@ Reach for this page when you are about to cut a release, want more than the patc
 
 ## Prerequisites
 
-<Callout type="warn" title="A fresh fork's Actions token is read-only">
+<Callout type="warn" title="A fresh fork's Actions cannot open pull requests">
 
-Until it has write access the release workflows fail with `403 Resource not accessible by integration` and no release PR opens. Under **Settings → Actions → General → Workflow permissions**, select **Read and write permissions**, check **Allow GitHub Actions to create and approve pull requests**, and save; the pre-push hook prints these steps on the push that publishes `canary`.
+GitHub leaves **Allow GitHub Actions to create and approve pull requests** unchecked on a new repository in a personal account, and one in an organization inherits the organization's setting. Until it is checked, `auto-canary-into-main` stops at `gh pr create` with `GitHub Actions is not permitted to create or approve pull requests`, and no release PR opens. Under **Settings → Actions → General → Workflow permissions**, select **Read and write permissions**, check that box, and save; the pre-push hook prints these steps on the push that publishes `canary`. The read-only token default is not what stops the release: each release workflow declares its own write scopes in its `permissions` key.
 
 </Callout>
 
@@ -36,7 +36,7 @@ A window that keeps no releasable commit cannot release; [Commit messages](/docs
 
 **A window opens.** Every push to `canary` runs `.github/workflows/auto-canary-into-main.yml`: with `canary` ahead of `main` it opens the draft PR `ci(release): 🚀 merge canary into main` if none is open, then pushes the `ci(version)` commit with the workflow token. That push starts no push-triggered workflow, so nothing loops and the next human push recomputes; the release PR's `pull_request` build on it is created but held for approval (below).
 
-**One merge.** Mark the PR ready, review it, and merge with a merge commit, so `main` keeps `canary`'s history and the next release PR diffs only its own window. In the canonical starter, `.github/rulesets/main.json` records merge as the one method `main` allows, with one approving review and no required status check, and the `release` skill passes `--merge` explicitly because the history depends on it.
+**One merge.** Mark the PR ready, review it, and merge with a merge commit, so `main` keeps `canary`'s history and the next release PR diffs only its own window; the `release` skill passes `--merge` explicitly because the history depends on it. In the canonical starter, `.github/rulesets/main.json` records merge as the one method `main` allows, with one approving review and no required status check, and `.github/rulesets/canary.json` records squash as the one method `canary` allows. A fork takes neither ruleset, so nothing enforces either method there until it adds its own: the labeler's comment on each new PR into `canary` is the only prompt to squash, and a PR merged another way puts each of its own commits in the window.
 
 <Callout type="warn" title="A head the workflow pushed merges unbuilt">
 
@@ -66,7 +66,7 @@ The window kept no commit the changelog counts: [Commit messages](/docs/manage/c
 
 **Why did no release PR open on my fork?**
 
-The latest `auto-canary-into-main` run's log names which of these stopped it, in order: the Actions token is still read-only, `main` is not on the remote yet, or `canary` is not ahead of `main`. With no run since `main` reached the remote, nothing has asked yet: the hook pushes `main` on its own, which starts no workflow, so a push that seeded `main` without a new `canary` commit ran none. Push a commit to `canary`, or run `gh workflow run auto-canary-into-main.yml --ref canary`. A `main` the repository was created with shares no history with `canary` and never takes one ([Prerequisites](#prerequisites)).
+The latest `auto-canary-into-main` run's log names which of these stopped it, in the order it checks them: `main` is not on the remote yet, `canary` is not ahead of `main`, or `gh pr create` was refused because the repository does not yet let Actions create pull requests ([Prerequisites](#prerequisites)). With no run since `main` reached the remote, nothing has asked yet: the hook pushes `main` on its own, which starts no workflow, so a push that seeded `main` without a new `canary` commit ran none. Push a commit to `canary`, or run `gh workflow run auto-canary-into-main.yml --ref canary`. A `main` the repository was created with shares no history with `canary` and never takes one ([Prerequisites](#prerequisites)).
 
 **The run stopped with `package.json is at 0.0.0, below the last release`. Why?**
 
@@ -80,6 +80,6 @@ The latest `auto-canary-into-main` run's log names which of these stopped it, in
 
 ## Next
 
-- [Code Quality](/docs/manage/code-quality#commit-messages), because the window reads the headers of `canary`'s squash commits, and that section says which count and where a squash commit's header comes from.
+- [Code Quality](/docs/manage/code-quality#commit-messages), because the window reads the headers of the commits on `canary`, and that section says which count and where a squash commit's header comes from.
 - [Deploy to Vercel](/docs/deployment/vercel), because `main` and `canary` are the refs that deploy and migrate.
-- [CLI](/docs/getting-started/cli), because `init` and the first two pushes wire this flow in a fork.
+- [CLI](/docs/getting-started/cli), because `init` and the first pushes after it wire this flow in a fork.

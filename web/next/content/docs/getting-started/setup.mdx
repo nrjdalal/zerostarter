@@ -14,6 +14,7 @@ A fresh machine, or a new product. An existing repo or a fork is `reinit` or `sy
 
 - **Bun.** The repo pins `bun@1.4.3` in the root `package.json`, and the CLI shells out to `bunx` and `bun` for every step, so run it with `bunx`, not `npx`.
 - **Docker**, optional. With a daemon running, `init` provisions a local Postgres for you; without one you point `POSTGRES_URL` at a database yourself.
+- **Git** with a commit identity, since `init` commits the scaffold; [The CLI](/docs/getting-started/cli#prerequisites) says what that takes and where a run without it stops.
 
 ## `zerostarter init`
 

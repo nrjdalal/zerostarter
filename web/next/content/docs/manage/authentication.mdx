@@ -39,7 +39,7 @@ Each OAuth app takes your app's origin (GitHub's "Homepage URL", Google's "Autho
 | Local, `PORTLESS=0 bun run dev` (web `:3000`, api `:4000`)           | `http://localhost:3000`       | `http://localhost:4000/api/auth/callback/github` and `http://localhost:4000/api/auth/callback/google`             |
 | Two deployments on a public hosting suffix (two `*.vercel.app` apps) | `https://your-web.vercel.app` | `https://your-web.vercel.app/api/auth/callback/github` and `https://your-web.vercel.app/api/auth/callback/google` |
 
-The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a sign-in there that comes back on the api is the `state_mismatch` question in [common questions](#common-questions). The local row uses the fixed ports rather than the default `bun run dev`'s `.localhost` hosts, which Google refuses as a redirect URI; the question below has the detail.
+The last row is the web for both, for the reason [sessions and cookies](#sessions-and-cookies) gives; a sign-in there that ends in `state_mismatch` is the question in [common questions](#common-questions). The local row uses the fixed ports rather than the default `bun run dev`'s `.localhost` hosts, which Google refuses as a redirect URI; the question below has the detail.
 
 ## The console role ladder
 
@@ -91,7 +91,7 @@ Reading the session is one call on either side, both in `web/next/src/lib/auth/`
 
 **Why does sign-in between two `*.vercel.app` projects end in `state_mismatch`?**
 
-Because the provider returns the browser to the api, and the state cookie Better Auth checks there is on the web. On a public suffix sign-in starts on the web origin, through its `/api` proxy ([sessions and cookies](#sessions-and-cookies)), so the state cookie is set host-only on the web, and a callback that lands on the api arrives without it. Register the callback at the web origin (the last row of the [callback table](#callback-urls)), and set `HONO_WEB_URL` on the api when it cannot infer the web origin from `HONO_TRUSTED_ORIGINS`, since Better Auth builds the redirect URI it sends the provider from that origin.
+Because the provider returned the browser to a host that does not hold the state cookie. On a public suffix the browser's auth calls go to the `NEXT_PUBLIC_APP_URL` origin through its `/api` proxy ([sessions and cookies](#sessions-and-cookies)), so the state cookie is set host-only there, while Better Auth builds the callback it sends the provider from the web origin the api resolves: `HONO_WEB_URL`, else the first `HONO_TRUSTED_ORIGINS` entry that is not the api. When the two differ, the callback lands on a host without the cookie: several non-api origins are trusted and another one is listed first, which the api logs as `[auth] inferred the web origin as the first non-api HONO_TRUSTED_ORIGINS entry`, or `HONO_WEB_URL` names another host. Set `HONO_WEB_URL` to the `NEXT_PUBLIC_APP_URL` origin and register the callback there (the last row of the [callback table](#callback-urls)). An api that resolves no web origin at all does not trust the web either, so its sign-in never reaches the provider: Better Auth refuses it with a 403 (`Invalid callbackURL`, or `Invalid origin`), which the sign-in dialog shows as its error.
 
 **Why does the sign-in dialog say "No sign-in options are configured yet"?**
 

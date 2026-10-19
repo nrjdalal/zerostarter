@@ -30,7 +30,7 @@ curl -sSL -o /dev/null -w "%{http_code}" "$WEB/"   # 200
 
 ## Restart
 
-The API dev task runs `bun --hot`, which misses a file created after the modules that import it have reloaded: wire a new router or schema export before its file exists and the route answers `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
+The API dev task runs `bun --hot`, which misses a file created after the modules that import it have reloaded: wire a new router or schema export before its file exists and the route answers `{"error":{"code":"NOT_FOUND"}}` until a full restart, and touching files does not clear it. Under `/api/v1` the auth gate runs on every path, matched or not, so curl a route there signed in (the cookie from Agent login below): without a session any path there answers 401 `UNAUTHORIZED`, and below admin any path under `/api/v1/admin` answers 403 `FORBIDDEN`, before a missing route can show as `NOT_FOUND`. The same restart follows a change to a `@packages/*` export the API consumes, after `bunx turbo run build --filter=@packages/<name>`, since those resolve to built dist.
 
 ```bash
 # Kill this checkout's dev processes by their working directory: ROOT is the worktree when run from one, and a worktree nested under it is skipped

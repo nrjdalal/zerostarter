@@ -65,7 +65,7 @@ Compose wires it from `secrets: dotenv`; a plain `docker build` passes `--secret
 
 <Callout type="warn" title="One web import can copy .env into the image">
 
-The web image stays free of `.env` only while no server module under `web/next` reaches `@packages/env/load-dotenv`, directly or through a server slice, `@packages/db` or the main `@packages/auth` entry ([Environment Variables](/docs/manage/environment#common-questions) says why). One that does lets Next's file tracer copy the mounted secret to `.next/standalone/.env`, the runner stage ships it as `/app/.env` with every secret in it, and nothing fails. Have the web read server data through the api, and after a build check that `web/next/.next/standalone/.env` does not exist.
+The web image stays free of `.env` only while no module the web server runs (a page, layout, route handler or server action under `web/next/src`, or anything it imports) reaches `@packages/env/load-dotenv`, directly or through a server slice, `@packages/db` or the main `@packages/auth` entry. One that does lets Next's file tracer copy the mounted secret to `.next/standalone/.env`, the runner stage ships it as `/app/.env` with every secret in it, and nothing fails. `next.config.ts` imports the loader too and keeps that import, because Next does not trace the config's imports ([Environment Variables](/docs/manage/environment#common-questions) has both reasons). Have the web read server data through the api, and after a build check that `web/next/.next/standalone/.env` does not exist.
 
 </Callout>
 

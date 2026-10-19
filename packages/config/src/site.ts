@@ -1,4 +1,4 @@
-// The brand the app shows, read by web via lib/config.ts; a fork's sync rebrands its dev hosts, skills and AGENTS.md from the root package.json name instead.
+// The brand the app shows, which web imports from @packages/config/site; a fork's sync rebrands its dev hosts, skills and AGENTS.md from the root package.json name instead.
 export const site = {
   name: "ZeroStarter",
   description:

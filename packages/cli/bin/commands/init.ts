@@ -240,7 +240,7 @@ export const init = async (argv: string[]) => {
   if (!exists(join(target, ".git"))) {
     await gitInit(target)
     await gitCommitAll(target, "ci(init): scaffold from zerostarter")
-    // Seed `main` locally at the scaffold commit so canary leads it; the pre-push hook publishes main on the second push (canary is pushed first, so GitHub makes it the default branch).
+    // Seed `main` locally at the scaffold commit so canary leads it; the pre-push hook publishes main on the second push (canary is pushed first, so an empty GitHub repository makes it the default branch).
     await gitBranch(target, "main")
   }
 

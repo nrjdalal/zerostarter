@@ -44,7 +44,7 @@ Both windows are `HONO_RATE_LIMIT_WINDOW_MS`, 60000 by default, and both variabl
 
 ## Better Auth's limiter
 
-Better Auth limits the requests its own handler serves, every `/api/auth/*` route but `/providers`, which the api answers itself. `packages/auth/src/index.ts` sets no `rateLimit`, so the library's defaults hold: on only when `NODE_ENV` is `production`, counted in memory per process, 100 requests per 10 seconds, 3 per 10 seconds on `/sign-in*`, `/sign-up*`, `/change-password` and `/change-email`, and 3 per 60 seconds on the password-reset and verification-email paths.
+Better Auth limits the requests its own handler serves, every `/api/auth/*` route but `/providers`, which the api answers itself. `packages/auth/src/index.ts` sets no `rateLimit`, so the library's defaults hold: on only when `NODE_ENV` is `production` as Better Auth loads, which a built api started by hand with the stage in `.env` alone misses ([Stages](/docs/manage/environment#stages)), counted in memory per process, 100 requests per 10 seconds, 3 per 10 seconds on `/sign-in*`, `/sign-up*`, `/change-password` and `/change-email`, and 3 per 60 seconds on the password-reset and verification-email paths.
 
 Each budget is per client address and path, and with no `advanced.ipAddress.trustedProxies` set Better Auth trusts `x-forwarded-for` whenever the header holds a single address, whoever wrote it. With no header, or a chain of several, every client shares one bucket per path, and Better Auth logs a warning once. On a bare Bun-served api with nothing in front, that cuts both ways:
 
