@@ -36,7 +36,7 @@ Grep every surface for each item on the list, a removed section by its heading a
 rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .agents/skills web/next/docs.config.ts packages/cli/README.md packages/config/src/site.ts
 ```
 
-Where a path is absent, as `packages/cli/README.md` is outside the canonical starter, `rg` names it as missing and searches the rest. Done when every surface has been grepped for every item.
+Where a path is absent, as `packages/cli/README.md` is in a fork, `rg` reports it missing and exits 2 but still searches the rest. Done when every surface has been grepped for every item.
 
 ## 3. Sync, coupled surfaces included
 

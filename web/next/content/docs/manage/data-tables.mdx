@@ -114,7 +114,7 @@ One per `MAX_BATCH` ids, the set route's cap in `packages/config/src/console.ts`
 
 ## It's working if
 
-- `/console/users` fills the viewport with the table scrolling inside its region and the page itself never scrolling; the status line counts up (`25 of 61`) as you reach the bottom.
+- `/console/users` fills the viewport with the table scrolling inside its region and the page itself never scrolling; the status line counts up in batches of 25 (`50 of 61`, then `61 of 61`) as you reach the bottom, a tall window loading the second batch at once.
 - A new column with only a `meta.label` and no config entry gets a header wide enough for its label and sort icon, with no manual width.
 - Sort, search or filter, then reload: the URL carries the state and the table comes back the same.
 
