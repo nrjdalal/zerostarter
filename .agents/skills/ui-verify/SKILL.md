@@ -27,9 +27,11 @@ Behind auth, sign in first as the agent (the `dev` skill's login). For an end-to
 
 ## 3. Check it holds up
 
-- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after, as `before.png`; then your change as `after.png`. For a public page the before can be the production deployment; for a page behind sign-in it is the pre-change commit checked out in another worktree against the same seeded throwaway database, since production renders real people. Every screenshot shows seeded rows only.
-- **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'`.
-- **Theme:** check light and dark whenever the change touches either, through the navbar's theme toggle, or `agent-browser set media dark` and `light` on a page without the navbar.
+Every command here carries the same `--session <task>` as step 2, or it drives a separate browser with no page open.
+
+- **Visual:** capture before and after at the same viewport (the 1782×972 default, `agent-browser --session <task> set viewport 1782 972`; see the `agent-browser` skill). The before is the pre-change state, in the same auth state as the after, taken with `agent-browser --session <task> screenshot --full before.png`; then your change as `after.png` the same way. For a public page the before can be the production deployment; for a page behind sign-in it is the pre-change commit checked out in another worktree against the same seeded throwaway database, since production renders real people. Every screenshot shows seeded rows only.
+- **Responsive:** check mobile (390×844), tablet (820×1180), and desktop (1782×972) with `agent-browser --session <task> set viewport <w> <h>`, and confirm no horizontal overflow: `agent-browser --session <task> eval 'document.documentElement.scrollWidth <= document.documentElement.clientWidth'` prints `true`.
+- **Theme:** check light and dark whenever the change touches either, through the navbar's theme toggle, or `agent-browser --session <task> set media dark` and `light` on a page without the navbar.
 
 Done when Visual, Responsive, and Theme are each exercised (or consciously marked N/A) for the surfaces this change touches.
 

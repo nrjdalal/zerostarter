@@ -15,7 +15,7 @@ Reach for this page when you are adding a variable, setting one for a new stage 
 
 ## The slices
 
-Four slices, each a Zod schema in `packages/env/src/<slice>.ts`, imported as `@packages/env/<slice>` and named for the consumer that imports it, plus `NODE_ENV` in every one. A variable two slices declare (`HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`) is validated by both and read through whichever slice its reader imports:
+One slice per consumer, each a Zod schema in `packages/env/src/<slice>.ts`, imported as `@packages/env/<slice>` and named for the consumer that imports it, plus `NODE_ENV` in every one. A variable two slices declare (`HONO_APP_URL`, `HONO_TRUSTED_ORIGINS`) is validated by both and read through whichever slice its reader imports:
 
 | Slice      | Holds                                                                                                                                                                |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

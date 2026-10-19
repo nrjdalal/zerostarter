@@ -28,18 +28,18 @@ A success is `{ data }`. A failure is `{ error: { code, message } }` plus whatev
 
 The codes are the `ERROR_CODES` list in `lib/error.ts`, one `as const` array the `ErrorCode` union, the OpenAPI schema and the web client all derive from. On the web, `unwrap` adds two transport codes of its own, `NETWORK_ERROR` and `UNKNOWN_ERROR`, so `error.code` there is this list plus those two and nothing else. Adding a code means extending that list, which keeps this table honest. The status is the whole request's; a set route's per-row refusals reuse three of these codes inside a 200 ([Lists and sets](#lists-and-sets)):
 
-| Code                    | Status   | When                                                                                     |
-| ----------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`routers/agents.ts`)                                         |
-| `BAD_REQUEST`           | 400      | Malformed JSON or form body (Hono's own `HTTPException`)                                 |
-| `CONFLICT`              | 409      | The value already exists (an allowlist rule added twice)                                 |
-| `ERROR`                 | (varies) | An `HTTPException` whose status maps to no code                                          |
-| `FORBIDDEN`             | 403      | Below the rung a route asks for, or banned; `/headers` outside `local` and `development` |
-| `INTERNAL_SERVER_ERROR` | 500      | An unhandled error                                                                       |
-| `NOT_FOUND`             | 404      | No such route, or its feature is off                                                     |
-| `TOO_MANY_REQUESTS`     | 429      | Over the rate limit                                                                      |
-| `UNAUTHORIZED`          | 401      | No session, or an invalid one                                                            |
-| `VALIDATION_ERROR`      | 400      | The request failed its schema; `issues` names the fields                                 |
+| Code                    | Status   | When                                                                                                       |
+| ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `AGENT_LOGIN_FAILED`    | 500      | Local agent sign-in failed (`routers/agents.ts`)                                                           |
+| `BAD_REQUEST`           | 400      | Malformed JSON or form body (Hono's own `HTTPException`)                                                   |
+| `CONFLICT`              | 409      | The value already exists (an allowlist rule added twice)                                                   |
+| `ERROR`                 | (varies) | An `HTTPException` whose status maps to no code                                                            |
+| `FORBIDDEN`             | 403      | Below the rung a route asks for, or banned; `/headers` outside `local` and `development`                   |
+| `INTERNAL_SERVER_ERROR` | 500      | An unhandled error                                                                                         |
+| `NOT_FOUND`             | 404      | No such route, or its feature is off                                                                       |
+| `TOO_MANY_REQUESTS`     | 429      | Over the rate limit                                                                                        |
+| `UNAUTHORIZED`          | 401      | No session, or an invalid one                                                                              |
+| `VALIDATION_ERROR`      | 400      | The request failed its schema or a route's own check; `issues` names the fields when a validator raised it |
 
 ## Lists and sets
 

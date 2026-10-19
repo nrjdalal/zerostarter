@@ -66,7 +66,7 @@ E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run 
 - `AGENT_SIGNIN_ENABLED=true`
 - both OAuth pairs filled, id and secret (the dummy recipe does): a provider registers only with both halves, and the snapshot lists all three
 - `NODE_ENV=local`
-- a disposable `POSTGRES_URL` (`bunx pglaunch -k`), migrated first with `bun run db:migrate`, in the `localhost` form it prints: under compose's `INTERNAL_API_URL`, `@packages/env` rewrites that host to `host.docker.internal` so the api container reaches it. Docker Desktop resolves that name; Linux Docker Engine resolves it only with `extra_hosts: ["host.docker.internal:host-gateway"]` on the api service, which `docker-compose.yml` does not set, so add it there in a scratch checkout. The URL is read at boot, so after the swap `docker compose up -d` recreates the containers; a rebuild is only for a value the build bakes in
+- a disposable `POSTGRES_URL` (`bunx pglaunch@5.5.7 -k`), migrated first with `bun run db:migrate`, in the `localhost` form it prints: under compose's `INTERNAL_API_URL`, `@packages/env` rewrites that host to `host.docker.internal` so the api container reaches it. Docker Desktop resolves that name; Linux Docker Engine resolves it only with `extra_hosts: ["host.docker.internal:host-gateway"]` on the api service, which `docker-compose.yml` does not set, so add it there in a scratch checkout. The URL is read at boot, so after the swap `docker compose up -d` recreates the containers; a rebuild is only for a value the build bakes in
 
 `tests/stack.ts` refuses an `E2E_*_URL` whose host is not local and an `E2E_POSTGRES_URL` holding any account beyond the agent and the seed; that variable unlocks the second-account role and ban flows. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. Done when it prints `0 fail` twice in a row; the second run proves the goldens deterministic and the cleanup complete.
 
@@ -92,6 +92,8 @@ Empty optionals pass through `emptyStringAsUndefined`. Three things no config co
 - `docker run --env-file` keeps inline comments, so `HONO_RATE_LIMIT=60 # note` fails validation; compose strips them, and a direct run sanitizes first with `sed 's/ #.*//' .env > .env.docker`.
 
 Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side. Compose publishes both on every network interface, and this dummy, like the suite's `.env` in section 4, mounts the agent sign-in (`NODE_ENV=local` with the flag `true`), whose trusted-`Origin` check stops only browser pages, so any host on the network can sign in as `LocalAgent`, an owner from the call that creates the account until someone demotes it: run the stack on a network you trust, or publish `127.0.0.1:3000:3000` and `127.0.0.1:4000:4000` in a scratch checkout.
+
+Done when `.env` holds every required value and every image built since its last edit was built with `--no-cache`.
 
 ## 6. Browser sign-in
 

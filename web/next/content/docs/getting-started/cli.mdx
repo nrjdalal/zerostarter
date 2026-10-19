@@ -14,7 +14,7 @@ Scaffolding a product, re-scaffolding a repo that already has history and secret
 
 ## Prerequisites
 
-- Bun. The commands run under `bunx`, and when bun is missing the CLI offers to install it (`--yes` installs without asking; a non-interactive run without it prints the re-run line and exits).
+- Bun. The commands run under `bunx`, and when bun is missing the CLI offers to install it (`init` and `reinit` take `--yes` to install without asking, `sync` has no such flag; a non-interactive run without it prints the re-run line and exits).
 - Git with a commit identity: `user.name` and `user.email` set, or a machine whose host name git can build an address from. `init` and `reinit` treat a failed commit as nothing to commit, so without an identity `init` into a target with no `.git` stops at `git branch main` with the files fetched and nothing committed (delete the directory before running it again, since a re-run takes it for a non-empty directory), and an in-place `init` or a `reinit` finishes without its commit.
 - A clean working tree for `reinit` and `sync`. Both refuse uncommitted changes, because their rollback restores only what is committed.
 
@@ -25,6 +25,8 @@ Scaffolding a product, re-scaffolding a repo that already has history and secret
 | `init`   | `main`, or `canary` with `--canary` | Yes: two commits on `canary`, `main` seeded behind, when the target has no `.git`; one commit on the current branch when it converts a checkout with `.git` in place | No          | Stops where it failed; nothing is rolled back                                                            |
 | `reinit` | `main`                              | Yes, on the current branch                                                                                                                                           | Yes         | Resets the tree to your last commit                                                                      |
 | `sync`   | `main`                              | No: the diff stays in your tree for review                                                                                                                           | Yes         | Resets the tree to your last commit, except an install failure after the overlay, which leaves the files |
+
+`--help` (`-h`) after a command lists its flags; `--version` (`-v`) prints the CLI's version.
 
 ### `init`
 

@@ -18,7 +18,7 @@ Read `git status` and `git diff`. Done when the diff is empty or every hunk is a
 
 ## 3. Type-check
 
-`bunx turbo run check-types --filter=@web/next`, which builds the packages it depends on first and covers every `ui/*.tsx`, used or not. Done when it exits 0; a missing module from the registry's imports is a dependency to add to the root `catalog` by hand, since the sync resets the three manifests to HEAD.
+`bunx turbo run check-types --filter=@web/next`, which builds the packages it depends on first and covers every `ui/*.tsx`, used or not. Done when it exits 0; a missing module from the registry's imports is a dependency to add by hand, since the sync resets the three manifests to HEAD: its range in the root `catalog`, and `"<dep>": "catalog:"` in `web/next/package.json`, or nothing installs it.
 
 ## 4. Add or repair an override
 

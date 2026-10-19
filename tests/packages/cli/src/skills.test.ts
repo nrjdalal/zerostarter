@@ -15,6 +15,37 @@ import {
 } from "../../../../packages/cli/src/skills"
 import { agentsTemplate } from "../../../../packages/cli/src/templates"
 
+// The stub the released CLI scaffolded (v0.1.37), copied rather than imported: sync recognizes it by digest, so a template edit that leaves this behind strands those forks.
+const releasedStub = `# AGENTS.md
+
+Guidance for AI coding agents working in this repository.
+
+## Instructions
+
+- ALWAYS: Use \`@/\` for imports, and follow the \`design\` skill for UI and styling conventions.
+- ALWAYS: Keep documentation in sync with every change.
+- NEVER: Include "Co-authored-by" in commit messages.
+- NEVER: Use em-dashes (the long dash, U+2014) in code, comments, docs, or copy. Regular hyphens are fine; for a pause or aside, use a comma, colon, or period.
+
+## Skills
+
+Skills live in \`.agents/skills\` (symlinked to \`.claude/skills\` and \`.github/skills\`, so every agent tool reads the same files). Each is a \`SKILL.md\` with a \`description\` trigger and a literal procedure. Start with \`codebase-map\` to orient, then load the task skill that fits.
+
+These tables are generated from each skill's own description by \`bun .github/scripts/skills-manager.ts\`, which a pre-commit hook runs for you. **Custom** skills are maintained here; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
+
+**Custom**
+
+<!-- skills:custom -->
+
+<!-- /skills:custom -->
+
+**Vendored** (upstream, copied verbatim)
+
+<!-- skills:vendored -->
+
+<!-- /skills:vendored -->
+`
+
 let dir: string
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), "zs-skills-"))
@@ -352,11 +383,11 @@ describe("the agent guide", () => {
 
     test("upgrades the untouched stub an older CLI scaffolded, tables filled or not", () => {
       named()
-      const before = agentsTemplate().replace(
+      const before = releasedStub.replace(
         "<!-- skills:custom -->\n",
         "<!-- skills:custom -->\n\n| dev | Start it. |\n",
       )
-      expect(before).not.toBe(agentsTemplate())
+      expect(before).not.toBe(releasedStub)
       expect(
         reconcileForkGuideFromRoot(dir, { before, upstream: upstreamGuide("Use worktrees.") }),
       ).toBe("adopted")

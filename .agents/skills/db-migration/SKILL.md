@@ -17,7 +17,7 @@ Post the table or the altered columns and name the choices that are hard to reve
 Every `db:*` script validates `NODE_ENV` and `POSTGRES_URL` before it runs, and the dev stack that step 5 restarts validates the rest, so a worktree with no `.env` copies the primary checkout's first (the `dev` skill) and then points it at its own database:
 
 ```bash
-bunx pglaunch -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
+bunx pglaunch@5.5.7 -k    # disposable Postgres; -k keeps it, and the name defaults to the directory, so each worktree gets its own
 ```
 
 Write the URL it prints over the worktree `.env`'s `POSTGRES_URL`, with `NODE_ENV=local`. The output is colorized, so a script that captures it strips the escapes first (`| sed $'s/\033\\[[0-9;]*m//g'`): an escape left on the URL makes drizzle-kit exit 1 with no message. The command returns as soon as the container starts, so wait for `docker exec <container> pg_isready` before the next step. Seed fake rows; a deployed database holds real people (in the canonical starter, the shared one), and a screenshot or response body from it stays out of every PR. pglaunch publishes the container's port on every network interface with user and password `postgres`, so any host on the same network can read and write it: keep it to a network you trust. Done when `pg_isready` answers from the container (its suffixed name is on pglaunch's `started` line) and the worktree `.env` carries its URL, with no deployed database's URL anywhere in the worktree.

@@ -74,7 +74,7 @@ Three edits go with it:
 2. Label it in `ACTION_LABELS` in `web/next/src/lib/activity.ts`. The map is keyed by the action union, so a verb without a label is a type error rather than a blank cell.
 3. Write its sentence beside the others in `packages/db/src/console.ts`. This one is a convention rather than a rule, and the reason to follow it is that keeping the sentences together is what lets you hear whether a new one sounds like the rest.
 
-An actor that is not a person passes `{ label }` in place of `{ email, id }`, the shape the rule, the bootstrap and the CLI use.
+An actor that is not a person passes `{ label }` in place of `{ email, id }`, as the rule and the bootstrap do; the label lands in `actor` with no `actorId`, the row `console:roles` writes by hand.
 
 ## Common questions
 

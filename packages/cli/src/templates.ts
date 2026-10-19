@@ -103,7 +103,7 @@ Guidance for AI coding agents working in this repository.
 
 Skills live in \`.agents/skills\` (symlinked to \`.claude/skills\` and \`.github/skills\`, so every agent tool reads the same files). Each is a \`SKILL.md\` with a \`description\` trigger and a literal procedure. Start with \`codebase-map\` to orient, then load the task skill that fits.
 
-These tables are generated from each skill's own description by \`bun .github/scripts/skills-manager.ts\`, which a pre-commit hook runs for you. **Custom** skills are maintained here; **vendored** skills are copied from upstream; re-vendor to update, then put back what the \`skills-manager\` skill lists.
+These tables are generated from each skill's own description by \`bun .github/scripts/skills-manager.ts\`, which a pre-commit hook runs for you. **Custom** skills are maintained here; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
 
 **Custom**
 
@@ -111,7 +111,7 @@ These tables are generated from each skill's own description by \`bun .github/sc
 
 <!-- /skills:custom -->
 
-**Vendored** (from upstream)
+**Vendored** (upstream, copied verbatim)
 
 <!-- skills:vendored -->
 

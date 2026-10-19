@@ -15,7 +15,7 @@ curl -fL -o web/next/src/fonts/<name>-latin-wght-normal.woff2 \
   https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/files/<name>-latin-wght-normal.woff2
 ```
 
-No dependency: `-f` turns a wrong name into a non-zero exit instead of an HTML page on disk. Done when curl exits 0 and the file is on disk.
+A family that ships an italic (its package serves a `wght-italic.css`, as the shipped sans's does) also takes `<name>-latin-wght-italic.woff2` the same way; skip it and every italic synthesizes. No dependency: `-f` turns a wrong name into a non-zero exit instead of an HTML page on disk. Done when curl exits 0 and each file is on disk.
 
 ## 2. Declare it
 
@@ -29,7 +29,7 @@ export const <export> = localFont({
 })
 ```
 
-Omitted, `weight` leaves the face at 400 and every bold glyph synthesizes. A serif adds `adjustFontFallback: "Times New Roman"` (the metrics default to Arial); an italic-only file sets `style: "italic"`; the mono renders synthetic oblique for italics, by choice. A swap also removes the font it replaces (step 6), or every page keeps preloading a face nothing renders. Done when the export carries `variable` and a `weight` matching that CSS.
+Omitted, `weight` leaves the face at 400 and every bold glyph synthesizes. A family with both faces takes `src` as an array of `{ path, style }`, `"normal"` and `"italic"`, as `dmSans` does; an italic-only file sets `style: "italic"`; a serif adds `adjustFontFallback: "Times New Roman"` (the metrics default to Arial); the mono renders synthetic oblique for italics, by choice. A swap also removes the font it replaces (step 6), or every page keeps preloading a face nothing renders. Done when the export carries `variable` and a `weight` matching that CSS.
 
 ## 3. Apply it
 
