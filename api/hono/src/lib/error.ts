@@ -128,7 +128,7 @@ export const forbiddenErrorResponses: ResponsesWithResolver = {
 export const notFoundErrorResponses: ResponsesWithResolver = {
   404: errorResponse("NOT_FOUND", "Not found"),
 }
-// Add to routes with a request validator, the only thing that returns 400; the 400 also carries the per-field issues.
+// Add to routes with a request validator or their own 400 check; a validator's 400 also carries the per-field issues.
 export const validationErrorResponses: ResponsesWithResolver = {
   400: {
     description: "Invalid request payload",

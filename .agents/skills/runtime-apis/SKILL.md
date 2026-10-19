@@ -18,7 +18,7 @@ Two rules, in order:
 | Area | Runtime | Rule |
 | --- | --- | --- |
 | `.github/workflows/*` (`actions/github-script`) | Node | `require("node:...")`. |
-| `packages/*/tsdown.config.ts` | Node | `node:` only: the `tsdown` bin starts with `#!/usr/bin/env node`, so `bun run build` loads the config under Node. |
+| `api/hono/tsdown.config.ts`, `packages/*/tsdown.config.ts` | Node | `node:` only: the `tsdown` bin starts with `#!/usr/bin/env node`, so `bun run build` loads the config under Node. |
 | `packages/auth/src/{access,schema}.ts` | Node + Bun | `node:` only: `bun run auth:schema` loads both under Node through the Better Auth CLI. Client components import `access.ts`, so it carries no `node:*` at all. |
 | `packages/cli/**` (canonical starter only) | Node | `node:` only: published to npm and launched through `npx`, so `Bun.*` breaks every user. |
 | `packages/config/src/**` | Node + Bun | No `node:*` at all: the web imports `site` and `console`, client components included. |
