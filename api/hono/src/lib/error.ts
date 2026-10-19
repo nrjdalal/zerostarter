@@ -114,7 +114,7 @@ export const globalErrorResponses: ResponsesWithResolver = {
   500: errorResponse("INTERNAL_SERVER_ERROR", "Internal Server Error"),
 }
 
-// Add to routes behind authMiddleware, the only thing that returns 401.
+// Add to routes behind authMiddleware, which returns 401, as does the console gate it fronts.
 export const authErrorResponses: ResponsesWithResolver = {
   401: errorResponse("UNAUTHORIZED", "Unauthorized"),
 }

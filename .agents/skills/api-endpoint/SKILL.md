@@ -54,7 +54,7 @@ export const exampleRouter = new Hono().post(
 )
 ```
 
-`responses` spreads one set per middleware the route sits behind: `validationErrorResponses` for a validator, `authErrorResponses` behind `authMiddleware`, `forbiddenErrorResponses` behind the console gate, plus `notFoundErrorResponses` for a row addressed by id and `conflictErrorResponses` for a unique constraint it can lose to. 429 and 500 come from `src/index.ts` for every method. A method missing from `cors()`'s `allowMethods` and the OpenAPI `defaultOptions` beside it joins both lists, or the browser's preflight fails (curl sends none) and the route's 429 and 500 go undocumented. Done when `bunx turbo run check-types --filter=@api/hono` exits 0 and `responses` holds 200 plus one spread per middleware the route sits behind.
+`responses` spreads one set per middleware the route sits behind: `validationErrorResponses` for a validator or a 400 the handler raises itself, `authErrorResponses` behind `authMiddleware`, `forbiddenErrorResponses` behind the console gate, plus `notFoundErrorResponses` for a row addressed by id and `conflictErrorResponses` for a unique constraint it can lose to. 429 and 500 come from `src/index.ts` for every method. A method missing from `cors()`'s `allowMethods` and the OpenAPI `defaultOptions` beside it joins both lists, or the browser's preflight fails (curl sends none) and the route's 429 and 500 go undocumented. Done when `bunx turbo run check-types --filter=@api/hono` exits 0 and `responses` holds 200 plus one spread per middleware the route sits behind.
 
 ## 2. Wire it
 
