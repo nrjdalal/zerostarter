@@ -14,7 +14,7 @@ Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming
 
 ## 2. Review the diff
 
-Read `git diff`. Done when it is empty or every hunk is a registry change in what the sync re-scaffolds (`components.json`, `globals.css`, `ui/`); a hunk that drops an override is a guard whose target moved (step 4).
+Read `git status` and `git diff`. Done when the diff is empty or every hunk is a registry change in what the sync re-scaffolds (`components.json`, `globals.css`, `ui/`, and any file a registry item writes beside them, such as a new `hooks/` or `lib/` helper a component imports, which `git status` lists as untracked); a hunk that drops an override is a guard whose target moved (step 4).
 
 ## 3. Type-check
 
