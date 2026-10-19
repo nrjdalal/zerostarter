@@ -54,7 +54,7 @@ Running `bun .github/scripts/docs.ts` stamps a missing `createdAt` with today's 
 
 The starter's post images sit under `web/next/public/marketing/blog/<slug>/images/`, referenced by absolute path; `web/next/public/` does not ship to a fork, which keeps its images under its own `public/`.
 
-The publishing rule lives in one place, `web/next/src/lib/blog-policy.ts`, and the listing, sitemap, `llms.txt` and OG routes all read it, so they can never disagree about what is public.
+The publishing rule lives in one place, `web/next/src/lib/blog-policy.ts`, and the listing, sitemap, `llms.txt` and OG routes all read it, so they apply one rule. Each re-applies it on its own sixty-second revalidation, though, so for about a minute after a release time one of them can list a post another does not list yet.
 
 ## Search
 

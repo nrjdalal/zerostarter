@@ -40,7 +40,7 @@ docker diff t-offline | grep .bun/install/cache
 docker rm -f t-offline
 ```
 
-Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first auth call of any kind rather than boot (every auth endpoint and every adapter call opens one), and the agent sign-in, which calls the adapter directly, is that call. It answers an error here, since no database is reachable, and answers within a second; a stall means the `--no-install` guard left the image's command. Done when health answers, sign-in answers within a second, and the `docker diff` prints nothing.
+Health alone proves nothing about sign-in: Better Auth's guarded `@opentelemetry/api` import fires inside its first span, the first auth call of any kind rather than boot (every auth endpoint and every adapter call opens one), and the agent sign-in, which calls the adapter directly, is that call. It reaches the adapter only when the route is mounted and the `Origin` trusted, so `.env.docker` needs `NODE_ENV=local`, `AGENT_SIGNIN_ENABLED=true` and `http://localhost:3000` in `HONO_TRUSTED_ORIGINS`, as section 5's dummy has. With a deploy's `.env` it answers a 404, and with one that does not trust that origin a 500 `AGENT_LOGIN_FAILED` naming `untrusted Origin`, both before Better Auth is touched, so neither proves anything. Past both, it answers a 500 `INTERNAL_SERVER_ERROR` within a second, since no database is reachable; a stall means the `--no-install` guard left the image's command. Done when health answers, sign-in answers that `INTERNAL_SERVER_ERROR` within a second, and the `docker diff` prints nothing.
 
 ## 3. Single-libc check
 
@@ -91,7 +91,7 @@ Empty optionals pass through `emptyStringAsUndefined`. Three things no config co
 - A dummy-built web image carries its `NEXT_PUBLIC_*` forever, since Next inlines them at build: a smoke build is disposable, and a deploy image builds with the real `.env`.
 - `docker run --env-file` keeps inline comments, so `HONO_RATE_LIMIT=60 # note` fails validation; compose strips them, and a direct run sanitizes first with `sed 's/ #.*//' .env > .env.docker`.
 
-Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side. Compose publishes both on every network interface, and this dummy, like the suite's `.env` in section 4, mounts the agent sign-in (`NODE_ENV=local` with the flag `true`), whose trusted-`Origin` check stops only browser pages, so any host on the network can sign in as `LocalAgent`, an owner on a fresh database: run the stack on a network you trust, or publish `127.0.0.1:3000:3000` and `127.0.0.1:4000:4000` in a scratch checkout.
+Ports `3000` and `4000` collide with a running dev stack; bump the compose mappings (`14000:4000`) in a scratch checkout for side-by-side. Compose publishes both on every network interface, and this dummy, like the suite's `.env` in section 4, mounts the agent sign-in (`NODE_ENV=local` with the flag `true`), whose trusted-`Origin` check stops only browser pages, so any host on the network can sign in as `LocalAgent`, an owner from the call that creates the account until someone demotes it: run the stack on a network you trust, or publish `127.0.0.1:3000:3000` and `127.0.0.1:4000:4000` in a scratch checkout.
 
 ## 6. Browser sign-in
 

@@ -918,7 +918,7 @@ const { data, error } = await unwrap(
     },
   )
   // The waitlist is a public signup list rather than an access decision, so it sits behind its own flag: with the surface off, these routes 404 like the page and the nav entry do.
-  // Both paths are listed, like the allowlist above: a Hono wildcard does not match the bare segment, so the bare route needs its own line, and without the wildcard a sub-path added later would be ungated with nothing pointing at the omission.
+  // Both paths are listed, like the allowlist above: Hono's wildcard also matches the bare segment, so the bare line is redundant but states the gate beside its route, and the wildcard is what keeps a sub-path added later gated.
   .use("/waitlist", requireFeature("waitlist"))
   .use("/waitlist/*", requireFeature("waitlist"))
   .get(

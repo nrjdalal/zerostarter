@@ -37,7 +37,7 @@ Under `bun run dev`, `.github/scripts/portless.ts` sets four of them in the proc
 | Variable                            | Schema   | What it does                                                                                                                                                                                                                              |
 | ----------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AGENT_SIGNIN_ENABLED`              | optional | Defaults to `false`. Mounts the local [agent sign-in](/docs/getting-started/working-with-agents), and only while `NODE_ENV` is `local` (`api/hono/src/lib/agent-signin.ts`); `init` and `reinit` write `true` over a blank or missing one |
-| `BETTER_AUTH_SECRET`                | required | Signs sessions; `init` and `reinit` generate one when it is blank. A [skip flag](#skipping-validation) leaves it unset rather than dummied, with the risk that section names                                                              |
+| `BETTER_AUTH_SECRET`                | required | Signs sessions; `init` and `reinit` generate one when it is blank or missing. A [skip flag](#skipping-validation) leaves it unset rather than dummied, with the risk that section names                                                   |
 | `GITHUB_CLIENT_ID` / `_SECRET`      | optional | GitHub sign-in registers only when both are set                                                                                                                                                                                           |
 | `GOOGLE_CLIENT_ID` / `_SECRET`      | optional | Google sign-in registers only when both are set                                                                                                                                                                                           |
 | `HONO_APP_URL`                      | required | The api's public origin; the cookie scope and Better Auth's `baseURL` derive from it in `packages/auth/src/index.ts`                                                                                                                      |
@@ -120,7 +120,7 @@ No, it is the Docker variable, and Compose sets it on both services. It does thr
 ## It's working if
 
 - `bun run dev` with `POSTGRES_URL` blank stops at the `@packages/db` build, before either app starts, with `❌ Invalid environment variables:` and an issue whose `path` is `POSTGRES_URL`, then throws `Invalid environment variables`; nothing starts against a half-read config.
-- With `NODE_ENV=local`, `next dev` prints `@web/next:getSafeEnv:` with the slice's values and `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` shown as `******** REDACTED ********`.
+- Started as `NODE_ENV=local bun run dev`, `next dev` prints `@web/next:getSafeEnv:` with the slice's values and `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` shown as `******** REDACTED ********`. With the stage in `.env` alone it prints nothing: `next dev` sets `NODE_ENV=development` before `next.config.ts` loads `.env`, which never overrides a value the process already has.
 - Reading `env.INTERNAL_API_URL` from a client component throws `❌ Attempted to access a server-side environment variable on the client`.
 
 ## Next

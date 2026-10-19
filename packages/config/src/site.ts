@@ -58,14 +58,14 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 
 **Environment variables:**
 - A single root \`.env\` (not per-package). Client code may only read \`NEXT_PUBLIC_*\` variables.
-- Always read env through the validated \`@packages/env/*\` entrypoint for the consumer, never \`process.env\` directly.
+- Read the app's variables through the validated \`@packages/env/*\` entrypoint for the consumer. \`process.env\` is read directly only for values the schemas leave out or Next inlines at build: what the host or Next injects (\`PORT\`, \`VERCEL*\`, \`NEXT_PHASE\`, and \`NODE_ENV\` in client code), \`GIT_SHA\` and the two skip flags.
 
 **API:**
 - Backend routes are defined in \`api/hono/src/routers/\`.
-- The frontend calls the API only through the type-safe RPC client (\`import { apiClient } from "@/lib/api/client"\`); do not use raw \`fetch\` or \`axios\`.
+- The frontend calls the api's own routes through the type-safe RPC client (\`import { apiClient } from "@/lib/api/client"\`), not raw \`fetch\` or \`axios\`. Better Auth's \`/api/auth/*\` bodies are untyped there: client code goes through \`authClient\` (\`@/lib/auth/client\`), and server code reads the session through \`auth.api.getSession\` in \`@/lib/auth\`, which \`fetch\`es the URL \`apiClient\` builds.
 
 **Database:**
-- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database). \`auth.ts\` there is generated from \`packages/auth/src/schema.ts\` by \`bun run auth:schema\`: declare a plugin or a column there, regenerate, then migrate.
+- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database). \`auth.ts\` there is generated from \`packages/auth/src/schema.ts\` by \`bun run auth:schema\`: declare a plugin or a \`user\` column there, regenerate, then migrate. A plugin that brings a table also adds that table's export to the hand-written \`schema\` map \`drizzleAdapter\` takes in \`packages/auth/src/index.ts\`, or Better Auth's schema check fails every auth call; a \`session\` column takes the extra step in the \`db-migration\` skill.
 
 **Code style:**
 - Use workspace imports (\`@api/hono\`, \`@packages/*\`) and the \`@/\` path alias; avoid deep relative paths.

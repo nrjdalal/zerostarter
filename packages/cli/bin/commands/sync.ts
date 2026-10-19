@@ -147,7 +147,7 @@ export const sync = async (argv: string[]) => {
       skills = reconcileForkSkillsFromRoot(target, skillsBefore)
       // The guide the overlay just supplied, read now because the restore below puts the fork's own back: AGENTS.md is a PRESERVE_ON_SYNC path so that a CLI older than this one never overwrites a fork's guide.
       const guideUpstream = readGuide(target)
-      // Restore the fork-owned local files the .gitpickignore directive names (favicon, audit record).
+      // Restore the fork-owned paths the starter's .gitpickignore PRESERVE_ON_SYNC directive names.
       await gitRestore(target, preserve)
       // Then take the starter's guide only where the fork has not made its own.
       guide = reconcileForkGuideFromRoot(target, { before: guideBefore, upstream: guideUpstream })

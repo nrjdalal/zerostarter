@@ -56,7 +56,7 @@ Two gotchas shape the loop: killing turbo alone leaves `next-server` holding its
 
 ## Agent login
 
-The route mounts only when the stage is `local` and `.env` sets `AGENT_SIGNIN_ENABLED=true`. `.env.example` leaves the flag blank, but `init` and `reinit` turn a blank flag into `true` beside `NODE_ENV=local`, so a server started from that `.env` serves the route, a Docker deploy included (compose reads the same file); a deploy's `.env` sets `NODE_ENV` to `production` or `staging` and the flag to `false`, which survives a re-seed. The api listens on every network interface, dev included, and the route requires a trusted `Origin`, which stops a page on another site, not a client that sets the header itself, as this curl does, so any host on the network that reaches the api port can sign in:
+The route mounts only when the stage is `local` and `.env` sets `AGENT_SIGNIN_ENABLED=true`. `.env.example` leaves the flag blank, but `init` and `reinit` turn a blank or missing flag into `true` beside `NODE_ENV=local`, so a server started from that `.env` serves the route, a Docker deploy included (compose reads the same file); a deploy's `.env` sets `NODE_ENV` to `production` or `staging` and the flag to `false`, which survives a re-seed. The api listens on every network interface, dev included, and the route requires a trusted `Origin`, which stops a page on another site, not a client that sets the header itself, as this curl does, so any host on the network that reaches the api port can sign in:
 
 ```bash
 WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)

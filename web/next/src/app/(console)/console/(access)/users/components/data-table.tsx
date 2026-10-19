@@ -270,7 +270,7 @@ export function UsersDataTable() {
         description={
           <>
             {shownStatus && shownStatus.banned
-              ? "Signed out everywhere, and cannot sign back in until you unban them."
+              ? "Signs them out within five minutes, and they cannot sign back in until you unban them."
               : "They can sign in again. Their role is unchanged, so this restores exactly the access they had."}
             {shownStatus && shownStatus.users.length > 1
               ? " Anyone you do not outrank is left as they are."

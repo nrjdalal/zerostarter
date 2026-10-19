@@ -70,7 +70,7 @@ curl -sS -X POST -H "Content-Type: application/json" -H "Origin: $WEB" \
   -d '{"email":"you@example.com"}' "$API/api/<name>"
 ```
 
-Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/openapi.json` names the path (the document is served while `apiDocs` in `packages/config/src/site.ts` is on).
+A route in `v1.ts` sits at `/api/v1/<name>` behind the auth gate, so sign in first (the `dev` skill's Agent login) and add `-b cookies.txt`: without a session every path there answers 401 `UNAUTHORIZED`, and below admin every path under `/api/v1/admin` answers 403 `FORBIDDEN`, before the route runs. Done when valid input returns `{ data }`, invalid returns the `VALIDATION_ERROR` envelope, and `/api/openapi.json` names the path (the document is served while `apiDocs` in `packages/config/src/site.ts` is on).
 
 ## 4. Call it from the web app
 
