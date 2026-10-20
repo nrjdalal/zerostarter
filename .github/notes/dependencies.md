@@ -18,6 +18,8 @@ Rewriting a spec after resolution leaves `bun.lock` holding the old spec string 
 
 Note that a caret on a prerelease widens it more than it may look: `^2.0.14-beta.1` admits `2.0.14-beta.2` and every later `2.x`. A prerelease is the one spec most often pinned on purpose, so if an exact prerelease matters, record the reason here before the rule rewrites it.
 
+`tsrs` runs the other way. Every release of the port so far is a prerelease, such as `0.18.0-ts7.1.0-dev.20260929`, and its caret admits neither a later minor (a `0.x` caret stops below `0.19.0`) nor a prerelease of any other version, so `bun update` never reaches the next release; only the `audit` skill's `bun update -r --latest` refresh moves it.
+
 The rule has **no opt-out**, so no pin survives an install, whatever reason is recorded here. Pinning something deliberately means changing the rule itself in `.github/scripts/deps-manager.ts`, for example adding an allowlist it skips, and writing down why in this file. That was left out on purpose: there is nothing to exempt today, and an unused config key is worse than adding one when a real case appears.
 
 Enforcement is only partial by design. Specs the rule cannot convert are reported and the script still exits 0, so a compound range such as `>=4.4.3 <5` survives an install with nothing but a line of `postinstall` output. Failing the install instead would block work for a range that may be perfectly deliberate, so the auto-convertible half is enforced and the rest is advisory.

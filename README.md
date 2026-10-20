@@ -38,7 +38,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
 - **SEO**: sitemap, robots, and per-page metadata, indexable by default
-- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [Oxlint](https://oxc.rs) and [Oxfmt](https://oxc.rs), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
+- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [tsrs](https://github.com/oxc-project/tsrs) (type checking), [Oxlint](https://oxc.rs) and [Oxfmt](https://oxc.rs), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
 - **Automated Releases**: changelog generation and a canary-to-main release flow
 
 ## 📂 Monorepo Structure
@@ -116,7 +116,7 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run dev`                     | Start both dev servers on portless URLs     |
 | `bun run build`                   | Build every workspace                       |
 | `bun run release:version`         | Print the release window's version decision |
-| `bun run check-types`             | Type-check every workspace                  |
+| `bun run check-types`             | Type-check every workspace with tsrs        |
 | `bun run test`                    | Build, then run the suite in `tests/`       |
 | `bun run test:e2e`                | Drive a running stack with the e2e suite    |
 | `bun run lint` / `bun run format` | Lint with Oxlint / format with Oxfmt        |

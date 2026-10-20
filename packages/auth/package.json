@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "bun ../scripts/src/generate-env.ts auth && tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "dependencies": {
     "@packages/db": "workspace:*",
@@ -33,6 +33,7 @@
     "@types/node": "catalog:",
     "auth": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }

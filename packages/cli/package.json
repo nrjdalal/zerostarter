@@ -31,7 +31,7 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsrs --noEmit",
     "dev": "tsdown --watch"
   },
   "devDependencies": {
@@ -39,6 +39,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }

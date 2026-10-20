@@ -22,10 +22,11 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "devDependencies": {
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }

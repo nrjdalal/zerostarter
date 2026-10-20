@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify --env disable",
     "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --env disable --external hono",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsrs --noEmit",
     "dev": "portless",
     "dev:app": "concurrently \"tsdown --watch\" \"bun ../../.github/scripts/portless.ts bun --hot src/index.ts\"",
     "start": "bun --no-install bundle/index.mjs"
@@ -40,6 +40,7 @@
     "concurrently": "catalog:",
     "portless": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   },
   "portless": {

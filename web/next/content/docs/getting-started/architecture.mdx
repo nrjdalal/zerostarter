@@ -67,7 +67,7 @@ You feel this most when you refactor: the compiler walks you from the database t
 
 **Tooling**
 
-- [Oxc](https://oxc.rs): one Rust toolchain (`oxlint` + `oxfmt`) in place of ESLint and Prettier. Plus [tsdown](https://tsdown.dev) for backend bundling, and [Lefthook](https://github.com/evilmartians/lefthook) + [Commitlint](https://commitlint.js.org) git hooks.
+- [Oxc](https://oxc.rs): one Rust toolchain (`oxlint` + `oxfmt`) in place of ESLint and Prettier, and `tsrs` in place of `tsc` for `bun run check-types`. Plus [tsdown](https://tsdown.dev) for backend bundling, and [Lefthook](https://github.com/evilmartians/lefthook) + [Commitlint](https://commitlint.js.org) git hooks.
 - [portless](https://portless.sh): named `.localhost` dev URLs off one proxy, branch-prefixed in a git worktree, so parallel checkouts never fight over a port.
 
 <Callout type="info" title="What's a shell, not a feature">

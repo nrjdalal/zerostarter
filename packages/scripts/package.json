@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
@@ -15,7 +15,7 @@
     "changelogen": "catalog:",
     "fontkit": "catalog:",
     "tldts": "catalog:",
-    "typescript": "catalog:",
+    "tsrs": "catalog:",
     "wawoff2": "catalog:"
   }
 }
