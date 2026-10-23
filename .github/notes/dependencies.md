@@ -47,12 +47,7 @@ A version the catalog range admits but the lock keeps back, because the newer on
 
 An advisory with no patched version anywhere cannot be cleared by any of the three rungs, so the gate ignores it by ID instead. Each `--ignore` sits in both gates, `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and in the two docs pages that quote them (`manage/code-quality.mdx`, `contributing.mdx`). Remove it from all four when its exit criteria are met.
 
-### `braces` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm))
-
-- **Advisory:** high: stack-exhaustion denial of service through deeply nested brace patterns. Affects `braces <=3.0.3`, which is every published version; the advisory lists no patched version.
-- **Why an ignore:** there is nothing to update to or override with. `braces@3.0.3` is the latest release, and every parent's latest still reaches it through `micromatch@4.0.8`: `shadcn@4.21.1` depends on `fast-glob` directly, and `globby@16.2.4` on both `fast-glob` and `micromatch`. The `ts-morph` path under `shadcn` would clear at `ts-morph@28` (its `@ts-morph/common` moved to `tinyglobby`), but `shadcn` still declares `ts-morph ^26` and its own `fast-glob`, so the tree keeps the copy either way.
-- **Risk:** negligible. The only consumers are dev tooling: the `shadcn` CLI behind `bun run shadcn:update`, and `globby` in `.github/scripts/deps-manager.ts`, which globs the fixed pattern `**/package.json` on install. Neither takes a pattern from untrusted input, and nothing the api bundle or the web app ships imports the chain.
-- **Exit criteria:** drop the ignore once `braces` publishes a patched version (then a normal `bun audit fix` or refresh lifts it), or once neither `shadcn` nor `globby` resolves `micromatch`.
+None.
 
 ## Retired overrides
 
