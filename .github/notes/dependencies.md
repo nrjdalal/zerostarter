@@ -26,13 +26,13 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-### `fumadocs-mdx` held at `15.4.7`
+### `fumadocs` held at mdx `15.4.7`, core and ui `16.17.1`
 
 - **Break:** `fumadocs-mdx@15.4.10` (inside `^15.4.7`, and it needs `fumadocs-core ^16.17.8`) with `fumadocs-core` and `fumadocs-ui` at `16.17.8` fails `next build`'s type check with 23 errors, measured on 2026-10-23. Every page's `data` types as fumadocs-core's bare `PageData`, so the collection's own fields are gone. `15.4.7` with `16.17.1` is clean. `15.4.8` and `15.4.9` were not tried.
 - **The 23 errors:**
-  - `src/app/(llms.txt)/llms-full.txt/route.ts(17,47)` and `src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts(97,29)`: TS2345, `Page<undefined, PageData>` is not assignable to `LLMPage`, since `getText` is missing.
-  - `src/lib/blog.ts(21,56)`: TS2559, `PageData` has no properties in common with `Pick<BlogPostMeta, "draft" | "publishedAt">`.
-  - TS2339, the property does not exist on `PageData`: `src/app/sitemap.ts` `updatedAt` (38); `src/lib/blog.ts` `createdAt` (32), `draft` (33), `publishedAt` (34); `src/lib/fumadocs.tsx` `body` (27), `publishedAt` (31, 77, 78, 80, 81), `toc` (35), `full` (36), `updatedAt` (53 twice, 54, 55, 81), `author` (96 twice), `tags` (97).
+  - 2 TS2345, in the two `src/app/(llms.txt)` routes: `Page<undefined, PageData>` is not assignable to `LLMPage`, since `getText` is missing.
+  - 1 TS2559, in `src/lib/blog.ts`: `PageData` has no properties in common with `Pick<BlogPostMeta, "draft" | "publishedAt">`.
+  - 20 TS2339, the property does not exist on `PageData`: `updatedAt` in `src/app/sitemap.ts`; `createdAt`, `draft` and `publishedAt` in `src/lib/blog.ts`; `author`, `body`, `full`, `publishedAt`, `tags`, `toc` and `updatedAt` in `src/lib/fumadocs.tsx`.
 - **Reproduce:** `bun update -r fumadocs-core fumadocs-ui fumadocs-mdx`, then `bun run build` in `web/next` with `SKIP_ENV_VALIDATION=true NODE_ENV=production`.
 - **Exit criteria:** drop this entry once a refresh moves the three fumadocs packages together and `bun run build` passes, with a later `fumadocs-mdx` or a fix on our side.
 
