@@ -20,7 +20,7 @@ bun install        # once more: postinstall rewrote ranges, so bun.lock is one i
 bun outdated -r    # expect no rows
 ```
 
-`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group back to its held versions in `bun.lock` after it, unless step 4 proves the break fixed. Done when `bun outdated -r` prints no rows but the held groups'.
+`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group's catalog entries and `bun.lock` back to its held versions after it, unless step 4 proves the break fixed. Done when `bun outdated -r` prints no rows but the held groups'.
 
 ### 2. Move the pins outside npm
 
