@@ -161,7 +161,6 @@
         "@packages/auth": "workspace:*",
         "@packages/config": "workspace:*",
         "@packages/env": "workspace:*",
-        "@pierre/highlights": "catalog:",
         "@remixicon/react": "catalog:",
         "@shadcn/react": "catalog:",
         "@tanstack/react-form": "catalog:",
@@ -235,7 +234,6 @@
     "@hono/node-server": "^2.1.5",
     "@hono/standard-validator": "^0.4.0",
     "@octokit/rest": "^22.0.1",
-    "@pierre/highlights": "^0.2.0",
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.12.14",
     "@shadcn/react": "^0.3.1",
@@ -768,8 +766,6 @@
     "@packages/env": ["@packages/env@workspace:packages/env"],
 
     "@packages/scripts": ["@packages/scripts@workspace:packages/scripts"],
-
-    "@pierre/highlights": ["@pierre/highlights@0.2.0", "", {}, "sha512-hTpcOU1EzDAP4bYtEhxmMu2jwMvtkUydRUBUpWMSHTs3dw0IaC3Ld5ansMy18L0GE3b6Vfl2OGkLK+pWWpnBmw=="],
 
     "@posthog/browser-common": ["@posthog/browser-common@0.9.11", "", { "dependencies": { "@posthog/core": "^1.60.1", "@posthog/types": "^1.416.0", "preact": "^10.29.3" } }, "sha512-ZCwJIgiDBRoEAlrlYxaIIIAUfITmBDpWDQJp+IZmAcTyvJka5/ebEKu8uV+jSSA/RhpvDKKte1WmhLUbkIWQjA=="],
 

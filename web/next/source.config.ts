@@ -1,5 +1,3 @@
-import { createHighlights } from "fumadocs-core/highlight/highlights"
-import { rehypeCodeFromHighlighter } from "fumadocs-core/mdx-plugins/rehype-code.core"
 import { pageSchema } from "fumadocs-core/source/schema"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 import { z } from "zod"
@@ -65,17 +63,4 @@ export const consoleDocs = defineDocs({
   },
 })
 
-const highlighter = createHighlights()
-
-export default defineConfig({
-  mdxOptions: {
-    rehypeCodeOptions: false,
-    rehypePlugins: (v) => [
-      () =>
-        rehypeCodeFromHighlighter(({ transformers }) =>
-          highlighter.override({ shikiTransformers: transformers }),
-        ),
-      ...v,
-    ],
-  },
-})
+export default defineConfig()

@@ -79,7 +79,6 @@
     "@hono/node-server": "^2.1.5",
     "@hono/standard-validator": "^0.4.0",
     "@octokit/rest": "^22.0.1",
-    "@pierre/highlights": "^0.2.0",
     "@remixicon/react": "^4.9.0",
     "@scalar/hono-api-reference": "^0.12.14",
     "@shadcn/react": "^0.3.1",
