@@ -1,3 +1,19 @@
+## v0.1.39
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.38...v0.1.39)
+
+### 🚀 Enhancements
+
+- Check types with tsrs, move every dependency to latest and sync shadcn ([#885](https://github.com/nrjdalal/zerostarter/pull/885))
+
+### 🩹 Fixes
+
+- **deps:** Raise next to ^16.4.1 past three security advisories ([#881](https://github.com/nrjdalal/zerostarter/pull/881))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.38
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.37...v0.1.38)
