@@ -13,7 +13,7 @@ import { blogSource, consoleSource, docsSource } from "@/lib/source"
 
 export type ContentKind = "blog" | "console" | "docs"
 
-// The one place that knows each content kind's source, base URL, the feature flag that gates it, and whether it has an /og route. baseUrl is `/console/docs` for the admin-gated internal docs (feature `internalDocs`), which has no OG route.
+// The one place that knows each content kind's source, base URL, the feature flag that gates it, and whether it has an /og route. baseUrl is `/console/docs` for the member-level internal docs (feature `internalDocs`), which has no OG route.
 const REGISTRY = {
   blog: { source: blogSource, baseUrl: "/blog", feature: "blog", og: true },
   console: { source: consoleSource, baseUrl: "/console/docs", feature: "internalDocs", og: false },
@@ -30,7 +30,7 @@ export interface ContentSource<K extends ContentKind> {
   kind: K
   baseUrl: string
   enabled: boolean
-  // Whether this kind has an /og${baseUrl} route; false for console, so metadata omits the OG image rather than pointing at a route that does not exist.
+  // Whether this kind has an /og${baseUrl} route; false for console, which has none: its page calls no generatePageMetadata, so it inherits the root layout's home OG image.
   og: boolean
   source: SourceOf<K>
   getPageOr404: (slug: string[] | undefined) => PageOf<K>

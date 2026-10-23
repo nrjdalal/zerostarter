@@ -1,93 +1,81 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository, a Bun monorepo: the `web/next` app, the `api/hono` service, and shared `packages/*` (auth, config, db, env), with build-only tooling in `packages/scripts`. The canonical starter also carries the `packages/cli` npm binary and the `tests/` suite, neither of which a fork takes; this guide and every skill ship to a fork whole, rebranded to its name. Start each task with the `codebase-map` skill to orient, then load the task skill that fits (see [Skills](#skills)).
+Guidance for AI coding agents in this repository: a Bun monorepo with the `web/next` app, the `api/hono` service, and shared `packages/*`. The canonical starter also carries the `packages/cli` npm binary, the `tests/` suite and `.github/notes/`, none of which a fork takes; this guide and every skill ship to a fork whole, rebranded to its name. Start each task with the `codebase-map` skill, then load the task skill that fits (see [Skills](#skills)).
 
 ## Workflow
 
-- ALWAYS: Do every change in its own git worktree, never on the primary checked-out branch. Create it under `.claude/worktrees/` (repo-root relative, one directory per worktree; never `/tmp`, home, or a sibling of the repo), and fork its branch from the latest `canary`: fetch first, then branch from `origin/canary` (`git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary`), so the change builds on current main.
-- ALWAYS: Show the user a new or altered database schema and wait for their go before generating or applying a migration. Name the choices that are costly to reverse and stop; a shape is cheap to argue about and expensive to change once rows exist, and `canary` shares its database with production, so applying reaches production immediately. See the `db-migration` skill.
-- ALWAYS: Point local database work at a disposable container (`bunx pglaunch -k`) set in the worktree's own `.env`, never the `POSTGRES_URL` that ships in the root `.env`. That one is the shared Neon database read by both `canary` and production, so a migration or a rename applied there reaches production immediately and under running code. Seed fake rows; real rows must never reach a screenshot or a PR. See the `db-migration` skill.
-- ALWAYS: Keep documentation in sync with every change. Whenever code, structure, conventions, or tooling change, update the matching docs in the same change (e.g. `web/next/content/docs/`, `README.md`, the `llms.txt`/`llms-full.txt` context routes, skill docs under `.agents/skills/` and `.claude/skills/`, and these agent guides `AGENTS.md`/`CLAUDE.md`). Docs must never drift. See the `doc-sync` skill.
-- ALWAYS: When code, a convention, a command, a path, or tooling changes, review the skills in `.agents/skills/` that touch it and update them in the same change, so every skill stays accurate and relevant. A skill that describes old behavior misleads every agent that loads it, which is worse than no skill. If a change makes a skill obsolete, remove it; if it reveals a gap, consider adding one.
+- ALWAYS: Work in a git worktree under `.claude/worktrees/`, one directory per change, branched from freshly fetched `origin/canary` (`git fetch origin canary && git worktree add .claude/worktrees/<name> -b <branch> origin/canary`), so the change builds on current canary; a repo with no remote yet branches from its local `canary` instead. `.gitignore` does not list `.claude/worktrees/`, so add it to `.git/info/exclude` once per clone: otherwise the primary checkout shows every worktree as untracked, and a fork's `sync` and `reinit` refuse that tree as dirty. With the exclude in place `reinit` runs, and it deletes every file under `.claude/worktrees/` but the `.env*` files, uncommitted work included, so push or remove each worktree before it. A new worktree has neither `node_modules` nor `.env`, since git ignores both (`dev` sets them up).
+- ALWAYS: Show the user a new or altered schema and wait for their go before generating or applying a migration, naming the choices that are costly to reverse (`db-migration`).
+- NEVER: Point local database work at a database a deployed environment reads, since a migration applied there is applied under running code; in the canonical starter that is the root `.env`'s `POSTGRES_URL`, the Neon database `canary` and production both read. Local work runs against a disposable container (`bunx pglaunch@5.5.7 -k`) named in the worktree's own `.env`, seeded with fake rows (`db-migration`).
+- ALWAYS: Land the docs and the skills a change touches in the same change, and remove a skill the change makes obsolete (`doc-sync`).
 
 ## Code
 
-- ALWAYS: Use `@/` for imports, if applicable.
-- ALWAYS: Put every test under the repo-root `tests/` directory, mirroring the path of the file it covers (`api/hono/src/lib/sql.ts` is tested by `tests/api/hono/src/lib/sql.test.ts`). One `bun run test` runs the suite; a package never carries its own `test/` directory or `test` script. That script builds `packages/*` first, because a test reaches a shared package through its `exports`, which point at `dist`, so on a fresh checkout an unbuilt package resolves to nothing. Only the shared packages are built, not the apps: a test imports app code by source path and never through `dist`. `tests/` is fork-excluded, so the root script no-ops where the directory is absent. Note `bun test` skips dot-directories, which is why `.github/scripts` tests live under `tests/github/scripts/`. An end-to-end test mirrors the router or page its requests hit and carries the `.e2e.test.ts` suffix (`api/hono/src/routers/admin.ts` is driven by `tests/api/hono/src/routers/admin.e2e.test.ts`), imports the stack helper at `tests/stack.ts`, drives the artifact over HTTP without importing app source, and skips itself when either of `E2E_API_URL` and `E2E_WEB_URL` is unset, which is how `bun run test` stays green without a stack; `bun run test:e2e` names the compose ports unless those variables say otherwise, refuses any host that is not local, and needs a local-stage stack (`NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true`) so the agent can sign in, with both OAuth credential pairs set to any value, the id and the secret of each, since a provider registers only when both halves are present and the providers snapshot lists all three.
-- ALWAYS: Put a new build or tooling script in `packages/scripts/src/`, not `.github/scripts/`, and declare the dependencies it imports on that package. It is a real workspace package, so `turbo prune` carries it into the Docker build without an extra COPY.
-- ALWAYS: Prefer a Bun-native API when the file runs under Bun and one exists (`Bun.file`, `Bun.write`, `Bun.spawn`); otherwise use a Node built-in with the `node:` protocol prefix (`import { join } from "node:path"`, `require("node:fs")`), never the bare specifier. Code that runs under Node in any environment (the `packages/cli` npm binary in the canonical starter, `web/next`, where `next dev` runs under Node while Docker and Vercel serve it under Bun, and shared `packages/env`) stays on `node:`. See the `runtime-apis` skill.
-- ALWAYS: Keep enumerable lists alphabetical (A→Z), union/enum members, env-var schemas and their `runtimeEnv`/`turbo.json` mirrors, and the docs that list them, so the code and its docs stay in the same order. Use a meaningful order (flow, priority, required-then-optional) only where alphabetical would obscure intent. API response schemas are included, and they order by relevance first, then A→Z: where one key is what the response is about and the rest describe it, that key leads and the others sort after it (`users`, then `hasNextPage`, `page`, `perPage`, `total`). Everything else, a row's own fields included, is plain A→Z with `id` in its alphabetical place rather than hoisted. Sorting the subject too would put it in a different position on every endpoint, which is the drift this rule exists to prevent.
-- ALWAYS: Version every root `catalog` entry with a caret range (`^1.2.3`), never an exact pin or a tilde. `.github/scripts/deps-manager.ts` rewrites exact and tilde specs on `postinstall`, including specs it promotes into the catalog from a workspace dep, and reports the rest (wildcards, dist-tags, compound ranges) for a manual fix. There is no opt-out: no pin survives an install, so pinning deliberately means changing the rule in that script and recording why in `.github/notes/dependencies.md`.
-- Do not comment unnecessarily. Only comment if it is absolutely necessary.
-- Keep comments on a single line; do not split one across multiple `//` lines or use multi-line `/* */` blocks.
-- NEVER: Use em-dashes (the long dash, U+2014) in code, comments, docs, or copy. Regular hyphens are fine; for a pause or aside, use a comma, colon, or period.
+- ALWAYS: Import through `@/` where the alias applies.
+- ALWAYS: Put a test under the repo-root `tests/`, mirroring the path of the file it covers; a package carries no `test/` of its own (canonical starter only; `codebase-map` holds the layout).
+- ALWAYS: Put a new build or tooling script in `packages/scripts/src/`, with its dependencies declared there, so `turbo prune` carries it into the Docker build.
+- ALWAYS: Use a Bun-native API where the file runs under Bun and one exists; otherwise a Node built-in with the `node:` prefix (`runtime-apis` names the areas that run under Node).
+- ALWAYS: Keep enumerable lists A→Z (enum members, env-var schemas and their mirrors, the docs that list them), with a meaningful order only where alphabetical would obscure intent; an API response leads with its subject, then A→Z (`api-endpoint`).
+- ALWAYS: Version every root `catalog` entry with a caret range; `postinstall` rewrites exact and tilde pins back, so a deliberate pin means changing that rule and recording why (`audit`).
+- Comment only where the code cannot say it, on one line.
+- NEVER: Use an em-dash (U+2014) in code, comments, docs, or copy; a comma, colon, or period carries the pause, and a hyphen is fine.
+- NEVER: Use an `unstable_` framework API; stable APIs only, so an upgrade never strands a feature on one.
 
 ## UI
 
-- ALWAYS: Follow the `design` skill for UI, styling, and design decisions (it holds the canonical conventions). Update it in the same change when a convention changes.
-- ALWAYS: For any frontend or UI change, verify it in a real browser with agent-browser before opening or updating a PR; drive the actual page or flow, do not rely on type-check and lint alone. Run the end-to-end flow when the change spans it or when asked. Capture screenshots and attach them to the PR with `gh pr comment --attach`. See the `ui-verify` skill.
+- ALWAYS: Follow the `design` skill for UI, styling, and design decisions, and update it in the same change when a convention changes.
+- NEVER: Hand-edit `web/next/src/components/ui/`; it is generated, and a customization goes through the post-sync script (`shadcn-sync`).
+- ALWAYS: Verify a frontend change in a real browser before opening or updating a PR, signed in as the agent where the page needs it, with before and after screenshots attached to the PR (`ui-verify`).
 
 ## Commits
 
-- Make atomic commits in the Conventional Commits format. See the `gh-commit` skill.
-- NEVER: Include "Co-authored-by" in commit messages.
+- ALWAYS: Make atomic commits in the Conventional Commits format (`gh-commit`).
+- NEVER: Add a `Co-authored-by` trailer; the author line alone names who committed.
 
 ## Working notes
 
-- Write audit reports (any kind) to `.github/notes/audits/` as dated files (`YYYY-MM-DD-<topic>.md`). Audits are transient working docs: delete one once its findings are fully addressed (shipped or consciously won't-fixed) so the directory does not accumulate stale records.
-- Track planned, in-progress, and parked work in `.github/notes/plans/` (an index plus one file per item), not in dated audit files or scattered across issues; issues are the inbox, folded in and closed once captured.
-- A fork starts both directories itself: `.github/notes/` is the starter's own working record and does not ship.
-
-## Logging in (agents)
-
-Signs in as `LocalAgent` (`agent@local.host`). The route is gated: set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route 404s without it and a deployed default env never exposes it). Then click **Login (agents)** in the dev UI, or use curl:
-
-```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
-curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
-curl -sS -b cookies.txt "$API/api/v1/user"
-```
-
-Local-only (needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`) and requires a trusted `Origin` header. See `api/hono/src/routers/agents.ts` if needed.
+Canonical starter only: audits and plans live under `.github/notes/`, laid out by `.github/notes/plans/README.md`.
 
 ## Skills
 
-Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` with a `description` trigger and a literal procedure; only the description is scanned until a skill matches. Start with `codebase-map` to orient, then load the task skill that fits. **Custom** skills are maintained in this repo; **vendored** skills are copied verbatim from an upstream project (re-vendor to update, do not hand-edit).
+Skills live in `.agents/skills` (symlinked to `.claude/skills` and `.github/skills`, so every agent tool reads the same files). Each is a `SKILL.md` whose `description` is the trigger and whose body is the procedure; only the description is scanned until a skill matches. **Custom** skills are maintained in this repo; **vendored** skills are copied from upstream; re-vendor to update, then put back what the `skills-manager` skill lists. Write or change a custom skill, or this guide, with `writing-for-agents` loaded; write or change a docs page with `writing-docs` loaded.
 
 **Custom**
 
 <!-- skills:custom -->
 
-| Skill                                                    | Description                                                                                                                                                                         |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [add-package](.agents/skills/add-package/SKILL.md)       | Add a new shared workspace package under packages/*.                                                                                                                                |
-| [api-endpoint](.agents/skills/api-endpoint/SKILL.md)     | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                                 |
-| [audit](.agents/skills/audit/SKILL.md)                   | Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md.                                      |
-| [codebase-map](.agents/skills/codebase-map/SKILL.md)     | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                            |
-| [db-migration](.agents/skills/db-migration/SKILL.md)     | Create and apply a Drizzle schema change.                                                                                                                                           |
-| [design](.agents/skills/design/SKILL.md)                 | Follow and maintain the app's UI conventions.                                                                                                                                       |
-| [dev](.agents/skills/dev/SKILL.md)                       | Start, restart, and verify the ZeroStarter dev stack. `bun run dev` serves portless named `.localhost` URLs (branch-prefixed in a worktree); resolve them with `bunx portless get`. |
-| [doc-sync](.agents/skills/doc-sync/SKILL.md)             | Sync docs and skills so they never drift from the code.                                                                                                                             |
-| [docker-test](.agents/skills/docker-test/SKILL.md)       | Build and smoke-test the Docker images with docker compose, and run the golden end-to-end suite against them.                                                                       |
-| [fonts](.agents/skills/fonts/SKILL.md)                   | Add, swap, or remove a self-hosted web font (latin variable woff2 from fontsource, localized via next/font/local).                                                                  |
-| [gh-commit](.agents/skills/gh-commit/SKILL.md)           | Create atomic commits in the conventional format.                                                                                                                                   |
-| [icebox](.agents/skills/icebox/SKILL.md)                 | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                                 |
-| [ignore-sync](.agents/skills/ignore-sync/SKILL.md)       | Mirror .gitignore to .dockerignore.                                                                                                                                                 |
-| [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                                               |
-| [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                                  |
-| [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                              |
-| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream.                                                       |
-| [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                                   |
+| Skill                                                    | Description                                                                                                                                                             |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [add-package](.agents/skills/add-package/SKILL.md)       | Add a new shared workspace package under packages/*.                                                                                                                    |
+| [api-endpoint](.agents/skills/api-endpoint/SKILL.md)     | Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.                                                     |
+| [audit](.agents/skills/audit/SKILL.md)                   | Refresh every dependency and version pin to its latest release, run the dependency security audit, and in the canonical starter maintain .github/notes/dependencies.md. |
+| [codebase-map](.agents/skills/codebase-map/SKILL.md)     | Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.                                                |
+| [db-migration](.agents/skills/db-migration/SKILL.md)     | Create and apply a Drizzle schema change.                                                                                                                               |
+| [design](.agents/skills/design/SKILL.md)                 | Follow and maintain the app's UI conventions.                                                                                                                           |
+| [dev](.agents/skills/dev/SKILL.md)                       | Start, restart, and verify the dev stack, and sign in as the agent.                                                                                                     |
+| [doc-sync](.agents/skills/doc-sync/SKILL.md)             | Sync docs and skills so they never drift from the code.                                                                                                                 |
+| [docker-test](.agents/skills/docker-test/SKILL.md)       | Build and smoke-test the Docker images with docker compose, and in the canonical starter run the golden end-to-end suite against them.                                  |
+| [fonts](.agents/skills/fonts/SKILL.md)                   | Add, swap, or remove a self-hosted web font.                                                                                                                            |
+| [gh-commit](.agents/skills/gh-commit/SKILL.md)           | Create atomic commits in the conventional format.                                                                                                                       |
+| [icebox](.agents/skills/icebox/SKILL.md)                 | Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.                                     |
+| [ignore-sync](.agents/skills/ignore-sync/SKILL.md)       | Mirror .gitignore to .dockerignore.                                                                                                                                     |
+| [release](.agents/skills/release/SKILL.md)               | Cut a production release by promoting canary to main.                                                                                                                   |
+| [runtime-apis](.agents/skills/runtime-apis/SKILL.md)     | Prefer Bun-native APIs, else Node built-ins with the node: prefix.                                                                                                      |
+| [shadcn-sync](.agents/skills/shadcn-sync/SKILL.md)       | Run and reconcile the shadcn component sync (`bun run shadcn:update`).                                                                                                  |
+| [skills-manager](.agents/skills/skills-manager/SKILL.md) | Keep the AGENTS.md skills tables generated from skill descriptions.                                                                                                     |
+| [ui-verify](.agents/skills/ui-verify/SKILL.md)           | Verify a frontend or UI change in a real browser.                                                                                                                       |
+| [writing-docs](.agents/skills/writing-docs/SKILL.md)     | Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them.       |
 
 <!-- /skills:custom -->
 
-**Vendored** (upstream, copied verbatim)
+**Vendored** (from upstream)
 
 <!-- skills:vendored -->
 
-| Skill                                                  | Description                                                                                                              |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| [agent-browser](.agents/skills/agent-browser/SKILL.md) | Browser automation CLI for AI agents.                                                                                    |
-| [portless](.agents/skills/portless/SKILL.md)           | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+| Skill                                                            | Description                                                                                                              |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [agent-browser](.agents/skills/agent-browser/SKILL.md)           | Browser automation CLI for AI agents.                                                                                    |
+| [portless](.agents/skills/portless/SKILL.md)                     | Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000). |
+| [writing-for-agents](.agents/skills/writing-for-agents/SKILL.md) | Writing documents for agents.                                                                                            |
 
 <!-- /skills:vendored -->

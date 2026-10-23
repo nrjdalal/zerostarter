@@ -117,12 +117,12 @@ export const gitBranch = async (dir: string, name: string): Promise<void> => {
   await run("git", ["branch", name], dir)
 }
 
-// Stage everything and commit, bypassing hooks; no-op if there is nothing to commit.
+// Stage everything and commit, bypassing hooks; every commit failure is swallowed, so nothing to commit and a refused commit (no identity git can work out) both pass silently.
 export const gitCommitAll = async (dir: string, message: string): Promise<void> => {
   await run("git", ["add", "-A"], dir)
   try {
     await run("git", ["commit", "--no-verify", "-q", "-m", message], dir)
   } catch {
-    // nothing to commit
+    // nothing to commit, or any other commit failure
   }
 }

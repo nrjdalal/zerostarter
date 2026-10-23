@@ -2,9 +2,9 @@
 
 The curated backlog of everything not yet done: in-progress work, planned features, ideas, and known cleanups. One file per item in this folder, each carrying a status and a link to its history (closed issue, branch, or PR). GitHub issues are the inbox for new bugs and requests; fold each in here and close it once captured, so this stays the single backlog rather than a parallel one.
 
-Distinct from the dated code audits in `../audits/` (transient, deleted once addressed) and the dependency-audit register in `../dependencies.md`. An item gets a full spec once it moves to `planned`.
+Distinct from the dated code audits in `../audits/` (one file per audit, named `YYYY-MM-DD-<topic>.md`, transient, deleted once addressed) and the dependency-audit register in `../dependencies.md`. An item gets a full spec once it moves to `planned`.
 
-This is the internal, fork-excluded backlog. It is separate from the published `web/next/content/docs/getting-started/roadmap.mdx` (the curated public roadmap that ships to forks); keep the two from drifting.
+This is the internal, fork-excluded backlog. It is separate from the published `web/next/content/docs/getting-started/roadmap.mdx` (the curated public roadmap on zerostarter.dev; it stays in the canonical starter, since `web/next/content/` is fork-excluded); keep the two from drifting.
 
 ## In progress
 
@@ -56,3 +56,4 @@ Raised but undecided: real concerns with no agreed next action and no confident 
 - [Lighthouse follow-ups that are product tradeoffs](lighthouse-followups.md) - deferring PostHog and raising the browser floor, scoping the fumadocs stylesheets out of the root, a long cache lifetime for stable-named marketing assets, and pausing the grain off-screen; each buys a small number at a visible cost (Lighthouse audit 2026-07-04, PR #653).
 - [An authenticated WebSocket pattern](websocket-auth-ticket.md) - the one shipped socket is public, and nothing shows a fork how to open one as a signed-in user; ship a worked ticket pattern, document it, or keep the one sentence in the `api-endpoint` skill.
 - [The public-suffix /api rewrite bills a Vercel hop](rate-limit-rewrite-bucket.md) - pre-existing: on a `*.vercel.app` host every visitor shares one anonymous bucket on that path; an echo route on a preview API would show which header carries the client (deepsec audit 2026-09-06).
+- [Skills with more than one file do not sync to forks](cli-skill-sibling-files.md) - the CLI syncs, rebrands and hashes only `SKILL.md`, so a sibling branch file reaches a fork unrebranded, is overwritten by every sync without being named, and never shows in `--outdated`; extend the CLI to walk every `*.md`, or keep custom skills single-file by convention.

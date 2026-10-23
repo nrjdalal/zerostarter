@@ -1,120 +1,72 @@
 ---
 slug: /docs/manage/code-quality
 title: Code Quality
-description: Oxlint, Oxfmt, and the git hooks that keep every commit formatted, linted, and building.
+description: Which check runs on the commit, the push and the pull request, and the commit message rules the release reads.
 ---
 
-One Rust toolchain formats and lints the whole monorepo, and [Lefthook](https://github.com/evilmartians/lefthook) runs it (plus a build and a commit-message check) at the moments a mistake would otherwise slip through. You rarely invoke any of it by hand.
+One Rust toolchain, [Oxc](https://oxc.rs), lints and formats the monorepo through `oxlint` and `oxfmt`, and [Lefthook](https://github.com/evilmartians/lefthook) runs it on every commit beside a build and a message check, so a commit that lands is formatted, linted and building.
 
-## Oxc, not ESLint + Prettier
+The hooks see only your staged files and your machine, so the pull request re-runs its checks over the whole tree. Commitlint (`commit-msg`) and `skills-manager` (`pre-commit`) run only in the hooks and nothing in the pull request repeats them, so a commit made with `--no-verify` or `LEFTHOOK=0` skips both.
 
-[Oxc](https://oxc.rs) replaces both ESLint and Prettier with two commands: `oxlint` for linting and `oxfmt` for formatting. They're written in Rust, so they finish in a fraction of the time, fast enough to run on every commit without you noticing. That speed is the whole reason to switch.
+## When you need this
 
-The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schema, every rule at its default:
+Reach for this page when a hook or a pull-request check fails, or to find which gate runs what. How the commits become a version is [Releases](/docs/manage/release); the same toolchain on save is [IDE Setup](/docs/resources/ide-setup).
 
-```jsonc
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-}
-```
+## The gates, in order
 
-`.oxfmtrc.jsonc` turns off semicolons, sorts imports, sorts Tailwind classes, and skips the AI skill directory:
+`lefthook.yml` holds the hooks, `.lintstagedrc.json` what runs on a staged file, and `auto-check-build.yml` the pull request's run. Oxc reads `.oxlintrc.jsonc`, every rule at its default, and `.oxfmtrc.jsonc`: no semicolons, sorted imports and Tailwind classes, `.agents/**` left alone.
 
-```jsonc
-{
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "semi": false,
-  "experimentalSortImports": {},
-  "experimentalTailwindcss": {},
-  "ignorePatterns": [".agents/**"],
-}
-```
+| Gate         | Runs              | What has to pass                                                     |
+| ------------ | ----------------- | -------------------------------------------------------------------- |
+| `pre-commit` | each commit       | `skills-manager`, `oxfmt` then `oxlint`, `bun run build`             |
+| `commit-msg` | each commit       | Commitlint                                                           |
+| `pre-push`   | each push         | `bun audit` (on `canary` only), `ensure-remote-branches.ts`          |
+| pull request | each push to a PR | the audit, `format:check`, `lint`, `check-types`, `test` and `build` |
 
-Run either across the tree yourself:
+The pre-commit hook is `piped`, so the first failure stops the rest. `skills-manager` runs only when a skill's Markdown or `skills-manager.ts` itself is staged, `oxfmt` and `oxlint` see only the staged files and re-stage what the formatter fixed, and a staged `package.json` also goes through the dependency manager. The build type-checks `web/next` only, through `next build`; the api and package builds emit without checking types, so run `bun run check-types`, which covers every workspace, before you push.
 
-```bash
-bun run lint          # oxlint over everything (this is what CI runs)
-bun run format        # oxfmt, writing fixes
-bun run format:check  # oxfmt, report only (also what CI runs)
-```
-
-## The git hooks
-
-`lefthook.yml` wires three hooks:
-
-```yaml
-pre-commit:
-  piped: true
-  commands:
-    skills-manager:
-      priority: 1
-      glob:
-        - ".agents/skills/**/*.md"
-        - ".github/scripts/skills-manager.ts"
-      run: bun .github/scripts/skills-manager.ts && git add AGENTS.md
-    lint-staged:
-      priority: 2
-      run: bunx lint-staged --verbose
-      stage_fixed: true
-    build:
-      run: bun run build
-      use_stdin: true
-
-commit-msg:
-  commands:
-    commitlint:
-      run: bunx commitlint --edit {1}
-
-pre-push:
-  commands:
-    audit:
-      # GHSA-vfj7-8cjw-p6xm: braces has no patched release, and only dev tooling (shadcn, globby) reaches it
-      run: bun audit --audit-level high --ignore GHSA-vfj7-8cjw-p6xm
-      only:
-        - ref: canary
-    ensure-branches:
-      run: bun .github/scripts/ensure-remote-branches.ts {1}
-```
-
-**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats then lints only your staged files (`oxfmt`, then `oxlint`); `stage_fixed: true` re-stages anything the formatter rewrote, so the fix rides along in the same commit. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
-
-**commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
-
-**pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-branches.ts` seeds the release branches (default `main`) that drive the release PR (see [Releases](/docs/manage/release)).
-
-**On a pull request**, the `auto-check-build` workflow re-runs the full gate on GitHub: `bun audit`, `bun run format:check`, `bun run lint`, `bun run check-types`, `bun run test`, and `bun run build`. A failing type error or test blocks the merge, so the checks that are cheap to skip locally (the pre-commit build tolerates type errors that `tsc` would reject) still cannot reach `canary`. It runs once per commit, on the pull-request events only: a review cannot change the result for a commit that is already built, and a second run on the same commit would cancel the first through the workflow's concurrency group, which shows on the pull request as a cancelled check.
+The pre-push audit is `bun audit --audit-level high` on `canary` only, with accepted advisories ignored by id, and `ensure-remote-branches.ts` seeds `main` on a fresh GitHub remote. The pull request's run covers a PR into `canary` or `main`, and a new push cancels the run in progress, which shows as a cancelled check. Canonical starter only: `cli-release.yml` also runs the suite on Linux, macOS and Windows when a `canary` push touches `packages/cli`, `packages/scripts` or `tests`, and `.github/notes/dependencies.md` records each audit override and ignore (the `audit` skill).
 
 <Callout type="warn" title="The local build sees your real .env">
 
-Unlike CI (which sets `SKIP_ENV_VALIDATION=true`), the pre-commit build validates your actual `.env`. A missing or invalid required variable fails the commit locally even though the same build passes in CI.
+CI builds with `SKIP_ENV_VALIDATION=true`; the pre-commit build validates the `.env` you have, so a missing required variable fails the commit while the same change passes in CI.
 
 </Callout>
 
 ## Commit messages
 
-Messages follow [Conventional Commits](https://www.conventionalcommits.org): `<type>(<scope>): <subject>`. Common types are `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `perf`, and `style`; `build` and `revert` are also accepted.
+`<type>(<scope>): <subject>`, checked against `@commitlint/config-conventional` (the `commitlint` key in the root `package.json`). The `gh-commit` skill holds the types and the procedure. No commit carries a `Co-authored-by` trailer, a repo rule in `AGENTS.md` rather than a hook check.
 
-```bash
-feat(auth): add Google OAuth provider
-fix(api): handle null user in session middleware
-docs(readme): update setup steps
-```
+A PR squashed into `canary` lands as one commit (squash is the method [Releases](/docs/manage/release#from-push-to-release) asks for, and only the canonical starter enforces it), and under GitHub's default the PR title heads that commit whenever the PR holds more than one. No hook and no CI step checks the title, so write it as a Conventional Commit too.
 
-Two repo rules the hook and skills enforce:
+The release counts a commit only when changelogen has its type enabled (`packages/scripts/src/release-version.ts`). Of the types commitlint accepts, those are `build`, `chore`, `docs`, `feat`, `fix`, `perf`, `refactor`, `style` and `test`; what each earns is [the window](/docs/manage/release#the-window). Three kinds of commit earn no version and no changelog line:
 
-- **Never add a `Co-authored-by` trailer.**
-- **`ci` is reserved** for pipeline-generated commits (the changelog bot) and is filtered out of the changelog; use `fix(ci)` or `docs(ci)` for real CI work.
+- **A non-breaking `chore(deps)`.** changelogen drops it, so a dependency refresh is `build(deps)`.
+- **`ci`, which is reserved.** `changelog.config.json` turns it off. It belongs to the pipeline's own `ci(version)` and `ci(changelog)`; real CI work is `fix(ci)`, `feat(ci)` or `docs(ci)`.
+- **`revert`.** changelogen has no entry for it, so a window holding only reverts never releases.
 
-## Common fixes
+## Common questions
 
-- **A commit failed on formatting or lint**: run `bun run format` (and `bun run lint`), `git add` the result, and commit again.
-- **Commitlint rejected the message**: rewrite it as `type: subject`; `add user page` becomes `feat: add user page`.
-- **Hooks aren't running**: reinstall them with `bun run prepare`.
-- **You need to bypass in an emergency**: `git commit --no-verify`, or `LEFTHOOK=0 git commit …` to drop every hook, or `LEFTHOOK_EXCLUDE=build git commit …` to drop just the build. CI re-checks all of it anyway.
+**Why does the audit run on push and not on commit?**
 
-Dependency advisories that can only be resolved with a `package.json` override are recorded in `.github/notes/dependencies.md`; the `audit` skill walks you through it.
+It needs the network, and a new advisory in a dependency nobody touched would block every commit, offline included, along with the build piped behind it. The pre-push audit runs only on a push from `canary`, where it catches the advisory before `canary` leaves your machine; a feature branch meets the audit in its pull request's CI.
+
+**Why did commitlint reject a message that looks conventional?**
+
+The `gh-commit` skill lists the subject and body rules the hook enforces, and the error names the rule that failed, such as `subject-case` or `type-empty`.
+
+**How do I skip a hook, or get them back?**
+
+`LEFTHOOK_EXCLUDE=build git commit` drops one command, `LEFTHOOK=0` drops every hook, and `git commit --no-verify` is git's own switch. Hooks that never fire were skipped by an install with `--ignore-scripts`, and `bun run prepare` installs them.
+
+## It's working if
+
+- `git commit -m "add user page"` fails with `type may not be empty [type-empty]`.
+- A file the formatter rewrote lands formatted in that same commit.
+- Each push to a pull request runs the `Audit, Lint, and Build` check.
 
 ## Next
 
-- [Releases](/docs/manage/release): how those conventional commits become a changelog and a tagged release.
-- [Scripts](/docs/getting-started/scripts): `lint`, `format`, `build`, and the rest, in one place.
+- [Releases](/docs/manage/release), because the commit types decide the version and the changelog.
+- [Scripts](/docs/getting-started/scripts), because the gates run the same scripts you run by hand.
+- [IDE Setup](/docs/resources/ide-setup), because the editor reads the same Oxc config on save.

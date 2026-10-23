@@ -42,7 +42,7 @@ export const siteTemplate = (
 ): string => {
   const display = name.charAt(0).toUpperCase() + name.slice(1)
   // JSON.stringify emits a valid TS string literal whatever the name holds: a quote or backslash in a directory name must not break out of the literal in a module the app executes.
-  return `// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
+  return `// The brand the app shows, which web imports from @packages/config/site; a fork's sync rebrands its dev hosts, skills and AGENTS.md from the root package.json name instead.
 export const site = {
   name: ${JSON.stringify(display)},
   description: ${JSON.stringify(`${display} is just getting started. Tell its story here.`)},

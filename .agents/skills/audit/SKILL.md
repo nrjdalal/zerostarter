@@ -1,12 +1,12 @@
 ---
 name: audit
-description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
+description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and in the canonical starter maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 source: local
 ---
 
 # Dependency Refresh and Audit
 
-Two jobs share one record. A **refresh** moves everything to its latest release; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override and ignored advisory, and it stays in place even when there are none.
+Two jobs share one record. A **refresh** moves everything to its latest release; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). In the canonical starter, `.github/notes/dependencies.md` is the record of every active override and ignored advisory, and it stays in place even when there are none; a fork takes no `.github/notes/`.
 
 ## Refresh
 
@@ -20,7 +20,7 @@ bun install        # once more: postinstall rewrote ranges, so bun.lock is one i
 bun outdated -r    # expect no rows
 ```
 
-`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. Done when `bun outdated -r` prints no rows.
+`postinstall` (`.github/scripts/deps-manager.ts`) rewrites exact and tilde specs back to carets and reports the rest for a manual fix, so a deliberate pin means changing that rule in the script and recording why in `.github/notes/dependencies.md` (canonical starter only). For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. A row left after the second install is a release newer than the update ran, so run the update again. Done when `bun outdated -r` prints no rows.
 
 ### 2. Move the pins outside npm
 
@@ -57,7 +57,7 @@ A refresh touches every surface, so verify every surface:
 3. **Docker:** when Bun or anything in the image moved, build both images with `--no-cache` and run the single-libc and offline checks (the `docker-test` skill).
 4. **Browser:** drive the pages built on the packages that moved (the `ui-verify` skill), for example the docs search after Fumadocs moves, or the console tables and their menus after Base UI moves.
 
-When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Fix the code where the fix is ours; a group that has to stay back keeps its older catalog range, with the reason in the PR body, and its packages are the only rows `bun outdated -r` is then expected to print. Done when every gate is green, the suite passes twice, and the browser pass is clean.
+When something breaks, bisect: pin one package group back to the base branch's versions, keep every other update, and retest. Packages that release together, such as `fumadocs-core`, `fumadocs-ui`, and `fumadocs-mdx`, move back together. Fix the code where the fix is ours; a group that has to stay back keeps its older catalog range, with the reason in the PR body, and its packages are the only rows `bun outdated -r` is then expected to print. Done when every gate is green, the suite passes twice in the canonical starter, and the browser pass is clean.
 
 ### 5. Ship
 
@@ -85,16 +85,16 @@ Fix each advisory on the highest rung that lifts the whole tree; drop a rung onl
    "overrides": { "<vulnerable-package>": "<patched-version>" }
    ```
 
-When the advisory lists no patched version at all, none of the three can lift it. Then the gate ignores that one advisory by ID: add `--ignore <GHSA-id>`, with a one-line comment naming the package and why (the notes below do not ship to a fork), to the audit command in both `lefthook.yml` and `.github/workflows/auto-check-build.yml`, mirror it in the docs that quote them (`manage/code-quality.mdx`, `contributing.mdx`), and record it under `## Ignored advisories` in `.github/notes/dependencies.md`. It is a security exception that ships to every fork, so it needs the user's go.
+When the advisory lists no patched version at all, none of the three can lift it. Then the gate ignores that one advisory by ID: add `--ignore <GHSA-id>`, with a one-line comment naming the package and why (the notes below do not ship to a fork), to the audit command in both `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and in the canonical starter record it under `## Ignored advisories` in `.github/notes/dependencies.md`. Those are the whole list: no docs page quotes the `--ignore` flags or names an advisory. It is a security exception that ships to every fork, so it needs the user's go.
 
 `bun audit fix` applies the first two rungs mechanically when a patched version exists within the ranges parents allow; `--dry-run` previews and `--latest` also crosses majors, so review what it picks before accepting. Read the advisory's affected ranges before reaching for a lower rung: the audit header lists every installed version of the package, not only the vulnerable ones. Follow with `bun dedupe` to collapse duplicate versions the tree accumulated.
 
-Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and `bun audit --audit-level high` reports no high advisories.
+Then `bun i` and prove nothing broke. Done when `bun run check-types && bun run build` pass and the audit command `lefthook.yml` runs, its `--ignore` flags included, exits 0.
 
-### 3. Record every override and ignore
+### 3. Record every override and ignore (canonical starter only)
 
-Every ignored advisory needs a block under `## Ignored advisories` with the same four fields, and leaves all four places together. Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). Delete a block when its override goes. Done when every override has a block and no block outlives its override.
+Every ignored advisory needs a block under `## Ignored advisories` with the same four fields (**Why an ignore** in place of **Why an override**), and leaves all three places together. Every entry in root `overrides` needs a matching block in `.github/notes/dependencies.md`, in the file's existing shape: one `### <package> → <version>` under `## Active overrides`, carrying **Advisory** (link, severity, affected range), **Why an override** (why an update or parent bump can't lift the tree), **Risk**, and **Exit criteria** (when to remove it). When an override goes, its block leaves `## Active overrides`: condense it into a bullet under `## Retired overrides` when the fix holds a lesson a returning advisory would need, otherwise delete it. Done when every override has a block and no active block outlives its override.
 
 ### 4. Ship
 
-`package.json`, `bun.lock`, and `.github/notes/dependencies.md` go through a normal PR.
+`package.json`, `bun.lock`, and in the canonical starter `.github/notes/dependencies.md` go through a normal PR. Done when its CI is green and, in the canonical starter, every `###` block under the active and ignored sections of `dependencies.md` matches an entry in `overrides` or an `--ignore` in the gate.

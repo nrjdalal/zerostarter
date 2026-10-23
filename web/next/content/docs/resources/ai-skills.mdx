@@ -4,78 +4,78 @@ title: AI Skills
 description: The bundled SKILL.md recipes that teach an agent this repo's conventions and traps.
 ---
 
-A skill is a `SKILL.md` file: a trigger plus a literal procedure. Not a vague "you are a helpful assistant" prompt: the exact steps for one real task in _this_ repo, with its conventions baked in and its known traps called out. The `api-endpoint` skill, for instance, hands over the Hono router template, the validation envelope, where to mount the route, the restart step, and the `curl` that proves it works.
+A skill is a `SKILL.md` under `.agents/skills/<name>/`: a trigger plus a literal procedure for one real task in this repo, its conventions and traps included. `.claude/skills` and `.github/skills` are symlinks to that directory, so Claude Code, Cursor, Codex, and Copilot read the same files.
 
-Every skill lives in `.agents/skills/<name>/SKILL.md`. That is the one source. `.claude/skills` is a symlink to it, so Claude Code, Cursor, and Codex all read the same files. Edit a skill once and every agent tool sees the change. There is no second copy to keep in sync.
+Only the description is scanned. An agent matches its task against each skill's `Use when ...` and loads one body on a match, so the description is the trigger: a skill whose description names the wrong moment never loads, however good its procedure.
 
-A fork scaffolded with the [CLI](/docs/getting-started/cli) inherits every skill below, rebranded, and `sync` keeps the ones it has not customized up to date.
+## When you need this
 
-## How an agent picks one
-
-Each `SKILL.md` opens with frontmatter, a `name` and a `description` that states _when_ to use it:
-
-```yaml
-name: api-endpoint
-description: "Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring. Use when adding or modifying routes in api/hono."
-```
-
-An agent reads those descriptions, matches the task in front of it against the "Use when…" trigger, loads the one skill that fits, and follows the procedure verbatim. Only the descriptions are scanned up front, so the whole catalog costs almost nothing in context until one is needed; the full procedure loads only on a match.
-
-When you don't know where to start, the `codebase-map` skill orients first; it maps where each kind of change lives and how types ripple across the stack. It is the one skill worth reading before you have a specific task.
+Reach for this page to find the skill for a task, or to add one. For what a fork's `sync` does with the skills it inherits, see [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
 
 ## The catalog
 
-The skills, arranged as the arc of a real task, **Navigate** to find your way, **Build** the feature, **Operate** the running app, **Maintain** the scaffolding, **Ship** the change:
+Each entry is the skill's own summary, the sentence before `Use` in its description, so you see what the agent sees. The summaries of `audit` and `docker-test` name what only the canonical starter has, `.github/notes/dependencies.md` and the end-to-end suite under `tests/`, neither of which a fork takes; each skill's body marks that part as the canonical starter's. Entries group by the stage where in the loop a skill fires, in that order: navigate before a task, build while making the change, operate to prove it in the running app, maintain the tooling around the repo, ship the result. Read `codebase-map` at the start of each task.
 
-| Stage    | Skill            | What it does                                                                                                                                                            |
-| -------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Navigate | `codebase-map`   | Orient fast: the "where do I edit for X" table and how a change ripples across the stack. Start here in unfamiliar territory.                                           |
-| Build    | `add-package`    | Add a shared workspace package the repo's way: skeleton, `types: ["bun"]` for Bun scripts, where output goes (`.generated/` or committed source).                       |
-| Build    | `api-endpoint`   | Add a typed Hono route the repo's way: router, validation envelope, OpenAPI, RPC wiring, and the restart-and-`curl` test.                                               |
-| Build    | `db-migration`   | Change the Drizzle schema and apply it: `db:generate`, then `db:migrate`.                                                                                               |
-| Build    | `design`         | The canonical UI conventions: spacing, color, cursor, typography, tokens. Follow it for any component work.                                                             |
-| Build    | `dev`            | Start, restart, and verify the dev stack; fixes the `bun --hot` trap where new files return `NOT_FOUND`.                                                                |
-| Build    | `portless`       | Set up and use portless for stable named `.localhost` dev URLs instead of `localhost:PORT`.                                                                             |
-| Build    | `runtime-apis`   | Prefer Bun-native APIs; fall back to Node built-ins with the required `node:` prefix.                                                                                   |
-| Operate  | `agent-browser`  | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                                                                |
-| Operate  | `docker-test`    | Build and smoke-test the Docker images with `docker compose`, and run the golden end-to-end suite against them.                                                         |
-| Operate  | `ui-verify`      | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                                                                       |
-| Maintain | `audit`          | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
-| Maintain | `fonts`          | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                                                  |
-| Maintain | `ignore-sync`    | Keep `.dockerignore` in step with `.gitignore`.                                                                                                                         |
-| Maintain | `shadcn-sync`    | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                                                                        |
-| Maintain | `skills-manager` | Regenerate the AGENTS.md skills tables from every skill's frontmatter, and how a fork syncs its skills from upstream.                                                   |
-| Ship     | `doc-sync`       | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                                                           |
-| Ship     | `gh-commit`      | Atomic commits in conventional-commit format.                                                                                                                           |
-| Ship     | `icebox`         | Park a raised-but-undecided concern with no verdict, so the context survives instead of being forced to a call.                                                         |
-| Ship     | `release`        | Cut a production release by promoting `canary` to `main`; the pipeline does the version, changelog, tag, and publish.                                                   |
+### Navigate
 
-Two skills are vendored from Vercel Labs; every other skill is written for this repo. `agent-browser` (from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser)) is a discovery stub pinned in `skills-lock.json` for integrity: its committed `SKILL.md` just points the agent at the live workflow (`agent-browser skills get core`), installed with `npm i -g agent-browser && agent-browser install`. `portless` (from [`vercel-labs/portless`](https://github.com/vercel-labs/portless)) is copied in full and self-contained. Re-vendor to update either; do not hand-edit.
+- `codebase-map`: Orient in this repo: which file to edit for a change, how a change ripples across the stack, and how to search the code.
+
+### Build
+
+- `add-package`: Add a new shared workspace package under packages/\*.
+- `api-endpoint`: Add a typed Hono API endpoint or WebSocket route: router, OpenAPI docs, validation envelope, and RPC client wiring.
+- `db-migration`: Create and apply a Drizzle schema change.
+- `design`: Follow and maintain the app's UI conventions.
+- `dev`: Start, restart, and verify the dev stack, and sign in as the agent.
+- `portless`: Set up and use portless for named local dev server URLs (e.g. https://myapp.localhost instead of http://localhost:3000).
+- `runtime-apis`: Prefer Bun-native APIs, else Node built-ins with the node: prefix.
+
+### Operate
+
+- `agent-browser`: Browser automation CLI for AI agents.
+- `docker-test`: Build and smoke-test the Docker images with docker compose, and in the canonical starter run the golden end-to-end suite against them.
+- `ui-verify`: Verify a frontend or UI change in a real browser.
+
+### Maintain
+
+- `audit`: Refresh every dependency and version pin to its latest release, run the dependency security audit, and in the canonical starter maintain .github/notes/dependencies.md.
+- `fonts`: Add, swap, or remove a self-hosted web font.
+- `ignore-sync`: Mirror .gitignore to .dockerignore.
+- `shadcn-sync`: Run and reconcile the shadcn component sync (`bun run shadcn:update`).
+- `skills-manager`: Keep the AGENTS.md skills tables generated from skill descriptions.
+- `writing-for-agents`: Writing documents for agents.
+
+### Ship
+
+- `doc-sync`: Sync docs and skills so they never drift from the code.
+- `gh-commit`: Create atomic commits in the conventional format.
+- `icebox`: Icebox a raised-but-undecided concern instead of forcing a plan-or-dismiss call: record it with no verdict so the context survives.
+- `release`: Cut a production release by promoting canary to main.
+- `writing-docs`: Write or rewrite a docs page under web/next/content/docs so it orients the reader, explains the why, and points at the code and skills instead of restating them.
+
+## Vendored skills
+
+`agent-browser`, `portless` and `writing-for-agents` are copied from upstream, and a bare tool name on the `source:` line (`agent-browser`, `portless`, `skills`) is what marks a skill vendored; every other skill in the canonical starter is `source: local`, and a fork's synced skills carry the upstream URL instead. [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser) ships a discovery stub pointing at the live workflow (`agent-browser skills get core`), so install the CLI first: `npm i -g agent-browser@0.39.0 && agent-browser install`. `portless` is the whole skill from [`vercel-labs/portless`](https://github.com/vercel-labs/portless), as is `writing-for-agents` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
+
+A re-vendor rewrites the folder, and this repo adds to each copy afterwards; the `skills-manager` skill's Re-vendor section holds how each one is re-vendored and what goes back in.
 
 ## Writing your own
 
-Make a directory under `.agents/skills/<name>/`, add a `SKILL.md`, and the symlink carries it to every tool:
+Make `.agents/skills/<name>/SKILL.md` with `source: local`; the symlinks carry it to every tool. Three rules are the tooling's:
 
-````markdown
----
-name: deploy-preview
-description: Ship a preview build to staging. Use when asked to deploy a preview.
----
+- Keep the `<summary>. Use when <triggers>` shape: the manager cuts the `AGENTS.md` cell at `Use`.
+- Quote a description holding `: `, or the manager throws, since strict YAML like GitHub's rejects the bare colon.
+- Keep a skill that ships to forks to one file: the CLI rebrands, records and protects only `SKILL.md`, so a sibling file reaches a fork unrebranded and every sync overwrites it without naming it ([CLI](/docs/getting-started/cli#common-questions)).
 
-# Deploy Preview
+Write the body with `writing-for-agents` loaded; when a convention changes, change its skill in the same commit, and the pre-commit hook regenerates the tables (the `skills-manager` skill).
 
-## Workflow
+## It's working if
 
-### 1. Build
-
-```bash
-bun run build
-```
-````
-
-Keep it one task, one procedure. Write the real commands and the real traps. A skill earns its place by encoding what an agent would otherwise get wrong. When a convention changes, update its skill in the same commit; `AGENTS.md` makes that rule load-bearing.
+- `bun .github/scripts/skills-manager.ts --check` prints `AGENTS.md skills tables are up to date.`
+- Your skill is in the **Custom** table of `AGENTS.md`, its cell ending where `Use` begins.
 
 ## Next
 
-- [Working with Agents](/docs/getting-started/working-with-agents): the loop these skills plug into.
-- [The Type-Safe API](/docs/getting-started/type-safe-api): the types the build skills lean on.
+- [Working with Agents](/docs/getting-started/working-with-agents), because it is the loop these skills plug into.
+- [CLI](/docs/getting-started/cli), because it says what `init` and `sync` do with a fork's skills.
+- [Contributing](/docs/contributing), because a convention and its skill change in the same PR.

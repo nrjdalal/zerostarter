@@ -7,7 +7,9 @@ A `notFound()` inside the `(console)` area renders the not-found UI but returns 
 
 Pre-existing, not introduced by the feature flags: a genuinely missing slug (`/console/docs/does-not-exist`) returns 200 with every feature on, and the old console docs page already called `notFound()` for missing slugs. It is page-level `notFound()` specifically that degrades; the layout-level auth `notFound()` still returns a real 404, because it fires before streaming starts.
 
-Since #758 that covers every unknown console path too. The `[...unmatched]` catch-all exists so a forbidden page and a nonexistent one cannot be told apart, and the cost of matching a route instead of missing one is that `/console/nope` now answers 200 like the rest rather than a router-level 404. That is the trade taken deliberately: identical answers at every rung matter more here than the status line on a noindex area.
+Since #758 that covers every unknown console path too. The `[...unmatched]` catch-all exists so a forbidden page and a nonexistent one cannot be told apart, and the cost of matching a route instead of missing one is that `/console/nope` answers 200 on a dev server like the rest rather than a router-level 404. That is the trade taken deliberately: identical answers at every rung matter more here than the status line on a noindex area.
+
+Every 200 on this page was measured against a dev server. A production build answers 404 for an unknown console path: the golden suite asserts it (`tests/web/next/src/app/(console)/console/[...unmatched]/page.e2e.test.ts`) and passed against the Docker images in #823. A page-level `notFound()` after an awaited gate, such as a disabled feature's console page, is unmeasured on a production build, so re-measure there before scheduling a fix.
 
 ## The anonymous white flash (PR #758)
 

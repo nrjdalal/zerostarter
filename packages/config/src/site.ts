@@ -1,4 +1,4 @@
-// Brand identity for this app: the single source a fork edits to rebrand. web reads it via lib/config.ts.
+// The brand the app shows, which web imports from @packages/config/site; a fork's sync rebrands its dev hosts, skills and AGENTS.md from the root package.json name instead.
 export const site = {
   name: "ZeroStarter",
   description:
@@ -32,17 +32,20 @@ export const site = {
 
 A Bun + Turborepo monorepo with two deployable apps and shared packages under \`packages/\`:
 - \`api/hono/\` - backend API (Hono). Routers live in \`src/routers/\` and are served under \`/api\`: \`/api/v1\` (app API), \`/api/auth\` (Better Auth handler), \`/api/agents\` (local-only dev sign-in), \`/api/waitlist\` (public waitlist signup + count), \`/api/docs\` (Scalar reference).
-- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(marketing)\` (public pages), \`(protected)\` (auth-gated dashboard), \`(console)\` (staff console, member and above), \`(content)\` (docs and blog) and \`(llms.txt)\` (their plain-text mirrors). Docs and blog are MDX under \`content/\`.
+- \`web/next/\` - frontend (Next.js App Router). Route groups: \`(marketing)\` (public pages), \`(protected)\` (auth-gated dashboard), \`(console)\` (staff console; its layout admits member and above, but a page with no check of its own, such as the console docs, is readable by anyone who knows its path, because a request whose \`Next-Router-State-Tree\` header claims the layout is on screen skips it), \`(content)\` (docs and blog) and \`(llms.txt)\` (their plain-text mirrors). Docs and blog are MDX under \`content/\`.
 - \`packages/auth/\` - the Better Auth instance (shared server config + plugins).
+- \`packages/cli/\` - the \`zerostarter\` scaffolding CLI (init, reinit, sync).
+- \`packages/config/\` - shared config: the TypeScript/tsdown base configs, and \`site\` (brand identity + injectable content).
 - \`packages/db/\` - Drizzle ORM schema + client (PostgreSQL via Bun's SQL driver).
 - \`packages/env/\` - type-safe environment variables (t3-oss/env + Zod); one validated entrypoint per consumer.
-- \`packages/config/\` - shared config: the TypeScript/tsdown base configs, and \`site\` (brand identity + injectable content).
+- \`packages/scripts/\` - build-only Bun tooling (auth-schema, data-table-metrics, generate-env, release-version), never bundled; every new script lands here.
 
 ## Workspace Imports
 
 - Backend RPC types: \`import type { AppType } from "@api/hono"\`
 - Auth instance: \`import { auth } from "@packages/auth"\`
 - DB client + schema tables: \`import { db, user, session } from "@packages/db"\`
+- The web imports neither of those two (only \`@packages/auth/access\` and types): a web server module that reaches either lets Next's file tracer copy the root \`.env\` into the standalone build the Docker image ships, so the web reads that data through the api.
 - Env, per consumer: \`import { env } from "@packages/env/web-next"\` (also \`/api-hono\`, \`/db\`, \`/auth\`)
 - Brand/site config: \`import { site } from "@packages/config/site"\`
 
@@ -57,15 +60,15 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 ## Conventions & Rules
 
 **Environment variables:**
-- A single root \`.env\` (not per-package). Client code may only read \`NEXT_PUBLIC_*\` variables.
-- Always read env through the validated \`@packages/env/*\` entrypoint for the consumer, never \`process.env\` directly.
+- A single root \`.env\` (not per-package). Client code may read only \`NEXT_PUBLIC_*\` variables and \`NODE_ENV\`, which Next inlines at build.
+- Read the app's variables through the validated \`@packages/env/*\` entrypoint for the consumer. \`process.env\` is read directly only for values the schemas leave out or Next inlines at build: what the host or Next injects (\`NEXT_PHASE\`, \`NODE_ENV\` in client code, \`PORT\`, \`VERCEL*\`), \`NEXT_PUBLIC_IS_PRIVATE\` (which \`next.config.ts\` inlines from \`generate-env.ts\` output), \`GIT_SHA\` and the two skip flags; the repo scripts under \`.github/scripts/\` read theirs directly.
 
 **API:**
 - Backend routes are defined in \`api/hono/src/routers/\`.
-- The frontend calls the API only through the type-safe RPC client (\`import { apiClient } from "@/lib/api/client"\`); do not use raw \`fetch\` or \`axios\`.
+- The frontend calls the api's own routes through the type-safe RPC client (\`import { apiClient } from "@/lib/api/client"\`), not raw \`fetch\` or \`axios\`. Better Auth's \`/api/auth/*\` bodies are untyped there: client code goes through \`authClient\` (\`@/lib/auth/client\`), and server code reads the session through \`auth.api.getSession\` in \`@/lib/auth\`, which \`fetch\`es the URL \`apiClient\` builds.
 
 **Database:**
-- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database). \`auth.ts\` there is generated from \`packages/auth/src/schema.ts\` by \`bun run auth:schema\`: declare a plugin or a column there, regenerate, then migrate.
+- Schema lives in \`packages/db/src/schema/\`. Apply every change through Drizzle migrations: \`bun run db:generate\` then \`bun run db:migrate\` (never hand-edit the database). \`auth.ts\` there is generated from \`packages/auth/src/schema.ts\` by \`bun run auth:schema\`: declare a plugin or a \`user\` column there, regenerate, then migrate. A plugin that brings a table also adds that table's export to the hand-written \`schema\` map \`drizzleAdapter\` takes in \`packages/auth/src/index.ts\`, or Better Auth's schema check fails every auth call; a \`session\` column takes the extra step in the \`db-migration\` skill.
 
 **Code style:**
 - Use workspace imports (\`@api/hono\`, \`@packages/*\`) and the \`@/\` path alias; avoid deep relative paths.
@@ -74,7 +77,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 
 export type Site = typeof site
 
-// Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. waitlist off makes the home a plain landing page.
+// Optional surfaces a fork enables or disables. Typed boolean (not `as const`) so a fork can flip them and the runtime gates are not dead code. Off means the routes 404 and the links, nav, sitemap, llms, and search drop the surface; the CLI init sets these per fork, and any can be turned back on later. In a fork, waitlist off makes the home a plain landing page; the canonical starter's marketing home ignores it.
 export const features = {
   allowlist: true,
   apiDocs: true,

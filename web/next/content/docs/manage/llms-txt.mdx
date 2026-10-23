@@ -1,38 +1,53 @@
 ---
 slug: /docs/manage/llms-txt
 title: llms.txt
-description: Auto-generated, whole-codebase context for LLMs at /llms.txt and /llms-full.txt.
+description: "The docs and blog as markdown for LLMs, generated at build: an index at /llms.txt and the full text at /llms-full.txt."
 ---
 
-An LLM doesn't browse; it ingests. HTML docs and the interactive [Scalar reference](/docs/manage/api-conventions) at `/api/docs` are built for a human clicking around; `/llms.txt` hands an agent the same knowledge as flat markdown it can read top to bottom, with no JavaScript and no navigation to crawl. Both are generated from the docs at build time, so they never drift from the pages they mirror.
+An LLM doesn't browse; it ingests. HTML docs and the interactive [Scalar reference](/docs/getting-started/type-safe-api) at `/api/docs` are built for a human clicking around; `/llms.txt` hands an agent the same knowledge as flat markdown it can read top to bottom, with no JavaScript and no navigation to crawl.
 
-Two shapes:
+Both files are generated at build from the same sources as the pages, so they cannot list a page that does not exist, and a feature turned off drops its pages from them in the same build.
 
-- **`/llms.txt`**: an index. Lists every docs page (each linked as its `.md` alias) plus a link to the blog. `/llms.txt/blog` serves the blog's own index as a route; `/llms.txt` itself is the docs listing.
-- **`/llms-full.txt`**: everything in one file. A `# {site.name}` title (with an `LLM Context File` label) and `> {site.description}` blockquote, then `llmsFullPreamble` from `packages/config/src/site.ts` (the monorepo layout, import map, stack, and conventions), then every docs and blog page concatenated with `---` separators.
+## When you need this
 
-Every page is also available on its own as plain text: append `.md` or `.txt` to any docs or blog URL, e.g. `/docs/manage/llms-txt.md`.
+Reach for this page when you are pointing an agent at the project, or when the index and the site seem to disagree. For where the pages come from, see [Content](/docs/manage/content); for the loop an agent runs with this context, see [Working with Agents](/docs/getting-started/working-with-agents).
 
-In development, `curl "$(bunx portless get zerostarter)/llms-full.txt"` hands an agent the whole project as one file before it writes a line, which is exactly what the `codebase-map` skill does to orient.
+## Two files and an alias
+
+| Route                                     | What it holds                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/llms.txt`                               | the index: every docs page in sidebar order, each linked as its `.md` alias with its description, then a link to the blog                                                                                                                                                                                |
+| `/llms-full.txt`                          | everything in one file: the site name and description, `llmsFullPreamble` from `packages/config/src/site.ts` (the canonical starter's layout, import map, stack and conventions; a fork's starts empty, since `init` regenerates that file), then every docs page and published post, `---` between them |
+| any docs or blog URL plus `.md` or `.txt` | that page as markdown, a docs page with a footer pointing back to `/llms.txt`; `/docs.md` is the docs root page and `/blog.md` the blog index                                                                                                                                                            |
+
+The aliases are rewrites in `web/next/next.config.ts` onto the `/llms.txt/docs/...` and `/llms.txt/blog/...` routes. In development, `curl "$(bunx portless get <name>)/llms-full.txt"`, with `<name>` the project's slug (`zerostarter` in the canonical starter), hands an agent the docs, the published posts and the preamble as one file before it writes a line, which is how the `codebase-map` skill orients.
 
 ## How they're generated
 
-Two `force-static` route handlers (both `revalidate = 60`) build the files from Fumadocs sources:
+Two `force-static` route handlers under `web/next/src/app/(llms.txt)/`, revalidated every 60 seconds, read the Fumadocs collections through the same `contentSource` the pages use. Docs sort with `sortByMeta` against `content/docs/meta.json`, which `bun .github/scripts/docs.ts` derives from `web/next/docs.config.ts` and the web build regenerates before it compiles, so in a build the index, the full file and the sidebar agree; a running dev server can disagree after a config edit, as [Common questions](#common-questions) says. The blog lists published posts, newest first. Console docs are a separate collection that only the console's own routes read, so they are out by construction; that keeps them out of these files, not private ([Authentication](/docs/manage/authentication#the-console-role-ladder) says who can read them).
 
-- `web/next/src/app/(llms.txt)/llms.txt/[[...slug]]/route.ts`: the `/llms.txt` index, the `/docs` and `/blog` section indexes, and every per-page alias. It sorts docs by `meta.json` order and lists only published blog posts. Console docs are excluded on purpose (privacy boundary).
-- `web/next/src/app/(llms.txt)/llms-full.txt/route.ts`: the single-file dump, preamble first.
+Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. Every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`, so a page's rendered markdown is there to read; `decodeHTML` undoes Fumadocs' HTML escaping, and a `# [title](url)` heading links back to the live page.
 
-The docs and blog are [features](/docs/manage/features): turn one off and its pages, section index, and per-page aliases drop from both files, so the files never point at a docs or blog page that 404s.
+Docs and blog are [features](/docs/manage/features): turn one off and its pages, its index and its aliases drop from both files, so neither can point at a page that 404s.
 
-Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page docs alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
+## Common questions
 
-<Callout type="info" title="Only /docs and /blog aliases are routes">
+**Why is `/llms.txt` in a different order from the sidebar?**
 
-The per-page `.md`/`.txt` rewrites (in `web/next/next.config.ts`) cover `/docs/*` and `/blog/*` only. The top-level `/docs.md`, `/docs.txt`, `/blog.md`, and `/blog.txt` forms are not routes and 404. Use `/llms.txt` for the docs listing and `/llms.txt/blog` for the blog index.
+Both routes order the docs by `meta.json`, which `bun .github/scripts/docs.ts` generates from `docs.config.ts`, while the sidebar reads `docs.config.ts` directly, so a page missing from `meta.json` falls to the tail. The dev script generates it once at startup and nothing watches the config, so after editing `docs.config.ts` run `bun .github/scripts/docs.ts` again; a page the config does not list needs its entry first. The web build runs `bun .github/scripts/docs.ts --strict`, which fails on that drift ([Content](/docs/manage/content#docs-the-config-is-the-source-of-truth)).
 
-</Callout>
+**Why is `/docs.md` a page while `/blog.md` is a list?**
+
+The docs have a root page, the introduction at `/docs`, so its alias serves that page. The blog's root is a listing with no page of its own, so its alias serves the blog index, the one `/llms.txt` links.
+
+## It's working if
+
+- `/llms.txt` lists the docs pages in the sidebar's order, the introduction first.
+- `/llms-full.txt` opens with a heading ending in `LLM Context File`, the site description as a quote, then the first docs page after a `---`; in the canonical starter the preamble sits between them, opening with `## Instructions for AI Assistants`.
+- `curl -s -o /dev/null -w "%{content_type}" "$WEB/docs.md"`, with `$WEB` the web URL (`bunx portless get <name>` in development), prints `text/markdown; charset=utf-8`, and the body ends with the footer pointing at `/llms.txt`.
 
 ## Next
 
-- [Working with Agents](/docs/getting-started/working-with-agents): the loop that leans on this context.
-- [Content](/docs/manage/content): where the pages come from, and the `includeProcessedMarkdown` flag.
+- [Working with Agents](/docs/getting-started/working-with-agents), because it is the loop that reads this context before it writes.
+- [Content](/docs/manage/content), because the pages these files mirror are authored there, and `includeProcessedMarkdown` is set per collection.
+- [AI Skills](/docs/resources/ai-skills), because `codebase-map` is the skill that opens with `llms-full.txt`.

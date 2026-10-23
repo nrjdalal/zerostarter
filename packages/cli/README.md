@@ -36,12 +36,14 @@ bunx zerostarter <command> [dir] [options]
 
 Scaffold a new product. Run it in an empty directory (its name becomes the project name), or pass a name: `bunx zerostarter init my-app`.
 
-| Option         | Description                                                           |
-| -------------- | --------------------------------------------------------------------- |
-| `-y`, `--yes`  | Skip prompts, taking defaults (provisions Postgres when Docker is up) |
-| `--db`         | Provision a local Postgres (via pglaunch) and migrate; needs Docker   |
-| `--dry-run`    | Print the plan without writing anything                               |
-| `-h`, `--help` | Display help                                                          |
+| Option                          | Description                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-y`, `--yes`                   | Skip prompts, taking defaults (provisions Postgres when Docker is up)                                                                                                                         |
+| `--canary`                      | Scaffold from the `canary` branch instead of `main` (for testing)                                                                                                                             |
+| `--db`                          | Provision a local Postgres (via pglaunch) and migrate; needs Docker                                                                                                                           |
+| `--dry-run`                     | Print the plan without writing anything                                                                                                                                                       |
+| `--<feature>`, `--no-<feature>` | Turn an optional surface on or off: `allowlist`, `api-docs`, `blog`, `docs`, `internal-docs`, `waitlist` (on by default except `allowlist` and `waitlist`); any feature flag skips the picker |
+| `-h`, `--help`                  | Display help                                                                                                                                                                                  |
 
 ### `reinit`
 
@@ -56,13 +58,14 @@ Re-scaffold an existing repo in place. Every file is deleted (except `.git` and 
 
 Re-baseline a fork on the latest ZeroStarter. A gitpick overlay updates the starter files while your content, `public/marketing`, branding, `package.json` identity, dev-URL names, and favicon are preserved. Requires a clean tree; lands as a reviewable diff you commit yourself.
 
-Skills you own are preserved too: sync only rewrites a skill whose `source` is this repo. One you authored, one you vendored from a tool, one you took from another upstream, one you edited, or one whose sync note you removed keeps your version, and sync names it in the summary rather than replacing it.
+Skills you own are preserved too: sync only rewrites a skill whose `source` is this repo. One you authored, one you vendored from a tool, one you took from another upstream, one you edited, or one whose sync note you removed keeps your version, and sync names it in the summary rather than replacing it. Two cases still take the update: a skill with no ledger record, and one edited before `init` converted the fork in place again.
 
-`AGENTS.md` ships to a fork whole, rebranded, and follows the same contract: sync hands you the starter's latest while your copy is unedited, and keeps yours once you have changed it.
+`AGENTS.md` ships to a fork whole, rebranded, and follows the same contract: sync hands you the starter's latest while your copy is unedited, and keeps yours once you have changed it, unless `init` converted the fork in place again since, which re-records the guide as the CLI's.
 
 ## Requirements
 
 - **[Bun](https://bun.sh)** runs the scaffolded project. If it is missing, the CLI offers to install it for you.
+- **Git** with a commit identity (`user.name` and `user.email`), since `init` and `reinit` commit their work; `reinit` and `sync` also need a clean working tree.
 - **Docker** (optional) lets `init` provision a local Postgres and migrate automatically. Without it, point `POSTGRES_URL` at any Postgres and run `bun run db:migrate`.
 
 ## Links

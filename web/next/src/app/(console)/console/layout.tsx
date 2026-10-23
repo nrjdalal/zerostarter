@@ -9,7 +9,7 @@ import { SidebarMenu } from "@/components/ui/sidebar"
 import { assertConsoleAccess } from "@/lib/auth/console"
 import { resolveDocsNav } from "@/lib/docs"
 
-// Force per-request rendering so the access check runs on every request and the console is never statically prerendered/cached for anonymous users.
+// Force per-request rendering so the console is never statically prerendered or cached for anonymous users; the access check below runs whenever this layout renders (a full load, or a client navigation into the console from outside it), not on a client navigation between console pages.
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  // Single server-side gate for the entire /console area (every nested route).
+  // Asserts member only when this layout renders, which a client navigation between console pages does not do: a page that needs more asserts it itself, and the console docs pages rely on this alone.
   const session = await assertConsoleAccess()
 
   return (

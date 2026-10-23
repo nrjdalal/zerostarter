@@ -1,43 +1,42 @@
 ---
 name: shadcn-sync
-description: Run and reconcile the shadcn component sync (`bun run shadcn:update`). Use when refreshing shadcn components, or when a sync regresses a local customization or breaks the build.
+description: Run and reconcile the shadcn component sync (`bun run shadcn:update`). Use when refreshing shadcn components, adding or repairing a `ui/` override, or when a sync regresses one or breaks the build.
 source: local
 ---
 
 # Shadcn Sync
 
-`bun run shadcn:update` tears the whole `ui/` layer down to the registry and re-applies every local override programmatically. It is **self-reconciling**: a clean tree goes in, a clean tree comes back. The only diff you should ever see is **the residual**, a genuine upstream change to a component.
+`bun run shadcn:update` wipes `web/next/src/components/ui` and `components.json`, re-scaffolds both from the registry (`shadcn init`, then `add -a`), re-applies every override in `.github/scripts/shadcn-customize.ts`, formats, and reinstalls. A clean tree goes in; the only diff out is the residual, a genuine upstream change to a component.
 
-Under the hood the command is `bash .github/scripts/shadcn-update.sh && bun i`. The script, from `web/next`, runs `rm -rf components.json src/components/ui` -> `shadcn init` -> `shadcn add -a`; then, at repo root, `.github/scripts/shadcn-customize.ts` -> `bun run format` (oxfmt). The trailing `bun i` belongs to the wrapper, not the script: it reconciles the lockfile after `customize.ts` restores it from HEAD.
+## 1. Run the sync
 
-## Procedure
+Run `bun run shadcn:update` on a clean tree: a dirty blast radius exits 1 naming the files, and root `package.json`, which the sync resets, sits outside that check. Done when it exits 0 after a `[shadcn-customize] restored from HEAD:` line and a `[shadcn-customize] patched:` line per patched file in Guards; a throw naming its target and `shape changed`, or ts-morph's `Expected to find function named`, names the guard to repair (step 4).
 
-1. **Run** on a clean tree: `bun run shadcn:update`. It refuses on a dirty **blast radius**, so commit or stash first.
-2. **Review** `git diff`; expect it empty. Every non-empty hunk must be a real registry change to a component, never override churn.
-3. **Type-check**: `cd web/next && bun run build` (or `bun run check-types`), which covers every `.tsx`, including unused ones like `calendar.tsx`. Must pass.
-4. **Commit** only the residual registry deltas.
+## 2. Review the diff
 
-## What `shadcn-customize.ts` reconciles
+Read `git status` and `git diff`. Done when the diff is empty or every hunk is a registry change in what the sync re-scaffolds (`components.json`, `globals.css`, `ui/`, and any file a registry item writes beside them, such as a new `hooks/` or `lib/` helper a component imports, which `git status` lists as untracked); a hunk that drops an override is a guard whose target moved (step 4).
 
-Two strategies. Each guard is idempotent and throws when its target is absent, so an upstream shape change **fails loudly** rather than silently dropping an override.
+## 3. Type-check
 
-**Restore from HEAD** (`RESTORE` list), files the sync re-scaffolds but we own outright:
+`bunx turbo run check-types --filter=@web/next`, which builds the packages it depends on first and covers every `ui/*.tsx`, used or not. Done when it exits 0; a missing module from the registry's imports is a dependency to add by hand, since the sync resets the three manifests to HEAD: its range in the root `catalog`, and `"<dep>": "catalog:"` in `web/next/package.json`, or nothing installs it.
 
-- `bun.lock` + `web/next/package.json` + root `package.json`: `add -a` rewrites deps off `catalog:` to pinned ranges, and adds every dependency a registry item declares to the root catalog even when no component imports it (`calendar` declares `date-fns`; `react-day-picker` 10 needs no such peer). The root `catalog` is the source of truth, so reset all three to HEAD. A dependency a component really needs still surfaces: step 3's type-check fails, and the catalog is bumped by hand, as #796 did for `@shadcn/react`.
-- `web/next/src/app/layout.tsx`: `init` injects `next/font/google`; we self-host instead (see the `fonts` skill).
-- `web/next/src/lib/utils.ts`: `init` drops the repo helpers `slugify` and `isActive` (and internal `generateId`).
+## 4. Add or repair an override
 
-**Patch in place**, registry components we extend, located by AST shape with ts-morph (so attribute or param reordering can't break them) plus one guarded string swap for CSS:
+In `shadcn-customize.ts` only: extend `RESTORE`, or add a shape-keyed ts-morph patch (a guarded string swap for CSS) that throws when its target is absent, then list it under Guards. Done when a second run on the committed tree leaves an empty diff and Guards names the override.
 
-- `button.tsx`, Base UI render wiring (`render`, `nativeButton={!render}`, `render={render}`)
-- `checkbox.tsx`, the indeterminate state: Base UI sets `data-indeterminate` (never `data-checked`), so the registry's check-only indicator paints a partial selection identically to a checked one. Fills the box on `data-indeterminate` and swaps the glyph to a minus. The guard tests for the patch before the target, since the swapped-in ternary still contains the `<RiCheckLine />` it replaced.
-- `spinner.tsx`, `React.ComponentProps<RemixiconComponentType>` typing
-- `sidebar.tsx`, optional `children` label on `SidebarTrigger`
-- `globals.css`, `--font-sans` repointed at the brand DM Sans variable (`--font-dm-sans`), and both `--sidebar` lines (`:root` + `.dark`) flushed to `var(--background)` (PR #566)
+## 5. Commit the residual
 
-`calendar.tsx` carries no override and tracks the registry as-is (we pin `react-day-picker` to `^10`; the registry component is v10-compatible).
+Commit with the `gh-commit` skill. Done when the commit holds only the re-scaffolded paths plus any catalog bump.
 
-## Notes
+## Guards
 
-- **Add overrides only through `shadcn-customize.ts`**, never by hand, because `add -a` overwrites `ui/` every run. Extend the `RESTORE` list, or add a fail-loud ts-morph patch (or guarded CSS string swap).
-- `add -a` re-adds ALL components, so unused ones (`calendar.tsx`, `chart.tsx`, …) reappear every run. That is expected; do not delete them to chase a dead-code report.
+Every override, enumerated only here:
+
+- `RESTORE`, reset to HEAD: `bun.lock`, root `package.json` and `web/next/package.json`, since `add -a` pins `catalog:` specs and adds every registry-declared dependency to the catalog, imported or not; `layout.tsx`, since `init` injects `next/font/google` and the fonts are self-hosted (the `fonts` skill); `utils.ts`, since `init` drops `slugify` and `isActive`.
+- `button.tsx`: Base UI `render` wiring, `nativeButton={!render}` and `render={render}` on `ButtonPrimitive`.
+- `checkbox.tsx`: indeterminate fills the box and swaps the glyph to a minus.
+- `globals.css`: `--font-sans` at the brand sans (`FONT_TO`), and both `--sidebar` lines (`:root`, `.dark`) at `var(--background)`.
+- `sidebar.tsx`: optional `children` on `SidebarTrigger`.
+- `spinner.tsx`: props typed `React.ComponentProps<RemixiconComponentType>`.
+
+`add -a` re-adds every registry component, so an unused `ui/` file is expected output, left in place.

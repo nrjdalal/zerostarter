@@ -68,7 +68,7 @@ export async function generatePageMetadata<K extends ContentKind>(
   const pageUrl = `${config.app.url}${page.url}`
   // page.url always starts with cs.baseUrl (the loader prefixes it), so slicing the base off yields the slug path. This assumes no frontmatter slug override makes page.url diverge from the route param slug; none exists in the starter.
   const slugPath = page.url.slice(cs.baseUrl.length).replace(/^\//, "")
-  // Only kinds with an /og route (docs, blog) get an OG image; console has none, so omit it rather than link a nonexistent /og/console/docs.
+  // Only kinds with an /og route (docs, blog) get an OG image here; console has none, and its page never calls this, so it inherits the root layout's home image instead.
   // Intentional cache-bust: the build/revalidation timestamp ties the OG URL to each deploy so social and CDN scrapers refetch the regenerated image instead of serving a stale one; not a bug.
   const imageUrl = cs.og
     ? `${config.app.url}/og${cs.baseUrl}${slugPath ? `/${slugPath}` : ""}?t=${Date.now()}`

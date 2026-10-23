@@ -6,93 +6,67 @@ description: "The loop an AI agent uses here: skills, a local login, agent-brows
 
 An AI coding agent that opens most repositories has to guess: where routes live, what the response shape is, how to run the thing, how to log in and test. ZeroStarter hands it a playbook instead. Point Claude Code, Cursor, or your own agent at the repo and it can build a real feature (and check that it works) without you narrating every step.
 
-Four things make that possible, and none of them are magic:
+The playbook ships in the repo and moves in the same change as the code, so what an agent reads is what the code does.
 
-- **Skills**: step-by-step recipes for this repo's real tasks.
-- **A local sign-in**: one request to an authenticated session, no OAuth.
-- **agent-browser**: the agent drives the running app like a user.
-- **llms.txt**: the whole codebase as context, generated.
+## When you need this
 
-<Callout type="info" title="Scope">
-
-This is about AI agents that _build on_ the codebase: coding assistants. ZeroStarter does not (yet) ship primitives for end-user agents that operate your product in production; that is your app to design.
-
-</Callout>
+Reach for this page when you are handing the repo to an agent, or when one stalls on a step a human does by hand: running the stack, signing in, checking its work. For the skill catalog, see [AI Skills](/docs/resources/ai-skills); end-user agents that operate your product in production are your app to design.
 
 ## The loop
 
-The full cycle an agent runs, start to finish:
+Scaffold, run, sign in, build, verify; the skill holds the commands:
 
-```bash
-# 1: scaffold a product (init sets AGENT_SIGNIN_ENABLED=true, enabling Login (agents)), then start the stack
-bunx zerostarter init
-bun run dev   # serves named .localhost URLs; `bunx portless get zerostarter` prints the web URL
+| Step     | What happens                                                                                              | Skill                                    |
+| -------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Scaffold | `bunx zerostarter init` (and `reinit`) sets a blank or missing `AGENT_SIGNIN_ENABLED` in `.env` to `true` | [the CLI](/docs/getting-started/cli)     |
+| Run      | `bun run dev`, named `.localhost` URLs, branch-prefixed in a worktree                                     | `dev`                                    |
+| Sign in  | one request mints a session as `LocalAgent`, no OAuth                                                     | `dev`, under Agent login                 |
+| Build    | a route, a migration or a page, by its recipe                                                             | `api-endpoint`, `db-migration`, `design` |
+| Verify   | drive the running app in a real browser, screenshot the result                                            | `ui-verify`, with `agent-browser`        |
 
-# 2: sign in locally (drive the real UI, or the curl below)
-agent-browser open "$(bunx portless get zerostarter)"
-agent-browser snapshot                  # get refs for the page
-agent-browser click "@e5"               # the "Login (agents)" button ref
+### Skills
 
-# 3: build a feature by following a skill (api-endpoint, db-migration)
-# 4: verify it in the running app, behind auth
-agent-browser snapshot                  # read the page, then act
-```
+Each step's skill is a procedure an agent loads by its description, with this repo's conventions and traps; [AI Skills](/docs/resources/ai-skills) says how they load and lists them all. The `dev` skill, for instance, holds the trap that stalls agents most: `bun --hot` misses a file created after its importers reloaded, so a new router answers `NOT_FOUND` until a full restart.
 
-Scaffold, run, sign in, build, verify. Each step below is one of those pieces.
+A fork inherits all of it, rebranded: `init` ships every skill and `AGENTS.md`, and `sync` reconciles them per skill, keeping the ones you have edited; the rules, and the cases where an edit is still replaced, are under [Skills you have customized](/docs/getting-started/cli#skills-you-have-customized).
 
-## Skills
+### agent-browser
 
-Skills live in `.agents/skills/` (and `.claude/skills/` is a symlink to it, so Claude Code, Cursor, and Codex read the _same_ files). Each is a `SKILL.md` with a trigger and a literal procedure: not a vague prompt, but this repo's exact conventions and its known traps.
-
-For example, the `api-endpoint` skill hands the agent the Hono router template, the mandatory validation hook, where to wire the route, the restart step, and the `curl` to test it. The `dev` skill documents the one trap that stalls agents most (`bun --hot` won't pick up newly-created files) and the exact restart that fixes it.
-
-See [AI Skills](/docs/resources/ai-skills) for the full catalog and how to write your own.
-
-### A fork inherits all of it
-
-`bunx zerostarter init` ships every skill and the starter's own `AGENTS.md` into your fork, rebranded to your project name, so an agent opening your repo gets the same playbook rather than a stub. `bunx zerostarter sync` keeps them current: a skill or a guide you have not edited takes the starter's update, and one you have edited stays yours. See [the CLI](/docs/getting-started/cli#skills-you-have-customized).
+With the session in place, the vendored `agent-browser` skill drives the real app: open a page, read the accessibility tree as a snapshot with element refs, click, type, screenshot. The `ui-verify` skill is the procedure around it, before and after included.
 
 ## Local sign-in
 
-Testing anything behind auth normally means an OAuth round-trip an agent can't complete. ZeroStarter ships a **local-only** sign-in that returns a real session in one request. `bunx zerostarter init` sets `AGENT_SIGNIN_ENABLED=true` for you, so the route is already live; if you cloned the repo instead, set `AGENT_SIGNIN_ENABLED=true` in `.env` first (it is off by default, so the route stays unmounted until you opt in):
+Anything behind auth normally needs an OAuth round-trip an agent cannot complete. `POST /api/agents/sign-in-as` returns a real session in one request; the curl pair and the browser path (**Login**, then **Login (agents)**) are the `dev` skill's Agent login. The sign-in that creates the account makes it an `owner`; after that its rung stands, so you can demote it to see what a lower rung sees, and `bun run console:roles grant agent@local.host owner` puts it back.
 
-```bash
-WEB=$(bunx portless get zerostarter); API=$(bunx portless get api.zerostarter)
-curl -sS -c cookies.txt -X POST -H "Origin: $WEB" "$API/api/agents/sign-in-as"
-curl -sS -b cookies.txt "$API/api/v1/user"   # now authenticated
-```
+The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true` (one predicate, `api/hono/src/lib/agent-signin.ts`). `.env.example` ships `NODE_ENV=local` with the flag blank, which defaults to false, so a fresh clone answers `404` on the route. `init` and `reinit` set a blank or missing flag to `true` in the `.env` they seed, so that one file opens both locks.
 
-It signs in as `LocalAgent` and sets the session cookie. The sign-in that creates the account makes it an `owner`, so the whole console is reachable including the owner-only rules; after that its rung stands as it is, which is what lets you demote it to see what a lower rung sees. `bun run console:roles grant agent@local.host owner` puts it back. In the browser, the dev-only **Login (agents)** button does the same thing; in a dev build it appears once `AGENT_SIGNIN_ENABLED` is true, so a visible button always has a live route behind it.
+A `false` flag closes the route, and so does a blank or missing one until `init` or `reinit` runs in that checkout again, but a deploy still sets `NODE_ENV` to `production` or `staging`: whatever the flag, `local` keeps the api's `/headers` route open, which echoes every request header, cookies included, and puts an unhandled error's raw message in its 500. `development` and `test` unmount the route too, but neither suits a deploy: `development` keeps `/headers` open as well, and `test` turns off Better Auth's origin and callback-URL checks ([Stages](/docs/manage/environment#stages) lists what each stage opens).
 
-<Callout type="warn" title="Local only, by construction">
+A self-host that runs on the `.env` `init` wrote serves the route to anyone who can reach the api, each call a session on the agent account at its current rung, which is `owner` from the call that creates the account until someone demotes it, and so does `bun run dev` on a shared network, since the api listens on every interface (Bun's default). The trusted-`Origin` check on each request stops a page on another site from calling it from a visitor's browser, not a direct HTTP client, which sends whatever `Origin` it likes. The same predicate gates the route's `/api/auth/providers` advertisement, so the **Login (agents)** button never points at a route that is not there, and the button exists only in a dev build.
 
-The route mounts only when `NODE_ENV` is `local` **and** `AGENT_SIGNIN_ENABLED` is `true`. It ships off (blank) in `.env.example`, so a fresh clone and any deployed default env expose no session-minting route: it returns `404`. `bunx zerostarter init` sets it only in your local (gitignored) `.env`, so agent login works in local dev without touching a deploy, where `NODE_ENV` is not `local` and the route stays down regardless. The **Login (agents)** button appears only in a dev build when the API advertises the route, so it never posts to a route that would 404. The trusted-`Origin` check still guards each request.
+## The context an agent reads
 
-</Callout>
+### llms.txt
 
-## agent-browser
+Before it crawls the tree, an agent can read the docs as flat markdown at `/llms.txt` and `/llms-full.txt`; [llms.txt](/docs/manage/llms-txt) says what each file holds and how `codebase-map` uses the full one.
 
-The bundled `agent-browser` skill is a fast, CDP-based browser CLI. An agent uses it to drive the _actual_ running app (navigate, click, type, screenshot, read the accessibility tree) instead of mocking the UI. Combined with the local sign-in, it can operate the product end-to-end and confirm its own work.
+### Managed blocks in AGENTS.md
 
-```bash
-agent-browser open "$(bunx portless get zerostarter)/dashboard"
-agent-browser snapshot        # structured page state with element refs
-agent-browser click "@e12"    # act on a referenced element
-```
+`AGENTS.md` (`CLAUDE.md` is a symlink to it) is hand-written apart from its two skills tables, which the `skills-manager` skill generates, and a fork's `sync` tracks edits to the rest, so an edited guide stays the fork's, except an edit made before `init` converted the fork in place again ([Skills you have customized](/docs/getting-started/cli#skills-you-have-customized)). Two tools would write a block of their own for AI coding agents, and both are off. `next dev` upserts a managed block pointing at the installed Next docs when it detects an agent, creating `AGENTS.md` where none exists, which from `web/next/` means a second file; `agentRules: false` in `web/next/next.config.ts` turns it off. `turbo` writes one into the root `AGENTS.md` before repository-scoped commands when an agent is detected, where in a fork it reads as an edit that stops the guide syncing; `"agentGuidance": false` in the root `turbo.json` turns that off. Their docs match the installed versions, under `node_modules` at `next/dist/docs/` and `turbo/docs/`.
 
-## llms.txt
+## Common questions
 
-`/llms.txt` and `/llms-full.txt` are generated from the docs on every build. `llms-full.txt` opens with a preamble that hands an agent the monorepo layout, the workspace import map, the stack, and the conventions: enough to write correct code without crawling the tree. See [llms.txt](/docs/manage/llms-txt).
+**Why did a managed block appear in `AGENTS.md`?**
 
-## Docs that can't drift
+Both writers are on by default, so a block in a diff means one of the switches above was removed, not that the block belongs there. Put the switch back: Next removes its block on the next `next dev`, while Turbo leaves its block for you to delete.
 
-`AGENTS.md` (symlinked to `CLAUDE.md`) makes one rule load-bearing: **documentation is updated in the same change as the code.** When a convention moves, its skill and doc move with it. Paired with the symlinked skill directory, what an agent reads is always what the code actually does: the single biggest cause of agent mistakes, designed out.
+## It's working if
 
-It is enforced, not just requested. Docs structure and page metadata live in one file, `web/next/docs.config.ts`, and the build derives every page's frontmatter and sidebar from it; `docs.ts --strict` fails the build when a page and the config disagree, so a doc can't silently fall out of sync. The `doc-sync` skill is the checklist an agent runs to keep code, docs, and skills aligned in the same change.
-
-Because that file is generated and symlinked, this starter turns off the one Next.js writes for you. Since 16.3, `next dev` upserts a managed block into `AGENTS.md` whenever it detects an AI coding agent, and creates `AGENTS.md` plus a `CLAUDE.md` containing `@AGENTS.md` when neither exists, which in this repo would mean a second pair inside `web/next/` fighting the generated root pair. `agentRules: false` in `web/next/next.config.ts` turns it off. Turborepo started doing the same in 2.11.5, a managed block in the root `AGENTS.md` before any repository-scoped `turbo` command that detects an agent; `"agentGuidance": false` in the root `turbo.json` turns that one off. The docs both point at are still worth reading: they ship in `node_modules/next/dist/docs/` and `node_modules/turbo/docs/`, and match the installed versions exactly.
+- After the `dev` skill's Agent login, which sets `$API` to the api URL and saves the session in `cookies.txt`, `curl -sS -b cookies.txt "$API/api/v1/user"` returns a user named `LocalAgent`.
+- In a dev build, **Login** opens a dialog with **Login (agents)** while `AGENT_SIGNIN_ENABLED=true`; blank it and restart, and the button is gone and the route answers `404`.
 
 ## Next
 
-- [AI Skills](/docs/resources/ai-skills): the full skill catalog, and writing your own.
-- [The Type-Safe API](/docs/getting-started/type-safe-api): the types an agent leans on to build safely.
+- [AI Skills](/docs/resources/ai-skills), because it is the catalog the loop draws from, and how to write your own.
+- [CLI](/docs/getting-started/cli), because `init` seeds the flag and `sync` decides which skills are yours.
+- [llms.txt](/docs/manage/llms-txt), because it is the context an agent reads before it writes.

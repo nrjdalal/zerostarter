@@ -4,80 +4,77 @@ title: Quickstart
 description: Go from one command to a running, signed-in app, and where to go next.
 ---
 
-Two commands take you from nothing to a running, signed-in app.
+Two commands take you from an empty directory to a running app, and one click signs you in: `bunx zerostarter init` scaffolds a product, `bun run dev` starts it. `init` writes everything `bun run dev` assumes (the `.env`, the dependencies, the database and its migrations, the first commits), so the only step that can be left undone is the database: it is skipped when Docker is down, when you decline the prompt, or when `.env` already names one, and stops short when pglaunch or the migration fails. The **Next steps** note at the end of the run is where that shows.
 
-<Callout type="info" title="Prerequisites">
+## When you need this
 
-- **Bun**, required. The repo pins `bun@1.4.3` via `packageManager` in the root `package.json`. If it is missing, the CLI shows how to re-run under Bun (`bunx --bun zerostarter ...`) and offers to install it for you.
-- **`bunx`, not `npx`.** The CLI shells out to `bunx` to fetch the scaffold, install dependencies, provision Postgres, and migrate, streaming each step's progress.
-- **Docker**, optional. `init` uses it to provision a local Postgres automatically; without it you set `POSTGRES_URL` yourself.
+A fresh machine, or a new product. An existing repo or a fork is `reinit` or `sync` on [The CLI](/docs/getting-started/cli), and restarting a stack you already have is the `dev` skill in [AI Skills](/docs/resources/ai-skills).
 
-</Callout>
+## Prerequisites
 
-```bash
-bunx zerostarter init
-bun run dev
-```
-
-The rest of this page is what those commands do, and the one thing to check if the database step gets skipped.
+- **Bun.** The repo pins `bun@1.4.3` in the root `package.json`, and the CLI shells out to `bunx` and `bun` for every step, so run it with `bunx`, not `npx`.
+- **Docker**, optional. With a daemon running, `init` provisions a local Postgres for you; without one you point `POSTGRES_URL` at a database yourself.
+- **Git** with a commit identity, since `init` commits the scaffold; [The CLI](/docs/getting-started/cli#prerequisites) says what that takes and where a run without it stops.
 
 ## `zerostarter init`
 
-`bunx zerostarter init` scaffolds a fresh product into the current directory, and the directory name becomes your project name. Run it in an empty folder of its own:
-
-- if the folder already has files, it asks for a project name and scaffolds into that new directory instead;
-- if you run it inside an existing workspace or monorepo, it stops early, because a parent lockfile would break the dependency install.
-
-In one run it:
-
-- fetches the latest ZeroStarter and strips the sample content,
-- rebrands the copy to your project name, the agent [skills](/docs/resources/ai-skills) and `AGENTS.md` included,
-- sets your [feature flags](/docs/manage/features) (allowlist, API reference, blog, docs, internal docs, waitlist), from an interactive checklist or `--<flag>`/`--no-<flag>` flags,
-- installs dependencies with Bun from the shipped `bun.lock`, so the first install resolves from locked versions instead of a slow cold resolve (progress streams live),
-- provisions a local Postgres in Docker (via [pglaunch](https://github.com/nrjdalal/pglaunch)), reusing an already-running one when you re-run `init`, and applies the migrations,
-- writes `.env` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`, which enables the local **Login (agents)** sign-in out of the box.
-
-Everything else has a working default, so the scaffold runs as-is. The feature checklist is pre-checked to the defaults (all on except the allowlist and the waitlist), and any feature can be flipped later in config. The database step defaults to yes when Docker is running; pass `--db` to provision it without the prompt.
-
-<Callout type="info" title="If Docker isn't running">
-
-`init` skips the database and leaves `POSTGRES_URL` empty. Point it at any Postgres (a hosted one like [Neon](https://neon.com) works) by setting `POSTGRES_URL` in `.env`, then apply the migrations once:
-
 ```bash
-bun run db:migrate
+bunx zerostarter init
 ```
+
+Run it in an empty directory of its own, with no `.git` in it either: the directory name becomes the project name. A directory holding only `.git`, such as an empty clone, passes `init`'s emptiness check, but gitpick refuses to fetch into a directory that is not empty, so `init` stops at the fetch with gitpick's `is not empty` warning, having written nothing; scaffold into a fresh directory and add the remote afterwards. A directory with files in it prompts for a name and scaffolds into a subdirectory of that name, or, with `--yes` or without a terminal, stops with `Directory is not empty`; a directory inside an existing workspace stops before writing anything, because `bun install` would climb into the parent lockfile.
+
+One run fetches the latest starter without its sample content, rebrands it to the project name (the agent skills and `AGENTS.md` included), asks which optional surfaces to ship (the [CLI page](/docs/getting-started/cli) lists the flags and their defaults; each is flippable later in [Features](/docs/manage/features)), installs with Bun, commits, and writes `.env` from `.env.example` with a generated `BETTER_AUTH_SECRET` and `AGENT_SIGNIN_ENABLED=true`. The commits land on a new `canary` branch with `main` seeded behind it; only an in-place conversion of a checkout that already holds the starter and its own `.git` (a clone of the starter, or a fork) commits once on its current branch, with no new branch. Then it asks whether to provision a local Postgres, defaulting to yes when Docker is up: [pglaunch](https://github.com/nrjdalal/pglaunch) starts a container, `init` waits for it to accept connections, points `POSTGRES_URL` at it, and applies the migrations. That container publishes its port on every network interface with user and password `postgres`, so anyone on a shared network who can reach your machine can read and write the database; keep the machine on a trusted network. `--db` skips that prompt, and `--yes` takes every default.
+
+The run ends on `<name> is ready` and a **Next steps** note. With a database provisioned and migrated, that note is `bun run dev`, after a `cd` into the project when it landed in a directory other than the one you ran `init` from.
+
+<Callout type="warn" title="If Docker was down">
+
+`init` leaves `POSTGRES_URL` empty, and the note says so: `set POSTGRES_URL in .env`, then `bun run db:migrate`. Until the URL is set, `bun run dev` stops before either app starts: the `@packages/db` build it runs first fails the env check with `Invalid environment variables` naming `POSTGRES_URL`. Once it is set the api starts whether or not the migrations ran, and a request that reads a table fails until `bun run db:migrate` has. Any Postgres works, a hosted one like [Neon](https://neon.com) included; the migrate script builds the env package first, and Drizzle Kit talks to the database through the Node `postgres` driver that `packages/db` carries, since it cannot use `bun:sql`, so the command runs on a fresh scaffold.
 
 </Callout>
 
-## Already have a repo, or a fork?
-
-The CLI also covers the cases `init` does not. Both of these require a clean tree:
-
-- **`bunx zerostarter reinit`** re-scaffolds an **existing git repo** as a fresh ZeroStarter, keeping `.git` and your `.env*` files, so your history, remote, and local secrets survive.
-- **`bunx zerostarter sync`** re-baselines an **existing fork** on the latest starter, updating the shared files while keeping everything your fork owns. It leaves the result as a diff for you to review and commit.
-
-See [The CLI](/docs/getting-started/cli) for every flag, what each rolls back when a step fails, exactly what `sync` preserves, and how it treats the skills and the agent guide you have edited.
-
 ## `bun run dev`
 
-Turborepo starts both apps together through [portless](https://portless.sh), which serves stable named `.localhost` URLs off one unprivileged proxy (`bunx portless list` shows them; in a git worktree each host is branch-prefixed so parallel checkouts never collide):
+```bash
+bun run dev
+```
 
-- **web** (Next.js) at `http://zerostarter.localhost:1355`
-- **api** (Hono) at `http://api.zerostarter.localhost:1355`, with an interactive API reference at `/api/docs`
+Turborepo starts both apps through [portless](https://portless.sh), one proxy on `:1355` serving named `.localhost` hosts, so the URLs never depend on which port a process won. `init` names the hosts after the project, lowercased with every other character run turned into a hyphen (`My App` serves `my-app.localhost`); `<name>` below is that slug, and `zerostarter` in the starter itself:
 
-`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`). Reach for it when:
+- **web** (Next.js) at `http://<name>.localhost:1355`
+- **api** (Hono) at `http://api.<name>.localhost:1355`, with the API reference at `/api/docs` while the `apiDocs` [feature](/docs/manage/features) is on, as it is by default
 
-- **OAuth.** Providers reject `.localhost` redirect URIs, so callbacks expect the fixed ports (see [Authentication](/docs/manage/authentication#callback-urls)).
-- **`*.localhost` does not resolve server-side.** macOS and most Linux resolve it to loopback; some containers and corporate DNS setups do not. There the web server can't reach `api.<name>.localhost` to render authenticated pages, and they redirect to the home page.
+`PORTLESS=0 bun run dev` skips the proxy for fixed ports instead (web `:3000`, api `:4000`), the ones the local row of [Callback URLs](/docs/manage/authentication#callback-urls) registers with an OAuth provider; that page says why Google refuses the `.localhost` hosts. `bunx portless list` prints the active hosts. Restarting, the `bun --hot` trap where a new route answers `NOT_FOUND`, and the detached start an agent needs are the `dev` skill in [AI Skills](/docs/resources/ai-skills).
 
 ## Sign in
 
-A fresh scaffold has no OAuth configured yet, so the home page shows no social buttons. `init` already set `AGENT_SIGNIN_ENABLED=true` in your local `.env`, so the dev-only **Login (agents)** button is ready in the sign-in dialog: click it (or use one `curl`) to mint a real session locally with no OAuth round-trip, an `owner` the first time it creates the account. See [Working with Agents](/docs/getting-started/working-with-agents) for that flow.
+A fresh scaffold has no OAuth configured, so **Login** in the navbar opens a dialog with one button, **Login (agents)**: `init` set `AGENT_SIGNIN_ENABLED=true`, and the route it posts to mints a real session with no OAuth round-trip, as an `owner`, since the sign-in that creates the account makes it one. It lands on `/dashboard`. The curl form is the `dev` skill's Agent login, and what keeps the route out of a deploy, and what does not, is in [Local sign-in](/docs/getting-started/working-with-agents#local-sign-in). Real users come from GitHub or Google in [Authentication](/docs/manage/authentication); each button appears once its credentials are set.
 
-When you're ready for real users, wire up GitHub or Google in [Authentication](/docs/manage/authentication); each button appears only once its credentials are set.
+## Common questions
+
+**Can I run it with `npx`?**
+
+Not without Bun installed: `npx zerostarter init` on a machine without it used to die on the first spawn with `spawnSync bunx ENOENT`. It now stops before any prompt, prints the `bunx --bun zerostarter init` re-run, and offers to install Bun.
+
+**What happens when I run `init` again?**
+
+In a directory that already holds the project, `init` converts it in place again, after a confirm that defaults to no and that `--yes` (or a run without a terminal) skips. That regenerates `site.ts`, `README.md`, `docs.config.ts`, `app/page.tsx` and the content stubs over your own. The stub `docs.config.ts` lists only the two index pages, so every docs page you added fails the strict docs check in `bun run build`, and the pre-commit hook with it, until you restore the file from history. It also resets the root `package.json` to version `0.0.0` without its author fields ([Rebrand](/docs/getting-started/cli#rebrand) says what that does to the next release), restamps each of your `source: local` skills as synced from the starter, records the skills and `AGENTS.md`, edits and all, as what the CLI wrote, so the next `sync` replaces a skill or a guide you had edited ([Skills you have customized](/docs/getting-started/cli#skills-you-have-customized) says which), and commits. A fork takes upstream changes with `sync`, not `init`. The database step is idempotent: pglaunch names its container after the directory and refuses a second one of the same name, but it still prints the running one's URL, so `init` reuses that container instead of failing, and `init` asks pglaunch for a fresh one only when that first run printed no URL; a migration that fails is a warning (`run bun run db:migrate`), never a new container. When `.env` already has a `POSTGRES_URL`, `init` leaves it alone and ignores `--db`, but it seeds `.env` as on the first run, so a blank or missing `AGENT_SIGNIN_ENABLED` becomes `true` again.
+
+**Can two checkouts run `bun run dev` at once?**
+
+Under portless, yes: in a linked worktree each host is prefixed with the last segment of the branch name, on the same proxy, so `fix-ui.<name>.localhost:1355` and `<name>.localhost:1355` run side by side. `PORTLESS=0` serves one stack at a time, since both would bind `:3000` and `:4000`.
+
+## It's working if
+
+- `init` ends on `<name> is ready` and its **Next steps** note lists `bun run dev` (after a `cd` when the project landed in a new directory); a `bun run db:migrate` line there means the migrations were not applied, and `set POSTGRES_URL in .env` above it means no database was provisioned.
+- `bunx portless list` shows `<name>` and `api.<name>` (branch-prefixed in a worktree).
+- `curl http://api.<name>.localhost:1355/api/health` prints `"message":"ok"`, and `http://<name>.localhost:1355/` answers 200, or a redirect to `/waitlist` in a fork with the waitlist feature on.
+- `http://api.<name>.localhost:1355/api/docs` renders the Scalar API reference, or answers 404 when `init` turned the `apiDocs` feature off.
+- **Login (agents)** lands on `/dashboard`.
 
 ## Next
 
-- [Working with Agents](/docs/getting-started/working-with-agents): sign in locally and build your first feature.
-- [Architecture](/docs/getting-started/architecture): what you just started, and why each piece is there.
-- [Authentication](/docs/manage/authentication): add OAuth, organizations, and teams.
+- [Architecture](/docs/getting-started/architecture): what `init` scaffolded, and why each piece is there.
+- [The CLI](/docs/getting-started/cli): every `init` flag, and the `reinit` and `sync` commands an existing repo needs next.
+- [Working with Agents](/docs/getting-started/working-with-agents): the agent's path through the same stack, since it signs in by curl and builds from the skills.

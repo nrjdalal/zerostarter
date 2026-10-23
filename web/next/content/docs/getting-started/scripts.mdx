@@ -1,111 +1,120 @@
 ---
 slug: /docs/getting-started/scripts
 title: Scripts
-description: Every bun script, grouped by when you'd reach for it.
+description: "Every bun run script and the tooling behind it: what each does, when it runs, and where a new one goes."
 ---
 
-Every script lives in the root `package.json`; run any of them with `bun run <name>`. They're grouped below by when you actually reach for one.
+Every script you run is `bun run <name>` from the root `package.json`, and most call a file in one of two places. `packages/scripts/src/` is a workspace package, so `turbo prune` carries it and its declared dependencies into the Docker build: a new build or tooling script lands there, with its imports declared on that package. `.github/scripts/` reaches the image only through an extra `COPY` in each Dockerfile and borrows the root dev dependencies.
 
-## Dev loop
+## When you need this
 
-| Script             | What it does                                                                                                                 |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `bun run clean`    | Remove build artifacts and caches (`.next`, `.turbo`, `dist`), every `node_modules`, and generated typedefs                  |
-| `bun run dev`      | Start both apps through portless on named `.localhost` URLs (`bunx portless list` shows them; branch-prefixed in a worktree) |
-| `bun run devtools` | Open Turborepo DevTools                                                                                                      |
+Reach for this page to look up what a script does and when it runs, or to place a new one. The `dev` skill holds the dev loop; [Code Quality](/docs/manage/code-quality) says what the hooks and CI run.
 
-`PORTLESS=0 bun run dev` uses fixed ports instead: web `:3000`, api `:4000`.
+## Check and ship
 
-<Callout type="warn">
+### Build and release
 
-`bun run clean` deletes every `node_modules` and the generated typedefs, so re-run `bun install` afterward.
+| Script                    | What it does                                                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run build`           | Build every workspace with Turbo and print each app's output size; the pre-commit hook's build                                    |
+| `bun run release:version` | Print the release window's version decision as JSON, writing nothing and needing no network; `--write` moves `package.json` to it |
+| `bun run start`           | Serve the production builds: the web's standalone server and the api bundle                                                       |
 
-</Callout>
+The release workflows run `release:version`; by hand it previews ([Releases](/docs/manage/release)). Run locally, `start` serves the web without its assets: only `web/next/Dockerfile` copies `.next/static` and `public` into the standalone output, so they 404 until you copy them in the same way. With `NODE_ENV=production` in `.env` alone, Better Auth in the api still behaves as outside production, because the bundle loads it before `.env`; pass the stage in the command as well, `NODE_ENV=production bun run start` ([Stages](/docs/manage/environment#stages) says what stays off).
 
-## Database
+### Quality
 
-`bun run auth:schema` runs the Better Auth CLI; each `db:*` script builds `@packages/env` first, then runs Drizzle Kit against `packages/db`.
+| Script                 | What it does                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `bun run check-types`  | `tsc --noEmit` in every workspace, then over `.github/scripts`, then once per `tests/**/tsconfig.json` |
+| `bun run format`       | Oxfmt, writing fixes                                                                                   |
+| `bun run format:check` | Oxfmt, report only                                                                                     |
+| `bun run lint`         | Oxlint over the tree                                                                                   |
+| `bun run test`         | Build `packages/*`, regenerate the data-table font metrics, then run the suite under `tests/`          |
+| `bun run test:e2e`     | Every `*.e2e.test.ts` against a stack already running on the compose ports                             |
 
-| Script                | What it does                                                                                                                       |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `bun run auth:schema` | Regenerate the Better Auth tables in `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts` (`--check` only compares) |
-| `bun run db:generate` | Generate a migration from schema changes                                                                                           |
-| `bun run db:migrate`  | Apply pending migrations                                                                                                           |
-| `bun run db:studio`   | Open Drizzle Studio to browse and edit data                                                                                        |
+[Code Quality](/docs/manage/code-quality#the-gates-in-order) says which of these the hooks and the pull request run. `tests/` belongs to the canonical starter, so in a fork `test` and `test:e2e` no-op. `test` builds the shared packages first because a test imports one through its `exports`, which point at `dist`. The end-to-end suite skips itself when no stack is named, so `test` stays green without one and no CI job runs it; the `docker-test` skill runs it against the images.
 
-See [Database](/docs/manage/database) for the loop these belong to.
+## Develop
 
-## Quality
+### Console
 
-| Script                 | What it does                                                                           | In PR CI |
-| ---------------------- | -------------------------------------------------------------------------------------- | -------- |
-| `bun run check-types`  | Type-check every workspace, then the repo scripts and the test tree                    | yes      |
-| `bun run format`       | Oxfmt, writing fixes                                                                   | no       |
-| `bun run format:check` | Oxfmt, report only                                                                     | yes      |
-| `bun run lint`         | Oxlint over the whole tree                                                             | yes      |
-| `bun run test`         | Build the shared packages, then run the whole suite from the repo-root `tests/` mirror | yes      |
-| `bun run test:e2e`     | Run every `*.e2e.test.ts` against a stack that is already running                      | no       |
+| Script                                                       | What it does                                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Grant, list or revoke a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
 
-A failing test or type error blocks the merge. The details worth knowing:
+It writes to the database `POSTGRES_URL` names. The usage header of `.github/scripts/console-roles.ts` holds each action and the defaults it takes.
 
-- **`check-types`** runs in passes: every workspace through Turbo, then `check-types:scripts` (`tsc` over `.github/scripts`), then `check-types:tests` (one `tsc` run per `tests/**/tsconfig.json`).
-- **`test`** builds `packages/*` and regenerates the data-table font metrics first. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds.
+### Database
 
-### The end-to-end suite
+| Script                | What it does                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `bun run auth:schema` | Regenerate `packages/db/src/schema/auth.ts` from `packages/auth/src/schema.ts`; `--check` only compares |
+| `bun run db:generate` | Generate a migration from schema changes                                                                |
+| `bun run db:migrate`  | Apply pending migrations                                                                                |
+| `bun run db:studio`   | Open Drizzle Studio                                                                                     |
 
-`bun run test:e2e` is a golden suite: every contract response is snapshotted, and `bun run test:e2e --update-snapshots` accepts a deliberate change. It needs a running **local-stage** stack:
+Each `db:*` script builds `@packages/env` first, which `drizzle.config.ts` imports built, then runs Drizzle Kit in `packages/db`. [Database](/docs/manage/database) holds the loop and the `db-migration` skill the steps.
 
-- `NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true`, so the agent can sign in.
-- Both OAuth credential pairs set to any value, the id and the secret of each: a provider registers only when both halves are present, and the providers snapshot lists all three.
-- `E2E_API_URL` and `E2E_WEB_URL` default to the compose ports (`localhost:4000`, `localhost:3000`), and are refused unless local, since the suite writes through the API.
-- `E2E_POSTGRES_URL` unlocks the flows that seed a second account.
+### Dev loop
 
-It skips itself when no stack is named, so `bun run test` stays green without one. CI never names one, so **nothing in CI runs this suite**: run it yourself after a dependency refresh, which is what can move a library's internals under a snapshot.
+| Script             | What it does                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `bun run clean`    | Remove build output, caches, generated files and every `node_modules`; `bun install` again afterward                      |
+| `bun run dev`      | Both apps on named `.localhost` URLs through portless, branch-prefixed in a worktree; `PORTLESS=0` uses `3000` and `4000` |
+| `bun run devtools` | The Turborepo package graph in the browser                                                                                |
 
-## Release / production
+### shadcn
 
-| Script                    | What it does                                                                                            |
-| ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `bun run build`           | Build every app with Turbo, then print each workspace's size. The same build the pre-commit hook runs   |
-| `bun run release:version` | Print the version decision for the current release window as JSON; `--write` moves `package.json` to it |
-| `bun run start`           | Serve the production build                                                                              |
+| Script                  | What it does                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `bun run shadcn:update` | Re-scaffold every shadcn/ui component from the registry, re-apply the local overrides, format, then `bun i` |
 
-`release:version` reports the last tag, the tree, what the window earned, and the larger of the two. The draft-PR workflow runs it on a push to `canary` whenever a release window is open, meaning `main` exists and `canary` is ahead of it; running it by hand only previews, and it needs no network. It reads the `v*` tags, so fetch them first: with tags present but none reachable from HEAD it stops rather than computing from v0.0.0.
+<Callout type="warn" title="The sync wipes web/next/src/components/ui">
 
-The changelog, version bump, tag, and GitHub release are automated: you don't run them by hand. See [Releases](/docs/manage/release).
-
-## shadcn
-
-| Script                  | What it does                                   |
-| ----------------------- | ---------------------------------------------- |
-| `bun run shadcn:update` | Update every shadcn/ui component, then `bun i` |
-
-<Callout type="warn">
-
-`bun run shadcn:update` overwrites everything under `web/next/src/components/ui/`, so hand-edits to those files are lost. Put durable customizations in `.github/scripts/shadcn-customize.ts`, which re-applies them after each sync; the `shadcn-sync` skill covers the workflow.
+A hand edit there is lost on the next sync; a durable customization goes in `.github/scripts/shadcn-customize.ts`, which the sync re-applies (the `shadcn-sync` skill).
 
 </Callout>
 
-## Console
+## Runs on its own
 
-| Script                                                       | What it does                                                                                        |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `bun run console:roles <grant\|revoke\|list> [email] [role]` | Set a user's rung on the [console role ladder](/docs/manage/authentication#the-console-role-ladder) |
+Lifecycle scripts, and the files builds, hooks and workflows call by path:
 
-- `grant` takes `owner`, `admin` or `member`. It defaults to `admin`, or to `owner` while the install has none, which is how a fresh install gets its first way in.
-- `revoke` returns them to `user`.
-- `list` shows everyone with console access.
+| Script                                            | When                                                                  | What it does                                                                     |
+| ------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `.github/scripts/build-sizes.ts`                  | after `build`; the release, with `--graph`                            | the size table; `.github/assets/graph-build.svg`                                 |
+| `.github/scripts/changelog-manager.ts`            | the release                                                           | the changelog's compare links and contributor names                              |
+| `.github/scripts/compress-images.ts`              | the web build                                                         | compress `web/next/public` in place                                              |
+| `.github/scripts/docs.ts`                         | the web build (`--strict`), `check-types`, `dev`                      | `meta.json` and each page's frontmatter from `docs.config.ts`                    |
+| `.github/scripts/ensure-remote-branches.ts`       | the pre-push hook                                                     | seed `main` on a fresh GitHub remote                                             |
+| `.github/scripts/migrate-on-deploy.ts`            | the api's Vercel build                                                | `db:migrate`, on production and `canary` deploys only                            |
+| `.github/scripts/portless.ts`                     | `dev`                                                                 | each app's portless URLs, injected before its dev command                        |
+| `.github/scripts/skills-manager.ts`               | the pre-commit hook, when a skill's Markdown or this script is staged | the `AGENTS.md` skills tables                                                    |
+| `packages/scripts/src/data-table-metrics.ts`      | the web build, `check-types`, `dev`, `test`                           | the header font's metrics, into `.generated/`                                    |
+| `packages/scripts/src/generate-env.ts`            | the auth and web builds                                               | the app host's breakdown (cookie scope, private-host signal), into `.generated/` |
+| `postinstall` (`.github/scripts/deps-manager.ts`) | `bun install`; a staged `package.json`                                | sort the `catalog`, move a dependency into it, caret every exact or tilde pin    |
+| `prepare`                                         | `bun install`                                                         | install the Lefthook hooks                                                       |
 
-`grant` and `revoke` both record a line in [Activity](/docs/manage/activity) attributed to `console:roles`, since nobody is signed in when it runs.
+The pull-request workflow, Vercel and the Dockerfiles install with `--ignore-scripts`, so neither lifecycle script runs there.
 
-## Runs automatically
+## Common questions
 
-| Script        | When                | What it does                                |
-| ------------- | ------------------- | ------------------------------------------- |
-| `postinstall` | after `bun install` | Normalize the `catalog:` dependency entries |
-| `prepare`     | after `bun install` | Install the Lefthook git hooks              |
+**Why did `postinstall` rewrite the version I pinned?**
+
+Every root `catalog` entry is a caret range, and the dependency manager restores one on every install with no opt-out: a deliberate pin means changing that rule in `deps-manager.ts` and recording why (in the canonical starter, `.github/notes/dependencies.md`). A range it cannot convert is reported for a manual fix.
+
+**Why does `release:version` stop with `v* tags exist but none is reachable from HEAD`?**
+
+The clone holds `v*` tags that HEAD's history does not reach, usually because it is shallow: run `git fetch --unshallow --tags`, then run it again. The message's own advice falls short there, since fetching the tags into a shallow clone leaves the history between HEAD and them missing. A clone with no tags at all does not stop: it computes from `v0.0.0`, so fetch the tags before trusting its number.
+
+## It's working if
+
+- `bun run release:version` prints one JSON line holding `next`, and `git status` stays clean.
+- `bun run build` ends in a size table with `@api/hono` and `@web/next` rows.
+- `bun run test` passes with no stack running, the end-to-end files skipped.
 
 ## Next
 
-- [Code Quality](/docs/manage/code-quality): what `lint`, `format`, and `build` enforce on every commit.
-- [Architecture](/docs/getting-started/architecture): the two apps and the packages these scripts drive.
+- [Code Quality](/docs/manage/code-quality), because the hooks and the pull-request gate run these scripts.
+- [Database](/docs/manage/database), because `auth:schema` and `db:*` are steps of its migration loop.
+- [AI Skills](/docs/resources/ai-skills), because `dev`, `docker-test` and `shadcn-sync` hold the runbooks these tables point at.

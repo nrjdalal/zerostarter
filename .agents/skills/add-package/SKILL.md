@@ -1,140 +1,25 @@
 ---
 name: add-package
-description: Add a new shared workspace package under packages/*. Use when creating a new @packages/<name>, whether a bundled library other workspaces import or a build-only script package that runs during a build or on demand (bun run <script>).
+description: Add a new shared workspace package under packages/*. Use when creating a new @packages/<name>, a bundled library other workspaces import or a build-only script package that runs in a build or on demand.
 source: local
 ---
 
 # Add a Package
 
-The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A shared package lives at `packages/<name>/` and is named `@packages/<name>`. Every package shares one shape, so copy an existing sibling rather than invent a layout.
+The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`, so `packages/<name>/`, named `@packages/<name>`, is a workspace the moment it exists. Two shapes, each with a sibling to copy: a **library** is tsdown-built to `dist/` and imported through its `exports` (`packages/db`, or `packages/auth` when it ships several entries), and a **build-only script package** is never bundled and runs as `bun <path>.ts` (`packages/scripts`, where `AGENTS.md` lands every new script).
 
-## Pick the shape
+## 1. Copy the sibling
 
-- **Library** (`env`, `db`, `auth`, `config`): tsdown-built to `dist/` and imported by other workspaces through an `exports` map. Use it when code is consumed at runtime.
-- **Build-only script** (`scripts`): never bundled, never imported at runtime. Its `.ts` files run via `bun src/<x>.ts`, either during another package's build (`@packages/auth`'s `build` runs `bun ../scripts/src/generate-env.ts auth` first) or on demand from a root script (`bun run auth:schema` runs `auth-schema.ts`). Use it for build-time codegen, for regenerators of committed source, and for every new build, CI, or repo tooling script (`release-version.ts` decides the release number for the workflows from here), as `AGENTS.md` requires; `.github/scripts` holds only the scripts that predate that rule, and nothing new lands there.
+Copy its `package.json`, `tsconfig.json` and, for a library, `tsdown.config.ts`; rename, drop the sibling's own dependencies, and apply these deltas. `@packages/config` stays a devDependency: `tsconfig.json` extends it and `tsdown.config.ts` imports the `definePackageConfig` factory from it, which takes the package's `env` and `getSafeEnv` to validate the env at build time. A library with no env of its own copies `packages/config`'s `tsdown.config.ts` instead, which calls tsdown's `defineConfig` directly; `packages/env` does the same because the factory validates through env's own build. A script package carries `types: ["bun"]` in `tsconfig.json`, so `tsc` knows the Bun globals, and no `build`, `exports` or `files`. A library with several entries lists them all in `entry`, `src/index.ts` included, since the option replaces the default, with one `exports` entry per file. Done when `bun install` records `packages/<name>` in `bun.lock` and `bunx turbo run check-types --filter=@packages/<name>` exits 0.
 
-## Common skeleton (both shapes)
+## 2. Wire the consumers
 
-```
-packages/<name>/
-├── package.json
-├── tsconfig.json
-└── src/
-    └── index.ts        # source under src/, imported via @/ (a build-only script names its entry by function, e.g. generate-env.ts, not index.ts)
-```
+A library goes in each consumer's `dependencies`, a script package in `devDependencies`, so `turbo prune` carries either into the Docker build. A library that reaches `@packages/env/load-dotenv`, through a server env slice as `packages/db` does or a slice of its own, stays out of `web/next`'s server code, since Next's tracer would copy the root `.env` into the web image (`ignore-sync` says how); the web reads that data through the api. A script runs from the consumer's directory, where turbo runs every script, by relative path (`bun ../scripts/src/generate-env.ts auth` in `packages/auth`'s `build`, `bun ../../packages/<name>/src/<x>.ts` from an app), because the `.env` load resolves `../../.env` from the working directory (`codebase-map` holds the env entrypoints). A script package's `src/**` joins `globalDependencies` in `turbo.json`, since it has no build task for a consumer's hash to follow, so a cached consumer build would replay stale output. Disposable output goes to the repo-root `.generated/`; a new artifact kind is added to `.dockerignore`, `.github/scripts/clean.sh` and `.gitignore` together. Done when `rg "@packages/<name>" -g package.json` lists every consumer beside the package itself, and `bunx turbo run build --filter=<consumer>` exits 0 with a library in its run, or with a script's command line in the consumer's build log and its artifact under `.generated/` where it writes one.
 
-`package.json` fields shared by every package:
+## 3. Verify
 
-```jsonc
-{
-  "name": "@packages/<name>",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "check-types": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@packages/config": "workspace:*",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
-  }
-}
-```
+Done when `bunx turbo run check-types build` lists the package and exits 0, and in the canonical starter `bun run test` passes.
 
-`@packages/config` MUST be a devDependency: `tsconfig.json` extends it, and the `extends` cannot resolve without the dep. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
+## 4. Sync the map
 
-`tsconfig.json` (identical to `env`/`db`/`auth`):
-
-```json
-{
-  "extends": "@packages/config/tsconfig.json",
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-```
-
-## Library shape (adds to the skeleton)
-
-```jsonc
-{
-  // ...skeleton...
-  "files": ["dist"],
-  "exports": {
-    ".": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" }
-  },
-  "scripts": {
-    "build": "tsdown",
-    "check-types": "tsc --noEmit"
-  },
-  "dependencies": { /* runtime deps */ },
-  "devDependencies": {
-    "@packages/config": "workspace:*",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:"
-  }
-}
-```
-
-Add one `exports` entry per `entry` file. `tsdown.config.ts` uses the shared helper, which validates env in `build:prepare`, emits tsc dts, and minifies: A package that ships more than one entry lists them all in `definePackageConfig({ entry: [...] })`, `src/index.ts` included, because the option replaces the default rather than extending it; `@packages/auth` is the worked example, with `src/access.ts` as a second entry so the web can import the pure rules without the auth runtime.
-
-```ts
-import { definePackageConfig } from "@packages/config/tsdown"
-import { getSafeEnv } from "@packages/env"
-import { env } from "@packages/env/<name>"
-
-export default definePackageConfig({
-  name: "@packages/<name>",
-  env,
-  getSafeEnv,
-})
-```
-
-A package with no env of its own can pass another package's `env`/`getSafeEnv`, or (like `env` itself) call tsdown's `defineConfig` directly. `turbo.json`'s `build.outputs` already lists `dist/**`, so no turbo edit is needed.
-
-## Build-only script shape (adds to the skeleton)
-
-No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and the native tsc preview (tsc) will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
-
-```json
-{
-  "extends": "@packages/config/tsconfig.json",
-  "compilerOptions": {
-    "types": ["bun"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-```
-
-`types: ["bun"]` is the only line that differs from a library's tsconfig; `bun-types` pulls in the node references, so `@types/node` stays a devDep but needs no separate `types` entry. The consumer runs the script in its own `build`, e.g. `"build": "bun ../<name>/src/<script>.ts && tsdown"` (the same `bun <path>` sibling-script call `web/next` and `api/hono` use for `.github/scripts/*.ts`), and declares `"@packages/<name>": "workspace:*"` as a devDependency so `turbo prune` keeps it in the Docker build. Invoke it from the consumer's directory (the `bun ../<name>/...` form), not the repo root: a script that reads env inherits the cwd-relative `.env` load (`cwd/../../.env`) that `@packages/env/load-dotenv` performs, so running it from root silently misses `.env`. That load rides on the server targets, `api-hono`, `auth` and `db`, which each import `@/load-dotenv`. Two entrypoints deliberately do not: the `@packages/env` index, which carries only constants and `getSafeEnv`, and `web-next`, which client components import and so must stay free of `node:*`. A script reaching env through either of those imports `@packages/env/load-dotenv` itself, as `generate-env.ts` does.
-
-Write any generated-but-disposable artifact to the repo-root `.generated/` dir (gitignored, dockerignored, removed by `bun run clean`), never inside a package; a regenerator whose output is committed source (`auth-schema.ts` writing `packages/db/src/schema/auth.ts`) writes that file in place and keeps its scratch in `.generated/`. `.generated/` is the one centralized home for generated-but-disposable files the build consumes, which keeps individual packages free of committed-or-not `*.generated.*` files. When you add a new generated artifact type, add it to `.gitignore`/`.dockerignore` and `.github/scripts/clean.sh` together.
-
-## Wire it up
-
-1. `bun install` from the repo root to link the new workspace (a fresh worktree also needs this before the pre-commit build; set `NODE_ENV=production SKIP_ENV_VALIDATION=true`).
-2. In each consumer, add `"@packages/<name>": "workspace:*"` (a runtime `dependency` for a library, a `devDependency` for a build-only package) and import via `@packages/<name>` (or a subpath export).
-3. Runtime code follows the `runtime-apis` skill: Bun-native APIs where they exist, else `node:`-prefixed built-ins.
-4. Verify: `bunx turbo run check-types build` and `bun run test` are green and the new package appears in the run.
-
-## Keep docs in sync
-
-Adding a package touches the map. In the same change, update: the `packages/*` list in `AGENTS.md`/`CLAUDE.md`; both structure trees, `README.md` (`## Monorepo Structure`) and `web/next/content/docs/getting-started/project-structure.mdx` (the tree and the "The packages" list); the `codebase-map` skill; and any skill whose globs name package paths (e.g. `runtime-apis`). A fork keeps build-only packages like `scripts` (unlike `cli`, which `init` strips), so they belong in the user-facing trees too. See the `doc-sync` skill.
-
-## Gotchas
-
-- Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- A Bun-script package without `types: ["bun"]` fails `check-types` with `Cannot find name 'Bun'` / `'node:...'` under tsc, even though the identical library config auto-includes fine. Pin `types` for script packages only.
-- Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
+The surfaces that list packages: the `codebase-map` tree, the `README.md` tree, the `/llms-full.txt` preamble in `packages/config/src/site.ts`, and both the tree and the table in `web/next/content/docs/getting-started/project-structure.mdx`; a script package also joins the Bun-only paths in `runtime-apis`. A fork takes neither `README.md` nor `web/next/content/`, and the CLI writes its `site.ts` with an empty preamble. Done when every surface that names the sibling you copied also names the new package (`rg -l "\b<sibling>\b"` and `rg -l "\b<name>\b"` over those four paths list the same files), and `runtime-apis` names a script package.

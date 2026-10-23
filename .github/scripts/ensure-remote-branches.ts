@@ -1,4 +1,4 @@
-// Pre-push guard for fresh forks, GitHub remotes only (other remotes are left alone). The user's first `git push origin canary` creates canary, which GitHub makes the default branch; on the next push the hook seeds the release branches (main by default, from RELEASE_BRANCHES) as separate refs, so they never collide with the canary push, so auto-canary-into-main opens the release PR. No gh or repo-admin is needed: the default branch falls out of push order. A per-branch, per-remote git-config marker makes it a no-op once done; shared via lefthook.yml so it runs here and in every fork.
+// Pre-push guard for fresh forks, GitHub remotes only (other remotes are left alone). The user's first `git push origin canary` creates canary, which an empty GitHub repository makes its default branch; on the next push the hook seeds the release branches (main by default, from RELEASE_BRANCHES) as separate refs, so they never collide with the canary push. Seeding main starts no workflow, so auto-canary-into-main opens the release PR on the first push that moves canary once main exists. No gh or repo-admin is needed: on an empty repository the default branch falls out of push order. A per-branch, per-remote git-config marker makes it a no-op once done; shared via lefthook.yml so it runs here and in every fork.
 
 // Per-branch, per-remote local-only marker; the remote is sanitized and prefixed so the key is always a valid git-config name.
 export const markerKey = (branch: string, remote: string): string => {
@@ -72,7 +72,7 @@ const orange = (s: string): string => (process.stderr.isTTY ? `\x1b[38;5;208m${s
 const link = (url: string): string =>
   process.stderr.isTTY ? `\x1b]8;;${url}\x07${orange(url)}\x1b]8;;\x07` : url
 
-// Print the one manual step the Actions token cannot do for the user: grant itself write access.
+// Print the manual step the Actions token cannot take for the user: the repository's Actions settings.
 const printPermsInstructions = (remote: string): void => {
   const url = settingsUrl(remoteUrl(remote))
   console.error(
@@ -100,7 +100,7 @@ const ensureRemoteBranches = (remote: string): void => {
   if (canaryOnRemote === null) return // remote unreachable: never block the push, retry next time
 
   if (!canaryOnRemote) {
-    // This push creates canary, which GitHub makes the default branch. The release branches are seeded on the next push.
+    // This push creates canary, which an empty repository makes its default branch. The release branches are seeded on the next push.
     console.error(
       "zerostarter: publishing canary; it becomes your default branch. Push again to seed the release branches and open the release PR.",
     )
