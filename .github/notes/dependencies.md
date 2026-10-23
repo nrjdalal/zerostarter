@@ -28,15 +28,11 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-### `fumadocs-mdx` held at `15.4.7`, beside core and ui `16.17.8`
+### `tsdown` held at `0.23.1`
 
-- **Break:** `fumadocs-mdx@15.4.10` (inside `^15.4.7`, and it needs `fumadocs-core ^16.17.8`) with `fumadocs-core` and `fumadocs-ui` at `16.17.8` fails `next build`'s type check with 23 errors, measured on 2026-10-23. Every page's `data` types as fumadocs-core's bare `PageData`, so the collection's own fields are gone. `15.4.7` with core and ui at `16.17.8` is clean (the build and check-types pass). `15.4.8` and `15.4.9` were not tried.
-- **The 23 errors:**
-  - 2 TS2345, in the two `src/app/(llms.txt)` routes: `Page<undefined, PageData>` is not assignable to `LLMPage`, since `getText` is missing.
-  - 1 TS2559, in `src/lib/blog.ts`: `PageData` has no properties in common with `Pick<BlogPostMeta, "draft" | "publishedAt">`.
-  - 20 TS2339, the property does not exist on `PageData`: `updatedAt` in `src/app/sitemap.ts`; `createdAt`, `draft` and `publishedAt` in `src/lib/blog.ts`; `author`, `body`, `full`, `publishedAt`, `tags`, `toc` and `updatedAt` in `src/lib/fumadocs.tsx`.
-- **Reproduce:** `bun update -r fumadocs-mdx`, then `bun run build` in `web/next` with `SKIP_ENV_VALIDATION=true NODE_ENV=production`.
-- **Exit criteria:** drop this entry once a refresh moves `fumadocs-mdx` past `15.4.7` and `bun run build` passes, with a later `fumadocs-mdx` or a fix on our side.
+- **Break:** `tsdown@0.23.2` depends on `rolldown-plugin-dts ^0.29.0-beta.2`, whose declaration build stops the package builds (first seen on `@packages/config`) with "TypeScript 7.0.2 does not provide the classic TypeScript API required by tsc", measured on 2026-10-23. Its way out, `isolatedDeclarations`, was not tried: it asks for explicit types on everything the packages export, and `@packages/auth` exports an inferred better-auth instance. `0.23.1` with `rolldown-plugin-dts@0.28.8` builds clean.
+- **Reproduce:** `bun update -r tsdown`, then `bun run check-types`, whose package builds fail first.
+- **Exit criteria:** drop this entry once a `tsdown` past `0.23.1` builds the packages under TypeScript 7, or the packages turn on `isolatedDeclarations`.
 
 ## Active overrides
 
