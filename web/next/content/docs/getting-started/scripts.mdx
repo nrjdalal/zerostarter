@@ -82,7 +82,7 @@ The changelog, version bump, tag, and GitHub release are automated: you don't ru
 
 <Callout type="warn">
 
-`bun run shadcn:update` overwrites everything under `web/next/src/components/ui/`, so hand-edits to those files are lost. Put durable customizations in `.github/scripts/shadcn-customize.ts`, which re-applies them after each sync; the `shadcn-sync` skill covers the workflow.
+`bun run shadcn:update` overwrites everything under `web/next/src/components/ui/` and writes the registry's hooks and lib files into `web/next/src/hooks/` and `web/next/src/lib/`, so hand-edits to those files are lost. Put durable customizations in `.github/scripts/shadcn-customize.ts`, which re-applies them after each sync; the `shadcn-sync` skill covers the workflow.
 
 </Callout>
 
