@@ -32,18 +32,18 @@ packages/<name>/
   "private": true,
   "type": "module",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "tsrs": "catalog:"
   }
 }
 ```
 
-`@packages/config` MUST be a devDependency: `tsconfig.json` extends it, and the `extends` cannot resolve without the dep. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
+`@packages/config` MUST be a devDependency: `tsconfig.json` extends it, and the `extends` cannot resolve without the dep. `check-types` runs tsrs, so `tsrs` is a devDependency of every package; `typescript` is one only where something needs the compiler itself, as a library's tsdown does. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
 
 `tsconfig.json` (identical to `env`/`db`/`auth`):
 
@@ -71,7 +71,7 @@ packages/<name>/
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "dependencies": { /* runtime deps */ },
   "devDependencies": {
@@ -79,12 +79,13 @@ packages/<name>/
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }
 ```
 
-Add one `exports` entry per `entry` file. `tsdown.config.ts` uses the shared helper, which validates env in `build:prepare`, emits tsc dts, and minifies: A package that ships more than one entry lists them all in `definePackageConfig({ entry: [...] })`, `src/index.ts` included, because the option replaces the default rather than extending it; `@packages/auth` is the worked example, with `src/access.ts` as a second entry so the web can import the pure rules without the auth runtime.
+Add one `exports` entry per `entry` file. `tsdown.config.ts` uses the shared helper, which validates env in `build:prepare`, emits dts through `typescript`, and minifies: A package that ships more than one entry lists them all in `definePackageConfig({ entry: [...] })`, `src/index.ts` included, because the option replaces the default rather than extending it; `@packages/auth` is the worked example, with `src/access.ts` as a second entry so the web can import the pure rules without the auth runtime.
 
 ```ts
 import { definePackageConfig } from "@packages/config/tsdown"
@@ -102,7 +103,7 @@ A package with no env of its own can pass another package's `env`/`getSafeEnv`, 
 
 ## Build-only script shape (adds to the skeleton)
 
-No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and the native tsc preview (tsc) will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
+No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and tsrs, like the TypeScript 7 compiler it ports, will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
 
 ```json
 {
@@ -136,5 +137,5 @@ Adding a package touches the map. In the same change, update: the `packages/*` l
 ## Gotchas
 
 - Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- A Bun-script package without `types: ["bun"]` fails `check-types` with `Cannot find name 'Bun'` / `'node:...'` under tsc, even though the identical library config auto-includes fine. Pin `types` for script packages only.
+- A Bun-script package without `types: ["bun"]` fails `check-types` with `Cannot find name 'Bun'` / `'node:...'` under tsrs, even though the identical library config auto-includes fine. Pin `types` for script packages only.
 - Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
