@@ -1,10 +1,12 @@
+import githubDark from "@pierre/highlights/themes/github-dark"
+import githubLight from "@pierre/highlights/themes/github-light"
+import { createHighlights } from "fumadocs-core/highlight/highlights"
 import { rehypeCodeFromHighlighter } from "fumadocs-core/mdx-plugins/rehype-code.core"
 import { pageSchema } from "fumadocs-core/source/schema"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 import { z } from "zod"
 
 import { normalizeBlogTimestamp } from "@/lib/blog-policy"
-import { highlighter } from "@/lib/highlighter"
 
 // docs.config.ts owns these fields; the generator syncs them into each MDX, so the schema must accept them (label defaults to title).
 const docsSchema = pageSchema.extend({
@@ -63,6 +65,10 @@ export const consoleDocs = defineDocs({
       includeProcessedMarkdown: true,
     },
   },
+})
+
+const highlighter = createHighlights({
+  themes: { light: githubLight, dark: githubDark },
 })
 
 export default defineConfig({
