@@ -18,6 +18,8 @@ Rewriting a spec after resolution leaves `bun.lock` holding the old spec string 
 
 Note that a caret on a prerelease widens it more than it may look: `^2.0.14-beta.1` admits `2.0.14-beta.2` and every later `2.x`. A prerelease is the one spec most often pinned on purpose, so if an exact prerelease matters, record the reason here before the rule rewrites it.
 
+`tsrs` runs the other way. Every release of the port so far is a prerelease, such as `0.18.0-ts7.1.0-dev.20260929`, and its caret admits neither a later minor (a `0.x` caret stops below `0.19.0`) nor a prerelease of any other version, so `bun update` never reaches the next release; only the `audit` skill's `bun update -r --latest` refresh moves it.
+
 The rule has **no opt-out**, so no pin survives an install, whatever reason is recorded here. Pinning something deliberately means changing the rule itself in `.github/scripts/deps-manager.ts`, for example adding an allowlist it skips, and writing down why in this file. That was left out on purpose: there is nothing to exempt today, and an unused config key is worse than adding one when a real case appears.
 
 Enforcement is only partial by design. Specs the rule cannot convert are reported and the script still exits 0, so a compound range such as `>=4.4.3 <5` survives an install with nothing but a line of `postinstall` output. Failing the install instead would block work for a range that may be perfectly deliberate, so the auto-convertible half is enforced and the rest is advisory.
@@ -26,15 +28,11 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-### `fumadocs` held at mdx `15.4.7`, core and ui `16.17.1`
+### `tsdown` held at `0.23.1`
 
-- **Break:** `fumadocs-mdx@15.4.10` (inside `^15.4.7`, and it needs `fumadocs-core ^16.17.8`) with `fumadocs-core` and `fumadocs-ui` at `16.17.8` fails `next build`'s type check with 23 errors, measured on 2026-10-23. Every page's `data` types as fumadocs-core's bare `PageData`, so the collection's own fields are gone. `15.4.7` with `16.17.1` is clean. `15.4.8` and `15.4.9` were not tried.
-- **The 23 errors:**
-  - 2 TS2345, in the two `src/app/(llms.txt)` routes: `Page<undefined, PageData>` is not assignable to `LLMPage`, since `getText` is missing.
-  - 1 TS2559, in `src/lib/blog.ts`: `PageData` has no properties in common with `Pick<BlogPostMeta, "draft" | "publishedAt">`.
-  - 20 TS2339, the property does not exist on `PageData`: `updatedAt` in `src/app/sitemap.ts`; `createdAt`, `draft` and `publishedAt` in `src/lib/blog.ts`; `author`, `body`, `full`, `publishedAt`, `tags`, `toc` and `updatedAt` in `src/lib/fumadocs.tsx`.
-- **Reproduce:** `bun update -r fumadocs-core fumadocs-ui fumadocs-mdx`, then `bun run build` in `web/next` with `SKIP_ENV_VALIDATION=true NODE_ENV=production`.
-- **Exit criteria:** drop this entry once a refresh moves the three fumadocs packages together and `bun run build` passes, with a later `fumadocs-mdx` or a fix on our side.
+- **Break:** `tsdown@0.23.2` depends on `rolldown-plugin-dts ^0.29.0-beta.2`, whose declaration build stops the package builds (first seen on `@packages/config`) with "TypeScript 7.0.2 does not provide the classic TypeScript API required by tsc", measured on 2026-10-23. Its way out, `isolatedDeclarations`, was not tried: it asks for explicit types on everything the packages export, and `@packages/auth` exports an inferred better-auth instance. `0.23.1` with `rolldown-plugin-dts@0.28.8` builds clean.
+- **Reproduce:** `bun update -r tsdown`, then `bun run check-types`, whose package builds fail first.
+- **Exit criteria:** drop this entry once a `tsdown` past `0.23.1` builds the packages under TypeScript 7, or the packages turn on `isolatedDeclarations`.
 
 ## Active overrides
 

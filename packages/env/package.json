@@ -34,7 +34,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsrs --noEmit"
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
@@ -46,6 +46,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
+    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }
