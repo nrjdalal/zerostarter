@@ -1,8 +1,10 @@
+import { rehypeCodeFromHighlighter } from "fumadocs-core/mdx-plugins/rehype-code.core"
 import { pageSchema } from "fumadocs-core/source/schema"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 import { z } from "zod"
 
 import { normalizeBlogTimestamp } from "@/lib/blog-policy"
+import { highlighter } from "@/lib/highlighter"
 
 // docs.config.ts owns these fields; the generator syncs them into each MDX, so the schema must accept them (label defaults to title).
 const docsSchema = pageSchema.extend({
@@ -63,4 +65,15 @@ export const consoleDocs = defineDocs({
   },
 })
 
-export default defineConfig()
+export default defineConfig({
+  mdxOptions: {
+    rehypeCodeOptions: false,
+    rehypePlugins: (v) => [
+      () =>
+        rehypeCodeFromHighlighter(({ transformers }) =>
+          highlighter.override({ shikiTransformers: transformers }),
+        ),
+      ...v,
+    ],
+  },
+})
