@@ -1,9 +1,8 @@
 #!/bin/sh
 
-# The sync wipes ui/ and re-scaffolds these paths (shadcn-customize.ts later resets some to HEAD),
-# so uncommitted work anywhere in this blast radius would be clobbered silently. Refuse to run on it.
-set -- web/next/src/components/ui web/next/components.json web/next/package.json bun.lock \
-  web/next/src/app/layout.tsx web/next/src/lib/utils.ts web/next/src/app/globals.css
+# init and add -a rewrite these paths (shadcn-customize.ts resets some to HEAD), so refuse on uncommitted work here.
+set -- web/next/src/components/ui web/next/components.json web/next/package.json bun.lock package.json \
+  web/next/src/app/layout.tsx web/next/src/app/globals.css web/next/src/hooks web/next/src/lib
 if [ -n "$(git status --porcelain -- "$@")" ]; then
   echo "shadcn-update: commit or stash changes in the sync's blast radius first:" >&2
   git status --porcelain -- "$@" >&2
