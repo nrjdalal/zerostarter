@@ -1,5 +1,3 @@
-import githubDark from "@pierre/highlights/themes/github-dark"
-import githubLight from "@pierre/highlights/themes/github-light"
 import { createHighlights } from "fumadocs-core/highlight/highlights"
 import { rehypeCodeFromHighlighter } from "fumadocs-core/mdx-plugins/rehype-code.core"
 import { pageSchema } from "fumadocs-core/source/schema"
@@ -67,9 +65,7 @@ export const consoleDocs = defineDocs({
   },
 })
 
-const highlighter = createHighlights({
-  themes: { light: githubLight, dark: githubDark },
-})
+const highlighter = createHighlights()
 
 export default defineConfig({
   mdxOptions: {
