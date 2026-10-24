@@ -275,6 +275,13 @@ describe("regenerateSkillTables", () => {
     expect(read(join(dir, "ran.txt"))).toBe(".github/scripts/skills-manager.ts")
   })
 
+  test("prefers packages/scripts/src in a synced fork that still has .github/scripts", async () => {
+    manager(".github/scripts/skills-manager.ts")
+    manager("packages/scripts/src/skills-manager.ts")
+    await regenerateSkillTables(dir)
+    expect(read(join(dir, "ran.txt"))).toBe("packages/scripts/src/skills-manager.ts")
+  })
+
   test("does nothing in a fork that dropped the manager", async () => {
     await regenerateSkillTables(dir)
     expect(exists(join(dir, "ran.txt"))).toBe(false)
