@@ -5,8 +5,8 @@ pre-commit:
       priority: 1
       glob:
         - ".agents/skills/**/*.md"
-        - ".github/scripts/skills-manager.ts"
-      run: bun .github/scripts/skills-manager.ts && git add AGENTS.md
+        - "packages/scripts/src/skills-manager.ts"
+      run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
     lint-staged:
       priority: 2
       run: bunx lint-staged --verbose
@@ -27,4 +27,4 @@ pre-push:
       only:
         - ref: canary
     ensure-branches:
-      run: bun .github/scripts/ensure-remote-branches.ts {1}
+      run: bun packages/scripts/src/ensure-remote-branches.ts {1}

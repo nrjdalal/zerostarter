@@ -69,11 +69,11 @@ Some have a detail worth knowing before you edit:
 - **`db`** groups its schema by concern rather than one file per table: `auth.ts`, `console.ts`, `waitlist.ts`. See [Database](/docs/manage/database).
 - **`env`** has one slice per consumer: `api-hono.ts`, `auth.ts`, `db.ts`, `web-next.ts`. See [Environment Variables](/docs/manage/environment).
 
-`scripts` holds build-time scripts and on-demand ones. The build-time ones write to the gitignored repo-root `.generated/`: the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, and the data-table font metrics. The on-demand ones write committed source or decide something: `auth-schema` (`bun run auth:schema`) writes `packages/db/src/schema/auth.ts`, and `release-version` decides the number a release window has earned.
+`scripts` holds every build, CI and repo script, each TypeScript run by Bun: build-time ones, on-demand ones, and the hooks' and workflows' helpers. The build-time ones write to the gitignored repo-root `.generated/`: the tldts breakdown baked into `auth`, the client split signal `web/next`'s `next.config` inlines, and the data-table font metrics. The on-demand ones write committed source or decide something: `auth-schema` (`bun run auth:schema`) writes `packages/db/src/schema/auth.ts`, `sync-config` (`bun run sync:config`) writes every `tsconfig.json` and each package's type-check setup from one template, and `release-version` decides the number a release window has earned.
 
 ## Bun catalog
 
-The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `.github/scripts/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
+The root `package.json` defines a `catalog:` block with one version per shared dependency; every workspace references those deps as `catalog:` instead of a literal version, so the whole monorepo stays on one version of each. `packages/scripts/src/deps-manager.ts` normalizes and sorts these entries on `postinstall` and whenever a `package.json` is staged.
 
 ## Next
 

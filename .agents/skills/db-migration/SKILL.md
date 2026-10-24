@@ -48,7 +48,7 @@ Put the URL it prints in the worktree's own `.env` as `POSTGRES_URL`, then migra
 bun run db:migrate
 ```
 
-This is local or ad-hoc only. On production and canary deploys the API build auto-applies pending migrations (`.github/scripts/migrate-on-deploy.ts`, gated on `VERCEL_ENV`/`VERCEL_GIT_COMMIT_REF`, PR previews skipped), so a migration merged to canary applies itself on the next deploy.
+This is local or ad-hoc only. On production and canary deploys the API build auto-applies pending migrations (`packages/scripts/src/migrate-on-deploy.ts`, gated on `VERCEL_ENV`/`VERCEL_GIT_COMMIT_REF`, PR previews skipped), so a migration merged to canary applies itself on the next deploy.
 
 ## 5. Make the running stack see it
 

@@ -16,7 +16,7 @@ packages/auth/    # Better Auth instance
 packages/db/      # Drizzle schema + client
 packages/env/     # type-safe env, one validated entry per consumer
 packages/config/  # TS base, tsdown factory, and site.ts (brand identity)
-packages/scripts/ # build-only bun tooling (auth-schema, data-table-metrics, generate-env, release-version); every new script lands here, never bundled
+packages/scripts/ # every build, CI and repo script, in bun TypeScript (codegen, sync-config, deps-manager, skills-manager, clean); never bundled
 packages/cli/     # the zerostarter scaffolding CLI (canonical repo only; init strips it)
 tests/            # the whole suite, mirroring each subject's path; *.e2e.test.ts drive a running stack (canonical repo only; forks take no tests)
 ```
@@ -39,6 +39,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add a data table | colocate `data-columns.tsx` + `data-table.tsx` in the page's `components/` folder, composing `web/next/src/components/data-table.tsx` (reference: `(console)/console/(access)/users/`) | `design` skill |
 | Add a test | `tests/<path of the file under test>.test.ts`; run the suite with `bun run test`. An end-to-end test is `tests/<path of the router or page it drives>.e2e.test.ts` on the `tests/stack.ts` helper, run against a stack with `bun run test:e2e` | `docker-test` skill |
 | Add a build or tooling script | `packages/scripts/src/<name>.ts`, with its deps on that package | - |
+| Change a `tsconfig.json`, or a package's type-check devDependencies or `check-types` | `packages/scripts/src/sync-config/template.json` for all, or the target's own patch beside it (`web-next.json`) → `bun run sync:config`; never the generated file | `add-package` skill |
 | Gate by role | the ladder and every access decision live in `packages/auth/src/access.ts` (pure, unit-tested, imported as `@packages/auth/access`); `web/next/src/lib/auth/console.ts` gates the pages at member, `api/hono/src/middlewares/console.ts` requires admin for the whole console router via `requireConsoleRole` | - |
 | Change the error/response shape | `api/hono/src/lib/error.ts` (the `{ error: { code, message } }` handler) | - |
 | Change docs structure/sidebar | `web/next/docs.config.ts`, single source; `meta.json` is generated | - |

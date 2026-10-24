@@ -86,7 +86,7 @@ The API imports `@packages/db`'s built output, and `bun --hot` does not reliably
 
 ## In production
 
-The schema, the SQL, and the snapshot travel together in the same commit as the change that needs them. On Vercel, the API build applies pending migrations automatically on production and canary deploys (`.github/scripts/migrate-on-deploy.ts`); PR previews are skipped. Point `POSTGRES_URL` at any managed Postgres: Neon, Supabase, Railway. For a throwaway local database, `bunx pglaunch -k` creates one instantly.
+The schema, the SQL, and the snapshot travel together in the same commit as the change that needs them. On Vercel, the API build applies pending migrations automatically on production and canary deploys (`packages/scripts/src/migrate-on-deploy.ts`); PR previews are skipped. Point `POSTGRES_URL` at any managed Postgres: Neon, Supabase, Railway. For a throwaway local database, `bunx pglaunch -k` creates one instantly.
 
 ## Browsing data
 

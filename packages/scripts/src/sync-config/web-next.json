@@ -1,0 +1,29 @@
+{
+  "package": {
+    "scripts": {
+      "check-types": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit"
+    }
+  },
+  "tsconfig": {
+    "compilerOptions": {
+      "incremental": true,
+      "paths": {
+        "collections/*": ["./.source/*"],
+        "generated/*": ["../../.generated/*"]
+      },
+      "plugins": [
+        {
+          "name": "next"
+        }
+      ],
+      "types": ["node"]
+    },
+    "include": [
+      "**/*.ts",
+      "**/*.tsx",
+      ".next/types/**/*.ts",
+      ".next/dev/types/**/*.ts",
+      "next-env.d.ts"
+    ]
+  }
+}

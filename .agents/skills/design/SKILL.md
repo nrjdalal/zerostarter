@@ -62,7 +62,7 @@ When a change establishes or alters a convention, update this file in the same c
 
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/common/access.tsx`) uses `max-w-md`.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
-- **shadcn (`components/ui/*`):** customize only via `.github/scripts/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
+- **shadcn (`components/ui/*`):** customize only via `packages/scripts/src/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 
 ## Data tables
 

@@ -7,15 +7,22 @@
     "check-types": "tsrs --noEmit"
   },
   "devDependencies": {
+    "@octokit/rest": "catalog:",
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
     "@types/bun": "catalog:",
     "@types/fontkit": "catalog:",
     "@types/node": "catalog:",
+    "@viz-js/viz": "catalog:",
     "changelogen": "catalog:",
     "fontkit": "catalog:",
+    "globby": "catalog:",
+    "sharp": "catalog:",
+    "svgo": "catalog:",
     "tldts": "catalog:",
+    "ts-morph": "catalog:",
     "tsrs": "catalog:",
+    "typescript": "catalog:",
     "wawoff2": "catalog:"
   }
 }
