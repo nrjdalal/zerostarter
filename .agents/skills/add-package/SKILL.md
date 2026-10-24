@@ -137,5 +137,5 @@ Adding a package touches the map. In the same change, update: the `packages/*` l
 ## Gotchas
 
 - Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- tsrs does not load `@types/*` by itself. A package gets Node or Bun types only from a dependency that references them: dotenv brings Node to `env`, and drizzle-orm's `bun-sql` driver brings Bun and Node to `db` and `auth`. Without one, `check-types` fails with `Cannot find name 'Bun'` or `'node:...'`. When a package's own code uses `Bun.*`, `import.meta.dir` or `node:*`, set `types: ["bun"]` in its tsconfig, so its types come from the package itself.
+- tsrs does not load `@types/*` by itself. A package gets Node or Bun types only from a dependency that references them: dotenv brings Node to `env`, and drizzle-orm's `bun-sql` driver brings Bun and Node to `db` and `auth`. Without one, `check-types` fails with `Cannot find name 'Bun'` or `'node:...'`. When a package's own code uses `Bun.*`, `import.meta.dir` or `node:*`, set `types: ["bun"]` in its tsconfig, so it gets the Bun and Node types directly.
 - Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
