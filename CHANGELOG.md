@@ -1,3 +1,32 @@
+## v0.1.41
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.40...v0.1.41)
+
+### 🚀 Enhancements
+
+- **scripts:** One tsconfig pattern, written by sync:config ([#892](https://github.com/nrjdalal/zerostarter/pull/892))
+
+### 🩹 Fixes
+
+- **scripts:** Clean records removal failures and exits nonzero ([#897](https://github.com/nrjdalal/zerostarter/pull/897))
+- **scripts:** The windows leg of #896's ports ([#898](https://github.com/nrjdalal/zerostarter/pull/898), [#896](https://github.com/nrjdalal/zerostarter/issues/896))
+
+### 💅 Refactors
+
+- **scripts:** Keep every repo script in packages/scripts ([#896](https://github.com/nrjdalal/zerostarter/pull/896))
+
+### 📖 Documentation
+
+- Plain-English shadcn guard and add-package types lines ([#890](https://github.com/nrjdalal/zerostarter/pull/890))
+
+### 📦 Build
+
+- **deps:** Drop the js-yaml override ([#893](https://github.com/nrjdalal/zerostarter/pull/893))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.40
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.39...v0.1.40)
