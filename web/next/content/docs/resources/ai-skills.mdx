@@ -43,7 +43,7 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Maintain | `audit`          | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
 | Maintain | `fonts`          | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                                                  |
 | Maintain | `ignore-sync`    | Keep `.dockerignore` in step with `.gitignore`.                                                                                                                         |
-| Maintain | `shadcn-sync`    | Run `bun run shadcn:update` and reconcile it so a sync never silently drops your customizations.                                                                        |
+| Maintain | `shadcn-sync`    | Run `bun run sync:shadcn` and reconcile it so a sync never silently drops your customizations.                                                                          |
 | Maintain | `skills-manager` | Regenerate the AGENTS.md skills tables from every skill's frontmatter, and how a fork syncs its skills from upstream.                                                   |
 | Ship     | `doc-sync`       | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                                                           |
 | Ship     | `gh-commit`      | Atomic commits in conventional-commit format.                                                                                                                           |

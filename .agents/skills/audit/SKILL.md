@@ -46,7 +46,7 @@ Done when every row is on its latest release and the old-value grep returns no h
 
 ### 3. Re-sync shadcn
 
-Run `bun run shadcn:update` (the `shadcn-sync` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
+Run `bun run sync:shadcn` (the `shadcn-sync` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
 
 ### 4. Prove nothing broke
 
