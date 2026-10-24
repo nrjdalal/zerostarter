@@ -1,3 +1,15 @@
+## v0.1.40
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.39...v0.1.40)
+
+### 🩹 Fixes
+
+- Refuse the shadcn sync on uncommitted hooks and lib edits, and true up the docs ([#887](https://github.com/nrjdalal/zerostarter/pull/887))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.39
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.38...v0.1.39)

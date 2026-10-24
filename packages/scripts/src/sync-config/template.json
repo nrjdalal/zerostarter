@@ -1,0 +1,32 @@
+{
+  "package": {
+    "devDependencies": {
+      "@packages/config": "workspace:*",
+      "@types/bun": "catalog:",
+      "@types/node": "catalog:",
+      "tsrs": "catalog:",
+      "typescript": "catalog:"
+    },
+    "scripts": {
+      "check-types": "tsrs --noEmit"
+    }
+  },
+  "tsconfig": {
+    "extends": "@packages/config/tsconfig.json",
+    "compilerOptions": {
+      "paths": {
+        "@/*": ["./src/*"]
+      },
+      "types": ["bun"]
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules"]
+  },
+  "tests": {
+    "compilerOptions": {
+      "types": ["bun"]
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules"]
+  }
+}

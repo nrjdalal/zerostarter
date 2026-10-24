@@ -125,7 +125,8 @@ That is the whole setup. When Docker is running, `init` provisions a local Postg
 | `bun run db:migrate`              | Apply pending migrations                    |
 | `bun run db:studio`               | Open Drizzle Studio                         |
 | `bun run console:roles`           | Grant, revoke, or list console access       |
-| `bun run shadcn:update`           | Update shadcn/ui components                 |
+| `bun run sync:config`             | Sync every tsconfig and type-check setup    |
+| `bun run sync:shadcn`             | Update shadcn/ui components                 |
 
 📖 **[All scripts →](https://zerostarter.dev/docs/getting-started/scripts)**
 

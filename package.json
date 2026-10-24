@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.1.40",
+  "version": "0.1.41",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -19,12 +19,11 @@
   ],
   "scripts": {
     "auth:schema": "bun packages/scripts/src/auth-schema.ts",
-    "build": "turbo run build --summarize && bun .github/scripts/build-sizes.ts",
-    "check-types": "turbo run check-types --summarize && bun run check-types:scripts && bun run check-types:tests",
-    "check-types:scripts": "tsrs -p .github/scripts/tsconfig.json",
+    "build": "turbo run build --summarize && bun packages/scripts/src/build-sizes.ts",
+    "check-types": "turbo run check-types --summarize && bun run check-types:tests",
     "check-types:tests": "if [ -d tests ]; then find tests -name tsconfig.json -print0 | xargs -0 -n1 tsrs -p; fi",
-    "clean": "bash .github/scripts/clean.sh",
-    "console:roles": "bun .github/scripts/console-roles.ts",
+    "clean": "bun packages/scripts/src/clean.ts",
+    "console:roles": "bun packages/scripts/src/console-roles.ts",
     "db:generate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit generate",
     "db:migrate": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit migrate",
     "db:studio": "turbo run build --filter=@packages/env && bun --cwd packages/db drizzle-kit studio",
@@ -33,21 +32,20 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint",
-    "postinstall": "bun .github/scripts/deps-manager.ts",
+    "postinstall": "bun packages/scripts/src/deps-manager.ts",
     "prepare": "bunx lefthook install",
     "release:version": "bun packages/scripts/src/release-version.ts",
-    "shadcn:update": "bash .github/scripts/shadcn-update.sh && bun i",
     "start": "turbo run start",
+    "sync:config": "bun packages/scripts/src/sync-config.ts",
+    "sync:shadcn": "bun packages/scripts/src/shadcn-update.ts && bun i",
     "test": "if [ -d tests ]; then turbo run build --filter='./packages/*' && bun packages/scripts/src/data-table-metrics.ts && bun test tests; fi",
     "test:e2e": "[ ! -d tests ] || E2E_API_URL=${E2E_API_URL:-http://localhost:4000} E2E_WEB_URL=${E2E_WEB_URL:-http://localhost:3000} bun test e2e.test"
   },
   "devDependencies": {
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
-    "@octokit/rest": "catalog:",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "@viz-js/viz": "catalog:",
     "changelogen": "catalog:",
     "globby": "catalog:",
     "lefthook": "catalog:",
@@ -55,15 +53,9 @@
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "portless": "catalog:",
-    "sharp": "catalog:",
-    "svgo": "catalog:",
-    "ts-morph": "catalog:",
     "tsrs": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
-  },
-  "overrides": {
-    "js-yaml": "^4.3.1"
   },
   "commitlint": {
     "extends": [

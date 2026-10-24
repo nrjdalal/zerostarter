@@ -6,7 +6,7 @@ import {
   sortObjectDeep,
   toCaretRange,
   type PackageJson,
-} from "../../../.github/scripts/deps-manager"
+} from "../../../../packages/scripts/src/deps-manager"
 
 test("an exact and a tilde spec both become caret ranges", () => {
   expect(toCaretRange("1.2.3")).toBe("^1.2.3")

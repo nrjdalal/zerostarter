@@ -84,8 +84,8 @@ jobs:
           # refresh the build-graph snapshot for this release from a fresh CI build
           # (env mirrors auto-check-build.yml so size labels match the PR-check build)
           NODE_ENV=production SKIP_ENV_VALIDATION=true bunx turbo build
-          bun .github/scripts/build-sizes.ts --graph
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun .github/scripts/changelog-manager.ts
+          bun packages/scripts/src/build-sizes.ts --graph
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} bun packages/scripts/src/changelog-manager.ts
           # gate intentionally ignores the svg: it only ships riding a real release
           # (changelog or version change); alone it is never worth a commit.
           # content check: a range of only filtered-out commit types still bumps,

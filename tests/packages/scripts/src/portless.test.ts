@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { deriveUrls } from "../../../.github/scripts/portless"
+import { deriveUrls } from "../../../../packages/scripts/src/portless"
 
 // Main checkout (no branch prefix): web `zerostarter.localhost`, api `api.zerostarter.localhost`.
 test("deriveUrls toggles the api label from the web host (main checkout)", () => {

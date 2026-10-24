@@ -48,7 +48,6 @@ describe("auto-labeler getLabelForFile", () => {
     expect(getLabelForFile(".agents/skills/dev/SKILL.md", packageMap)).toBe("@.agents")
     expect(getLabelForFile("api/hono/src/index.ts", packageMap)).toBe("@api/hono")
     expect(getLabelForFile(".github/workflows/x.yml", packageMap)).toBe("@workflows")
-    expect(getLabelForFile(".github/scripts/x.ts", packageMap)).toBe("@scripts")
   })
 
   test("keeps the fixed labels for dependency, docker and root files", () => {

@@ -86,7 +86,7 @@ It needs a local-stage stack on a disposable database, never a deployed one; [Sc
 
 <Callout type="warn" title="Docker does not migrate your database">
 
-Unlike the Vercel build, the Docker images never run migrations. Apply them yourself with `bun run db:migrate` before or alongside a rollout. Only [Vercel](/docs/deployment/vercel) migrates on deploy, via `.github/scripts/migrate-on-deploy.ts`.
+Unlike the Vercel build, the Docker images never run migrations. Apply them yourself with `bun run db:migrate` before or alongside a rollout. Only [Vercel](/docs/deployment/vercel) migrates on deploy, via `packages/scripts/src/migrate-on-deploy.ts`.
 
 </Callout>
 

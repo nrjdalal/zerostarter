@@ -9,6 +9,7 @@ import {
   reconcileForkGuide,
   reconcileForkGuideFromRoot,
   reconcileForkSkillsFromRoot,
+  regenerateSkillTables,
   SKILL_LEDGER,
   SKILL_REF,
   snapshotSkills,
@@ -242,7 +243,7 @@ describe("the sync ledger", () => {
     expect(SKILL_REF).toBe("main")
   })
 
-  // The CLI and .github/scripts/skills-manager.ts hash the ledger independently (a fork ships no
+  // The CLI and packages/scripts/src/skills-manager.ts hash the ledger independently (a fork ships no
   // packages/cli to import), so a one-sided edit would make every skill silently read as untracked.
   // Whitespace is stripped rather than matched, which keeps this insensitive to how either file is
   // formatted and to the CRLF a Windows checkout brings, the very thing the hash normalizes away.
@@ -253,7 +254,37 @@ describe("the sync ledger", () => {
     )
     const source = async (rel: string) => strip(await Bun.file(join(import.meta.dir, rel)).text())
     expect(await source("../../../../packages/cli/src/skills.ts")).toContain(pipeline)
-    expect(await source("../../../../.github/scripts/skills-manager.ts")).toContain(pipeline)
+    expect(await source("../../../../packages/scripts/src/skills-manager.ts")).toContain(pipeline)
+  })
+})
+
+describe("regenerateSkillTables", () => {
+  // A stand-in manager that records which path ran, so the test sees the CLI pick the script by where the fork keeps it.
+  const manager = (path: string) =>
+    write(join(dir, path), `await Bun.write("ran.txt", ${JSON.stringify(path)})\n`)
+
+  test("runs the manager at packages/scripts/src in a current fork", async () => {
+    manager("packages/scripts/src/skills-manager.ts")
+    await regenerateSkillTables(dir)
+    expect(read(join(dir, "ran.txt"))).toBe("packages/scripts/src/skills-manager.ts")
+  })
+
+  test("falls back to .github/scripts in a fork from before the move", async () => {
+    manager(".github/scripts/skills-manager.ts")
+    await regenerateSkillTables(dir)
+    expect(read(join(dir, "ran.txt"))).toBe(".github/scripts/skills-manager.ts")
+  })
+
+  test("prefers packages/scripts/src in a synced fork that still has .github/scripts", async () => {
+    manager(".github/scripts/skills-manager.ts")
+    manager("packages/scripts/src/skills-manager.ts")
+    await regenerateSkillTables(dir)
+    expect(read(join(dir, "ran.txt"))).toBe("packages/scripts/src/skills-manager.ts")
+  })
+
+  test("does nothing in a fork that dropped the manager", async () => {
+    await regenerateSkillTables(dir)
+    expect(exists(join(dir, "ran.txt"))).toBe(false)
   })
 })
 

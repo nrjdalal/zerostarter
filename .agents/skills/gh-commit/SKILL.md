@@ -58,4 +58,4 @@ Stop after the commit. Push only when the user says "commit and push", "push the
 ## Notes
 
 - Never commit directly to canary (the default branch); branch first, then PR.
-- The pre-commit build prints the size table only. Refresh the graph svg manually: `bun .github/scripts/build-sizes.ts --graph`.
+- The pre-commit build prints the size table only. Refresh the graph svg manually: `bun packages/scripts/src/build-sizes.ts --graph`.
