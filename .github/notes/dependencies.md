@@ -36,12 +36,7 @@ A version the catalog range admits but the lock keeps back, because the newer on
 
 ## Active overrides
 
-### `js-yaml` → `^4.3.1`
-
-- **Advisory:** [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj) (high): quadratic CPU consumption resolving `!!omap`, the CVE-2026-59870 fix not backported. Affects `js-yaml >=4.0.0 <4.3.1`.
-- **Why an override:** same shape as the two before it. `@commitlint/cli` is already latest, and the `cosmiconfig` under it declares `js-yaml: ^4.1.0`, which the patched `4.3.1` already satisfies, so the stale copy is purely a lockfile pin. Bumping the parent cannot lift it either: `cosmiconfig@10`, the current latest, still declares the same `^4.1.0`. Note `js-yaml@5.x` exists but is outside that range, so `^4.3.1` is the highest usable. Do not reach for `bun update js-yaml`: it adds js-yaml as a direct dependency at `5.x` and leaves the vulnerable transitive copy in place.
-- **Risk:** low. It parses commitlint's own config at commit time and shadcn's registry responses, neither of which takes untrusted input here, and `4.3.1` is a patch release of the range already in use.
-- **Exit criteria:** remove once `cosmiconfig` (via `@commitlint/cli`) resolves `js-yaml >=4.3.1` on its own.
+None.
 
 ## Ignored advisories
 
@@ -70,3 +65,4 @@ Kept as a record so a returning advisory is recognised rather than re-investigat
   - **Why that is acceptable:** the affected surface is `esbuild serve`, which nothing here starts. `drizzle-kit` uses the loader to read `drizzle.config.ts`, and `bun run dev` serves through Next and Hono. The advisory is moderate, so `bun audit --audit-level high` (the pre-push gate) stays green.
   - **Reinstate the override** if anything in the repo starts running esbuild's own dev server, or if this advisory is ever re-rated high.
   - `fumadocs-mdx@15.2.0` requires `^0.28.1` on its own and never needed the override; `drizzle-kit`'s direct range (`^0.25.4`) is clear too. The `@esbuild-kit/*` chain was the only thing it still held up.
+- **`js-yaml` → `^4.3.1`** ([GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj), high). Held up for `cosmiconfig` (under `@commitlint/cli`), which declares `js-yaml: ^4.1.0`, a range that already admits the patched `4.3.1`, so the override only pinned the lockfile. Removing it and reinstalling keeps a single `js-yaml@4.3.2`, resolved by that range on its own, and `bun audit --audit-level high` reports no vulnerabilities: the recorded exit criterion, met. `js-yaml@5.x` stays out of reach under `^4.1.0`; do not reach for `bun update js-yaml`, which adds it as a direct dependency and leaves the transitive copy behind.
