@@ -1,0 +1,5 @@
+{
+  "tsconfig": {
+    "extends": "../../../.github/scripts/tsconfig.json"
+  }
+}

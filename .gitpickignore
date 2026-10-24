@@ -31,5 +31,8 @@ web/next/public/
 CHANGELOG.md
 LICENSE.md
 packages/config/src/site.ts
+# sync:config patches for the excluded packages/cli and tests/ above
+packages/scripts/src/sync-config/packages-cli.json
+packages/scripts/src/sync-config/tests-github-workflows.json
 README.md
 web/next/src/app/icon.svg

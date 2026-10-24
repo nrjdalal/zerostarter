@@ -6,7 +6,7 @@ source: local
 
 # Add a Package
 
-The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A shared package lives at `packages/<name>/` and is named `@packages/<name>`. Every package shares one shape, so copy an existing sibling rather than invent a layout.
+The root `package.json` globs workspaces as `api/*`, `packages/*`, `web/*`. A shared package lives at `packages/<name>/` and is named `@packages/<name>`. Every package shares one shape, and `bun run sync:config` writes its type-check part (the `tsconfig.json`, the type-check devDependencies and the `check-types` script) from one template, so you write only what makes the package its own.
 
 ## Pick the shape
 
@@ -38,14 +38,17 @@ packages/<name>/
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "tsrs": "catalog:"
+    "tsrs": "catalog:",
+    "typescript": "catalog:"
   }
 }
 ```
 
-`@packages/config` MUST be a devDependency: `tsconfig.json` extends it, and the `extends` cannot resolve without the dep. `check-types` runs tsrs, so `tsrs` is a devDependency of every package; `typescript` is one only where something needs the compiler itself, as a library's tsdown does. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
+The `check-types` script and those five devDependencies are the type-check set `sync:config` writes into every package: `@packages/config` because `tsconfig.json` extends it, `tsrs` because `check-types` runs it, and `typescript` and both `@types/*` because the config names them. One in a package's runtime `dependencies` already (`@packages/config` in `api/hono` and `web/next`) stays there. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
 
-`tsconfig.json` (identical to `env`/`db`/`auth`):
+`packages/config` is the one exception: its `tsconfig.json` is the base every other one extends, so `sync:config` skips it, and it carries no `@packages/config` or `@types/*`, since none of its own code reaches a runtime API.
+
+`tsconfig.json`, as `sync:config` writes it from `packages/scripts/src/sync-config/template.json`:
 
 ```json
 {
@@ -53,12 +56,15 @@ packages/<name>/
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["bun"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }
 ```
+
+`types` names the runtime the package's own code runs on, since tsrs includes no `@types/*` unless `types` names it. The template's `["bun"]` fits code that runs only under Bun (`api/hono`, `auth`, `db`, `scripts`); code that also runs under Node takes `["node"]` (`cli`, the npm binary; `env` and `web/next`, which `next dev` runs under Node), so a `Bun.*` call there fails the type check instead of the Node process. Anything else a package needs (a `.tsx` include, a `jsxImportSource`, another `types`) goes in its patch, `packages/scripts/src/sync-config/<path with - for />.json` (`web-next.json`), deep-merged over the template: an object merges, anything else replaces, `null` removes the key. The patch is the only place that difference lives; a hand edit to the generated file fails `bun run sync:config --check` in CI.
 
 ## Library shape (adds to the skeleton)
 
@@ -103,32 +109,17 @@ A package with no env of its own can pass another package's `env`/`getSafeEnv`, 
 
 ## Build-only script shape (adds to the skeleton)
 
-No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and tsrs will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
-
-```json
-{
-  "extends": "@packages/config/tsconfig.json",
-  "compilerOptions": {
-    "types": ["bun"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-```
-
-`types: ["bun"]` is the only line that differs from a library's tsconfig; `bun-types` pulls in the node references, so `@types/node` stays a devDep but needs no separate `types` entry. The consumer runs the script in its own `build`, e.g. `"build": "bun ../<name>/src/<script>.ts && tsdown"` (the same `bun <path>` sibling-script call `web/next` and `api/hono` use for `.github/scripts/*.ts`), and declares `"@packages/<name>": "workspace:*"` as a devDependency so `turbo prune` keeps it in the Docker build. Invoke it from the consumer's directory (the `bun ../<name>/...` form), not the repo root: a script that reads env inherits the cwd-relative `.env` load (`cwd/../../.env`) that `@packages/env/load-dotenv` performs, so running it from root silently misses `.env`. That load rides on the server targets, `api-hono`, `auth` and `db`, which each import `@/load-dotenv`. Two entrypoints deliberately do not: the `@packages/env` index, which carries only constants and `getSafeEnv`, and `web-next`, which client components import and so must stay free of `node:*`. A script reaching env through either of those imports `@packages/env/load-dotenv` itself, as `generate-env.ts` does.
+No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, so the template's `types: ["bun"]` fits it with no patch; `bun-types` pulls in the node references, so it needs no `"node"` beside it. The consumer runs the script in its own `build`, e.g. `"build": "bun ../<name>/src/<script>.ts && tsdown"` (the same `bun <path>` sibling-script call `web/next` and `api/hono` use for `.github/scripts/*.ts`), and declares `"@packages/<name>": "workspace:*"` as a devDependency so `turbo prune` keeps it in the Docker build. Invoke it from the consumer's directory (the `bun ../<name>/...` form), not the repo root: a script that reads env inherits the cwd-relative `.env` load (`cwd/../../.env`) that `@packages/env/load-dotenv` performs, so running it from root silently misses `.env`. That load rides on the server targets, `api-hono`, `auth` and `db`, which each import `@/load-dotenv`. Two entrypoints deliberately do not: the `@packages/env` index, which carries only constants and `getSafeEnv`, and `web-next`, which client components import and so must stay free of `node:*`. A script reaching env through either of those imports `@packages/env/load-dotenv` itself, as `generate-env.ts` does.
 
 Write any generated-but-disposable artifact to the repo-root `.generated/` dir (gitignored, dockerignored, removed by `bun run clean`), never inside a package; a regenerator whose output is committed source (`auth-schema.ts` writing `packages/db/src/schema/auth.ts`) writes that file in place and keeps its scratch in `.generated/`. `.generated/` is the one centralized home for generated-but-disposable files the build consumes, which keeps individual packages free of committed-or-not `*.generated.*` files. When you add a new generated artifact type, add it to `.gitignore`/`.dockerignore` and `.github/scripts/clean.sh` together.
 
 ## Wire it up
 
-1. `bun install` from the repo root to link the new workspace (a fresh worktree also needs this before the pre-commit build; set `NODE_ENV=production SKIP_ENV_VALIDATION=true`).
-2. In each consumer, add `"@packages/<name>": "workspace:*"` (a runtime `dependency` for a library, a `devDependency` for a build-only package) and import via `@packages/<name>` (or a subpath export).
-3. Runtime code follows the `runtime-apis` skill: Bun-native APIs where they exist, else `node:`-prefixed built-ins.
-4. Verify: `bunx turbo run check-types build` and `bun run test` are green and the new package appears in the run.
+1. `bun run sync:config` from the repo root writes the package's `tsconfig.json` and type-check set; add its patch first when it must differ. Done when `bun run sync:config --check` exits 0.
+2. `bun install` from the repo root to link the new workspace (a fresh worktree also needs this before the pre-commit build; set `NODE_ENV=production SKIP_ENV_VALIDATION=true`).
+3. In each consumer, add `"@packages/<name>": "workspace:*"` (a runtime `dependency` for a library, a `devDependency` for a build-only package) and import via `@packages/<name>` (or a subpath export).
+4. Runtime code follows the `runtime-apis` skill: Bun-native APIs where they exist, else `node:`-prefixed built-ins.
+5. Verify: `bunx turbo run check-types build` and `bun run test` are green and the new package appears in the run.
 
 ## Keep docs in sync
 
@@ -137,5 +128,5 @@ Adding a package touches the map. In the same change, update: the `packages/*` l
 ## Gotchas
 
 - Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- tsrs auto-includes no `@types/*`, so a package sees node or Bun types only through a dependency's own type references: dotenv brings node to `env`, and drizzle-orm's `bun-sql` driver brings Bun and node to `db` and `auth`. A package with neither fails `check-types` with `Cannot find name 'Bun'` / `'node:...'`. Pin `types: ["bun"]` in any package whose own code uses `Bun.*`, `import.meta.dir` or `node:*`, rather than leaning on a dependency.
+- tsrs auto-includes no `@types/*`: a package whose `types` names the wrong runtime fails `check-types` with `Cannot find name 'Bun'` / `'node:...'`, or worse, passes only through a dependency's own type references. Set `types` from where the package's own code runs, as the tsconfig section says.
 - Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
