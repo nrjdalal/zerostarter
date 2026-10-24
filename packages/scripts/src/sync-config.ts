@@ -2,7 +2,7 @@ import { dirname, join, relative } from "node:path"
 
 import { Glob } from "bun"
 
-// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted and each patch that matches no target. Runs from the repo root (cwd).
+// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted and each patch that matches no target. Paths are normalized to forward slashes as they enter, since Windows hands scan results and relative() output back with backslash separators. Runs from the repo root (cwd).
 
 type Json = { [key: string]: unknown }
 
@@ -12,6 +12,8 @@ const check = process.argv.includes("--check")
 
 const isObject = (value: unknown): value is Json =>
   typeof value === "object" && value !== null && !Array.isArray(value)
+
+const normalize = (path: string): string => path.replaceAll("\\", "/")
 
 const merge = (base: Json, patch: Json): Json => {
   const out: Json = { ...base }
@@ -58,7 +60,8 @@ const expected = new Map<string, Json>()
 
 const rootPackage = (await Bun.file(join(root, "package.json")).json()) as { workspaces: string[] }
 for (const pattern of rootPackage.workspaces) {
-  for await (const file of new Glob(`${pattern}/package.json`).scan({ cwd: root })) {
+  for await (const raw of new Glob(`${pattern}/package.json`).scan({ cwd: root })) {
+    const file = normalize(raw)
     const dir = dirname(file)
     const pkg = (await readJson(join(root, file))) as Json
     if (pkg.name === "@packages/config") continue
@@ -79,11 +82,12 @@ for (const pattern of rootPackage.workspaces) {
 }
 
 // Each test folder extends its subject's own config, so the source it imports resolves its @/ paths; tests/github/<x> mirrors .github/<x>.
-for await (const file of new Glob("tests/**/tsconfig.json").scan({ cwd: root })) {
+for await (const raw of new Glob("tests/**/tsconfig.json").scan({ cwd: root })) {
+  const file = normalize(raw)
   const dir = dirname(file)
   const subject = dir.replace(/^tests\//, "").replace(/^github\//, ".github/")
   const patch = await patchFor(dir)
-  const extendsPath = `${relative(dir, subject)}/tsconfig.json`
+  const extendsPath = normalize(`${relative(dir, subject)}/tsconfig.json`)
   expected.set(file, tsconfig({ extends: extendsPath, ...template.tests }, patch.tsconfig))
 }
 
