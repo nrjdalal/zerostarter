@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 
@@ -49,3 +49,59 @@ test("removes every generated artifact and keeps config, source and dot-folders 
     rmSync(dir, { force: true, recursive: true })
   }
 })
+
+test.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+  "records a removal that fails mid-walk, keeps going and exits nonzero",
+  () => {
+    const dir = mkdtempSync(join(tmpdir(), "clean-walk-"))
+    const locked = join(dir, "node_modules/locked")
+    try {
+      mkdirSync(locked, { recursive: true })
+      writeFileSync(join(locked, "index.js"), "")
+      for (const file of ["packages/db/dist/index.mjs", "web/next/content/docs/meta.json"]) {
+        mkdirSync(join(dir, dirname(file)), { recursive: true })
+        writeFileSync(join(dir, file), "")
+      }
+      chmodSync(locked, 0o555)
+      const out = Bun.spawnSync(["bun", script], { cwd: dir, stderr: "pipe" })
+      expect(out.exitCode).toBe(1)
+      expect(out.stderr.toString()).not.toBe("")
+      expect(existsSync(locked)).toBe(true)
+      expect(existsSync(join(dir, "packages/db/dist/index.mjs"))).toBe(false)
+      expect(existsSync(join(dir, "web/next/content/docs/meta.json"))).toBe(false)
+    } finally {
+      chmodSync(locked, 0o755)
+      rmSync(dir, { force: true, recursive: true })
+    }
+  },
+)
+
+test.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+  "records a PATHS removal that fails, keeps going and exits nonzero",
+  () => {
+    const dir = mkdtempSync(join(tmpdir(), "clean-paths-"))
+    const locked = join(dir, "web/next/content/blog")
+    try {
+      for (const file of [
+        "packages/db/dist/index.mjs",
+        "web/next/content/blog/meta.json",
+        "web/next/content/console/docs/meta.json",
+        "web/next/content/docs/meta.json",
+      ]) {
+        mkdirSync(join(dir, dirname(file)), { recursive: true })
+        writeFileSync(join(dir, file), "")
+      }
+      chmodSync(locked, 0o555)
+      const out = Bun.spawnSync(["bun", script], { cwd: dir, stderr: "pipe" })
+      expect(out.exitCode).toBe(1)
+      expect(out.stderr.toString()).not.toBe("")
+      expect(existsSync(join(locked, "meta.json"))).toBe(true)
+      expect(existsSync(join(dir, "web/next/content/console/docs/meta.json"))).toBe(false)
+      expect(existsSync(join(dir, "web/next/content/docs/meta.json"))).toBe(false)
+      expect(existsSync(join(dir, "packages/db/dist/index.mjs"))).toBe(false)
+    } finally {
+      chmodSync(locked, 0o755)
+      rmSync(dir, { force: true, recursive: true })
+    }
+  },
+)
