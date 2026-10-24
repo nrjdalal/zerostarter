@@ -64,7 +64,9 @@ The `check-types` script and those five devDependencies are the type-check set. 
 }
 ```
 
-Set `types` to the runtime that the package's own code runs on. tsrs does not load `@types/*` by itself, so `types` is the only way a package gets Bun or Node types. Code that runs only under Bun keeps the template's `["bun"]`: `api/hono`, `auth`, `db` and `scripts`. Code that also runs under Node takes `["node"]`: `cli` (the npm binary), and `env` and `web/next` (`next dev` runs them under Node). Then a `Bun.*` call there fails the type check, not the Node process.
+Set `types` to the runtime that the package's own code runs on. tsrs does not load `@types/*` by itself, so `types` names what the package's own code can use. Code that runs on the Bun server keeps the template's `["bun"]`: `api/hono`, `auth`, `db` and `scripts`. Code that also runs under Node takes `["node"]`: `cli` (the npm binary), and `env` and `web/next` (`next dev` runs them under Node). In those three, a `Bun.*` call fails the type check with `Cannot find name 'Bun'`, not the Node process.
+
+A dependency can still bring types in, whatever `types` says. `@packages/db` uses drizzle-orm's `bun-sql` driver, so Bun's types reach `db` and every package that imports it. `auth` shows the limit: its `access` entry also runs in `web/next` under Node, but `auth` imports `@packages/db`, so no `types` value makes its check catch a `Bun.*` call there. Keep `auth/src/access.ts` free of `Bun.*` by hand.
 
 Any other difference goes in the package's patch, `packages/scripts/src/sync-config/<path, / as ->.json` (`web-next.json`): a `.tsx` include, a `jsxImportSource`, another `types`. `sync:config` merges the patch over the template. An object merges, any other value replaces, and `null` removes the key. The patch is the only place for the difference. A hand edit to a generated file fails `bun run sync:config --check` in CI.
 
@@ -130,5 +132,5 @@ Adding a package touches the map. In the same change, update: the `packages/*` l
 ## Gotchas
 
 - Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- `check-types` fails with `Cannot find name 'Bun'` or `'node:...'` → the package's `types` does not name its runtime. Set it as the tsconfig section says.
+- `check-types` fails with `Cannot find name 'Bun'` or `'node:...'` → the package's `types` does not name its runtime, and no dependency brings it in. Set it as the tsconfig section says.
 - Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
