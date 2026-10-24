@@ -4,7 +4,7 @@
 set -- web/next/src/components/ui web/next/components.json web/next/package.json bun.lock package.json \
   web/next/src/app/layout.tsx web/next/src/app/globals.css web/next/src/hooks web/next/src/lib
 if [ -n "$(git status --porcelain -- "$@")" ]; then
-  echo "shadcn-update: these files have uncommitted changes, and the sync can overwrite them. Commit or stash them first:" >&2
+  echo "sync:shadcn: these files have uncommitted changes, and the sync can overwrite them. Commit or stash them first:" >&2
   git status --porcelain -- "$@" >&2
   exit 1
 fi

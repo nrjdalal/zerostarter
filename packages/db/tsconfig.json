@@ -3,8 +3,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["bun"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }

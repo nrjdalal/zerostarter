@@ -1,0 +1,8 @@
+{
+  "tsconfig": {
+    "extends": "../../packages/config/tsconfig.json",
+    "compilerOptions": {
+      "paths": null
+    }
+  }
+}
