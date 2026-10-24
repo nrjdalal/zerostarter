@@ -23,15 +23,31 @@ const PATHS = [
   "web/next/content/docs/meta.json",
 ]
 
+const failures: string[] = []
+
 const walk = async (dir: string): Promise<void> => {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
-    if (NAMES.has(entry.name) || entry.name.endsWith(".tsbuildinfo"))
-      await rm(path, { force: true, recursive: true })
-    else if (entry.isDirectory() && !entry.name.startsWith(".")) await walk(path)
+    if (NAMES.has(entry.name) || entry.name.endsWith(".tsbuildinfo")) {
+      try {
+        await rm(path, { force: true, recursive: true })
+      } catch (error) {
+        failures.push(String(error))
+      }
+    } else if (entry.isDirectory() && !entry.name.startsWith(".")) await walk(path)
   }
 }
 
 const root = process.cwd()
 await walk(root)
-for (const path of PATHS) await rm(join(root, path), { force: true })
+for (const path of PATHS) {
+  try {
+    await rm(join(root, path), { force: true })
+  } catch (error) {
+    failures.push(String(error))
+  }
+}
+if (failures.length > 0) {
+  console.error(failures.join("\n"))
+  process.exitCode = 1
+}
