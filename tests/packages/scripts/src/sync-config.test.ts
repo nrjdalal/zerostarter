@@ -89,12 +89,16 @@ describe("sync:config --check", () => {
 describe("sync:config", () => {
   test("rewrites a drifted file from the template and its patch, null removing a key", () =>
     withCopy(async (dir) => {
-      const file = join(dir, ".github/scripts/tsconfig.json")
+      await Bun.write(
+        join(dir, "packages/scripts/src/sync-config/packages-cli.json"),
+        JSON.stringify({ tsconfig: { compilerOptions: { paths: null, types: ["node"] } } }),
+      )
+      const file = join(dir, "packages/cli/tsconfig.json")
       await Bun.write(file, JSON.stringify({ compilerOptions: { paths: { "@/*": ["./src/*"] } } }))
       expect(run(dir).code).toBe(0)
       const written = await Bun.file(file).json()
-      expect(written.extends).toBe("../../packages/config/tsconfig.json")
-      expect(written.compilerOptions).toEqual({ types: ["bun"] })
+      expect(written.extends).toBe("@packages/config/tsconfig.json")
+      expect(written.compilerOptions).toEqual({ types: ["node"] })
       expect(run(dir, "--check")).toEqual({ code: 0, stderr: "" })
     }))
 })

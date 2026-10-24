@@ -39,7 +39,7 @@ See [Database](/docs/manage/database) for the loop these belong to.
 
 | Script                 | What it does                                                                                                | In PR CI          |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------- |
-| `bun run check-types`  | Type-check every workspace, then the repo scripts and the test tree                                         | yes               |
+| `bun run check-types`  | Type-check every workspace, the repo scripts included, then the test tree                                   | yes               |
 | `bun run format`       | Oxfmt, writing fixes                                                                                        | no                |
 | `bun run format:check` | Oxfmt, report only                                                                                          | yes               |
 | `bun run lint`         | Oxlint over the whole tree                                                                                  | yes               |
@@ -49,8 +49,8 @@ See [Database](/docs/manage/database) for the loop these belong to.
 
 A failing test or type error blocks the merge. The details worth knowing:
 
-- **`check-types`** runs [tsrs](/docs/manage/code-quality#tsrs-not-tsc) in passes: every workspace through Turbo, then `check-types:scripts` (`tsrs` over `.github/scripts`), then `check-types:tests` (one `tsrs` run per `tests/**/tsconfig.json`).
-- **`sync:config`** writes every package's `tsconfig.json`, its type-check devDependencies (`@packages/config`, `@types/bun`, `@types/node`, `tsrs`, `typescript`) and its `check-types` script, plus the `.github/scripts` and `tests/**` configs, from `packages/scripts/src/sync-config/template.json`. A package that must differ keeps the difference in its own patch beside the template, named by its path (`web-next.json`), so a hand edit to a generated file fails CI's `--check`.
+- **`check-types`** runs [tsrs](/docs/manage/code-quality#tsrs-not-tsc) in passes: every workspace through Turbo, then `check-types:tests` (one `tsrs` run per `tests/**/tsconfig.json`).
+- **`sync:config`** writes every package's `tsconfig.json`, its type-check devDependencies (`@packages/config`, `@types/bun`, `@types/node`, `tsrs`, `typescript`) and its `check-types` script, plus the `tests/**` configs, from `packages/scripts/src/sync-config/template.json`. A package that must differ keeps the difference in its own patch beside the template, named by its path (`web-next.json`), so a hand edit to a generated file fails CI's `--check`.
 - **`test`** builds `packages/*` and regenerates the data-table font metrics first. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds.
 
 ### The end-to-end suite
@@ -84,7 +84,7 @@ The changelog, version bump, tag, and GitHub release are automated: you don't ru
 
 <Callout type="warn">
 
-`bun run sync:shadcn` deletes `web/next/src/components/ui/` and writes it again from shadcn. It also writes shadcn's own files into `web/next/src/hooks/` and `web/next/src/lib/`. Your edits to those files are lost. To keep an edit, put it in `.github/scripts/shadcn-customize.ts`, which applies it again after each sync. The `shadcn-sync` skill has the steps.
+`bun run sync:shadcn` deletes `web/next/src/components/ui/` and writes it again from shadcn. It also writes shadcn's own files into `web/next/src/hooks/` and `web/next/src/lib/`. Your edits to those files are lost. To keep an edit, put it in `packages/scripts/src/shadcn-customize.ts`, which applies it again after each sync. The `shadcn-sync` skill has the steps.
 
 </Callout>
 

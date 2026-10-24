@@ -3,12 +3,12 @@ name: skills-manager
 description: Keep the AGENTS.md skills tables generated from skill descriptions, and understand how a fork syncs its skills from upstream. Use after editing a skill's frontmatter, when adding or removing a skill, or when the AGENTS.md skills-table check fails.
 source: local
 files:
-  - .github/scripts/skills-manager.ts
+  - packages/scripts/src/skills-manager.ts
 ---
 
 # Skills Manager
 
-The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `.github/scripts/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
+The AGENTS.md skills tables duplicate each skill's own `description`, so they are generated, never hand-kept. `packages/scripts/src/skills-manager.ts` is the maintainer, and a `pre-commit` hook runs it automatically whenever a skill (or the manager) changes, so the catalog never drifts.
 
 Each skill carries its **provenance** in frontmatter:
 
@@ -23,8 +23,8 @@ Provenance is never rewritten by a sync: a `local` or vendored skill in a fork s
 The hook handles this on commit, but to run it by hand:
 
 ```bash
-bun .github/scripts/skills-manager.ts          # rewrite the tables from the skills
-bun .github/scripts/skills-manager.ts --check  # fail on drift instead of writing (the gate)
+bun packages/scripts/src/skills-manager.ts          # rewrite the tables from the skills
+bun packages/scripts/src/skills-manager.ts --check  # fail on drift instead of writing (the gate)
 ```
 
 Each cell is the description's summary, the sentence before `Use ...`, so keep every description in the `<summary>. Use when <triggers>` shape and edit the description, not the table. Done when `--check` passes.
@@ -44,7 +44,7 @@ Prose cannot be compared directly (sync rebrands the body to the fork's name, so
 Check state from inside a fork with:
 
 ```bash
-bun .github/scripts/skills-manager.ts --outdated
+bun packages/scripts/src/skills-manager.ts --outdated
 ```
 
 which reports each skill as `local, no upstream`, `vendored (<tool>)`, `untracked` (customized there, or synced before the ledger existed), or, for a tracked skill, `up to date` / `DIFFERS from upstream`, plus `edited here` when the fork has since changed it.

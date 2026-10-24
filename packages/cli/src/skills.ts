@@ -61,7 +61,7 @@ const NOTE_MARKER = `> Synced from ${UPSTREAM}.`
 const syncNote = (): string =>
   `> [!CAUTION]\n${NOTE_MARKER} Customize this skill or remove this note to stop syncing.`
 
-// A source reduced to owner/repo, so the full URL and the owner/repo shorthand that .github/scripts/skills-manager.ts also accepts compare equal. Without this a fork that wrote the shorthand reads as a different upstream and its skill freezes forever.
+// A source reduced to owner/repo, so the full URL and the owner/repo shorthand that packages/scripts/src/skills-manager.ts also accepts compare equal. Without this a fork that wrote the shorthand reads as a different upstream and its skill freezes forever.
 const repoOf = (source: string): string =>
   source.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "")
 
@@ -250,11 +250,18 @@ export const missingSkillTableMarkers = (root: string): boolean => {
   return !text.includes("<!-- skills:custom -->") || !text.includes("<!-- skills:vendored -->")
 }
 
+// Where a fork keeps its maintainer script: packages/scripts now, .github/scripts in a fork from before the move.
+const SKILLS_MANAGER = [
+  "packages/scripts/src/skills-manager.ts",
+  ".github/scripts/skills-manager.ts",
+]
+
 // Fill the fork's AGENTS.md skills tables using the fork's own maintainer script, so the catalog matches the skills this reconcile left in place. Runs after install, since the script formats through oxfmt. Best-effort: a fork that dropped the script still scaffolds.
 export const regenerateSkillTables = async (root: string): Promise<void> => {
-  if (!exists(join(root, ".github/scripts/skills-manager.ts"))) return
+  const script = SKILLS_MANAGER.find((path) => exists(join(root, path)))
+  if (!script) return
   try {
-    await run("bun", [".github/scripts/skills-manager.ts"], root)
+    await run("bun", [script], root)
   } catch {
     // a fork that customized the manager or its markers keeps its own AGENTS.md
   }

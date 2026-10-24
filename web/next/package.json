@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../.github/scripts/compress-images.ts && bun ../../.github/scripts/docs.ts --strict && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && next build",
+    "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../packages/scripts/src/compress-images.ts && bun ../../packages/scripts/src/docs.ts --strict && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && next build",
     "build:vercel": "bun run --bun build",
-    "check-types": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit",
+    "check-types": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit",
     "dev": "portless",
-    "dev:app": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && bun ../../.github/scripts/portless.ts next dev",
+    "dev:app": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && bun ../../packages/scripts/src/portless.ts next dev",
     "start": "bun .next/standalone/web/next/server.js"
   },
   "dependencies": {

@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "hono",
   "installCommand": "cd ../.. && bun install --ignore-scripts",
-  "buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono",
+  "buildCommand": "cd ../.. && bun packages/scripts/src/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono",
   "outputDirectory": "vercel-bundle",
   "bunVersion": "1.4.x"
 }

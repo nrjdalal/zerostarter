@@ -82,7 +82,7 @@ To tell an edit of yours from an upstream change, the CLI records what it wrote 
   on, your edits are preserved automatically.
 </Callout>
 
-Run `bun .github/scripts/skills-manager.ts --outdated` in your fork to see which synced skills upstream has moved on, and which you have edited locally.
+Run `bun packages/scripts/src/skills-manager.ts --outdated` in your fork to see which synced skills upstream has moved on, and which you have edited locally. A fork from before the scripts moved into `packages/scripts` keeps it at `.github/scripts/skills-manager.ts`, and sync still runs it there.
 
 ### Your agent guide
 

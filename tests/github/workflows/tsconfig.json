@@ -1,5 +1,5 @@
 {
-  "extends": "../../../.github/scripts/tsconfig.json",
+  "extends": "../../../packages/scripts/tsconfig.json",
   "compilerOptions": {
     "types": ["bun"]
   },

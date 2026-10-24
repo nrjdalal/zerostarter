@@ -24,7 +24,7 @@ Under **Settings → Actions → General → Workflow permissions** (the pre-pus
 
 ![GitHub Workflow permissions: Read and write permissions selected and Allow GitHub Actions to create and approve pull requests checked](/marketing/docs/release/workflow-permissions.png)
 
-On a brand-new empty repo, push `canary` first (`git push origin canary`) so GitHub makes it the default branch. The pre-push hook (`.github/scripts/ensure-remote-branches.ts`) then seeds the release branches (`main` by default) on your next push (each a separate ref, so they never collide) and the release PR opens on its own. No `gh` and no repo-admin required.
+On a brand-new empty repo, push `canary` first (`git push origin canary`) so GitHub makes it the default branch. The pre-push hook (`packages/scripts/src/ensure-remote-branches.ts`) then seeds the release branches (`main` by default) on your next push (each a separate ref, so they never collide) and the release PR opens on its own. No `gh` and no repo-admin required.
 
 ## Land work on canary with squash-merge
 
@@ -90,7 +90,7 @@ Ordinary releases carry what the window earned: at 0.x a feature is a patch (`0.
 
 ## How it deploys
 
-Both branches deploy through [Vercel](/docs/deployment/vercel). Drizzle migrations run at API build time via `.github/scripts/migrate-on-deploy.ts`, but only when `VERCEL_ENV=production` or the ref is `canary`; every other deploy (including PR previews) logs a skip and exits, so an unmerged migration never touches the shared database. Those two builds therefore need a valid `POSTGRES_URL`.
+Both branches deploy through [Vercel](/docs/deployment/vercel). Drizzle migrations run at API build time via `packages/scripts/src/migrate-on-deploy.ts`, but only when `VERCEL_ENV=production` or the ref is `canary`; every other deploy (including PR previews) logs a skip and exits, so an unmerged migration never touches the shared database. Those two builds therefore need a valid `POSTGRES_URL`.
 
 ## Next
 

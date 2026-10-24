@@ -62,7 +62,7 @@ test("agentsTemplate carries the skills-table markers the fork's pre-commit hook
   for (const id of ["custom", "vendored"]) {
     expect(out).toContain(`<!-- skills:${id} -->`)
     expect(out).toContain(`<!-- /skills:${id} -->`)
-    // the same shape .github/scripts/skills-manager.ts matches when it rewrites a region
+    // the same shape packages/scripts/src/skills-manager.ts matches when it rewrites a region
     expect(new RegExp(`(<!-- skills:${id} -->)[\\s\\S]*?(<!-- /skills:${id} -->)`).test(out)).toBe(
       true,
     )

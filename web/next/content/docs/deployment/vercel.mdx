@@ -36,7 +36,7 @@ Deploy the **backend first**: the frontend needs its URL.
 `api/hono/vercel.json` puts a migration step ahead of the build:
 
 ```json
-"buildCommand": "cd ../.. && bun .github/scripts/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono"
+"buildCommand": "cd ../.. && bun packages/scripts/src/migrate-on-deploy.ts && turbo build:vercel --filter=@api/hono"
 ```
 
 `migrate-on-deploy.ts` applies pending migrations with `bun run db:migrate`, but only when `VERCEL_ENV=production` or the branch is `canary`. Every other preview (a PR branch) skips it: an unmerged migration must not run against the shared database. The split is deliberate: `main` (production) and `canary` are the two branches allowed to change the shared schema; feature branches build and preview without touching it.
