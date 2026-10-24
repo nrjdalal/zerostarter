@@ -54,38 +54,42 @@ describe("sync:config --check", () => {
       expect(run(dir, "--check")).toEqual({ code: 0, stderr: "" })
     }, inFork))
 
-  test("compares and names win32-shaped paths with forward slashes", () =>
-    withCopy(async (dir) => {
-      // A folder name carrying a backslash, beside its twin at the split path, stands in for the backslash paths the scan hands back on Windows: the normalized key reads the twin. The patch's check-types holds only while the patch is found, as web/next's is on posix.
-      const template = (await Bun.file(
-        join(dir, "packages/scripts/src/sync-config/template.json"),
-      ).json()) as {
-        package: { devDependencies?: Record<string, string>; scripts: Record<string, string> }
-        tsconfig: Record<string, unknown>
-      }
-      const pkg = {
-        ...template.package,
-        scripts: { ...template.package.scripts, "check-types": "fake patched command" },
-      }
-      for (const name of ["packages/fake/pkg", "packages/fake\\pkg"]) {
-        mkdirSync(join(dir, name), { recursive: true })
-        await Bun.write(join(dir, name, "package.json"), JSON.stringify(pkg))
-        await Bun.write(join(dir, name, "tsconfig.json"), JSON.stringify(template.tsconfig))
-      }
-      await Bun.write(
-        join(dir, "packages/scripts/src/sync-config/packages-fake-pkg.json"),
-        JSON.stringify({ package: { scripts: { "check-types": "fake patched command" } } }),
-      )
-      expect(run(dir, "--check")).toEqual({ code: 0, stderr: "" })
-      const file = join(dir, "packages/env/tsconfig.json")
-      const config = await Bun.file(file).json()
-      config.compilerOptions.strict = false
-      await Bun.write(file, JSON.stringify(config, null, 2))
-      const { code, stderr } = run(dir, "--check")
-      expect(code).toBe(1)
-      expect(stderr).toContain("packages/env/tsconfig.json")
-      expect(stderr).not.toContain("fake\\pkg")
-    }))
+  // The backslash folder name holds as one segment on posix alone; win32 joins it onto the twin, so the synthetic shape cannot be built there and the synced-tree test covers real win32 scan output.
+  test.skipIf(process.platform === "win32")(
+    "compares and names win32-shaped paths with forward slashes",
+    () =>
+      withCopy(async (dir) => {
+        // A folder name carrying a backslash, beside its twin at the split path, stands in for the backslash paths the scan hands back on Windows: the normalized key reads the twin. The patch's check-types holds only while the patch is found, as web/next's is on posix.
+        const template = (await Bun.file(
+          join(dir, "packages/scripts/src/sync-config/template.json"),
+        ).json()) as {
+          package: { devDependencies?: Record<string, string>; scripts: Record<string, string> }
+          tsconfig: Record<string, unknown>
+        }
+        const pkg = {
+          ...template.package,
+          scripts: { ...template.package.scripts, "check-types": "fake patched command" },
+        }
+        for (const name of ["packages/fake/pkg", "packages/fake\\pkg"]) {
+          mkdirSync(join(dir, name), { recursive: true })
+          await Bun.write(join(dir, name, "package.json"), JSON.stringify(pkg))
+          await Bun.write(join(dir, name, "tsconfig.json"), JSON.stringify(template.tsconfig))
+        }
+        await Bun.write(
+          join(dir, "packages/scripts/src/sync-config/packages-fake-pkg.json"),
+          JSON.stringify({ package: { scripts: { "check-types": "fake patched command" } } }),
+        )
+        expect(run(dir, "--check")).toEqual({ code: 0, stderr: "" })
+        const file = join(dir, "packages/env/tsconfig.json")
+        const config = await Bun.file(file).json()
+        config.compilerOptions.strict = false
+        await Bun.write(file, JSON.stringify(config, null, 2))
+        const { code, stderr } = run(dir, "--check")
+        expect(code).toBe(1)
+        expect(stderr).toContain("packages/env/tsconfig.json")
+        expect(stderr).not.toContain("fake\\pkg")
+      }),
+  )
 
   test("fails naming a hand-edited tsconfig", () =>
     withCopy(async (dir) => {

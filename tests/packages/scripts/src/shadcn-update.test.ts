@@ -78,10 +78,10 @@ test("stops before touching anything when a path the sync rewrites has uncommitt
   expect(existsSync(join(dir, "web/next/src/components/ui/button.tsx"))).toBe(true)
 })
 
-// The stubs are shebang scripts found through a colon-joined PATH, which Windows can neither exec nor split, so the stubbed runs hold on posix alone (run 40091483938 ran the real bunx there).
-const stubsHold = process.platform !== "win32"
+// The stubs are shebang scripts found through a colon-joined PATH, which Windows can neither exec nor split, so the stubbed runs hold on posix alone.
+const canExecStubs = process.platform !== "win32"
 
-test.skipIf(!stubsHold)(
+test.skipIf(!canExecStubs)(
   "rescaffolds shadcn in web/next, then customizes and formats from the root",
   async () => {
     const { calls, code, stderr } = await run()
@@ -112,7 +112,7 @@ test.skipIf(!stubsHold)(
   },
 )
 
-test.skipIf(!stubsHold)("stops at the first step that fails", async () => {
+test.skipIf(!canExecStubs)("stops at the first step that fails", async () => {
   const { calls, code } = await run({ STUB_FAIL: "init" })
   expect(code).toBe(3)
   expect(calls.map((c) => c.args[1])).toEqual(["init"])
