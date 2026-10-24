@@ -9,9 +9,6 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 
 | File | Runtime | `node:` modules (APIs used) |
 | --- | --- | --- |
-| `.github/scripts/compress-images.ts` | Bun | `node:path` (path) |
-| `.github/scripts/docs.ts` | Bun | `node:path` (path) |
-| `.github/scripts/skills-manager.ts` | Bun | `node:crypto` (createHash); `node:path` (path) |
 | `.github/workflows/auto-labeler.yml` | Node | `node:child_process`, `node:fs`, `node:path` (via `require`, `actions/github-script`) |
 | `packages/auth/tsdown.config.ts` | Build | `node:fs` (existsSync, readFileSync); `node:path` (resolve) |
 | `packages/cli/bin/commands/_args.ts` | Node | `node:util` (parseArgs, ParseArgsConfig) |
@@ -29,10 +26,14 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/env/src/load-dotenv.ts` | Both | `node:path` (path) |
 | `packages/env/tsdown.config.ts` | Build | `node:child_process` (execSync) |
 | `packages/scripts/src/auth-schema.ts` | Bun | `node:path` (join, resolve) |
+| `packages/scripts/src/clean.ts` | Bun | `node:fs/promises` (readdir, rm); `node:path` (join) |
+| `packages/scripts/src/compress-images.ts` | Bun | `node:path` (path) |
 | `packages/scripts/src/data-table-metrics.ts` | Bun | `node:path` (join, resolve) |
+| `packages/scripts/src/docs.ts` | Bun | `node:path` (path) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
 | `packages/scripts/src/release-version.ts` | Bun | `node:path` (join) |
-| `tests/github/scripts/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
+| `packages/scripts/src/shadcn-update.ts` | Bun | `node:fs/promises` (rm); `node:path` (join) |
+| `packages/scripts/src/skills-manager.ts` | Bun | `node:crypto` (createHash); `node:path` (path) |
 | `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/bin/commands/reinit.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join); `node:util` (stripVTControlCharacters) |
@@ -45,6 +46,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/packages/cli/src/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/src/skills.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/db/src/schema/auth.test.ts` | Bun | `node:path` (join) |
+| `tests/packages/scripts/src/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |

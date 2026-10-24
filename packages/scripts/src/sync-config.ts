@@ -1,9 +1,8 @@
-import { existsSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 
 import { Glob } from "bun"
 
-// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script, the .github/scripts tsconfig and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted and each patch that matches no target. Runs from the repo root (cwd).
+// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted and each patch that matches no target. Runs from the repo root (cwd).
 
 type Json = { [key: string]: unknown }
 
@@ -77,11 +76,6 @@ for (const pattern of rootPackage.workspaces) {
     })
     expected.set(`${dir}/tsconfig.json`, tsconfig(template.tsconfig, patch.tsconfig))
   }
-}
-
-if (existsSync(join(root, ".github/scripts"))) {
-  const patch = await patchFor(".github/scripts")
-  expected.set(".github/scripts/tsconfig.json", tsconfig(template.tsconfig, patch.tsconfig))
 }
 
 // Each test folder extends its subject's own config, so the source it imports resolves its @/ paths; tests/github/<x> mirrors .github/<x>.

@@ -39,13 +39,13 @@ rg -n "<changed-path-or-command>" web/next/content/docs README.md AGENTS.md .age
 
 Fix each hit in the same change. Two couplings are easy to miss:
 
-- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun .github/scripts/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog row. A vendored one also touches that page's count of how many skills are vendored, and `skills-lock.json` when it is a stub pinned for integrity (`agent-browser`); one copied in full (`portless`) has no lock entry.
+- **Adding or removing a skill** touches the `AGENTS.md` skills table (generated, so run `bun packages/scripts/src/skills-manager.ts`) and the `resources/ai-skills.mdx` catalog row. A vendored one also touches that page's count of how many skills are vendored, and `skills-lock.json` when it is a stub pinned for integrity (`agent-browser`); one copied in full (`portless`) has no lock entry.
 - **Adding, removing, or renaming a doc page** touches `web/next/docs.config.ts`, not the `.mdx` alone.
 
 ## 4. Verify with the repo's own drift gate
 
 ```bash
-bun .github/scripts/docs.ts --strict
+bun packages/scripts/src/docs.ts --strict
 ```
 
 This is the fast gate (seconds): it exits non-zero on any `.mdx` missing from `docs.config.ts`, any config entry with no file, or frontmatter drifted from `docs.config.ts`. To fix a failure, run it without `--strict` to rewrite the managed frontmatter and scaffold missing pages, then commit. Before the PR, also run `cd web/next && bun run build` once: it reruns this check inside the full build, and additionally catches type errors and rebuilds the search index. Done when the strict gate passes AND a fresh `rg` for every removed or renamed path, command, and skill name finds zero stale mentions across the surfaces.

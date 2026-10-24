@@ -1,5 +1,5 @@
 {
   "tsconfig": {
-    "extends": "../../../.github/scripts/tsconfig.json"
+    "extends": "../../../packages/scripts/tsconfig.json"
   }
 }

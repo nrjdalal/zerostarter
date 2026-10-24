@@ -50,7 +50,6 @@ dist/
 vercel-bundle/
 
 # custom files
-.github/scripts/*.d.ts
 .npmrc
 *.local.json
 cookies.txt

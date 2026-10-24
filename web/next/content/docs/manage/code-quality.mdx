@@ -40,7 +40,7 @@ bun run format:check  # oxfmt, report only (also what CI runs)
 
 ## tsrs, not tsc
 
-[tsrs](https://github.com/oxc-project/tsrs), from the same Oxc project, is a Rust port of the TypeScript 7 compiler. `bun run check-types` runs it where `tsc` ran before: `tsrs --noEmit` in every workspace, then over `.github/scripts` and each `tests/` project. On this repo it reports the same errors as `tsc`, faster and in a fraction of the memory.
+[tsrs](https://github.com/oxc-project/tsrs), from the same Oxc project, is a Rust port of the TypeScript 7 compiler. `bun run check-types` runs it where `tsc` ran before: `tsrs --noEmit` in every workspace, then over each `tests/` project. On this repo it reports the same errors as `tsc`, faster and in a fraction of the memory.
 
 Here it only checks. `typescript` stays installed where something needs the compiler itself: tsdown emits each package's `.d.ts` through it, `next build` type-checks the web app with it, and your editor runs it. tsrs follows TypeScript's main branch (7.1 in development) while `typescript` is 7.0, so an error can abbreviate a long type differently from the message your editor shows.
 
@@ -58,8 +58,8 @@ pre-commit:
       priority: 1
       glob:
         - ".agents/skills/**/*.md"
-        - ".github/scripts/skills-manager.ts"
-      run: bun .github/scripts/skills-manager.ts && git add AGENTS.md
+        - "packages/scripts/src/skills-manager.ts"
+      run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
     lint-staged:
       priority: 2
       run: bunx lint-staged --verbose
@@ -80,7 +80,7 @@ pre-push:
       only:
         - ref: canary
     ensure-branches:
-      run: bun .github/scripts/ensure-remote-branches.ts {1}
+      run: bun packages/scripts/src/ensure-remote-branches.ts {1}
 ```
 
 **pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats then lints only your staged files (`oxfmt`, then `oxlint`); `stage_fixed: true` re-stages anything the formatter rewrote, so the fix rides along in the same commit. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.

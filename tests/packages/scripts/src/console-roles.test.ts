@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test"
 
-import { CONSOLE_ROLES } from "../../../packages/auth/src/access"
-import { ACTIVITY_ACTIONS } from "../../../packages/config/src/console"
+import { CONSOLE_ROLES } from "../../../../packages/auth/src/access"
+import { ACTIVITY_ACTIONS } from "../../../../packages/config/src/console"
 
 // The script cannot import the ladder: it runs from the repo root, and giving @packages/scripts a dependency on @packages/auth is a build cycle. So it restates the grantable rungs, and this is what keeps the restatement honest.
 const source = await Bun.file(
-  new URL("../../../.github/scripts/console-roles.ts", import.meta.url),
+  new URL("../../../../packages/scripts/src/console-roles.ts", import.meta.url),
 ).text()
 const writerSource = await Bun.file(
-  new URL("../../../packages/db/src/console.ts", import.meta.url),
+  new URL("../../../../packages/db/src/console.ts", import.meta.url),
 ).text()
 
 describe("console-roles", () => {

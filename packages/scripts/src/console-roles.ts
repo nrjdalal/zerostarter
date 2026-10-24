@@ -18,7 +18,7 @@ if (!url) {
 const sql = new SQL(url)
 
 // The ladder's grantable rungs, in rank order; `user` is the absence of console access, which is what revoke sets.
-// Restated rather than imported from @packages/auth/access, because this runs from the repo root, where @packages/auth does not resolve. tests/github/scripts/console-roles.test.ts holds this copy to the real one.
+// Restated rather than imported from @packages/auth/access, since @packages/auth depends on this package. tests/packages/scripts/src/console-roles.test.ts holds this copy to the real one.
 const GRANTABLE = ["owner", "admin", "member"]
 // The same list and the same order for the database, derived rather than spelled out again. Interpolated as SQL text rather than bound, which is safe only because GRANTABLE is this literal array and never user input.
 const GRANTABLE_LIST = GRANTABLE.map((role) => `'${role}'`).join(", ")

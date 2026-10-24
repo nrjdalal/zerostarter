@@ -1,7 +1,7 @@
 {
   "package": {
     "scripts": {
-      "check-types": "bun ../../.github/scripts/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit"
+      "check-types": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit"
     }
   },
   "tsconfig": {

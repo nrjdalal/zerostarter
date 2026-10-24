@@ -4,12 +4,12 @@ import path from "node:path"
 import { $, Glob } from "bun"
 
 // Skill maintainer: the AGENTS.md skills tables duplicate each skill's own description, so they are GENERATED from .agents/skills/*/SKILL.md frontmatter instead of hand-kept.
-//   bun .github/scripts/skills-manager.ts            rewrite the AGENTS.md tables from the skills (default)
-//   bun .github/scripts/skills-manager.ts --check    fail on drift instead of writing (the pre-commit gate)
-//   bun .github/scripts/skills-manager.ts --outdated fetch each skill's source upstream and report drift
+//   bun packages/scripts/src/skills-manager.ts            rewrite the AGENTS.md tables from the skills (default)
+//   bun packages/scripts/src/skills-manager.ts --check    fail on drift instead of writing (the pre-commit gate)
+//   bun packages/scripts/src/skills-manager.ts --outdated fetch each skill's source upstream and report drift
 // A skill's source is its provenance: a full github link it was inherited from (checked by --outdated), a bare tool name (vendored, re-run the tool), or local (authored here).
 
-const ROOT = path.resolve(import.meta.dir, "../..")
+const ROOT = path.resolve(import.meta.dir, "../../..")
 const SKILLS_DIR = path.join(ROOT, ".agents/skills")
 const AGENTS = path.join(ROOT, "AGENTS.md")
 const UPSTREAM_REF = "main" // the branch the CLI scaffolds and syncs a fork from; a ledger entry may name its own
@@ -165,7 +165,9 @@ if (arg === "--outdated") {
 } else if (arg === "--check") {
   const want = await render()
   if ((await Bun.file(AGENTS).text()) !== want) {
-    console.error("AGENTS.md skills tables are stale. Run: bun .github/scripts/skills-manager.ts")
+    console.error(
+      "AGENTS.md skills tables are stale. Run: bun packages/scripts/src/skills-manager.ts",
+    )
     process.exit(1)
   }
   console.log("AGENTS.md skills tables are up to date.")

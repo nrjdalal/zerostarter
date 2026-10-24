@@ -3,7 +3,11 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { markerKey, repoSlug, settingsUrl } from "../../../.github/scripts/ensure-remote-branches"
+import {
+  markerKey,
+  repoSlug,
+  settingsUrl,
+} from "../../../../packages/scripts/src/ensure-remote-branches"
 
 test("settingsUrl builds the Actions settings URL from an SSH remote", () => {
   expect(settingsUrl("git@github.com:acme/widgets.git")).toBe(
@@ -51,7 +55,7 @@ test("repoSlug detects GitHub remotes (SSH and HTTPS) and is empty otherwise", (
 // its file:// URL so the hook's GitHub detection matches on Windows too (a joined path there uses backslashes). Every
 // real git call runs (remote get-url, rev-parse, ls-remote, push --no-verify) and the config marker makes the second
 // run a no-op. An insteadOf rewrite would not do: get-url returns the rewritten URL.
-const SCRIPT = join(import.meta.dir, "../../../.github/scripts/ensure-remote-branches.ts")
+const SCRIPT = join(import.meta.dir, "../../../../packages/scripts/src/ensure-remote-branches.ts")
 
 const sh = (cwd: string, args: string[]): string => {
   const proc = Bun.spawnSync(args, { cwd, stdin: "ignore", stdout: "pipe", stderr: "pipe" })

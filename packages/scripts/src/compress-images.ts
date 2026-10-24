@@ -6,7 +6,7 @@ import { optimize } from "svgo"
 
 // resolve from script location to support being called from any cwd
 const scriptDir = path.dirname(Bun.main)
-const publicDir = path.resolve(scriptDir, "../../web/next/public")
+const publicDir = path.resolve(scriptDir, "../../../web/next/public")
 const isCI = !!process.env.CI
 const CONCURRENCY = 8
 
