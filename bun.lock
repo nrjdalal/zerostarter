@@ -149,6 +149,7 @@
         "fontkit": "catalog:",
         "tldts": "catalog:",
         "tsrs": "catalog:",
+        "typescript": "catalog:",
         "wawoff2": "catalog:",
       },
     },
