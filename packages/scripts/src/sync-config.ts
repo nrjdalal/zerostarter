@@ -3,12 +3,12 @@ import { dirname, join, relative } from "node:path"
 
 import { Glob } from "bun"
 
-// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script, the .github/scripts tsconfig and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted. Runs from the repo root (cwd).
+// Writes every workspace's tsconfig.json, type-check devDependencies and check-types script, the .github/scripts tsconfig and every tests/**/tsconfig.json from template.json. A target that must differ says so in its own patch beside the template, named by its path (web/next is web-next.json), deep-merged over the template: an object merges, anything else replaces, null removes the key. packages/config is skipped, since its tsconfig.json is the base every other one extends. --check writes nothing and exits 1 naming each file that drifted and each patch that matches no target. Runs from the repo root (cwd).
 
 type Json = { [key: string]: unknown }
 
-const here = join(import.meta.dir, "sync-config")
 const root = process.cwd()
+const here = join(root, "packages/scripts/src/sync-config")
 const check = process.argv.includes("--check")
 
 const isObject = (value: unknown): value is Json =>
@@ -31,7 +31,6 @@ const canonical = (value: unknown): string =>
   JSON.stringify(value, (_, v) => (isObject(v) ? sortKeys(v) : v))
 
 const readJson = async (path: string): Promise<Json | undefined> => {
-  if (!existsSync(path)) return undefined
   try {
     return await Bun.file(path).json()
   } catch {
@@ -44,11 +43,12 @@ const template = (await Bun.file(join(here, "template.json")).json()) as Record<
   Json
 >
 
-const patchFor = async (dir: string) =>
-  ((await readJson(join(here, `${dir.replace(/^\./, "").replaceAll("/", "-")}.json`))) ?? {}) as {
-    package?: Json
-    tsconfig?: Json
-  }
+const usedPatches = new Set(["template.json"])
+const patchFor = async (dir: string) => {
+  const name = `${dir.replace(/^\./, "").replaceAll("/", "-")}.json`
+  usedPatches.add(name)
+  return ((await readJson(join(here, name))) ?? {}) as { package?: Json; tsconfig?: Json }
+}
 
 const tsconfig = (base: Json, patch?: Json): Json => {
   const merged = merge(base, patch ?? {})
@@ -73,7 +73,7 @@ for (const pattern of rootPackage.workspaces) {
     expected.set(file, {
       ...pkg,
       devDependencies: sortKeys(devDependencies),
-      scripts: { ...(pkg.scripts as Json), ...(wanted.scripts as Json) },
+      scripts: sortKeys({ ...(pkg.scripts as Json), ...(wanted.scripts as Json) }),
     })
     expected.set(`${dir}/tsconfig.json`, tsconfig(template.tsconfig, patch.tsconfig))
   }
@@ -99,13 +99,21 @@ for (const file of [...expected.keys()].sort()) {
     drifted.push(file)
 }
 
+const unused: string[] = []
+for await (const name of new Glob("*.json").scan({ cwd: here })) {
+  if (!usedPatches.has(name)) unused.push(name)
+}
+if (unused.length) {
+  console.error("sync:config: these patches match no target (rename or remove them):")
+  for (const name of unused.sort()) console.error(`  packages/scripts/src/sync-config/${name}`)
+}
+
 if (check) {
   if (drifted.length) {
     console.error("sync:config: drifted from the template (bun run sync:config rewrites them):")
     for (const file of drifted) console.error(`  ${file}`)
-    process.exit(1)
   }
-  process.exit(0)
+  process.exit(drifted.length || unused.length ? 1 : 0)
 }
 
 for (const file of drifted)
@@ -118,3 +126,4 @@ if (drifted.length) {
   if (format.exitCode !== 0) process.exit(format.exitCode)
 }
 console.log(`sync:config: ${drifted.length} file(s) written`)
+if (unused.length) process.exit(1)
