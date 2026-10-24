@@ -23,7 +23,7 @@ const stub = (name: string) => {
   const path = join(bin, name)
   writeFileSync(
     path,
-    `#!${process.execPath}\nimport { appendFileSync } from "node:fs"\nappendFileSync(process.env.STUB_LOG!, JSON.stringify({ cmd: ${JSON.stringify(name)}, args: process.argv.slice(2), cwd: process.cwd() }) + "\\n")\n`,
+    `#!${process.execPath}\nimport { appendFileSync } from "node:fs"\nappendFileSync(process.env.STUB_LOG!, JSON.stringify({ cmd: ${JSON.stringify(name)}, args: process.argv.slice(2), cwd: process.cwd() }) + "\\n")\nif (process.env.STUB_FAIL && process.argv.includes(process.env.STUB_FAIL)) process.exit(3)\n`,
   )
   chmodSync(path, 0o755)
 }
@@ -35,10 +35,10 @@ const file = (path: string, text = "") => {
   writeFileSync(join(dir, path), text)
 }
 
-const run = async () => {
+const run = async (extra: Record<string, string> = {}) => {
   const out = Bun.spawnSync([process.execPath, script], {
     cwd: dir,
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, STUB_LOG: log },
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, STUB_LOG: log, ...extra },
     stderr: "pipe",
   })
   const text = existsSync(log) ? await Bun.file(log).text() : ""
@@ -95,4 +95,10 @@ test("rescaffolds shadcn in web/next, then customizes and formats from the root"
     { args: [join(scripts, "shadcn-customize.ts")], cmd: "bun", cwd: dir },
     { args: ["run", "format"], cmd: "bun", cwd: dir },
   ])
+})
+
+test("stops at the first step that fails", async () => {
+  const { calls, code } = await run({ STUB_FAIL: "init" })
+  expect(code).toBe(3)
+  expect(calls.map((c) => c.args[1])).toEqual(["init"])
 })
