@@ -103,7 +103,7 @@ A package with no env of its own can pass another package's `env`/`getSafeEnv`, 
 
 ## Build-only script shape (adds to the skeleton)
 
-No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script using `Bun.*` / `import.meta.dir` / `node:*`, and tsrs will not auto-include `@types/*` for it, so pin `types: ["bun"]` exactly as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
+No `build`, no `exports`, no `files`, no `tsdown`; add only the script's own tool deps (e.g. `tldts`) as devDependencies. A tool the script spawns inside another package rather than imports (the auth CLI, run from `packages/auth` so it reads that tsconfig's paths) is that package's devDependency, since `bunx` resolves it from the working directory. The entry is a Bun script that uses `Bun.*`, `import.meta.dir` or `node:*`. tsrs does not load `@types/*` by itself, so set `types: ["bun"]`, as `packages/cli` (the repo's other Bun package) and `.github/scripts/tsconfig.json` do:
 
 ```json
 {
@@ -137,5 +137,5 @@ Adding a package touches the map. In the same change, update: the `packages/*` l
 ## Gotchas
 
 - Missing `@packages/config` devDep → `tsconfig extends` fails to resolve. It is a dep, not just a base file.
-- tsrs auto-includes no `@types/*`, so a package sees node or Bun types only through a dependency's own type references: dotenv brings node to `env`, and drizzle-orm's `bun-sql` driver brings Bun and node to `db` and `auth`. A package with neither fails `check-types` with `Cannot find name 'Bun'` / `'node:...'`. Pin `types: ["bun"]` in any package whose own code uses `Bun.*`, `import.meta.dir` or `node:*`, rather than leaning on a dependency.
+- tsrs does not load `@types/*` by itself. A package gets Node or Bun types only from a dependency that references them: dotenv brings Node to `env`, and drizzle-orm's `bun-sql` driver brings Bun and Node to `db` and `auth`. Without one, `check-types` fails with `Cannot find name 'Bun'` or `'node:...'`. When a package's own code uses `Bun.*`, `import.meta.dir` or `node:*`, set `types: ["bun"]` in its tsconfig, so its types come from the package itself.
 - Keep `exports`, `entry`, and dependency lists alphabetical so they match their docs (`order-lists-alphabetically`).
