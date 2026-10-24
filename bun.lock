@@ -223,9 +223,6 @@
       },
     },
   },
-  "overrides": {
-    "js-yaml": "^4.3.1",
-  },
   "catalog": {
     "@arcjet/ip": "^1.14.1",
     "@base-ui/react": "^1.9.0",
