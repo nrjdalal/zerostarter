@@ -32,7 +32,7 @@ const strengths = [
   "**AI product engineering**: LLM workflows taken from prototype to production, and agent tooling that takes structured actions for users",
   "**Fast, steady delivery**: a product that ships daily, with a median under three hours from opening a change to merging it",
   "**Build speed and release automation**: test suites about 5x faster, CI gates, and promotion between environments without hand-made pull requests",
-  "**Security by default**: two-step sign-in made mandatory for every account in ten days",
+  "**Security by default**: authentication and access control rolled out to every account of a live product in days",
 ]
 
 const experience: {
