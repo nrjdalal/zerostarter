@@ -240,7 +240,7 @@ export default function Page() {
       {/* core strengths */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>core strengths</h2>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {strengths.map((s) => (
             <li key={s}>{emphasize(s)}</li>
           ))}
@@ -263,7 +263,7 @@ export default function Page() {
               )}{" "}
               <span className="text-muted-foreground">· {job.meta}</span>
             </p>
-            <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+            <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
               {job.points.map((point) => (
                 <li key={point}>{emphasize(point)}</li>
               ))}
@@ -287,7 +287,7 @@ export default function Page() {
           , 1,070+ GitHub stars on the public ones, and 30,000+ weekly npm downloads across 40+
           packages. The strongest:
         </p>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {projects.map((project) => (
             <li key={project.name}>
               <a
@@ -308,7 +308,7 @@ export default function Page() {
       {/* skills */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>skills</h2>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {skills.map((skill) => (
             <li key={skill.group}>
               <span className="text-foreground font-medium">{skill.group}</span>:{" "}
