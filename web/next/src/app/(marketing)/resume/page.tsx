@@ -1,9 +1,10 @@
 import { site } from "@packages/config/site"
-import { RiArrowRightUpLine } from "@remixicon/react"
+import { RiArrowRightUpLine, RiDownloadLine } from "@remixicon/react"
 import { cn } from "cn"
 import type { Metadata } from "next"
 import Link from "next/link"
 
+import { Button } from "@/components/ui/button"
 import { config } from "@/lib/config"
 import { caveat } from "@/lib/marketing/fonts"
 
@@ -225,6 +226,15 @@ export default function Page() {
             linkedin.com/in/nrjdalal
           </a>
         </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="print:hidden"
+          render={<a href="/neeraj-dalal-resume.pdf" download="Neeraj Dalal - Resume.pdf" />}
+        >
+          <RiDownloadLine />
+          Download PDF
+        </Button>
       </div>
 
       {/* core strengths */}
