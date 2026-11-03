@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { config } from "@/lib/config"
-import { caveat, lora } from "@/lib/marketing/fonts"
+import { caveat } from "@/lib/marketing/fonts"
 
 const ogImageUrl = `${config.app.url}/og?${new URLSearchParams({
   section: "Résumé",
@@ -27,13 +27,11 @@ export const metadata: Metadata = {
 }
 
 const strengths = [
-  "**Agent orchestration**: Claude Code sessions that plan, build, review and merge software, run from one live dashboard",
-  "**Guardrails for agents**: guard hooks that refuse unsafe actions, and a review step before every merge",
+  "**Open-source agent infrastructure**: built Playground, a multi-agent system where Claude Code sessions plan, build, review and ship software under policies I define, and ZeroStarter, a type-safe SaaS starter that AI agents can operate",
   "**AI product engineering**: LLM workflows taken from prototype to production, and agent tooling that takes structured actions for users",
   "**Fast, steady delivery**: a product that ships daily, with a median under three hours from opening a change to merging it",
-  "**Type-safe full stack**: shared types from database to UI in TypeScript, React, Next.js, Hono and Bun",
   "**Build speed and release automation**: test suites about 5x faster, CI gates, and promotion between environments without hand-made pull requests",
-  "**Security by default**: two-step sign-in for every account in ten days, and a production image with zero critical or high vulnerabilities",
+  "**Security by default**: two-step sign-in made mandatory for every account in ten days",
 ]
 
 const experience: {
@@ -51,10 +49,9 @@ const experience: {
     points: [
       "Shipped product **end to end for a year and a half**, across frontend, backend, dev tooling, migrations, security, infrastructure, and AI agent tooling, on an AI-powered property-management platform that ships daily.",
       "Made two-step sign-in **mandatory for every account in ten days**, building both the server side and the UI: email codes, Google sign-in, trusted devices, a real password policy, lockout, and per-organisation controls, rolled out to every existing account.",
-      "Brought the production image to **zero critical and high vulnerabilities**, from more than fifty, and made it a fifth smaller, proving the app byte-identical across the change and adding a CI gate so a regression fails the build.",
       "Made the team's **test suites about 5x faster** and cold builds about 4x faster by moving the build and test toolchain to a faster compiler over one weekend, unasked, and turned a flaky out-of-memory coverage job into a stable one in under half the time.",
       "Kept delivery fast at a median of **under three hours** from opening a change to merging it, with 19 in 20 changes merged the same day.",
-      "**Automated the path to production** and the team's dev tooling: changes labelled by area, promotion between environments without hand-made pull requests, a faster monorepo build, CI results in chat, and a same-day fix that unblocked every change in the repo.",
+      "Automated **the path to production** and the team's dev tooling: changes labelled by area, promotion between environments without hand-made pull requests, a faster monorepo build, CI results in chat, and a same-day fix that unblocked every change in the repo.",
       "Built **AI agent tooling** that lets the product take structured actions on behalf of users.",
       "Led the web app's migrations: a framework re-platform in my first month, a full redesign shipped to every page behind flags with no feature freeze, the old UI retired in a single cutover with **zero regressions**, and the move into a new codebase.",
       "Took the product from **one language to four in two days**, with an automated parity check so no language can drift and no growth in bundle size.",
@@ -66,7 +63,7 @@ const experience: {
     meta: "Remote · Nov 2025 – Present",
     points: [
       "Built ZeroStarter, a **type-safe SaaS starter**: shared types from database to UI, one database schema, automated publishing, and an agent sign-in so AI agents can operate the app.",
-      "Built Playground, an **agent factory** where Claude Code sessions plan, build, review, and merge software, with a live dashboard of every session and guard hooks that refuse unsafe actions.",
+      "Built Playground, an **agent factory** on Claude Code, skills, MCP tools and the Claude Agent SDK: multi-session orchestration where sessions plan, build, review, and merge software from a live dashboard, with policy-driven guardrails.",
       "Both are public on GitHub; ZeroStarter installs with one command and stands at **64★**.",
     ],
   },
@@ -146,7 +143,7 @@ const skills: { group: string; items: string }[] = [
   {
     group: "AI",
     items:
-      "**Claude Code** (hooks, skills, multi-session orchestration), **Claude Agent SDK**, **MCP**, Vercel AI SDK, OpenAI Agents SDK, OpenAI API, **LLM-as-judge evals**, agent tooling (AGENTS.md, skills)",
+      "**Claude Code** (hooks, skills), **Claude Agent SDK**, **MCP**, Vercel AI SDK, OpenAI Agents SDK, OpenAI API, **LLM-as-judge evals**, AGENTS.md",
   },
   { group: "Languages", items: "**TypeScript**, JavaScript, **Python**, **SQL**, Bash, HTML/CSS" },
   {
@@ -166,12 +163,12 @@ const skills: { group: string; items: string }[] = [
   {
     group: "Cloud & Infra",
     items:
-      "**AWS** (Lambda, EC2, S3, RDS, SQS, SES, CloudFront, API Gateway, IAM), **Kubernetes**, SST + Pulumi, Cloudflare Workers, **Vercel**, **Docker** and image CVE hygiene, nginx, headless browsers on Lambda",
+      "**AWS** (Lambda, EC2, S3, RDS, SQS, SES, CloudFront, API Gateway, IAM), SST + Pulumi, **Cloudflare Workers**, **Vercel**, **Docker**, nginx, headless browsers on Lambda",
   },
   {
     group: "Tooling & Quality",
     items:
-      "**Turborepo**, Nx, Bun/pnpm workspaces, SWC, tsdown/tsup, oxlint/oxfmt, **GitHub Actions** (OIDC publishing), conventional commits, changesets, lefthook, **Vitest**, pytest, **Playwright**, PostHog",
+      "**Turborepo**, Nx, Bun/pnpm workspaces, SWC, tsdown/tsup, oxlint/oxfmt, **GitHub Actions** (OIDC publishing), conventional commits, changesets, lefthook, **Vitest**, **Playwright**, PostHog",
   },
 ]
 
@@ -198,17 +195,11 @@ export default function Page() {
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>résumé</h1>
         <p className="text-lg">
           <b className="font-semibold">AI-native Product Engineer</b> with 6+ years shipping
-          production SaaS, developer tools, full-stack TypeScript systems, and{" "}
-          <b className="font-semibold">AI agent infrastructure</b>. At LightWork AI I ship product
-          end to end on an AI-powered property-management platform: frontend, backend, dev tooling,
-          migrations, security, infrastructure, and AI agent tooling. On my own time I build an
-          open-source <b className="font-semibold">agent factory</b>: Claude Code sessions that
-          plan, build, review and merge software. Author of 250+ repositories, with 1,070+ GitHub
-          stars and 30,000+ weekly npm downloads, used by projects including Storybook, TanStack
-          Router, and ElectricSQL.{" "}
-          <span className={cn(lora.className, "font-medium tracking-wide italic")}>
-            I learn by shipping, and I sweat build performance, type safety, and release automation.
-          </span>
+          production SaaS and <b className="font-semibold">AI agent infrastructure</b> in full-stack
+          TypeScript. At LightWork AI I ship an AI-powered property-management platform end to end.
+          On my own time I build an open-source <b className="font-semibold">agent factory</b> on
+          Claude Code. Author of 250+ repositories, with 1,070+ GitHub stars and 30,000+ weekly npm
+          downloads.
         </p>
         <p className="text-muted-foreground text-sm">
           New Delhi, India (open to relocate) ·{" "}
