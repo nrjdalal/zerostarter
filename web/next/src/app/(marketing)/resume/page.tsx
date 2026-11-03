@@ -203,9 +203,9 @@ export default function Page() {
           end to end on an AI-powered property-management platform: frontend, backend, dev tooling,
           migrations, security, infrastructure, and AI agent tooling. On my own time I build an
           open-source <b className="font-semibold">agent factory</b>: Claude Code sessions that
-          plan, build, review and merge software. Author of 100+ public repositories with 1,070+
-          GitHub stars and 30,000+ weekly npm downloads, used by projects including Storybook,
-          TanStack Router, and ElectricSQL.{" "}
+          plan, build, review and merge software. Author of 250+ repositories, with 1,070+ GitHub
+          stars and 30,000+ weekly npm downloads, used by projects including Storybook, TanStack
+          Router, and ElectricSQL.{" "}
           <span className={cn(lora.className, "font-medium tracking-wide italic")}>
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
@@ -275,16 +275,16 @@ export default function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>selected projects</h2>
         <p className="text-muted-foreground">
-          1,070+ stars across{" "}
           <a
             href="https://github.com/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
             className={linkClass}
           >
-            100+ public repositories
+            250+ repositories
           </a>
-          , and 30,000+ weekly npm downloads across 40+ packages. The strongest:
+          , 1,070+ GitHub stars on the public ones, and 30,000+ weekly npm downloads across 40+
+          packages. The strongest:
         </p>
         <ul className="text-muted-foreground list-disc space-y-1 pl-5">
           {projects.map((project) => (
