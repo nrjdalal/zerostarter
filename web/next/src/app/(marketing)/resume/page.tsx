@@ -28,11 +28,11 @@ export const metadata: Metadata = {
 }
 
 const strengths = [
-  "**Open-source agent infrastructure**: built Playground, a multi-agent system where Claude Code sessions plan, build, review and ship software under policies I define, and ZeroStarter, a type-safe SaaS starter that AI agents can operate",
+  "**Open-source agent infrastructure**: built ZeroStarter, a type-safe SaaS starter that AI agents can operate, and on its foundation Playground, a multi-agent system where Claude Code sessions plan, build, review and ship software under policies I define",
   "**AI product engineering**: LLM workflows taken from prototype to production, and agent tooling that takes structured actions for users",
-  "**Fast, steady delivery**: a product that ships daily, with a median under three hours from opening a change to merging it",
-  "**Build speed and release automation**: test suites about 5x faster, CI gates, and promotion between environments without hand-made pull requests",
-  "**Security by default**: authentication and access control rolled out to every account of a live product in days",
+  "**Migrations without regressions**: a framework re-platform, a full redesign shipped behind flags and a move into a new codebase, each landed on a live product with no feature freeze",
+  "**Build and release automation**: CI gates, test toolchains and promotion between environments without hand-made pull requests",
+  "**Security by default**: authentication and access control built in and rolled out to every account of a live product",
 ]
 
 const experience: {
@@ -51,7 +51,6 @@ const experience: {
       "Shipped product **end to end for a year and a half**, across frontend, backend, dev tooling, migrations, security, infrastructure, and AI agent tooling, on an AI-powered property-management platform that ships daily.",
       "Made two-step sign-in **mandatory for every account in ten days**, building both the server side and the UI: email codes, Google sign-in, trusted devices, a real password policy, lockout, and per-organisation controls, rolled out to every existing account.",
       "Made the team's **test suites about 5x faster** and cold builds about 4x faster by moving the build and test toolchain to a faster compiler over one weekend, unasked, and turned a flaky out-of-memory coverage job into a stable one in under half the time.",
-      "Kept delivery fast at a median of **under three hours** from opening a change to merging it, with 19 in 20 changes merged the same day.",
       "Automated **the path to production** and the team's dev tooling: changes labelled by area, promotion between environments without hand-made pull requests, a faster monorepo build, CI results in chat, and a same-day fix that unblocked every change in the repo.",
       "Built **AI agent tooling** that lets the product take structured actions on behalf of users.",
       "Led the web app's migrations: a framework re-platform in my first month, a full redesign shipped to every page behind flags with no feature freeze, the old UI retired in a single cutover with **zero regressions**, and the move into a new codebase.",
@@ -64,7 +63,7 @@ const experience: {
     meta: "Remote · Nov 2025 – Present",
     points: [
       "Built ZeroStarter, a **type-safe SaaS starter**: shared types from database to UI, one database schema, automated publishing, and an agent sign-in so AI agents can operate the app.",
-      "Built Playground, an **agent factory** on Claude Code, skills, MCP tools and the Claude Agent SDK: multi-session orchestration where sessions plan, build, review, and merge software from a live dashboard, with policy-driven guardrails.",
+      "Built Playground as a ZeroStarter fork: an **agent factory** on Claude Code, skills, MCP tools and the Claude Agent SDK, where sessions plan, build, review, and merge software from a live dashboard, with policy-driven guardrails.",
       "Both are public on GitHub; ZeroStarter installs with one command and stands at **64★**.",
     ],
   },
@@ -142,34 +141,24 @@ const projects: { name: string; href: string; note: string }[] = [
 
 const skills: { group: string; items: string }[] = [
   {
-    group: "AI",
+    group: "AI & agents",
     items:
-      "**Claude Code** (hooks, skills), **Claude Agent SDK**, **MCP**, Vercel AI SDK, OpenAI Agents SDK, OpenAI API, **LLM-as-judge evals**, AGENTS.md",
-  },
-  { group: "Languages", items: "**TypeScript**, JavaScript, **Python**, **SQL**, Bash, HTML/CSS" },
-  {
-    group: "Web & UI",
-    items:
-      "**React**, **Next.js** (App Router), **TanStack** Router/Query/Form, **Tailwind CSS**, shadcn/ui, Radix, React Hook Form, Zod, MDX, i18n, SSR/SSG, PWA, Accessibility, Web Vitals",
+      "**Claude Code** (hooks, skills, AGENTS.md), **Claude Agent SDK**, **MCP** servers (GitHub, Linear, Slack, Notion, Datadog, PostHog), Vercel AI SDK, **agent-browser** and agent-desktop automation, multi-session orchestration, LLM-as-judge review gates",
   },
   {
-    group: "Backend & APIs",
+    group: "Languages & frameworks",
     items:
-      "**Node.js**, **Bun**, **Hono** (+ RPC), NestJS, Express, Elysia, tRPC, **FastAPI**, SQLAlchemy, REST, OpenAPI/Scalar, WebSockets, Better Auth, MFA and OAuth flows, queues, rate limiting, caching",
+      "**TypeScript**, JavaScript, Python, SQL, Bash; **React**, **Next.js** (App Router), **Hono** (RPC, OpenAPI with Scalar), **Bun**, Node.js, **Tailwind CSS**, shadcn/ui, Base UI, TanStack Query/Form/Table, Zod, Streamdown, Fumadocs, MDX, WebSockets",
   },
   {
-    group: "Databases",
-    items: "**PostgreSQL**, **Drizzle ORM**, Prisma, MongoDB, **Redis** (Upstash)",
+    group: "Data & auth",
+    items:
+      "**PostgreSQL**, **Drizzle ORM**, **Redis**, **Better Auth**, OAuth and two-step sign-in flows, rate limiting, queues",
   },
   {
-    group: "Cloud & Infra",
+    group: "Infra & tooling",
     items:
-      "**AWS** (Lambda, EC2, S3, RDS, SQS, SES, CloudFront, API Gateway, IAM), SST + Pulumi, **Cloudflare Workers**, **Vercel**, **Docker**, nginx, headless browsers on Lambda",
-  },
-  {
-    group: "Tooling & Quality",
-    items:
-      "**Turborepo**, Nx, Bun/pnpm workspaces, SWC, tsdown/tsup, oxlint/oxfmt, **GitHub Actions** (OIDC publishing), conventional commits, changesets, lefthook, **Vitest**, **Playwright**, PostHog",
+      "**Docker**, **Vercel**, AWS Lambda, **GitHub Actions** (OIDC npm publishing), **Turborepo**, Bun workspaces, tsdown, oxlint/oxfmt, lefthook, conventional commits, automated changelogs, bun test with browser-driven end-to-end tests, PostHog",
   },
 ]
 
@@ -198,9 +187,10 @@ export default function Page() {
           <b className="font-semibold">AI-native Product Engineer</b> with 6+ years shipping
           production SaaS and <b className="font-semibold">AI agent infrastructure</b> in full-stack
           TypeScript. At LightWork AI I ship an AI-powered property-management platform end to end.
-          On my own time I build an open-source <b className="font-semibold">agent factory</b> on
-          Claude Code. Author of 250+ repositories, with 1,070+ GitHub stars and 30,000+ weekly npm
-          downloads.
+          On my own time I build <b className="font-semibold">ZeroStarter</b>, an open-source
+          type-safe SaaS starter, and on top of it an <b className="font-semibold">agent factory</b>{" "}
+          where Claude Code sessions ship software. Author of 250+ repositories, with 1,070+ GitHub
+          stars and 30,000+ weekly npm downloads.
         </p>
         <p className="text-muted-foreground text-sm">
           New Delhi, India (open to relocate) ·{" "}
