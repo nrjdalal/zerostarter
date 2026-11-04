@@ -186,8 +186,8 @@ export default function Page() {
         <p className="text-lg">
           <b className="font-semibold">AI-native Product Engineer</b> with 6+ years shipping
           production SaaS and <b className="font-semibold">AI agent infrastructure</b> in full-stack
-          TypeScript. At LightWork AI, I build an AI-powered property-management platform across the
-          full stack, from AI and UI to the infrastructure. On my own time I build{" "}
+          TypeScript. At LightWork AI, I help build an AI-powered property-management platform
+          across the full stack: agents, UI and infrastructure. On my own time I build{" "}
           <b className="font-semibold">ZeroStarter</b>, an open-source type-safe SaaS starter, and
           on top of it an <b className="font-semibold">agent factory</b> where Claude Code sessions
           ship software. Author of 250+ repositories, with 1,070+ GitHub stars and 30,000+ weekly
