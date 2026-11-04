@@ -1,9 +1,10 @@
 import { site } from "@packages/config/site"
-import { RiArrowRightUpLine } from "@remixicon/react"
+import { RiArrowRightUpLine, RiDownloadLine } from "@remixicon/react"
 import { cn } from "cn"
 import type { Metadata } from "next"
 import Link from "next/link"
 
+import { Button } from "@/components/ui/button"
 import { config } from "@/lib/config"
 import { caveat, lora } from "@/lib/marketing/fonts"
 
@@ -28,12 +29,14 @@ export const metadata: Metadata = {
 
 const strengths = [
   "AI product engineering and agent tooling",
+  "Multi-agent orchestration, review gates and guardrails for coding agents",
   "Full-stack SaaS architecture and type-safe TypeScript systems",
-  "React, Next.js, TanStack, Hono, Bun",
   "Developer tools, CLIs, VS Code extensions, open source",
   "AWS Lambda, serverless systems, queues, rate limiting",
   "Scraping infrastructure and browser automation",
   "Monorepos, CI/CD, release automation",
+  "Migrations and redesigns on live products without regressions",
+  "Authentication, two-step verification and access control",
   "0-to-1 product development in startup environments",
 ]
 
@@ -50,11 +53,24 @@ const experience: {
     meta: "London, UK (Remote) · Jun 2025 – Present",
     href: "https://lightwork.co",
     points: [
-      "Shipped 500+ pull requests across frontend, backend, infrastructure, and product workflows on an AI-powered property-management platform.",
+      "Shipped features across frontend, backend, infrastructure, and product workflows on an AI-powered property-management platform.",
       "Built AI agent tooling that lets the product take structured actions on behalf of users.",
-      "Led a major frontend redesign across core product surfaces, delivered incrementally behind feature flags.",
-      "Implemented internationalization across the redesigned product flows.",
-      "Improved build performance, CI reliability, and developer-experience tooling across the engineering team.",
+      "Led a major frontend redesign across core product surfaces, delivered incrementally behind feature flags with no feature freeze, and retired the old versions of the app in one cutover without regressions.",
+      "Re-platformed the web app onto a new framework, and led its move into a new codebase.",
+      "Implemented internationalization across the redesigned product flows, with an automated parity check across languages and no growth in bundle size.",
+      "Improved build performance, CI reliability, and developer-experience tooling across the engineering team: Docker builds centralized in the monorepo, smarter builds, faster test suites and cold builds through a faster compiler, and a flaky out-of-memory coverage job made stable.",
+      "Automated the path to production: changes labelled by area, promotion between environments with no hand-made pull requests, and CI results in chat.",
+      "Made two-step sign-in mandatory for every account, server and UI: email codes, Google sign-in, trusted devices, password policy, lockout and per-organisation controls.",
+    ],
+  },
+  {
+    company: "Open source (ZeroStarter, Playground)",
+    role: "Creator & Maintainer",
+    meta: "Nov 2025 – Present",
+    points: [
+      "Built ZeroStarter, a type-safe SaaS starter on Bun, Hono, Better Auth, Drizzle and TanStack: shared types from database to UI, one database schema, self-healing release automation, and an agent sign-in for AI agents.",
+      "Built Playground on ZeroStarter: an agent factory on Claude Code, skills, MCP and the Claude Agent SDK, where sessions plan, build, review and merge software from a live dashboard, behind review gates and guardrails.",
+      "Both are public on GitHub, and ZeroStarter installs with one command.",
     ],
   },
   {
@@ -98,58 +114,65 @@ const experience: {
 
 const projects: { name: string; href: string; note: string }[] = [
   {
-    name: "gitpick (311★)",
+    name: "gitpick",
     href: "https://github.com/nrjdalal/gitpick",
-    note: "TypeScript, Bun. A zero-dependency degit replacement that clones any file, folder, or branch by URL; used by TanStack Router, SST, Electric SQL, and Storybook.",
+    note: "TypeScript, Bun. A zero-dependency degit replacement that clones any file, folder, or branch by URL: 345,000+ npm downloads in the last year; used by TanStack Router, SST, Electric SQL, and Storybook.",
   },
   {
-    name: "zerostarter (52★)",
-    href: "https://github.com/nrjdalal/zerostarter",
-    note: "Bun, Hono RPC, Better Auth, Drizzle, TanStack. A type-safe SaaS monorepo with shared types, one database schema, and self-healing release automation.",
-  },
-  {
-    name: "rdt.li (255★)",
-    href: "https://github.com/nrjdalal/rdt-li",
-    note: "Next.js, Drizzle, Postgres. A self-hostable, open-source URL shortener with analytics, charts, and one-click deploy.",
-  },
-  {
-    name: "shadcn-ui snippets (117★)",
-    href: "https://github.com/nrjdalal/shadcn-ui-snippets",
-    note: "VS Code, Bun. An editor extension for shadcn/ui snippets, 8,500+ installs, built via a Markdown-to-snippet pipeline.",
-  },
-  {
-    name: "smart-registry (27★)",
+    name: "smart-registry",
     href: "https://github.com/nrjdalal/smart-registry",
     note: "TypeScript. A zero-config shadcn registry builder that auto-detects files and dependencies, removing most registry.json boilerplate.",
   },
   {
-    name: "onset (62★)",
-    href: "https://github.com/nrjdalal/onset",
-    note: "Next.js, Drizzle, Auth.js. A documented full-stack starter that teaches the architecture step by step.",
-  },
-  {
-    name: "karabiner-human-config (46★)",
+    name: "karabiner-human-config",
     href: "https://github.com/nrjdalal/karabiner-human-config",
     note: "TypeScript. A human-readable Karabiner config compiler, listed among the official Karabiner-Elements generators.",
+  },
+  {
+    name: "rdt.li",
+    href: "https://github.com/nrjdalal/rdt-li",
+    note: "Next.js, Drizzle, Postgres. A self-hostable, open-source URL shortener with analytics, charts, and one-click deploy.",
+  },
+  {
+    name: "tailwind-animate",
+    href: "https://github.com/nrjdalal/tailwind-animate",
+    note: "TypeScript. A Tailwind CSS v4 animation plugin replacing tailwindcss-animate: 22,000+ weekly npm downloads.",
+  },
+  {
+    name: "shadcn-ui snippets",
+    href: "https://github.com/nrjdalal/shadcn-ui-snippets",
+    note: "VS Code, Bun. An editor extension for shadcn/ui snippets, 13,500+ installs across its two Marketplace listings, built via a Markdown-to-snippet pipeline.",
+  },
+  {
+    name: "onset",
+    href: "https://github.com/nrjdalal/onset",
+    note: "Next.js, Drizzle, Auth.js. A documented full-stack starter that teaches the architecture step by step.",
   },
 ]
 
 const skills: { group: string; items: string }[] = [
-  { group: "Languages", items: "TypeScript, JavaScript, SQL, Python, Bash, HTML/CSS" },
+  {
+    group: "AI & agents",
+    items:
+      "Claude Code (hooks, skills, AGENTS.md), Claude Agent SDK, MCP servers (GitHub, Linear, Slack, Notion, Datadog, PostHog), Vercel AI SDK, OpenAI Agents SDK, OpenAI API, agent-browser and agent-desktop automation, multi-session orchestration, LLM-as-judge review gates",
+  },
+  {
+    group: "Languages",
+    items: "TypeScript, JavaScript, SQL, Python, Bash, HTML/CSS",
+  },
   {
     group: "Frontend",
     items:
-      "React, Next.js (App Router), TanStack Router/Query/Form, Tailwind CSS, shadcn/ui, Radix, React Hook Form, Zod, MDX, SSR/SSG, PWA, Accessibility, Web Vitals",
+      "React, Next.js (App Router), TanStack Router/Query/Form/Table, Tailwind CSS, shadcn/ui, Base UI, Radix, React Hook Form, Zod, Streamdown, Fumadocs, MDX, SSR/SSG, PWA, Accessibility, Web Vitals",
   },
   {
     group: "Backend & APIs",
     items:
-      "Node.js, Bun, Hono (+ RPC), NestJS, Express, Elysia, tRPC, REST, OpenAPI/Scalar, WebSockets, Better Auth, queues, rate limiting, caching",
+      "Node.js, Bun, Hono (+ RPC), NestJS, Express, Elysia, tRPC, REST, OpenAPI/Scalar, WebSockets, Better Auth, OAuth and two-step sign-in flows, queues, rate limiting, caching",
   },
-  { group: "Databases", items: "PostgreSQL, Drizzle ORM, Prisma, MongoDB, Redis (Upstash)" },
   {
-    group: "AI",
-    items: "Vercel AI SDK, OpenAI Agents SDK, OpenAI API, agent tooling (AGENTS.md, skills)",
+    group: "Databases",
+    items: "PostgreSQL, Drizzle ORM, Prisma, MongoDB, Redis (Upstash)",
   },
   {
     group: "Cloud & Infra",
@@ -159,7 +182,7 @@ const skills: { group: string; items: string }[] = [
   {
     group: "Tooling & Quality",
     items:
-      "Turborepo, Bun/pnpm workspaces, tsdown/tsup, oxlint/oxfmt, GitHub Actions (OIDC publishing), conventional commits, changesets, lefthook, Vitest, Playwright, PostHog",
+      "Turborepo, Bun/pnpm workspaces, tsdown/tsup, oxlint/oxfmt, GitHub Actions (OIDC publishing), conventional commits, changesets, automated changelogs, lefthook, portless, Vitest, bun test, Playwright, browser-driven end-to-end tests, PostHog",
   },
 ]
 
@@ -173,19 +196,22 @@ export default function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>résumé</h1>
         <p className="text-lg">
-          AI-native Product Engineer with 6+ years shipping production SaaS, developer tools,
-          full-stack TypeScript systems, and AI agent infrastructure. Currently building AI-powered
-          product surfaces and agent tooling at LightWork AI. Author of 250+ public repositories and
-          open-source tools with 1,045+ GitHub stars, used by projects including TanStack, SST,
+          AI-native product engineer building SaaS, developer tools and agent infrastructure, with
+          6+ years in full-stack TypeScript. At LightWork AI, I help build an AI-powered
+          property-management platform across the full stack: agents, UI and infrastructure. On my
+          own time I build ZeroStarter, production-ready SaaS infrastructure with world-class human
+          and agent DX, and on top of it an agent factory where Claude Code sessions ship software.
+          Author of open-source tools with 1,100+ GitHub stars across 250+ repositories, 13,500+ VS
+          Code installs and 30,000+ weekly npm downloads, used by projects including TanStack, SST,
           Electric SQL, and Storybook.{" "}
           <span className={cn(lora.className, "font-medium tracking-wide italic")}>
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
         </p>
         <p className="text-muted-foreground text-sm">
-          New Delhi, India ·{" "}
-          <a href="mailto:admin@nrjdalal.com" className={linkClass}>
-            admin@nrjdalal.com
+          New Delhi, India (open to relocate) ·{" "}
+          <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
+            nrjdalal.dev@gmail.com
           </a>{" "}
           ·{" "}
           <a
@@ -206,12 +232,21 @@ export default function Page() {
             linkedin.com/in/nrjdalal
           </a>
         </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="print:hidden"
+          render={<a href="/neeraj-dalal-resume.pdf" download="Neeraj Dalal - Resume.pdf" />}
+        >
+          <RiDownloadLine />
+          Download PDF
+        </Button>
       </div>
 
       {/* core strengths */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>core strengths</h2>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {strengths.map((s) => (
             <li key={s}>{s}</li>
           ))}
@@ -224,7 +259,7 @@ export default function Page() {
         {experience.map((job) => (
           <div key={job.company} className="space-y-2">
             <p>
-              {job.role} ·{" "}
+              <b className="font-semibold">{job.role}</b> ·{" "}
               {job.href ? (
                 <a href={job.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
                   {job.company}
@@ -234,7 +269,7 @@ export default function Page() {
               )}{" "}
               <span className="text-muted-foreground">· {job.meta}</span>
             </p>
-            <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+            <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
               {job.points.map((point) => (
                 <li key={point}>{point}</li>
               ))}
@@ -247,25 +282,26 @@ export default function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>selected projects</h2>
         <p className="text-muted-foreground">
-          1,045+ stars across{" "}
+          1,100+ GitHub stars,{" "}
           <a
             href="https://github.com/nrjdalal"
             target="_blank"
             rel="noopener noreferrer"
             className={linkClass}
           >
-            ~250 public repositories
+            250+ repositories
           </a>
-          . The strongest:
+          , 13,500+ VS Code installs and 30,000+ weekly npm downloads across 40+ packages. The
+          strongest:
         </p>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {projects.map((project) => (
             <li key={project.name}>
               <a
                 href={project.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground border-border hover:border-ring border-b transition-colors"
+                className="text-foreground border-border hover:border-ring border-b font-semibold transition-colors"
               >
                 {project.name}
               </a>
@@ -279,7 +315,7 @@ export default function Page() {
       {/* skills */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>skills</h2>
-        <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
           {skills.map((skill) => (
             <li key={skill.group}>
               <span className="text-foreground font-medium">{skill.group}</span>: {skill.items}
@@ -292,15 +328,18 @@ export default function Page() {
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>education</h2>
         <div className="space-y-2">
-          <p>B.Tech, Electronics &amp; Communication Engineering</p>
+          <p>
+            <b className="font-semibold">B.Tech, Electronics &amp; Communication Engineering</b>
+          </p>
           <p className="text-muted-foreground">
-            Delhi Technical Campus (GGSIPU), New Delhi · 2016–2020
+            <b className="text-foreground font-semibold">Delhi Technical Campus (GGSIPU)</b>, New
+            Delhi · 2016–2020
           </p>
         </div>
       </div>
 
-      {/* the story behind the work */}
-      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
+      {/* the story behind the work: site navigation, kept off the printed page */}
+      <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6 print:hidden">
         <h2 className={sectionHeading}>the story behind the work</h2>
         <p className="text-muted-foreground">
           This is the clean version. The real one is messier and more useful: 250 repositories, six
