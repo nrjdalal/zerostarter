@@ -79,6 +79,12 @@ const sections: {
         description: "Production-ready SaaS infrastructure with world-class human and agent DX.",
         external: false,
       },
+      {
+        href: "https://github.com/nrjdalal/playground",
+        title: "Playground",
+        description:
+          "An agent factory on ZeroStarter where Claude Code sessions plan, build, review and ship software.",
+      },
     ],
   },
   {

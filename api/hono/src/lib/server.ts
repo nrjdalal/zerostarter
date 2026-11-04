@@ -1,4 +1,4 @@
-import { serve, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
+import { createAdaptorServer, upgradeWebSocket as nodeUpgradeWebSocket } from "@hono/node-server"
 import { env } from "@packages/env/api-hono"
 import type { Hono } from "hono"
 import { upgradeWebSocket as bunUpgradeWebSocket, websocket } from "hono/bun"
@@ -12,13 +12,12 @@ export const upgradeWebSocket = onVercel
   ? (nodeUpgradeWebSocket as typeof bunUpgradeWebSocket)
   : bunUpgradeWebSocket
 
-// On Vercel, return the Node http.Server so the platform drives all traffic including the WebSocket upgrade; elsewhere return the Bun.serve() shape so Bun owns fetch + the socket. Both honor process.env.PORT when set (Vercel, or portless assigning a dev port), else HONO_PORT.
+// On Vercel, return the Node http.Server, never listened (Vercel hangs a function whose server already listens), so the platform drives all traffic including the WebSocket upgrade; elsewhere return the Bun.serve() shape so Bun owns fetch + the socket. Off Vercel it honors process.env.PORT when set (portless assigning a dev port), else HONO_PORT.
 export const createServer = (app: Hono) => {
   const port = process.env.PORT ? Number(process.env.PORT) : env.HONO_PORT
   return onVercel
-    ? serve({
+    ? createAdaptorServer({
         fetch: app.fetch,
-        port,
         websocket: { server: new WebSocketServer({ noServer: true }) },
       })
     : {
