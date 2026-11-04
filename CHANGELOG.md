@@ -1,3 +1,19 @@
+## v0.1.42
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.41...v0.1.42)
+
+### 🩹 Fixes
+
+- **api:** Hand vercel an unlistened server ([#899](https://github.com/nrjdalal/zerostarter/pull/899))
+
+### 📖 Documentation
+
+- **web:** Set the resume to its approved texts, add page footers and Playground on the hire page ([#901](https://github.com/nrjdalal/zerostarter/pull/901))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.41
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.40...v0.1.41)
