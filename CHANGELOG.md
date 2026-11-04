@@ -1,3 +1,15 @@
+## v0.1.43
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.42...v0.1.43)
+
+### 📖 Documentation
+
+- **web:** Use the resume's email on the hire page ([#902](https://github.com/nrjdalal/zerostarter/pull/902))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.42
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.41...v0.1.42)
