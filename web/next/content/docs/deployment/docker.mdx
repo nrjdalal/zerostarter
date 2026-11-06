@@ -13,7 +13,7 @@ docker compose up
 
 That builds and starts both services, **web** on [localhost:3000](http://localhost:3000) and **api** on [localhost:4000](http://localhost:4000), reading config from a root `.env` you provide (see [Environment Variables](/docs/manage/environment)). Compose lives in `docker-compose.yml` at the repo root.
 
-To run it beside a `bun run dev` stack, or beside another checkout's, start it with `PORTLESS_HTTPS=0 PORTLESS_PORT=1355 PORTLESS_SYNC_HOSTS=0 bunx portless compose up` (the dev script's proxy settings; stop it with `bunx portless compose down`) instead: each service then answers on a named URL, `http://web.<project>.localhost:1355` and `http://api.<project>.localhost:1355`, where the project is the checkout's folder name, and `3000` and `4000` stay free. The web image bakes its URLs at build, so put those two URLs in `.env` first. The `docker-test` skill holds the whole flow.
+To run it beside a `bun run dev` stack, or beside another checkout's, start it with `PORTLESS_HTTPS=0 PORTLESS_PORT=1355 PORTLESS_SYNC_HOSTS=0 bunx portless compose up` (the dev script's proxy settings; stop it with `bunx portless compose down`) instead: each service then answers on a named URL, `http://web.<project>.localhost:1355` and `http://api.<project>.localhost:1355`, where the project is the checkout's folder name as the `docker-test` skill normalizes it (lowercased, characters other than letters, digits, `-` and `_` dropped, `_` turned into `-`, ends trimmed of `-`), and `3000` and `4000` stay free. The web image bakes its URLs at build, so put those two URLs in `.env` first. The `docker-test` skill holds the whole flow.
 
 ## How the containers talk: INTERNAL_API_URL
 

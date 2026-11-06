@@ -6,11 +6,11 @@ source: local
 
 # Docker Testing
 
-The stack runs behind portless, on the dev proxy: `portless compose up` moves each published port to a free loopback port and routes the service as `<service>.<project>.localhost`, where the project is the checkout's folder name, lowercased, with every character but letters, digits, `-` and `_` dropped and `_` turned into `-`. So it runs beside a dev stack and beside another checkout's stack. Resolve both URLs first, since the web image bakes them at build (the smoke `.env` below writes them in):
+The stack runs behind portless, on the dev proxy: `portless compose up` moves each published port to a free loopback port and routes the service as `<service>.<project>.localhost`, where the project is the checkout's folder name, lowercased, with every character but letters, digits, `-` and `_` dropped, `_` turned into `-` and the ends trimmed of `-`. So it runs beside a dev stack and beside another checkout's stack. Resolve both URLs first, since the web image bakes them at build (the smoke `.env` below writes them in):
 
 ```bash
 export PORTLESS_HTTPS=0 PORTLESS_PORT=1355 PORTLESS_SYNC_HOSTS=0   # the dev script's proxy
-P=$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_-]//g; s/_+/-/g')
+P=$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_-]//g; s/_+/-/g; s/^-+//; s/-+$//')
 WEB=$(bunx portless get "web.$P" --no-worktree); API=$(bunx portless get "api.$P" --no-worktree)
 ```
 
