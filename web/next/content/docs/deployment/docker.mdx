@@ -13,6 +13,8 @@ docker compose up
 
 That builds and starts both services, **web** on [localhost:3000](http://localhost:3000) and **api** on [localhost:4000](http://localhost:4000), reading config from a root `.env` you provide (see [Environment Variables](/docs/manage/environment)). Compose lives in `docker-compose.yml` at the repo root.
 
+To run it beside a `bun run dev` stack, or beside another checkout's, start it with `PORTLESS_HTTPS=0 PORTLESS_PORT=1355 PORTLESS_SYNC_HOSTS=0 bunx portless compose up` (the dev script's proxy settings; stop it with `bunx portless compose down`) instead: each service then answers on a named URL, `http://web.<project>.localhost:1355` and `http://api.<project>.localhost:1355`, where the project is the checkout's folder name as the `docker-test` skill normalizes it (lowercased, characters other than letters, digits, `-` and `_` dropped, `_` turned into `-`, ends trimmed of `-`), and `3000` and `4000` stay free. The web image bakes its URLs at build, so put those two URLs in `.env` first. The `docker-test` skill holds the whole flow.
+
 ## How the containers talk: INTERNAL_API_URL
 
 Inside the Compose network the web container can't reach the api at `localhost`: that address is its own container. `INTERNAL_API_URL=http://api:4000` (set on both services in `docker-compose.yml`, and baked into the web image) is the one Docker-specific knob, and it does three jobs:
@@ -21,7 +23,7 @@ Inside the Compose network the web container can't reach the api at `localhost`:
 - **web, runtime**: server-side API calls (SSR, server actions) in `src/lib/config.ts` hit the api container directly.
 - **api, runtime**: its presence flips `POSTGRES_URL` from `localhost` to `host.docker.internal` (`dockerHostUrl` in `packages/env/src/lib/postgres-url.ts`, applied by `db.ts`), so the container reaches a database running on your host.
 
-External clients still use the mapped ports (`localhost:3000`, `localhost:4000`). You don't set `INTERNAL_API_URL` by hand for Compose: it's already wired.
+External clients still use the mapped ports (`localhost:3000`, `localhost:4000`), or the named URLs under `portless compose up`. You don't set `INTERNAL_API_URL` by hand for Compose: it's already wired.
 
 ## The images
 
@@ -74,7 +76,7 @@ docker run -p 3000:3000 --env-file .env zerostarter-web
 
 ## Test the images end to end
 
-`bun run test:e2e` drives a running stack over HTTP, and its defaults are the compose ports, so with `docker compose up` running it tests the images you just built rather than a dev server:
+`bun run test:e2e` drives a running stack over HTTP, and its defaults are the compose ports, so with `docker compose up` running it tests the images you just built rather than a dev server. Under `portless compose up`, set `E2E_API_URL` and `E2E_WEB_URL` to the stack's two URLs first:
 
 ```bash
 bun run test:e2e
@@ -96,7 +98,7 @@ The api needs a reachable `POSTGRES_URL`; without one, DB-backed routes like `/a
 
 - **Stale values after an env change**: rebuild with `docker compose build --no-cache` (see the callout above).
 - **`docker run --env-file` keeps inline comments**: `HONO_RATE_LIMIT=60 # note` arrives as `"60 # note"` and fails validation. Compose's `env_file` strips comments; for a direct `docker run`, sanitize first: `sed 's/ #.*//' .env > .env.docker`.
-- **Port already in use**: `3000`/`4000` collide with a running `bun run dev` stack. Stop it, or remap the compose ports (e.g. `14000:4000`) in a scratch checkout.
+- **Port already in use**: `3000`/`4000` collide with a stack on fixed ports (`PORTLESS=0 bun run dev`, or another checkout's plain `docker compose up`), and `4000` with a `bun run dev` app that portless put there (it picks from 4000-4999). Stop it, or start this stack with `bunx portless compose up`, which publishes no fixed port.
 
 ## Next
 

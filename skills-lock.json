@@ -6,6 +6,13 @@
       "sourceType": "github",
       "skillPath": "skills/agent-browser/SKILL.md",
       "computedHash": "228f87d57035100d9dc6efcfc05aafd4b6e3962adacaa04b8217ab2fadb15dc8"
+    },
+    "portless": {
+      "source": "vercel-labs/portless",
+      "ref": "v0.16.0",
+      "sourceType": "github",
+      "skillPath": "skills/portless/SKILL.md",
+      "computedHash": "e7095c498477edf206bab5f5f9e9df59d4cc108626b002054c18f771a770a8e7"
     }
   }
 }
