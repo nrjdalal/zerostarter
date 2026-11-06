@@ -6,20 +6,30 @@ source: local
 
 # Docker Testing
 
+The stack runs behind portless, on the dev proxy: `portless compose up` moves each published port to a free loopback port and routes the service as `<service>.<project>.localhost`, where the project is the checkout's folder name. So it runs beside a dev stack and beside another checkout's stack. Resolve both URLs first, since the web image bakes them at build (the smoke `.env` below writes them in):
+
+```bash
+export PORTLESS_HTTPS=0 PORTLESS_PORT=1355 PORTLESS_SYNC_HOSTS=0   # the dev script's proxy
+P=$(basename "$PWD" | tr '[:upper:]' '[:lower:]')
+WEB=$(bunx portless get "web.$P" --no-worktree); API=$(bunx portless get "api.$P" --no-worktree)
+```
+
 Full stack, the same Dockerfiles prod ships:
 
 ```bash
-docker compose build --no-cache && docker compose up
+docker compose build --no-cache && bunx portless compose up
 ```
 
 Scope to one service while iterating:
 
 ```bash
-docker compose build --no-cache api && docker compose up -d api
-curl -sf --retry 30 --retry-delay 1 --retry-connrefused http://localhost:4000/api/health
+docker compose build --no-cache api && bunx portless compose up -d api
+curl -sf --retry 30 --retry-delay 1 --retry-connrefused "$API/api/health"
 docker compose logs -f api
-docker compose down
+bunx portless compose down
 ```
+
+Start and stop it with `portless compose`: a plain `docker compose up` recreates the containers on `3000` and `4000`, and `portless compose down` removes the routes with the containers. Done when `bunx portless list` shows no `.$P.localhost` route.
 
 ## .env
 
@@ -34,16 +44,19 @@ docker compose down
       -e 's|^GOOGLE_CLIENT_SECRET=$|GOOGLE_CLIENT_SECRET=dummy|' \
       -e 's|^POSTGRES_URL=$|POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy|' \
       -e 's|^AGENT_SIGNIN_ENABLED=$|AGENT_SIGNIN_ENABLED=true|' \
+      -e "s|^HONO_APP_URL=.*|HONO_APP_URL=$API|" \
+      -e "s|^HONO_TRUSTED_ORIGINS=.*|HONO_TRUSTED_ORIGINS=$WEB|" \
+      -e "s|^NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=$WEB|" \
+      -e "s|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=$API|" \
       .env.example > .env
   ```
 
-  Empty optionals (e.g. `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=`) pass via `emptyStringAsUndefined`. A smoke build is disposable: Next inlines `NEXT_PUBLIC_*` into the bundle at build, so a dummy-built web image carries dummy URLs forever. Deploy images build with the real `.env`.
+  Empty optionals (e.g. `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=`) pass via `emptyStringAsUndefined`. The four URL lines take the portless URLs resolved above; the api's session cookie then scopes to `.$P.localhost`, which covers the web host. A smoke build is disposable: Next inlines `NEXT_PUBLIC_*` into the bundle at build, so a smoke-built web image carries its checkout's URLs forever. Deploy images build with the real `.env`.
 - **`--no-cache` after any `.env` edit.** Secret contents are not part of BuildKit's cache key, so a plain rebuild reuses the cached build RUN and silently ships stale baked values (web's `NEXT_PUBLIC_*`).
 - **Skip `SKIP_ENV_VALIDATION`.** Build and runtime both load a real `.env`, so both validate real values. The flag no longer bypasses validation anyway: it only substitutes shape-valid dummies for *missing* required vars while zod defaults and transforms still run (`HONO_PORT` defaults to 4000, `HONO_TRUSTED_ORIGINS` parses to an array). Reserve it for CI, which genuinely lacks a `.env`. The web deploy uses the narrower `SKIP_ENV_VALIDATION_SERVER`, which dummies only server secrets while still validating the `NEXT_PUBLIC_*` it inlines.
 - **`NODE_ENV` is read at runtime.** The API bundle is built with `bun build --env disable`, so bun does not bake `process.env.NODE_ENV` from the build shell, where `.env` is never sourced and the value would always be "development". What `up` loads from `.env` wins: `/api/health` reports it as `environment`, and `NODE_ENV=local` with `AGENT_SIGNIN_ENABLED=true` mounts the agent sign-in inside the container.
 - **Database.** Without a reachable `POSTGRES_URL`, DB-backed routes (e.g. `/api/v1/user`) return 500 while `/api/health` stays green. The end-to-end suite below needs one: a disposable container (`bunx pglaunch -k`), written into `.env` as `host.docker.internal:<port>` so the containers reach it, and migrated first with `POSTGRES_URL=<the localhost form> bun run db:migrate`.
 - **Direct `docker run --env-file`** does not strip inline comments: `HONO_RATE_LIMIT=60 # note` arrives as `"60 # note"`, coerces to NaN, and validation rejects it. Compose's parser strips them; for `docker run`, sanitize first: `sed 's/ #.*//' .env > .env.docker`.
-- **Ports** `4000` and `3000` collide with a running dev stack; for side-by-side testing bump the compose mappings (e.g. `14000:4000`) in a scratch checkout.
 
 ## Self-containment check (catches runtime auto-install)
 
@@ -78,15 +91,15 @@ Expect `OK`. `! -type l` skips dangling glibc-named symlinks (expected leftovers
 With the stack up on a fresh disposable database, run every `*.e2e.test.ts` under `tests/` against it:
 
 ```bash
-E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run test:e2e
+E2E_API_URL=$API E2E_WEB_URL=$WEB E2E_POSTGRES_URL=postgres://postgres:postgres@localhost:<port>/postgres bun run test:e2e
 ```
 
-`E2E_API_URL` and `E2E_WEB_URL` default to the compose ports. The suite signs in as `LocalAgent` and asserts the stage is `local` (so `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, plus both OAuth credential pairs set, the id and the secret of each, which the dummy `.env` above already does: left blank, the providers endpoint lists only `agent` and its snapshot fails; it is a suite for a local-stage stack, never a deployed one, and a URL whose host is not local is refused at load), drives the organization plugin, the console routes, the waitlist and the web pages, and snapshots every contract response after normalizing ids, timestamps and the build version. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. The users list assumes LocalAgent is the only account, which is why the database is fresh; `E2E_POSTGRES_URL` is what lets the suite seed and remove a second account for the role and ban flows, and it refuses any host that is not local and any database holding an account beyond the agent and the seed, so neither the shared database nor a populated local one can be seeded by mistake; the stack's own `POSTGRES_URL` must be disposable for the same reason, since the suite writes through the API. Done when it prints 0 fail twice in a row: the second run proves the goldens are deterministic and that a run removes what it created (its organization, rules, signups, seeded account and sessions; the audit log keeps its rows by design, and the goldens read only the entries a run adds).
+`E2E_API_URL` and `E2E_WEB_URL` take the stack's portless URLs; left unset, they default to a plain `docker compose up`'s ports. The suite signs in as `LocalAgent` and asserts the stage is `local` (so `.env` needs `NODE_ENV=local` and `AGENT_SIGNIN_ENABLED=true`, plus both OAuth credential pairs set, the id and the secret of each, which the dummy `.env` above already does: left blank, the providers endpoint lists only `agent` and its snapshot fails; it is a suite for a local-stage stack, never a deployed one, and a URL whose host is not local is refused at load), drives the organization plugin, the console routes, the waitlist and the web pages, and snapshots every contract response after normalizing ids, timestamps and the build version. A snapshot mismatch is a contract change: review it, then `bun run test:e2e --update-snapshots`. The users list assumes LocalAgent is the only account, which is why the database is fresh; `E2E_POSTGRES_URL` is what lets the suite seed and remove a second account for the role and ban flows, and it refuses any host that is not local and any database holding an account beyond the agent and the seed, so neither the shared database nor a populated local one can be seeded by mistake; the stack's own `POSTGRES_URL` must be disposable for the same reason, since the suite writes through the API. Done when it prints 0 fail twice in a row: the second run proves the goldens are deterministic and that a run removes what it created (its organization, rules, signups, seeded account and sessions; the audit log keeps its rows by design, and the goldens read only the entries a run adds).
 
-In a browser against the images the **Login (agents)** button is absent: its guard is Next's build-time `NODE_ENV`, so a production build compiles it out. Submit the same form it posts from the page's console, and the 302 lands on the dashboard with the session (cookies on `localhost` do not isolate by port):
+In a browser against the images the **Login (agents)** button is absent: its guard is Next's build-time `NODE_ENV`, so a production build compiles it out. Submit the same form it posts from the page's console, and the 302 lands on the dashboard with the session (its cookie scopes to `.$P.localhost`, which covers both hosts). Put the `$API` value in its `action`:
 
 ```js
-document.body.appendChild(Object.assign(document.createElement("form"), { method: "POST", action: "http://localhost:4000/api/agents/sign-in-as" })).submit()
+document.body.appendChild(Object.assign(document.createElement("form"), { method: "POST", action: "http://api.<project>.localhost:1355/api/agents/sign-in-as" })).submit()
 ```
 
 ## Notes
