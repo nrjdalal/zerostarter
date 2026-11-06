@@ -24,10 +24,10 @@ Every font is self-hosted through `next/font/local`. That loader is what generat
      https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/files/<name>-latin-wght-normal.woff2
    ```
 
-2. Declare it in `web/next/src/lib/fonts.ts`: `localFont({ src: "../fonts/<file>", variable: "--font-<name>", weight: "<min> <max>" })`. The weight range is MANDATORY for a variable font: omit it and the face pins to 400, so every bold glyph becomes faux-bold synthesis. Read the range from the fontsource CSS, `curl -s https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/index.css | grep font-weight`. A serif also sets `adjustFontFallback: "Times New Roman"` (the metrics default to Arial).
+2. Declare it in `web/next/src/lib/fonts.ts`: `localFont({ src: "../fonts/<file>", variable: "--font-<name>", weight: "<min> <max>" })`. The weight range is MANDATORY for a variable font: omit it and the face pins to 400, so every bold glyph becomes faux-bold synthesis. Read the range from the fontsource CSS, `curl -s https://cdn.jsdelivr.net/npm/@fontsource-variable/<name>/index.css | grep font-weight`. A serif also sets `adjustFontFallback: "Times New Roman"` (the metrics default to Arial). A monospace font sets `adjustFontFallback: false`: Next has no monospace base, so the matched fallback is a scaled-up Arial that shows code in a proportional face while the font loads, and inline code in prose reflows more on the swap than it does with the platform monospace. The role's generic `monospace` takes over.
 3. Apply the export's `.variable` on `<html>` in `layout.tsx`.
 4. Wire the role in `globals.css` `@theme inline`: `--font-<role>: var(--font-<name>), <generic>`.
-5. Verify loading: dev CSS emits hashed `/_next/static/media/*.woff2` urls plus the generated `"<family> Fallback"` faces, and a production build (Vercel preview, protection-bypass header) emits one `<link rel="preload" as="font">` per file, with no font 404s.
+5. Verify loading: dev CSS emits hashed `/_next/static/media/*.woff2` urls plus a generated `"<family> Fallback"` face for each font that keeps the adjustment, and a production build (Vercel preview, protection-bypass header) emits one `<link rel="preload" as="font">` per file, with no font 404s.
 6. If a public page changed, check CLS and LCP for layout shift before shipping.
 
 ## Notes
