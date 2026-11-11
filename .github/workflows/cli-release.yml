@@ -85,8 +85,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          # 24 bundles npm >= 11.5.1, the floor for npm Trusted Publishing
-          node-version: 24
+          # 26 bundles npm >= 11.5.1, the floor for npm Trusted Publishing
+          node-version: 26
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
