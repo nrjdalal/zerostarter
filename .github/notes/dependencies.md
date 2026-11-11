@@ -28,11 +28,7 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-### `tsdown` held at `0.23.1`
-
-- **Break:** `tsdown@0.23.2` depends on `rolldown-plugin-dts ^0.29.0-beta.2`, whose declaration build stops the package builds (first seen on `@packages/config`) with "TypeScript 7.0.2 does not provide the classic TypeScript API required by tsc", measured on 2026-10-23. Its way out, `isolatedDeclarations`, was not tried: it asks for explicit types on everything the packages export, and `@packages/auth` exports an inferred better-auth instance. `0.23.1` with `rolldown-plugin-dts@0.28.8` builds clean.
-- **Reproduce:** `bun update -r tsdown`, then `bun run check-types`, whose package builds fail first.
-- **Exit criteria:** drop this entry once a `tsdown` past `0.23.1` builds the packages under TypeScript 7, or the packages turn on `isolatedDeclarations`.
+None.
 
 ## Active overrides
 

@@ -37,6 +37,6 @@ run(
   ["bunx", "shadcn@latest", "init", "--template", "next", "--preset", "a16C8", "--base", "base"],
   "web/next",
 )
-run(["bunx", "shadcn@latest", "add", "-a"], "web/next")
+run(["bunx", "shadcn@latest", "add", "-a", "--overwrite"], "web/next")
 run(["bun", join(import.meta.dir, "shadcn-customize.ts")])
 run(["bun", "run", "format"])

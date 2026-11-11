@@ -105,7 +105,7 @@ test.skipIf(!canExecStubs)(
         cmd: "bunx",
         cwd: web,
       },
-      { args: ["shadcn@latest", "add", "-a"], cmd: "bunx", cwd: web },
+      { args: ["shadcn@latest", "add", "-a", "--overwrite"], cmd: "bunx", cwd: web },
       { args: [join(scripts, "shadcn-customize.ts")], cmd: "bun", cwd: dir },
       { args: ["run", "format"], cmd: "bun", cwd: dir },
     ])

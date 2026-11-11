@@ -8,12 +8,12 @@ source: local
 
 `bun run sync:shadcn` tears the whole `ui/` layer down to the registry and re-applies every local override programmatically. It is **self-reconciling**: a clean tree goes in, a clean tree comes back. The only diff you should ever see is **the residual**, a genuine registry change: a component update, or a new item with its files.
 
-Under the hood the command is `bun packages/scripts/src/shadcn-update.ts && bun i`. The script, in `web/next`, removes `components.json` and `src/components/ui` -> `shadcn init` -> `shadcn add -a`; then, at repo root, `packages/scripts/src/shadcn-customize.ts` -> `bun run format` (oxfmt). It stops at the first step that fails. The trailing `bun i` belongs to the wrapper, not the script: it reconciles the lockfile after `customize.ts` restores it from HEAD.
+Under the hood the command is `bun packages/scripts/src/shadcn-update.ts && bun i`. The script, in `web/next`, removes `components.json` and `src/components/ui` -> `shadcn init` -> `shadcn add -a --overwrite`; then, at repo root, `packages/scripts/src/shadcn-customize.ts` -> `bun run format` (oxfmt). It stops at the first step that fails. The trailing `bun i` belongs to the wrapper, not the script: it reconciles the lockfile after `customize.ts` restores it from HEAD.
 
 ## Procedure
 
 1. **Run** on a clean tree: `bun run sync:shadcn`. It stops when a file it can rewrite has uncommitted changes, so commit or stash them first.
-2. **Review** `git status` and `git diff`; expect both empty. Every non-empty hunk must be a real registry change, never override churn. `shadcn add -a` also writes a new item's files outside `ui/` (`src/hooks/`, `src/lib/`); when one lands on a local file's path, move the local code elsewhere and keep the registry's file.
+2. **Review** `git status` and `git diff`; expect both empty. Every non-empty hunk must be a real registry change, never override churn. `shadcn add -a` also writes a new item's files outside `ui/` (`src/hooks/`, `src/lib/`); when one lands on a local file's path, move the local code elsewhere and keep the registry's file. `--overwrite` is what lets those files through without a terminal: without it `add` asks before replacing an existing one (`src/hooks/use-highlighted-code.ts`), and with no one to answer it exits 0 having written only part of `ui/`, so the run looks green while the diff deletes most components.
 3. **Type-check**: `cd web/next && bun run build` (or `bun run check-types`), which covers every `.tsx`, including unused ones like `calendar.tsx`. Must pass.
 4. **Commit** only the residual registry deltas.
 
