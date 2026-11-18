@@ -82,11 +82,18 @@ export function Navbar() {
   if (pathname?.startsWith("/console") || pathname?.startsWith("/dashboard")) return null
 
   // A link with a `feature` is shown only when that feature is enabled; /hire has none, so it always shows (and is stripped from forks by the CLI).
-  const allNavLinks: { href: string; label: string; external?: boolean; feature?: Feature }[] = [
+  // /hire is not prefetched: a prefetch would preload its two route-only fonts on every page that shows the nav.
+  const allNavLinks: {
+    href: string
+    label: string
+    external?: boolean
+    feature?: Feature
+    prefetch?: false
+  }[] = [
     { href: "/docs", label: "Documentation", feature: "docs" },
     { href: "/api/docs", label: "API Docs", external: true, feature: "apiDocs" },
     { href: "/blog", label: "Blog", feature: "blog" },
-    { href: "/hire", label: "Hire" },
+    { href: "/hire", label: "Hire", prefetch: false },
   ]
   const navLinks = allNavLinks.filter((link) => !link.feature || features[link.feature])
 
@@ -119,6 +126,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={link.prefetch}
                   className={cn(
                     "font-medium transition-colors",
                     active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
@@ -213,6 +221,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch={link.prefetch}
                       className={cn(
                         "font-medium transition-colors",
                         active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
