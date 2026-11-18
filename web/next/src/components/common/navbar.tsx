@@ -15,7 +15,7 @@ import { useEffect, useState } from "react"
 
 import { Access } from "@/components/common/access"
 import { ModeToggle } from "@/components/common/mode-toggle"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -82,11 +82,18 @@ export function Navbar() {
   if (pathname?.startsWith("/console") || pathname?.startsWith("/dashboard")) return null
 
   // A link with a `feature` is shown only when that feature is enabled; /hire has none, so it always shows (and is stripped from forks by the CLI).
-  const allNavLinks: { href: string; label: string; external?: boolean; feature?: Feature }[] = [
+  // /hire is not prefetched: a prefetch would preload its two route-only fonts on every page that shows the nav.
+  const allNavLinks: {
+    href: string
+    label: string
+    external?: boolean
+    feature?: Feature
+    prefetch?: false
+  }[] = [
     { href: "/docs", label: "Documentation", feature: "docs" },
     { href: "/api/docs", label: "API Docs", external: true, feature: "apiDocs" },
     { href: "/blog", label: "Blog", feature: "blog" },
-    { href: "/hire", label: "Hire" },
+    { href: "/hire", label: "Hire", prefetch: false },
   ]
   const navLinks = allNavLinks.filter((link) => !link.feature || features[link.feature])
 
@@ -119,6 +126,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={link.prefetch}
                   className={cn(
                     "font-medium transition-colors",
                     active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
@@ -144,19 +152,17 @@ export function Navbar() {
               tabIndex={-1}
             />
           ) : session?.user ? (
-            <Button
-              role="link"
-              className="w-24"
-              variant="outline"
+            <Link
+              href="/dashboard"
+              className={cn(buttonVariants({ variant: "outline" }), "w-24")}
               onClick={() => setToDashboard(true)}
-              render={<Link href="/dashboard" />}
             >
               {toDashboard ? (
                 <Spinner />
               ) : (
                 <span className="animate-in fade-in duration-1000">Dashboard</span>
               )}
-            </Button>
+            </Link>
           ) : (
             <Access labelClassName="animate-in fade-in duration-1000" />
           )}
@@ -215,6 +221,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch={link.prefetch}
                       className={cn(
                         "font-medium transition-colors",
                         active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
@@ -226,18 +233,16 @@ export function Navbar() {
                   )
                 })}
                 {site.social.github && (
-                  <Button
-                    role="link"
-                    size="sm"
-                    className="mt-2 w-fit"
+                  <a
+                    href={site.social.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(buttonVariants({ size: "sm" }), "mt-2 w-fit")}
                     onClick={() => setIsOpen(false)}
-                    render={
-                      <a href={site.social.github} target="_blank" rel="noopener noreferrer" />
-                    }
                   >
                     <RiGithubFill className="size-4" />
                     Get {site.name}
-                  </Button>
+                  </a>
                 )}
               </nav>
               {/* Mobile Social Links */}

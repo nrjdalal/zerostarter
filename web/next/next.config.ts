@@ -57,10 +57,24 @@ const appDevHost = (() => {
   }
 })()
 
+// Sent on every response. The CSP restricts only framing, plugins and <base>, so it needs no script nonce and every page can stay static.
+const securityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: "base-uri 'none'; frame-ancestors 'none'; object-src 'none'",
+  },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=()" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+]
+
 const nextConfig: NextConfig = {
   // Off because this repo writes its own agent guides: the root AGENTS.md is generated (skills-manager owns its skills tables) and CLAUDE.md is a symlink to it, so a second writer would fight both. Left on, `next dev` upserts a managed block whenever it detects an AI agent, and its own text says removing it from a diff only re-creates it. The Next 16.3 docs it points at are worth reading; see the AI agents note in web/next/content/docs/getting-started/working-with-agents.mdx.
   agentRules: false,
   env: { NEXT_PUBLIC_IS_PRIVATE: String(isPrivate) },
+  headers: async () => [{ source: "/:path*", headers: securityHeaders }],
   // Standalone is the Docker runner's input only. Vercel builds through a Next adapter, and since 16.3.0 an adapter build writes no .nft.json trace files, so the standalone copy step reads next-server.js.nft.json and fails the build with ENOENT.
   ...(!process.env.VERCEL && { output: "standalone" as const }),
   ...(appDevHost && { allowedDevOrigins: [appDevHost, `*.${appDevHost}`] }),
@@ -96,6 +110,7 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  poweredByHeader: false,
   serverExternalPackages: ["@takumi-rs/core", "takumi-js"],
 }
 

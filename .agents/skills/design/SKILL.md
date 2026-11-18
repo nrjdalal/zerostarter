@@ -15,10 +15,10 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## Cursor
 
-`cursor-pointer` is for navigation only: links, anchors, a Button rendered as `<Link>` or `<a>`, a `router.push`. It signals "this changes the route."
+`cursor-pointer` is for navigation only: links, anchors, a link styled with `buttonVariants`, a `router.push`. It signals "this changes the route."
 
 - Action controls (form submit, dialog/menu triggers, toggles, mutation buttons, sign-in, sign-out) keep the native arrow even when the action eventually navigates: classify by element, not by side effect.
-- In practice you need no `cursor-pointer` class: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor. A readOnly button-like input (the docs search trigger, `DocsSearch` in `components/docs/sidebar.tsx`) uses `cursor-default` to avoid the text I-beam.
+- In practice you need no `cursor-pointer` class: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor. A control that only looks like a field (the docs search trigger, `DocsSearch` in `components/docs/sidebar.tsx`) is a real `<button>` styled like the input, never a readOnly `<input>`: a button opens on Enter and Space and is announced as a button.
 - Exception: some primitives set their own cursor (`DropdownMenuItem` hard-codes `cursor-default`). A navigation item inside one (a `render={<Link/>}` menu item) needs an explicit `cursor-pointer` to restore the pointer the base overrode.
 
 ## Spacing
@@ -42,7 +42,8 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## Layout and landmarks
 
-- Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so add none to the root layout or you nest landmarks.
+- Each top-level page wraps its content in a single `<main id="main">`. The dashboard and console get theirs from `SidebarShell`, and in docs and blog the Fumadocs page renders it, so those layouts wrap the page in a `<div id="main">` instead. Add none to the root layout or you nest landmarks.
+- The root layout's first tab stop is a "Skip to content" link to `#main`, which is why every page's `<main>` (or the docs and blog wrapper) carries that id.
 - A surface that has footer content renders it in a real `<footer>` as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark. A surface with nothing to put there renders no footer rather than an empty one.
 - Name a `<section>` that has a visible heading with `aria-labelledby` pointing at that heading's id, not a hand-written `aria-label`: internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name. A wrapper with no visible heading (a `role="region"` scroll container) still takes `aria-label`.
 - A scrollable region (a code block, a wide table) needs `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
@@ -51,6 +52,7 @@ When a change establishes or alters a convention, update this file in the same c
 ## Motion
 
 - Every looping or auto-playing animation is gated on reduced motion. For a Tailwind utility use the `motion-safe:` variant (`motion-safe:animate-pulse`). For a keyframe Tailwind does not ship, declare it next to the section that uses it and wrap the rule in `@media (prefers-reduced-motion: no-preference)`; marketing keyframes stay out of `globals.css`.
+- Overlays (dialogs, menus, popovers, tooltips) keep their fade under reduced motion and drop the zoom: an unlayered rule at the end of `globals.css` resets tw-animate-css's scale variables, so a `ui/*` sync cannot undo it.
 - Anything that moves for more than five seconds also needs a pause affordance, on both hover and `focus-within`, so a keyboard user can stop it (WCAG 2.2.2).
 
 ## Components
@@ -61,6 +63,7 @@ When a change establishes or alters a convention, update this file in the same c
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (no second `space-y-*`). Do not hand-roll labels or error markup.
 
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/common/access.tsx`) uses `max-w-md`.
+- **Links that look like buttons:** a plain `<Link>` or `<a>` with `className={cn(buttonVariants({ ... }), ...)}`, never `<Button render={<Link />}>`. Base UI gives a non-button `render` target `role="button"`, so a screen reader announces the link as a button.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
 - **shadcn (`components/ui/*`):** customize only via `packages/scripts/src/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 

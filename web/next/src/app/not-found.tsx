@@ -4,7 +4,7 @@ import { RouteNotFound } from "@/components/common/route-not-found"
 // It carries the main landmark itself, since nothing above it does: the root layout stops at <body>.
 export default function NotFound() {
   return (
-    <main className="flex min-h-svh flex-col">
+    <main id="main" className="flex min-h-svh flex-col">
       <RouteNotFound
         action="Back home"
         className="flex-1"

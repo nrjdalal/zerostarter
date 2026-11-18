@@ -1,6 +1,6 @@
 # Hardening refactors from the external evaluation
 
-- Status: backlog; the three named items shipped, the larger ones under "Larger, tracked separately" are open
+- Status: backlog; the three named items and the default security headers shipped, the rate-limit store and the test harness are open
 - Links: external SaaS-starter evaluation (nrjdalal/saas-starter-evals), `ZEROSTARTER-RECOMMENDATIONS.md` §4, PR #823 (the agent route's end-to-end test)
 
 A set of small, self-contained refactors surfaced by an external, evidence-based evaluation of the repo (at v0.1.2). Each is its own PR into canary, verified end to end. Preserve the evaluation's noted strengths: the agent-DX login is a differentiator (tighten the gate, keep the route); one canonical way; docs in sync.
@@ -21,6 +21,6 @@ To keep the agent-DX differentiator intact, `packages/cli` `seedEnv` also sets `
 
 ## Larger, tracked separately
 
-Default security headers/CSP + a durable rate-limit store, and a full product-test harness (Playwright e2e + example org-scoped tests, where the deferred route/env tests land), are larger; scope them after these.
+A durable rate-limit store and a full product-test harness (Playwright e2e + example org-scoped tests, where the deferred route/env tests land) are larger; scope them after these. Default security headers shipped with the Modern Web Guidance fixes (#907): the web app sends a CSP of `base-uri`, `frame-ancestors` and `object-src`, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` and COOP, and the API runs Hono's `secureHeaders()`. A nonce-based `script-src` is still open, in [modern-web-followups](modern-web-followups.md).
 
 Since 2026-09-06 `tests/api/hono/src/routers/agents.e2e.test.ts` (`bun run test:e2e`) drives the route on a running stack: an untrusted Origin is refused and a trusted one mints a session. The env-shape tests still wait for the harness.

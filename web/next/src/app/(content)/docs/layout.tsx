@@ -32,7 +32,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <main>
+      <div id="main">
         <SidebarFloatingTrigger />
         <RootProvider
           theme={{
@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {children}
           </DocsLayout>
         </RootProvider>
-      </main>
+      </div>
     </SidebarProvider>
   )
 }

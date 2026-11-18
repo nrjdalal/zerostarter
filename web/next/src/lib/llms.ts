@@ -45,7 +45,7 @@ export function sortByMeta<T extends { url: string }>(
   const positionMap = new Map<string, number>()
   order.forEach((slug, index) => positionMap.set(slug, index))
 
-  return [...pages].sort((a, b) => {
+  return pages.toSorted((a, b) => {
     const slugA = getSlug(a.url)
     const slugB = getSlug(b.url)
     const posA = positionMap.get(slugA)

@@ -20,6 +20,8 @@ You restyle ZeroStarter by editing tokens, not components. Colors, fonts, and ra
 >
 ```
 
+The root layout also exports `viewport.colorScheme = "light dark"`, so the served HTML carries `<meta name="color-scheme" content="light dark">` and the browser knows both schemes before any script runs.
+
 The `ModeToggle` (`web/next/src/components/common/mode-toggle.tsx`) is a smart three-state toggle: from `system` it jumps to the opposite of the OS preference, flips between `light` and `dark` while they diverge, and snaps back to `system` once the explicit choice matches the OS again.
 
 ## Design tokens

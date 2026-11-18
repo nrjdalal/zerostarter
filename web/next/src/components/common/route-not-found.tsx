@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Empty,
   EmptyContent,
@@ -33,9 +33,9 @@ export function RouteNotFound({
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="outline" render={<Link href={href} />}>
+        <Link href={href} className={buttonVariants({ variant: "outline" })}>
           {action}
-        </Button>
+        </Link>
       </EmptyContent>
     </Empty>
   )

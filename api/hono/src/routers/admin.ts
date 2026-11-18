@@ -389,7 +389,7 @@ const { data, error } = await unwrap(
         const outcomes = new Map<string, BatchOutcome>()
         const records: ActivityEvent[] = []
         // Written in id order, answered in the order asked. Two admins acting on overlapping selections take the same row locks in the same sequence, so they queue instead of deadlocking.
-        for (const id of [...targets].sort()) {
+        for (const id of targets.toSorted()) {
           const target = byId.get(id)
           if (!target) {
             outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
@@ -499,7 +499,7 @@ const { data, error } = await unwrap(
         }[] = []
         const swept: string[] = []
         // Written in id order, answered in the order asked, so two admins acting on overlapping selections queue on the same row locks instead of deadlocking on opposite orders.
-        for (const id of [...targets].sort()) {
+        for (const id of targets.toSorted()) {
           const target = byId.get(id)
           if (!target) {
             outcomes.set(id, refused(id, "NOT_FOUND", "User not found"))
