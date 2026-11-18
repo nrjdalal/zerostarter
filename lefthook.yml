@@ -23,7 +23,8 @@ commit-msg:
 pre-push:
   commands:
     audit:
-      run: bun audit --audit-level high
+      # GHSA-fc5q-39xc-vjpf: picomatch has no patched version yet; drop the ignore once one ships
+      run: bun audit --audit-level high --ignore GHSA-fc5q-39xc-vjpf
       only:
         - ref: canary
     ensure-branches:
