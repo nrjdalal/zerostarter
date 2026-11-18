@@ -38,7 +38,12 @@ None.
 
 An advisory with no patched version anywhere cannot be cleared by any of the three rungs, so the gate ignores it by ID instead. Each `--ignore` sits in both gates, `lefthook.yml` and `.github/workflows/auto-check-build.yml`, and in the two docs pages that quote them (`manage/code-quality.mdx`, `contributing.mdx`). Remove it from all four when its exit criteria are met.
 
-None.
+### picomatch: GHSA-fc5q-39xc-vjpf
+
+- **Advisory:** [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), high: a ReDoS through single-branch repeated extglobs, affecting `picomatch <=4.0.7`. It reaches the tree as `picomatch@4.0.7` and `2.3.2`, both transitive: `fumadocs-mdx`, `fumadocs-core`, `tsdown` (through `tinyglobby` and `fdir`), `lint-staged`, `shadcn`, and `globby` and `ts-morph` in `packages/scripts` (through `micromatch`).
+- **Why an ignore:** the advisory lists no patched version, and `4.0.7` is the latest release, so no update, parent bump or override can lift the tree.
+- **Risk:** every path reaches `picomatch` through build tooling, a docs build or a dev tool, matching globs the repo writes itself. Checked on a production build: the API bundle holds no copy, and the web app's standalone output holds only Next's own compiled copy (`next/dist/compiled/picomatch`, which `bun audit` does not list). Next runs it only on `images.remotePatterns` and `images.localPatterns`, and `next.config.ts` sets neither, so no running server compiles a pattern a visitor or an API request sends.
+- **Exit criteria:** `picomatch` ships a patched version and the tree resolves to it. Then remove the `--ignore` from `lefthook.yml`, `.github/workflows/auto-check-build.yml`, `manage/code-quality.mdx` and `contributing.mdx`, and delete this block.
 
 ## Retired overrides
 

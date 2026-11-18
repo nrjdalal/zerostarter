@@ -30,7 +30,8 @@ jobs:
 
       - name: Audit, Format, Lint, Sync-config, Check-types, Test, and Build
         run: |
-          bun audit --audit-level high
+          # GHSA-fc5q-39xc-vjpf: picomatch has no patched version yet; drop the ignore once one ships
+          bun audit --audit-level high --ignore GHSA-fc5q-39xc-vjpf
           bun run format:check
           bun run lint
           bun run sync:config --check
