@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { site } from "@packages/config/site"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { cn } from "cn"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/common/navbar"
@@ -54,6 +54,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [ogImageUrl],
   },
+}
+
+export const viewport: Viewport = {
+  colorScheme: "light dark",
 }
 
 export default function RootLayout({
