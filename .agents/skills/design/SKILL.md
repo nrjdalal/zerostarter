@@ -18,7 +18,7 @@ When a change establishes or alters a convention, update this file in the same c
 `cursor-pointer` is for navigation only: links, anchors, a Button rendered as `<Link>` or `<a>`, a `router.push`. It signals "this changes the route."
 
 - Action controls (form submit, dialog/menu triggers, toggles, mutation buttons, sign-in, sign-out) keep the native arrow even when the action eventually navigates: classify by element, not by side effect.
-- In practice you need no `cursor-pointer` class: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor. A readOnly button-like input (the docs search trigger, `DocsSearch` in `components/docs/sidebar.tsx`) uses `cursor-default` to avoid the text I-beam.
+- In practice you need no `cursor-pointer` class: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor. A control that only looks like a field (the docs search trigger, `DocsSearch` in `components/docs/sidebar.tsx`) is a real `<button>` styled like the input, never a readOnly `<input>`: a button opens on Enter and Space and is announced as a button.
 - Exception: some primitives set their own cursor (`DropdownMenuItem` hard-codes `cursor-default`). A navigation item inside one (a `render={<Link/>}` menu item) needs an explicit `cursor-pointer` to restore the pointer the base overrode.
 
 ## Spacing

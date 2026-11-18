@@ -2,17 +2,15 @@
 
 import { env } from "@packages/env/web-next"
 import { RiArrowRightSLine, RiSearchLine } from "@remixicon/react"
-import { cn } from "cn"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Kbd } from "@/components/ui/kbd"
 import {
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -196,6 +194,7 @@ function MetaOrControl() {
 
 export function DocsSearch() {
   const { isMobile, setOpenMobile } = useSidebar()
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   const handleSearchTrigger = useCallback(() => {
     if (isMobile) {
@@ -216,7 +215,20 @@ export function DocsSearch() {
       cancelable: true,
     })
     document.dispatchEvent(event)
-  }, [handleSearchTrigger])
+    const trigger = triggerRef.current
+    if (isMobile || !trigger) return
+    // The search dialog opens from that event and so has no trigger to return focus to; return it here once the dialog leaves the page.
+    let opened = false
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('[role="dialog"]')) {
+        opened = true
+      } else if (opened) {
+        observer.disconnect()
+        if (document.activeElement === document.body) trigger.focus()
+      }
+    })
+    observer.observe(document.body, { childList: true })
+  }, [handleSearchTrigger, isMobile])
 
   useEffect(() => {
     const hotKey = [
@@ -250,22 +262,23 @@ export function DocsSearch() {
   }, [handleSearchTrigger])
 
   return (
-    <div className="relative">
-      <RiSearchLine className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
-      <SidebarInput
-        placeholder="Search"
-        onClick={handleClick}
-        readOnly
-        className={cn("cursor-default pl-8", isMobile ? "pr-3" : "pr-20")}
-      />
+    <button
+      ref={triggerRef}
+      type="button"
+      aria-haspopup="dialog"
+      onClick={handleClick}
+      className="border-input bg-background text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex h-8 w-full items-center gap-2 rounded-lg border px-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+    >
+      <RiSearchLine className="size-4" />
+      Search
       {!isMobile && (
-        <div className="pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
+        <span className="ml-auto flex items-center gap-1">
           <Kbd>
             <MetaOrControl />
           </Kbd>
           <Kbd>K</Kbd>
-        </div>
+        </span>
       )}
-    </div>
+    </button>
   )
 }
