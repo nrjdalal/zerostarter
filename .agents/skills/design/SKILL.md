@@ -52,6 +52,7 @@ When a change establishes or alters a convention, update this file in the same c
 ## Motion
 
 - Every looping or auto-playing animation is gated on reduced motion. For a Tailwind utility use the `motion-safe:` variant (`motion-safe:animate-pulse`). For a keyframe Tailwind does not ship, declare it next to the section that uses it and wrap the rule in `@media (prefers-reduced-motion: no-preference)`; marketing keyframes stay out of `globals.css`.
+- Overlays (dialogs, menus, popovers, tooltips) keep their fade under reduced motion and drop the zoom: an unlayered rule at the end of `globals.css` resets tw-animate-css's scale variables, so a `ui/*` sync cannot undo it.
 - Anything that moves for more than five seconds also needs a pause affordance, on both hover and `focus-within`, so a keyboard user can stop it (WCAG 2.2.2).
 
 ## Components

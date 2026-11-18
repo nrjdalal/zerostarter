@@ -146,3 +146,11 @@
     @apply mt-0;
   }
 }
+
+/* Unlayered, so it outranks every overlay's zoom-in/zoom-out utility: under reduced motion they keep the fade and drop the scale. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+  }
+}
