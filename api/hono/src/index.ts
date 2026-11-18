@@ -7,6 +7,7 @@ import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
+import { secureHeaders } from "hono/secure-headers"
 import { z } from "zod"
 
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
@@ -37,6 +38,7 @@ app.use(
     credentials: true,
   }),
   logger(),
+  secureHeaders(),
   rateLimiterMiddleware,
 )
 
