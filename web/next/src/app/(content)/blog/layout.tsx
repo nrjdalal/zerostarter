@@ -8,7 +8,7 @@ const blog = contentSource("blog")
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <main>
+    <div id="main">
       <RootProvider
         theme={{
           enabled: false,
@@ -26,6 +26,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {children}
         </DocsLayout>
       </RootProvider>
-    </main>
+    </div>
   )
 }

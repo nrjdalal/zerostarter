@@ -8,6 +8,7 @@ import type { Metadata } from "next"
 
 import { InnerProvider, OuterProvider } from "@/app/providers"
 import { Navbar } from "@/components/common/navbar"
+import { buttonVariants } from "@/components/ui/button"
 import { config } from "@/lib/config"
 import { dmSans, jetbrainsMono } from "@/lib/fonts"
 
@@ -68,6 +69,15 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <body className="min-h-svh">
+          <a
+            href="#main"
+            className={cn(
+              buttonVariants(),
+              "fixed top-2 left-2 z-60 -translate-y-16 focus:translate-y-0",
+            )}
+          >
+            Skip to content
+          </a>
           <InnerProvider>
             <Navbar />
             {children}

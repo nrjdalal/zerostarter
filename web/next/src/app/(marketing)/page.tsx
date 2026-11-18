@@ -232,7 +232,7 @@ docker compose up --build`
 
   return (
     <>
-      <main className="relative isolate flex flex-col">
+      <main id="main" className="relative isolate flex flex-col">
         <MarketingBackdrops />
         {/* Hero */}
         <section aria-labelledby="hero-title" className="flex min-h-svh flex-col">

@@ -160,7 +160,7 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <main className="bg-background text-foreground min-h-svh space-y-16 py-24 text-lg">
+    <main id="main" className="bg-background text-foreground min-h-svh space-y-16 py-24 text-lg">
       {/* hook */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>nrjdalal</h1>

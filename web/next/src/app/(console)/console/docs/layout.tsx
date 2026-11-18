@@ -8,7 +8,7 @@ const consoleDocs = contentSource("console")
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="console-docs">
+    <div className="console-docs">
       <RootProvider
         theme={{
           enabled: false,
@@ -28,6 +28,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {children}
         </DocsLayout>
       </RootProvider>
-    </main>
+    </div>
   )
 }

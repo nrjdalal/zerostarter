@@ -42,7 +42,8 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## Layout and landmarks
 
-- Each top-level page wraps its content in a single `<main>`. Route-group layouts (dashboard via `SidebarShell`, docs, blog) already render their own `<main>`, so add none to the root layout or you nest landmarks.
+- Each top-level page wraps its content in a single `<main id="main">`. The dashboard and console get theirs from `SidebarShell`, and in docs and blog the Fumadocs page renders it, so those layouts wrap the page in a `<div id="main">` instead. Add none to the root layout or you nest landmarks.
+- The root layout's first tab stop is a "Skip to content" link to `#main`, which is why every page's `<main>` (or the docs and blog wrapper) carries that id.
 - A surface that has footer content renders it in a real `<footer>` as a sibling of `<main>`, never a `<div>` inside it, so the page exposes a `contentinfo` landmark. A surface with nothing to put there renders no footer rather than an empty one.
 - Name a `<section>` that has a visible heading with `aria-labelledby` pointing at that heading's id, not a hand-written `aria-label`: internal authoring vocabulary ("Hero", "Call to action") otherwise leaks into the accessibility tree as the region's name. A wrapper with no visible heading (a `role="region"` scroll container) still takes `aria-label`.
 - A scrollable region (a code block, a wide table) needs `tabIndex={0}` and an accessible name, or its overflow is unreachable by keyboard.
