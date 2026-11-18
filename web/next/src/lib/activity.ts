@@ -38,8 +38,8 @@ export function activityJson<
     summary: string
   },
 >(events: T[]) {
-  const ordered = [...events]
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  const ordered = events
+    .toSorted((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map((event) => ({
       actor: event.actor,
       action: event.action,

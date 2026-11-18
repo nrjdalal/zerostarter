@@ -24,7 +24,7 @@ const round = (px: number) => Math.round(px * 100) / 100
 // Every codepoint the font maps, so the calculator covers the full latin subset, not a guessed label list. Full precision internally; rounding happens once at emit.
 const exact: Record<string, number> = {}
 const advances: Record<string, number> = {}
-for (const codePoint of [...base.characterSet].sort((a, b) => a - b)) {
+for (const codePoint of base.characterSet.toSorted((a, b) => a - b)) {
   const char = String.fromCodePoint(codePoint)
   // Zero-advance glyphs (combining marks) are kept as 0; dropping them would fall back to the average and overstate any label that used one.
   const px = shapedPx(char)
