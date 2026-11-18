@@ -38,7 +38,7 @@ app.use(
     credentials: true,
   }),
   logger(),
-  secureHeaders(),
+  secureHeaders({ strictTransportSecurity: false }),
   rateLimiterMiddleware,
 )
 
