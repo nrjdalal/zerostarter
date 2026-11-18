@@ -5,7 +5,7 @@ import { RiGithubFill, RiGoogleFill, RiLayoutGridFill } from "@remixicon/react"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
   const pathname = usePathname()
   const [loader, setLoader] = useState<"email" | "github" | "google" | null>(null)
   const [open, setOpen] = useState(false)
+  const popupRef = useRef<HTMLDivElement>(null)
   // Next inlines NODE_ENV at build time: "development" only under `next dev`,
   // "production" for any `next build`. Auto-hides in deployments.
   const isDev = process.env.NODE_ENV === "development"
@@ -90,7 +91,7 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
       <DialogTrigger render={<Button className="w-24" variant="outline" />}>
         <span className={labelClassName}>Login</span>
       </DialogTrigger>
-      <DialogContent className="max-w-md" initialFocus={false}>
+      <DialogContent className="max-w-md" ref={popupRef} initialFocus={popupRef}>
         <DialogHeader className="sr-only">
           <DialogTitle className="text-center">Sign in/up</DialogTitle>
         </DialogHeader>
