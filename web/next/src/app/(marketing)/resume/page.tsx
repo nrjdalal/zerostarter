@@ -4,7 +4,7 @@ import { cn } from "cn"
 import type { Metadata } from "next"
 import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { config } from "@/lib/config"
 import { caveat, lora } from "@/lib/marketing/fonts"
 
@@ -232,15 +232,14 @@ export default function Page() {
             linkedin.com/in/nrjdalal
           </a>
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="print:hidden"
-          render={<a href="/neeraj-dalal-resume.pdf" download="Neeraj Dalal - Resume.pdf" />}
+        <a
+          href="/neeraj-dalal-resume.pdf"
+          download="Neeraj Dalal - Resume.pdf"
+          className={cn(buttonVariants({ size: "sm", variant: "outline" }), "print:hidden")}
         >
           <RiDownloadLine />
           Download PDF
-        </Button>
+        </a>
       </div>
 
       {/* core strengths */}

@@ -15,7 +15,7 @@ When a change establishes or alters a convention, update this file in the same c
 
 ## Cursor
 
-`cursor-pointer` is for navigation only: links, anchors, a Button rendered as `<Link>` or `<a>`, a `router.push`. It signals "this changes the route."
+`cursor-pointer` is for navigation only: links, anchors, a link styled with `buttonVariants`, a `router.push`. It signals "this changes the route."
 
 - Action controls (form submit, dialog/menu triggers, toggles, mutation buttons, sign-in, sign-out) keep the native arrow even when the action eventually navigates: classify by element, not by side effect.
 - In practice you need no `cursor-pointer` class: `<a href>` shows the pointer natively, `<button>` shows the arrow natively, and `buttonVariants` sets no cursor. A control that only looks like a field (the docs search trigger, `DocsSearch` in `components/docs/sidebar.tsx`) is a real `<button>` styled like the input, never a readOnly `<input>`: a button opens on Enter and Space and is announced as a button.
@@ -62,6 +62,7 @@ When a change establishes or alters a convention, update this file in the same c
 - **Forms:** native `<form>` then `<FieldGroup>` then `<form.Field>` then `<Field>` + `<FieldLabel>` + `<Input>` + conditional `<FieldError>`, with `@tanstack/react-form` + zod. Let `FieldGroup` own the vertical rhythm (no second `space-y-*`). Do not hand-roll labels or error markup.
 
 - **Dialogs:** bare `<DialogContent>` is centered at `sm:max-w-sm`. The auth dialog (`components/common/access.tsx`) uses `max-w-md`.
+- **Links that look like buttons:** a plain `<Link>` or `<a>` with `className={cn(buttonVariants({ ... }), ...)}`, never `<Button render={<Link />}>`. Base UI gives a non-button `render` target `role="button"`, so a screen reader announces the link as a button.
 - **Icons:** `@remixicon/react` only. `size-4` inside buttons by default.
 - **shadcn (`components/ui/*`):** customize only via `packages/scripts/src/shadcn-customize.ts` (the sync wipes and re-scaffolds `ui/`). Extend the primitive in place; do not fork a copy.
 

@@ -15,7 +15,7 @@ import { useEffect, useState } from "react"
 
 import { Access } from "@/components/common/access"
 import { ModeToggle } from "@/components/common/mode-toggle"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -144,19 +144,17 @@ export function Navbar() {
               tabIndex={-1}
             />
           ) : session?.user ? (
-            <Button
-              role="link"
-              className="w-24"
-              variant="outline"
+            <Link
+              href="/dashboard"
+              className={cn(buttonVariants({ variant: "outline" }), "w-24")}
               onClick={() => setToDashboard(true)}
-              render={<Link href="/dashboard" />}
             >
               {toDashboard ? (
                 <Spinner />
               ) : (
                 <span className="animate-in fade-in duration-1000">Dashboard</span>
               )}
-            </Button>
+            </Link>
           ) : (
             <Access labelClassName="animate-in fade-in duration-1000" />
           )}
@@ -226,18 +224,16 @@ export function Navbar() {
                   )
                 })}
                 {site.social.github && (
-                  <Button
-                    role="link"
-                    size="sm"
-                    className="mt-2 w-fit"
+                  <a
+                    href={site.social.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(buttonVariants({ size: "sm" }), "mt-2 w-fit")}
                     onClick={() => setIsOpen(false)}
-                    render={
-                      <a href={site.social.github} target="_blank" rel="noopener noreferrer" />
-                    }
                   >
                     <RiGithubFill className="size-4" />
                     Get {site.name}
-                  </Button>
+                  </a>
                 )}
               </nav>
               {/* Mobile Social Links */}

@@ -28,7 +28,7 @@ import { AppShellDiagram } from "@/components/marketing/app-shell-diagram"
 import { MarketingBackdrops } from "@/components/marketing/backdrops"
 import { CodeCard } from "@/components/marketing/code-card"
 import { CodeWindow } from "@/components/marketing/code-window"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 type Tech = { name: string; icon: { light: string; dark: string } }
 
@@ -157,19 +157,22 @@ const whyPoints = [
 function PrimaryActions({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center justify-center gap-3", className)}>
-      <Button
-        size="lg"
-        variant="secondary"
-        className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
-        render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
+      <a
+        href={site.social.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          buttonVariants({ size: "lg", variant: "secondary" }),
+          "border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6",
+        )}
       >
         <RiGithubFill className="size-5" />
         GitHub
-      </Button>
-      <Button size="lg" className="group h-11 px-4 md:px-6" render={<Link href="/docs" />}>
+      </a>
+      <Link href="/docs" className={cn(buttonVariants({ size: "lg" }), "group h-11 px-4 md:px-6")}>
         Get Started
         <RiArrowRightSLine className="size-4 transition-transform group-hover:translate-x-0.5" />
-      </Button>
+      </Link>
     </div>
   )
 }
