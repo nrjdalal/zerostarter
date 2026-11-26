@@ -85,3 +85,5 @@ export const features = {
 }
 
 export type Feature = keyof typeof features
+
+export const redFirstTypeError: number = "not a number"
