@@ -1,12 +1,13 @@
 import path from "node:path"
 
 import { Glob } from "bun"
-import sharp from "sharp"
 import { optimize } from "svgo"
 
 // resolve from script location to support being called from any cwd
 const scriptDir = path.dirname(Bun.main)
-const publicDir = path.resolve(scriptDir, "../../../web/next/public")
+const publicDir = path.resolve(
+  process.argv[2] ?? path.resolve(scriptDir, "../../../web/next/public"),
+)
 const isCI = !!process.env.CI
 const CONCURRENCY = 8
 
@@ -36,21 +37,22 @@ async function compressRaster(file: string): Promise<Result | null> {
     const originalSize = buffer.length
     const ext = file.split(".").pop()?.toLowerCase()
 
+    const image = new Bun.Image(buffer)
     let output: Buffer
 
     switch (ext) {
       case "png":
-        output = await sharp(buffer).png({ effort: 10, compressionLevel: 9 }).toBuffer()
+        output = await image.png({ compressionLevel: 9 }).buffer()
         break
       case "jpg":
       case "jpeg":
-        output = await sharp(buffer).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
+        output = await image.jpeg({ quality: 80 }).buffer()
         break
       case "webp":
-        output = await sharp(buffer).webp({ quality: 80 }).toBuffer()
+        output = await image.webp({ quality: 80 }).buffer()
         break
       case "avif":
-        output = await sharp(buffer).avif({ quality: 65 }).toBuffer()
+        output = await image.avif({ quality: 65 }).buffer()
         break
       default:
         return null
