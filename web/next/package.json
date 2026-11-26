@@ -5,7 +5,7 @@
   "scripts": {
     "build": "bun ../../packages/scripts/src/generate-env.ts web && bun ../../packages/scripts/src/compress-images.ts && bun ../../packages/scripts/src/docs.ts --strict && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && next build",
     "build:vercel": "bun run --bun build",
-    "check-types": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && tsrs --noEmit",
+    "check-types": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && fumadocs-mdx && bun check",
     "dev": "portless",
     "dev:app": "bun ../../packages/scripts/src/docs.ts && bun ../../packages/scripts/src/data-table-metrics.ts && bun ../../packages/scripts/src/portless.ts next dev",
     "start": "bun .next/standalone/web/next/server.js"
@@ -62,7 +62,6 @@
     "shadcn": "catalog:",
     "sharp": "catalog:",
     "tailwindcss": "catalog:",
-    "tsrs": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:"
   },

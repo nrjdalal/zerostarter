@@ -10,7 +10,7 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsrs --noEmit"
+    "check-types": "bun check"
   },
   "dependencies": {
     "@packages/env": "workspace:*",
@@ -23,7 +23,6 @@
     "drizzle-kit": "catalog:",
     "postgres": "catalog:",
     "tsdown": "catalog:",
-    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -49,8 +49,8 @@ See [Database](/docs/manage/database) for the loop these belong to.
 
 A failing test or type error blocks the merge. The details worth knowing:
 
-- **`check-types`** runs [tsrs](/docs/manage/code-quality#tsrs-not-tsc) in passes: every workspace through Turbo, then `check-types:tests` (one `tsrs` run per `tests/**/tsconfig.json`).
-- **`sync:config`** writes every package's `tsconfig.json`, its type-check devDependencies (`@packages/config`, `@types/bun`, `@types/node`, `tsrs`, `typescript`) and its `check-types` script, plus the `tests/**` configs, from `packages/scripts/src/sync-config/template.json`. A package that must differ keeps the difference in its own patch beside the template, named by its path (`web-next.json`), so a hand edit to a generated file fails CI's `--check`.
+- **`check-types`** runs [`bun check`](/docs/manage/code-quality#bun-check-not-tsc) in passes: every workspace through Turbo, then `check-types:tests` (one `bun check` run per `tests/**/tsconfig.json`).
+- **`sync:config`** writes every package's `tsconfig.json`, its type-check devDependencies (`@packages/config`, `@types/bun`, `@types/node`, `typescript`) and its `check-types` script, plus the `tests/**` configs, from `packages/scripts/src/sync-config/template.json`. A package that must differ keeps the difference in its own patch beside the template, named by its path (`web-next.json`), so a hand edit to a generated file fails CI's `--check`.
 - **`test`** builds `packages/*` and regenerates the data-table font metrics first. The build comes first because a test reaches a shared package the way the apps do, through its published `exports`, which point at `dist`; without it a fresh checkout fails to resolve the import rather than failing an assertion. Turbo caches the build, so a repeat run costs milliseconds.
 
 ### The end-to-end suite
