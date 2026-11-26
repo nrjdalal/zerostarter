@@ -1,7 +1,7 @@
 ---
 slug: /docs/manage/code-quality
 title: Code Quality
-description: Oxlint, Oxfmt, tsrs, and the git hooks that keep every commit formatted, linted, and building.
+description: Oxlint, Oxfmt, bun check, and the git hooks that keep every commit formatted, linted, and building.
 ---
 
 One Rust toolchain formats and lints the whole monorepo, and [Lefthook](https://github.com/evilmartians/lefthook) runs it (plus a build and a commit-message check) at the moments a mistake would otherwise slip through. You rarely invoke any of it by hand.
@@ -38,13 +38,11 @@ bun run format        # oxfmt, writing fixes
 bun run format:check  # oxfmt, report only (also what CI runs)
 ```
 
-## tsrs, not tsc
+## bun check, not tsc
 
-[tsrs](https://github.com/oxc-project/tsrs), from the same Oxc project, is a Rust port of the TypeScript 7 compiler. `bun run check-types` runs it where `tsc` ran before: `tsrs --noEmit` in every workspace, then over each `tests/` project. On this repo it reports the same errors as `tsc`, faster and in a fraction of the memory.
+[`bun check`](https://bun.com/docs/runtime/check) is Bun's built-in type checker, and it reports the same errors as `tsc` from TypeScript 7. `bun run check-types` runs it where `tsc` ran before: `bun check` in every workspace, then over each `tests/` project. It needs no install of its own and runs wherever Bun runs.
 
-Here it only checks. `typescript` stays installed where something needs the compiler itself: tsdown emits each package's `.d.ts` through it, `next build` type-checks the web app with it, and your editor runs it. tsrs follows TypeScript's main branch (7.1 in development) while `typescript` is 7.0, so an error can abbreviate a long type differently from the message your editor shows.
-
-tsrs is pre-1.0 and ships binaries for macOS on Apple silicon and for Linux (x64 and arm64), with none yet for Windows or Intel Macs.
+Here it only checks. `typescript` stays installed where something needs the compiler itself: tsdown emits each package's `.d.ts` through it, `next build` type-checks the web app with it, and your editor runs it.
 
 ## The git hooks
 
