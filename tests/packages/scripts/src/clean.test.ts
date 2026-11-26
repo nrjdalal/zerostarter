@@ -105,5 +105,3 @@ test.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
     }
   },
 )
-
-export const redFirstTypeError: number = "not a number"
