@@ -1,4 +1,4 @@
-import { RiLoaderLine, type RemixiconComponentType } from "@remixicon/react"
+import { type RemixiconComponentType, RiLoaderLine } from "@remixicon/react"
 import { cn } from "cn"
 
 function Spinner({ className, ...props }: React.ComponentProps<RemixiconComponentType>) {

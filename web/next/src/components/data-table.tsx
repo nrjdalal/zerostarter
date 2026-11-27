@@ -2,6 +2,7 @@
 "use no memo"
 
 import {
+  type RemixiconComponentType,
   RiAddCircleLine,
   RiArrowDownLine,
   RiArrowUpLine,
@@ -9,21 +10,20 @@ import {
   RiCloseLine,
   RiEqualizerLine,
   RiExpandUpDownLine,
-  type RemixiconComponentType,
 } from "@remixicon/react"
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import {
-  flexRender,
-  useTable,
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
+  flexRender,
   type OnChangeFn,
+  type ReactTable as TableInstance,
   type RowData,
   type RowSelectionState,
   type SortingState,
-  type ReactTable as TableInstance,
   type Updater,
+  useTable,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { cn } from "cn"
@@ -70,8 +70,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { features, type Features } from "@/lib/data-table-features"
-import { applyColumnManager, growingColumnIds, type ColumnConfig } from "@/lib/data-table-layout"
+import { type Features, features } from "@/lib/data-table-features"
+import { applyColumnManager, type ColumnConfig, growingColumnIds } from "@/lib/data-table-layout"
 
 // The whole data-table family as one module (the sidebar.tsx pattern: one file, many exports). Everything reading a table or column instance lives behind the module-level "use no memo": TanStack Table mutates one stable instance during render, and compiler-memoized consumers would freeze one render behind.
 // The layout math it composes (the column config contract, the font-metric widths, the slack rule) is pure and lives in @/lib/data-table-layout, and the registered features every table type is generic over live in @/lib/data-table-features; both are re-exported here so a table still has one import site.

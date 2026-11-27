@@ -1,9 +1,9 @@
 "use client"
 
-import { RiArrowLeftSLine, RiArrowRightSLine, RiArrowDownSLine } from "@remixicon/react"
+import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react"
 import { cn } from "cn"
 import * as React from "react"
-import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from "react-day-picker"
+import { type DayButton, DayPicker, getDefaultClassNames, type Locale } from "react-day-picker"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 

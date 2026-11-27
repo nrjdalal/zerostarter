@@ -5,7 +5,7 @@ import { Questionnaire as QuestionnairePrimitive } from "@shadcn/react/questionn
 import { cn } from "cn"
 import * as React from "react"
 
-import { buttonVariants, type Button } from "@/components/ui/button"
+import { type Button, buttonVariants } from "@/components/ui/button"
 
 function Questionnaire({
   className,

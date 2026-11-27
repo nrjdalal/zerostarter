@@ -3,8 +3,8 @@ import { describe, expect, test } from "bun:test"
 import {
   CONSOLE_ROLES,
   consoleRole,
-  grantableRoles,
   findAllowlistRule,
+  grantableRoles,
   matchesAllowlist,
   parseAllowlistRule,
   refuseBan,

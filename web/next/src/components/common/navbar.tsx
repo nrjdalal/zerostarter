@@ -1,6 +1,6 @@
 "use client"
 
-import { features, type Feature, site } from "@packages/config/site"
+import { type Feature, features, site } from "@packages/config/site"
 import {
   RiArrowRightUpLine,
   RiDiscordFill,

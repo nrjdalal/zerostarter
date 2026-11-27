@@ -1,15 +1,15 @@
 "use client"
 
-import { ACCESS_ROLE, roleAtLeast, type ConsoleRole } from "@packages/auth/access"
+import { ACCESS_ROLE, type ConsoleRole, roleAtLeast } from "@packages/auth/access"
 import { features } from "@packages/config/site"
 import {
+  type RemixiconComponentType,
   RiBookLine,
   RiDashboardLine,
   RiGroupLine,
   RiHistoryLine,
   RiMailLine,
   RiShieldKeyholeLine,
-  type RemixiconComponentType,
 } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"

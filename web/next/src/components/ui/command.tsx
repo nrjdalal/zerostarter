@@ -1,6 +1,6 @@
 "use client"
 
-import { RiSearchLine, RiCheckLine } from "@remixicon/react"
+import { RiCheckLine, RiSearchLine } from "@remixicon/react"
 import { Command as CommandPrimitive } from "cmdk"
 import { cn } from "cn"
 import * as React from "react"

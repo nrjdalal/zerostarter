@@ -2,7 +2,7 @@ import { features } from "@packages/config/site"
 import { allowlist, db, recordActivity, roleChangeSummary, user } from "@packages/db"
 import { and, eq, inArray, isNull, or } from "drizzle-orm"
 
-import { ALLOWLIST_KINDS, findAllowlistRule, roleAtLeast, type AllowlistRule } from "@/access"
+import { ALLOWLIST_KINDS, type AllowlistRule, findAllowlistRule, roleAtLeast } from "@/access"
 
 // Signing up and using the dashboard is open to everyone; the allowlist is only about the console. A matching address is lifted to the console's bottom rung on sign-in, so adding a domain covers colleagues who already have accounts rather than only future ones.
 // Best effort on purpose: this sits on the sign-in path, so a database failure must not stop anyone signing in. A missed grant is repaired by the next sign-in.

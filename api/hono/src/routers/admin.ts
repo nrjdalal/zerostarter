@@ -12,6 +12,7 @@ import {
 import { ACTIVITY_ACTIONS } from "@packages/config/console"
 import {
   activity,
+  type ActivityEvent,
   allowlist,
   allowlistAddSummary,
   allowlistRemoveSummary,
@@ -24,7 +25,6 @@ import {
   user,
   waitlist,
   waitlistRemoveSummary,
-  type ActivityEvent,
 } from "@packages/db"
 import { and, asc, desc, eq, ilike, inArray, isNull, notInArray, or, sql } from "drizzle-orm"
 import { Hono } from "hono"
@@ -34,11 +34,11 @@ import { z } from "zod"
 import {
   answerFor,
   batchInput,
+  type BatchOutcome,
   batchResponseSchema,
   raced,
   refused,
   uniqueIds,
-  type BatchOutcome,
 } from "@/lib/batch"
 import {
   ApiError,

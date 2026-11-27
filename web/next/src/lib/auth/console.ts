@@ -1,4 +1,4 @@
-import { reachesConsole, type ConsoleRole } from "@packages/auth/access"
+import { type ConsoleRole, reachesConsole } from "@packages/auth/access"
 import { notFound } from "next/navigation"
 import { cache } from "react"
 

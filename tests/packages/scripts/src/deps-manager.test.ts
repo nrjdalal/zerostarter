@@ -2,10 +2,10 @@ import { expect, test } from "bun:test"
 
 import {
   normalizeCatalogRanges,
+  type PackageJson,
   pickSafeMoves,
   sortObjectDeep,
   toCaretRange,
-  type PackageJson,
 } from "../../../../packages/scripts/src/deps-manager"
 
 test("an exact and a tilde spec both become caret ranges", () => {

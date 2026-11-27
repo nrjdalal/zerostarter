@@ -1,7 +1,7 @@
 "use client"
 
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
-import { RiArrowDownSLine, RiCloseLine, RiCheckLine } from "@remixicon/react"
+import { RiArrowDownSLine, RiCheckLine, RiCloseLine } from "@remixicon/react"
 import { cn } from "cn"
 import * as React from "react"
 
