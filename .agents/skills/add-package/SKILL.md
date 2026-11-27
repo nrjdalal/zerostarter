@@ -125,7 +125,7 @@ Write any generated-but-disposable artifact to the repo-root `.generated/` dir (
 
 ## Keep docs in sync
 
-Adding a package touches the map. In the same change, update: the `packages/*` list in `AGENTS.md`/`CLAUDE.md`; both structure trees, `README.md` (`## Monorepo Structure`) and `web/next/content/docs/getting-started/project-structure.mdx` (the tree and the "The packages" list); the `codebase-map` skill; and any skill whose globs name package paths (e.g. `runtime-apis`). A fork keeps build-only packages like `scripts` (unlike `cli`, which `init` strips), so they belong in the user-facing trees too. See the `doc-sync` skill.
+Adding a package touches the map. In the same change, update: the `packages/*` list in `AGENTS.md`/`CLAUDE.md`; both structure trees, `README.md` (`## Monorepo Structure`) and `web/next/content/docs/getting-started/project-structure.mdx` (the tree and the "The packages" list); the `codebase-map` skill; and any skill whose globs name package paths (e.g. `runtime-apis`). A fork keeps build-only packages like `scripts` (unlike `cli`, which `init` strips), so they belong in the user-facing trees too. See the `sync-docs` skill.
 
 ## Gotchas
 

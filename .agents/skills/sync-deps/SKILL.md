@@ -1,5 +1,5 @@
 ---
-name: audit
+name: sync-deps
 description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 source: local
 ---
@@ -46,7 +46,7 @@ Done when every row is on its latest release and the old-value grep returns no h
 
 ### 3. Re-sync shadcn
 
-Run `bun run sync:shadcn` (the `shadcn-sync` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
+Run `bun run sync:shadcn` (the `sync-shadcn` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
 
 ### 4. Prove nothing broke
 
