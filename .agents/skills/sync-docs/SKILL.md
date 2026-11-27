@@ -1,5 +1,5 @@
 ---
-name: doc-sync
+name: sync-docs
 description: Sync docs and skills so they never drift from the code. Use before opening or updating a PR, or when a change touches a command, path, convention, or the skill set a doc or skill documents.
 source: local
 ---

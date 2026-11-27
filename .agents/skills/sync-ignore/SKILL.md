@@ -1,5 +1,5 @@
 ---
-name: ignore-sync
+name: sync-ignore
 description: Mirror .gitignore to .dockerignore. Use whenever a .gitignore entry is added or removed, or when auditing a bloated Docker build context.
 source: local
 ---

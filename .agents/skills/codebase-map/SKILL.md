@@ -30,7 +30,7 @@ Read `AGENTS.md` first for the rules; `curl "$(bunx portless get zerostarter)/ll
 | Add/change an API route | `api/hono/src/routers/<name>.ts` → export from `routers/index.ts` → mount in `src/index.ts` `.route()` chain | `api-endpoint` skill |
 | Change the database schema | `packages/db/src/schema/<name>.ts` → export from `schema/index.ts`; `auth.ts` is generated, see the row below | `db-migration` skill |
 | Add/change a page | `web/next/src/app/`, route groups: `(marketing)` public, `(protected)` dashboard, `(console)` member and above, `(content)` docs+blog, `(llms.txt)` the plain-text mirrors | - |
-| Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `shadcn-sync` skills |
+| Add/customize a UI component | `web/next/src/components/`: `ui/` is generated shadcn, don't hand-edit | `design`, `sync-shadcn` skills |
 | Call the API from the web app | `web/next/src/lib/api/client.ts` (`apiClient`, `unwrap`) | - |
 | Rebrand (name, description, socials) | `packages/config/src/site.ts`, one file | - |
 | Add or read an env var | `packages/env/src/{api-hono,auth,db,web-next}.ts`; read via `@packages/env/*`, never `process.env`. The root `.env` is loaded by `src/load-dotenv.ts`, which the server targets import and neither `web-next` nor the package index does; a new server target imports `@/load-dotenv` first. The exception is a variable the hosting platform injects rather than you configuring (`PORT`, `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_*`): those are read from `process.env` at the point of use and belong in neither the schema nor `.env.example` | - |

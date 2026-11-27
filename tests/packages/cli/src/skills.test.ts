@@ -150,16 +150,16 @@ describe("reconcileForkSkillsFromRoot (sync path)", () => {
 
     test("treats a dropped sync note as the fork taking ownership", () => {
       forkPkg()
-      overlaid("audit", "local", "# Audit\n\nOriginal.\n")
+      overlaid("sync-deps", "local", "# Sync deps\n\nOriginal.\n")
       reconcileForkSkillsFromRoot(dir)
-      const file = join(dir, ".agents/skills/audit/SKILL.md")
+      const file = join(dir, ".agents/skills/sync-deps/SKILL.md")
       write(file, read(file).replace(/> \[!CAUTION\][\s\S]*?stop syncing\.\n\n/, ""))
       const before = snapshotSkills(dir)
-      overlaid("audit", "local", "# Audit\n\nRevised upstream.\n")
+      overlaid("sync-deps", "local", "# Sync deps\n\nRevised upstream.\n")
       const result = reconcileForkSkillsFromRoot(dir, before)
       expect(read(file)).not.toContain("[!CAUTION]")
       expect(read(file)).not.toContain("Revised upstream")
-      expect(result.forkOwned).toContain("audit")
+      expect(result.forkOwned).toContain("sync-deps")
     })
 
     // A fork last synced before the ledger existed has no entry to compare, so an untouched skill must still be recognised, including one the older CLI stamped as synced from upstream even though it is vendored.

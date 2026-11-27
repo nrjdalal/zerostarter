@@ -40,15 +40,15 @@ The skills, arranged as the arc of a real task, **Navigate** to find your way, *
 | Operate  | `agent-browser`  | Drive the running app like a user: navigate, click, and snapshot the accessibility tree.                                                                                |
 | Operate  | `docker-test`    | Build and smoke-test the Docker images with `docker compose`, and run the golden end-to-end suite against them.                                                         |
 | Operate  | `ui-verify`      | Verify a frontend change in a real browser with agent-browser, then attach screenshots to the PR.                                                                       |
-| Maintain | `audit`          | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
 | Maintain | `fonts`          | Add or swap web fonts: fetch latin variable woff2 from Fontsource, localize through `next/font/local`.                                                                  |
-| Maintain | `ignore-sync`    | Keep `.dockerignore` in step with `.gitignore`.                                                                                                                         |
-| Maintain | `shadcn-sync`    | Run `bun run sync:shadcn` and reconcile it so a sync never silently drops your customizations.                                                                          |
 | Maintain | `skills-manager` | Regenerate the AGENTS.md skills tables from every skill's frontmatter, and how a fork syncs its skills from upstream.                                                   |
-| Ship     | `doc-sync`       | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                                                           |
+| Maintain | `sync-deps`      | Refresh every dependency and version pin to its latest release, run the security audit, and maintain `.github/notes/dependencies.md`; unblocks the pre-push audit hook. |
+| Maintain | `sync-ignore`    | Keep `.dockerignore` in step with `.gitignore`.                                                                                                                         |
+| Maintain | `sync-shadcn`    | Run `bun run sync:shadcn` and reconcile it so a sync never silently drops your customizations.                                                                          |
 | Ship     | `gh-commit`      | Atomic commits in conventional-commit format.                                                                                                                           |
 | Ship     | `icebox`         | Park a raised-but-undecided concern with no verdict, so the context survives instead of being forced to a call.                                                         |
 | Ship     | `release`        | Cut a production release by promoting `canary` to `main`; the pipeline does the version, changelog, tag, and publish.                                                   |
+| Ship     | `sync-docs`      | Sync docs and skills so a change never ships drift: the surface map, a grep sweep, and the strict docs build.                                                           |
 
 Two skills are vendored from Vercel Labs; every other skill is written for this repo. `agent-browser` (from [`vercel-labs/agent-browser`](https://github.com/vercel-labs/agent-browser)) is a discovery stub pinned in `skills-lock.json` for integrity: its committed `SKILL.md` just points the agent at the live workflow (`agent-browser skills get core`), installed with `npm i -g agent-browser && agent-browser install`. `portless` (from [`vercel-labs/portless`](https://github.com/vercel-labs/portless)) is copied in full and self-contained. Re-vendor to update either; do not hand-edit.
 

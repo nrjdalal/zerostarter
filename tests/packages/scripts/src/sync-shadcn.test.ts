@@ -12,7 +12,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 
 const scripts = join(import.meta.dir, "../../../../packages/scripts/src")
-const script = join(scripts, "shadcn-update.ts")
+const script = join(scripts, "sync-shadcn.ts")
 
 let dir: string
 let bin: string
@@ -50,8 +50,8 @@ const run = async (extra: Record<string, string> = {}) => {
 }
 
 beforeEach(() => {
-  dir = realpathSync(mkdtempSync(join(tmpdir(), "shadcn-update-")))
-  bin = mkdtempSync(join(tmpdir(), "shadcn-update-bin-"))
+  dir = realpathSync(mkdtempSync(join(tmpdir(), "sync-shadcn-")))
+  bin = mkdtempSync(join(tmpdir(), "sync-shadcn-bin-"))
   log = join(bin, "calls.jsonl")
   stub("bun")
   stub("bunx")
