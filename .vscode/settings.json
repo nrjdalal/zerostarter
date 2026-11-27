@@ -1,3 +1,11 @@
 {
-  "editor.formatOnSave": false
+  "editor.formatOnSave": false,
+  "runOnSave.commands": [
+    {
+      "command": "bun fmt --no-error-on-unmatched-pattern \"${file}\"",
+      "globMatch": "${workspaceFolder}/**",
+      "globMatchOptions": { "dot": true },
+      "runIn": "backend"
+    }
+  ]
 }
