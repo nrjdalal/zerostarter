@@ -1,25 +1,25 @@
 "use client"
 "use no memo"
 
-import { CONSOLE_ROLES, grantableRoles, refuseBan, type ConsoleRole } from "@packages/auth/access"
+import { CONSOLE_ROLES, type ConsoleRole, grantableRoles, refuseBan } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
 import * as React from "react"
 
 import {
+  type ConsoleUser,
   usersColumnConfig,
   usersColumns,
-  type ConsoleUser,
 } from "@/app/(console)/console/(access)/users/components/data-columns"
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
-  DataTableToolbar,
-  useDataTable,
   type DataTablePage,
   type DataTablePageInput,
+  DataTableToolbar,
+  useDataTable,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import {

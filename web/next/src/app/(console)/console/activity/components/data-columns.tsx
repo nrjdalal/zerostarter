@@ -6,10 +6,10 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { InferResponseType } from "hono/client"
 
 import {
+  type ColumnConfig,
   DataTableCellText,
   DataTableColumnHeader,
   selectColumn,
-  type ColumnConfig,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import {

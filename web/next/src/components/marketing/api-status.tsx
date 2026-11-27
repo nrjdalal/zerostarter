@@ -131,9 +131,9 @@ export function ApiStatus() {
         variant="destructive"
         role="status"
         aria-label="API status"
-        className="border-destructive/20 motion-safe:animate-in motion-safe:fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
+        className="h-8 gap-2 rounded-full border border-destructive/20 px-4 py-1.5 text-sm duration-2000 motion-safe:animate-in motion-safe:fade-in"
       >
-        <span className="bg-destructive size-2 shrink-0 rounded-full" />
+        <span className="size-2 shrink-0 rounded-full bg-destructive" />
         <span className="min-w-48 text-center whitespace-nowrap">Systems are facing issues</span>
       </Badge>
     )
@@ -144,11 +144,11 @@ export function ApiStatus() {
       variant="outline"
       role="status"
       aria-label="API status"
-      className="border-success/20 bg-success/10 text-success motion-safe:animate-in motion-safe:fade-in h-8 gap-2 rounded-full border px-4 py-1.5 text-sm duration-2000"
+      className="h-8 gap-2 rounded-full border border-success/20 bg-success/10 px-4 py-1.5 text-sm text-success duration-2000 motion-safe:animate-in motion-safe:fade-in"
     >
       <span
         className={cn(
-          "bg-success size-2 shrink-0 rounded-full",
+          "size-2 shrink-0 rounded-full bg-success",
           live && "motion-safe:animate-pulse",
         )}
       />

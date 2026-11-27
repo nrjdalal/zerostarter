@@ -7,7 +7,7 @@ import { Node, Project, SyntaxKind } from "ts-morph"
 //             attribute/param reordering can't break them; the lone globals.css value is a guarded
 //             string swap (a single stable line isn't worth a CSS parser).
 // Each patch is idempotent and throws if its target is absent, so a shadcn shape change fails the
-// sync loudly instead of silently dropping an override. A single oxfmt pass runs after.
+// sync loudly instead of silently dropping an override. A single bun fmt pass runs after.
 
 const log = (msg: string) => console.log(`[shadcn-customize] ${msg}`)
 

@@ -4,10 +4,10 @@ import { Glob } from "bun"
 
 import docsConfig from "../../../web/next/docs.config"
 import {
+  type BlogPostMeta,
   compareBlogPostPublishOrder,
   isBlogPostPublished,
   normalizeBlogTimestamp,
-  type BlogPostMeta,
 } from "../../../web/next/src/lib/blog-policy"
 import type { DocsCollection, DocsItem, DocsMeta } from "../../../web/next/src/lib/docs"
 

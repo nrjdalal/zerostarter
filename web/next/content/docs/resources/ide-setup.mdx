@@ -4,44 +4,52 @@ title: IDE Setup
 description: VS Code and Cursor settings for the Oxc toolchain.
 ---
 
-ZeroStarter ships `.vscode/` config so your editor lints and formats with the same [Oxc](https://oxc.rs) toolchain the CLI and git hooks use: one Rust tool in place of ESLint and Prettier, fast enough to run on every save.
+ZeroStarter ships `.vscode/` config so your editor lints with the same [Oxc](https://oxc.rs) toolchain the CLI and git hooks use: one Rust tool in place of ESLint, fast enough to run on every save.
 
 ## VS Code
 
-Open the repo and VS Code recommends one extension, from `.vscode/extensions.json`:
+Open the repo and VS Code recommends two extensions, from `.vscode/extensions.json`:
 
 ```json
 {
-  "recommendations": ["oxc.oxc-vscode"]
+  "recommendations": ["oxc.oxc-vscode", "pucelle.run-on-save"]
 }
 ```
 
-Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints (Oxlint) and formats (Oxfmt) inline. `.vscode/settings.json` makes it the default formatter and runs it on save:
+Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and it lints (Oxlint) inline. [`bun fmt`](https://bun.com/docs/format) has no editor integration, so the [Run on Save extension](https://marketplace.visualstudio.com/items?itemName=pucelle.run-on-save) runs it on each file you save in the workspace. `.vscode/settings.json` keeps the editor's own format on save off, so no other formatter fights it:
 
 ```json
 {
-  "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true
+  "editor.formatOnSave": false,
+  "runOnSave.commands": [
+    {
+      "command": "bun fmt --no-error-on-unmatched-pattern \"${file}\"",
+      "globMatch": "${workspaceFolder}/**",
+      "globMatchOptions": { "dot": true },
+      "runIn": "backend"
+    }
+  ]
 }
 ```
 
-The extension reads the project's root config, so the editor and the CLI can never disagree:
+The Oxc extension reads the project's root lint config, and Run on Save runs the same `bun fmt`, so the editor and the CLI can never disagree:
 
 - `.oxlintrc.jsonc`: lint rules.
-- `.oxfmtrc.jsonc`: formatting: no semicolons, sorted imports, Tailwind class sorting. It ignores `.agents/**`, so the AI skill docs are left untouched.
+- `bunfig.toml`'s `[fmt]` section, read by `bun fmt`: formatting like oxfmt: no semicolons, sorted imports, Tailwind classes in the theme's order, package.json scripts A to Z. It ignores `.agents/**` and the two links to its skills (`.claude/skills/**`, `.github/skills/**`), so the AI skill docs are left untouched.
 
 ## Cursor
 
-[Cursor](https://cursor.com) reads the same `.vscode/` config, so the extension and format-on-save work with no extra setup.
+[Cursor](https://cursor.com) reads the same `.vscode/` config, so both extensions work with no extra setup.
 
 ## From the terminal
 
 No editor integration required. The same checks run from the shell, and again on commit:
 
 ```bash
-bun run format        # format the tree with Oxfmt
-bun run format:check  # check formatting without writing
-bun run lint          # lint the tree with Oxlint
+bun run format          # format the tree with bun fmt
+bun run format:check    # check formatting without writing
+bun run format:changed  # check only the files that differ from canary
+bun run lint            # lint the tree with Oxlint
 ```
 
 ## Next

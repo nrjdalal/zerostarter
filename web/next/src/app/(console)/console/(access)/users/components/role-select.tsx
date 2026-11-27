@@ -1,6 +1,6 @@
 "use client"
 
-import { grantableRoles, type ConsoleRole } from "@packages/auth/access"
+import { type ConsoleRole, grantableRoles } from "@packages/auth/access"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Column } from "@tanstack/react-table"
 import * as React from "react"

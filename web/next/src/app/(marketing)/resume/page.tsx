@@ -191,7 +191,7 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <main className="bg-background text-foreground min-h-svh space-y-16 py-24 text-base">
+    <main className="min-h-svh space-y-16 bg-background py-24 text-base text-foreground">
       {/* header */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>résumé</h1>
@@ -208,7 +208,7 @@ export default function Page() {
             I learn by shipping, and I sweat build performance, type safety, and release automation.
           </span>
         </p>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           New Delhi, India (open to relocate) ·{" "}
           <a href="mailto:nrjdalal.dev@gmail.com" className={linkClass}>
             nrjdalal.dev@gmail.com
@@ -246,7 +246,7 @@ export default function Page() {
       {/* core strengths */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>core strengths</h2>
-        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
+        <ul className="list-disc space-y-2 pl-5 leading-snug text-muted-foreground">
           {strengths.map((s) => (
             <li key={s}>{s}</li>
           ))}
@@ -269,7 +269,7 @@ export default function Page() {
               )}{" "}
               <span className="text-muted-foreground">· {job.meta}</span>
             </p>
-            <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
+            <ul className="list-disc space-y-2 pl-5 leading-snug text-muted-foreground">
               {job.points.map((point) => (
                 <li key={point}>{point}</li>
               ))}
@@ -294,18 +294,18 @@ export default function Page() {
           , 13,500+ VS Code installs and 30,000+ weekly npm downloads across 40+ packages. The
           strongest:
         </p>
-        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
+        <ul className="list-disc space-y-2 pl-5 leading-snug text-muted-foreground">
           {projects.map((project) => (
             <li key={project.name}>
               <a
                 href={project.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground border-border hover:border-ring border-b font-semibold transition-colors"
+                className="border-b border-border font-semibold text-foreground transition-colors hover:border-ring"
               >
                 {project.name}
               </a>
-              <RiArrowRightUpLine className="text-muted-foreground mb-1 inline size-4" /> -{" "}
+              <RiArrowRightUpLine className="mb-1 inline size-4 text-muted-foreground" /> -{" "}
               {project.note}
             </li>
           ))}
@@ -315,10 +315,10 @@ export default function Page() {
       {/* skills */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h2 className={sectionHeading}>skills</h2>
-        <ul className="text-muted-foreground list-disc space-y-2 pl-5 leading-snug">
+        <ul className="list-disc space-y-2 pl-5 leading-snug text-muted-foreground">
           {skills.map((skill) => (
             <li key={skill.group}>
-              <span className="text-foreground font-medium">{skill.group}</span>: {skill.items}
+              <span className="font-medium text-foreground">{skill.group}</span>: {skill.items}
             </li>
           ))}
         </ul>
@@ -332,7 +332,7 @@ export default function Page() {
             <b className="font-semibold">B.Tech, Electronics &amp; Communication Engineering</b>
           </p>
           <p className="text-muted-foreground">
-            <b className="text-foreground font-semibold">Delhi Technical Campus (GGSIPU)</b>, New
+            <b className="font-semibold text-foreground">Delhi Technical Campus (GGSIPU)</b>, New
             Delhi · 2016–2020
           </p>
         </div>

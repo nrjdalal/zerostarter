@@ -14,10 +14,10 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
-  DataTableToolbar,
-  useDataTable,
   type DataTablePage,
   type DataTablePageInput,
+  DataTableToolbar,
+  useDataTable,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"

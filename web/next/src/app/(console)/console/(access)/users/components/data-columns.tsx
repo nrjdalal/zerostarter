@@ -9,10 +9,10 @@ import type { InferResponseType } from "hono/client"
 import { UserRoleSelect } from "@/app/(console)/console/(access)/users/components/role-select"
 import { useConsoleRole } from "@/components/console/role"
 import {
-  DataTableCellText,
-  selectColumn,
-  DataTableColumnHeader,
   type ColumnConfig,
+  DataTableCellText,
+  DataTableColumnHeader,
+  selectColumn,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import {
