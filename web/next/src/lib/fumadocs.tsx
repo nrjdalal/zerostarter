@@ -48,7 +48,7 @@ export function renderPageContent<K extends ContentKind>(cs: ContentSource<K>, p
         />
       </DocsBody>
       {article && publishedAt && (
-        <div className="not-prose text-muted-foreground mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm">
+        <div className="not-prose mt-4 flex flex-wrap justify-end gap-x-3 gap-y-1 text-right text-sm text-muted-foreground">
           <time dateTime={publishedAt}>Published {formatBlogDate(publishedAt)}</time>
           {article.data.updatedAt && article.data.updatedAt !== publishedAt && (
             <time dateTime={article.data.updatedAt}>

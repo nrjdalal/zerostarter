@@ -33,10 +33,10 @@ function CopyButton({ code, label }: { code: string; label: string }) {
       variant="ghost"
       onClick={copy}
       aria-label={copied ? `Copied ${label}` : `Copy ${label}`}
-      className="text-muted-foreground hover:text-foreground -my-1"
+      className="-my-1 text-muted-foreground hover:text-foreground"
     >
       {copied ? (
-        <RiCheckLine className="text-success size-3.5" />
+        <RiCheckLine className="size-3.5 text-success" />
       ) : (
         <RiFileCopyLine className="size-3.5" />
       )}
@@ -48,9 +48,9 @@ function CopyButton({ code, label }: { code: string; label: string }) {
 // `html` is server-highlighted by shiki; `code` is the same source kept raw so it can be copied.
 export function CodeWindow({ label, html, code }: { label: string; html: string; code: string }) {
   return (
-    <div className="bg-card min-w-0 overflow-hidden rounded-lg border text-left">
-      <div className="bg-card flex items-center gap-2 border-b py-2.5 pr-2 pl-4">
-        <span className="text-muted-foreground font-mono text-xs">{label}</span>
+    <div className="min-w-0 overflow-hidden rounded-lg border bg-card text-left">
+      <div className="flex items-center gap-2 border-b bg-card py-2.5 pr-2 pl-4">
+        <span className="font-mono text-xs text-muted-foreground">{label}</span>
         <span className="ml-auto">
           <CopyButton code={code} label={label} />
         </span>

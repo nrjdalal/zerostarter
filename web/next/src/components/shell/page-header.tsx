@@ -20,7 +20,7 @@ function PageHeader({
     >
       <div className="space-y-1">
         <h1 className="text-xl font-semibold">{title}</h1>
-        {description && <p className="text-muted-foreground text-sm">{description}</p>}
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

@@ -27,7 +27,7 @@ export function DevTools() {
   const { width, height } = dimensions
 
   return (
-    <div className="bg-background text-primary fixed right-0 bottom-0 z-100 flex items-center gap-1.5 rounded-tl-lg border-t border-l font-mono text-xs font-medium select-none">
+    <div className="fixed right-0 bottom-0 z-100 flex items-center gap-1.5 rounded-tl-lg border-t border-l bg-background font-mono text-xs font-medium text-primary select-none">
       {expandDevtools && (
         <>
           <ReactQueryDevtools buttonPosition="top-right" />

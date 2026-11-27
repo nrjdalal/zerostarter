@@ -160,7 +160,7 @@ function PrimaryActions({ className }: { className?: string }) {
       <Button
         size="lg"
         variant="secondary"
-        className="border-border! bg-card! h-11 border bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
+        className="h-11 border border-border! bg-card! bg-clip-border px-4 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)]! md:px-6"
         render={<a href={site.social.github} target="_blank" rel="noopener noreferrer" />}
       >
         <RiGithubFill className="size-5" />
@@ -176,8 +176,8 @@ function PrimaryActions({ className }: { className?: string }) {
 
 function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <span className="bg-muted/50 text-muted-foreground mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm">
-      <span className="bg-success size-1.5 rounded-full" aria-hidden />
+    <span className="mb-4 inline-flex items-center gap-2 rounded-full border bg-muted/50 px-3.5 py-1.5 text-sm text-muted-foreground">
+      <span className="size-1.5 rounded-full bg-success" aria-hidden />
       {children}
     </span>
   )
@@ -240,9 +240,9 @@ docker compose up --build`
             <div>
               <Link
                 href="/docs"
-                className="bg-muted/50 text-muted-foreground hover:bg-muted mx-auto mb-6 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm whitespace-nowrap transition-colors"
+                className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border bg-muted/50 px-3.5 py-1.5 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted"
               >
-                <span className="bg-success size-1.5 rounded-full" aria-hidden />
+                <span className="size-1.5 rounded-full bg-success" aria-hidden />
                 Starter for Enterprise
                 <RiArrowRightSLine className="size-3.5" />
               </Link>
@@ -253,7 +253,7 @@ docker compose up --build`
               >
                 <NoBreakCompounds text={site.tagline} />
               </h1>
-              <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance sm:text-xl">
+              <p className="mx-auto mt-6 max-w-2xl text-lg text-balance text-muted-foreground sm:text-xl">
                 {site.description}
               </p>
               <div className="mx-auto mt-8 max-w-2xl">
@@ -272,13 +272,13 @@ docker compose up --build`
             role="group"
             aria-label="Technologies wired into the starter. Scrolling pauses while focused."
             data-marquee
-            className="bg-sidebar focus-visible:ring-ring/50 relative overflow-hidden border-y py-6 outline-none focus-visible:ring-2"
+            className="relative overflow-hidden border-y bg-sidebar py-6 outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             <div className="animate-marquee flex w-max gap-10 px-6">
               {[...techStack, ...techStack].map((tech, index) => (
                 <div
                   key={`${tech.name}-${index}`}
-                  className="text-muted-foreground flex items-center gap-2 whitespace-nowrap"
+                  className="flex items-center gap-2 whitespace-nowrap text-muted-foreground"
                 >
                   <span className="relative size-4 shrink-0">
                     <Image
@@ -300,8 +300,8 @@ docker compose up --build`
                 </div>
               ))}
             </div>
-            <div className="from-sidebar pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r to-transparent" />
-            <div className="from-sidebar pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-linear-to-r from-sidebar to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-linear-to-l from-sidebar to-transparent" />
             <style
               dangerouslySetInnerHTML={{
                 __html: `@media (prefers-reduced-motion: no-preference){@keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}[data-marquee] .animate-marquee{animation:marquee 50s linear infinite;will-change:transform}[data-marquee]:hover .animate-marquee,[data-marquee]:focus-within .animate-marquee{animation-play-state:paused}}`,
@@ -319,9 +319,9 @@ docker compose up --build`
           >
             One contract from database to UI
           </h2>
-          <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg text-balance">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-balance text-muted-foreground">
             Hono RPC exposes your API as a single{" "}
-            <code className="text-foreground font-mono">AppType</code>, so the client infers every
+            <code className="font-mono text-foreground">AppType</code>, so the client infers every
             request and response automatically. Rename a route and the frontend stops compiling. No
             codegen. No duplicated types. No drift.
           </p>
@@ -345,7 +345,7 @@ docker compose up --build`
               >
                 Wired together, not just installed
               </h2>
-              <p className="text-muted-foreground mt-4 text-lg text-balance">
+              <p className="mt-4 text-lg text-balance text-muted-foreground">
                 The boring, critical pieces every serious SaaS needs are already connected and
                 working on first run. The dashboard ships as an auth-gated shell and the console
                 ships with worked examples to copy, ready for your product logic.
@@ -353,13 +353,13 @@ docker compose up --build`
             </div>
             <div className="grid gap-3.5 sm:grid-cols-2">
               {/* Agents, full-width row */}
-              <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <div className="relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border bg-card p-6 sm:col-span-2 sm:grid-cols-2">
                 <div className="relative sm:-mr-4">
-                  <RiRobot2Line className="text-muted-foreground size-5" />
+                  <RiRobot2Line className="size-5 text-muted-foreground" />
                   <h3 className="mt-3.5 text-lg font-semibold">
                     Agents operate the real app, behind auth
                   </h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">
+                  <p className="mt-1.5 text-base text-muted-foreground">
                     SKILL.md playbooks, AGENTS.md, and generated llms.txt give Claude Code, Cursor,
                     and Copilot the repo-specific context they need. A dev-only login lets
                     agent-browser drive the running app for real, no mocks and no fixtures.
@@ -368,7 +368,7 @@ docker compose up --build`
                     {["SKILL.md", "llms.txt", "AGENTS.md"].map((chip) => (
                       <span
                         key={chip}
-                        className="text-muted-foreground bg-background rounded border px-2 py-1 font-mono text-xs"
+                        className="rounded border bg-background px-2 py-1 font-mono text-xs text-muted-foreground"
                       >
                         {chip}
                       </span>
@@ -381,22 +381,22 @@ docker compose up --build`
               {featureCards.slice(0, 2).map((feature) => (
                 <div
                   key={feature.title}
-                  className="bg-card relative overflow-hidden rounded-lg border p-6"
+                  className="relative overflow-hidden rounded-lg border bg-card p-6"
                 >
                   <div className="relative">
-                    <feature.icon className="text-muted-foreground size-5" />
+                    <feature.icon className="size-5 text-muted-foreground" />
                     <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
-                    <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                    <p className="mt-1.5 text-base text-muted-foreground">{feature.description}</p>
                   </div>
                 </div>
               ))}
 
               {/* Deploy, full-width row */}
-              <div className="bg-card relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <div className="relative grid items-stretch gap-x-14 gap-y-6 overflow-hidden rounded-lg border bg-card p-6 sm:col-span-2 sm:grid-cols-2">
                 <div className="relative sm:-mr-4">
-                  <RiRocketLine className="text-muted-foreground size-5" />
+                  <RiRocketLine className="size-5 text-muted-foreground" />
                   <h3 className="mt-3.5 text-lg font-semibold">Deploy without assembly</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">
+                  <p className="mt-1.5 text-base text-muted-foreground">
                     Web and API deploy as two apps sharing one PostgreSQL database, with production
                     and Docker configs included from the first commit. On Vercel, the API runs
                     migrations during deploy.
@@ -426,7 +426,7 @@ docker compose up --build`
                     ).map((tech) => (
                       <span
                         key={tech.name}
-                        className="text-muted-foreground bg-background inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs"
+                        className="inline-flex items-center gap-1.5 rounded border bg-background px-2 py-1 font-mono text-xs text-muted-foreground"
                       >
                         <span className="relative size-3 shrink-0">
                           <Image
@@ -455,22 +455,22 @@ docker compose up --build`
               {featureCards.slice(2).map((feature) => (
                 <div
                   key={feature.title}
-                  className="bg-card relative overflow-hidden rounded-lg border p-6"
+                  className="relative overflow-hidden rounded-lg border bg-card p-6"
                 >
                   <div className="relative">
-                    <feature.icon className="text-muted-foreground size-5" />
+                    <feature.icon className="size-5 text-muted-foreground" />
                     <h3 className="mt-3.5 text-lg font-semibold">{feature.title}</h3>
-                    <p className="text-muted-foreground mt-1.5 text-base">{feature.description}</p>
+                    <p className="mt-1.5 text-base text-muted-foreground">{feature.description}</p>
                   </div>
                 </div>
               ))}
 
               {/* App shell, full-width row */}
-              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <div className="relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border bg-card p-6 sm:col-span-2 sm:grid-cols-2">
                 <div className="relative sm:-mr-4">
-                  <RiLayoutGridLine className="text-muted-foreground size-5" />
+                  <RiLayoutGridLine className="size-5 text-muted-foreground" />
                   <h3 className="mt-3.5 text-lg font-semibold">The shell is already built</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">
+                  <p className="mt-1.5 text-base text-muted-foreground">
                     A collapsible sidebar, page header, user menu, and organization switcher ship
                     wired to real sessions. <code className="font-mono">/dashboard</code> is
                     auth-gated and <code className="font-mono">/console</code> is role-gated, so the
@@ -481,13 +481,13 @@ docker compose up --build`
               </div>
 
               {/* SEO & OG, full-width row */}
-              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <div className="relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border bg-card p-6 sm:col-span-2 sm:grid-cols-2">
                 <div className="relative sm:-mr-4">
-                  <RiGlobalLine className="text-muted-foreground size-5" />
+                  <RiGlobalLine className="size-5 text-muted-foreground" />
                   <h3 className="mt-3.5 text-lg font-semibold">
                     Indexable and shareable by default
                   </h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">
+                  <p className="mt-1.5 text-base text-muted-foreground">
                     takumi renders a unique social card for every page at request time, alongside a
                     generated sitemap, robots, and metadata. The preview here is this page&apos;s
                     own, rendered live.
@@ -506,11 +506,11 @@ docker compose up --build`
               </div>
 
               {/* Docs, full-width row */}
-              <div className="bg-card relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border p-6 sm:col-span-2 sm:grid-cols-2">
+              <div className="relative grid items-center gap-x-14 gap-y-6 overflow-hidden rounded-lg border bg-card p-6 sm:col-span-2 sm:grid-cols-2">
                 <div className="relative sm:-mr-4">
-                  <RiBookOpenLine className="text-muted-foreground size-5" />
+                  <RiBookOpenLine className="size-5 text-muted-foreground" />
                   <h3 className="mt-3.5 text-lg font-semibold">Docs agents can read</h3>
-                  <p className="text-muted-foreground mt-1.5 text-base">
+                  <p className="mt-1.5 text-base text-muted-foreground">
                     Fumadocs, full-text search, MDX content, and generated llms.txt make the project
                     readable for developers, contributors, and coding agents.
                   </p>
@@ -524,7 +524,7 @@ docker compose up --build`
                     <a
                       key={row.route}
                       href={row.route}
-                      className="bg-background hover:bg-muted/50 flex justify-between rounded-md border px-3.5 py-2.5 transition-colors"
+                      className="flex justify-between rounded-md border bg-background px-3.5 py-2.5 transition-colors hover:bg-muted/50"
                     >
                       {row.route}
                       <span className="text-muted-foreground">{row.note}</span>
@@ -544,7 +544,7 @@ docker compose up --build`
               <h2 id="why" className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
                 Not another starter. A better default.
               </h2>
-              <p className="text-muted-foreground mt-4 text-lg text-balance">
+              <p className="mt-4 text-lg text-balance text-muted-foreground">
                 Most starters give you folders and dependencies. {site.name} gives you the decisions
                 already made and wired: one file rebrands the fork, one command re-baselines it on
                 upstream, and a canary-to-main pipeline versions and ships it. You inherit a way of
@@ -556,11 +556,11 @@ docker compose up --build`
                 <div key={point.title} className="flex gap-4">
                   <point.icon
                     aria-hidden
-                    className="text-muted-foreground mt-0.5 size-6 shrink-0"
+                    className="mt-0.5 size-6 shrink-0 text-muted-foreground"
                   />
                   <div>
                     <h3 className="text-lg font-semibold">{point.title}</h3>
-                    <p className="text-muted-foreground mt-1.5 text-base">{point.description}</p>
+                    <p className="mt-1.5 text-base text-muted-foreground">{point.description}</p>
                   </div>
                 </div>
               ))}
@@ -570,7 +570,7 @@ docker compose up --build`
 
         {/* CTA */}
         <section aria-labelledby="get-started" className="px-4 py-24 md:px-6">
-          <div className="bg-card mx-auto max-w-6xl rounded-2xl border px-6 py-16 text-center sm:py-20">
+          <div className="mx-auto max-w-6xl rounded-2xl border bg-card px-6 py-16 text-center sm:py-20">
             <div className="mx-auto max-w-xl">
               <h2
                 id="get-started"
@@ -578,14 +578,14 @@ docker compose up --build`
               >
                 Start at zero. Ship like you have done this before.
               </h2>
-              <p className="text-muted-foreground mt-4 text-lg text-balance">
+              <p className="mt-4 text-lg text-balance text-muted-foreground">
                 {site.name} is the foundation for building real SaaS products with speed, clarity,
                 and discipline: production-ready infrastructure, clean architecture, automated
                 workflows, and documentation both humans and agents can trust. It does not choose
                 your payments or email vendor; the parts that make your product yours stay yours.
               </p>
               <PrimaryActions className="mt-8" />
-              <p className="text-muted-foreground mt-6 text-sm">
+              <p className="mt-6 text-sm text-muted-foreground">
                 Open source. Use it freely, including for commercial products.
               </p>
             </div>
@@ -599,15 +599,15 @@ docker compose up --build`
 
 function MarketingFooter() {
   return (
-    <footer className="bg-sidebar border-t">
-      <p className="text-muted-foreground mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm md:px-6">
+    <footer className="border-t bg-sidebar">
+      <p className="mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-4 py-5 text-sm text-muted-foreground md:px-6">
         <RiHeartFill className="size-4 fill-red-500/70 text-red-500/70" aria-hidden />
         Made by{" "}
         <a
           href={site.social.x}
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-foreground font-medium transition-colors"
+          className="font-medium transition-colors hover:text-foreground"
         >
           @nrjdalal
         </a>

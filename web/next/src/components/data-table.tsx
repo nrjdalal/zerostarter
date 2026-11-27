@@ -469,7 +469,7 @@ export function DataTable<TData extends RowData>({
         tabIndex={0}
         onScroll={(event) => loadMoreOnBottomReached(event.currentTarget)}
         className={cn(
-          "focus-visible:border-ring focus-visible:ring-ring/50 relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:ring-3 [&_[data-slot=table-container]]:overflow-visible",
+          "relative min-h-0 flex-1 overflow-auto rounded-md border outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 [&_[data-slot=table-container]]:overflow-visible",
           // Room to scroll the last rows clear of the floating bar, which otherwise sits over them for as long as anything is selected.
           selectionActions && selectedCount > 0 && "pb-14",
         )}
@@ -480,7 +480,7 @@ export function DataTable<TData extends RowData>({
           aria-rowcount={(typeof total === "number" ? total : rows.length) + 1}
           className="grid min-w-max"
         >
-          <TableHeader role="rowgroup" className="bg-background sticky top-0 z-10 grid">
+          <TableHeader role="rowgroup" className="sticky top-0 z-10 grid bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} role="row" aria-rowindex={1} className="flex w-full">
                 {headerGroup.headers.map((header) => {
@@ -585,7 +585,7 @@ export function DataTable<TData extends RowData>({
           </div>
         )}
         {isError && rows.length > 0 && (
-          <div className="text-destructive flex items-center justify-center gap-2 py-2 text-sm">
+          <div className="flex items-center justify-center gap-2 py-2 text-sm text-destructive">
             Something went wrong
             {onRetry && (
               <Button variant="outline" onClick={() => onRetry()}>
@@ -601,7 +601,7 @@ export function DataTable<TData extends RowData>({
             // A group, not a toolbar: role="toolbar" promises roving tabindex and arrow-key navigation, and a handful of buttons that tab normally is the honest shape.
             role="group"
             aria-label={`Actions for ${selectedCount} selected`}
-            className="bg-popover animate-in fade-in slide-in-from-bottom-2 pointer-events-auto flex items-center gap-1 rounded-md border p-1 shadow-md"
+            className="pointer-events-auto flex animate-in items-center gap-1 rounded-md border bg-popover p-1 shadow-md fade-in slide-in-from-bottom-2"
           >
             {selectionActions}
             <Button variant="ghost" onClick={() => table.resetRowSelection()}>
@@ -611,7 +611,7 @@ export function DataTable<TData extends RowData>({
         </div>
       )}
       {(selectable || typeof total === "number") && (
-        <div className="text-muted-foreground flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div>
             {selectable
               ? `${selectedCount} of ${table.getFilteredRowModel().rows.length} row(s) selected`
@@ -651,7 +651,7 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
     <button
       type="button"
       aria-label={`Sort by ${title}`}
-      className="focus-visible:ring-ring/50 inline-flex rounded-sm outline-none focus-visible:ring-3"
+      className="inline-flex rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
       {column.getIsSorted() === "desc" ? (
@@ -659,7 +659,7 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
       ) : column.getIsSorted() === "asc" ? (
         <RiArrowUpLine className="size-4" />
       ) : (
-        <RiExpandUpDownLine className="text-muted-foreground size-4" />
+        <RiExpandUpDownLine className="size-4 text-muted-foreground" />
       )}
     </button>
   )
@@ -692,7 +692,7 @@ export function DataTableCellText<TData extends RowData, TValue>({
   const wrap = Boolean(column && column.columnDef.meta && column.columnDef.meta.wrap)
   if (wrap) {
     return (
-      <span className={cn("min-w-0 whitespace-normal wrap-break-word", className)}>{children}</span>
+      <span className={cn("min-w-0 wrap-break-word whitespace-normal", className)}>{children}</span>
     )
   }
 
@@ -895,7 +895,7 @@ export function DataTableFacetedFilter<TData extends RowData, TValue>({
                     {option.icon && <option.icon className="text-muted-foreground" />}
                     <span>{option.label}</span>
                     {typeof count === "number" && count > 0 && (
-                      <span className="text-muted-foreground ml-auto font-mono text-xs">
+                      <span className="ml-auto font-mono text-xs text-muted-foreground">
                         {count}
                       </span>
                     )}

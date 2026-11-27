@@ -1,7 +1,7 @@
 {
   "semi": false,
   "sortImports": {},
-  "sortTailwindcss": {},
+  "sortTailwindcss": { "stylesheet": "web/next/src/app/globals.css", "functions": ["cn", "cva"] },
   "sortPackageJson": { "sortScripts": true },
   "ignorePatterns": [".agents/**"],
 }

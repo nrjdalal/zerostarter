@@ -53,7 +53,7 @@ export function SidebarDropdownMenu({
         render={
           <SidebarMenuButton
             size="lg"
-            className="data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground border"
+            className="border data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground"
           />
         }
       >

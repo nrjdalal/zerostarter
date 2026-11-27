@@ -37,7 +37,7 @@ function WaitlistCount() {
   return (
     <div className="mt-10 flex h-7 items-center justify-center">
       {data && data.count > 0 && (
-        <div className="animate-in fade-in flex items-center gap-3 duration-500">
+        <div className="flex animate-in items-center gap-3 duration-500 fade-in">
           <AvatarGroup>
             <Avatar className="size-7">
               <AvatarFallback className="bg-chart-2 text-xs text-white">A</AvatarFallback>
@@ -49,7 +49,7 @@ function WaitlistCount() {
               <AvatarFallback className="bg-chart-4 text-xs text-white">C</AvatarFallback>
             </Avatar>
           </AvatarGroup>
-          <span className="text-muted-foreground text-sm">
+          <span className="text-sm text-muted-foreground">
             {data.count}+ people on the waitlist
           </span>
         </div>
@@ -95,11 +95,11 @@ export default function WaitlistPage() {
     <main className="flex min-h-svh flex-col items-center justify-center p-8 text-center">
       <div className="mx-auto flex w-full max-w-xl flex-col items-center">
         <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">{site.name}</h1>
-        <p className="text-muted-foreground mb-8 max-w-md text-lg">{site.tagline}</p>
+        <p className="mb-8 max-w-md text-lg text-muted-foreground">{site.tagline}</p>
 
         {joined ? (
           // matches the single-row form height so submitting never shifts the layout (sm+); on mobile the form stacks
-          <div className="text-success flex min-h-12 w-full items-center justify-center text-lg">
+          <div className="flex min-h-12 w-full items-center justify-center text-lg text-success">
             {"You're on the list. We'll be in touch soon."}
           </div>
         ) : (

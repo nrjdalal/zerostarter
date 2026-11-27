@@ -166,7 +166,7 @@ export function DocsFooter() {
             }
           >
             <span>Feedback</span>
-            <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
+            <span className="ml-auto text-xs text-muted-foreground">v{config.app.version}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -176,7 +176,7 @@ export function DocsFooter() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <div className="text-muted-foreground px-2 py-1.5 text-xs">v{config.app.version}</div>
+        <div className="px-2 py-1.5 text-xs text-muted-foreground">v{config.app.version}</div>
       </SidebarMenuItem>
     </SidebarMenu>
   )
@@ -251,7 +251,7 @@ export function DocsSearch() {
 
   return (
     <div className="relative">
-      <RiSearchLine className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
+      <RiSearchLine className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
       <SidebarInput
         placeholder="Search"
         onClick={handleClick}

@@ -47,7 +47,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon
-        render={<RiArrowDownSLine className="text-muted-foreground pointer-events-none size-4" />}
+        render={<RiArrowDownSLine className="pointer-events-none size-4 text-muted-foreground" />}
       />
     </SelectPrimitive.Trigger>
   )

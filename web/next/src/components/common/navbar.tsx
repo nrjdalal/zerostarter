@@ -53,7 +53,7 @@ function SocialLinks({ onClick }: { onClick?: () => void }) {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground/60 hover:text-foreground transition-colors"
+                  className="text-foreground/60 transition-colors hover:text-foreground"
                   aria-label={link.label}
                   onClick={onClick}
                 />
@@ -91,7 +91,7 @@ export function Navbar() {
   const navLinks = allNavLinks.filter((link) => !link.feature || features[link.feature])
 
   return (
-    <header className="bg-background fixed top-0 left-0 z-50 w-full border-b">
+    <header className="fixed top-0 left-0 z-50 w-full border-b bg-background">
       <div className="flex min-h-14 items-center justify-between pr-5 pl-3.5">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {site.name}
@@ -108,7 +108,7 @@ export function Navbar() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground/60 hover:text-foreground/80 font-medium transition-colors"
+                    className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
                   >
                     {link.label}
                     <RiArrowRightUpLine className="-mt-3 inline size-3.5" />
@@ -121,7 +121,7 @@ export function Navbar() {
                   href={link.href}
                   className={cn(
                     "font-medium transition-colors",
-                    active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
+                    active ? "text-foreground" : "text-foreground/60 hover:text-foreground/80",
                   )}
                 >
                   {link.label}
@@ -154,7 +154,7 @@ export function Navbar() {
               {toDashboard ? (
                 <Spinner />
               ) : (
-                <span className="animate-in fade-in duration-1000">Dashboard</span>
+                <span className="animate-in duration-1000 fade-in">Dashboard</span>
               )}
             </Button>
           ) : (
@@ -203,7 +203,7 @@ export function Navbar() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-foreground/60 hover:text-foreground/80 font-medium transition-colors"
+                        className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
                         onClick={() => setIsOpen(false)}
                       >
                         {link.label}
@@ -217,7 +217,7 @@ export function Navbar() {
                       href={link.href}
                       className={cn(
                         "font-medium transition-colors",
-                        active ? "text-foreground" : "hover:text-foreground/80 text-foreground/60",
+                        active ? "text-foreground" : "text-foreground/60 hover:text-foreground/80",
                       )}
                       onClick={() => setIsOpen(false)}
                     >

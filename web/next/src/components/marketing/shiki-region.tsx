@@ -19,7 +19,7 @@ export function ShikiRegion({
       role="region"
       aria-label={label}
       className={cn(
-        "focus-visible:ring-ring/50 overflow-x-auto py-5 outline-none focus-visible:ring-2",
+        "overflow-x-auto py-5 outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         shikiReset,
         className,
       )}

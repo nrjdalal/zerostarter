@@ -27,7 +27,7 @@ function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Tr
       {...props}
     >
       {children}
-      <RiArrowDownSLine className="text-muted-foreground pointer-events-none size-4" />
+      <RiArrowDownSLine className="pointer-events-none size-4 text-muted-foreground" />
     </ComboboxPrimitive.Trigger>
   )
 }
