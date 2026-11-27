@@ -37,15 +37,16 @@ See [Database](/docs/manage/database) for the loop these belong to.
 
 ## Quality
 
-| Script                 | What it does                                                                                                | In PR CI          |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------- |
-| `bun run check-types`  | Type-check every workspace, the repo scripts included, then the test tree                                   | yes               |
-| `bun run format`       | Oxfmt, writing fixes                                                                                        | no                |
-| `bun run format:check` | Oxfmt, report only                                                                                          | yes               |
-| `bun run lint`         | Oxlint over the whole tree                                                                                  | yes               |
-| `bun run sync:config`  | Write every `tsconfig.json` and each package's type-check setup from one template (`--check` only compares) | yes, as `--check` |
-| `bun run test`         | Build the shared packages, then run the whole suite from the repo-root `tests/` mirror                      | yes               |
-| `bun run test:e2e`     | Run every `*.e2e.test.ts` against a stack that is already running                                           | no                |
+| Script                   | What it does                                                                                                | In PR CI          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- | ----------------- |
+| `bun run check-types`    | Type-check every workspace, the repo scripts included, then the test tree                                   | yes               |
+| `bun run format`         | `bun fmt`, writing fixes                                                                                    | no                |
+| `bun run format:changed` | `bun fmt --check` on the files that differ from `origin/canary`                                             | no                |
+| `bun run format:check`   | `bun fmt --check`, report only                                                                              | yes               |
+| `bun run lint`           | Oxlint over the whole tree                                                                                  | yes               |
+| `bun run sync:config`    | Write every `tsconfig.json` and each package's type-check setup from one template (`--check` only compares) | yes, as `--check` |
+| `bun run test`           | Build the shared packages, then run the whole suite from the repo-root `tests/` mirror                      | yes               |
+| `bun run test:e2e`       | Run every `*.e2e.test.ts` against a stack that is already running                                           | no                |
 
 A failing test or type error blocks the merge. The details worth knowing:
 
