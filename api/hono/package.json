@@ -9,8 +9,8 @@
   "types": "./dist/index.d.mts",
   "exports": "./dist/index.mjs",
   "scripts": {
-    "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify --env disable",
-    "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --env disable --external hono",
+    "build": "tsdown && bun build dist/index.mjs --outfile bundle/index.mjs --target bun --minify --env disable --external zod-to-json-schema",
+    "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --env disable --external hono --external zod-to-json-schema",
     "check-types": "bun check",
     "dev": "portless",
     "dev:app": "concurrently \"tsdown --watch\" \"bun ../../packages/scripts/src/portless.ts bun --hot src/index.ts\"",
