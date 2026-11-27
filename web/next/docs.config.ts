@@ -219,7 +219,7 @@ const docsConfig = {
         "/docs/manage/code-quality": {
           title: "Code Quality",
           description:
-            "Oxlint, Oxfmt, bun check, and the git hooks that keep every commit formatted, linted, and building.",
+            "Oxlint, bun fmt, bun check, and the git hooks that keep every commit formatted, linted, and building.",
         },
       },
       {

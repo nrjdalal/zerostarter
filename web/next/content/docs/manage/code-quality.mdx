@@ -1,14 +1,14 @@
 ---
 slug: /docs/manage/code-quality
 title: Code Quality
-description: Oxlint, Oxfmt, bun check, and the git hooks that keep every commit formatted, linted, and building.
+description: Oxlint, bun fmt, bun check, and the git hooks that keep every commit formatted, linted, and building.
 ---
 
-One Rust toolchain formats and lints the whole monorepo, and [Lefthook](https://github.com/evilmartians/lefthook) runs it (plus a build and a commit-message check) at the moments a mistake would otherwise slip through. You rarely invoke any of it by hand.
+Oxlint lints and `bun fmt` formats the whole monorepo, and [Lefthook](https://github.com/evilmartians/lefthook) runs them (plus a build and a commit-message check) at the moments a mistake would otherwise slip through. You rarely invoke any of it by hand.
 
-## Oxc, not ESLint + Prettier
+## Oxlint and bun fmt, not ESLint + Prettier
 
-[Oxc](https://oxc.rs) replaces both ESLint and Prettier with two commands: `oxlint` for linting and `oxfmt` for formatting. They're written in Rust, so they finish in a fraction of the time, fast enough to run on every commit without you noticing. That speed is the whole reason to switch.
+[Oxlint](https://oxc.rs) replaces ESLint, and [`bun fmt`](https://bun.com/docs/format), the formatter built into Bun, replaces Prettier. Both are native code, so they finish in a fraction of the time, fast enough to run on every commit without you noticing. That speed is the whole reason to switch.
 
 The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schema, every rule at its default:
 
@@ -18,14 +18,14 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 }
 ```
 
-`.oxfmtrc.jsonc` turns off semicolons, sorts imports, sorts Tailwind classes, and skips the AI skill directory:
+`bun fmt` reads `.oxfmtrc.jsonc`, which turns off semicolons, sorts imports, sorts Tailwind classes, keeps every package.json's scripts A to Z, and skips the AI skill directory:
 
 ```jsonc
 {
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "semi": false,
-  "experimentalSortImports": {},
-  "experimentalTailwindcss": {},
+  "sortImports": {},
+  "sortTailwindcss": {},
+  "sortPackageJson": { "sortScripts": true },
   "ignorePatterns": [".agents/**"],
 }
 ```
@@ -33,9 +33,10 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 Run either across the tree yourself:
 
 ```bash
-bun run lint          # oxlint over everything (this is what CI runs)
-bun run format        # oxfmt, writing fixes
-bun run format:check  # oxfmt, report only (also what CI runs)
+bun run lint            # oxlint over everything (this is what CI runs)
+bun run format          # bun fmt, writing fixes
+bun run format:check    # bun fmt --check, report only (also what CI runs)
+bun run format:changed  # the same check, only on the files that differ from canary
 ```
 
 ## bun check, not tsc
@@ -58,8 +59,11 @@ pre-commit:
         - ".agents/skills/**/*.md"
         - "packages/scripts/src/skills-manager.ts"
       run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
-    lint-staged:
+    format:
       priority: 2
+      run: bun fmt --staged
+    lint-staged:
+      priority: 3
       run: bunx lint-staged --verbose
       stage_fixed: true
     build:
@@ -81,7 +85,7 @@ pre-push:
       run: bun packages/scripts/src/ensure-remote-branches.ts {1}
 ```
 
-**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats then lints only your staged files (`oxfmt`, then `oxlint`); `stage_fixed: true` re-stages anything the formatter rewrote, so the fix rides along in the same commit. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
+**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then `bun fmt --staged` formats only your staged files and stages them again, so the fix rides along in the same commit. A file with both staged and unstaged changes stops the commit there: stage the rest, or commit those hunks separately. Then [lint-staged](https://github.com/lint-staged/lint-staged) lints the staged files with `oxlint`. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
 **commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 
