@@ -1,4 +1,4 @@
 {
-  "*": ["oxlint --no-error-on-unmatched-pattern"],
+  "*": ["bun fmt --no-error-on-unmatched-pattern", "oxlint --no-error-on-unmatched-pattern"],
   "package.json": ["bun packages/scripts/src/deps-manager.ts"]
 }
