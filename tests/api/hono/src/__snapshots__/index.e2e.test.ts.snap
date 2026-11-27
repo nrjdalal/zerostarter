@@ -52,8 +52,10 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "environment": {
                           "enum": [
@@ -102,8 +104,10 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -150,8 +154,10 @@ exports[`api/hono/src/index.ts the OpenAPI document is the contract 1`] = `
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -223,8 +229,10 @@ const { data, error } = await unwrap(apiClient.health.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -271,8 +279,10 @@ const { data, error } = await unwrap(apiClient.health.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -338,11 +348,14 @@ socket.addEventListener("message", (event) => {
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "events": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "action": {
                                 "example": "role.change",
@@ -439,8 +452,10 @@ socket.addEventListener("message", (event) => {
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -459,6 +474,7 @@ socket.addEventListener("message", (event) => {
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -511,8 +527,10 @@ socket.addEventListener("message", (event) => {
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -559,8 +577,10 @@ socket.addEventListener("message", (event) => {
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -607,8 +627,10 @@ socket.addEventListener("message", (event) => {
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -655,8 +677,10 @@ socket.addEventListener("message", (event) => {
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -721,13 +745,16 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "results": {
                           "items": {
                             "oneOf": [
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "id": {
                                     "type": "string",
@@ -744,6 +771,7 @@ const { data, error } = await unwrap(
                                 "type": "object",
                               },
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "code": {
                                     "enum": [
@@ -810,8 +838,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -830,6 +860,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -882,8 +913,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -930,8 +963,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -978,8 +1013,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1026,8 +1063,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1090,8 +1129,10 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "hasNextPage": {
                           "example": true,
@@ -1107,6 +1148,7 @@ const { data, error } = await unwrap(
                         },
                         "rules": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "actor": {
                                 "example": "ada@example.com",
@@ -1198,8 +1240,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1218,6 +1262,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -1270,8 +1315,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1318,8 +1365,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1366,8 +1415,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1414,8 +1465,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1478,10 +1531,13 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "rule": {
+                          "additionalProperties": false,
                           "properties": {
                             "actor": {
                               "example": "ada@example.com",
@@ -1563,8 +1619,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1583,6 +1641,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -1635,8 +1694,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1683,8 +1744,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1731,8 +1794,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1779,8 +1844,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1827,8 +1894,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -1893,8 +1962,10 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "hasNextPage": {
                           "example": true,
@@ -1914,6 +1985,7 @@ const { data, error } = await unwrap(
                         },
                         "users": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "banned": {
                                 "example": false,
@@ -2018,8 +2090,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2038,6 +2112,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -2090,8 +2165,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2138,8 +2215,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2186,8 +2265,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2234,8 +2315,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2300,13 +2383,16 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "results": {
                           "items": {
                             "oneOf": [
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "id": {
                                     "type": "string",
@@ -2323,6 +2409,7 @@ const { data, error } = await unwrap(
                                 "type": "object",
                               },
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "code": {
                                     "enum": [
@@ -2389,8 +2476,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2409,6 +2498,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -2461,8 +2551,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2509,8 +2601,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2557,8 +2651,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2605,8 +2701,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2671,13 +2769,16 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "results": {
                           "items": {
                             "oneOf": [
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "id": {
                                     "type": "string",
@@ -2694,6 +2795,7 @@ const { data, error } = await unwrap(
                                 "type": "object",
                               },
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "code": {
                                     "enum": [
@@ -2760,8 +2862,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2780,6 +2884,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -2832,8 +2937,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2880,8 +2987,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2928,8 +3037,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -2976,8 +3087,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3042,13 +3155,16 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "results": {
                           "items": {
                             "oneOf": [
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "id": {
                                     "type": "string",
@@ -3065,6 +3181,7 @@ const { data, error } = await unwrap(
                                 "type": "object",
                               },
                               {
+                                "additionalProperties": false,
                                 "properties": {
                                   "code": {
                                     "enum": [
@@ -3131,8 +3248,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3151,6 +3270,7 @@ const { data, error } = await unwrap(
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -3203,8 +3323,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3251,8 +3373,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3299,8 +3423,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3347,8 +3473,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3409,8 +3537,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "hasNextPage": {
                           "example": true,
@@ -3426,6 +3556,7 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                         },
                         "signups": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "createdAt": {
                                 "example": "<timestamp>",
@@ -3493,8 +3624,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3513,6 +3646,7 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -3565,8 +3699,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3613,8 +3749,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3661,8 +3799,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3709,8 +3849,10 @@ const { data, error } = await unwrap(apiClient.v1.admin.waitlist.$delete({ json:
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3775,8 +3917,10 @@ const { data, error } = await unwrap(
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "createdAt": {
                           "example": "<timestamp>",
@@ -3852,8 +3996,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3900,8 +4046,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -3948,8 +4096,10 @@ const { data, error } = await unwrap(
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4012,8 +4162,10 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())"
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "createdAt": {
                           "example": "<timestamp>",
@@ -4080,8 +4232,10 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4128,8 +4282,10 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4176,8 +4332,10 @@ const { data, error } = await unwrap(apiClient.v1.session.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4240,8 +4398,10 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())"
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "count": {
                           "example": 40,
@@ -4273,8 +4433,10 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4321,8 +4483,10 @@ const { data, error } = await unwrap(apiClient.v1.user.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4383,8 +4547,10 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())"
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "data": {
+                      "additionalProperties": false,
                       "properties": {
                         "message": {
                           "example": "ok",
@@ -4424,8 +4590,10 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4444,6 +4612,7 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())"
                         },
                         "issues": {
                           "items": {
+                            "additionalProperties": false,
                             "properties": {
                               "message": {
                                 "type": "string",
@@ -4496,8 +4665,10 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
@@ -4544,8 +4715,10 @@ const { data, error } = await unwrap(apiClient.waitlist.$get())"
                   },
                 },
                 "schema": {
+                  "additionalProperties": false,
                   "properties": {
                     "error": {
+                      "additionalProperties": false,
                       "properties": {
                         "code": {
                           "enum": [
