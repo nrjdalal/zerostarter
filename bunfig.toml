@@ -1,11 +1,11 @@
 [fmt]
 config = false
 flavor = "oxfmt"
-semi = false
 ignorePatterns = [".agents/**"]
+semi = false
 sortImports = true
 sortPackageJson = { sortScripts = true }
 
 [fmt.sortTailwindcss]
-stylesheet = "web/next/src/app/globals.css"
 functions = ["cn", "cva"]
+stylesheet = "web/next/src/app/globals.css"

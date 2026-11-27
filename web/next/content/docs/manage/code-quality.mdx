@@ -24,14 +24,14 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 [fmt]
 config = false
 flavor = "oxfmt"
-semi = false
 ignorePatterns = [".agents/**"]
+semi = false
 sortImports = true
 sortPackageJson = { sortScripts = true }
 
 [fmt.sortTailwindcss]
-stylesheet = "web/next/src/app/globals.css"
 functions = ["cn", "cva"]
+stylesheet = "web/next/src/app/globals.css"
 ```
 
 `config = false` keeps a Prettier or oxfmt config file, a parent folder's included, from applying, and `flavor = "oxfmt"` formats like oxfmt (100 columns) where bun fmt would otherwise format like Prettier.
