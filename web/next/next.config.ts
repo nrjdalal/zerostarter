@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
 import { getSafeEnv } from "@packages/env"
-// Must stay above the web-next import: that module validates env when it evaluates, and imports hoist, so a call placed lower would run too late. bun fmt keeps a bare import on its line but sorts the named imports around it, so the order holds only while one import sits above it.
+// Must stay above the web-next import: that module validates env when it evaluates, and imports hoist, so a call placed lower would run too late. bun fmt keeps a bare import at its place in the import list but sorts the named imports around it, so an import added above it can move the web-next import above it.
 import "@packages/env/load-dotenv"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
