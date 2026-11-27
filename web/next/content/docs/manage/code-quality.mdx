@@ -18,13 +18,13 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 }
 ```
 
-`bun fmt` reads `.oxfmtrc.jsonc`, which turns off semicolons, sorts imports, sorts Tailwind classes in the theme's order (in `className` and inside `cn()` and `cva()`), keeps every package.json's scripts A to Z, and skips the AI skill directory:
+`bun fmt` reads `.oxfmtrc.jsonc`, which turns off semicolons, sorts imports, sorts Tailwind classes, keeps every package.json's scripts A to Z, and skips the AI skill directory:
 
 ```jsonc
 {
   "semi": false,
   "sortImports": {},
-  "sortTailwindcss": { "stylesheet": "web/next/src/app/globals.css", "functions": ["cn", "cva"] },
+  "sortTailwindcss": {},
   "sortPackageJson": { "sortScripts": true },
   "ignorePatterns": [".agents/**"],
 }
