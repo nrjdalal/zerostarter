@@ -256,7 +256,7 @@ const SKILLS_MANAGER = [
   ".github/scripts/skills-manager.ts",
 ]
 
-// Fill the fork's AGENTS.md skills tables using the fork's own maintainer script, so the catalog matches the skills this reconcile left in place. Runs after install, since the script formats through oxfmt. Best-effort: a fork that dropped the script still scaffolds.
+// Fill the fork's AGENTS.md skills tables using the fork's own maintainer script, so the catalog matches the skills this reconcile left in place. Runs after install, since the script formats through bun fmt. Best-effort: a fork that dropped the script still scaffolds.
 export const regenerateSkillTables = async (root: string): Promise<void> => {
   const script = SKILLS_MANAGER.find((path) => exists(join(root, path)))
   if (!script) return

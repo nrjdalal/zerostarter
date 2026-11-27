@@ -92,12 +92,12 @@ async function render(): Promise<string> {
   return format(doc)
 }
 
-// oxfmt owns the table-column alignment, so run the render through it, otherwise the compact output drifts from what lint-staged commits and the --check gate flip-flops.
+// bun fmt owns the table-column alignment, so run the render through it, otherwise the compact output drifts from what pre-commit formats and the --check gate flip-flops.
 async function format(doc: string): Promise<string> {
   const tmp = path.join(ROOT, ".skills.agents.tmp.md")
   try {
     await Bun.write(tmp, doc)
-    await $`bunx oxfmt --write ${tmp}`.quiet()
+    await $`bun fmt ${tmp}`.quiet()
     return await Bun.file(tmp).text()
   } finally {
     await $`rm -f ${tmp}`.quiet()
