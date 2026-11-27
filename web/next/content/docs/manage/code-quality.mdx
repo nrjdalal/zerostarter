@@ -18,17 +18,23 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 }
 ```
 
-`bun fmt` reads `.oxfmtrc.jsonc`, which turns off semicolons, sorts imports, sorts Tailwind classes, keeps every package.json's scripts A to Z, and skips the AI skill directory:
+`bun fmt` reads the `[fmt]` section of `bunfig.toml`, which formats like oxfmt, turns off semicolons, sorts imports, sorts Tailwind classes in the theme's order (in `className` and inside `cn()` and `cva()`), keeps every package.json's scripts A to Z, and skips the AI skill directory:
 
-```jsonc
-{
-  "semi": false,
-  "sortImports": {},
-  "sortTailwindcss": {},
-  "sortPackageJson": { "sortScripts": true },
-  "ignorePatterns": [".agents/**"],
-}
+```toml
+[fmt]
+config = false
+flavor = "oxfmt"
+semi = false
+ignorePatterns = [".agents/**"]
+sortImports = true
+sortPackageJson = { sortScripts = true }
+
+[fmt.sortTailwindcss]
+stylesheet = "web/next/src/app/globals.css"
+functions = ["cn", "cva"]
 ```
+
+`config = false` keeps a Prettier or oxfmt config file, a parent folder's included, from applying, and `flavor = "oxfmt"` formats like oxfmt (100 columns) where bun fmt would otherwise format like Prettier.
 
 Run either across the tree yourself:
 
@@ -59,11 +65,8 @@ pre-commit:
         - ".agents/skills/**/*.md"
         - "packages/scripts/src/skills-manager.ts"
       run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
-    format:
-      priority: 2
-      run: bun fmt --staged
     lint-staged:
-      priority: 3
+      priority: 2
       run: bunx lint-staged --verbose
       stage_fixed: true
     build:
@@ -85,7 +88,7 @@ pre-push:
       run: bun packages/scripts/src/ensure-remote-branches.ts {1}
 ```
 
-**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then `bun fmt --staged` formats only your staged files and stages them again, so the fix rides along in the same commit. A file with both staged and unstaged changes stops the commit there: stage the rest, or commit those hunks separately. Then [lint-staged](https://github.com/lint-staged/lint-staged) lints the staged files with `oxlint`. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
+**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats your staged files with `bun fmt`, lints them with `oxlint` and stages the fixes again, so they ride along in the same commit. A file with both staged and unstaged changes is fine: lint-staged hides the unstaged part while it runs. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
 **commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 

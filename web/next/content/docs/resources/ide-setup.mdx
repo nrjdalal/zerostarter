@@ -27,7 +27,7 @@ Install the [Oxc extension](https://marketplace.visualstudio.com/items?itemName=
 The extension reads the project's root lint config, so the editor and the CLI can never disagree:
 
 - `.oxlintrc.jsonc`: lint rules.
-- `.oxfmtrc.jsonc`, read by `bun fmt`: formatting: no semicolons, sorted imports, Tailwind class sorting, package.json scripts A to Z. It ignores `.agents/**`, so the AI skill docs are left untouched.
+- `bunfig.toml`'s `[fmt]` section, read by `bun fmt`: formatting like oxfmt: no semicolons, sorted imports, Tailwind classes in the theme's order, package.json scripts A to Z. It ignores `.agents/**`, so the AI skill docs are left untouched.
 
 ## Cursor
 
