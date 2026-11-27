@@ -1,7 +1,7 @@
 [fmt]
 config = false
 flavor = "oxfmt"
-ignorePatterns = [".agents/**"]
+ignorePatterns = [".agents/**", ".claude/skills/**", ".github/skills/**"]
 semi = false
 sortImports = true
 sortPackageJson = { sortScripts = true }
