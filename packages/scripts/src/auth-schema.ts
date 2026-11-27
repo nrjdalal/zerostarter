@@ -33,7 +33,7 @@ try {
     authPackage,
   )
   generated = await capture(
-    ["bun", "fmt", `--stdin-filepath=${target}`],
+    ["bunx", "oxfmt", "--stdin-filepath", target],
     authPackage,
     await Bun.file(scratch).text(),
   )

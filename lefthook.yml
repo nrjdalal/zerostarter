@@ -7,11 +7,8 @@ pre-commit:
         - ".agents/skills/**/*.md"
         - "packages/scripts/src/skills-manager.ts"
       run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
-    format:
-      priority: 2
-      run: bun fmt --staged
     lint-staged:
-      priority: 3
+      priority: 2
       run: bunx lint-staged --verbose
       stage_fixed: true
     build:
