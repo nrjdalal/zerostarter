@@ -1,7 +1,7 @@
 {
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "semi": false,
-  "experimentalSortImports": {},
-  "experimentalTailwindcss": {},
+  "sortImports": {},
+  "sortTailwindcss": {},
+  "sortPackageJson": { "sortScripts": true },
   "ignorePatterns": [".agents/**"],
 }

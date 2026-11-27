@@ -49,7 +49,7 @@ A Bun + Turborepo monorepo with two deployable apps and shared packages under \`
 ## Tech Stack
 
 Major versions are listed where they matter; see the root \`package.json\` catalog for exact pins.
-- **Runtime & tooling:** Bun (runtime + package manager), Turborepo, tsdown (bundler for backend packages), Oxlint + Oxfmt (lint/format), TypeScript with bun check (type checking), Lefthook + Commitlint (git hooks), portless (named .localhost dev URLs, branch-prefixed in a worktree).
+- **Runtime & tooling:** Bun (runtime + package manager), Turborepo, tsdown (bundler for backend packages), Oxlint + bun fmt (lint/format), TypeScript with bun check (type checking), Lefthook + Commitlint (git hooks), portless (named .localhost dev URLs, branch-prefixed in a worktree).
 - **Frontend (\`web/next\`):** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, shadcn/ui on Base UI primitives, TanStack Query (data) with TanStack Form (forms), TanStack Table + Virtual (data tables) with nuqs (their state in the URL), Remixicon, Fumadocs (docs), takumi-js (dynamic OG images), PostHog (analytics), Vercel Speed Insights (Core Web Vitals, rendered only when \`VERCEL\` is set).
 - **Backend (\`api/hono\`):** Hono with end-to-end type-safe RPC, Zod + @hono/standard-validator, hono-rate-limiter with Arcjet IP detection, OpenAPI + Scalar reference, WebSockets through the same typed client (Bun.serve() locally and in Docker, the Node adapter on Vercel).
 - **Data & auth:** PostgreSQL + Drizzle ORM (Bun SQL driver). Better Auth with the Organizations (organizations + teams) and Admin (the console role ladder \`owner > admin > member > user\`; member and above reach \`/console\`) plugins.
@@ -69,7 +69,7 @@ Major versions are listed where they matter; see the root \`package.json\` catal
 
 **Code style:**
 - Use workspace imports (\`@api/hono\`, \`@packages/*\`) and the \`@/\` path alias; avoid deep relative paths.
-- No semicolons (enforced by Oxfmt). Keep documentation in sync with code changes.`,
+- No semicolons (enforced by bun fmt). Keep documentation in sync with code changes.`,
 } as const
 
 export type Site = typeof site
