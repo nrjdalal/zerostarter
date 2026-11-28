@@ -8,7 +8,7 @@ PostHog and the feedback link are **optional** and stay off until you set an env
 
 ## PostHog analytics
 
-[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry, which runs once before the app hydrates), following PostHog's current App Router setup. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present.
+[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry), which loads `posthog-js` once the page has loaded and the browser is idle, or 2 seconds after load at the latest, so the library stays off every route's first load. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present, and without a key `posthog-js` never downloads.
 
 Turn it on with two env vars (the key enables it, the host picks your region):
 
@@ -25,25 +25,36 @@ The starter sets up initialization, but it does **not** call `capture`, `identif
 
 </Callout>
 
+Loading after the page trades a little completeness for speed: a visitor who leaves before PostHog starts is never counted. PostHog starts soon after the page has loaded, or 2 seconds after it at the latest on a page that stays busy. On a local production build, PostHog starts at 181 ms, after the page's load event at 72 ms; on a page kept busy every frame, at 2,251 ms.
+
+PostHog initializes after the page has loaded, so call it from an event handler and import it there. A call made earlier, at module load or in a mount effect, is dropped with a "You must initialize PostHog" error, and a static `import posthog from "posthog-js"` puts the library back on that route's first load.
+
 Capture events and identify users from the shared client:
 
 ```ts
-import posthog from "posthog-js"
-
-posthog.capture("signup_clicked", { plan: "pro" })
-posthog.identify(user.id, { email: user.email, name: user.name })
-```
-
-Inside components, reach the same singleton and read flags off it (`isFeatureEnabled` resolves once flags have loaded):
-
-```tsx
-import posthog from "posthog-js"
-
-function Dashboard() {
-  const showNew = posthog.isFeatureEnabled("new-dashboard")
-  return showNew ? <New onClick={() => posthog.capture("used_new")} /> : <Old />
+async function onSignup(user: { email: string; id: string; name: string }) {
+  const { default: posthog } = await import("posthog-js")
+  posthog.capture("signup_clicked", { plan: "pro" })
+  posthog.identify(user.id, { email: user.email, name: user.name })
 }
 ```
+
+Read a flag the same way, in the handler that acts on it (`isFeatureEnabled` returns nothing until flags have loaded, so an earlier click takes the default path):
+
+```tsx
+import { useRouter } from "next/navigation"
+
+function DashboardLink() {
+  const router = useRouter()
+  const open = async () => {
+    const { default: posthog } = await import("posthog-js")
+    router.push(posthog.isFeatureEnabled("new-dashboard") ? "/dashboard/new" : "/dashboard")
+  }
+  return <button onClick={open}>Dashboard</button>
+}
+```
+
+A flag that changes the first render needs its value before PostHog loads, which `bootstrap` cannot give, since it takes effect at init: evaluate the flag on the server with `posthog-node` and pass the value into the page, as [PostHog's Next.js guide](https://posthog.com/docs/libraries/next-js#integration) recommends, using the same distinct ID on server and client.
 
 PostHog is privacy-configurable: the host picks EU or US data residency, session recordings can be masked or turned off, and its built-in opt-out honors users who decline tracking.
 
