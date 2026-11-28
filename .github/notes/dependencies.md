@@ -22,6 +22,10 @@ The rule has **no opt-out**, so no pin survives an install, whatever reason is r
 
 Enforcement is only partial by design. Specs the rule cannot convert are reported and the script still exits 0, so a compound range such as `>=4.4.3 <5` survives an install with nothing but a line of `postinstall` output. Failing the install instead would block work for a range that may be perfectly deliberate, so the auto-convertible half is enforced and the rest is advisory.
 
+## Release age
+
+`bunfig.toml` holds Bun's install settings. Under `[install]`, `minimumReleaseAge = 259200` makes `bun install`, `bun add` and `bun update` take only versions published at least 3 days ago, so a hijacked release has time to be caught and pulled before it lands here. A version `bun.lock` already holds still installs, `--frozen-lockfile` included. `bun outdated -r` marks a version the age keeps back with `*`, and the next refresh after its third day takes it. A package that has to move sooner, for a fix in a fresh version, goes in `minimumReleaseAgeExcludes`: by name to exempt every version, or as `name@version` for one. Record the reason here. The list holds `@types/bun` and `bun-types` today, since `@types/bun` pins `bun-types` to its own version and both move with the Bun pin on the day a Bun version ships. `telemetry = false` at the top of the file turns off Bun's telemetry, as `DO_NOT_TRACK` does.
+
 ## Held versions
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
