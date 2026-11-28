@@ -1,7 +1,6 @@
 import { site } from "@packages/config/site"
 import { getBuildVersion } from "@packages/env"
 import { env } from "@packages/env/api-hono"
-import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { describeRoute, openAPIRouteHandler, resolver } from "hono-openapi"
 import { cors } from "hono/cors"
@@ -9,20 +8,13 @@ import { HTTPException } from "hono/http-exception"
 import { logger } from "hono/logger"
 import { z } from "zod"
 
+import { apiReference } from "@/lib/api-reference"
 import { errorHandler, globalErrorResponses, jsonError } from "@/lib/error"
 import { createServer, upgradeWebSocket } from "@/lib/server"
 import { rateLimiterMiddleware, requireFeature } from "@/middlewares"
 import { agentsRouter, authRouter, v1Router, waitlistRouter } from "@/routers"
 
 const BUILD_VERSION = getBuildVersion()
-
-// The Scalar API reference UI, gated by the apiDocs feature. Built once; a fork can flip the flag on later without changing this route.
-const apiReference = Scalar({
-  pageTitle: `API Reference | ${site.name}`,
-  defaultOpenAllTags: true,
-  expandAllResponses: true,
-  url: "/api/openapi.json",
-})
 
 const app = new Hono()
 
