@@ -32,6 +32,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/scripts/src/docs.ts` | Bun | `node:path` (path) |
 | `packages/scripts/src/generate-env.ts` | Bun | `node:path` (resolve) |
 | `packages/scripts/src/release-version.ts` | Bun | `node:path` (join) |
+| `packages/scripts/src/shadcn-css.ts` | Bun | `node:fs/promises` (rm); `node:path` (dirname, join, resolve) |
 | `packages/scripts/src/skills-manager.ts` | Bun | `node:crypto` (createHash); `node:path` (path) |
 | `packages/scripts/src/sync-shadcn.ts` | Bun | `node:fs/promises` (rm); `node:path` (join) |
 | `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (join) |
@@ -48,6 +49,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/packages/db/src/schema/auth.test.ts` | Bun | `node:path` (join) |
 | `tests/packages/scripts/src/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
+| `tests/packages/scripts/src/shadcn-css.test.ts` | Bun | `node:fs` (existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (dirname, join) |
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |
 | `web/next/src/app/layout.tsx` | Both | `node:fs` (existsSync); `node:path` (join) |
 

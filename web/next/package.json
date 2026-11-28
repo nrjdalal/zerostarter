@@ -59,7 +59,6 @@
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "portless": "catalog:",
-    "shadcn": "catalog:",
     "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",

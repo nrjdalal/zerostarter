@@ -133,7 +133,6 @@
     "react-dom": "^19.3.1",
     "react-resizable-panels": "^4.26.0",
     "recharts": "^3.11.2",
-    "shadcn": "^4.23.1",
     "sharp": "^0.35.5",
     "shiki": "^4.6.0",
     "svgo": "^4.1.0",

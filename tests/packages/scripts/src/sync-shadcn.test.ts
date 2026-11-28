@@ -78,6 +78,17 @@ test("stops before touching anything when a path the sync rewrites has uncommitt
   expect(existsSync(join(dir, "web/next/src/components/ui/button.tsx"))).toBe(true)
 })
 
+test("stops before touching anything when the vendored shadcn.css has uncommitted changes", async () => {
+  file("web/next/src/app/shadcn.css", "/* edited */\n")
+  git("add", "web/next/src/app/shadcn.css")
+  git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "vendor")
+  file("web/next/src/app/shadcn.css", "/* edited again */\n")
+  const { calls, code, stderr } = await run()
+  expect(code).toBe(1)
+  expect(stderr).toContain("web/next/src/app/shadcn.css")
+  expect(calls).toEqual([])
+})
+
 // The stubs are shebang scripts found through a colon-joined PATH, which Windows can neither exec nor split, so the stubbed runs hold on posix alone.
 const canExecStubs = process.platform !== "win32"
 

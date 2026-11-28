@@ -19,7 +19,7 @@ Under the hood the command is `bun packages/scripts/src/sync-shadcn.ts && bun i`
 
 ## What `shadcn-customize.ts` reconciles
 
-Two strategies. Each guard is idempotent and throws when its target is absent, so an upstream shape change **fails loudly** rather than silently dropping an override.
+Three strategies. Each guard is idempotent and throws when its target is absent, so an upstream shape change **fails loudly** rather than silently dropping an override.
 
 **Restore from HEAD** (`RESTORE` list), files the sync re-scaffolds but we own outright:
 
@@ -34,6 +34,8 @@ Two strategies. Each guard is idempotent and throws when its target is absent, s
 - `spinner.tsx`, `React.ComponentProps<RemixiconComponentType>` typing
 - `sidebar.tsx`, optional `children` label on `SidebarTrigger`
 - `globals.css`, `--font-sans` repointed at the brand DM Sans variable (`--font-dm-sans`), and both `--sidebar` lines (`:root` + `.dark`) flushed to `var(--background)` (PR #566)
+
+**Vendor**, `web/next/src/app/shadcn.css` (`packages/scripts/src/shadcn-css.ts`): the app's own copy of `shadcn/tailwind.css`, so the app has no `shadcn` dependency. Each run rewrites it from the shadcn package `init` installed, with that version, licence and copyright in its header. It points the `@import "shadcn/tailwind.css"` that `init` re-adds at `./shadcn.css`, or drops it when that import is already there, so one copy stays. Then it removes the package from `node_modules`. It throws when the package no longer exports `tailwind.css` or is no longer MIT. Its usual diff is the header's version line.
 
 `calendar.tsx` carries no override and tracks the registry as-is (we pin `react-day-picker` to `^10`; the registry component is v10-compatible).
 
