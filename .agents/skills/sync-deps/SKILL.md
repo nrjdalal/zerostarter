@@ -1,12 +1,12 @@
 ---
 name: sync-deps
-description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
+description: "Refresh every dependency and version pin to its latest release (npm: at least 3 days old), run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory."
 source: local
 ---
 
 # Dependency Refresh and Audit
 
-Two jobs share one record. A **refresh** moves everything to its latest release; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override, ignored advisory and held version, and it stays in place even when there are none.
+Two jobs share one record. A **refresh** moves everything to its latest release, an npm package to its latest that is at least 3 days old; an **audit** clears a high advisory. The pre-push hook runs the audit, on `canary` only (`lefthook.yml`). `.github/notes/dependencies.md` is the canonical record of every active override, ignored advisory and held version, and it stays in place even when there are none.
 
 ## Refresh
 
@@ -17,10 +17,10 @@ A refresh moves the npm tree, then the pins outside it, which `bun update` never
 ```bash
 bun update -r --latest
 bun install        # once more: postinstall rewrote ranges, so bun.lock is one install behind
-bun outdated -r    # expect no rows
+bun outdated -r    # expect only held groups and age-held (*) rows
 ```
 
-`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group's catalog entries and `bun.lock` back to its held versions after it, unless step 4 proves the break fixed. A patch in root `patchedDependencies` is keyed to one exact version, so when the update moves a patched package, drop its patch if the new version carries the fix, else redo it with `bun patch` on the new version; in the canonical starter, `## Patched dependencies` in the same `.github/notes/dependencies.md` names each one. Done when `bun outdated -r` prints no rows but the held groups'.
+`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group's catalog entries and `bun.lock` back to its held versions after it, unless step 4 proves the break fixed. A patch in root `patchedDependencies` is keyed to one exact version, so when the update moves a patched package, drop its patch if the new version carries the fix, else redo it with `bun patch` on the new version; in the canonical starter, `## Patched dependencies` in the same `.github/notes/dependencies.md` names each one. Done when `bun outdated -r` prints no rows but the held groups' and the versions the release age keeps back, which it marks `*` (`## Release age` in `.github/notes/dependencies.md`).
 
 ### 2. Move the pins outside npm
 
