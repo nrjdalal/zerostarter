@@ -4,11 +4,15 @@ import { isProduction } from "@packages/env"
 import { env } from "@packages/env/web-next"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
+import dynamic from "next/dynamic"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { useState } from "react"
 
-import { DevTools } from "@/components/common/devtools"
 import { Toaster } from "@/components/ui/toast"
+
+const DevTools = dynamic(() => import("@/components/common/devtools").then((m) => m.DevTools), {
+  ssr: false,
+})
 
 export function OuterProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
