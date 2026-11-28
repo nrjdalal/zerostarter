@@ -16,9 +16,10 @@ type Route = { status?: number; body: unknown }
 const sent: { url: string; headers: Headers }[] = []
 let inFlight = 0
 let maxInFlight = 0
+let fetchSpy: { mockRestore: () => void } | undefined
 
 function stubFetch(routes: Record<string, Route>) {
-  return spyOn(globalThis, "fetch").mockImplementation((async (
+  fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ) => {
@@ -40,7 +41,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  ;(globalThis.fetch as unknown as { mockRestore?: () => void }).mockRestore?.()
+  fetchSpy?.mockRestore()
+  fetchSpy = undefined
 })
 
 describe("the GitHub reads", () => {
