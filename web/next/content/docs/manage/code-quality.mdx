@@ -65,18 +65,28 @@ pre-commit:
         - ".agents/skills/**/*.md"
         - "packages/scripts/src/skills-manager.ts"
       run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
-    lint-staged:
+    deps-manager:
       priority: 2
-      run: bunx lint-staged --verbose
+      glob:
+        - "package.json"
+        - "**/package.json"
+      run: bun packages/scripts/src/deps-manager.ts
       stage_fixed: true
+    format:
+      priority: 3
+      run: bun fmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    lint:
+      priority: 4
+      run: bunx oxlint --deny-warnings --no-error-on-unmatched-pattern {staged_files}
     build:
       run: bun run build
       use_stdin: true
 
 commit-msg:
   commands:
-    commitlint:
-      run: bunx commitlint --edit {1}
+    commit-msg:
+      run: bun packages/scripts/src/commit-msg.ts {1}
 
 pre-push:
   commands:
@@ -88,9 +98,9 @@ pre-push:
       run: bun packages/scripts/src/ensure-remote-branches.ts {1}
 ```
 
-**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats your staged files with `bun fmt`, lints them with `oxlint` and stages the fixes again, so they ride along in the same commit. A file with both staged and unstaged changes is fine: lint-staged hides the unstaged part while it runs. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
+**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then lefthook's own jobs run on your staged files (`{staged_files}`): `deps-manager` when a `package.json` is staged, `bun fmt`, then `oxlint`, and `stage_fixed` stages their fixes again, so they ride along in the same commit. A file with both staged and unstaged changes is fine: lefthook hides the unstaged part while the jobs run. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
-**commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
+**commit-msg**: `packages/scripts/src/commit-msg.ts` checks the message against Conventional Commits (below), with the 12 rules of commitlint's [`config-conventional`](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional) and no dependency.
 
 **pre-push**: `bun audit --audit-level high` runs, but only from `canary` (`only: ref: canary`), so a vulnerable dependency is caught before the branch leaves your machine without blocking your offline commits. `ensure-remote-branches.ts` seeds the release branches (default `main`) that drive the release PR (see [Releases](/docs/manage/release)).
 
@@ -120,7 +130,7 @@ Two repo rules the hook and skills enforce:
 ## Common fixes
 
 - **A commit failed on formatting or lint**: run `bun run format` (and `bun run lint`), `git add` the result, and commit again.
-- **Commitlint rejected the message**: rewrite it as `type: subject`; `add user page` becomes `feat: add user page`.
+- **The commit-msg hook rejected the message**: rewrite it as `type: subject`; `add user page` becomes `feat: add user page`.
 - **Hooks aren't running**: reinstall them with `bun run prepare`.
 - **You need to bypass in an emergency**: `git commit --no-verify`, or `LEFTHOOK=0 git commit …` to drop every hook, or `LEFTHOOK_EXCLUDE=build git commit …` to drop just the build. CI re-checks all of it anyway.
 

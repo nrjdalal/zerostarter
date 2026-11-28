@@ -38,7 +38,7 @@ Every item below is wired and working out of the box, not just a dependency in `
 - **Documentation**: [Fumadocs](https://fumadocs.dev) with full-text search and auto-generated [llms.txt](https://zerostarter.dev/llms.txt)
 - **Dynamic OG Images**: [takumi](https://www.npmjs.com/package/takumi-js) for home, docs, and blog social cards
 - **SEO**: sitemap, robots, and per-page metadata, indexable by default
-- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [`bun check`](https://bun.com/docs/runtime/check) (type checking), [Oxlint](https://oxc.rs) and [`bun fmt`](https://bun.com/docs/format), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and [Commitlint](https://commitlint.js.org)
+- **Tooling**: [tsdown](https://tsdown.dev) (backend bundling), [`bun check`](https://bun.com/docs/runtime/check) (type checking), [Oxlint](https://oxc.rs) and [`bun fmt`](https://bun.com/docs/format), with [Lefthook](https://github.com/evilmartians/lefthook) git hooks and a Conventional Commits check
 - **Automated Releases**: changelog generation and a canary-to-main release flow
 
 ## 📂 Monorepo Structure
