@@ -39,7 +39,7 @@ jobs:
           git checkout canary
           # install first so every bunx below resolves the LOCKED versions
           # (changelogen's output format is load-bearing for the content gate)
-          bun install --ignore-scripts
+          bun install --frozen-lockfile --ignore-scripts
           # the boundary this changelog covers; tagged below so the next run starts exactly here
           BOUNDARY=$(git rev-parse HEAD)
           LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
