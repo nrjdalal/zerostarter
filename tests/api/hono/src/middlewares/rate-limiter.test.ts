@@ -10,18 +10,25 @@ import { createRateLimiter } from "./src/middlewares/rate-limiter"
 
 type Ask = { headers?: Record<string, string>; peer?: string }
 const app = () => new Hono().use(createRateLimiter({ limit: 2, windowMs: 60_000 })).get("/", (c) => c.text("ok"))
+const stacked = () =>
+  new Hono()
+    .use(createRateLimiter({ limit: 1000, windowMs: 60_000 }))
+    .use(createRateLimiter({ getUserId: (c) => c.req.header("x-user"), limit: 2, windowMs: 60_000 }))
+    .get("/", (c) => c.text("ok"))
 const env = (peer?: string) =>
   peer ? { requestIP: () => ({ address: peer, family: peer.includes(":") ? "IPv6" : "IPv4", port: 40000 }) } : undefined
 const answer = (r: Response) => r.status + (r.headers.has("ratelimit-limit") ? "" : " skipped")
-const answers = async (asks: Ask[]) => {
-  const one = app()
+const answers = async (asks: Ask[], make = app) => {
+  const one = make()
   const out: string[] = []
   for (const ask of asks) out.push(answer(await one.fetch(new Request("http://api.test/", { headers: ask.headers }), env(ask.peer))))
   return out
 }
-const cases = JSON.parse(process.env.CASES!) as Record<string, Ask[]>
+const cases = JSON.parse(process.env.CASES ?? "{}") as Record<string, Ask[]>
+const stack = JSON.parse(process.env.STACKED ?? "{}") as Record<string, Ask[]>
 const out: Record<string, string[]> = {}
 for (const [name, asks] of Object.entries(cases)) out[name] = await answers(asks)
+for (const [name, asks] of Object.entries(stack)) out[name] = await answers(asks, stacked)
 if (process.env.LOOPBACK) {
   const server = Bun.serve({ port: 0, hostname: "127.0.0.1", fetch: app().fetch })
   const got: string[] = []
@@ -104,6 +111,56 @@ test("off Vercel, a private or loopback peer that forwards no public client addr
     "a private-network peer with no forwarding header": skipped,
     "a Docker peer that forwards a private address": skipped,
     "a loopback client over a real socket": skipped,
+  })
+})
+
+test("off Vercel, an IPv4 client that Bun's dual-stack listener reports as ::ffff:a.b.c.d is read as that IPv4 address", async () => {
+  expect(
+    await probe(
+      {
+        "a mapped public peer that rotates x-forwarded-for": rotating("::ffff:8.8.8.8"),
+        "a mapped public peer with no forwarding header": three({ peer: "::ffff:8.8.8.8" }),
+        "a mapped private proxy's public client": three({
+          headers: { "x-forwarded-for": "1.2.3.4" },
+          peer: "::ffff:172.18.0.2",
+        }),
+        "a mapped Docker peer with no forwarding header": three({ peer: "::ffff:172.18.0.5" }),
+      },
+      {},
+    ),
+  ).toEqual({
+    "a mapped public peer that rotates x-forwarded-for": limited,
+    "a mapped public peer with no forwarding header": limited,
+    "a mapped private proxy's public client": limited,
+    "a mapped Docker peer with no forwarding header": skipped,
+  })
+})
+
+test("behind the global limiter, the per-user limiter keys each signed-in user on their own account", async () => {
+  const user = (id: string, peer: string) => ({ headers: { "x-user": id }, peer })
+  expect(
+    await probe(
+      {},
+      {
+        STACKED: JSON.stringify({
+          "two users behind one public address": [
+            user("a", "8.8.8.8"),
+            user("a", "8.8.8.8"),
+            user("b", "8.8.8.8"),
+          ],
+          "one user from three public addresses": [
+            user("a", "8.8.8.8"),
+            user("a", "8.8.4.4"),
+            user("a", "1.1.1.1"),
+          ],
+          "one user on an internal peer": three(user("a", "172.18.0.5")),
+        }),
+      },
+    ),
+  ).toEqual({
+    "two users behind one public address": ["200", "200", "200"],
+    "one user from three public addresses": limited,
+    "one user on an internal peer": limited,
   })
 })
 
