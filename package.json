@@ -43,8 +43,6 @@
     "test:e2e": "[ ! -d tests ] || E2E_API_URL=${E2E_API_URL:-http://localhost:4000} E2E_WEB_URL=${E2E_WEB_URL:-http://localhost:3000} bun test e2e.test"
   },
   "devDependencies": {
-    "@commitlint/cli": "catalog:",
-    "@commitlint/config-conventional": "catalog:",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "changelogen": "catalog:",
@@ -55,17 +53,10 @@
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
   "packageManager": "bun@1.4.5",
   "catalog": {
     "@arcjet/ip": "^1.16.0",
     "@base-ui/react": "^1.9.0",
-    "@commitlint/cli": "^21.2.4",
-    "@commitlint/config-conventional": "^21.2.4",
     "@hono/node-server": "^2.1.11",
     "@hono/standard-validator": "^0.4.1",
     "@octokit/rest": "^22.0.1",

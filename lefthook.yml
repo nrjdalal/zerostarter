@@ -27,8 +27,8 @@ pre-commit:
 
 commit-msg:
   commands:
-    commitlint:
-      run: bunx commitlint --edit {1}
+    commit-msg:
+      run: bun packages/scripts/src/commit-msg.ts {1}
 
 pre-push:
   commands:
