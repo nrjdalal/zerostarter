@@ -210,11 +210,27 @@ test("off Vercel, a mapped address a proxy forwards is read as its IPv4 address"
   })
 })
 
-test("off Vercel, a Cloudflare edge peer is a proxy whose cf-connecting-ip names the client, and a forged one from any other peer counts for nothing", async () => {
-  const edge = (client: string, peer = "::ffff:104.16.0.1") => ({
-    headers: { "cf-connecting-ip": client },
-    peer,
-  })
+const edge = (client: string, peer = "::ffff:104.16.0.1") => ({
+  headers: { "cf-connecting-ip": client },
+  peer,
+})
+
+test("off Vercel, by default a Cloudflare edge peer is a public peer like any other, keyed on itself", async () => {
+  expect(
+    await probe(
+      {
+        "three clients through one Cloudflare edge": [
+          edge("1.2.3.4"),
+          edge("5.6.7.8"),
+          edge("9.10.11.12"),
+        ],
+      },
+      {},
+    ),
+  ).toEqual({ "three clients through one Cloudflare edge": limited })
+})
+
+test("off Vercel, with HONO_TRUST_CLOUDFLARE on, a Cloudflare edge peer is a proxy whose cf-connecting-ip names the client, and a forged one from any other peer counts for nothing", async () => {
   expect(
     await probe(
       {
@@ -234,7 +250,7 @@ test("off Vercel, a Cloudflare edge peer is a proxy whose cf-connecting-ip names
           edge("9.10.11.12", "8.8.8.8"),
         ],
       },
-      {},
+      { HONO_TRUST_CLOUDFLARE: "true" },
     ),
   ).toEqual({
     // each client keeps a bucket of its own, though all share one edge address
