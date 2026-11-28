@@ -7,7 +7,6 @@
     "check-types": "bun check"
   },
   "devDependencies": {
-    "@octokit/rest": "catalog:",
     "@packages/config": "workspace:*",
     "@packages/env": "workspace:*",
     "@types/bun": "catalog:",
