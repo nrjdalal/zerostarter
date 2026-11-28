@@ -1,5 +1,7 @@
 import { Node, Project, SyntaxKind } from "ts-morph"
 
+import { vendorShadcnCss } from "@/shadcn-css"
+
 // Re-applies every local override after `sync-shadcn.ts` wipes ui/ and re-scaffolds the app.
 // Two strategies:
 //   restore, files we own outright; shadcn's version carries nothing we want, so reset to HEAD.
@@ -208,3 +210,5 @@ patchCheckbox()
 patchSpinner()
 patchSidebar()
 await patchGlobals()
+await vendorShadcnCss("web/next")
+log("vendored: web/next/src/app/shadcn.css")
