@@ -1,5 +1,3 @@
-import { globby } from "globby"
-
 type DepSection = "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies"
 
 const DEP_SECTIONS: DepSection[] = [
@@ -15,6 +13,7 @@ type JSONValue = JSONPrimitive | JSONValue[] | { [key: string]: JSONValue }
 export type PackageJson = {
   catalog?: Record<string, JSONValue>
   catalogs?: Record<string, Record<string, JSONValue>>
+  workspaces?: string[]
 } & Partial<Record<DepSection, Record<string, string>>>
 
 const isPlainObject = (v: unknown): v is Record<string, JSONValue> =>
@@ -162,6 +161,17 @@ export const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string
   return { safeToMove, unsafeMissing }
 }
 
+// The root manifest and each workspace's, the ones a `catalog:` spec resolves in, read from the root's `workspaces` as sync-config.ts reads them, with forward slashes, since Windows hands scan results back with backslashes.
+export const manifestPaths = async (rootPkg: PackageJson, cwd = ".") => {
+  const paths = ["package.json"]
+  for (const pattern of rootPkg.workspaces ?? []) {
+    for await (const file of new Bun.Glob(`${pattern}/package.json`).scan({ cwd })) {
+      paths.push(file.replaceAll("\\", "/"))
+    }
+  }
+  return paths.sort()
+}
+
 async function main() {
   const rootPkgPath = "package.json"
 
@@ -180,7 +190,7 @@ async function main() {
 
   const catalogKeys = collectCatalogKeys(rootPkg)
 
-  const pkgPaths = await globby("**/package.json", { gitignore: true })
+  const pkgPaths = await manifestPaths(rootPkg)
   const { usedDeps, usedVersions } = await scanUsedDeps(pkgPaths)
 
   const { safeToMove, unsafeMissing } = pickSafeMoves(catalogKeys, usedVersions)

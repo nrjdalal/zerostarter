@@ -34,7 +34,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `packages/scripts/src/release-version.ts` | Bun | `node:path` (join) |
 | `packages/scripts/src/skills-manager.ts` | Bun | `node:crypto` (createHash); `node:path` (path) |
 | `packages/scripts/src/sync-shadcn.ts` | Bun | `node:fs/promises` (rm); `node:path` (join) |
-| `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (join) |
+| `tests/github/workflows/auto-labeler.test.ts` | Bun | `node:module` (createRequire); `node:path` (dirname, join) |
 | `tests/packages/cli/bin/commands/init.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/bin/commands/reinit.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join); `node:util` (stripVTControlCharacters) |
 | `tests/packages/cli/bin/commands/sync.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdtempSync, readFileSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join); `node:util` (stripVTControlCharacters) |
@@ -46,6 +46,7 @@ runs under the system Node while Docker and Vercel serve it under Bun.
 | `tests/packages/cli/src/io.test.ts` | Bun | `node:child_process` (execFileSync); `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/cli/src/skills.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/db/src/schema/auth.test.ts` | Bun | `node:path` (join) |
+| `tests/packages/scripts/src/deps-manager.test.ts` | Bun | `node:fs` (mkdirSync, mkdtempSync, rmSync, writeFileSync); `node:os` (tmpdir); `node:path` (dirname, join) |
 | `tests/packages/scripts/src/ensure-remote-branches.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `tests/packages/scripts/src/release-version.test.ts` | Bun | `node:fs` (mkdtempSync, rmSync); `node:os` (tmpdir); `node:path` (join) |
 | `web/next/next.config.ts` | Both | `node:fs` (readFileSync); `node:path` (resolve) |

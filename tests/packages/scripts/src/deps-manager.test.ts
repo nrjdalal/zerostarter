@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { dirname, join } from "node:path"
 
 import {
+  manifestPaths,
   normalizeCatalogRanges,
   type PackageJson,
   pickSafeMoves,
@@ -100,4 +104,42 @@ test("a dependency already in the catalog is not moved again", () => {
 test("object keys sort at every depth while array order is kept", () => {
   const sorted = sortObjectDeep({ z: 1, a: { d: [3, 1, 2], b: { y: true, c: null } } })
   expect(JSON.stringify(sorted)).toBe('{"a":{"b":{"c":null,"y":true},"d":[3,1,2]},"z":1}')
+})
+
+const root = join(import.meta.dir, "../../../..")
+
+test("the manifests read are the root's and every workspace's, the package.json files git tracks outside a dot folder", async () => {
+  const rootPkg = await Bun.file(join(root, "package.json")).json()
+  const tracked = Bun.spawnSync(
+    ["git", "ls-files", "--", ":(glob)**/package.json", ":(exclude,glob)**/.*/**"],
+    { cwd: root },
+  )
+    .stdout.toString()
+    .split("\n")
+    .filter(Boolean)
+    .sort()
+  expect(await manifestPaths(rootPkg, root)).toEqual(tracked)
+})
+
+test("a manifest under node_modules, a dot folder or a folder outside the workspaces is not read", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "deps-manager-"))
+  try {
+    for (const file of [
+      "package.json",
+      "packages/a/package.json",
+      "packages/a/node_modules/x/package.json",
+      "packages/.hidden/package.json",
+      "node_modules/y/package.json",
+      "out/package.json",
+    ]) {
+      mkdirSync(join(dir, dirname(file)), { recursive: true })
+      writeFileSync(join(dir, file), "{}")
+    }
+    expect(await manifestPaths({ workspaces: ["packages/*"] }, dir)).toEqual([
+      "package.json",
+      "packages/a/package.json",
+    ])
+  } finally {
+    rmSync(dir, { force: true, recursive: true })
+  }
 })
