@@ -13,7 +13,9 @@
     "build:vercel": "tsdown && bun build dist/index.mjs --outfile vercel-bundle/index.mjs --target bun --minify --env disable --external hono",
     "check-types": "bun check",
     "dev": "portless",
-    "dev:app": "concurrently \"tsdown --watch\" \"bun ../../packages/scripts/src/portless.ts bun --hot src/index.ts\"",
+    "dev:app": "bun run --parallel --no-exit-on-error dev:serve dev:watch",
+    "dev:serve": "bun ../../packages/scripts/src/portless.ts bun --hot src/index.ts",
+    "dev:watch": "tsdown --watch",
     "start": "bun --no-install bundle/index.mjs"
   },
   "dependencies": {
@@ -37,7 +39,6 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@types/ws": "catalog:",
-    "concurrently": "catalog:",
     "portless": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

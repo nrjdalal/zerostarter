@@ -104,7 +104,6 @@
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "cn": "^0.5.2",
-    "concurrently": "^10.0.7",
     "dotenv": "^18.0.10",
     "drizzle-kit": "^0.31.11",
     "drizzle-orm": "^0.45.4",
