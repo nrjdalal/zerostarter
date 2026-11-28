@@ -2,4 +2,4 @@ telemetry = false
 
 [install]
 minimumReleaseAge = 259200
-minimumReleaseAgeExcludes = []
+minimumReleaseAgeExcludes = ["@types/bun", "bun-types"]

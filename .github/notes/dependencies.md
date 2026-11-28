@@ -24,7 +24,7 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 ## Release age
 
-`bunfig.toml` holds Bun's install settings. Under `[install]`, `minimumReleaseAge = 259200` makes `bun install`, `bun add` and `bun update` take only versions published at least 3 days ago, so a hijacked release has time to be caught and pulled before it lands here. A version `bun.lock` already holds still installs, `--frozen-lockfile` included. `bun outdated -r` marks a version the age keeps back with `*`, and the next refresh after its third day takes it. A package that has to move sooner, for a fix in a fresh version, goes in `minimumReleaseAgeExcludes`: by name to exempt every version, or as `name@version` for one. Record the reason here. The list is empty today. `telemetry = false` at the top of the file turns off Bun's telemetry, as `DO_NOT_TRACK` does.
+`bunfig.toml` holds Bun's install settings. Under `[install]`, `minimumReleaseAge = 259200` makes `bun install`, `bun add` and `bun update` take only versions published at least 3 days ago, so a hijacked release has time to be caught and pulled before it lands here. A version `bun.lock` already holds still installs, `--frozen-lockfile` included. `bun outdated -r` marks a version the age keeps back with `*`, and the next refresh after its third day takes it. A package that has to move sooner, for a fix in a fresh version, goes in `minimumReleaseAgeExcludes`: by name to exempt every version, or as `name@version` for one. Record the reason here. It holds `@types/bun` and `bun-types` today. `telemetry = false` at the top of the file turns off Bun's telemetry, as `DO_NOT_TRACK` does.
 
 ## Held versions
 
