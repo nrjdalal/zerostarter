@@ -26,7 +26,6 @@
     "@packages/config": "workspace:*",
     "@packages/db": "workspace:*",
     "@packages/env": "workspace:*",
-    "@scalar/hono-api-reference": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
