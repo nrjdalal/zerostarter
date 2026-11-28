@@ -78,6 +78,7 @@ test("runTail draws a rolling window on a TTY, then collapses to the summary", a
     Object.defineProperty(stdout, "columns", { configurable: true, value: origCols })
   }
   const all = writes.join("")
+  // oxlint-disable-next-line no-control-regex -- the redraw is an ANSI escape, ESC by design
   expect(all).toMatch(/\[\d+A/) // cursor-up: the window was redrawn in place
   expect(all).toContain("[?7l") // auto-wrap disabled so a wide/long line can't wrap and grow the window
   expect(all).toContain("[?7h") // and re-enabled afterwards
