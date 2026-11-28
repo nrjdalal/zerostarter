@@ -1,4 +1,4 @@
-import { findIp } from "@arcjet/ip"
+import { cloudflare, findIp, parseProxies } from "@arcjet/ip"
 import { env } from "@packages/env/api-hono"
 import { hash } from "bun"
 import type { Context } from "hono"
@@ -8,25 +8,33 @@ import { jsonError } from "@/lib/error"
 
 const onVercel = process.env.VERCEL === "1"
 
-// The connection's peer, which Bun.serve() reports through the server it passes fetch as env (local, Docker, self-host), with a dual-stack listener's ::ffff:a.b.c.d read as a.b.c.d; none on Vercel, whose function sees only Vercel's proxy.
+// Off Vercel, a Cloudflare edge peer is a proxy whose cf-connecting-ip names the client; its ranges are parsed once here, not on every call.
+const FIND_IP = onVercel
+  ? { platform: "vercel" as const }
+  : { proxies: parseProxies([cloudflare()]) }
+
+// An IPv4 address that a dual-stack listener or proxy writes as ::ffff:a.b.c.d, which findIp counts non-global.
+const MAPPED = /(?<![\w:])::ffff:(?=\d{1,3}(?:\.\d{1,3}){3}(?![\w.:]))/gi
+const unmap = (value: string | null) => value && value.replace(MAPPED, "")
+
+// The connection's peer, which Bun.serve() reports through the server it passes fetch as env (local, Docker, self-host); none on Vercel, whose function sees only Vercel's proxy.
 function peerAddress(c: Context): string | undefined {
   if (onVercel) return
   const server = c.env as
     | { requestIP?: (request: Request) => { address: string } | null }
     | undefined
   const address = server?.requestIP?.(c.req.raw)?.address
-  return address?.replace(/^::ffff:(?=\d+\.\d+\.\d+\.\d+$)/i, "")
+  return address?.replace(MAPPED, "")
 }
 
-// A public peer is the client, so a header it sends cannot pick its bucket; behind a private or loopback peer (a proxy, or a client on the same network) the first public forwarding address names the client; on Vercel, the x-real-ip Vercel sets. Undefined for internal traffic: a private or loopback peer whose headers name no public client, as the web app's server-side calls, a dev run and the golden suite are.
+// A public peer is the client, so a header it sends cannot pick its bucket; behind a Cloudflare edge, the cf-connecting-ip it sets; behind a private or loopback peer (a proxy, or a client on the same network) the nearest public forwarding address names the client; on Vercel, the x-real-ip Vercel sets. Undefined for internal traffic: a private or loopback peer whose headers name no public client, as the web app's server-side calls, a dev run and the golden suite are.
 function clientIp(c: Context): string | undefined {
   const peer = peerAddress(c)
   const socket = peer && !PRIVATE_PEER.test(peer) ? { remoteAddress: peer } : undefined
-  const ip = findIp(
-    { headers: c.req.raw.headers, socket },
-    onVercel ? { platform: "vercel" } : undefined,
-  )
-  return ip || undefined
+  const { headers } = c.req.raw
+  // findIp reads headers only through get
+  const unmapped = { get: (name: string) => unmap(headers.get(name)) } as Headers
+  return findIp({ headers: unmapped, socket }, FIND_IP) || undefined
 }
 
 // A loopback or private peer findIp would only find non-global, after parsing it twice, which cost a proxied client a quarter of its req/s; so it gets the headers alone.
