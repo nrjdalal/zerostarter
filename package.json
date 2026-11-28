@@ -149,5 +149,8 @@
     "wawoff2": "^2.0.1",
     "ws": "^8.23.1",
     "zod": "^4.6.7"
+  },
+  "patchedDependencies": {
+    "@standard-community/standard-json@0.4.1": "patches/@standard-community%2Fstandard-json@0.4.1.patch"
   }
 }

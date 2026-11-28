@@ -17,6 +17,6 @@ WORKDIR /app/api/hono
 COPY --from=builder --chown=bun:bun /app/api/hono/bundle ./bundle
 
 USER bun
-# No node_modules here, so a bare specifier the bundle still carries (Better Auth's optional telemetry import) would make Bun fetch it from npm at runtime; with auto-install off it fails at once and the guarded import falls back
+# No node_modules here, so a bare specifier the bundle still carries (Better Auth's optional telemetry import, and zod-to-json-schema, which the OpenAPI schema converter tries to load) would make Bun fetch it from npm at runtime; with auto-install off it fails at once and the guarded import falls back
 CMD ["bun", "--no-install", "bundle/index.mjs"]
 EXPOSE 4000
