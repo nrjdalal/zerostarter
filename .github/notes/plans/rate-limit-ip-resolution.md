@@ -1,11 +1,11 @@
 # The rate limiter's client-IP resolution
 
-- Status: icebox, top priority
+- Status: shipped in PR #943 (the socket peer first, the mapped-address unwrap, `proxies: [cloudflare()]` behind `HONO_TRUST_CLOUDFLARE`, off by default, internal traffic skipped); a trusted-proxies list, narrowing the headers a private peer may use, the rewrite item and the end-to-end 429 test left open
 - Links: deepsec audit 2026-09-06 (item 3, MEDIUM / high confidence), PR #819 (built, verified, then reverted out to keep that PR to safe changes), [the public-suffix rewrite item](rate-limit-rewrite-bucket.md), PR #823 (names the 429 test path)
 
 ## The concern
 
-The global limiter keys anonymous requests on `findIp(c.req.raw)` with no options, and falls back to `randomUUIDv7()` when nothing resolves (`api/hono/src/middlewares/rate-limiter.ts`). Two consequences, both live on canary:
+The global limiter keys anonymous requests on `findIp(c.req.raw)` with no options, and falls back to `randomUUIDv7()` when nothing resolves (`api/hono/src/middlewares/rate-limiter.ts`). Two consequences, both live on canary until PR #943:
 
 - On a deploy where Bun owns the socket (Docker, any self-host) the request object carries no peer address, so the library reads client-controllable headers: a forged `x-forwarded-for` names its own bucket per request.
 - A client that sends no such header resolves to nothing, and the random fallback gives it a fresh bucket per request, so anonymous rate limiting is silently off on a bare deploy. Vercel is unaffected on the direct path, since it overwrites `x-forwarded-for` (verified against production and a preview).

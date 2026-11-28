@@ -43,6 +43,7 @@ A variable that is missing or malformed at startup fails validation with a messa
 | `HONO_PORT`                         | `api-hono`          | `4000`   | The port the api binds when the host injects no `PORT`                                                            |
 | `HONO_RATE_LIMIT`                   | `api-hono`          | `60`     | [Requests per window](/docs/manage/rate-limiting); signed-in users get twice this                                 |
 | `HONO_RATE_LIMIT_WINDOW_MS`         | `api-hono`          | `60000`  | The window, in milliseconds                                                                                       |
+| `HONO_TRUST_CLOUDFLARE`             | `api-hono`          | `false`  | Trusts the `CF-Connecting-IP` a [Cloudflare edge](/docs/manage/rate-limiting) sets; on only behind Cloudflare     |
 | `HONO_TRUSTED_ORIGINS`              | `api-hono`, `auth`  | required | Comma-separated origins CORS and Better Auth accept                                                               |
 | `HONO_WEB_URL`                      | `auth`              | inferred | Names the web origin on a [public hosting suffix](/docs/deployment/vercel) when it cannot be inferred             |
 | `INTERNAL_API_URL`                  | `web-next` (server) | optional | Where the web server reaches the api; [Docker](/docs/deployment/docker) sets it to `http://api:4000`              |
