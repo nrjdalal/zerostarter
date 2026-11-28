@@ -65,10 +65,20 @@ pre-commit:
         - ".agents/skills/**/*.md"
         - "packages/scripts/src/skills-manager.ts"
       run: bun packages/scripts/src/skills-manager.ts && git add AGENTS.md
-    lint-staged:
+    deps-manager:
       priority: 2
-      run: bunx lint-staged --verbose
+      glob:
+        - "package.json"
+        - "**/package.json"
+      run: bun packages/scripts/src/deps-manager.ts
       stage_fixed: true
+    format:
+      priority: 3
+      run: bun fmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    lint:
+      priority: 4
+      run: bunx oxlint --deny-warnings --no-error-on-unmatched-pattern {staged_files}
     build:
       run: bun run build
       use_stdin: true
@@ -88,7 +98,7 @@ pre-push:
       run: bun packages/scripts/src/ensure-remote-branches.ts {1}
 ```
 
-**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then [lint-staged](https://github.com/lint-staged/lint-staged) formats your staged files with `bun fmt`, lints them with `oxlint` and stages the fixes again, so they ride along in the same commit. A file with both staged and unstaged changes is fine: lint-staged hides the unstaged part while it runs. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
+**pre-commit**: when a skill changed, `skills-manager` regenerates the AGENTS.md skills tables first. Then lefthook's own jobs run on your staged files (`{staged_files}`): `deps-manager` when a `package.json` is staged, `bun fmt`, then `oxlint`, and `stage_fixed` stages their fixes again, so they ride along in the same commit. A file with both staged and unstaged changes is fine: lefthook hides the unstaged part while the jobs run. Then a full `bun run build` has to pass. A commit that lands is formatted, linted, and building.
 
 **commit-msg**: [Commitlint](https://commitlint.js.org) checks the message against Conventional Commits (below).
 
