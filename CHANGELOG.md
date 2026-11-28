@@ -1,3 +1,15 @@
+## v0.1.47
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.46...v0.1.47)
+
+### 🩹 Fixes
+
+- **api:** Import only toJSONSchema from zod in the standard-json patch ([#928](https://github.com/nrjdalal/zerostarter/pull/928))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.46
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.45...v0.1.46)
