@@ -4,6 +4,8 @@ import { cn } from "cn"
 import { useTheme } from "next-themes"
 import { useEffect, useRef } from "react"
 
+import { skipsGrain } from "@/lib/marketing/grain"
+
 // A subtle, animated grain gradient for the landing backdrop, ported from paper.design's grain-gradient shader (simplex + value-noise FBM) with its noise texture swapped for a procedural hash, so nothing is fetched and no runtime dependency is added.
 
 // Color stops read live from the app's --chart-* oklch tokens (globals.css), resolved to sRGB by the browser so the grain matches them exactly.
@@ -181,6 +183,12 @@ function setupGrainGL(off: HTMLCanvasElement) {
     preserveDrawingBuffer: true,
   })
   if (!gl) return null
+  // On a software renderer, skip the shader and the loop and free the context; the page shows without the grain.
+  const info = gl.getExtension("WEBGL_debug_renderer_info")
+  if (info && skipsGrain(gl.getParameter(info.UNMASKED_RENDERER_WEBGL))) {
+    gl.getExtension("WEBGL_lose_context")?.loseContext()
+    return null
+  }
 
   const vert = compile(gl, gl.VERTEX_SHADER, VERT)
   const frag = compile(gl, gl.FRAGMENT_SHADER, FRAG)
