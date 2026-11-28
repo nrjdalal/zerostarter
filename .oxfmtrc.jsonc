@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/oxfmt@0.80.0/configuration_schema.json",
+  "ignorePatterns": [".agents/**", ".claude/skills/**", ".github/skills/**"],
+  "semi": false,
+  "sortImports": true,
+  "sortPackageJson": { "sortScripts": true },
+  "sortTailwindcss": {
+    "functions": ["cn", "cva"],
+    "stylesheet": "web/next/src/app/globals.css",
+  },
+}

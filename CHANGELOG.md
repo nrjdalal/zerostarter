@@ -1,3 +1,30 @@
+## v0.1.45
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.44...v0.1.45)
+
+### 🚀 Enhancements
+
+- **config:** Type check with bun check in place of tsrs ([#911](https://github.com/nrjdalal/zerostarter/pull/911))
+- **config:** Format with bun fmt in place of oxfmt ([#915](https://github.com/nrjdalal/zerostarter/pull/915))
+- **config:** Format with bun fmt in place of oxfmt ([#917](https://github.com/nrjdalal/zerostarter/pull/917))
+
+### 🩹 Fixes
+
+- **config:** Pass PORTLESS_STATE_DIR through turbo to the dev tasks ([#922](https://github.com/nrjdalal/zerostarter/pull/922))
+- **web:** Keep @takumi-rs/wasm's JS entry in the standalone trace ([#923](https://github.com/nrjdalal/zerostarter/pull/923))
+
+### 💅 Refactors
+
+- **skills:** Group the sync skills under sync- ([#918](https://github.com/nrjdalal/zerostarter/pull/918))
+
+### 📦 Build
+
+- **deps:** Update every catalog entry to latest ([#919](https://github.com/nrjdalal/zerostarter/pull/919))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.44
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.43...v0.1.44)

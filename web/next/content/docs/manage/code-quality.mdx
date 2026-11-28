@@ -18,23 +18,23 @@ The config is deliberately small. `.oxlintrc.jsonc` is three lines, just a schem
 }
 ```
 
-`bun fmt` reads the `[fmt]` section of `bunfig.toml`, which formats like oxfmt, turns off semicolons, sorts imports, sorts Tailwind classes in the theme's order (in `className` and inside `cn()` and `cva()`), keeps every package.json's scripts A to Z, and skips the AI skill directory:
+`bun fmt` reads `.oxfmtrc.jsonc`, oxfmt's own config file, so it formats like oxfmt and the same file still works with oxfmt itself. It turns off semicolons, sorts imports, sorts Tailwind classes in the theme's order (in `className` and inside `cn()` and `cva()`), keeps every package.json's scripts A to Z, and skips the AI skill directory:
 
-```toml
-[fmt]
-config = false
-flavor = "oxfmt"
-ignorePatterns = [".agents/**", ".claude/skills/**", ".github/skills/**"]
-semi = false
-sortImports = true
-sortPackageJson = { sortScripts = true }
-
-[fmt.sortTailwindcss]
-functions = ["cn", "cva"]
-stylesheet = "web/next/src/app/globals.css"
+```jsonc
+{
+  "$schema": "https://unpkg.com/oxfmt@0.80.0/configuration_schema.json",
+  "ignorePatterns": [".agents/**", ".claude/skills/**", ".github/skills/**"],
+  "semi": false,
+  "sortImports": true,
+  "sortPackageJson": { "sortScripts": true },
+  "sortTailwindcss": {
+    "functions": ["cn", "cva"],
+    "stylesheet": "web/next/src/app/globals.css",
+  },
+}
 ```
 
-`config = false` keeps a Prettier or oxfmt config file, a parent folder's included, from applying, and `flavor = "oxfmt"` formats like oxfmt (100 columns) where bun fmt would otherwise format like Prettier.
+The file sits at the repo root, so it is the config `bun fmt --doctor` names ("Using .oxfmtrc.jsonc (oxfmt config)") from any folder in the tree, and a parent folder's Prettier or oxfmt config never applies.
 
 Run either across the tree yourself:
 
