@@ -13,6 +13,7 @@ export const env = createEnv({
     HONO_PORT: z.coerce.number().default(4000),
     HONO_RATE_LIMIT: z.coerce.number().default(60),
     HONO_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
+    HONO_TRUST_CLOUDFLARE: z.stringbool().default(false),
     HONO_TRUSTED_ORIGINS: z
       .string()
       .transform((s) => s.split(",").map((v) => v.trim().replace(/\/$/, "")))
@@ -25,6 +26,7 @@ export const env = createEnv({
     HONO_PORT: process.env.HONO_PORT,
     HONO_RATE_LIMIT: process.env.HONO_RATE_LIMIT,
     HONO_RATE_LIMIT_WINDOW_MS: process.env.HONO_RATE_LIMIT_WINDOW_MS,
+    HONO_TRUST_CLOUDFLARE: process.env.HONO_TRUST_CLOUDFLARE,
     HONO_TRUSTED_ORIGINS: polyfillServer(process.env.HONO_TRUSTED_ORIGINS, "https://polyfill.url"),
   },
   emptyStringAsUndefined: true,

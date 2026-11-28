@@ -8,10 +8,12 @@ import { jsonError } from "@/lib/error"
 
 const onVercel = process.env.VERCEL === "1"
 
-// Off Vercel, a Cloudflare edge peer is a proxy whose cf-connecting-ip names the client; its ranges are parsed once here, not on every call.
+// Off Vercel and with HONO_TRUST_CLOUDFLARE on, a Cloudflare edge peer is a proxy whose cf-connecting-ip names the client; its ranges are parsed once here, not on every call.
 const FIND_IP = onVercel
   ? { platform: "vercel" as const }
-  : { proxies: parseProxies([cloudflare()]) }
+  : env.HONO_TRUST_CLOUDFLARE
+    ? { proxies: parseProxies([cloudflare()]) }
+    : undefined
 
 // An IPv4 address that a dual-stack listener or proxy writes as ::ffff:a.b.c.d, which findIp counts non-global.
 const MAPPED = /(?<![\w:])::ffff:(?=\d{1,3}(?:\.\d{1,3}){3}(?![\w.:]))/gi
@@ -27,7 +29,7 @@ function peerAddress(c: Context): string | undefined {
   return address?.replace(MAPPED, "")
 }
 
-// A public peer is the client, so a header it sends cannot pick its bucket; behind a Cloudflare edge, the cf-connecting-ip it sets; behind a private or loopback peer (a proxy, or a client on the same network) the nearest public forwarding address names the client; on Vercel, the x-real-ip Vercel sets. Undefined for internal traffic: a private or loopback peer whose headers name no public client, as the web app's server-side calls, a dev run and the golden suite are.
+// A public peer is the client, so a header it sends cannot pick its bucket; behind a trusted Cloudflare edge, the cf-connecting-ip it sets; behind a private or loopback peer (a proxy, or a client on the same network) the nearest public forwarding address names the client; on Vercel, the x-real-ip Vercel sets. Undefined for internal traffic: a private or loopback peer whose headers name no public client, as the web app's server-side calls, a dev run and the golden suite are.
 function clientIp(c: Context): string | undefined {
   const peer = peerAddress(c)
   const socket = peer && !PRIVATE_PEER.test(peer) ? { remoteAddress: peer } : undefined
