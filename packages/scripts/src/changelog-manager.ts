@@ -1,6 +1,17 @@
-import { Octokit } from "@octokit/rest"
-
 const CHANGELOG_PATH = "CHANGELOG.md"
+
+async function githubGet<T>(token: string, path: string): Promise<T> {
+  const response = await fetch(`https://api.github.com${path}`, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "changelog-manager",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  })
+  if (!response.ok) throw new Error(`GET ${path}: ${response.status}`)
+  return (await response.json()) as T
+}
 
 function extractEmailAndUsername(contributorLine: string): {
   email: string | null
@@ -31,29 +42,32 @@ function extractEmailAndUsername(contributorLine: string): {
   return { email: null, username: null }
 }
 
-async function findUsernameByEmail(
-  octokit: Octokit,
+export async function findUsernameByEmail(
+  token: string,
   email: string,
   repoOwner: string,
   repoName: string,
 ): Promise<string | null> {
   try {
-    const { data: commits } = await octokit.rest.repos.listCommits({
-      owner: repoOwner,
-      repo: repoName,
-      author: email,
-      per_page: 1,
-    })
-
+    const commits = await githubGet<{ author: { login: string } | null }[]>(
+      token,
+      `/repos/${encodeURIComponent(repoOwner)}/${encodeURIComponent(repoName)}/commits?author=${encodeURIComponent(email)}&per_page=1`,
+    )
     return commits[0]?.author?.login ?? null
   } catch {
     return null
   }
 }
 
-async function getFullNameByUsername(octokit: Octokit, username: string): Promise<string | null> {
+export async function getFullNameByUsername(
+  token: string,
+  username: string,
+): Promise<string | null> {
   try {
-    const { data: user } = await octokit.rest.users.getByUsername({ username })
+    const user = await githubGet<{ name: string | null }>(
+      token,
+      `/users/${encodeURIComponent(username)}`,
+    )
     return user.name
   } catch {
     return null
@@ -97,7 +111,7 @@ function updateCompareLinks(lines: string[], repoOwner: string, repoName: string
   }
 }
 
-async function processChangelog() {
+export async function processChangelog() {
   const [repoOwner, repoName] = process.env.GITHUB_REPOSITORY!.split("/")
 
   const content = await Bun.file(CHANGELOG_PATH).text()
@@ -111,8 +125,6 @@ async function processChangelog() {
     return
   }
 
-  const octokit = new Octokit({ auth: token })
-
   const firstContributorSection = lines.findIndex((line) => line.trim() === "### ❤️ Contributors")
 
   if (firstContributorSection === -1) {
@@ -120,46 +132,33 @@ async function processChangelog() {
     return
   }
 
-  const contributorIndices: number[] = []
-  const contributorEntries: string[] = []
-
+  // one request at a time, as GitHub's REST best practices ask, to stay clear of secondary rate limits
   for (let i = firstContributorSection + 1; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (line.startsWith("##")) {
+    const entry = lines[i].trim()
+    if (entry.startsWith("##")) {
       break
     }
-    if (line.startsWith("- ")) {
-      contributorIndices.push(i)
-      contributorEntries.push(line)
+    if (!entry.startsWith("- ")) continue
+
+    const nameMatch = entry.match(/^-\s+(.+?)(?:\s+[@<]|$)/)
+    const fallbackName = nameMatch ? nameMatch[1].trim() : ""
+
+    const { email, username: extractedUsername } = extractEmailAndUsername(entry)
+
+    let username = extractedUsername
+    if (!username && email) {
+      username = await findUsernameByEmail(token, email, repoOwner, repoName)
+    }
+
+    if (username) {
+      const fullName = await getFullNameByUsername(token, username)
+      lines[i] = `- ${fullName || fallbackName} @${username}`
+    } else {
+      lines[i] = entry
     }
   }
-
-  const formattedContributors = await Promise.all(
-    contributorEntries.map(async (entry) => {
-      const nameMatch = entry.match(/^-\s+(.+?)(?:\s+[@<]|$)/)
-      const fallbackName = nameMatch ? nameMatch[1].trim() : ""
-
-      const { email, username: extractedUsername } = extractEmailAndUsername(entry)
-
-      let username = extractedUsername
-      if (!username && email) {
-        username = await findUsernameByEmail(octokit, email, repoOwner, repoName)
-      }
-
-      if (username) {
-        const fullName = await getFullNameByUsername(octokit, username)
-        return `- ${fullName || fallbackName} @${username}`
-      }
-
-      return entry
-    }),
-  )
-
-  formattedContributors.forEach((formatted, index) => {
-    lines[contributorIndices[index]] = formatted
-  })
 
   await Bun.write(CHANGELOG_PATH, lines.join("\n"))
 }
 
-processChangelog()
+if (import.meta.main) processChangelog()
