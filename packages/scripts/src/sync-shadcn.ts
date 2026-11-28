@@ -38,5 +38,8 @@ run(
   "web/next",
 )
 run(["bunx", "shadcn@latest", "add", "-a", "--overwrite"], "web/next")
+// add -a writes the registry's use-highlighted-code item (code-block lists it, but imports neither file), and nothing in the app imports it, so the sync drops it
+for (const path of ["src/hooks/use-highlighted-code.ts", "src/lib/highlighter.tsx"])
+  await rm(join("web/next", path), { force: true })
 run(["bun", join(import.meta.dir, "shadcn-customize.ts")])
 run(["bun", "run", "format"])
