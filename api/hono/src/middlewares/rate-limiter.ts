@@ -20,12 +20,18 @@ function peerAddress(c: Context): string | undefined {
 
 // A public peer is the client, so a header it sends cannot pick its bucket; behind a private or loopback peer (a proxy, or a client on the same network) the first public forwarding address names the client; on Vercel, the x-real-ip Vercel sets. Undefined for internal traffic: a private or loopback peer whose headers name no public client, as the web app's server-side calls, a dev run and the golden suite are.
 function clientIp(c: Context): string | undefined {
+  const peer = peerAddress(c)
+  const socket = peer && !PRIVATE_PEER.test(peer) ? { remoteAddress: peer } : undefined
   const ip = findIp(
-    { headers: c.req.raw.headers, socket: { remoteAddress: peerAddress(c) } },
+    { headers: c.req.raw.headers, socket },
     onVercel ? { platform: "vercel" } : undefined,
   )
   return ip || undefined
 }
+
+// A loopback or private peer findIp would only find non-global, after parsing it twice, which cost a proxied client a quarter of its req/s; so it gets the headers alone.
+const PRIVATE_PEER =
+  /^(?:127\.\d{1,3}|10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}$|^::1$/
 
 // Undefined for internal traffic, which skips the limit and stores no key.
 function generateRateLimitKey(
