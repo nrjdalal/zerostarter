@@ -1,7 +1,7 @@
 "use client"
 "use no memo"
 
-import { ALLOWLIST_KINDS, parseAllowlistRule, type AllowlistRule } from "@packages/auth/access"
+import { ALLOWLIST_KINDS, type AllowlistRule, parseAllowlistRule } from "@packages/auth/access"
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { InferRequestType } from "hono/client"
@@ -18,10 +18,10 @@ import { useConsoleRole } from "@/components/console/role"
 import {
   DataTable,
   DataTableFacetedFilter,
-  DataTableToolbar,
-  useDataTable,
   type DataTablePage,
   type DataTablePageInput,
+  DataTableToolbar,
+  useDataTable,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import {

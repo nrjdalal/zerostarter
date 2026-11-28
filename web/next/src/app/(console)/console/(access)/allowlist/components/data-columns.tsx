@@ -7,10 +7,10 @@ import type { InferResponseType } from "hono/client"
 
 import { useConsoleRole } from "@/components/console/role"
 import {
-  DataTableCellText,
-  selectColumn,
-  DataTableColumnHeader,
   type ColumnConfig,
+  DataTableCellText,
+  DataTableColumnHeader,
+  selectColumn,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import {

@@ -160,7 +160,7 @@ const linkClass = "border-border hover:border-ring border-b transition-colors"
 
 export default function Page() {
   return (
-    <main className="bg-background text-foreground min-h-svh space-y-16 py-24 text-lg">
+    <main className="min-h-svh space-y-16 bg-background py-24 text-lg text-foreground">
       {/* hook */}
       <div className="container mx-auto max-w-3xl space-y-8 px-4 md:px-6">
         <h1 className={cn(caveat.className, "text-3xl font-bold tracking-wide")}>nrjdalal</h1>
@@ -247,7 +247,7 @@ export default function Page() {
           {proof.map((stat) => (
             <div key={stat.value} className="space-y-1">
               <div className="text-2xl font-semibold tracking-tight">{stat.value}</div>
-              <div className="text-muted-foreground text-sm">{stat.label}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -274,10 +274,10 @@ export default function Page() {
                     >
                       {project.title}
                     </a>
-                    <RiArrowRightUpLine className="text-muted-foreground mb-2 inline size-4" />
+                    <RiArrowRightUpLine className="mb-2 inline size-4 text-muted-foreground" />
                   </>
                 )}
-                <p className="text-muted-foreground mt-2">{project.description}</p>
+                <p className="mt-2 text-muted-foreground">{project.description}</p>
               </div>
             ))}
           </div>
@@ -291,7 +291,7 @@ export default function Page() {
           <Link href="/blog/a-biography-written-in-code" className={linkClass}>
             A Biography Written in Code
           </Link>
-          <p className="text-muted-foreground mt-2">
+          <p className="mt-2 text-muted-foreground">
             The résumé is the clean version. The real one is six years, 250 repositories, and the
             path from shell scripts to AI-agent infrastructure, the mistakes and patterns behind the
             output. Read it if you want to understand how I think, not just what I shipped.

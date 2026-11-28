@@ -98,7 +98,7 @@ export function LandingBackground() {
           key={`${r}-${c}`}
           data-cx={x + CELL / 2}
           data-cy={y + CELL / 2}
-          className="text-foreground absolute flex items-center justify-center"
+          className="absolute flex items-center justify-center text-foreground"
           style={{
             left: x,
             top: y,

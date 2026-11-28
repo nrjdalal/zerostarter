@@ -25,7 +25,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.4
+          bun-version: 1.4.5
 
       - name: Configure Git
         run: |
@@ -80,7 +80,7 @@ jobs:
             AUTO_ESC=$(printf '%s' "$AUTO_VERSION" | sed 's/[.]/\\./g')
             sed -i "s|v${AUTO_ESC}|v${TARGET_VERSION}|g" CHANGELOG.md
           fi
-          bunx oxfmt --write CHANGELOG.md
+          bun fmt CHANGELOG.md
           # refresh the build-graph snapshot for this release from a fresh CI build
           # (env mirrors auto-check-build.yml so size labels match the PR-check build)
           NODE_ENV=production SKIP_ENV_VALIDATION=true bunx turbo build

@@ -4,11 +4,10 @@
       "@packages/config": "workspace:*",
       "@types/bun": "catalog:",
       "@types/node": "catalog:",
-      "tsrs": "catalog:",
       "typescript": "catalog:"
     },
     "scripts": {
-      "check-types": "tsrs --noEmit"
+      "check-types": "bun check"
     }
   },
   "tsconfig": {

@@ -1,5 +1,5 @@
 ---
-name: shadcn-sync
+name: sync-shadcn
 description: Run and reconcile the shadcn component sync (`bun run sync:shadcn`). Use when refreshing shadcn components, or when a sync regresses a local customization or breaks the build.
 source: local
 ---
@@ -8,7 +8,7 @@ source: local
 
 `bun run sync:shadcn` tears the whole `ui/` layer down to the registry and re-applies every local override programmatically. It is **self-reconciling**: a clean tree goes in, a clean tree comes back. The only diff you should ever see is **the residual**, a genuine registry change: a component update, or a new item with its files.
 
-Under the hood the command is `bun packages/scripts/src/shadcn-update.ts && bun i`. The script, in `web/next`, removes `components.json` and `src/components/ui` -> `shadcn init` -> `shadcn add -a --overwrite`; then, at repo root, `packages/scripts/src/shadcn-customize.ts` -> `bun run format` (oxfmt). It stops at the first step that fails. The trailing `bun i` belongs to the wrapper, not the script: it reconciles the lockfile after `customize.ts` restores it from HEAD.
+Under the hood the command is `bun packages/scripts/src/sync-shadcn.ts && bun i`. The script, in `web/next`, removes `components.json` and `src/components/ui` -> `shadcn init` -> `shadcn add -a --overwrite`; then, at repo root, `packages/scripts/src/shadcn-customize.ts` -> `bun run format` (bun fmt). It stops at the first step that fails. The trailing `bun i` belongs to the wrapper, not the script: it reconciles the lockfile after `customize.ts` restores it from HEAD.
 
 ## Procedure
 

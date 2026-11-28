@@ -3,10 +3,10 @@ import { describe, expect, test } from "bun:test"
 import {
   applyColumnManager,
   autoWidthUnits,
+  type ColumnConfig,
   growingColumnIds,
   measureLabelPx,
   resolveSort,
-  type ColumnConfig,
 } from "../../../../../web/next/src/lib/data-table-layout"
 
 describe("measureLabelPx", () => {

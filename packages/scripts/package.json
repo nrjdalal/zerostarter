@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check-types": "tsrs --noEmit"
+    "check-types": "bun check"
   },
   "devDependencies": {
     "@octokit/rest": "catalog:",
@@ -21,7 +21,6 @@
     "svgo": "catalog:",
     "tldts": "catalog:",
     "ts-morph": "catalog:",
-    "tsrs": "catalog:",
     "typescript": "catalog:",
     "wawoff2": "catalog:"
   }

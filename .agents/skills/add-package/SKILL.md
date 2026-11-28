@@ -32,19 +32,18 @@ packages/<name>/
   "private": true,
   "type": "module",
   "scripts": {
-    "check-types": "tsrs --noEmit"
+    "check-types": "bun check"
   },
   "devDependencies": {
     "@packages/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
-    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }
 ```
 
-The `check-types` script and those five devDependencies are the type-check set. `sync:config` writes it into every package. `tsconfig.json` extends `@packages/config`, `check-types` runs `tsrs`, and the config needs `typescript` and both `@types/*`. A dep that is already in `dependencies` stays there, as `@packages/config` does in `api/hono` and `web/next`. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
+The `check-types` script and those four devDependencies are the type-check set. `sync:config` writes it into every package. `tsconfig.json` extends `@packages/config`, `check-types` runs `bun check`, and the config needs `typescript` and both `@types/*`. A dep that is already in `dependencies` stays there, as `@packages/config` does in `api/hono` and `web/next`. Keep deps and `exports` alphabetical (A→Z); catalog-versioned deps use `"catalog:"`, workspace deps use `"workspace:*"`.
 
 `packages/config` is the one exception. Its `tsconfig.json` is the base that every other one extends, so `sync:config` skips it. It has no `@packages/config` or `@types/*`, because its own code uses no runtime API.
 
@@ -64,7 +63,7 @@ The `check-types` script and those five devDependencies are the type-check set. 
 }
 ```
 
-Set `types` to the runtime that the package's own code runs on. tsrs does not load `@types/*` by itself, so `types` names what the package's own code can use. Code that runs on the Bun server keeps the template's `["bun"]`: `api/hono`, `auth`, `db` and `scripts`. Code that also runs under Node takes `["node"]`: `cli` (the npm binary), and `env` and `web/next` (`next dev` runs them under Node). In those three, a `Bun.*` call fails the type check with `Cannot find name 'Bun'`, not the Node process.
+Set `types` to the runtime that the package's own code runs on. `bun check` does not load `@types/*` by itself, so `types` names what the package's own code can use. Code that runs on the Bun server keeps the template's `["bun"]`: `api/hono`, `auth`, `db` and `scripts`. Code that also runs under Node takes `["node"]`: `cli` (the npm binary), and `env` and `web/next` (`next dev` runs them under Node). In those three, a `Bun.*` call fails the type check with `Cannot find name 'Bun'`, not the Node process.
 
 A dependency can still bring types in, whatever `types` says. `@packages/db` uses drizzle-orm's `bun-sql` driver, so Bun's types reach `db` and every package that imports it. `auth` shows the limit: its `access` entry also runs in `web/next` under Node, but `auth` imports `@packages/db`, so no `types` value makes its check catch a `Bun.*` call there. Keep `auth/src/access.ts` free of `Bun.*` by hand.
 
@@ -81,7 +80,7 @@ Any other difference goes in the package's patch, `packages/scripts/src/sync-con
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsrs --noEmit"
+    "check-types": "bun check"
   },
   "dependencies": { /* runtime deps */ },
   "devDependencies": {
@@ -89,7 +88,6 @@ Any other difference goes in the package's patch, `packages/scripts/src/sync-con
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
-    "tsrs": "catalog:",
     "typescript": "catalog:"
   }
 }
@@ -127,7 +125,7 @@ Write any generated-but-disposable artifact to the repo-root `.generated/` dir (
 
 ## Keep docs in sync
 
-Adding a package touches the map. In the same change, update: the `packages/*` list in `AGENTS.md`/`CLAUDE.md`; both structure trees, `README.md` (`## Monorepo Structure`) and `web/next/content/docs/getting-started/project-structure.mdx` (the tree and the "The packages" list); the `codebase-map` skill; and any skill whose globs name package paths (e.g. `runtime-apis`). A fork keeps build-only packages like `scripts` (unlike `cli`, which `init` strips), so they belong in the user-facing trees too. See the `doc-sync` skill.
+Adding a package touches the map. In the same change, update: the `packages/*` list in `AGENTS.md`/`CLAUDE.md`; both structure trees, `README.md` (`## Monorepo Structure`) and `web/next/content/docs/getting-started/project-structure.mdx` (the tree and the "The packages" list); the `codebase-map` skill; and any skill whose globs name package paths (e.g. `runtime-apis`). A fork keeps build-only packages like `scripts` (unlike `cli`, which `init` strips), so they belong in the user-facing trees too. See the `sync-docs` skill.
 
 ## Gotchas
 

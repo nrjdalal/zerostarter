@@ -1,9 +1,9 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree"
 
 import {
+  type BlogPostMeta,
   compareBlogPostPublishOrder,
   isBlogPostPublished,
-  type BlogPostMeta,
 } from "@/lib/blog-policy"
 import { blogSource } from "@/lib/source"
 

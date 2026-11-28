@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
 import { getSafeEnv } from "@packages/env"
-// Must stay above the web-next import: that module validates env when it evaluates, and imports hoist, so a call placed lower would run too late. oxfmt treats a bare import as a sort barrier, so the order holds.
+// Must stay above the web-next import: that module validates env when it evaluates, and imports hoist, so a call placed lower would run too late. bun fmt treats a bare import as a sort barrier, so the order holds.
 import "@packages/env/load-dotenv"
 import { env } from "@packages/env/web-next"
 import { createMDX } from "fumadocs-mdx/next"
@@ -38,13 +38,13 @@ const libcExcludes = {
     "../../node_modules/.bun/@img+sharp-libvips-linuxmusl-*@*/**",
     "../../node_modules/.bun/@img+sharp-linuxmusl-*@*/**",
     "../../node_modules/.bun/@takumi-rs+core-linux-*-musl@*/**",
-    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/pkg/**",
   ],
   musl: [
     "../../node_modules/.bun/@img+sharp-libvips-linux-*@*/**",
     "../../node_modules/.bun/@img+sharp-linux-*@*/**",
     "../../node_modules/.bun/@takumi-rs+core-linux-*-gnu@*/**",
-    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/pkg/**",
   ],
 }
 

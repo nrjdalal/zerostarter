@@ -151,8 +151,8 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
             </form>
           )}
           {magicLinkEnabled && hasAlternatives && (
-            <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-              <span className="bg-popover text-muted-foreground relative z-10 px-2 text-xs">
+            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+              <span className="relative z-10 bg-popover px-2 text-xs text-muted-foreground">
                 OR
               </span>
             </div>
@@ -216,22 +216,22 @@ export function Access({ labelClassName }: { labelClassName?: string }) {
                   Continue with Google
                 </Button>
               )}
-              <div className="text-muted-foreground text-center text-xs text-balance">
+              <div className="text-center text-xs text-balance text-muted-foreground">
                 By clicking continue, you agree to our Terms of Service and Privacy Policy.
               </div>
             </div>
           )}
           {hasNoProviders &&
             (isPending ? (
-              <div className="text-muted-foreground flex justify-center">
+              <div className="flex justify-center text-muted-foreground">
                 <Spinner className="size-5" />
               </div>
             ) : isError ? (
-              <p className="text-muted-foreground text-center text-sm">
+              <p className="text-center text-sm text-muted-foreground">
                 Could not load sign-in options. Refresh to try again.
               </p>
             ) : (
-              <p className="text-muted-foreground text-center text-sm">
+              <p className="text-center text-sm text-muted-foreground">
                 No sign-in options are configured yet.
                 {isDev && " Set AGENT_SIGNIN_ENABLED=true in .env to enable local agent login."}
               </p>

@@ -1,3 +1,15 @@
+## v0.1.44
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.43...v0.1.44)
+
+### 📦 Build
+
+- **deps:** Update every dependency and pin to latest ([#905](https://github.com/nrjdalal/zerostarter/pull/905))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.43
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.42...v0.1.43)

@@ -1,5 +1,5 @@
 ---
-name: audit
+name: sync-deps
 description: Refresh every dependency and version pin to its latest release, run the dependency security audit, and maintain .github/notes/dependencies.md. Use when updating dependencies or any version pin (Bun, a GitHub Action, a pinned CLI), when the canary pre-push audit hook fails, or when `bun audit` flags a high advisory.
 source: local
 ---
@@ -20,7 +20,7 @@ bun install        # once more: postinstall rewrote ranges, so bun.lock is one i
 bun outdated -r    # expect no rows
 ```
 
-`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group's catalog entries and `bun.lock` back to its held versions after it, unless step 4 proves the break fixed. Done when `bun outdated -r` prints no rows but the held groups'.
+`--latest` crosses majors and rewrites the catalog; `postinstall` rewrites exact and tilde specs back to carets and reports the rest for a manual fix. For each package that crossed a major, read its current release notes or migration guide and grep the code for what it removed or renamed. Transitive copies stay wherever their parents' ranges hold them: a fresh lockfile barely moves them and only an override could lift them, so leave them. In the canonical starter, read `## Held versions` in `.github/notes/dependencies.md` first: the update moves each held group past its hold, so put that group's catalog entries and `bun.lock` back to its held versions after it, unless step 4 proves the break fixed. A patch in root `patchedDependencies` is keyed to one exact version, so when the update moves a patched package, drop its patch if the new version carries the fix, else redo it with `bun patch` on the new version; in the canonical starter, `## Patched dependencies` in the same `.github/notes/dependencies.md` names each one. Done when `bun outdated -r` prints no rows but the held groups'.
 
 ### 2. Move the pins outside npm
 
@@ -46,7 +46,7 @@ Done when every row is on its latest release and the old-value grep returns no h
 
 ### 3. Re-sync shadcn
 
-Run `bun run sync:shadcn` (the `shadcn-sync` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
+Run `bun run sync:shadcn` (the `sync-shadcn` skill). The registry moves with the `shadcn` package, so a refresh is when components drift. Done when the diff is empty or holds only registry changes, and the type check passes.
 
 ### 4. Prove nothing broke
 

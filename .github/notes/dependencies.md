@@ -18,8 +18,6 @@ Rewriting a spec after resolution leaves `bun.lock` holding the old spec string 
 
 Note that a caret on a prerelease widens it more than it may look: `^2.0.14-beta.1` admits `2.0.14-beta.2` and every later `2.x`. A prerelease is the one spec most often pinned on purpose, so if an exact prerelease matters, record the reason here before the rule rewrites it.
 
-`tsrs` runs the other way. Every release of the port so far is a prerelease, such as `0.18.0-ts7.1.0-dev.20260929`, and its caret admits neither a later minor (a `0.x` caret stops below `0.19.0`) nor a prerelease of any other version, so `bun update` never reaches the next release; only the `audit` skill's `bun update -r --latest` refresh moves it.
-
 The rule has **no opt-out**, so no pin survives an install, whatever reason is recorded here. Pinning something deliberately means changing the rule itself in `packages/scripts/src/deps-manager.ts`, for example adding an allowlist it skips, and writing down why in this file. That was left out on purpose: there is nothing to exempt today, and an unused config key is worse than adding one when a real case appears.
 
 Enforcement is only partial by design. Specs the rule cannot convert are reported and the script still exits 0, so a compound range such as `>=4.4.3 <5` survives an install with nothing but a line of `postinstall` output. Failing the install instead would block work for a range that may be perfectly deliberate, so the auto-convertible half is enforced and the rest is advisory.
@@ -28,7 +26,16 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-None.
+- **`fontkit` held at 2.0.4** (latest 3.0.0; the refresh's `--latest` crosses the `^2.0.4` range, so put it back after): `packages/scripts/src/data-table-metrics.ts` measures the header font for the data table's column widths, and its output must match the browser's canvas. fontkit 2's advances for DM Sans at wght 500 match Chrome's `measureText` exactly. fontkit 3's advances differ by 0.01 px on 75 glyphs (`2` measures 8.06 against the browser's 8.07), so the generated `.generated/data-table-metrics.json` differs.
+  - **Exit criteria:** a fontkit whose generated metrics file is byte-identical to 2.0.4's, or a script that no longer depends on fontkit's advances.
+
+## Patched dependencies
+
+A package `bun patch` edits in place: its patch file sits under `patches/`, and root `patchedDependencies` keys it to one exact version. A refresh that moves the package leaves the patch behind, so drop the patch once the new version carries the fix, or redo it with `bun patch` on the new version.
+
+- **`@standard-community/standard-json@0.4.1`** (`patches/@standard-community%2Fstandard-json@0.4.1.patch`): its zod converter loads the optional `zod-to-json-schema` through a helper whose `try` sits outside each `import()`, so `bun build` cannot resolve it and the API bundle fails. The patch puts each `import()` in its own `try`, which `bun build` treats as optional.
+  - **Risk:** the key names 0.4.1 alone, so a refresh that moves standard-json leaves the new version unpatched, and the API bundle build fails again until the patch is dropped or redone.
+  - **Exit criteria:** standard-json ships [standard-json#42](https://github.com/standard-community/standard-json/pull/42), which makes the same change; then delete the patch file and its `patchedDependencies` entry.
 
 ## Active overrides
 

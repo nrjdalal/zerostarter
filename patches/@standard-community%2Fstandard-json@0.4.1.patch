@@ -1,0 +1,82 @@
+diff --git a/dist/zod-1aXHhzFQ.js b/dist/zod-1aXHhzFQ.js
+index 0629eddef01b48c1f7f7168b70807bad56218609..604c150970bf8751473ffd7e260b57af86335bf3 100644
+--- a/dist/zod-1aXHhzFQ.js
++++ b/dist/zod-1aXHhzFQ.js
+@@ -1,13 +1,6 @@
+ import { M as MissingDependencyError, i as ioOf } from './index-Df4lLyZ_.js';
+ import 'quansync';
+ 
+-const importIfInstalled = async (load) => {
+-  try {
+-    return await load();
+-  } catch {
+-    return void 0;
+-  }
+-};
+ const allowAnyTransformOutput = ({ ignoreOverride, parseDef }, override) => (def, refs, seen, forceResolution) => {
+   const own = override ? override(def, refs, seen, forceResolution) : ignoreOverride;
+   if (own !== ignoreOverride) {
+@@ -21,8 +14,20 @@ const allowAnyTransformOutput = ({ ignoreOverride, parseDef }, override) => (def
+ };
+ async function getToJsonSchemaFn() {
+   const [zod4, zodToJsonSchema] = await Promise.all([
+-    importIfInstalled(() => import('zod/v4/core')),
+-    importIfInstalled(() => import('zod-to-json-schema'))
++    (async () => {
++      try {
++        return await import('zod/v4/core');
++      } catch {
++        return void 0;
++      }
++    })(),
++    (async () => {
++      try {
++        return await import('zod-to-json-schema');
++      } catch {
++        return void 0;
++      }
++    })()
+   ]);
+   return (schema, options) => {
+     if ("_zod" in schema) {
+diff --git a/dist/zod-C4zioXti.cjs b/dist/zod-C4zioXti.cjs
+index d67d8f5c0d33ced84c2415294f65f3206d679e84..f758cbffb18ac50f85cebf818ef3c32a08edd255 100644
+--- a/dist/zod-C4zioXti.cjs
++++ b/dist/zod-C4zioXti.cjs
+@@ -3,13 +3,6 @@
+ var index = require('./index-KWxdc1K1.cjs');
+ require('quansync');
+ 
+-const importIfInstalled = async (load) => {
+-  try {
+-    return await load();
+-  } catch {
+-    return void 0;
+-  }
+-};
+ const allowAnyTransformOutput = ({ ignoreOverride, parseDef }, override) => (def, refs, seen, forceResolution) => {
+   const own = override ? override(def, refs, seen, forceResolution) : ignoreOverride;
+   if (own !== ignoreOverride) {
+@@ -23,8 +16,20 @@ const allowAnyTransformOutput = ({ ignoreOverride, parseDef }, override) => (def
+ };
+ async function getToJsonSchemaFn() {
+   const [zod4, zodToJsonSchema] = await Promise.all([
+-    importIfInstalled(() => import('zod/v4/core')),
+-    importIfInstalled(() => import('zod-to-json-schema'))
++    (async () => {
++      try {
++        return await import('zod/v4/core');
++      } catch {
++        return void 0;
++      }
++    })(),
++    (async () => {
++      try {
++        return await import('zod-to-json-schema');
++      } catch {
++        return void 0;
++      }
++    })()
+   ]);
+   return (schema, options) => {
+     if ("_zod" in schema) {

@@ -11,10 +11,10 @@ import {
 import {
   DataTable,
   DataTableFacetedFilter,
-  DataTableToolbar,
-  useDataTable,
   type DataTablePage,
   type DataTablePageInput,
+  DataTableToolbar,
+  useDataTable,
 } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"

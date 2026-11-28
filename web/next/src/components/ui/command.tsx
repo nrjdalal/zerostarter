@@ -1,6 +1,6 @@
 "use client"
 
-import { RiSearchLine, RiCheckLine } from "@remixicon/react"
+import { RiCheckLine, RiSearchLine } from "@remixicon/react"
 import { Command as CommandPrimitive } from "cmdk"
 import { cn } from "cn"
 import * as React from "react"
@@ -63,7 +63,7 @@ function CommandInput({
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      <InputGroup className="border-input/30 bg-input/30 h-8! rounded-lg! shadow-none! *:data-[slot=input-group-addon]:pl-2!">
+      <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:pl-2!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(

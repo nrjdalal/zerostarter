@@ -55,13 +55,13 @@ export function SidebarUserMenu({ user, area }: { user: User; area?: "dashboard"
         <DropdownMenuItem render={<Link href="/" className="cursor-pointer" />}>
           <RiHome4Line />
           Home
-          <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
+          <RiArrowRightSLine className="ml-auto size-4 text-muted-foreground" />
         </DropdownMenuItem>
         {crossLink && (
           <DropdownMenuItem render={<Link href={crossLink.href} className="cursor-pointer" />}>
             {crossLink.icon}
             {crossLink.label}
-            <RiArrowRightSLine className="text-muted-foreground ml-auto size-4" />
+            <RiArrowRightSLine className="ml-auto size-4 text-muted-foreground" />
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

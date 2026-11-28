@@ -11,28 +11,28 @@ export function AppShellDiagram() {
   return (
     <div
       aria-hidden
-      className="bg-background text-muted-foreground overflow-hidden rounded-lg border font-mono text-xs select-none"
+      className="overflow-hidden rounded-lg border bg-background font-mono text-xs text-muted-foreground select-none"
     >
       <div className="flex h-8 items-center gap-2 border-b px-3">
-        <span className="bg-foreground/70 size-1.5 rounded-full" />
+        <span className="size-1.5 rounded-full bg-foreground/70" />
         <span className="text-foreground/70">SidebarShell</span>
       </div>
       <div className="flex min-h-44">
         <div className="w-36 shrink-0 space-y-2 border-r p-3">
-          <div className="border-border rounded border border-dashed px-2 py-1.5">OrgSwitcher</div>
+          <div className="rounded border border-dashed border-border px-2 py-1.5">OrgSwitcher</div>
           {rows.map((row) => (
             <div key={row.label} className="flex items-center gap-1 pt-1">
               {row.gated && <RiLockLine className="size-2.5 shrink-0" />}
-              <span className="text-foreground/70 truncate">{row.label}</span>
+              <span className="truncate text-foreground/70">{row.label}</span>
             </div>
           ))}
         </div>
         <div className="flex-1 space-y-2.5 p-3">
           <div className="text-foreground/70">{"<PageHeader />"}</div>
-          <div className="border-border/70 space-y-2 rounded border border-dashed p-2.5">
-            <div className="bg-foreground/10 h-1.5 w-2/3 rounded-full" />
-            <div className="bg-foreground/10 h-1.5 w-1/2 rounded-full" />
-            <div className="bg-foreground/10 h-1.5 w-3/5 rounded-full" />
+          <div className="space-y-2 rounded border border-dashed border-border/70 p-2.5">
+            <div className="h-1.5 w-2/3 rounded-full bg-foreground/10" />
+            <div className="h-1.5 w-1/2 rounded-full bg-foreground/10" />
+            <div className="h-1.5 w-3/5 rounded-full bg-foreground/10" />
           </div>
           <div className="text-foreground/50">your product logic</div>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { Select as SelectPrimitive } from "@base-ui/react/select"
-import { RiArrowDownSLine, RiCheckLine, RiArrowUpSLine } from "@remixicon/react"
+import { RiArrowDownSLine, RiArrowUpSLine, RiCheckLine } from "@remixicon/react"
 import { cn } from "cn"
 import * as React from "react"
 
@@ -47,7 +47,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon
-        render={<RiArrowDownSLine className="text-muted-foreground pointer-events-none size-4" />}
+        render={<RiArrowDownSLine className="pointer-events-none size-4 text-muted-foreground" />}
       />
     </SelectPrimitive.Trigger>
   )

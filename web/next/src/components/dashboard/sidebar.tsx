@@ -128,7 +128,7 @@ export function OrgSwitcher() {
         mobileSide="bottom"
         trigger={{
           leading: (
-            <div className="bg-sidebar-accent text-sidebar-accent-foreground flex aspect-square size-8 items-center justify-center rounded-md">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-accent-foreground">
               <RiBuildingLine className="size-4" />
             </div>
           ),
@@ -138,7 +138,7 @@ export function OrgSwitcher() {
         }}
         header={{
           leading: (
-            <div className="bg-sidebar-accent text-sidebar-accent-foreground flex size-8 items-center justify-center rounded-md">
+            <div className="flex size-8 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-accent-foreground">
               <RiBuildingLine className="size-4" />
             </div>
           ),
@@ -245,7 +245,7 @@ export function DashboardFooter({
           <SidebarMenuButton render={<Link href="/docs" onClick={close} />}>
             <RiBookLine />
             <span>Documentation</span>
-            <span className="text-muted-foreground ml-auto text-xs">v{config.app.version}</span>
+            <span className="ml-auto text-xs text-muted-foreground">v{config.app.version}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       )}
