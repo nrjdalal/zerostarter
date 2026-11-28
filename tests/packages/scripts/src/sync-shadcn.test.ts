@@ -112,6 +112,22 @@ test.skipIf(!canExecStubs)(
   },
 )
 
+test.skipIf(!canExecStubs)(
+  "deletes the highlighter files add -a writes for the registry's use-highlighted-code, which nothing imports",
+  async () => {
+    const written = ["src/hooks/use-highlighted-code.ts", "src/lib/highlighter.tsx"]
+    // A bunx stand-in that, on add, writes both files into web/next as the registry item does.
+    writeFileSync(
+      join(bin, "bunx"),
+      `#!${process.execPath}\nimport { appendFileSync, mkdirSync, writeFileSync } from "node:fs"\nimport { dirname } from "node:path"\nappendFileSync(process.env.STUB_LOG!, JSON.stringify({ cmd: "bunx", args: process.argv.slice(2), cwd: process.cwd() }) + "\\n")\nif (process.argv.includes("add")) for (const p of ${JSON.stringify(written)}) { mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, "export {}\\n") }\n`,
+    )
+    const { calls, code } = await run()
+    expect(code).toBe(0)
+    expect(calls.map((c) => c.args[1])).toContain("add")
+    for (const p of written) expect(existsSync(join(dir, "web/next", p))).toBe(false)
+  },
+)
+
 test.skipIf(!canExecStubs)("stops at the first step that fails", async () => {
   const { calls, code } = await run({ STUB_FAIL: "init" })
   expect(code).toBe(3)
