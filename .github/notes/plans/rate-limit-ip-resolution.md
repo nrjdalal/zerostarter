@@ -1,6 +1,6 @@
 # The rate limiter's client-IP resolution
 
-- Status: shipped in PR #943 (the socket peer first, the mapped-address unwrap, `proxies: [cloudflare()]`, internal traffic skipped); a trusted-proxies list, the rewrite item and the end-to-end 429 test left open
+- Status: shipped in PR #943 (the socket peer first, the mapped-address unwrap, `proxies: [cloudflare()]` behind `HONO_TRUST_CLOUDFLARE`, off by default, internal traffic skipped); a trusted-proxies list, narrowing the headers a private peer may use, the rewrite item and the end-to-end 429 test left open
 - Links: deepsec audit 2026-09-06 (item 3, MEDIUM / high confidence), PR #819 (built, verified, then reverted out to keep that PR to safe changes), [the public-suffix rewrite item](rate-limit-rewrite-bucket.md), PR #823 (names the 429 test path)
 
 ## The concern
