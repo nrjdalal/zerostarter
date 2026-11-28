@@ -103,8 +103,10 @@ describe("processChangelog", () => {
   afterEach(() => {
     process.chdir(cwd)
     rmSync(dir, { recursive: true, force: true })
-    process.env.GITHUB_REPOSITORY = env.repository
-    process.env.GITHUB_TOKEN = env.token
+    if (env.repository === undefined) delete process.env.GITHUB_REPOSITORY
+    else process.env.GITHUB_REPOSITORY = env.repository
+    if (env.token === undefined) delete process.env.GITHUB_TOKEN
+    else process.env.GITHUB_TOKEN = env.token
   })
 
   test("rewrites the newest contributors section one request at a time and leaves older sections alone", async () => {
