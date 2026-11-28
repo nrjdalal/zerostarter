@@ -216,7 +216,7 @@
     },
   },
   "patchedDependencies": {
-    "@standard-community/standard-json@0.4.1": "patches/@standard-community%2Fstandard-json@0.4.1.patch",
+    "@standard-community/standard-json@0.4.1": ".github/patches/@standard-community%2Fstandard-json@0.4.1.patch",
   },
   "catalog": {
     "@arcjet/ip": "^1.16.0",
