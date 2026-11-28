@@ -34,7 +34,12 @@ const IGNORES: ((message: string) => boolean)[] = [
       .replace(/\[(skip|ci)(-|\s)(ci|skip)\]/i, "")
       .replace(/\((skip|ci)(-|\s)(ci|skip)\)/i, "")
       .trim()
-    return version.length <= 256 && SEMVER.test(version)
+    const parts = version.match(SEMVER)
+    return (
+      version.length <= 256 &&
+      !!parts &&
+      parts.slice(1, 4).every((n) => +n! <= Number.MAX_SAFE_INTEGER)
+    )
   },
   (m) => /^(Merged (.*?)(in|into) (.*)|Merged PR (.*): (.*))/.test(m),
   (m) => /^Merge remote-tracking branch(\s*)(.*)/.test(m),
@@ -53,9 +58,8 @@ export type Verdict = { errors: string[]; warnings: string[] }
 export function lint(message: string, commentChar = "#"): Verdict {
   const errors: string[] = []
   const warnings: string[] = []
-  if (message === "" || IGNORES.some((ignored) => ignored(message.trimEnd())))
+  if (!message.trim() || IGNORES.some((ignored) => ignored(message.trimEnd())))
     return { errors, warnings }
-  if (!message.trim()) return { errors: ["the message is empty [parse]"], warnings }
   const raw = trimNewLines(message).split(/\r?\n/)
   const cut = raw.indexOf(`${commentChar} ${SCISSOR}`)
   const lines = (cut === -1 ? raw : raw.slice(0, cut)).filter(
@@ -143,7 +147,7 @@ if (import.meta.main) {
   }
   const git = Bun.spawnSync(["git", "config", "core.commentChar"], { stderr: "ignore" })
   const commentChar = git.stdout.toString().trim() || "#"
-  const message = await Bun.file(file).text()
+  const message = new TextDecoder("utf-8", { ignoreBOM: true }).decode(await Bun.file(file).bytes())
   const { errors, warnings } = lint(message, commentChar)
   for (const line of [...errors.map((e) => `✖   ${e}`), ...warnings.map((w) => `⚠   ${w}`)])
     console.error(line)
