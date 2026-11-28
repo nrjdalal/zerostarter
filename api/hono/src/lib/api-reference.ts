@@ -12,7 +12,7 @@ const config = {
   url: "/api/openapi.json",
 }
 
-// The dark theme @scalar/hono-api-reference 0.12.26 shipped (MIT), kept so the page looks as it did.
+// The dark theme @scalar/hono-api-reference 0.12.26 shipped (MIT, Copyright (c) 2023-present Scalar), kept so the page looks as it did.
 const darkTheme = `
 .dark-mode {
   --scalar-color-1: rgba(255, 255, 245, .86);
@@ -76,5 +76,4 @@ const page = html`<!doctype html>
     </body>
   </html>`
 
-// The Scalar API reference page, loaded from jsDelivr's ESM build as Scalar's HTML/JS integration documents it.
 export const apiReference = (c: Context) => c.html(page)
