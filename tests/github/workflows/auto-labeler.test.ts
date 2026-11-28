@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { createRequire } from "node:module"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
+
+import { manifestPaths } from "../../../packages/scripts/src/deps-manager"
 
 // The labeler is inline JavaScript in a workflow, so this lifts the mapping out of the YAML and runs it against this checkout, the way the job runs it against the base branch. Anything that reshapes the script has to keep these two anchors.
 const root = join(import.meta.dir, "../../..")
@@ -61,6 +63,16 @@ describe("auto-labeler getLabelForFile", () => {
     expect(getLabelForFile("zzz-spam/x.txt", packageMap)).toBe("@misc")
     expect(getLabelForFile("evil/../../x", packageMap)).toBe("@misc")
     expect(getLabelForFile("node_modules/evil/x.js", packageMap)).toBe("@misc")
+  })
+
+  test("findPackages maps a label to each folder whose package.json deps-manager reads", async () => {
+    const findPackages = new Function(
+      "require",
+      `${slice("const { execFileSync }", "// the top-level directories")}${slice("const findPackages", "const getLabelForFile")}; return findPackages`,
+    )(createRequire(import.meta.url)) as () => Map<string, string>
+    const rootPkg = await Bun.file(join(root, "package.json")).json()
+    const folders = (await manifestPaths(rootPkg, root)).map((file) => dirname(file)).sort()
+    expect([...findPackages().keys()].sort()).toEqual(folders)
   })
 
   test("reads a glob-looking directory name as a name, not a pathspec", () => {

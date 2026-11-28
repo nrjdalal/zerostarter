@@ -63,7 +63,6 @@ jobs:
             const { execFileSync } = require('node:child_process');
             const fs = require('node:fs');
             const path = require('node:path');
-            const { globbySync } = require('globby');
 
             // the top-level directories the base branch tracks, read once from git rather than the disk: the checkout has run an install, so the disk also holds node_modules and other untracked output, and a pathspec would read a name such as "*" as a glob
             const trackedDirectories = new Set(
@@ -89,10 +88,10 @@ jobs:
 
             const findPackages = () => {
               const packageMap = new Map();
-              const paths = globbySync(['**/package.json'], {
-                gitignore: true,
-                ignore: ['**/node_modules/**']
-              });
+              // every package.json the base branch tracks outside a dot folder, read from git as the tracked directories are
+              const paths = execFileSync('git', ['ls-files', '-z', '--', ':(glob)**/package.json', ':(exclude,glob)**/.*/**'], { encoding: 'utf8' })
+                .split('\0')
+                .filter(Boolean);
 
               for (const pkgPath of paths) {
                 const dir = path.dirname(pkgPath);
