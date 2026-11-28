@@ -12,6 +12,7 @@ const GUARDED = [
   "package.json",
   "web/next/src/app/layout.tsx",
   "web/next/src/app/globals.css",
+  "web/next/src/app/shadcn.css",
   "web/next/src/hooks",
   "web/next/src/lib",
 ]

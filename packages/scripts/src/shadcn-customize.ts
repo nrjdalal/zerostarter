@@ -3,11 +3,12 @@ import { Node, Project, SyntaxKind } from "ts-morph"
 import { vendorShadcnCss } from "@/shadcn-css"
 
 // Re-applies every local override after `sync-shadcn.ts` wipes ui/ and re-scaffolds the app.
-// Two strategies:
+// Three strategies:
 //   restore, files we own outright; shadcn's version carries nothing we want, so reset to HEAD.
 //   patch  , registry components we extend; ts-morph locates the TSX nodes by shape (not text) so
 //             attribute/param reordering can't break them; the lone globals.css value is a guarded
 //             string swap (a single stable line isn't worth a CSS parser).
+//   vendor , shadcn.css, the app's copy of shadcn/tailwind.css, rewritten from the package init installed (shadcn-css.ts).
 // Each patch is idempotent and throws if its target is absent, so a shadcn shape change fails the
 // sync loudly instead of silently dropping an override. A single bun fmt pass runs after.
 
