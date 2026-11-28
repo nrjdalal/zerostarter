@@ -24,7 +24,7 @@ Two `force-static` route handlers (both `revalidate = 60`) build the files from 
 
 The docs and blog are [features](/docs/manage/features): turn one off and its pages, section index, and per-page aliases drop from both files, so the files never point at a docs or blog page that 404s.
 
-Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), runs `decodeHTML` to undo Fumadocs' HTML-escaping, and prefixes a `# [title](url)` heading that links back to the live page. Each per-page docs alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
+Page bodies come from `getLLMText` in `web/next/src/lib/llms.ts`. It reads each page's processed markdown (available because every collection in `web/next/source.config.ts` sets `includeProcessedMarkdown: true`), decodes the hex character references that Fumadocs' markdown escaping writes (such as `&#x20;`), and prefixes a `# [title](url)` heading that links back to the live page. Each per-page docs alias also appends a footer pointing back to `/llms.txt`, so an agent that lands on one page can find the rest of the navigation.
 
 <Callout type="info" title="Only /docs and /blog aliases are routes">
 
