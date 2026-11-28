@@ -38,13 +38,13 @@ const libcExcludes = {
     "../../node_modules/.bun/@img+sharp-libvips-linuxmusl-*@*/**",
     "../../node_modules/.bun/@img+sharp-linuxmusl-*@*/**",
     "../../node_modules/.bun/@takumi-rs+core-linux-*-musl@*/**",
-    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/pkg/**",
   ],
   musl: [
     "../../node_modules/.bun/@img+sharp-libvips-linux-*@*/**",
     "../../node_modules/.bun/@img+sharp-linux-*@*/**",
     "../../node_modules/.bun/@takumi-rs+core-linux-*-gnu@*/**",
-    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/**",
+    "../../node_modules/.bun/@takumi-rs+wasm@*/node_modules/@takumi-rs/wasm/pkg/**",
   ],
 }
 
