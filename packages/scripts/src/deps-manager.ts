@@ -161,11 +161,13 @@ export const pickSafeMoves = (catalogKeys: Set<string>, usedVersions: Map<string
   return { safeToMove, unsafeMissing }
 }
 
-// The root manifest and each workspace's, the ones a `catalog:` spec resolves in, read from the root's `workspaces` as sync-config.ts reads them.
+// The root manifest and each workspace's, the ones a `catalog:` spec resolves in, read from the root's `workspaces` as sync-config.ts reads them, with forward slashes, since Windows hands scan results back with backslashes.
 export const manifestPaths = async (rootPkg: PackageJson, cwd = ".") => {
   const paths = ["package.json"]
   for (const pattern of rootPkg.workspaces ?? []) {
-    paths.push(...(await Array.fromAsync(new Bun.Glob(`${pattern}/package.json`).scan({ cwd }))))
+    for await (const file of new Bun.Glob(`${pattern}/package.json`).scan({ cwd })) {
+      paths.push(file.replaceAll("\\", "/"))
+    }
   }
   return paths.sort()
 }
