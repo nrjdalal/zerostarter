@@ -8,7 +8,7 @@ PostHog and the feedback link are **optional** and stay off until you set an env
 
 ## PostHog analytics
 
-[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry), which loads `posthog-js` once the page has loaded and the browser is idle, so the library stays off every route's first load. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present, and without a key `posthog-js` never downloads.
+[PostHog](https://posthog.com) gives you product analytics, session replay, and feature flags. It is wired but dormant: initialized in `web/next/instrumentation-client.ts` (Next.js's client-instrumentation entry), which loads `posthog-js` once the page has loaded and the browser is idle, or 2 seconds after load at the latest, so the library stays off every route's first load. Its `defaults` date turns on PostHog's current defaults, including single-page-app pageview capture, so no provider or manual pageview component is needed. It no-ops until the key is present, and without a key `posthog-js` never downloads.
 
 Turn it on with two env vars (the key enables it, the host picks your region):
 
@@ -25,7 +25,7 @@ The starter sets up initialization, but it does **not** call `capture`, `identif
 
 </Callout>
 
-Loading after the page trades a little completeness for speed: a visitor who leaves before the page has finished loading is never counted. On a local production build, PostHog starts at 262 ms, just after the page's load event at 199 ms.
+Loading after the page trades a little completeness for speed: a visitor who leaves before PostHog starts is never counted. PostHog starts soon after the page has loaded, or 2 seconds after it at the latest on a page that stays busy. On a local production build, PostHog starts at 181 ms, after the page's load event at 72 ms; on a page kept busy every frame, at 2,251 ms.
 
 PostHog initializes after the page has loaded, so call it from an event handler and import it there. A call made earlier, at module load or in a mount effect, is dropped with a "You must initialize PostHog" error, and a static `import posthog from "posthog-js"` puts the library back on that route's first load.
 
