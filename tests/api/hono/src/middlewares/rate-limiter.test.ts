@@ -1,48 +1,14 @@
 import { expect, test } from "bun:test"
 import { join } from "node:path"
 
+import type { Ask } from "./rate-limiter.probe"
+
 const API = join(import.meta.dir, "../../../../../api/hono")
+const PROBE = join(import.meta.dir, "rate-limiter.probe.ts")
 
-// Each case gets a limiter of its own with a limit of 2, so a third counted request from one client is refused. A peer is the address Bun.serve() reports for the connection, given to fetch as its env; Vercel's case has none, since the function sees only Vercel's proxy. Each answer is its status, and "skipped" when the limiter set no RateLimit-Limit header, which it sets only once it has stored the request's key.
-const PROBE = `
-import { Hono } from "hono"
-import { createRateLimiter } from "./src/middlewares/rate-limiter"
-
-type Ask = { headers?: Record<string, string>; peer?: string }
-const app = () => new Hono().use(createRateLimiter({ limit: 2, windowMs: 60_000 })).get("/", (c) => c.text("ok"))
-const stacked = () =>
-  new Hono()
-    .use(createRateLimiter({ limit: 1000, windowMs: 60_000 }))
-    .use(createRateLimiter({ getUserId: (c) => c.req.header("x-user"), limit: 2, windowMs: 60_000 }))
-    .get("/", (c) => c.text("ok"))
-const env = (peer?: string) =>
-  peer ? { requestIP: () => ({ address: peer, family: peer.includes(":") ? "IPv6" : "IPv4", port: 40000 }) } : undefined
-const answer = (r: Response) => r.status + (r.headers.has("ratelimit-limit") ? "" : " skipped")
-const answers = async (asks: Ask[], make = app) => {
-  const one = make()
-  const out: string[] = []
-  for (const ask of asks) out.push(answer(await one.fetch(new Request("http://api.test/", { headers: ask.headers }), env(ask.peer))))
-  return out
-}
-const cases = JSON.parse(process.env.CASES ?? "{}") as Record<string, Ask[]>
-const stack = JSON.parse(process.env.STACKED ?? "{}") as Record<string, Ask[]>
-const out: Record<string, string[]> = {}
-for (const [name, asks] of Object.entries(cases)) out[name] = await answers(asks)
-for (const [name, asks] of Object.entries(stack)) out[name] = await answers(asks, stacked)
-if (process.env.LOOPBACK) {
-  const server = Bun.serve({ port: 0, hostname: "127.0.0.1", fetch: app().fetch })
-  const got: string[] = []
-  for (let i = 0; i < 3; i++) got.push(answer(await fetch("http://127.0.0.1:" + server.port + "/")))
-  server.stop(true)
-  out["a loopback client over a real socket"] = got
-}
-console.log(JSON.stringify(out))
-`
-
-type Ask = { headers?: Record<string, string>; peer?: string }
-
+// Each case gets a limiter of its own with a limit of 2, so a third counted request from one client is refused. A peer is the address Bun.serve() reports for the connection; Vercel's case has none, since the function sees only Vercel's proxy. Each answer is its status, and "skipped" when the limiter set no RateLimit-Limit header, which it sets only once it has stored the request's key.
 const probe = async (cases: Record<string, Ask[]>, env: Record<string, string>) => {
-  const proc = Bun.spawn([process.execPath, "-e", PROBE], {
+  const proc = Bun.spawn([process.execPath, PROBE], {
     cwd: API,
     env: { ...process.env, CASES: JSON.stringify(cases), SKIP_ENV_VALIDATION: "true", ...env },
     stderr: "pipe",
@@ -110,16 +76,23 @@ test("off Vercel, a private or loopback peer that forwards no public client addr
     "a Docker peer with no forwarding header": skipped,
     "a private-network peer with no forwarding header": skipped,
     "a Docker peer that forwards a private address": skipped,
-    "a loopback client over a real socket": skipped,
+    "a loopback client over a real socket on 127.0.0.1": skipped,
+    "a loopback client over a real socket on Bun's default listener": skipped,
   })
 })
 
-test("off Vercel, an IPv4 client that Bun's dual-stack listener reports as ::ffff:a.b.c.d is read as that IPv4 address", async () => {
+test("off Vercel, an IPv4 client that Bun's dual-stack listener reports as ::ffff:a.b.c.d is read as that IPv4 address, and an IPv6 peer as itself", async () => {
   expect(
     await probe(
       {
-        "a mapped public peer that rotates x-forwarded-for": rotating("::ffff:8.8.8.8"),
-        "a mapped public peer with no forwarding header": three({ peer: "::ffff:8.8.8.8" }),
+        "a mapped public peer that rotates x-forwarded-for": rotating("::ffff:1.2.3.4"),
+        "a mapped public peer with no forwarding header": three({ peer: "::ffff:1.2.3.4" }),
+        "a mapped private-network peer with no forwarding header": three({
+          peer: "::ffff:10.0.0.1",
+        }),
+        "a mapped loopback peer with no forwarding header": three({ peer: "::ffff:127.0.0.1" }),
+        "a public IPv6 peer that rotates x-forwarded-for": rotating("2606:4700:4700::1111"),
+        "an IPv6 loopback peer with no forwarding header": three({ peer: "::1" }),
         "a mapped private proxy's public client": three({
           headers: { "x-forwarded-for": "1.2.3.4" },
           peer: "::ffff:172.18.0.2",
@@ -131,6 +104,10 @@ test("off Vercel, an IPv4 client that Bun's dual-stack listener reports as ::fff
   ).toEqual({
     "a mapped public peer that rotates x-forwarded-for": limited,
     "a mapped public peer with no forwarding header": limited,
+    "a mapped private-network peer with no forwarding header": skipped,
+    "a mapped loopback peer with no forwarding header": skipped,
+    "a public IPv6 peer that rotates x-forwarded-for": limited,
+    "an IPv6 loopback peer with no forwarding header": skipped,
     "a mapped private proxy's public client": limited,
     "a mapped Docker peer with no forwarding header": skipped,
   })
