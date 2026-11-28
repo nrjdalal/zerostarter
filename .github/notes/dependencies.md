@@ -26,7 +26,8 @@ Enforcement is only partial by design. Specs the rule cannot convert are reporte
 
 A version the catalog range admits but the lock keeps back, because the newer one breaks the build. The range stays a caret; the hold lives in `bun.lock` alone, so a refresh (`bun update -r --latest`) moves past it and hits the break. Read each entry before a refresh, and move the group forward only with its fix.
 
-None.
+- **`fontkit` held at 2.0.4** (latest 3.0.0; the refresh's `--latest` crosses the `^2.0.4` range, so put it back after): `packages/scripts/src/data-table-metrics.ts` measures the header font for the data table's column widths, and its output must match the browser's canvas. fontkit 2's advances for DM Sans at wght 500 match Chrome's `measureText` exactly. fontkit 3's advances differ by 0.01 px on 75 glyphs (`2` measures 8.06 against the browser's 8.07), so the generated `.generated/data-table-metrics.json` differs.
+  - **Exit criteria:** a fontkit whose generated metrics file is byte-identical to 2.0.4's, or a script that no longer depends on fontkit's advances.
 
 ## Active overrides
 
