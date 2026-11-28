@@ -88,6 +88,7 @@
     "@tanstack/react-query-devtools": "^5.108.4",
     "@tanstack/react-table": "^9.3.1",
     "@tanstack/react-virtual": "^3.14.28",
+    "@tanstack/redact": "^0.3.1",
     "@types/bun": "^1.4.5",
     "@types/fontkit": "^2.0.9",
     "@types/mdx": "^2.0.14",
