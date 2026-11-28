@@ -39,7 +39,7 @@ git commit -m "<type>(<scope>): <subject>"
 | **Subject** | Imperative, lowercase, no period. The commit-msg hook rejects a header over 100 chars or a capitalized subject (`subject-case`).                                                          |
 | **Body**    | Optional; explain "why", not "what". Wrap lines at 100 (the hook rejects longer).                                                                                                       |
 
-Never add `Co-authored-by` (repo rule). The commit-msg hook runs commitlint (`@commitlint/config-conventional`); pre-commit regenerates the AGENTS.md skills tables when a skill changed, then runs lint-staged, which formats the staged files with `bun fmt` and lints them with oxlint, then `bun run build`.
+Never add `Co-authored-by` (repo rule). The commit-msg hook runs commitlint (`@commitlint/config-conventional`); pre-commit regenerates the AGENTS.md skills tables when a skill changed, then formats the staged files with `bun fmt` and lints them with oxlint, then `bun run build`.
 
 **Examples**:
 
