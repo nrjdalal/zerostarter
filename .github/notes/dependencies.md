@@ -35,11 +35,11 @@ A version the catalog range admits but the lock keeps back, because the newer on
 
 ## Patched dependencies
 
-A package `bun patch` edits in place: its patch file sits under `patches/`, and root `patchedDependencies` keys it to one exact version. A refresh that moves the package leaves the patch behind, so drop the patch once the new version carries the fix, or redo it with `bun patch` on the new version.
+A package `bun patch` edits in place: its patch file sits under `.github/patches/`, and root `patchedDependencies` keys it to one exact version. `bun patch --commit` writes to `patches/` at the root unless it is given `--patches-dir .github/patches`. A refresh that moves the package leaves the patch behind, so drop the patch once the new version carries the fix, or redo it with `bun patch` on the new version.
 
-- **`@standard-community/standard-json@0.4.1`** (`patches/@standard-community%2Fstandard-json@0.4.1.patch`): its zod converter loads the optional `zod-to-json-schema` through a helper whose `try` sits outside each `import()`, so `bun build` cannot resolve it and the API bundle fails. The patch puts each `import()` in its own `try`, which `bun build` treats as optional.
+- **`@standard-community/standard-json@0.4.1`** (`.github/patches/@standard-community%2Fstandard-json@0.4.1.patch`): its zod converter loads the optional `zod-to-json-schema` through a helper whose `try` sits outside each `import()`, so `bun build` cannot resolve it and the API bundle fails. The patch puts each `import()` in its own `try`, which `bun build` treats as optional. It also takes only `toJSONSchema` from `zod/v4/core`: returning the whole module keeps every export, every zod locale included, which grew the API bundle by 330 KB.
   - **Risk:** the key names 0.4.1 alone, so a refresh that moves standard-json leaves the new version unpatched, and the API bundle build fails again until the patch is dropped or redone.
-  - **Exit criteria:** standard-json ships [standard-json#42](https://github.com/standard-community/standard-json/pull/42), which makes the same change; then delete the patch file and its `patchedDependencies` entry.
+  - **Exit criteria:** standard-json ships [standard-json#42](https://github.com/standard-community/standard-json/pull/42), which makes the same `try` change, and a fix that imports `toJSONSchema` alone; then delete the patch file and its `patchedDependencies` entry.
 
 ## Active overrides
 

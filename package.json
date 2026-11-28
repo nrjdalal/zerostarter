@@ -1,6 +1,6 @@
 {
   "name": "zerostarter",
-  "version": "0.1.46",
+  "version": "0.1.47",
   "private": true,
   "homepage": "https://github.com/nrjdalal/zerostarter#readme",
   "bugs": "https://github.com/nrjdalal/zerostarter/issues",
@@ -151,6 +151,6 @@
     "zod": "^4.6.7"
   },
   "patchedDependencies": {
-    "@standard-community/standard-json@0.4.1": "patches/@standard-community%2Fstandard-json@0.4.1.patch"
+    "@standard-community/standard-json@0.4.1": ".github/patches/@standard-community%2Fstandard-json@0.4.1.patch"
   }
 }

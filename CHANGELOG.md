@@ -1,3 +1,15 @@
+## v0.1.46
+
+[compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.45...v0.1.46)
+
+### 📦 Build
+
+- **config:** Format from .oxfmtrc.jsonc in place of bunfig's [fmt] ([#925](https://github.com/nrjdalal/zerostarter/pull/925))
+
+### ❤️ Contributors
+
+- Neeraj Dalal @nrjdalal
+
 ## v0.1.45
 
 [compare changes](https://github.com/nrjdalal/zerostarter/compare/v0.1.44...v0.1.45)
