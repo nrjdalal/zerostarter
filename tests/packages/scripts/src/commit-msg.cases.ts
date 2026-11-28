@@ -134,4 +134,22 @@ export const CASES: Case[] = [
   },
   { errors: [], message: "", name: "an empty message passes" },
   { errors: [], message: "# only a comment\n", name: "a message of comments passes" },
+  { errors: [], message: "   \n", name: "a message of spaces passes, as the CLI drops it" },
+  { errors: [], message: "\n\n", name: "a message of blank lines passes" },
+  { errors: [], message: "\t\n", name: "a message of a tab passes" },
+  {
+    errors: ["subject-empty", "type-empty"],
+    message: "v9007199254740992.0.0",
+    name: "a version part past the largest safe integer is linted, not ignored",
+  },
+  {
+    errors: ["subject-empty", "type-empty"],
+    message: "1.2.99999999999999999",
+    name: "a patch past the largest safe integer is linted, not ignored",
+  },
+  {
+    errors: ["header-trim", "subject-empty", "type-empty"],
+    message: "\uFEFFfeat: a\n",
+    name: "a leading byte order mark stays in the header",
+  },
 ]

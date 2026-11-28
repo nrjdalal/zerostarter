@@ -44,6 +44,12 @@ describe("the hook", () => {
     expect(run("feat: add a page\n").code).toBe(0)
   })
 
+  test("a byte order mark the editor wrote stays in the message", () => {
+    const bom = run("\uFEFFfeat: add a page\n")
+    expect(bom.code).toBe(1)
+    expect(bom.stderr).toContain("[header-trim]")
+  })
+
   test("a warning alone exits 0", () => {
     const warned = run("feat: a\nbody right under")
     expect(warned.code).toBe(0)
