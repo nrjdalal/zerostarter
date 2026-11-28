@@ -1,5 +1,3 @@
-import { decodeHTML } from "entities"
-
 import { config } from "@/lib/config"
 
 type LLMPage = {
@@ -14,6 +12,13 @@ export const llmTextHeaders = {
   "Content-Type": "text/markdown; charset=utf-8",
 } as const
 
+// mdast escapes a character with a backslash or a hex reference (&#x20;), never a named or decimal one, so only the hex ones are decoded.
+const decodeHexReferences = (text: string) =>
+  text.replace(/&#x([0-9a-f]+);/gi, (ref, hex: string) => {
+    const code = Number.parseInt(hex, 16)
+    return code <= 0x10ffff ? String.fromCodePoint(code) : ref
+  })
+
 export async function getLLMText(page: LLMPage) {
   let body: string
 
@@ -23,8 +28,8 @@ export async function getLLMText(page: LLMPage) {
     body = (await page.data.getText("raw")).trim()
   }
 
-  // Fumadocs' processed markdown HTML-escapes some chars (e.g. **bold** -> &#x2A;*); decode so the LLM text is clean.
-  body = decodeHTML(body)
+  // Fumadocs' processed markdown HTML-escapes some chars (e.g. a space at an emphasis edge -> &#x20;); decode so the LLM text is clean.
+  body = decodeHexReferences(body)
 
   const pageTitle = page.data.title ?? page.url
 
