@@ -32,7 +32,7 @@
     "format": "bun fmt",
     "format:changed": "bun fmt --check --changed=origin/canary",
     "format:check": "bun fmt --check",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "postinstall": "bun packages/scripts/src/deps-manager.ts",
     "prepare": "bunx lefthook install",
     "release:version": "bun packages/scripts/src/release-version.ts",
